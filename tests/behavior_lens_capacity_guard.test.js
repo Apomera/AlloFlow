@@ -115,7 +115,7 @@ describe('Behavior Lens storage-capacity safeguards', () => {
     });
   });
 
-  it('rejects oversized, malformed, and over-count workspace imports', () => {
+  it('rejects oversized or malformed imports and retains large valid collections', () => {
     const runtime = window.AlloModules.BehaviorLensWorkspace;
 
     expect(runtime.validateWorkspaceImport(workspace(), {
@@ -128,7 +128,7 @@ describe('Behavior Lens storage-capacity safeguards', () => {
     expect(runtime.validateWorkspaceImport({
       abcEntries: Array.from({ length: 5001 }, () => ({})),
       observationSessions: []
-    })).toMatchObject({ ok: false, error: 'abcEntries exceeds the limit of 5000 items.' });
+    })).toMatchObject({ ok: true, warnings: [expect.stringContaining('All records will be retained')] });
   });
 
   it('validates bounded role-based shared snapshots', () => {

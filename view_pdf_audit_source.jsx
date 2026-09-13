@@ -3804,6 +3804,18 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
     pdfRunHistory, setPdfRunHistory, openRemediationBuilder, _remediationMode
   } = props;
+  const [batchActionBusy, setBatchActionBusy] = useState(false);
+  const _batchActionBusyRef = useRef(false);
+  const [batchQueueFilter, setBatchQueueFilter] = useState('all');
+  const [batchStopSignal, setBatchStopSignal] = useState(null);
+  useEffect(() => { setBatchQueueFilter('all'); }, [pdfDocumentEpoch, pdfBatchMode, pdfBatchQueue.length === 0]);
+  useEffect(() => { if (!pdfBatchProcessing) setBatchStopSignal(null); }, [pdfBatchProcessing]);
+  const [workspaceDestination, setWorkspaceDestination] = useState(null);
+  useEffect(() => {
+    if (!workspaceDestination) return;
+    if (!_pdfWorkspaceJump(pdfModalRef.current, workspaceDestination)) addToast(_pdfWorkspaceText(t, 'section_unavailable', 'This section is not available for the current result.'), 'info');
+    setWorkspaceDestination(null);
+  }, [workspaceDestination, pdfAuditTab]);
   const [remediationProgress, setRemediationProgress] = useState(null);
   const remediationProgressOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 });
   const chunkTraceOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0 });
@@ -4379,7 +4391,7 @@ function PdfAuditView(props) {
   // all — so it rendered "Ready to hand out" above a banner saying the opposite. One derivation,
   // read by all three (and it folds in pipelineRunActive, the authoritative re-entry lock, so a
   // lost pdfFixLoading write degrades to a redundant signal instead of a silent "done").
-  const _remediationInFlight = _remediationBusy || pdfAutoContinueRunning;
+  const _remediationInFlight = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning;
   const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
   // (2026-08-15) Audit-modal visibility transitions, logged. 'CLOSED {hasResult:false,
   // loading:false}' arriving moments after 'audit START clicked' with no DROPPED line between
@@ -4610,7 +4622,12 @@ function PdfAuditView(props) {
   // Tier 4: surface "resume previous batch" banner when an interrupted batch
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
-  const [resumableBatch, setResumableBatch] = useState(null);
+  const { saved: resumableBatch, setSaved: setResumableBatch, status: savedBatchLookupStatus, refresh: refreshSavedBatch } = _usePdfSavedBatch({
+    pipeline: _docPipeline, batchMode: pdfBatchMode, documentEpoch: pdfDocumentEpoch,
+    occupied: pdfBatchQueue.length > 0 || pdfBatchProcessing || batchActionBusy || pdfAuditLoading || _remediationBusy,
+    ready: remediationReady,
+  });
+  const batchRecoveryState = _usePdfBatchRecovery(_docPipeline, pdfDocumentEpoch);
   const [verificationRefreshBusy, setVerificationRefreshBusy] = useState(false);
   // A SHA-256 rehydration can finish out of order when two project files are selected quickly.
   // Both project pickers share this token: only the most recently selected file may commit.
@@ -6582,6 +6599,7 @@ function PdfAuditView(props) {
     reader.readAsDataURL(file);
   });
   const _alloEnqueueBatchFilesOwned = async (files) => {
+    if (_modalHasActiveWork() || pdfAuditLoading) return 0;
     _cancelBatchIngest();
     const accepted = _alloBatchPreflight(files, pdfBatchQueue);
     if (!accepted.length) return 0;
@@ -6647,6 +6665,7 @@ function PdfAuditView(props) {
   // One file → one queue entry. Desktop folder reads stay sequential and apply
   // the same preflight budget again to the bytes actually returned by the host.
   const _alloLoadDesktopFolder = async () => {
+    if (_modalHasActiveWork() || pdfAuditLoading) return;
     _cancelBatchIngest();
     const previousSession = _batchIngestSessionRef.current;
     const session = { id: ((previousSession && previousSession.id) || 0) + 1, cancelled: false, reader: null, documentEpoch: typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null };
@@ -6818,20 +6837,20 @@ function PdfAuditView(props) {
   // can't drift. Non-fatal (swallows errors → returns {ok:false}); onActivity is an optional logger.
   const _reauditAndScore = async (newHtml, onActivity, operationTicket) => {
     let ownedTicket = null;
-    if (!operationTicket) {
-      const live = pdfFixResultRef && pdfFixResultRef.current;
-      if (!live || live.accessibleHtml !== newHtml) return { ok: false, score: null, stale: true, verificationState: 'unavailable' };
-      ownedTicket = _beginRemediationOperation('canonical-re-audit', false, { sourceHtml: newHtml });
-      operationTicket = ownedTicket;
-    }
-    const _reauditHtmlToken = _captureAsyncHtmlToken();
-    const _reauditSignal = operationTicket && operationTicket.controller && operationTicket.controller.signal;
-    const _reauditIsCurrent = () => !!(operationTicket && _remediationOperationIsCurrent(operationTicket)
-      && _reauditHtmlToken && _reauditHtmlToken.documentEpoch === operationTicket.documentEpoch
-      && pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml === newHtml
-      && _reauditHtmlToken.html === newHtml);
-    if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: 'unavailable' };
     try {
+      if (!operationTicket) {
+        const live = pdfFixResultRef && pdfFixResultRef.current;
+        if (!live || live.accessibleHtml !== newHtml) return { ok: false, score: null, stale: true, verificationState: 'unavailable' };
+        ownedTicket = _beginRemediationOperation('canonical-re-audit', false, { sourceHtml: newHtml });
+        operationTicket = ownedTicket;
+      }
+      const _reauditHtmlToken = _captureAsyncHtmlToken();
+      const _reauditSignal = operationTicket && operationTicket.controller && operationTicket.controller.signal;
+      const _reauditIsCurrent = () => !!(operationTicket && _remediationOperationIsCurrent(operationTicket)
+        && _reauditHtmlToken && _reauditHtmlToken.documentEpoch === operationTicket.documentEpoch
+        && pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml === newHtml
+        && _reauditHtmlToken.html === newHtml);
+      if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: 'unavailable' };
       if (onActivity && _reauditIsCurrent()) onActivity({ text: 'Re-auditing to refresh verification evidence...', type: 'audit', time: new Date().toLocaleTimeString() });
       const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
       const [_wv, _wa, _wea] = await Promise.all([
@@ -7664,50 +7683,156 @@ function PdfAuditView(props) {
   // Clear the tagged-PDF metadata override when a different document is loaded, so one doc's
   // title/language/author can't leak onto the next.
   useEffect(() => { setPdfMetaOverride(null); }, [pendingPdfFile && pendingPdfFile.name]);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!_docPipeline || !_docPipeline.loadResumableBatch) return;
-        const saved = await _docPipeline.loadResumableBatch();
-        if (!cancelled && saved && saved._incompleteCount > 0) {
-          setResumableBatch(saved);
-        }
-      } catch (_) { /* silent */ }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
-  const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
+
+  const _auxiliaryWorkBusy = verificationRefreshBusy || veraPdfBusy || veraPdfFixing || _paletteBusy || _restyleProposalsBusy || smartTableBusy || glossaryAppendixBusy || legacyTransformBusy || easyReadBusy || !!previewAuditBusy || pdfTranslateBusy || plainLangBusy || pdfFieldBusy;
+  const _modalWorkBusy = batchActionBusy || oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy || _auxiliaryWorkBusy;
+  // Consult live owners as well as render flags: a click can precede React committing busy state.
+  const _modalHasActiveWork = () => _modalWorkBusy || _batchActionBusyRef.current || _oneClickRemediationBusyRef.current
+    || _pipelineIsRemediating() || _viewDocumentJobIsActive()
+    || !!_remediationOperationOwnerRef.current.getCurrent();
+  const _requestCloseAudit = () => { if (!_modalHasActiveWork()) safeCloseAudit(); };
+  const _runBatchSelection = async (kind, fileId) => {
+    if (_modalHasActiveWork() || pdfAuditLoading) return;
+    if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
+      if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
+      return;
+    }
+    const selected = pdfBatchQueue.filter(item => item && (kind === 'retry'
+      ? item.status === 'failed' && (fileId == null || item.id === fileId)
+      : !item.status || item.status === 'pending' || item.status === 'processing'));
+    if (!selected.length) { addToast(kind === 'retry' ? 'No failed files to retry.' : 'No pending files to resume.', 'info'); return; }
+    const ids = new Set(selected.map(item => item.id));
+    // Pass the complete queue explicitly: React may not have committed a setter yet.
+    // The pipeline limits this invocation to the selected IDs and retains every other result.
+    const queue = pdfBatchQueue.map(item => ids.has(item.id) ? { ...item, status: 'pending', error: null } : item);
+    _batchActionBusyRef.current = true;
+    setBatchActionBusy(true);
+    try {
+      await Promise.resolve(runPdfBatchRemediation({
+        resumeQueue: queue,
+        resumeBatchId: pdfBatchSummary && pdfBatchSummary.batchId,
+        resumeSettings: pdfBatchSummary && pdfBatchSummary.settings,
+        retryFileIds: selected.map(item => item.id),
+      }));
+    } catch (error) {
+      addToast((kind === 'retry' ? 'Batch retry could not start: ' : 'Pending batch files could not resume: ') + ((error && error.message) || error), 'error');
+    } finally {
+      _batchActionBusyRef.current = false;
+      setBatchActionBusy(false);
+    }
+  };
+  const _resumeSavedBatch = async () => {
+    if (!resumableBatch || _modalHasActiveWork() || pdfAuditLoading || pdfBatchQueue.length) return;
+    const savedBatch = resumableBatch;
+    const onlyFailures = savedBatch.files.some(file => file.status === 'failed') && savedBatch.files.every(file => file.status === 'done' || file.status === 'failed');
+    if (onlyFailures) {
+      // Restoring failures is read-only: no AI run is launched until the user explicitly retries.
+      setPdfBatchQueue(savedBatch.files.map(file => ({ ...file })));
+      setPdfBatchSummary({ batchId: savedBatch.batchId, settings: savedBatch.settings || {}, status: 'complete',
+        total: savedBatch.files.length, processed: savedBatch.files.filter(file => file.status === 'done').length,
+        failed: savedBatch.files.filter(file => file.status === 'failed').length, pending: 0, checkpointSavedAt: savedBatch.savedAt });
+      setResumableBatch(current => current === savedBatch ? null : current);
+      return;
+    }
+    if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
+      if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
+      return;
+    }
+    const resumeEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
+    const isCurrent = () => typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(resumeEpoch);
+    const resumeQueue = savedBatch.files.map(file => ({ ...file, status: file.status === 'processing' ? 'pending' : file.status }));
+    _batchActionBusyRef.current = true;
+    setBatchActionBusy(true);
+    try {
+      addToast(t('pdf_audit.batch.resume.toast', { done: savedBatch._doneCount, remaining: savedBatch._incompleteCount }) || 'Resuming the saved batch.', 'info');
+      if (savedBatch.settings) addToast(t('pdf_audit.batch.resume.settings_toast') || 'Resuming with the batch’s original settings — current slider values apply to new batches.', 'info');
+      await Promise.resolve(runPdfBatchRemediation({ resumeQueue, resumeSettings: savedBatch.settings || null, resumeBatchId: savedBatch.batchId || null }));
+      if (isCurrent()) setResumableBatch(current => current === savedBatch ? null : current);
+    } catch (error) {
+      // Keep the saved checkpoint available on failure; never restore stale state over a newer document.
+      if (isCurrent()) addToast('Batch resume could not start: ' + ((error && error.message) || error), 'error');
+    } finally {
+      _batchActionBusyRef.current = false;
+      setBatchActionBusy(false);
+    }
+  };
+  const _discardSavedBatch = async () => {
+    if (!resumableBatch || _modalHasActiveWork() || pdfAuditLoading || pdfBatchQueue.length) return;
+    const checkpointBatchId = typeof resumableBatch.batchId === 'string' ? resumableBatch.batchId.trim() : '';
+    if (!checkpointBatchId) {
+      addToast('This saved batch has no safe checkpoint identity and was not discarded. Reload or resume it before trying again.', 'error');
+      return;
+    }
+    if (!_docPipeline || typeof _docPipeline.discardResumableBatch !== 'function') {
+      addToast('The saved batch could not be discarded because storage support is unavailable.', 'error');
+      return;
+    }
+    const savedBatch = resumableBatch;
+    const discardEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
+    const isCurrent = () => typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(discardEpoch);
+    _batchActionBusyRef.current = true;
+    setBatchActionBusy(true);
+    try {
+      const discarded = await _docPipeline.discardResumableBatch(checkpointBatchId);
+      if (!discarded) throw new Error('storage did not confirm deletion');
+      if (isCurrent()) setResumableBatch(current => current === savedBatch ? null : current);
+    } catch (error) {
+      if (isCurrent()) addToast('Could not discard the saved batch: ' + ((error && error.message) || error) + '. It remains available for resume.', 'error');
+    } finally {
+      _batchActionBusyRef.current = false;
+      setBatchActionBusy(false);
+    }
+  };
   // A stray Escape or backdrop click during an audit used to close the modal with NO
   // confirmation (safeCloseAudit only guards work that already produced a pdfFixResult),
   // silently aborting the run. The explicit close button stays on _modalWorkBusy so there
   // is always a deliberate way out even if a loading flag ever strands true.
   const _modalDismissBusy = _modalWorkBusy || pdfAuditLoading;
+  const _batchDisplay = _pdfWorkspaceBatchModel(pdfBatchQueue, batchQueueFilter);
+  const _batchController = typeof window !== 'undefined' ? window.__alloPdfBatchAbortCtrl : null;
+  const _batchStopRequested = !!(pdfBatchProcessing && _batchController?.signal && (_batchController.signal.aborted || batchStopSignal === _batchController.signal));
   const _batchSummaryPending = pdfBatchSummary
-    ? (Number.isFinite(pdfBatchSummary.pending) ? pdfBatchSummary.pending : pdfBatchQueue.filter((item) => !item.status || item.status === 'pending' || item.status === 'processing').length)
+    ? Math.max(Number.isFinite(pdfBatchSummary.pending) ? pdfBatchSummary.pending : 0, _batchDisplay.counts.pending)
     : 0;
+  const _batchRecovery = batchRecoveryState && (pdfBatchProcessing || batchActionBusy || pdfBatchSummary?.batchId === batchRecoveryState.batchId)
+    ? batchRecoveryState : pdfBatchSummary?.checkpointSavedAt ? { checkpoint: 'saved', savedAt: pdfBatchSummary.checkpointSavedAt } : null;
+  const _savedBatchOnlyFailures = !!(resumableBatch && resumableBatch.files.some(file => file.status === 'failed') && resumableBatch.files.every(file => file.status === 'failed' || file.status === 'done'));
   const _batchSummaryIncomplete = !!(pdfBatchSummary && (pdfBatchSummary.status !== 'complete' || _batchSummaryPending > 0));
-  const _batchSummaryNeedsAttention = !!(pdfBatchSummary && (_batchSummaryIncomplete || pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0));
+  const _batchSummaryNeedsAttention = !!(pdfBatchSummary && (_batchSummaryIncomplete || pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0 || _batchDisplay.counts.review > 0 || _batchDisplay.counts.failed > 0));
   const _batchSummaryTitle = !pdfBatchSummary ? '' : pdfBatchSummary.status === 'paused-quota' ? 'Batch Paused at AI Quota'
-    : pdfBatchSummary.status === 'stopped' ? 'Batch Processing Stopped' : pdfBatchSummary.status === 'complete' ? (t('pdf_audit.batch.summary_title') || 'Batch Processing Complete') : 'Batch Processing Interrupted';
+    : pdfBatchSummary.status === 'stopped' ? 'Batch Processing Stopped' : pdfBatchSummary.status === 'complete' && !_batchSummaryIncomplete ? (t('pdf_audit.batch.summary_title') || 'Batch Processing Complete') : 'Batch Processing Interrupted';
   const _auditScoreKnown = !!(pdfAuditResult && Number.isFinite(pdfAuditResult.score));
+  const _workspaceEvidence = useMemo(() => pdfFixResult ? _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline) : null, [pdfFixResult, _docPipeline]);
+  const _workspaceVerdict = pdfFixResult && typeof _docPipeline?.distributionVerdict === 'function'
+    ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _modalWorkBusy }) : null;
+  const _workspaceState = _pdfWorkspaceState({ audit: pdfAuditResult, result: pdfFixResult, busy: _modalWorkBusy,
+    auditLoading: pdfAuditLoading, batchMode: pdfBatchMode, batchProcessing: pdfBatchProcessing,
+    batchIngesting, batchStopping: _batchStopRequested, batchPhase: _batchRecovery?.phase, batchSummary: pdfBatchSummary, queue: pdfBatchQueue, progress: remediationProgress,
+    verifying: verificationRefreshBusy || veraPdfBusy || (oneClickRemediationBusy && !!pdfFixResult && !pdfFixLoading && !pdfAutoContinueRunning),
+    step: pdfFixStep, webBusy: webJobBusy, webMode: pdfWebMode, evidence: _workspaceEvidence, verdict: _workspaceVerdict, t });
+  const _workspaceNavigate = (selector) => {
+    if (pdfFixResult && pdfAuditTab !== 'results') setPdfAuditTab('results');
+    setWorkspaceDestination(selector);
+  };
   if (!pdfAuditResult && !pdfAuditLoading) return null;
 
   return (
         <div
           data-help-key="pdf_audit_view_panel"
-          className="allo-docsuite fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          data-workspace-theme={theme || 'light'}
+          className="allo-docsuite pdf-workspace fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           role="dialog" aria-modal="true" aria-label={t('pdf_audit.modal_aria') || 'PDF Accessibility Audit'}
           tabIndex={-1}
           onClick={(e) => {
             if (e.target === e.currentTarget && !_modalDismissBusy) {
-              safeCloseAudit();
+              _requestCloseAudit();
             }
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Escape' && !_modalDismissBusy) {
-              safeCloseAudit();
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              if (!_modalDismissBusy) _requestCloseAudit();
             }
           }}
           ref={(el) => {
@@ -7727,10 +7852,13 @@ function PdfAuditView(props) {
           {/* Floating diagnostics log — fixed bottom-right, above the modal; lets the teacher see +
               copy the pipeline's warnLog/debugLog output from inside Canvas (no browser console). */}
           <PdfDiagnosticsLog t={t} addToast={addToast} docPipeline={_docPipeline} />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
+          <div className="pdf-workspace-shell relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}
-            <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
+            <_PdfWorkspaceHeader t={t} state={_workspaceState}
+              fileName={pdfBatchMode ? _pdfWorkspaceText(t, 'batch_workspace', 'Batch workspace') : (pendingPdfFile?.name || pdfAuditResult?.fileName)}
+              sourceLabel={pdfBatchMode ? _pdfWorkspaceText(t, 'batch', 'Batch of files') : pdfWebMode || pdfAuditResult?._isWebAudit ? _pdfWorkspaceText(t, 'web', 'Website / HTML') : _pdfWorkspaceText(t, 'single', 'Single document')}
+              hasResult={!!pdfFixResult && !pdfBatchMode && !pdfAuditLoading && !pdfAuditResult?._choosing} onNavigate={_workspaceNavigate}>
               <button
                 type="button"
                 onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
@@ -7743,7 +7871,7 @@ function PdfAuditView(props) {
               <button
                 data-help-key="pdf_audit_view_close_btn"
                 type="button"
-                onClick={() => { safeCloseAudit(); }}
+                onClick={_requestCloseAudit}
                 disabled={_modalWorkBusy}
                 aria-label={t('pdf_audit.close_modal_aria') || 'Close audit modal'}
                 title={_modalWorkBusy ? (t('pdf_audit.close_wait_title') || 'Wait for the active operation to finish or stop it first') : (t('pdf_audit.close_esc_title') || 'Close (Esc)')}
@@ -7751,19 +7879,18 @@ function PdfAuditView(props) {
               >
                 <X size={18} aria-hidden="true"/>
               </button>
-            </div>
+            </_PdfWorkspaceHeader>
             {pdfAuditResult?._choosing && !pdfAuditLoading ? (
               <div className="p-8 text-center">
                 {/* ── Batch Mode Toggle (hidden in the focused remediation
                     mode — the desktop "Document remediation" install choice
                     locks the app to the batch remediation home screen) ── */}
-                {!_remediationMode && <div className="flex justify-center mb-4">
-                  <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
-                    <button data-help-key="pdf_audit_view_mode_single_btn" onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📄 Single PDF</button>
-                    <button data-help-key="pdf_audit_view_mode_batch_btn" onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📂 Batch</button>
-                    <button data-help-key="pdf_audit_view_mode_web_btn" onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>🌐 Website / HTML</button>
-                  </div>
-                </div>}
+                {!_remediationMode && <_PdfWorkspaceSources t={t} batch={pdfBatchMode} web={pdfWebMode} disabled={_modalDismissBusy}
+                  onChange={(mode) => {
+                    if (_modalHasActiveWork() || pdfAuditLoading) return;
+                    setPdfBatchMode(mode === 'batch');
+                    setPdfWebMode && setPdfWebMode(mode === 'web');
+                  }} />}
                 {pdfWebMode ? (
                   <div className="text-left space-y-4">
                     <h3 className="text-lg font-black text-slate-800 mb-1 text-center">{t('pdf_audit.web.heading') || '🌐 Website & HTML Accessibility'}</h3>
@@ -8096,7 +8223,7 @@ function PdfAuditView(props) {
                     <p className="text-[11px] text-slate-600 text-center">Both actions inspect static source with AI, axe-core, and IBM Equal Access. Remediation produces downloadable HTML, with unresolved and out-of-scope checks retained for manual review.</p>
                   </div>
                 ) : pdfBatchMode ? (
-                  <div className="text-left">
+                  <div id="pdf-workspace-batch" className="text-left">
                     {batchIngesting && <p role="status" aria-live="polite" className="mb-4 text-center text-sm font-bold text-indigo-700">Reading and validating selected files...</p>}
                     <h3 className="text-lg font-black text-slate-800 mb-3 text-center">📂 Batch Document & Image Remediation</h3>
 
@@ -8104,6 +8231,7 @@ function PdfAuditView(props) {
                     {!pdfBatchProcessing && !pdfBatchSummary && !batchIngesting && (
                       <div
                         data-help-key="pdf_audit_view_batch_dropzone"
+                        aria-disabled={_modalDismissBusy}
                         className="border-2 border-dashed border-indigo-300 rounded-xl p-6 mb-4 text-center hover:border-indigo-500 hover:bg-indigo-50/50 transition-all cursor-pointer"
                         onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-indigo-500', 'bg-indigo-50'); }}
                         onDragLeave={(e) => { e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50'); }}
@@ -8120,7 +8248,7 @@ function PdfAuditView(props) {
                         <div className="text-4xl mb-2">📥</div>
                         <p className="text-sm font-bold text-indigo-600">{t('pdf_audit.batch.drop_text') || 'Drag & drop PDFs, Word, PowerPoint, Markdown, CSV, Excel, PNG, JPEG, or WebP files here'}</p>
                         <p className="text-xs text-slate-600 mt-1">or click to browse</p>
-                        <input type="file" accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods,.png,.jpg,.jpeg,.webp" multiple className="hidden" id="batch-pdf-input" onChange={async (e) => {
+                        <input type="file" accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods,.png,.jpg,.jpeg,.webp" multiple disabled={_modalDismissBusy} className="hidden" id="batch-pdf-input" onChange={async (e) => {
                           const files = [...(e.target.files || [])].filter(_isSupportedBatchFile);
                           // #12: budget-checked + sequential reads (shared helper — was a byte-copy of the drop handler)
                           const _added = await _alloEnqueueBatchFilesOwned(files);
@@ -8138,6 +8266,7 @@ function PdfAuditView(props) {
                       <div className="mb-4 text-center">
                         <button
                           onClick={_alloLoadDesktopFolder}
+                          disabled={_modalDismissBusy}
                           className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
                         >
                           📂 {t('pdf_audit.batch.scan_folder') || 'Scan Folder (documents + PNG/JPEG/WebP, incl. subfolders)'}
@@ -8147,6 +8276,13 @@ function PdfAuditView(props) {
                     )}
 
                     {/* Tier 4: Resume previous batch banner */}
+                    {!pdfBatchQueue.length && !pdfBatchProcessing && !batchActionBusy && savedBatchLookupStatus !== 'ready' && savedBatchLookupStatus !== 'idle' && (
+                      <div className="pdf-workspace-recovery" aria-label="Saved batch lookup">
+                        <p role="status">{savedBatchLookupStatus === 'loading' ? 'Checking for a saved batch…' : savedBatchLookupStatus === 'unavailable' ? 'Saved-batch storage is still loading.' : 'Could not check for a saved batch. Your saved files were not discarded.'}</p>
+                        {savedBatchLookupStatus !== 'loading' && <button type="button" onClick={refreshSavedBatch}>Retry saved-batch lookup</button>}
+                      </div>
+                    )}
+                    <_PdfWorkspaceRecovery state={_batchRecovery} t={t} />
                     {resumableBatch && pdfBatchQueue.length === 0 && !pdfBatchProcessing && !pdfBatchSummary && (
                       <div className="mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300">
                         <div className="flex items-start gap-3">
@@ -8163,53 +8299,16 @@ function PdfAuditView(props) {
                             </p>
                             <div className="flex gap-2">
                               <button
-                                onClick={async () => {
-                                  if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
-                                    if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
-                                    return;
-                                  }
-                                  const resumeQueue = resumableBatch.files.map(f => ({
-                                    ...f,
-                                    status: f.status === 'processing' ? 'pending' : f.status,
-                                  }));
-                                  const toastMsg = t('pdf_audit.batch.resume.toast', { done: resumableBatch._doneCount, remaining: resumableBatch._incompleteCount }) || `Resuming batch · ${resumableBatch._doneCount} cached, ${resumableBatch._incompleteCount} to process`;
-                                  setResumableBatch(null);
-                                  addToast(toastMsg, 'info');
-                                  // Finding 10 (ChatGPT review 2026-07-10): resume with the batch's SAVED settings —
-                                  // resuming under the CURRENT sliders mixed configurations in one summary and
-                                  // broke the Tier-4 done-skip (cache keys no longer matched).
-                                  if (resumableBatch.settings) { addToast(t('pdf_audit.batch.resume.settings_toast') || 'Resuming with the batch’s original settings — current slider values apply to new batches.', 'info'); }
-                                  try {
-                                    await Promise.resolve(runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null, resumeBatchId: resumableBatch.batchId || null }));
-                                  } catch (error) {
-                                    setResumableBatch(resumableBatch);
-                                    addToast('Batch resume could not start: ' + ((error && error.message) || error), 'error');
-                                  }
-                                }}
+                                onClick={_resumeSavedBatch}
+                                disabled={_modalDismissBusy || (remediationReady === false && !_savedBatchOnlyFailures)}
                                 data-help-key="pdf_audit_view_batch_resume_btn"
                                 className="px-4 py-1.5 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-lg text-xs font-bold hover:from-amber-900 hover:to-orange-900 transition-all shadow"
                               >
-                                {'▶'} {t('pdf_audit.batch.resume.resume_button') || 'Resume Batch'}
+                                {'▶'} {_savedBatchOnlyFailures ? 'Review saved files' : (t('pdf_audit.batch.resume.resume_button') || 'Resume Batch')}
                               </button>
                               <button
-                                onClick={async () => {
-                                  const checkpointBatchId = typeof resumableBatch.batchId === 'string' ? resumableBatch.batchId.trim() : '';
-                                  if (!checkpointBatchId) {
-                                    addToast('This saved batch has no safe checkpoint identity and was not discarded. Reload or resume it before trying again.', 'error');
-                                    return;
-                                  }
-                                  if (!_docPipeline || typeof _docPipeline.discardResumableBatch !== 'function') {
-                                    addToast('The saved batch could not be discarded because storage support is unavailable.', 'error');
-                                    return;
-                                  }
-                                  try {
-                                    const discarded = await _docPipeline.discardResumableBatch(checkpointBatchId);
-                                    if (!discarded) throw new Error('storage did not confirm deletion');
-                                    setResumableBatch(null);
-                                  } catch (error) {
-                                    addToast('Could not discard the saved batch: ' + ((error && error.message) || error) + '. It remains available to retry safely.', 'error');
-                                  }
-                                }}
+                                onClick={_discardSavedBatch}
+                                disabled={_modalDismissBusy}
                                 data-help-key="pdf_audit_view_batch_discard_btn"
                                 className="px-4 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"
                               >
@@ -8222,17 +8321,20 @@ function PdfAuditView(props) {
                     )}
 
                     {/* File Queue */}
-                    {pdfBatchQueue.length > 0 && (!pdfBatchSummary || _batchSummaryIncomplete) && (
+                    {pdfBatchQueue.length > 0 && (
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-xs font-bold text-slate-600">{pdfBatchQueue.length} file{pdfBatchQueue.length !== 1 ? 's' : ''} queued</span>
-                          {!pdfBatchProcessing && !pdfBatchSummary && <button data-help-key="pdf_audit_view_batch_clear_all_btn" onClick={() => { _cancelBatchIngest(); setPdfBatchQueue([]); }} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
+                          <span className="text-xs font-bold text-slate-600">{_batchDisplay.counts.all} {_pdfWorkspaceText(t, 'batch_file_count', 'files in this batch')}</span>
+                          {!pdfBatchProcessing && !pdfBatchSummary && <button data-help-key="pdf_audit_view_batch_clear_all_btn" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; _cancelBatchIngest(); setPdfBatchQueue([]); }} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
                         </div>
-                        <div className="max-h-40 overflow-y-auto space-y-1">
-                          {pdfBatchQueue.map((item, idx) => (
-                            <div key={item.id} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${item.status === 'done' ? 'bg-green-50' : item.status === 'failed' ? 'bg-red-50' : item.status === 'processing' ? 'bg-indigo-50 animate-pulse' : 'bg-slate-50'}`}>
+                        <_PdfWorkspaceBatchFilters model={_batchDisplay} value={batchQueueFilter} onChange={setBatchQueueFilter} t={t} />
+                        <div id="pdf-workspace-batch-queue" className="pdf-workspace-batch-queue max-h-40 overflow-y-auto space-y-1">
+                          {_batchDisplay.rows.length === 0 && <p className="pdf-workspace-batch-empty" role="status">{_pdfWorkspaceText(t, 'no_matching_files', 'No files match this filter. Choose All files to see the whole batch.')}</p>}
+                          {_batchDisplay.rows.map((item) => (
+                            <div key={item.id} className={`pdf-workspace-batch-row flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${item.status === 'done' ? 'bg-green-50' : item.status === 'failed' ? 'bg-red-50' : item.status === 'processing' ? 'bg-indigo-50 animate-pulse' : 'bg-slate-50'}`}>
                               <span>{item.status === 'done' ? '\u2705' : item.status === 'failed' ? '\u274c' : item.status === 'processing' ? '\u23f3' : '\u23f8\ufe0f'}</span>
-                              <span className="flex-1 truncate font-medium">{item.fileName}</span>
+                              <span className="pdf-workspace-batch-name flex-1 font-medium">{item.fileName}</span>
+                              <_PdfWorkspaceBatchStatus item={item} t={t} />
                               <span className="text-slate-600">{(item.fileSize / (1024*1024)).toFixed(1)}MB</span>
                               {item.result && (() => {
                                 const _beforeKnown = Number.isFinite(item.result.beforeScore);
@@ -8242,37 +8344,24 @@ function PdfAuditView(props) {
                                   : item.result.afterScore >= 70 ? 'text-amber-600' : 'text-red-600';
                                 return <span className={`font-bold ${_scoreClass}`}>{_beforeKnown ? item.result.beforeScore : 'Unknown'}{'\u2192'}{_afterKnown ? item.result.afterScore : 'Unknown'}</span>;
                               })()}
-                              {item.error && <span className="text-red-500 truncate max-w-[100px]" title={(() => { const _c = classifyPdfError(item.error); return _c.friendly + (_c.actionable ? ' \u2014 ' + _c.actionable : ''); })()}>{'\u274c'}</span>}
-                              {/* 2026-06-08: per-row retry. Uses the REFINED shape from workflow
-                                  wxnlpe7ur verification: do NOT call runPdfBatchRemediation({resumeQueue:[item]})
-                                  because that would destructively wipe the rest of the queue
-                                  AND erase the summary card. Instead, mutate just this item's
-                                  status back to 'pending' (existing loop at doc_pipeline_source.jsx:5908
-                                  already skips done items) so the next runPdfBatchRemediation pass
-                                  picks it up. Re-uses the existing batch infra; no new code path. */}
                               {!pdfBatchProcessing && item.status === 'failed' && (
-                                <button
-                                  data-help-key="pdf_audit_view_batch_row_retry_btn"
-                                  onClick={() => {
-                                    // Reset this item to pending + clear error, then re-run the batch.
-                                    // The loop at doc_pipeline_source.jsx:5908 skips already-done items,
-                                    // so successes are preserved; only this row re-runs.
-                                    setPdfBatchQueue(prev => prev ? prev.map(q => q.id === item.id ? { ...q, status: 'pending', error: null, result: null } : q) : prev);
-                                    setTimeout(async () => {
-                                      if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
-                                        if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
-                                        return;
-                                      }
-                                      try { await Promise.resolve(runPdfBatchRemediation({})); }
-                                      catch (error) { addToast('Batch retry could not start: ' + ((error && error.message) || error), 'error'); }
-                                    }, 50);
-                                  }}
-                                  className="text-amber-700 hover:text-amber-800 font-bold ml-1"
-                                  title={'\u21bb Retry this file (the auto-retry already ran once if it failed transiently \u2014 this is your 3rd attempt; check the error tooltip first)'}
+                                <button data-help-key="pdf_audit_view_batch_row_retry_btn" type="button"
+                                  onClick={() => _runBatchSelection('retry', item.id)}
+                                  disabled={_modalDismissBusy || remediationReady === false}
+                                  className="text-amber-700 hover:text-amber-800 font-bold ml-1 px-2 py-1 disabled:opacity-50"
+                                  title="Retry this file; other files and completed results are kept."
                                   aria-label={'Retry ' + item.fileName}
-                                >{'\u21bb'}</button>
+                                >{_pdfWorkspaceText(t, 'retry', 'Retry')}</button>
                               )}
-                              {!pdfBatchProcessing && !batchIngesting && item.status === 'pending' && <button data-help-key="pdf_audit_view_batch_row_remove_btn" onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
+                              {!pdfBatchProcessing && !batchIngesting && item.status === 'pending' && <button data-help-key="pdf_audit_view_batch_row_remove_btn" aria-label={'Remove ' + item.fileName} disabled={_modalDismissBusy} onClick={() => { if (!_modalHasActiveWork() && !pdfAuditLoading) setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id)); }} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
+                              <_PdfWorkspaceBatchReview item={item} t={t} />
+                              {item.error && (() => {
+                                const error = classifyPdfError(item.error);
+                                return <details className="pdf-workspace-batch-error">
+                                  <summary>{_pdfWorkspaceText(t, 'failure_details', 'Failure details')}</summary>
+                                  <p>{error.friendly}</p>{(item.retryAdvice || error.actionable) && <p>{item.retryAdvice || error.actionable}</p>}{item.retryAdvice && <p>Details: {String(item.error?.message || item.error)}</p>}{item.autoRetryable === false && <p>Automatic retry skipped. Address the issue above before retrying.</p>}
+                                </details>;
+                              })()}
                             </div>
                           ))}
                         </div>
@@ -8281,30 +8370,34 @@ function PdfAuditView(props) {
 
                     {/* Batch Progress */}
                     {pdfBatchProcessing && (
-                      <div className="mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                      <div className="pdf-workspace-batch-progress mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="animate-spin">{'\u23f3'}</span>
-                          <span className="text-sm font-bold text-indigo-700">Processing {pdfBatchCurrentIndex + 1}/{pdfBatchQueue.length}</span>
+                          <span className="text-sm font-bold text-indigo-700">{_batchDisplay.counts.done}/{_batchDisplay.counts.all} {_pdfWorkspaceText(t, 'processed', 'processed')}{_batchDisplay.counts.failed > 0 && (' · ' + _batchDisplay.counts.failed + ' ' + _pdfWorkspaceText(t, 'failed', 'failed'))}</span>
                         </div>
-                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2" role="progressbar" aria-label={t('pdf_audit.batch.progress_aria') || 'Batch remediation progress'} aria-valuenow={pdfBatchCurrentIndex + 1} aria-valuemin={0} aria-valuemax={pdfBatchQueue.length}>
-                          <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{width: `${((pdfBatchCurrentIndex + 1) / pdfBatchQueue.length * 100)}%`}}></div>
+                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2" role="progressbar" aria-label={t('pdf_audit.batch.progress_aria') || 'Batch remediation progress'} aria-valuenow={_batchDisplay.counts.done} aria-valuemin={0} aria-valuemax={Math.max(1, _batchDisplay.counts.all)} aria-valuetext={_batchDisplay.counts.done + ' / ' + _batchDisplay.counts.all + ' ' + _pdfWorkspaceText(t, 'processed', 'processed')}>
+                          <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{width: `${_batchDisplay.percent}%`}}></div>
                         </div>
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-xs text-indigo-600 flex-1" role="status" aria-live="polite">{pdfBatchStep}</p>
+                          <p className="text-xs text-indigo-600 flex-1" role="status" aria-live="polite">{_batchStopRequested ? _pdfWorkspaceText(t, 'batch_stopping_detail', 'Stop requested. Keep this workspace open while the active work ends and the checkpoint is saved.') : pdfBatchStep}</p>
                           <button
                             onClick={() => {
-                              try {
-                                if (typeof window !== 'undefined' && window.__alloPdfBatchAbortCtrl) {
-                                  window.__alloPdfBatchAbortCtrl.abort();
-                                }
-                              } catch (_) { /* noop */ }
-                              addToast(t('toasts.stopping_batch_finishing_current_file'), 'info');
+                              const controller = typeof window !== 'undefined' ? window.__alloPdfBatchAbortCtrl : null;
+                              if (!controller?.signal || typeof controller.abort !== 'function') {
+                                addToast(_pdfWorkspaceText(t, 'stop_unavailable', 'Batch stop is not available yet. Try again in a moment.'), 'info');
+                                return;
+                              }
+                              if (controller.signal.aborted) return;
+                              controller.abort();
+                              setBatchStopSignal(controller.signal);
+                              addToast(_pdfWorkspaceText(t, 'batch_stopping', 'Stopping batch'), 'info');
                             }}
                             data-help-key="pdf_audit_view_batch_stop_btn"
+                            disabled={_batchStopRequested}
                             className="shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-bold"
                             aria-label={t('pdf_audit.batch.stop_aria') || 'Stop batch remediation'}
                           >
-                            ⏸ Stop
+                            {_batchStopRequested ? _pdfWorkspaceText(t, 'stopping', 'Stopping…') : _pdfWorkspaceText(t, 'stop', 'Stop')}
                           </button>
                         </div>
                       </div>
@@ -8315,51 +8408,35 @@ function PdfAuditView(props) {
                       <div className={`mb-4 p-4 rounded-xl border ${_batchSummaryNeedsAttention ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
                         <h4 className={`text-sm font-black mb-2 ${_batchSummaryNeedsAttention ? 'text-amber-900' : 'text-green-800'}`}>{_batchSummaryNeedsAttention ? (_batchSummaryIncomplete ? '\u23f8' : '\u26a0') : '\u2705'} {_batchSummaryTitle}</h4>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? (pdfBatchSummary.succeeded + (pdfBatchSummary.reviewRequired || 0))}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_processed') || 'Processed'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? _batchDisplay.counts.done}/{pdfBatchSummary.total ?? _batchDisplay.counts.all}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_processed') || 'Processed'}</div></div>
                           <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-700">{_batchSummaryPending}</div><div className="text-[11px] text-slate-600">Pending</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_fully_verified') || 'Fully verified'}</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired || 0}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_need_review') || 'Need review'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded ?? (_batchDisplay.counts.done - _batchDisplay.counts.review)}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_fully_verified') || 'Fully verified'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired ?? _batchDisplay.counts.review}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_need_review') || 'Need review'}</div></div>
                           <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_verified_90') || 'Verified at 90+'}</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
                           <p>{'\ud83d\udcc8'} Numeric-score average: {Number.isFinite(pdfBatchSummary.avgBefore) ? pdfBatchSummary.avgBefore : 'Unknown'} {'\u2192'} {Number.isFinite(pdfBatchSummary.avgAfter) ? pdfBatchSummary.avgAfter : 'Unknown'} ({Number.isFinite(pdfBatchSummary.avgImprovement) ? ((pdfBatchSummary.avgImprovement >= 0 ? '+' : '') + pdfBatchSummary.avgImprovement) : 'n/a'} average change)</p>
                           {pdfBatchSummary.failed > 0 && <p>{'\u274c'} {pdfBatchSummary.failed} failed</p>}
                           {pdfBatchSummary.needsExpert > 0 && <p>{'\ud83e\uddd1\u200d\ud83d\udd2c'} {pdfBatchSummary.needsExpert} need expert review</p>}
-                          <p>{'\u23f1\ufe0f'} Total time: {Math.floor(pdfBatchSummary.totalElapsed / 60)}m {pdfBatchSummary.totalElapsed % 60}s</p>
+                          <p>{'\u23f1\ufe0f'} Total time: {Number.isFinite(pdfBatchSummary.totalElapsed) && pdfBatchSummary.totalElapsed >= 0 ? (Math.floor(pdfBatchSummary.totalElapsed / 60) + 'm ' + Math.floor(pdfBatchSummary.totalElapsed % 60) + 's') : _pdfWorkspaceText(t, 'unavailable', 'Unavailable')}</p>
                         </div>
-                        {/* 2026-06-08: 'Retry all failed' bulk action. Same refined shape as
-                            the per-row retry \u2014 flip every status==='failed' item to 'pending'
-                            and re-run the existing batch loop (which skips done items at
-                            doc_pipeline_source.jsx:5908). Does NOT call setPdfBatchQueue with
-                            a resumeQueue array (would wipe successes) and does NOT erase the
-                            summary card before the retry. */}
                         {pdfBatchSummary.failed > 0 && !pdfBatchProcessing && (
-                          <button
-                            onClick={() => {
-                              const _failedCount = pdfBatchQueue.filter(q => q.status === 'failed').length;
-                              if (_failedCount === 0) { addToast('No failed files to retry.', 'info'); return; }
-                              setPdfBatchQueue(prev => prev ? prev.map(q => q.status === 'failed' ? { ...q, status: 'pending', error: null, result: null } : q) : prev);
-                              setTimeout(async () => {
-                                if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
-                                  if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
-                                  return;
-                                }
-                                try { await Promise.resolve(runPdfBatchRemediation({})); }
-                                catch (error) { addToast('Batch retry could not start: ' + ((error && error.message) || error), 'error'); }
-                              }, 50);
-                            }}
+                          <button type="button" onClick={() => _runBatchSelection('retry')}
+                            disabled={_modalDismissBusy || remediationReady === false}
                             data-help-key="pdf_audit_view_batch_retry_all_failed_btn"
-                            className="mt-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold"
-                            title="Re-queue every failed file and re-run the batch. Already-succeeded files are not re-processed."
-                          >{'\u21bb'} Retry all failed ({pdfBatchSummary.failed})</button>
+                            className="mt-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold disabled:opacity-50"
+                            title="Retry failed files while keeping completed results."
+                          >↻ Retry all failed ({pdfBatchSummary.failed})</button>
                         )}
                       </div>
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 justify-center">
+                    <div className="pdf-workspace-batch-actions flex gap-2 justify-center">
                       {!pdfBatchProcessing && !pdfBatchSummary && pdfBatchQueue.length > 0 && (
                         <button onClick={async () => {
+                          if (_modalHasActiveWork() || pdfAuditLoading) return;
+                          const startEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
                           // Pre-batch cost estimator \u2014 honest range based on file count and
                           // configured fix passes. Canvas mode: free under Google quotas.
                           // Self-hosted (Blaze tier): show $ range so the user can ack before kicking off.
@@ -8380,29 +8457,26 @@ function PdfAuditView(props) {
                             description: message,
                             confirmLabel: `Start batch (${fileCount} file${filePlural})`,
                           })) {
+                            if (_modalHasActiveWork() || pdfAuditLoading || (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(startEpoch))) return;
                             if (batchIngesting) { addToast('Wait for every selected file to finish loading before starting the batch.', 'info'); return; }
                             if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
                               if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
                               return;
                             }
-                            try { await Promise.resolve(runPdfBatchRemediation()); }
+                            _batchActionBusyRef.current = true;
+                            setBatchActionBusy(true);
+                            try { await Promise.resolve(runPdfBatchRemediation({ resumeQueue: pdfBatchQueue })); }
                             catch (error) { addToast('Batch remediation could not start: ' + ((error && error.message) || error), 'error'); }
+                            finally { _batchActionBusyRef.current = false; setBatchActionBusy(false); }
                           }
-                        }} disabled={batchIngesting || remediationReady === false} data-help-key="pdf_audit_view_batch_start_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        }} disabled={_modalDismissBusy || remediationReady === false} data-help-key="pdf_audit_view_batch_start_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                           {'\u267f'} Start Batch ({pdfBatchQueue.length} files)
                         </button>
                       )}
                       {pdfBatchSummary && (
                         <>
                           {_batchSummaryIncomplete && _batchSummaryPending > 0 && (
-                            <button data-help-key="pdf_audit_view_batch_resume_pending_btn" onClick={async () => {
-                              if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function') {
-                                if (typeof runPdfBatchRemediation !== 'function') addToast('The batch remediation engine is unavailable. Retry after it finishes loading.', 'error');
-                                return;
-                              }
-                              try { await Promise.resolve(runPdfBatchRemediation({})); }
-                              catch (error) { addToast('Pending batch files could not resume: ' + ((error && error.message) || error), 'error'); }
-                            }} disabled={remediationReady === false} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-800 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <button data-help-key="pdf_audit_view_batch_resume_pending_btn" onClick={() => _runBatchSelection('resume')} disabled={_modalDismissBusy || remediationReady === false} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-800 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                               {'\u25b6'} Resume Pending ({_batchSummaryPending})
                             </button>
                           )}
@@ -8411,28 +8485,35 @@ function PdfAuditView(props) {
                               {'\ud83d\udce5'} {_batchSummaryIncomplete ? 'Download Processed (ZIP)' : 'Download All (ZIP)'}
                             </button>
                           )}
-                          <button data-help-key="pdf_audit_view_batch_new_batch_btn" onClick={async () => {
-                            if (_batchSummaryIncomplete) {
-                              const checkpointBatchId = typeof pdfBatchSummary.batchId === 'string' ? pdfBatchSummary.batchId.trim() : '';
-                              if (!checkpointBatchId) {
-                                addToast('This interrupted batch does not include a safe checkpoint identity, so it was not discarded. Resume or explicitly discard the saved batch before starting a new one.', 'error');
-                                return;
+                          <button disabled={_modalDismissBusy} data-help-key="pdf_audit_view_batch_new_batch_btn" onClick={async () => {
+                            if (_modalHasActiveWork() || pdfAuditLoading) return;
+                            const resetEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
+                            _batchActionBusyRef.current = true;
+                            setBatchActionBusy(true);
+                            try {
+                              if (_batchSummaryIncomplete || pdfBatchSummary.failed > 0) {
+                                const checkpointBatchId = typeof pdfBatchSummary.batchId === 'string' ? pdfBatchSummary.batchId.trim() : '';
+                                if (!checkpointBatchId) {
+                                  addToast('This interrupted batch does not include a safe checkpoint identity, so it was not discarded. Resume or explicitly discard the saved batch before starting a new one.', 'error');
+                                  return;
+                                }
+                                if (!_docPipeline || typeof _docPipeline.discardResumableBatch !== 'function') {
+                                  addToast('The saved batch checkpoint could not be discarded because storage support is unavailable. The current batch remains open.', 'error');
+                                  return;
+                                }
+                                try {
+                                  const discarded = await _docPipeline.discardResumableBatch(checkpointBatchId);
+                                  if (!discarded) throw new Error('storage did not confirm deletion');
+                                } catch (error) {
+                                  addToast('Could not discard the saved batch checkpoint: ' + ((error && error.message) || error) + '. The current batch remains open so it can be retried safely.', 'error');
+                                  return;
+                                }
                               }
-                              if (!_docPipeline || typeof _docPipeline.discardResumableBatch !== 'function') {
-                                addToast('The saved batch checkpoint could not be discarded because storage support is unavailable. The current batch remains open.', 'error');
-                                return;
-                              }
-                              try {
-                                const discarded = await _docPipeline.discardResumableBatch(checkpointBatchId);
-                                if (!discarded) throw new Error('storage did not confirm deletion');
-                              } catch (error) {
-                                addToast('Could not discard the saved batch checkpoint: ' + ((error && error.message) || error) + '. The current batch remains open so it can be retried safely.', 'error');
-                                return;
-                              }
-                            }
-                            _cancelBatchIngest();
-                            setPdfBatchQueue([]);
-                            setPdfBatchSummary(null);
+                              if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(resetEpoch)) return;
+                              _cancelBatchIngest();
+                              setPdfBatchQueue([]);
+                              setPdfBatchSummary(null);
+                            } finally { _batchActionBusyRef.current = false; setBatchActionBusy(false); }
                           }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{t('pdf_audit.batch.new_batch') || 'New Batch'}</button>
                           <button onClick={() => {
                             const queue = pdfBatchQueue;
@@ -8914,12 +8995,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // STOP-AWARE: the user's Stop must be durable across the retry boundary (runAutoFixLoop
                     // resets the abort flag at entry, so without these checks the wrapper would relaunch it).
                     let _loopTries = 0, _prevScore = -1;
+                    let _loopRan = false;
                     const _handsCanonicalComplete = (x) => !!(x && x.verificationState === 'complete'
                       && x.afterScoreVerified === true && !x.requiresManualReview);
                     const _handsNeedsContinuation = (x) => !!(x && x.axeAudit && (
                       x._aiVerificationIncomplete
                       || (x.afterScore || 0) < pdfTargetScore
+                      || !_handsCanonicalComplete(x)
                       || x.axeAudit.totalViolations > 0
+                      || (x.secondEngineAudit && x.secondEngineAudit.failViolations > 0)
+                      || (x.verificationAudit && Array.isArray(x.verificationAudit.issues) && x.verificationAudit.issues.length > 0)
                     ));
                     const _handsProgressState = (x) => ({
                       score: x && Number.isFinite(x.afterScore) ? x.afterScore : null,
@@ -8974,6 +9059,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         warnLog('[Hands-off] Auto-continue declined to start (' + (_loopOutcome.reason || 'unknown') + ') — not counting this as a retry.');
                         break;
                       }
+                      _loopRan = true;
                       if (!_oneClickDocumentIsCurrent()) return;
                       if (_stopped()) break; // user pressed Stop during the loop — honor it, don't relaunch
                       // An empty ref after a round is "no progress", never "no result" — the loop
@@ -9017,7 +9103,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // rather than masking it). The GeminiGate stagger makes a re-throttle far less likely. Honor Stop.
                     if (!_oneClickDocumentIsCurrent()) return;
                     const _finCur = pdfFixResultRef.current;
-                    if (!_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
+                    if (!_stopped() && _finCur && _finCur.accessibleHtml && (_loopRan || _finCur._aiVerificationIncomplete)) {
                       addToast('🔍 ' + (t('toasts.handsoff_final_audit') || 'Finalizing — running one full audit so the score covers the whole document…'), 'info');
                       try { await _reauditAndScore(_finCur.accessibleHtml, null); } catch (_) {}
                     }
@@ -9032,7 +9118,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     if (!_oneClickDocumentIsCurrent()) return;
                     const _viaPopup = !!(_veraWarm && _veraWarm.win && !_veraWarm.win.closed);
                     const _viaIframe = !_viaPopup && !!(_veraIframe && _veraIframe.isReady());
-                    if (_viaPopup || _viaIframe) {
+                    if (!_stopped() && (_viaPopup || _viaIframe)) {
                       let _validated = false;
                       let _veraRun = null;
                       const _autoSetupOperation = ++_veraPdfValidationGenerationRef.current;
@@ -9102,7 +9188,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       try {
                         const _nmSkip = (pendingPdfFile?.name || '').toLowerCase();
                         const _isPdfSkip = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmSkip);
-                        if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');
+                        if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped(_stopped() ? 'user-stopped' : 'transport-blocked');
                       } catch (_) {}
                     }
                     } finally {
@@ -9136,7 +9222,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
 
                 <details data-help-key="pdf_audit_view_settings_panel" className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
-                  <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
+                  <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">{_pdfWorkspaceText(t, 'advanced_settings', 'Advanced pipeline settings')}</summary>
                   <div className="mt-2 space-y-2">
                     <div>
                       <div className="flex justify-between text-[11px]">
@@ -9398,6 +9484,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   </div>
                 </details>
+                <details className="pdf-workspace-manual" data-help-key="pdf_workspace_manual">
+                  <summary>{_pdfWorkspaceText(t, 'manual_controls', 'Manual audit & text extraction')}</summary>
+                  <_PdfWorkspaceAfterFix t={t} value={pdfFixMode} disabled={_modalDismissBusy} onChange={(mode) => { if (!_modalHasActiveWork() && !pdfAuditLoading) setPdfFixMode(mode); }} />
                 <div className="flex gap-3 justify-center">
                   {/* (2026-08-15, Aaron) Pre-run cache escape for diagnostics: the first Start
                       deliberately reuses the content-hash cache (it is the resume feature), so a
@@ -9406,7 +9495,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <input type="checkbox" checked={pdfDiagnosticFreshRun} onChange={(e) => setPdfDiagnosticFreshRun(e.target.checked)} className="accent-indigo-600" />
                     {t('pdf_audit.fresh_run') || 'Run fresh (skip cached results)'}
                   </label>
-                  <button data-help-key="pdf_audit_view_start_btn" disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => {
+                  <button data-help-key="pdf_audit_view_start_btn" disabled={_modalDismissBusy || !_auditInputReady} onClick={async () => {
+                    if (_modalHasActiveWork() || pdfAuditLoading) return;
                     if (!_requireAuditReady()) return;
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
                     const _auditSnapshot = pdfAuditResult;
@@ -9432,11 +9522,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
-                  {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
+                  {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>}
                 </div>
                 <p className="text-[11px] text-slate-600 text-center mt-2">{t('pdf_audit.manual_path_explainer') || '"Run Audit" scores the document and shows what needs fixing — you then review and click Fix & Verify yourself (step 2). "Make Accessible" above does both steps plus re-checking, automatically. "Text Extraction" just pulls the raw text for content generation.'}</p>
+                </details>
                 {/* Pre-flight triage panel — replaces the bare "estimated time"
                     line. Uses data already in pdfAuditResult (pageCount,
                     hasImages, hasTables, hasSearchableText, critical/serious/
@@ -9504,28 +9595,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-black">{fmt(estLow)}–{fmt(estHigh)}</span>
                         <span className="text-slate-500 text-[10px]">{t('pdf_audit.triage.estimate_caveat') || '(hands-free, multi-pass — varies with AI service load; safe to leave running)'}</span>
                         {isScanned && <span className="text-amber-700 text-[10px]">↑ scanned PDFs take longer (OCR required)</span>}
-                      </div>
-                      <div className="pt-2 border-t border-indigo-200">
-                        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">{t('pdf_audit.post_fix.label') || 'Post-fix mode'}</div>
-                        <div className="flex gap-1.5 flex-wrap" role="radiogroup" aria-label={t('pdf_audit.post_fix.aria') || 'Post-fix mode'}>
-                          {[
-                            { id: 'auto', label: '⚡ Auto', tip: 'Commit result immediately. Default.' },
-                            { id: 'review', label: '📝 Review', tip: 'Open Diff view after fix — inspect source ↔ final fidelity before treating as final.' },
-                            { id: 'expert', label: '🛠️ Expert', tip: 'Open Document Builder after fix — edit markup directly.' },
-                          ].map((m) => (
-                            <button
-                              key={m.id}
-                              role="radio"
-                              aria-checked={pdfFixMode === m.id}
-                              onClick={() => setPdfFixMode(m.id)}
-                              title={m.tip}
-                              className={'text-[11px] font-bold px-2.5 py-1 rounded border transition-all ' + (pdfFixMode === m.id ? 'bg-indigo-600 border-indigo-700 text-white shadow' : 'bg-white border-slate-300 text-slate-700 hover:bg-indigo-50 hover:border-indigo-300')}
-                            >{m.label}</button>
-                          ))}
-                          <span className="text-[10px] text-slate-500 self-center italic">
-                            {pdfFixMode === 'auto' ? 'Fix & Verify runs, result commits.' : pdfFixMode === 'review' ? 'Fix & Verify runs, then opens Diff view.' : 'Fix & Verify runs, then opens Document Builder.'}
-                          </span>
-                        </div>
                       </div>
                       {/* ── Quick downloads (pre-remediation) ──
                           Tagged PDF should be available BEFORE Fix & Verify so a
@@ -9645,7 +9714,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
                   <label className="flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200" title={t('pdf_audit.load_project_tooltip') || 'Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) — your document, scores, history, and settings all come back.'}>
                     📂 {t('pdf_audit.continue_session') || 'Continue a previous session'}
-                    <input type="file" accept=".json" className="hidden" onChange={(e) => {
+                    <input type="file" accept=".json" className="hidden" disabled={_modalDismissBusy} onChange={(e) => {
+                      if (_modalHasActiveWork() || pdfAuditLoading) { e.target.value = ''; return; }
                       const file = e.target.files?.[0]; if (!file) return;
                       if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 64 MB safety limit.', 'error'); e.target.value = ''; return; }
                       const _projectLoadToken = ++_projectLoadSelectionRef.current;
@@ -9844,7 +9914,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button onClick={() => { _closePdfAuditModal(); }} className="text-xs text-slate-600 hover:text-slate-900 font-bold">Cancel</button>
+                  <button disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="text-xs text-slate-600 hover:text-slate-900 font-bold">Cancel</button>
                 </div>
                 {/* Remediation history (2026-06-10): rides the project file —
                     Canvas has no cross-session storage, so this shows whatever
@@ -10050,7 +10120,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       setPdfWebMode(true);
                       setTimeout(() => { const field = document.getElementById('web-audit-html'); if (field) field.value = saved; }, 0);
                     }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">Back to static HTML input</button>
-                    <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>) : pdfAuditResult && pdfAuditResult.score < 0 ? (
@@ -10063,7 +10133,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.retry_hint') || 'A completed baseline audit is required before remediation. Retry the audit, or cancel and re-export the source document before trying again.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => {
+                    <button data-help-key="pdf_workspace_retry_audit" disabled={_modalDismissBusy || !_auditInputReady} onClick={async () => {
+                      if (_modalHasActiveWork() || pdfAuditLoading) return;
                       if (!_requireAuditReady()) return;
                       const _auditSnapshot = pdfAuditResult;
                       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
@@ -10087,12 +10158,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         addToast('Audit retry failed: ' + ((error && error.message) || error), 'error');
                       }
                     }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
-                    <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>
             ) : pdfAuditResult && (
-              <div role="status" aria-live="polite" aria-label={_auditScoreKnown ? (pdfAuditResult._isWebAudit ? `Static HTML source audit. Evidence score: ${pdfAuditResult.score} out of 100. Verification: ${pdfAuditResult.verificationState || 'partial'}.` : `PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`) : 'Accessibility audit coverage is incomplete; no numeric score is available.'}>
+              <div className="pdf-workspace-results" role="region" aria-label={_auditScoreKnown ? (pdfAuditResult._isWebAudit ? `Static HTML source audit. Evidence score: ${pdfAuditResult.score} out of 100. Verification: ${pdfAuditResult.verificationState || 'partial'}.` : `PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`) : 'Accessibility audit coverage is incomplete; no numeric score is available.'}>
                 {pdfFixResult && (
                   <div role="tablist" aria-label={t('pdf_audit.tabs.aria') || 'Audit view'} className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
                     <button data-help-key="pdf_audit_results_tab_remediation_btn" role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
@@ -11138,7 +11209,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           })()}
                         </button>
                     </>) : (
-                      <button onClick={async () => {
+                      <button data-help-key="pdf_workspace_fix_verify" onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
                         if (!_requireRemediationReady()) return;
                         const _fixDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
@@ -12514,7 +12585,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                       </div>
                     </div>
-                    {!_remediationMode && <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
+                    {!_remediationMode && <button disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
                       Text Extract
                     </button>}
                   </div>
@@ -12853,7 +12924,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   }} />}
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
-                    <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
+                    <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4">
                       {/* ── R1 verdict strip (2026-07-10): the one-line answer to the teacher's actual
                           question — "Can I hand this out?" — computed by the pipeline (single source,
                           unit-tested) from the honesty signals the result already carries. VISIBLE
@@ -12993,8 +13064,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               try { const _fb = document.getElementById('allo-sec-downloads'); if (_fb) _fb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
                               return;
                             }
-                            if (el.tagName === 'DETAILS') el.open = true;
-                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            _pdfWorkspaceJump(pdfModalRef.current, '#' + id);
                           } catch (_) {}
                         };
                         const _dashboardEvidence = _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline);
@@ -13222,12 +13292,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             share". Mirror the fidelity-aware "What now?" strip below. */}
                         {(() => {
                           const _stillWorking = _remediationInFlight;
-                          const _fidelity = !!(pdfFixResult && pdfFixResult.fidelityLimited);
-                          const _label = _stillWorking
-                            ? (t('pdf_audit.results.ready_heading_working') || 'Draft accessible copy ready — still improving…')
-                            : _fidelity
-                              ? (t('pdf_audit.results.ready_heading_verify') || 'Accessible copy ready — verify content before sharing')
-                              : (t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready');
+                          const _fidelity = _workspaceState.tone === 'attention';
+                          const _label = _stillWorking ? _pdfWorkspaceText(t, 'draft_working', 'Draft copy available; remediation is still running')
+                            : _workspaceState.title;
                           const _icon = _stillWorking ? '⏳' : _fidelity ? '⚠️' : '✅';
                           const _color = _stillWorking ? 'text-indigo-800' : _fidelity ? 'text-amber-800' : 'text-emerald-800';
                           return <h4 className={'text-sm font-bold flex items-center gap-2 flex-1 ' + _color}>{_icon} {_label}</h4>;
@@ -13247,20 +13314,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         ) : (
                           <button
                             onClick={async () => {
+                              if (_modalHasActiveWork() || pdfAuditLoading) return;
                               if (await askPdfConfirmation({
                                 title: t('pdf_audit.start_new_title_short') || 'Start a new audit?',
                                 description: t('pdf_audit.start_new_confirm') || 'Your current audit will be cleared. Download any remediated files or save the project first if you need to keep this work.',
                                 confirmLabel: t('pdf_audit.start_new_audit') || 'Start New Audit',
                                 tone: 'danger',
                               })) {
+                                if (_modalHasActiveWork() || pdfAuditLoading) return;
                                 startNewPdfAudit();
                               }
                             }}
-                            disabled={_remediationBusy}
-                            className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + (_remediationBusy ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
-                            title={_remediationBusy ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
+                            disabled={_modalWorkBusy}
+                            className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + (_modalWorkBusy ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
+                            title={_modalWorkBusy ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
                           >
-                            {_remediationBusy ? '⏳' : '🗑️'} {t('pdf_audit.start_new_audit') || 'Start New Audit'}
+                            {_modalWorkBusy ? '⏳' : '🗑️'} {t('pdf_audit.start_new_audit') || 'Start New Audit'}
                           </button>
                         )}
                       </div>
@@ -13271,21 +13340,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {/* Integrity-aware (2026-06-20): when content fidelity is in question (low coverage,
                             a changed number, a dropped table/link), do NOT call the output "share-ready"
                             or the fidelity notes "optional polish" — lead with verifying the content. */}
-                        <span>{(pdfFixResult && pdfFixResult.fidelityLimited)
-                          ? (t('pdf_audit.whatnow.fidelity') || ('⚠ Before sharing: some source content may not have carried over (see the fidelity notes below). 1️⃣ Open Compare/Diff and confirm scores, numbers, dates, and key text match the original. 2️⃣ Only then grab the ' + (_inputIsPdf ? 'Tagged PDF' : 'Word file') + ' from Downloads.'))
-                          : (_inputIsPdf
-                            ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
-                            : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.'))}</span>
-                        <button onClick={() => { try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0">📥 {t('pdf_audit.whatnow.go') || 'Take me to Downloads'}</button>
+                        <span>{_workspaceState.detail}</span>
+                        {_workspaceState.destination && <button type="button" onClick={() => _workspaceNavigate(_workspaceState.destination)} className="ml-auto px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[11px] font-bold shrink-0">{_workspaceState.action}</button>}
                         {/* The reverse door, surfaced (2026-06-11): the Full
                             Differentiation Pipeline button existed deep in the
                             languages panel — same source, every content tool. */}
                         <button onClick={() => {
+                          if (_modalHasActiveWork() || pdfAuditLoading) return;
                           const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.reverse_door') || '✨ Document loaded as source material — generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.', 'success');
-                        }} disabled={_remediationBusy || pdfAutoContinueRunning} className={'px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 ' + ((_remediationBusy || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-700')} title={(_remediationBusy || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : (t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.')}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
+                        }} disabled={_modalDismissBusy} className={'px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 ' + ((_remediationBusy || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-700')} title={(_remediationBusy || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : (t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.')}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
                       </div>
                       {/* Image-description reviewer (item 8b): entry + stepper. */}
                       {(() => {
@@ -15977,7 +16043,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                         <label data-help-key="pdf_audit_view_load_project_btn" className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                           📂 Load Project
-                          <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
+                          <input type="file" accept=".json,.alloflow.json" className="hidden" disabled={_modalDismissBusy} onChange={(e) => {
+                            if (_modalHasActiveWork() || pdfAuditLoading) { e.target.value = ''; return; }
                             const file = e.target.files?.[0]; if (!file) return;
                             if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 64 MB safety limit.', 'error'); e.target.value = ''; return; }
                             const _projectLoadToken = ++_projectLoadSelectionRef.current;
@@ -16807,7 +16874,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                         <p className="text-[11px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {callTTS && !audioJob && <button id="allo-export-audio" data-help-key="pdf_audit_audio_download_btn" onClick={() => {
                           const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
                           if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }

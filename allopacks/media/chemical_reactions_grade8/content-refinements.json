@@ -1,0 +1,578 @@
+[
+  {
+    "resourceId": "cr-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nBubbles are not proof. Neither is a colour change. This week you learn what actually counts as evidence that a new substance formed, and why mass that seems to disappear never really does.\n\n1. Read **Did Anything New Actually Form?**\n2. Learn the words in **Reaction Words**, then win the **Crossword** and the **Matching** game.\n3. Study the **Signs and Their Impostors** chart — it is the heart of the unit.\n4. Trace **What Happens to the Atoms** before the quiz.\n5. Sort the cards in **Chemical or Physical?**\n6. Take **Reaction Check**.\n7. Lock it in with **Remember the Two Rules**.\n8. Read **Reaction Questions Kids Ask**.\n9. Finish with **Investigation: The Sealed Bag**.\n\nYour job this week: catch one claim — an advert, a video, a classmate — that treats a sign as if it were proof. ⚗️\n\nPicture panels: Identity and rearrangement; Clues need context; Everyday reaction examples; New solids and conserved atoms. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nBubbles are not proof. Neither is a colour change. This week you learn what actually counts as evidence that a new substance formed, and why mass that seems to disappear never really does.\n\n1. Read **Did Anything New Actually Form?**\n2. Learn the words in **Reaction Words**, then win the **Crossword** and the **Matching** game.\n3. Study the **Signs and Their Impostors** chart — it is the heart of the unit.\n4. Trace **What Happens to the Atoms** before the quiz.\n5. Sort the cards in **Chemical or Physical?**\n6. Take **Reaction Check**.\n7. Lock it in with **Remember the Two Rules**.\n8. Read **Reaction Questions Kids Ask**.\n9. Finish with **Investigation: Account for the Atoms**.\n\nYour job this week: catch one claim — an advert, a video, a classmate — that treats a sign as if it were proof. ⚗️\n\nPicture panels: Identity and rearrangement; Clues need context; Everyday reaction examples; New solids and conserved atoms. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending."
+  },
+  {
+    "resourceId": "cr-reading",
+    "path": "data",
+    "from": "## Did Anything New Actually Form?\n\nDrop an antacid tablet in water and it fizzes furiously. Boil that same water and it bubbles just as hard. One of those is a chemical **reaction** and one is not. The bubbles cannot tell you which.\n\nThat is the problem this lesson solves.\n\nA **substance** is a material with its own fixed **property** set: melting point, density, colour, how it reacts with other things. In a chemical reaction, the substances you start with — the **reactants** — are used up, and different substances — the **products** — appear in their place. In a **physical** change, no new substance appears. The same stuff has changed form.\n\nWater boiling is physical. Steam is still water. Sugar dissolving is physical too, which surprises people, because the sugar vanishes from sight. Evaporate the water and the sugar comes back, unchanged. It was never destroyed, only spread out.\n\nSo what counts as evidence? Textbooks list five **indicators**: bubbles of gas, a colour change, a temperature change, light, and a **precipitate** — a solid appearing when two clear liquids mix.\n\nHere is the part usually left out. **Every one of those five has a physical impostor.** Bubbles can be boiling. A colour change can be dilution. A temperature change can be dissolving, which warms or cools a solution without any reaction at all. Light can be an object glowing simply because it is hot. And a solid can appear because something merely suspended has settled out, with nothing new formed. Each indicator says *look closer*. None of them proves anything by itself.\n\nThe real test is the definition. Compare the properties before and after. If what you have at the end melts at a different temperature, or has a different density, or refuses to dissolve where the original dissolved easily, then you have different substances, and a reaction happened.\n\nNow the second rule, and it is stranger.\n\nBurn a log and the ash weighs far less than the wood. Mass looks lost. It is not. Carbon dioxide and water vapour left as gases, and nobody weighed them. Do the same burning inside a sealed container and the total mass does not budge.\n\nThat is because **atoms** are not created or destroyed in a reaction. They are rearranged. Every atom that goes in comes out, in some new arrangement, so mass is **conserved**. Antoine Lavoisier established this in the 1770s by insisting on sealed vessels and a good balance, which is a reminder that better measurement, not a better idea, settled it.\n\nSo ask two questions. Are the properties different now? And where did the atoms go?",
+    "to": "## Did Anything New Actually Form?\n\nFizzing can come from a reaction, boiling or dissolved gas escaping. Bubbles establish that gas is present, but they do not identify its origin. What evidence would distinguish these explanations?\n\nA chemical **reaction** forms new substances as atoms rearrange and bonds change. **Reactants** participate as inputs; **products** form through the reaction. Reactants need not be completely used up, and some product may already be present in a mixture.\n\nA pure **substance** has a characteristic composition and properties. Measurements such as density depend on conditions, including temperature and pressure. Mixtures and concentration changes complicate comparisons. In a **physical** change, chemical identity is retained even when form, state or distribution changes.\n\nBoiling water is a physical change: water molecules remain water molecules. In ordinary sugar dissolving, sugar molecules disperse through water without becoming a new substance. Recovering sugar supports that account, but reversibility alone is not a universal test: chemical reactions can also be reversed.\n\nFive useful **indicators** are gas bubbles, color change, temperature change, light and a solid appearing. A **precipitate** is a solid that separates from a solution; in a precipitation reaction an insoluble product forms. The starting solutions need not be colorless.\n\nEach observation needs context. Bubbles may be water vapor. A solution can become paler when diluted. Physical mixing or some dissolving processes can warm or cool materials; other dissolving involves reactions. A hot object can glow. Existing suspended particles can settle, and evaporation can yield crystals without forming a new substance.\n\nBuild an explanation from several observations and appropriate tests. Compare identified materials under matched conditions. A different density or melting point by itself does not prove a reaction: temperature, concentration or impurities may explain it. Stronger evidence identifies a new substance and rules out plausible physical explanations.\n\nNow account for the atoms. A burning log combines with oxygen from the air, producing gases and ash. Comparing ash with wood alone leaves out both incoming oxygen and outgoing gases. This is an explanation of combustion, not a classroom burning procedure.\n\nIn ordinary chemical reactions, atoms of each element are conserved. A closed system exchanges no matter with its surroundings; at classroom precision its total mass stays the same. Count all reactants, all products and the same apparatus before and after. Differences in measurements may reflect material crossing a boundary or measurement uncertainty.\n\nOur diagrams use colored tokens to track particles. The paired red and blue atom model is an unnamed counting example, not a recipe or a specific real reaction. The box outlines mark conceptual system boundaries, not sealed reaction vessels.\n\nAsk: what evidence identifies a new substance, under what conditions was it measured, and where did every atom go?"
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.1.def",
+    "from": "A substance you start with, before the change.",
+    "to": "A substance consumed in a reaction; an excess amount may remain afterward."
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.2.def",
+    "from": "A substance that exists only after the change.",
+    "to": "A substance formed by a reaction; some may also have been present initially."
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.3.def",
+    "from": "A material with its own fixed set of properties.",
+    "to": "A material with a characteristic chemical composition and properties under specified conditions."
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.4.def",
+    "from": "Something measurable about a material, such as density or melting point.",
+    "to": "An observable or measurable characteristic; many depend on temperature, pressure or concentration."
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.6.def",
+    "from": "A solid that appears when two clear liquids are mixed.",
+    "to": "A solid separating from a solution; a precipitation reaction forms an insoluble product."
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.7.def",
+    "from": "A sign worth investigating, which on its own proves nothing.",
+    "to": "An observation that supports investigation but may have more than one explanation."
+  },
+  {
+    "resourceId": "cr-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "Ask: is the colour a new substance or a thinner one?",
+    "to": "Ask: new substance, changed concentration, or mixed colors?"
+  },
+  {
+    "resourceId": "cr-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "Impostor: dissolving, which warms or cools with no reaction",
+    "to": "Lookalike: physical mixing or some dissolving processes"
+  },
+  {
+    "resourceId": "cr-anchor",
+    "path": "data.sections.4.bullets.2",
+    "from": "The strongest of the five, still not proof",
+    "to": "Crystallization can also yield a solid; identify what formed"
+  },
+  {
+    "resourceId": "cr-anchor",
+    "path": "data.sections.5.bullets.0",
+    "from": "Compare properties before and after",
+    "to": "Use several tests under matched conditions"
+  },
+  {
+    "resourceId": "cr-anchor",
+    "path": "data.sections.5.bullets.1",
+    "from": "Different melting point, density, or solubility = different substance",
+    "to": "Rule out temperature, concentration and purity differences"
+  },
+  {
+    "resourceId": "cr-anchor",
+    "path": "data.sections.5.bullets.2",
+    "from": "Then ask where the atoms went",
+    "to": "Identify new substances and account for all atoms"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.0.title",
+    "from": "Physical change: no new substance",
+    "to": "Physical change"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.0.items.0",
+    "from": "Boiling water — steam is still water",
+    "to": "Water molecules remain water when water boils"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.0.items.1",
+    "from": "Sugar dissolving — evaporate the water and the sugar returns unchanged",
+    "to": "Sugar molecules disperse in ordinary sugar dissolving"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.0.items.2",
+    "from": "The same atoms, in the same groupings, arranged differently in space",
+    "to": "Chemical identity remains; state or distribution may change"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.1.title",
+    "from": "Chemical reaction: new substances",
+    "to": "Chemical reaction"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.1.items.0",
+    "from": "Reactants are used up; products appear in their place",
+    "to": "Reactants participate in forming products; some reactants may remain"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.1.items.1",
+    "from": "The atoms are the same atoms, bonded into different groupings",
+    "to": "Atoms retain their elements as bonds and arrangements change"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.1.items.2",
+    "from": "Products have their own properties, not blends of the old ones",
+    "to": "Identify products using evidence under controlled conditions"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.2.title",
+    "from": "Why mass seems to vanish",
+    "to": "An open system"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.2.items.0",
+    "from": "Burn a log: the ash weighs far less than the wood",
+    "to": "Burning wood also takes in oxygen from the air"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.2.items.1",
+    "from": "Carbon dioxide and water vapour left as gases, unweighed",
+    "to": "Gases leave; ash alone is not all the products"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.2.items.2",
+    "from": "Do it in a sealed container and the total mass does not change",
+    "to": "Account for inputs and outputs rather than sealing a fire"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.3.title",
+    "from": "Why mass is actually conserved",
+    "to": "Conservation and measurement"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.3.items.0",
+    "from": "Every atom that goes in comes out",
+    "to": "Count atoms of each element before and after"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.3.items.1",
+    "from": "Counting atoms on both sides is what balancing an equation does",
+    "to": "Balanced equations conserve those atom counts"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.3.items.2",
+    "from": "Lavoisier settled it in the 1770s with sealed vessels and a good balance",
+    "to": "In a closed system, mass is conserved at classroom precision"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.4.title",
+    "from": "The two questions to ask",
+    "to": "Questions for evidence"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.4.items.0",
+    "from": "Are the properties different now?",
+    "to": "Do controlled tests identify a new substance?"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.4.items.1",
+    "from": "Where did the atoms go?",
+    "to": "Where did the atoms go, including any gases?"
+  },
+  {
+    "resourceId": "cr-outline",
+    "path": "data.branches.4.items.2",
+    "from": "An indicator only tells you to start asking",
+    "to": "What physical explanation or uncertainty must be checked?"
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Every one of those five has a physical impostor. Compare the properties before and after. Atoms are not created or destroyed in a reaction. They are rearranged.",
+    "to": "Indicators need context. Identify substances under matched conditions, then account for all atoms and all material crossing the system boundary."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "The real test is comparing properties before and after.",
+    "to": "Use several appropriate tests under matched conditions and rule out physical explanations."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "SIGNS ARE SUSPECTS. A suspect is worth questioning and is not a conviction. Bubbles are a suspect. Boiling is the alibi. You convict on properties, not on appearance.",
+    "to": "CLUE, CHECK, ACCOUNT: notice a clue, check chemical identity under matched conditions, then account for atoms. A clue begins an explanation; it does not finish one."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Calling the indicators suspects keeps their real status: enough to start an investigation, never enough to close one.",
+    "to": "The cue links an observation with alternative explanations and a test; it does not turn one changed property into proof."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "____ is a suspect. Its alibi is ____. I convict by ____.",
+    "to": "The clue is ____. Another explanation is ____. My controlled test is ____."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.0.coachPrompts.0",
+    "from": "Which of the five has the weakest alibi, and why?",
+    "to": "What conditions would need to stay the same in your comparison?"
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "Drop an antacid tablet in water and it fizzes furiously. Boil that same water and it bubbles just as hard.",
+    "to": "Bubbles can be gas formed by a reaction, water vapor from boiling, or dissolved gas escaping."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "Burning a log seems to lose mass because gases left unweighed.",
+    "to": "Wood burning takes in oxygen and releases gases; weighing only ash misses both."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "In a sealed container the total mass does not change.",
+    "to": "A closed system conserves mass at classroom precision; compare the same complete system."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.1.hookFact.text",
+    "from": "Antoine Lavoisier established this in the 1770s by insisting on sealed vessels and a good balance.",
+    "to": "Careful mass measurements support conservation; measurement uncertainty must be evaluated."
+  },
+  {
+    "resourceId": "cr-sort",
+    "path": "data.categories.0.label",
+    "from": "Chemical: new substances formed",
+    "to": "CHEMICAL"
+  },
+  {
+    "resourceId": "cr-sort",
+    "path": "data.categories.1.label",
+    "from": "Physical: same substance, new form",
+    "to": "PHYSICAL"
+  },
+  {
+    "resourceId": "cr-sort",
+    "path": "data.items.2.content",
+    "from": "Baking soda and vinegar fizz and go flat",
+    "to": "Baking soda reacts with vinegar, forming carbon dioxide and other products"
+  },
+  {
+    "resourceId": "cr-sort",
+    "path": "data.items.4.content",
+    "from": "Sugar dissolves and disappears into tea",
+    "to": "Sugar molecules disperse unchanged in water"
+  },
+  {
+    "resourceId": "cr-sort",
+    "path": "data.items.8.content",
+    "from": "Dry ice smokes away without a puddle",
+    "to": "Solid carbon dioxide becomes carbon dioxide gas"
+  },
+  {
+    "resourceId": "cr-sort",
+    "path": "data.items.9.content",
+    "from": "A wax candle melts and pools in the dish",
+    "to": "Unlit wax melts without burning"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.0.options.3",
+    "from": "That something is worth investigating, and nothing more",
+    "to": "Gas is present; its source still needs investigation"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.0.correctAnswer",
+    "from": "That something is worth investigating, and nothing more",
+    "to": "Gas is present; its source still needs investigation"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.1.options.1",
+    "from": "The solid left behind melts at a different temperature",
+    "to": "Controlled tests identify a new substance and rule out physical explanations"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.1.correctAnswer",
+    "from": "The solid left behind melts at a different temperature",
+    "to": "Controlled tests identify a new substance and rule out physical explanations"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.2.options.0",
+    "from": "Because the sugar can be recovered unchanged by evaporating",
+    "to": "Sugar molecules remain sugar while spreading through water"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.2.correctAnswer",
+    "from": "Because the sugar can be recovered unchanged by evaporating",
+    "to": "Sugar molecules remain sugar while spreading through water"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.3.options.2",
+    "from": "Gases left the system and were never put on the balance",
+    "to": "The comparison omits incoming oxygen and outgoing gases"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.3.correctAnswer",
+    "from": "Gases left the system and were never put on the balance",
+    "to": "The comparison omits incoming oxygen and outgoing gases"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "A temperature change is an indicator, not proof. Dissolving can warm or cool a solution with no reaction at all. They should compare the properties of what they have now with what they started with, such as melting point, density or solubility, and see whether a genuinely different substance is present.",
+    "to": "Temperature change has multiple possible causes. Physical mixing or some dissolving can change temperature, while other dissolving involves reactions. Compare identified materials under matched conditions, using multiple tests and checking temperature, concentration and purity before concluding that a new substance formed."
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.6.question",
+    "from": "Design a way to show that mass is conserved when baking soda reacts with vinegar. Explain why your setup works.",
+    "to": "A teacher supplies data for a gas-forming reaction in open and closed systems. What must you compare to test conservation of mass?"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.6.expectedAnswer",
+    "from": "Carry out the reaction in a sealed container, such as a closed bag or a stoppered flask, and weigh it before and after. The mass stays the same because the carbon dioxide produced cannot escape and is still on the balance. Doing it in an open beaker would appear to lose mass, because the gas leaves unweighed.",
+    "to": "Compare the same complete system before and after, including apparatus, all reactants and all products. In the closed-system data the gas remains within the measured boundary, so the mass difference should be consistent with measurement uncertainty. In the open system some gas leaves that boundary. Analyze supplied data; do not seal a gas-producing reaction in a rigid container."
+  },
+  {
+    "resourceId": "cr-faq",
+    "path": "data.0.answer",
+    "from": "Usually yes. A raw egg turning solid is proteins changing shape and bonding differently, and you cannot get the raw egg back. Melting butter, though, is physical. Cooking is a mix of both.",
+    "to": "Cooking can include chemical changes such as browning and changes in proteins, as well as physical changes such as melting. Whether a change is easy to reverse does not by itself classify it."
+  },
+  {
+    "resourceId": "cr-faq",
+    "path": "data.1.answer",
+    "from": "Not in the same simple way. In nuclear changes a tiny amount of mass converts to energy, which is what E = mc squared describes. For every chemical reaction you will meet in this course, mass is conserved.",
+    "to": "Energy transfers correspond to very small mass differences. These are negligible at ordinary classroom precision for chemical reactions; nuclear processes require explicit mass-energy accounting. Atom conservation in ordinary chemistry does not describe nuclear transmutation."
+  },
+  {
+    "resourceId": "cr-faq",
+    "path": "data.2.answer",
+    "from": "Oxygen in the air reacts with compounds in the fruit, helped along by an enzyme released when you cut the cells open. It is a genuine chemical reaction, which is why lemon juice slows it down.",
+    "to": "Cutting damages tissue and brings enzymes, oxygen and other compounds into contact, allowing browning reactions. Color alone would not identify an unknown reaction."
+  },
+  {
+    "resourceId": "cr-faq",
+    "path": "data.3.answer",
+    "from": "Many can. Some run both ways at once and settle at a balance point. Others are practically one-way, like burning. Reversible does not mean easy to reverse.",
+    "to": "Many reactions can run in both directions. At dynamic equilibrium forward and reverse reactions continue at equal rates; concentrations remain steady rather than all motion stopping."
+  },
+  {
+    "resourceId": "cr-faq",
+    "path": "data.4.answer",
+    "from": "Usually not, and this trips up everyone. Salt in water separates into the charged particles it is built from, and evaporating brings the salt back unchanged. Some dissolvings do involve reactions, so the recovery test is the one to trust.",
+    "to": "It depends on the substances and conditions. Ordinary sugar dissolving preserves sugar molecules. Other materials react as they dissolve. Recovery alone is not decisive because chemical reactions can also be reversed."
+  },
+  {
+    "resourceId": "cr-faq",
+    "path": "data.5.answer",
+    "from": "By weighing very carefully in sealed vessels. Lavoisier could not see an atom, but he could show that closed systems do not change mass. Good measurement settled it long before good microscopes existed.",
+    "to": "Careful mass measurements in systems with controlled matter exchange support conservation. Models and balanced equations account for atoms; a small measured difference must be assessed against uncertainty."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "title",
+    "from": "Investigation: The Sealed Bag",
+    "to": "Investigation: Account for the Atoms"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.title",
+    "from": "The Sealed Bag",
+    "to": "Account for the Atoms"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.instructions",
+    "from": "Design and run a test that shows mass is conserved in a reaction that produces a gas. Then explain why an open beaker would have told you the opposite.",
+    "to": "Analyze teacher-supplied mass data for a gas-forming reaction in open and closed systems. Build a particle model and explain any apparent mass change. This is a data investigation, not an instruction to run a sealed reaction."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.fitReason",
+    "from": "MS-PS1-5 asks students to model conservation of mass. Running the same reaction open and sealed makes the apparent loss real and then makes it disappear, which is far more convincing than being told the atoms are still there.",
+    "to": "Students model conservation and evaluate system boundaries and measurement uncertainty using supplied observations."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.context",
+    "from": "Your class has baking soda, vinegar, resealable bags, small beakers, a balance reading to 0.01 g, and safety glasses. Every group runs the reaction twice: once open and once sealed.",
+    "to": "Use these invented practice measurements for a reaction and its apparatus: open system, 152.40 g before and 151.96 g after; closed system, 152.40 g before and 152.39 g after. The estimated uncertainty of each mass difference is ±0.03 g. Assume gas is the only matter leaving the open system. These are teaching data, not experimental results collected by this class."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.drivingQuestion",
+    "from": "Does the total mass change when baking soda reacts with vinegar, and why do the open and sealed versions disagree?",
+    "to": "Which mass differences are consistent with the stated uncertainty, and how do the system boundaries explain them?"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Weigh everything you are going to use, including the container and the lid, before you mix anything. If it will be on the balance at the end, it must be on the balance at the start.",
+    "to": "Draw each system boundary and list all material and apparatus included. Subtract before from after, then compare the size of each difference with ±0.03 g."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Burning a log seems to lose mass because gases leave unweighed.",
+    "to": "An open system can exchange matter, including gases, with its surroundings."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "In a sealed container the total mass does not change.",
+    "to": "Mass is conserved for a closed system at classroom precision."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.openQuestions.1",
+    "from": "How much of a change would count as real, given how precise your balance is?",
+    "to": "Is each difference larger than the supplied uncertainty?"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.openQuestions.2",
+    "from": "What would you predict if the bag leaked slightly?",
+    "to": "How would a leak affect a nominally closed system?"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.stakeholders.1",
+    "from": "Your lab partner, who records the masses",
+    "to": "Your partner, who checks the calculations"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.stakeholders.2",
+    "from": "Anyone repeating your procedure later",
+    "to": "Anyone reviewing your interpretation of the supplied data"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.criteria.0",
+    "from": "Masses recorded before and after for both the open and the sealed run",
+    "to": "Copy all four supplied masses and identify both system boundaries"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.criteria.1",
+    "from": "The procedure is written so another group could repeat it exactly",
+    "to": "Calculate both differences with units and show the subtraction"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.criteria.2",
+    "from": "The difference in each run is compared against the balance's precision",
+    "to": "Compare each difference with the stated uncertainty, not just the number of decimal places"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.constraints.0",
+    "from": "One reaction, run both ways",
+    "to": "Use supplied data and paper or digital particle tokens only"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.constraints.1",
+    "from": "Safety glasses on, bags not overfilled",
+    "to": "Do not heat or seal gas-producing mixtures; no chemical procedure is part of this activity"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.deliverable",
+    "from": "A one-page report: your procedure, a table of masses for both runs, the difference in each, and a paragraph explaining to the younger group why the open beaker appeared to lose mass while nothing was actually lost.",
+    "to": "A one-page report with two system sketches, a table of supplied masses and calculated differences, a particle model, and an explanation of the open result. Label all supplied values as invented practice data."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A group found their sealed bag lost 0.03 g and wanted to declare conservation broken.",
+    "to": "In a separate invented example, a closed-system difference is -0.02 g with estimated difference uncertainty ±0.04 g."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "They checked their balance, which read to 0.01 g and drifted by about 0.02 g between weighings, and then noticed the bag had been squeezed. They resealed, repeated it three times, and the difference fell inside their measurement uncertainty.",
+    "to": "The group treats that difference as consistent with zero within uncertainty. It does not claim that the result proves exact equality or that the instrument resolution alone defines uncertainty."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "They compared the size of the difference to the precision of the instrument instead of treating any non-zero number as a result.",
+    "to": "A measurement is interpreted with its uncertainty and system boundary, rather than treating every nonzero digit as a physical loss."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.frameStarter",
+    "from": "In the open beaker the mass ____. In the sealed bag it ____. The difference is explained by ____.",
+    "to": "The open-system difference is ____ g; the closed-system difference is ____ g. Compared with ±0.03 g, ____."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.frameChoices.0",
+    "from": "Baking soda and vinegar",
+    "to": "Draw the open and closed boundaries"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.frameChoices.1",
+    "from": "An antacid tablet and water",
+    "to": "Build an atom-token model with equal atom counts"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.frameChoices.2",
+    "from": "The same reaction at two temperatures",
+    "to": "Check the two mass calculations"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.supports.frameChoices.3",
+    "from": "The same reaction in two container sizes",
+    "to": "Explain a hypothetical leak using the same boundary"
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.coachHint",
+    "from": "Weigh the container too. Run it open and sealed.",
+    "to": "Expected differences: -0.44 g and -0.01 g. The latter is consistent with zero within ±0.03 g; account for escaped gas in the open system."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Do the same burning inside a sealed container and the total mass does not budge.",
+    "to": "Count all matter inside a defined boundary and evaluate differences against measurement uncertainty."
+  }
+]

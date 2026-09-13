@@ -208,3 +208,57 @@ describe('System resource integrity', () => {
     expect(h.saved[0].data.snapshot).toMatchObject({ episodeTurnLimit: 12, choiceCount: 4, learningProfile: 'systems', systemResourcePolicy: { mode: 'manual', enabled: true } });
   });
 });
+
+
+describe('Adventure mode refinement regressions', () => {
+  it('keeps debate positions before switching to written arguments', async () => {
+    const h = harness({ adventureInputMode: 'debate', adventureFreeResponseEnabled: true,
+      state: { currentScene: null, debatePhase: 'setup', choiceCount: 3 },
+      response: { text: 'Which water policy will you defend?', options: ['Conserve first', 'Expand supply', 'Combine both'] } });
+    await handlers.executeStartAdventure(null, h.deps);
+    expect(h.errors).toEqual([]);
+    expect(h.state.currentScene.options).toEqual(['Conserve first', 'Expand supply', 'Combine both']);
+    h.deps.response = payload();
+    await h.act(false); h.resolve();
+    expect(h.state.debatePhase).toBe('active');
+    expect(h.state.currentScene.options).toEqual([]);
+  });
+
+  it('uses plausible social approaches without mandatory aggressive or bad choices', async () => {
+    const h = harness({ isSocialStoryMode: true, isAdventureStoryMode: true,
+      state: { currentScene: null, choiceCount: 4 },
+      response: { text: 'A classmate needs space.', options: [...options] } });
+    await handlers.executeStartAdventure(null, h.deps);
+    h.deps.response = payload();
+    await h.act(false); h.resolve();
+    await h.act(true);
+    for (const prompt of h.prompts) {
+      expect(prompt).not.toMatch(new RegExp('1 Aggressive/Impulsive Choice|impulsive/aggressive|Aggressive, Passive, Assertive'));
+      expect(prompt).toContain('asking for help');
+      expect(prompt).toContain('4 meaningful choices');
+    }
+  });
+
+  it('respects a small choice count without contradictory bad-option quotas', async () => {
+    const h = harness({ isAdventureStoryMode: true, state: { choiceCount: 2 } });
+    await h.act(false);
+    expect(h.prompts[0]).toContain('2 meaningful choices');
+    expect(h.prompts[0]).not.toMatch(new RegExp('Very Bad Option|Very Strong/Smart Option|Provide exactly 6 distinct choices'));
+  });
+
+  it.each(['ai', 'manual'])('matches Systems resource updates independent of capitalization in %s mode', mode => {
+    const initial = [{ name: 'Budget', quantity: 1000, unit: 'credits' }, { name: 'Water quality', quantity: 70, unit: '%' }];
+    const next = session.applyAdventureSystemUpdate(initial, { add: [{ name: ' budget ', quantity: 100 }, { name: 'WATER QUALITY', quantity: 5 }] }, { enabled: true, mode });
+    expect(next.map(r => [r.name, r.quantity])).toEqual([['Budget', 1100], ['Water quality', 75]]);
+    expect(initial[0].quantity).toBe(1000);
+  });
+
+  it('normalizes manual starting percentages without limiting budgets or changing resource names', async () => {
+    const h = harness({ adventureInputMode: 'system', enableFactionResources: true, factionResourceMode: 'manual',
+      state: { currentScene: null, systemResources: [{ name: 'Water quality', quantity: 150, unit: '%' }, { name: 'Budget', quantity: 1200.5, unit: 'credits' }] },
+      response: { text: 'Plan a reservoir.', options: [...options] } });
+    await handlers.executeStartAdventure(null, h.deps);
+    expect(h.errors).toEqual([]);
+    expect(h.state.systemResources.map(r => [r.name, r.quantity])).toEqual([['Water quality', 100], ['Budget', 1200.5]]);
+  });
+});

@@ -74,5 +74,497 @@
     ],
     "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
     "submitted_at": "2026-07-20T02:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/area_perimeter_grade4.allopack.json",
+    "slug": "area_perimeter_grade4_illustrated",
+    "tags": [
+      "area-perimeter",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/argument_evidence_grade6.allopack.json",
+    "slug": "argument_evidence_grade6_illustrated",
+    "tags": [
+      "argument-evidence",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/body_systems_grade6.allopack.json",
+    "slug": "body_systems_grade6_illustrated",
+    "tags": [
+      "body-systems",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/cell_structure_grade7.allopack.json",
+    "slug": "cell_structure_grade7_illustrated",
+    "tags": [
+      "cell-structure",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/central_idea_grade7.allopack.json",
+    "slug": "central_idea_grade7_illustrated",
+    "tags": [
+      "central-idea",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/chemical_reactions_grade8.allopack.json",
+    "slug": "chemical_reactions_grade8_illustrated",
+    "tags": [
+      "chemical-reactions",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/context_clues_grade3.allopack.json",
+    "slug": "context_clues_grade3_illustrated",
+    "tags": [
+      "context-clues",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/data_and_typical_grade6.allopack.json",
+    "slug": "data_and_typical_grade6_illustrated",
+    "tags": [
+      "data-and-typical",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/day_night_sky_grade1.allopack.json",
+    "slug": "day_night_sky_grade1_illustrated",
+    "tags": [
+      "day-night-sky",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/decimal_place_value_grade5.allopack.json",
+    "slug": "decimal_place_value_grade5_illustrated",
+    "tags": [
+      "decimal-place-value",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/ecosystems_food_webs_grade5.allopack.json",
+    "slug": "ecosystems_food_webs_grade5_illustrated",
+    "tags": [
+      "ecosystems-food-webs",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/energy_transfer_grade4.allopack.json",
+    "slug": "energy_transfer_grade4_illustrated",
+    "tags": [
+      "energy-transfer",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/equal_groups_grade3.allopack.json",
+    "slug": "equal_groups_grade3_illustrated",
+    "tags": [
+      "equal-groups",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/figurative_language_grade5.allopack.json",
+    "slug": "figurative_language_grade5_illustrated",
+    "tags": [
+      "figurative-language",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/fractions_number_line_grade4.allopack.json",
+    "slug": "fractions_number_line_grade4_illustrated",
+    "tags": [
+      "fractions-number-line",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/habitats_diversity_grade2.allopack.json",
+    "slug": "habitats_diversity_grade2_illustrated",
+    "tags": [
+      "habitats-diversity",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/linear_equations_grade8.allopack.json",
+    "slug": "linear_equations_grade8_illustrated",
+    "tags": [
+      "linear-equations",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/magnetism_grade6.allopack.json",
+    "slug": "magnetism_grade6_illustrated",
+    "tags": [
+      "magnetism",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/main_idea_grade4.allopack.json",
+    "slug": "main_idea_grade4_illustrated",
+    "tags": [
+      "main-idea",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/making_ten_grade1.allopack.json",
+    "slug": "making_ten_grade1_illustrated",
+    "tags": [
+      "making-ten",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/moon_phases_grade6.allopack.json",
+    "slug": "moon_phases_grade6_illustrated",
+    "tags": [
+      "moon-phases",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/natural_selection_grade8.allopack.json",
+    "slug": "natural_selection_grade8_illustrated",
+    "tags": [
+      "natural-selection",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/photosynthesis_grade7.allopack.json",
+    "slug": "photosynthesis_grade7_illustrated",
+    "tags": [
+      "photosynthesis",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/place_value_grade2.allopack.json",
+    "slug": "place_value_grade2_illustrated",
+    "tags": [
+      "place-value",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/plate_tectonics_grade6.allopack.json",
+    "slug": "plate_tectonics_grade6_illustrated",
+    "tags": [
+      "plate-tectonics",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/point_of_view_grade4.allopack.json",
+    "slug": "point_of_view_grade4_illustrated",
+    "tags": [
+      "point-of-view",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/probability_models_grade7.allopack.json",
+    "slug": "probability_models_grade7_illustrated",
+    "tags": [
+      "probability-models",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/proportional_relationships_grade7.allopack.json",
+    "slug": "proportional_relationships_grade7_illustrated",
+    "tags": [
+      "proportional-relationships",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/ratios_real_life_grade6.allopack.json",
+    "slug": "ratios_real_life_grade6_illustrated",
+    "tags": [
+      "ratios-real-life",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/scarcity_choice_grade7.allopack.json",
+    "slug": "scarcity_choice_grade7_illustrated",
+    "tags": [
+      "scarcity-choice",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "c3",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/simple_machines_grade5.allopack.json",
+    "slug": "simple_machines_grade5_illustrated",
+    "tags": [
+      "simple-machines",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/sound_vibration_grade1.allopack.json",
+    "slug": "sound_vibration_grade1_illustrated",
+    "tags": [
+      "sound-vibration",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/story_retell_grade2.allopack.json",
+    "slug": "story_retell_grade2_illustrated",
+    "tags": [
+      "story-retell",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/theme_development_grade8.allopack.json",
+    "slug": "theme_development_grade8_illustrated",
+    "tags": [
+      "theme-development",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/volume_grade5.allopack.json",
+    "slug": "volume_grade5_illustrated",
+    "tags": [
+      "volume",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/weathering_erosion_grade4.allopack.json",
+    "slug": "weathering_erosion_grade4_illustrated",
+    "tags": [
+      "weathering-erosion",
+      "memory-aid",
+      "applied-challenge",
+      "ngss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/word_families_grade1.allopack.json",
+    "slug": "word_families_grade1_illustrated",
+    "tags": [
+      "word-families",
+      "memory-aid",
+      "applied-challenge",
+      "ccss",
+      "illustrated"
+    ],
+    "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
+    "submitted_at": "2026-09-13T00:00:00.000Z"
   }
 ]

@@ -33,7 +33,7 @@
 // Authoritative dictionary panel (Wiktionary via dictionaryapi.dev, offline-cached)
 // rendered beside the AI's leveled definition in the Define popup — triangulation.
 // Pure fn of (entry, t); returns null when there's no entry (AI-only fallback).
-function renderDictionaryPanel(dict, t) {
+function renderDictionaryPanel(dict, t, renderRecording) {
   if (!dict) return null;
   var kids = [];
   var sourceUrl = dict.sourceUrl || (dict.word ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(dict.word) : '');
@@ -44,19 +44,7 @@ function renderDictionaryPanel(dict, t) {
     className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700'
   }, t('glossary.popups.dictionary') || 'Dictionary'), dict.phonetic ? React.createElement('span', {
     className: 'text-[11px] text-slate-500'
-  }, dict.phonetic) : null, dict.audio ? React.createElement('button', {
-    type: 'button',
-    onClick: function () {
-      try {
-        new Audio(dict.audio).play().catch(function () {});
-      } catch (_e) {}
-    },
-    className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-1.5 py-0.5 transition-colors',
-    'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
-    title: t('glossary.popups.hear_real') || 'Hear a real recording'
-  }, React.createElement(Volume2, {
-    size: 11
-  }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')) : null));
+  }, dict.phonetic) : null, dict.audio ? renderRecording ? renderRecording('definition-recording', dict.audio) : null : null));
   (dict.meanings || []).slice(0, 2).forEach(function (m, mi) {
     var d0 = m.definitions && m.definitions[0] ? m.definitions[0].definition : '';
     if (!d0) return;
@@ -111,7 +99,7 @@ function renderReadingLevelExplanation(definitionData, t, renderFormattedText) {
 
 // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
 // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
-function renderPhonicsDictRow(phonicsData, t) {
+function renderPhonicsDictRow(phonicsData, t, renderRecording) {
   var d = phonicsData && phonicsData.dictionary;
   if (!d || !d.phonetic && !d.audio) return null;
   var row = [React.createElement('span', {
@@ -122,20 +110,7 @@ function renderPhonicsDictRow(phonicsData, t) {
     key: 'ipa',
     className: 'font-mono text-xs text-slate-600'
   }, d.phonetic));
-  if (d.audio) row.push(React.createElement('button', {
-    key: 'aud',
-    type: 'button',
-    onClick: function () {
-      try {
-        new Audio(d.audio).play().catch(function () {});
-      } catch (_e) {}
-    },
-    className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white hover:bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 transition-colors',
-    'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
-    title: t('glossary.popups.hear_real') || 'Hear a real recording'
-  }, React.createElement(Volume2, {
-    size: 11
-  }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
+  if (d.audio) row.push(renderRecording ? renderRecording('phonics-recording', d.audio) : null);
   return React.createElement('div', {
     className: 'flex items-center gap-2 flex-wrap px-1'
   }, row);
@@ -1034,7 +1009,8 @@ function simplifiedPopupStyle(point, widthRem) {
     left: Math.max(8, Math.min(window.innerWidth - width - 8, (Number(point.x) || 0) - 20)) + 'px',
     top: Math.max(8, Math.min((window.innerHeight - 16) / 2, (Number(point.y) || 0) + 10)) + 'px',
     maxHeight: 'calc(50dvh - 8px)',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    overflowWrap: 'anywhere'
   };
 }
 function SimplifiedView(props) {
@@ -1079,10 +1055,11 @@ function SimplifiedView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isProcessing = props.isProcessing;
   var isPlaying = props.isPlaying;
-  var interactionMode = props.interactionMode;
-  var isCompareMode = props.isCompareMode;
+  // Guard stale authoring state immediately when switching to student view.
+  var interactionMode = !isTeacherMode && ['revise', 'add-glossary'].includes(props.interactionMode) ? 'read' : props.interactionMode;
+  var isCompareMode = isTeacherMode && props.isCompareMode;
   var isFluencyMode = props.isFluencyMode;
-  var isEditingLeveledText = props.isEditingLeveledText;
+  var isEditingLeveledText = isTeacherMode && props.isEditingLeveledText;
   var isImmersiveReaderActive = props.isImmersiveReaderActive;
   var immersiveSettings = props.immersiveSettings;
   var immersiveRulerY = props.immersiveRulerY;
@@ -1106,9 +1083,9 @@ function SimplifiedView(props) {
   var isZenMode = props.isZenMode;
   var definitionData = props.definitionData;
   var phonicsData = props.phonicsData;
-  var revisionData = props.revisionData;
-  var selectionMenu = props.selectionMenu;
-  var isCustomReviseOpen = props.isCustomReviseOpen;
+  var revisionData = isTeacherMode || props.revisionData?.type === 'explain' ? props.revisionData : null;
+  var selectionMenu = interactionMode === props.interactionMode ? props.selectionMenu : null;
+  var isCustomReviseOpen = isTeacherMode && props.isCustomReviseOpen;
   var customReviseInstruction = props.customReviseInstruction;
   var latestGlossary = props.latestGlossary;
   var history = props.history;
@@ -2255,6 +2232,134 @@ function SimplifiedView(props) {
     }
     setEditAudioOpen(next);
   };
+  // One owned player for pronunciation and dictionary recordings. A request
+  // token prevents delayed synthesis or play() completions reopening dismissed help.
+  var helpAudioRef = React.useRef(null);
+  var helpAudioTokenRef = React.useRef(0);
+  var [helpAudioState, setHelpAudioState] = React.useState({
+    key: null,
+    status: 'idle'
+  });
+  var releaseHelpUrl = function (url) {
+    if (typeof url === 'string' && url.startsWith('blob:') && !(typeof window.__alloTtsCacheOwnsUrl === 'function' && window.__alloTtsCacheOwnsUrl(url))) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (_) {}
+    }
+  };
+  var stopHelpAudio = function (reset) {
+    helpAudioTokenRef.current += 1;
+    var current = helpAudioRef.current;
+    helpAudioRef.current = null;
+    if (current?.audio) {
+      current.audio.onended = null;
+      current.audio.onerror = null;
+      current.audio.pause();
+    }
+    if (current?.ownedUrl) releaseHelpUrl(current.ownedUrl);
+    if (reset !== false) setHelpAudioState({
+      key: null,
+      status: 'idle'
+    });
+  };
+  var playHelpAudio = async function (key, recordingUrl, word, language) {
+    if (helpAudioRef.current?.key === key) {
+      stopHelpAudio();
+      return;
+    }
+    stopHelpAudio();
+    if (typeof stopPlayback === 'function') stopPlayback();
+    var token = helpAudioTokenRef.current;
+    var current = {
+      key: key,
+      audio: null,
+      ownedUrl: null
+    };
+    helpAudioRef.current = current;
+    setHelpAudioState({
+      key: key,
+      status: 'loading'
+    });
+    try {
+      var url = recordingUrl || (await callTTS(word, selectedVoice, voiceSpeed || 1, 2, language || generatedContent?.config?.language || leveledTextLanguage || 'English'));
+      if (token !== helpAudioTokenRef.current) {
+        if (!recordingUrl) releaseHelpUrl(url);
+        return;
+      }
+      if (!url) throw new Error('No pronunciation audio');
+      if (!recordingUrl) current.ownedUrl = url;
+      var audio = new Audio(url);
+      current.audio = audio;
+      audio.playbackRate = voiceSpeed || 1;
+      var fail = function () {
+        if (token !== helpAudioTokenRef.current) return;
+        stopHelpAudio(false);
+        setHelpAudioState({
+          key: key,
+          status: 'error'
+        });
+      };
+      audio.onended = function () {
+        if (token === helpAudioTokenRef.current) stopHelpAudio();
+      };
+      audio.onerror = fail;
+      await audio.play();
+      if (token === helpAudioTokenRef.current) setHelpAudioState({
+        key: key,
+        status: 'playing'
+      });
+    } catch (_) {
+      if (token === helpAudioTokenRef.current) {
+        stopHelpAudio(false);
+        setHelpAudioState({
+          key: key,
+          status: 'error'
+        });
+      }
+    }
+  };
+  React.useEffect(function () {
+    setHelpAudioState({
+      key: null,
+      status: 'idle'
+    });
+    return function () {
+      stopHelpAudio(false);
+    };
+  }, [phonicsData?.word, definitionData?.word, generatedContent?.id, generatedContent?.data, interactionMode]);
+  React.useEffect(function () {
+    if (isPlaying && helpAudioRef.current) stopHelpAudio();
+  }, [isPlaying, playingContentId]);
+  var helpText = function (key, fallback) {
+    var value = t(key);
+    return value && value !== key ? value : fallback;
+  };
+  var renderHelpAudioButton = function (key, recordingUrl, word, language) {
+    var current = helpAudioState.key === key;
+    var active = current && (helpAudioState.status === 'loading' || helpAudioState.status === 'playing');
+    var label = active ? helpText('simplified.word_audio_stop', 'Stop audio') : current && helpAudioState.status === 'error' ? helpText('simplified.word_audio_retry', 'Try audio again') : recordingUrl ? helpText('simplified.word_recording', 'Hear recording') : helpText('simplified.word_audio_listen', 'Hear word');
+    return /*#__PURE__*/React.createElement("button", {
+      key: key,
+      type: "button",
+      "data-word-help-audio": key,
+      "aria-label": label,
+      onClick: () => playHelpAudio(key, recordingUrl, word, language),
+      className: "min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, active ? /*#__PURE__*/React.createElement(StopCircle, {
+      size: 16,
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(Volume2, {
+      size: 16,
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", null, label));
+  };
+  var renderHelpAudioNotice = function (prefix) {
+    if (!helpAudioState.key?.startsWith(prefix) || !['loading', 'error'].includes(helpAudioState.status)) return null;
+    return /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      className: "mb-3 text-sm text-slate-700"
+    }, helpAudioState.status === 'loading' ? helpText('simplified.word_audio_loading', 'Preparing audio…') : helpText('simplified.word_audio_error', 'Audio could not play. Try again when you are ready.'));
+  };
   // Read-aloud for the Define and Explain popups. Both go through the host's
   // handleSpeak, the same path the sentence reader, the immersive word
   // speaker and the glossary use, so voice, speed, provider fallback and
@@ -2281,6 +2386,7 @@ function SimplifiedView(props) {
       type: "button",
       "data-simplified-popup-speaker": contentId,
       onClick: function () {
+        stopHelpAudio();
         handleSpeak(text, contentId, 0);
       },
       "aria-label": active ? simplifiedPopupStopReadingLabel : simplifiedPopupReadAloudLabel,
@@ -2602,7 +2708,7 @@ function SimplifiedView(props) {
       });
     }
   };
-  var instructionalRoleControl = !isZenMode && generatedContent ? /*#__PURE__*/React.createElement("div", {
+  var instructionalRoleControl = isTeacherMode && !isZenMode && generatedContent ? /*#__PURE__*/React.createElement("div", {
     className: "mb-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm",
     "data-instructional-role": instructionalRole,
     "data-help-key": "simplified_instructional_role"
@@ -2642,7 +2748,48 @@ function SimplifiedView(props) {
   var readingColumnState = React.useState(72);
   var readingColumn = readingColumnState[0],
     setReadingColumn = readingColumnState[1];
-  var readingEndRef = React.useRef(null);
+  var readingStartRef = React.useRef(null);
+  var focusViewButtonRef = React.useRef(null);
+  var wasFocusViewRef = React.useRef(!!isZenMode);
+  React.useEffect(function () {
+    // The global exit button unmounts on exit. Return keyboard focus to the
+    // reader toggle only when that leaves focus on the document body.
+    if (wasFocusViewRef.current && !isZenMode && document.activeElement === document.body) {
+      focusViewButtonRef.current?.focus({
+        preventScroll: true
+      });
+    }
+    wasFocusViewRef.current = !!isZenMode;
+  }, [isZenMode]);
+  var [practiceOpen, setPracticeOpen] = React.useState(false);
+  var priorReadingRef = React.useRef({
+    id: generatedContent?.id,
+    text: generatedContent?.data
+  });
+  React.useEffect(function () {
+    var previous = priorReadingRef.current;
+    priorReadingRef.current = {
+      id: generatedContent?.id,
+      text: generatedContent?.data
+    };
+    if (previous.id === generatedContent?.id && previous.text === generatedContent?.data) return;
+    if (playingContentId === 'simplified-main' && typeof stopPlayback === 'function') stopPlayback();
+    if (typeof props.closeDefinition === 'function') props.closeDefinition();
+    if (typeof props.closePhonics === 'function') props.closePhonics();
+    if (typeof props.closeRevision === 'function') props.closeRevision();
+    if (typeof setSelectionMenu === 'function') setSelectionMenu(null);
+    if (typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(null);
+  }, [generatedContent?.id, generatedContent?.data]);
+  var selectionActionRef = React.useRef(null);
+  var selectionDialogRef = React.useRef(null);
+  React.useEffect(function () {
+    if (!selectionMenu) return;
+    var opener = document.activeElement;
+    selectionDialogRef.current?.querySelector('button, input')?.focus();
+    return function () {
+      if (opener && document.contains(opener)) opener.focus();
+    };
+  }, [!!selectionMenu]);
   var comparisonLanguageState = React.useState('auto');
   var comparisonLanguage = comparisonLanguageState[0],
     setComparisonLanguage = comparisonLanguageState[1];
@@ -2653,6 +2800,28 @@ function SimplifiedView(props) {
     var value = t(key);
     return value && value !== key ? value : fallback;
   };
+  function chooseReadingMode(mode) {
+    if (typeof stopPlayback === 'function') stopPlayback();
+    if (typeof props.closeDefinition === 'function') props.closeDefinition();
+    if (typeof props.closePhonics === 'function') props.closePhonics();
+    if (typeof props.closeRevision === 'function') props.closeRevision();
+    if (typeof setSelectionMenu === 'function') setSelectionMenu(null);
+    if (typeof setRevisionData === 'function') setRevisionData(null);
+    if (typeof setPhonicsData === 'function') setPhonicsData(null);
+    if (typeof setIsCustomReviseOpen === 'function') setIsCustomReviseOpen(false);
+    if (typeof setIsCompareMode === 'function') setIsCompareMode(false);
+    if (isEditingLeveledText && typeof props.handleToggleIsEditingLeveledText === 'function') props.handleToggleIsEditingLeveledText();
+    if (typeof setIsFluencyMode === 'function') setIsFluencyMode(mode === 'fluency');
+    if (typeof setInteractionMode === 'function') setInteractionMode(mode === 'fluency' ? 'read' : mode);
+  }
+  React.useEffect(function () {
+    if (isTeacherMode) return;
+    if (props.isCompareMode && typeof setIsCompareMode === 'function') setIsCompareMode(false);
+    if (props.isEditingLeveledText && typeof props.handleToggleIsEditingLeveledText === 'function') props.handleToggleIsEditingLeveledText();
+    if (['revise', 'add-glossary'].includes(props.interactionMode)) chooseReadingMode('read');
+    if (props.revisionData && props.revisionData.type !== 'explain' && typeof props.closeRevision === 'function') props.closeRevision();
+    if (props.isCustomReviseOpen && typeof setIsCustomReviseOpen === 'function') setIsCustomReviseOpen(false);
+  }, [isTeacherMode, props.isCompareMode, props.isEditingLeveledText, props.interactionMode, props.revisionData?.type, props.isCustomReviseOpen]);
   var readingLanguage = generatedContent?.config?.language || generatedContent?.instructionalText?.complexity?.language || leveledTextLanguage || 'English';
   var wordHelpHint = readerText('simplified.word_navigation_hint', 'Choose a word for help. Use Left and Right arrows to move between words.');
   var comparisonSourceState = React.useState('linked');
@@ -2836,7 +3005,7 @@ function SimplifiedView(props) {
           return block;
         });
         var endIdx = sentenceCursor;
-        var shouldFocus = isPlaying ? playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx : focusedParagraphIndex === paragraphId;
+        var shouldFocus = isPlaying && playingContentId === 'simplified-main' ? playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx : focusedParagraphIndex === paragraphId || focusedParagraphIndex == null && paragraphIndex === 0;
         var wordIndex = 0;
         var renderWords = function (text) {
           return simplifiedWordSegments(text, section.label).map(function (part, index) {
@@ -2847,7 +3016,9 @@ function SimplifiedView(props) {
             var label = interactionMode === 'phonics' ? simplifiedHearPhonicsLabel : interactionMode === 'add-glossary' ? readerText('common.click_add_glossary', 'Add to glossary') : simplifiedDefineLabel;
             var activate = function (event) {
               event.stopPropagation();
-              if (interactionMode === 'phonics') handlePhonicsClick(part.text, event);else if (interactionMode === 'add-glossary') handleQuickAddGlossary(part.text, true);else handleWordClick(part.text, event);
+              if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, {
+                audioPlayback: 'reader'
+              });else if (interactionMode === 'add-glossary') handleQuickAddGlossary(part.text, true);else handleWordClick(part.text, event);
             };
             return /*#__PURE__*/React.createElement("span", {
               key: index,
@@ -2887,17 +3058,27 @@ function SimplifiedView(props) {
           var Tag = block.type === 'heading' ? 'h' + Math.min(6, block.level) : block.type === 'quote' ? 'blockquote' : block.type === 'li' ? 'span' : 'p';
           var text = block.text === undefined ? block.raw : block.text;
           var content;
-          if (isWordMode || isSelectionMode) content = simplifiedInline(text, isWordMode ? renderWords : value => value);else content = block.sentences.map(function (sentence, index) {
+          if (isWordMode || interactionMode === 'revise') content = simplifiedInline(text, isWordMode ? renderWords : value => value);else content = block.sentences.map(function (sentence, index) {
             var currentGlobalIdx = block.start + index;
             var cleanText = sentence.replace(/^\s*#{1,6}\s+/, '').replace(/^\s*<\/?h[1-6][^>]*>/gi, '').replace(/<\/h[1-6]>\s*$/i, '').replace(/^\s*(?:[-+*]|\d+[.)])\s+/, '').replace(/^\s*>\s?/, '');
-            var active = playbackState.currentIdx === currentGlobalIdx;
+            var active = playingContentId === 'simplified-main' && playbackState.currentIdx === currentGlobalIdx;
             if (interactionMode === 'cloze') return /*#__PURE__*/React.createElement("span", {
               key: index
             }, formatInteractiveText(cleanText, true, !!isLineFocusMode), " ");
             var speakSentence = function (event) {
               if (event.target.closest('a,button,input,select,textarea')) return;
+              if (window.getSelection && window.getSelection().toString().trim()) return;
               event.stopPropagation();
-              handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
+              if (interactionMode === 'explain') {
+                event.currentTarget.focus();
+                var rect = event.currentTarget.getBoundingClientRect();
+                setSelectionMenu({
+                  text: simplifiedPlainInline(cleanText),
+                  language: section.label,
+                  x: rect.left + rect.width / 2,
+                  y: rect.top
+                });
+              } else handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
             };
             return /*#__PURE__*/React.createElement("span", {
               key: index,
@@ -2906,7 +3087,7 @@ function SimplifiedView(props) {
               role: "button",
               tabIndex: 0,
               "aria-current": active ? 'true' : undefined,
-              "aria-label": simplifiedReadSentenceLabel + ': ' + simplifiedPlainInline(cleanText),
+              "aria-label": (interactionMode === 'explain' ? readerText('simplified.explain_mode', 'Explain') : simplifiedReadSentenceLabel) + ': ' + simplifiedPlainInline(cleanText),
               onClick: speakSentence,
               onKeyDown: function (event) {
                 if (event.target !== event.currentTarget || event.key !== 'Enter' && event.key !== ' ') return;
@@ -2914,7 +3095,7 @@ function SimplifiedView(props) {
                 speakSentence(event);
               },
               className: `rounded px-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${active ? 'bg-yellow-300 text-slate-950' : 'hover:bg-indigo-100/30'}`,
-              title: t('common.click_read_from_here')
+              title: interactionMode === 'explain' ? readerText('simplified.explain_mode', 'Explain') : t('common.click_read_from_here')
             }, formatInteractiveText(cleanText, false, !!isLineFocusMode), " ");
           });
           var style = {
@@ -2936,6 +3117,7 @@ function SimplifiedView(props) {
         return /*#__PURE__*/React.createElement("div", _extends({
           key: paragraphId,
           "data-reading-paragraph": paragraphId,
+          "data-reading-focused": !!shouldFocus,
           "data-reading-language": section.label,
           lang: simplifiedLanguageTag(section.label),
           dir: section.key === 'tgt' ? 'ltr' : getContentDirection(section.label)
@@ -2955,7 +3137,21 @@ function SimplifiedView(props) {
       }
     }, /*#__PURE__*/React.createElement("div", {
       className: "mb-4 flex flex-wrap items-center gap-3 text-sm"
-    }, /*#__PURE__*/React.createElement("label", {
+    }, typeof handleSpeak === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-reader-listen": true,
+      disabled: !simplifiedReadAloudText,
+      onClick: () => {
+        if (isPlaying && playingContentId === 'simplified-main' && typeof stopPlayback === 'function') stopPlayback();else handleSpeak(simplifiedReadAloudText, 'simplified-main', 0);
+      },
+      className: "min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50"
+    }, isPlaying && playingContentId === 'simplified-main' ? /*#__PURE__*/React.createElement(StopCircle, {
+      size: 16,
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(Volume2, {
+      size: 16,
+      "aria-hidden": "true"
+    }), isPlaying && playingContentId === 'simplified-main' ? readerText('common.stop_reading', 'Stop reading aloud') : readerText('simplified.listen_start', 'Listen from the beginning')), /*#__PURE__*/React.createElement("label", {
       className: "flex items-center gap-2"
     }, readerText('simplified.reading_width', 'Reading width'), /*#__PURE__*/React.createElement("select", {
       "aria-label": readerText('simplified.reading_width', 'Reading width'),
@@ -2971,15 +3167,19 @@ function SimplifiedView(props) {
     }, readerText('simplified.width_wide', 'Wide')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "underline underline-offset-2 rounded px-2 py-2 focus-visible:ring-2 focus-visible:ring-indigo-600",
-      onClick: () => readingEndRef.current?.focus()
+      onClick: () => readingStartRef.current?.focus()
     }, readerText('simplified.skip_passage', 'Skip reading controls')), props.onReadReflect && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: openReadingReflection,
       className: "rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800"
-    }, readerText('simplified.read_reflect', 'Read & reflect'))), isWordMode && /*#__PURE__*/React.createElement("p", {
-      className: "mb-3 text-sm text-slate-600"
-    }, wordHelpHint), /*#__PURE__*/React.createElement("div", {
-      className: isLineFocusMode ? 'bg-slate-950 rounded-xl p-4' : ''
+    }, readerText('simplified.read_reflect', 'Read & reflect'))), /*#__PURE__*/React.createElement("div", {
+      ref: readingStartRef,
+      "data-reading-passage": "true",
+      "data-paragraph-focus": !!isLineFocusMode,
+      tabIndex: -1,
+      role: "region",
+      "aria-label": readerText('simplified.passage', 'Reading passage'),
+      className: (isLineFocusMode ? 'bg-slate-950 rounded-xl p-4 ' : '') + 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'
     }, parts && isSideBySide ? /*#__PURE__*/React.createElement(React.Fragment, null, parts.source.length !== parts.target.length && /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
@@ -3017,17 +3217,13 @@ function SimplifiedView(props) {
       className: "my-6 border-t border-indigo-200 pt-4 text-lg font-bold"
     }, simplifiedEnglishTranslationLabel), rendered[i]))), /*#__PURE__*/React.createElement(SourceReferencesPanel, {
       referencesText: simplifiedReferences
-    }), /*#__PURE__*/React.createElement("div", {
-      ref: readingEndRef,
-      tabIndex: -1,
-      className: "mt-4 rounded focus-visible:ring-2 focus-visible:ring-indigo-600",
-      "aria-label": readerText('simplified.end_of_reading', 'End of reading')
     }), isProcessing && /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "mt-4 text-sm text-indigo-700"
     }, simplifiedGeneratingMoreLabel));
   }
   return /*#__PURE__*/React.createElement("div", {
+    "data-adapted-reader": isTeacherMode ? "teacher" : "student",
     className: "space-y-6"
   }, activeReadAloudStatus && /*#__PURE__*/React.createElement("span", {
     className: "sr-only",
@@ -3313,7 +3509,9 @@ function SimplifiedView(props) {
             return;
           }
           if (interactionMode === 'phonics') {
-            handlePhonicsClick(wordData.text, e);
+            handlePhonicsClick(wordData.text, e, {
+              audioPlayback: 'reader'
+            });
             return;
           }
           if (isChunkReaderActive) {
@@ -3343,12 +3541,13 @@ function SimplifiedView(props) {
     size: 24,
     className: "text-yellow-500 fill-current",
     "aria-hidden": "true"
-  }), " ", simplifiedActivityCompleteLabel)), !isZenMode && /*#__PURE__*/React.createElement("div", {
+  }), " ", simplifiedActivityCompleteLabel)), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-4 rounded-lg border border-green-100 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-green-800"
-  }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('simplified.udl_goal').split(':')[1])), instructionalRoleControl, /*#__PURE__*/React.createElement("div", {
-    className: `bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-4' : 'p-8'}`
+  }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('simplified.udl_goal').split(':')[1])), /*#__PURE__*/React.createElement("div", {
+    "data-reading-card": true,
+    className: `bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-3 sm:p-4' : 'p-3 sm:p-6 lg:p-8'}`
   }, !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center items-center mb-2 flex-wrap gap-2"
   }, (() => {
@@ -3357,16 +3556,16 @@ function SimplifiedView(props) {
     const displayInterests = generatedContent?.config?.interests || studentInterests || [];
     const displayStandards = generatedContent?.config?.standards || standardsInput;
     return /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2"
+      className: "flex min-w-0 flex-wrap items-center justify-center gap-2"
     }, /*#__PURE__*/React.createElement("h4", {
-      className: "font-comic font-bold text-xl text-orange-800"
-    }, isTeacherMode ? `${t('simplified.target_level_label')}: ${displayGrade}` : sourceTopic || simplifiedReadingSelectionLabel), displayLang !== 'English' && /*#__PURE__*/React.createElement("span", {
+      className: "break-words font-comic font-bold text-xl text-orange-800"
+    }, isTeacherMode ? `${t('simplified.target_level_label')}: ${displayGrade}` : generatedContent?.title || generatedContent?.topic || sourceTopic || readerText('simplified.your_reading', 'Your reading')), displayLang !== 'English' && /*#__PURE__*/React.createElement("span", {
       className: "bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold border border-blue-200"
-    }, displayLang), displayInterests.length > 0 && /*#__PURE__*/React.createElement("span", {
+    }, displayLang), isTeacherMode && displayInterests.length > 0 && /*#__PURE__*/React.createElement("span", {
       className: "bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold border border-red-200 flex items-center gap-1"
     }, /*#__PURE__*/React.createElement(Heart, {
       size: 10
-    }), " ", t('simplified.engagement_optimized')), displayStandards && /*#__PURE__*/React.createElement("span", {
+    }), " ", t('simplified.engagement_optimized')), isTeacherMode && typeof displayStandards === 'string' && displayStandards && /*#__PURE__*/React.createElement("span", {
       className: "bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold border border-green-200 flex items-center gap-1 cursor-help",
       title: `${t('simplified.label_standard')}: ${displayStandards}`
     }, /*#__PURE__*/React.createElement(CheckCircle, {
@@ -3377,155 +3576,85 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-1 items-center min-w-0 w-full"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap justify-center w-full min-w-0 bg-white rounded-2xl sm:rounded-full p-1 border border-indigo-200 shadow-sm gap-y-1"
-  }, /*#__PURE__*/React.createElement("button", {
+    role: "group",
+    "aria-label": readerText('simplified.reading_actions', 'Reading tools'),
+    className: "flex flex-wrap justify-center w-full min-w-0 bg-white rounded-2xl p-2 border border-indigo-200 shadow-sm gap-2"
+  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ['explain', 'simplified.explain_mode', 'Explain', HelpCircle], ...(isTeacherMode ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])].map(([mode, key, fallback, Icon]) => /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => {
-      setInteractionMode('read');
-      stopPlayback();
-      setSelectionMenu(null);
-      setRevisionData(null);
-      setIsCompareMode(false);
-      setIsFluencyMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_read'),
-    "aria-label": t('simplified.read_mode'),
-    "data-help-key": "simplified_read_mode"
-  }, /*#__PURE__*/React.createElement(Volume2, {
-    size: 12
-  }), " ", t('simplified.read_mode')), /*#__PURE__*/React.createElement("button", {
+    key: mode,
+    "data-reading-mode": mode,
+    "data-help-key": mode === 'add-glossary' ? 'simplified_add_term' : 'simplified_' + mode + '_mode',
+    onClick: () => chooseReadingMode(mode),
+    "aria-pressed": interactionMode === mode && !isCompareMode && !isFluencyMode && !isEditingLeveledText,
+    className: 'min-h-11 rounded-xl px-3 py-2 text-sm font-bold inline-flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (interactionMode === mode && !isCompareMode && !isFluencyMode && !isEditingLeveledText ? 'bg-indigo-100 text-indigo-900' : 'text-slate-700 hover:bg-slate-100')
+  }, /*#__PURE__*/React.createElement(Icon, {
+    size: 16,
+    "aria-hidden": "true"
+  }), readerText(key, fallback))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => {
-      setIsFluencyMode(true);
-      stopPlayback();
-      setInteractionMode('read');
-      setIsCompareMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isFluencyMode ? 'bg-rose-100 text-rose-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_read_along'),
-    "aria-label": t('simplified.read_along'),
-    "data-help-key": "simplified_read_along"
-  }, /*#__PURE__*/React.createElement(Mic, {
-    size: 12
-  }), " ", t('simplified.read_along')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setInteractionMode('define');
-      stopPlayback();
-      setSelectionMenu(null);
-      setRevisionData(null);
-      setIsCompareMode(false);
-      setIsFluencyMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_define'),
-    "aria-label": t('simplified.define_mode'),
-    "data-help-key": "simplified_define_mode"
-  }, /*#__PURE__*/React.createElement(Search, {
-    size: 12
-  }), " ", t('simplified.define_mode')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setInteractionMode('phonics');
-      stopPlayback();
-      setPhonicsData(null);
-      setIsCompareMode(false);
-      setIsFluencyMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'phonics' && !isCompareMode ? 'bg-emerald-100 text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_phonics'),
-    "aria-label": t('simplified.phonics_mode'),
-    "data-help-key": "simplified_phonics_mode"
-  }, /*#__PURE__*/React.createElement(Ear, {
-    size: 12
-  }), " ", t('simplified.phonics_mode')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setInteractionMode('add-glossary');
-      stopPlayback();
-      setSelectionMenu(null);
-      setRevisionData(null);
-      setIsCompareMode(false);
-      setIsFluencyMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'add-glossary' && !isCompareMode ? 'bg-green-100 text-green-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_add_term'),
-    "aria-label": t('simplified.add_term'),
-    "data-help-key": "simplified_add_term"
-  }, /*#__PURE__*/React.createElement(Plus, {
-    size: 12
-  }), " ", t('simplified.add_term')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setInteractionMode('explain');
-      stopPlayback();
-      setIsCompareMode(false);
-      setIsFluencyMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_explain'),
-    "aria-label": t('simplified.explain_mode'),
-    "data-help-key": "simplified_explain_mode"
-  }, /*#__PURE__*/React.createElement(HelpCircle, {
-    size: 12
-  }), " ", t('simplified.explain_mode')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setInteractionMode('cloze');
-      stopPlayback();
-      setIsCompareMode(false);
-      setIsFluencyMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'cloze' && !isCompareMode ? 'bg-blue-100 text-blue-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_cloze'),
-    "aria-label": t('simplified.cloze_mode'),
-    "data-help-key": "simplified_cloze_mode"
-  }, /*#__PURE__*/React.createElement(PenTool, {
-    size: 12
-  }), " ", t('simplified.cloze_mode')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: handleSetIsSyntaxGameToTrue,
-    className: "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all bg-orange-100 text-orange-800 hover:bg-orange-200 shadow-sm",
-    title: t('simplified.tip_scramble'),
-    "aria-label": t('simplified.scramble_game'),
-    "data-help-key": "simplified_scramble_game"
-  }, /*#__PURE__*/React.createElement(Gamepad2, {
-    size: 12
-  }), " ", t('simplified.scramble_game')), isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      setInteractionMode('revise');
-      stopPlayback();
-      setIsCompareMode(false);
-    },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'revise' && !isCompareMode ? 'bg-purple-100 text-purple-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_revise'),
-    "aria-label": t('simplified.revise_mode'),
-    "data-help-key": "simplified_revise_mode"
-  }, /*#__PURE__*/React.createElement(Pencil, {
-    size: 12
-  }), " ", t('simplified.revise_mode')), /*#__PURE__*/React.createElement("button", {
+    "aria-expanded": practiceOpen,
+    "aria-controls": "simplified-practice-tools",
+    onClick: () => setPracticeOpen(!practiceOpen),
+    className: "min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, readerText('simplified.practice_tools', 'Practice'), practiceOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+    size: 14,
+    className: "inline ml-1"
+  }) : /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 14,
+    className: "inline ml-1"
+  })), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "simplified_compare_mode",
+    "aria-pressed": !!isCompareMode,
     onClick: () => {
-      setIsCompareMode(!isCompareMode);
-      stopPlayback();
+      const next = !isCompareMode;
+      chooseReadingMode('read');
+      setIsCompareMode(next);
     },
-    className: `px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isCompareMode ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:text-slate-700'}`,
-    title: t('simplified.tip_compare'),
-    "aria-label": t('simplified.compare_mode')
+    className: "min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement(GitCompare, {
-    size: 12
-  }), " ", t('simplified.compare_mode')))), !isZenMode && /*#__PURE__*/React.createElement("div", {
+    size: 16,
+    className: "inline mr-1"
+  }), readerText('simplified.compare_mode', 'Compare'))), /*#__PURE__*/React.createElement("div", {
+    id: "simplified-practice-tools",
+    hidden: !practiceOpen,
+    style: {
+      display: practiceOpen ? undefined : 'none'
+    },
+    className: "flex flex-wrap justify-center gap-2 py-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "simplified_read_along",
+    "aria-pressed": !!isFluencyMode,
+    onClick: () => chooseReadingMode('fluency'),
+    className: "min-h-11 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-900"
+  }, readerText('simplified.read_along', 'Read along')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "simplified_cloze_mode",
+    "aria-pressed": interactionMode === 'cloze',
+    onClick: () => chooseReadingMode('cloze'),
+    className: "min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900"
+  }, readerText('simplified.practice_blanks', 'Fill in the blanks')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "simplified_scramble_game",
+    onClick: handleSetIsSyntaxGameToTrue,
+    className: "min-h-11 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm font-semibold text-orange-900"
+  }, readerText('simplified.practice_sentences', 'Sentence scramble'))), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "my-2 text-center text-sm text-slate-700"
+  }, isCompareMode ? readerText('simplified.compare_hint', 'Review the source and adapted versions below.') : isEditingLeveledText ? readerText('simplified.edit_hint', 'Edit the passage below. Choose Read to return to reading.') : isFluencyMode ? readerText('simplified.fluency_hint', 'Use the read-along panel to practice at your own pace.') : interactionMode === 'define' || interactionMode === 'phonics' || interactionMode === 'add-glossary' ? wordHelpHint : interactionMode === 'explain' ? readerText('simplified.explain_hint', 'Choose a sentence for an explanation, or select a longer passage.') : interactionMode === 'revise' ? readerText('simplified.revise_hint', 'Select the words you want to revise.') : interactionMode === 'cloze' ? readerText('simplified.cloze_hint', 'Fill in the missing words. Choose Read to see the complete passage.') : readerText('simplified.read_hint', 'Read at your own pace. Choose any sentence to listen from there.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-center gap-2"
-  }, props.onReadReflect && /*#__PURE__*/React.createElement("button", {
+  }, typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("button", {
+    ref: focusViewButtonRef,
     type: "button",
-    onClick: openReadingReflection,
-    className: "min-h-[44px] px-3 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 text-sm font-bold"
-  }, t('reading_tools.reflect') || 'Read & reflect'), /*#__PURE__*/React.createElement("button", {
+    "data-reader-focus-view": true,
+    "aria-pressed": !!isZenMode,
+    "aria-describedby": "simplified-focus-view-hint",
+    onClick: () => props.onFocusViewChange(!isZenMode),
+    className: "min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, isZenMode ? readerText('simplified.exit_focus_view', 'Exit focus view') : readerText('simplified.focus_view', 'Focus view')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.refresh'),
+    "aria-label": readerText('simplified.immersive_reader', 'Immersive Reader'),
     "data-help-key": "simplified_immersive_reader",
     onClick: () => {
       if (generatedContent.immersiveData) {
@@ -3542,20 +3671,26 @@ function SimplifiedView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(BookOpen, {
     size: 14
-  }), isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')), /*#__PURE__*/React.createElement("select", {
-    value: readingTheme,
+  }), isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')), /*#__PURE__*/React.createElement("label", {
+    className: "inline-flex min-w-0 max-w-full flex-wrap items-center gap-2 text-sm"
+  }, /*#__PURE__*/React.createElement("span", null, readerText('header.reading_theme_aria', 'Reading theme')), /*#__PURE__*/React.createElement("select", {
+    "data-adapted-theme-picker": true,
+    value: readingTheme || 'default',
+    title: readerText('simplified.theme_scope', 'Changes the reading area. Your app theme stays the same.'),
     onChange: e => setReadingTheme(e.target.value),
     "aria-label": simplifiedReadingThemeLabel,
-    className: `px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`
+    className: `min-h-11 min-w-0 max-w-full px-3 py-2 rounded-lg text-sm font-semibold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "default"
-  }, t('header.reading_theme_default')), /*#__PURE__*/React.createElement("option", {
+  }, readerText('simplified.theme_follow_app', 'Use app theme')), /*#__PURE__*/React.createElement("option", {
     value: "warm"
   }, t('header.reading_theme_warm')), /*#__PURE__*/React.createElement("option", {
     value: "sepia"
-  }, t('header.reading_theme_sepia')), theme !== 'dark' && /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_sepia')), /*#__PURE__*/React.createElement("option", {
     value: "dark"
   }, t('header.reading_theme_dark')), /*#__PURE__*/React.createElement("option", {
+    value: "dim"
+  }, readerText('header.reading_theme_dim', 'Dim')), /*#__PURE__*/React.createElement("option", {
     value: "highContrast"
   }, t('header.reading_theme_contrast')), /*#__PURE__*/React.createElement("option", {
     value: "blue"
@@ -3565,7 +3700,7 @@ function SimplifiedView(props) {
     value: "rose"
   }, t('header.reading_theme_rose')), /*#__PURE__*/React.createElement("option", {
     value: "dyslexia"
-  }, t('header.reading_theme_easy_read'))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }, t('header.reading_theme_easy_read')))), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center mr-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3578,9 +3713,7 @@ function SimplifiedView(props) {
     title: t('simplified.teacher_tools_tooltip')
   }, /*#__PURE__*/React.createElement(Settings, {
     size: 14
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "hidden sm:inline"
-  }, t('simplified.teacher_tools_label')), isTeacherToolbarExpanded ? /*#__PURE__*/React.createElement(ChevronLeft, {
+  }), /*#__PURE__*/React.createElement("span", null, readerText('simplified.teacher_actions', 'Teacher tools')), isTeacherToolbarExpanded ? /*#__PURE__*/React.createElement(ChevronLeft, {
     size: 14
   }) : /*#__PURE__*/React.createElement(ChevronRight, {
     size: 14
@@ -3674,7 +3807,7 @@ function SimplifiedView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✓` : simplifiedAudioSaveLabel))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✓` : simplifiedAudioSaveLabel))), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.toggle_edit_text'),
     onClick: handleToggleIsEditingLeveledText,
@@ -3684,7 +3817,10 @@ function SimplifiedView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))))), ttsPrepNotice && /*#__PURE__*/React.createElement("p", {
+  }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))), typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("p", {
+    id: "simplified-focus-view-hint",
+    className: "mt-2 text-center text-xs text-slate-600"
+  }, isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')))), ttsPrepNotice && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -3713,12 +3849,12 @@ function SimplifiedView(props) {
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  })))), definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : /*#__PURE__*/React.createElement("div", {
+  })))), renderHelpAudioNotice('definition-'), definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 text-xs text-indigo-500"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
-  }), " ", t('glossary.popups.finding')), definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t), definitionData.text && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('glossary.popups.finding')), definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t, renderHelpAudioButton), definitionData.text && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-100"
   }, definitionData.imageUrl ? /*#__PURE__*/React.createElement("img", {
     src: definitionData.imageUrl,
@@ -3757,17 +3893,17 @@ function SimplifiedView(props) {
     className: "flex justify-between items-start mb-3"
   }, /*#__PURE__*/React.createElement("h5", {
     id: "phonics-popup-title",
-    className: "font-black text-emerald-900 text-2xl capitalize tracking-tight"
+    className: "min-w-0 break-words font-black text-emerald-900 text-2xl capitalize tracking-tight"
   }, phonicsData.word), /*#__PURE__*/React.createElement("button", {
     ref: phonicsCloseRef,
     type: "button",
     onClick: closePhonics,
-    className: "text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1",
+    className: "min-h-11 min-w-11 shrink-0 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  }))), phonicsData.isLoading ? /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"
+  }))), renderHelpAudioNotice('phonics-'), phonicsData.isLoading ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center justify-center py-6 gap-2 text-emerald-700"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 24,
     className: "animate-spin motion-reduce:animate-none",
@@ -3777,46 +3913,35 @@ function SimplifiedView(props) {
   }, t('glossary.popups.analyzing'))) : phonicsData.data ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"
+    className: "flex flex-wrap items-center justify-between gap-2 bg-emerald-50 p-3 rounded-lg border border-emerald-100"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1"
+    className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1"
   }, t('glossary.phonetic_spelling')), /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-serif italic text-slate-700"
-  }, "/", phonicsData.data.phoneticSpelling, "/")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.volume'),
-    onClick: () => {
-      if (phonicsData.audioUrl) {
-        const audio = new Audio(phonicsData.audioUrl);
-        audio.playbackRate = voiceSpeed || 1;
-        audio.play().catch(() => {});
-      }
-    },
-    className: "bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95",
-    title: t('glossary.popups.replay')
-  }, /*#__PURE__*/React.createElement(Volume2, {
-    size: 20,
-    className: "fill-current"
-  }))), renderPhonicsDictRow(phonicsData, t), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 gap-2"
+  }, "/", phonicsData.data.phoneticSpelling, "/")), renderHelpAudioButton('phonics-word', null, phonicsData.word, phonicsData.language)), renderPhonicsDictRow(phonicsData, t, renderHelpAudioButton), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-slate-50 p-2 rounded border border-slate-100"
+    className: "bg-slate-50 p-3 rounded border border-slate-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1"
-  }, t('glossary.popups.ipa')), /*#__PURE__*/React.createElement("div", {
-    className: "font-mono text-sm text-slate-600"
-  }, phonicsData.data.ipa)), /*#__PURE__*/React.createElement("div", {
-    className: "bg-slate-50 p-2 rounded border border-slate-100"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1"
+    className: "text-xs font-bold text-slate-600 mb-2"
   }, t('glossary.popups.syllables')), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center gap-0.5"
-  }, phonicsData.data.syllables.map((syl, i) => /*#__PURE__*/React.createElement(React.Fragment, null, i > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-emerald-500 font-bold px-0.5",
+    className: "flex flex-wrap items-center gap-1"
+  }, Array.isArray(phonicsData.data.syllables) && phonicsData.data.syllables.some(syl => typeof syl === 'string' && syl.trim()) ? phonicsData.data.syllables.filter(syl => typeof syl === 'string' && syl.trim()).map((syl, i) => /*#__PURE__*/React.createElement(React.Fragment, {
+    key: i
+  }, i > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-emerald-700 font-bold px-0.5",
     "aria-hidden": "true"
   }, "•"), /*#__PURE__*/React.createElement("span", {
     className: "bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm"
-  }, syl))))))) : /*#__PURE__*/React.createElement("div", {
+  }, syl))) : /*#__PURE__*/React.createElement("span", {
+    className: "text-sm text-slate-700"
+  }, helpText('simplified.word_parts_unavailable', 'Word parts are unavailable. You can still listen to the word.')))), phonicsData.data.ipa && /*#__PURE__*/React.createElement("details", {
+    className: "bg-slate-50 p-3 rounded border border-slate-100"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer py-2 text-sm font-semibold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, helpText('simplified.word_ipa_details', 'Pronunciation symbols (IPA)')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 font-mono text-sm text-slate-700"
+  }, phonicsData.data.ipa)))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-red-600 text-xs font-bold py-4"
   }, t('glossary.popups.failed')), /*#__PURE__*/React.createElement("div", {
     className: "allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45"
@@ -3825,12 +3950,17 @@ function SimplifiedView(props) {
     className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closePhonics
   }), selectionMenu && /*#__PURE__*/React.createElement("div", {
+    ref: selectionDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": readerText('simplified.selected_passage', 'Selected passage'),
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, selectionDialogRef.current, () => {
+      setSelectionMenu(null);
+      setIsCustomReviseOpen(false);
+    }),
     className: `fixed ${_popupZ} flex flex-col gap-1 items-center animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-200`,
-    style: {
-      top: selectionMenu.y - 50 + 'px',
-      left: selectionMenu.x + 'px',
-      transform: 'translateX(-50%)'
-    }
+    style: simplifiedPopupStyle(selectionMenu, 20)
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-900/90 text-white text-[11px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap shadow-sm max-w-[150px] truncate border border-slate-700"
   }, "\"", selectionMenu.text.length > 20 ? selectionMenu.text.substring(0, 20) + '...' : selectionMenu.text, "\""), /*#__PURE__*/React.createElement("div", {
@@ -3865,8 +3995,9 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(X, {
     size: 12
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, interactionMode === 'explain' && /*#__PURE__*/React.createElement("button", {
+    ref: selectionActionRef,
     type: "button",
-    "aria-label": t('common.help'),
+    "aria-label": readerText('simplified.explain_mode', 'Explain'),
     onClick: () => handleReviseSelection('explain'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(HelpCircle, {
@@ -3924,10 +4055,7 @@ function SimplifiedView(props) {
     tabIndex: -1,
     onKeyDown: e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision),
     className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`,
-    style: {
-      top: Math.min(window.innerHeight - 300, revisionData.y + 20) + 'px',
-      left: Math.min(window.innerWidth - 300, Math.max(20, revisionData.x - 140)) + 'px'
-    }
+    style: simplifiedPopupStyle(revisionData, 18)
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3 pb-2 border-b border-slate-100"
   }, /*#__PURE__*/React.createElement("h5", {
@@ -3954,7 +4082,7 @@ function SimplifiedView(props) {
     size: 14
   })))), revisionData.result ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3"
-  }, renderFormattedText(revisionData.result, false)), (revisionData.type === 'simplify' || revisionData.type === 'custom') && /*#__PURE__*/React.createElement("button", {
+  }, renderFormattedText(revisionData.result, false)), isTeacherMode && (revisionData.type === 'simplify' || revisionData.type === 'custom') && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.apply_text_revision'),
     onClick: applyTextRevision,
@@ -3972,7 +4100,12 @@ function SimplifiedView(props) {
     "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ} bg-black/5`,
     onClick: closeRevision
-  }), isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
+  }), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("details", {
+    "data-teacher-reading-review": true,
+    className: "my-4 rounded-xl border border-indigo-200 bg-white p-3"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, readerText('simplified.review_adjust', 'Review & adjust text')), instructionalRoleControl, isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1",
     "data-help-key": "simplified_complexity_slider"
   }, /*#__PURE__*/React.createElement("label", {
@@ -3986,33 +4119,34 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 transform -translate-x-1/2"
   }), /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.range_slider'),
+    "aria-label": readerText('simplified.adjust_complexity', 'Adjust text complexity'),
     type: "range",
     min: "1",
     max: "9",
     step: "1",
     value: complexityLevel,
     onChange: e => setComplexityLevel(parseInt(e.target.value)),
-    onMouseUp: handleComplexityAdjustment,
-    onTouchEnd: handleComplexityAdjustment,
+    "aria-valuetext": complexityLevel < 5 ? readerText('simplified.simpler_setting', 'Simpler') + ' ' + complexityLevel : complexityLevel > 5 ? readerText('simplified.complex_setting', 'More complex') + ' ' + complexityLevel : readerText('simplified.unchanged_setting', 'Current version'),
     disabled: isProcessing,
     "aria-busy": isProcessing,
     className: "w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative"
   })), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-slate-600 uppercase w-20"
   }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.harder') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.less_support') : t('simplified.complexity_controls.complex'))), /*#__PURE__*/React.createElement("div", {
-    className: "px-16"
+    className: "px-2 sm:px-16"
   }, /*#__PURE__*/React.createElement(ComplexityGauge, {
     level: complexityLevel
   })), /*#__PURE__*/React.createElement("div", {
-    className: "text-center mt-2 text-xs font-medium h-4"
-  }, complexityLevel < 5 && /*#__PURE__*/React.createElement("span", {
-    className: "text-green-600 animate-pulse motion-reduce:animate-none"
-  }, t('status.adjusting'), "..."), complexityLevel > 5 && /*#__PURE__*/React.createElement("span", {
-    className: "text-indigo-600 animate-pulse motion-reduce:animate-none"
-  }, t('status.adjusting'), "..."), complexityLevel === 5 && /*#__PURE__*/React.createElement("span", {
-    className: "text-slate-600"
-  }, t('simplified.complexity_controls.drag_hint'))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600 mb-2"
+  }, readerText('simplified.adjust_hint', 'Choose a change, then apply it. Review the new version before sharing.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-apply-complexity": true,
+    onClick: handleComplexityAdjustment,
+    disabled: isProcessing || Number(complexityLevel) === 5,
+    className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+  }, isProcessing ? readerText('simplified.applying_change', 'Updating text…') : readerText('simplified.apply_complexity', 'Apply text change'))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-center mt-4 pt-3 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("label", {
     className: `flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full cursor-pointer select-none transition-all border ${saveOriginalOnAdjust ? 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-2 ring-indigo-500 ring-offset-1 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-700'}`,
@@ -4023,12 +4157,12 @@ function SimplifiedView(props) {
     type: "checkbox",
     checked: saveOriginalOnAdjust,
     onChange: e => setSaveOriginalOnAdjust(e.target.checked),
-    className: "hidden"
+    className: "h-4 w-4 accent-indigo-600"
   }), saveOriginalOnAdjust ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 16
   }) : /*#__PURE__*/React.createElement(Copy, {
     size: 16
-  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
+  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
     const measured = simplifiedComplexityDisplay.measuredGrade;
     const targetGrade = simplifiedComplexityDisplay.targetGrade;
     const status = simplifiedComplexityDisplay.status;
@@ -4049,10 +4183,10 @@ function SimplifiedView(props) {
     }, verdict), /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] opacity-80"
     }, "Flesch-Kincaid, measured on this passage.", rangeNote, " Use Check Level for a fuller review."));
-  })(), !generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && /*#__PURE__*/React.createElement("div", {
+  })(), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
-  }, /*#__PURE__*/React.createElement("strong", null, "Reading-level measurement needs refresh."), " The text changed after it was measured; use Check Level before relying on a complexity verdict."), generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, "Reading-level measurement needs refresh."), " The text changed after it was measured; use Check Level before relying on a complexity verdict."), isTeacherMode && generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
     className: "mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
@@ -4121,7 +4255,7 @@ function SimplifiedView(props) {
     className: "text-slate-600 hover:text-slate-600 p-1"
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  })))), generatedContent.alignmentCheck && /*#__PURE__*/React.createElement("div", {
+  })))), isTeacherMode && generatedContent.alignmentCheck && /*#__PURE__*/React.createElement("div", {
     className: "mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
@@ -4186,7 +4320,7 @@ function SimplifiedView(props) {
     className: "text-slate-600 hover:text-slate-600 p-1"
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  })))), isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? /*#__PURE__*/React.createElement("div", {
+  }))))), isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"

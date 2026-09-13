@@ -33,3 +33,7 @@ Browser harness: `node reports/chemistry-refinement-2026-09-06/titration-path-re
 Reports use the `titration-path-refinement-*` prefix; screenshots use `titration-path-*`. Vitest uses `--pool=threads --maxWorkers=1`. The full scoped run is recorded in `titration-path-refinement-tests.json`.
 
 This pass is local. No deployment or physical-device classroom trial is included. The equipment catalogue remains at 14 entries with nine illustrated walkthroughs. See [the pipetting implementation notes](titration-aliquot-practice-2026-09-09.md) for model boundaries and technique references.
+
+## Apparatus inspection follow-up
+
+Pipetting now offers selectable filler, technique, and receiver close-ups, with an optional view that follows the current practice step. See [the September 12 apparatus inspection notes](titration-apparatus-inspection-2026-09-12.md) for the visuals, interaction details, and subsequent validation.

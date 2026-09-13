@@ -968,7 +968,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-purple-800' }, t('stem.unitconvert.ai_unit_tutor', '\uD83E\uDDE0 AI Unit Tutor')),
-              h('button', { 'aria-label': t('stem.unitconvert.ask_tutor', 'Ask Tutor'), onClick: function() { upd('showTutor', false); }, className: 'transition-colors text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+              h('button', { 'aria-label': t('stem.unitconvert.close_tutor', 'Close AI Tutor'), onClick: function() { upd('showTutor', false); }, className: 'transition-colors text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
             ),
             tutorLoading
               ? h('div', { className: 'flex items-center gap-2' },
@@ -984,7 +984,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Category selector: retain the full set behind a named, keyboard-operable disclosure.
           h('details', { 'data-unit-category-picker': true, className: 'mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm' },
-            h('summary', { className: 'cursor-pointer rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500', style: { minHeight: 44, color: '#0e7490' } }, t('stem.unitconvert.nav_measurement', 'Measurement') + ': ' + cat.label),
+            h('summary', { className: 'cursor-pointer rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500', style: { minHeight: 44, color: '#0e7490' } }, t('stem.unitconvert.change_measurement', 'Change measurement') + ': ' + cat.label),
             h('div', { className: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5', role: 'group', 'aria-label': 'Measurement categories' },
             Object.entries(CATEGORIES).map(function(e) {
               var k = e[0], v = e[1];
@@ -1039,6 +1039,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               magHunt:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u2699\uFE0F', title: t('stem.unitconvert.magnitude_orders_of_magnitude_discover', 'Magnitude \u2014 orders of magnitude discovery'), hint: t('stem.unitconvert.every_si_prefix_is_a_power_of_10_slide', 'Every SI prefix is a power of 10. Slide the source and target exponents to feel how far apart scales really are \u2014 the core skill behind scientific notation and Fermi estimates.') }
             };
             var meta = TAB_META[tab] || TAB_META.convert;
+              var startInstructions = {"convert":"Choose a measurement, enter a value, and select the From and To units. The result updates as you edit.","table":"Choose a measurement to compare its units in the reference table.","quiz":"Choose a practice question, enter your answer, then check the conversion.","wordproblem":"Choose a word problem, identify the units, then enter and check your answer.","magHunt":"Compare the quantities and use their units to decide which is larger."};
             return h('div', {
               role: 'tabpanel',
               id: 'stem-unitconvert-panel-' + tab,
@@ -1057,7 +1058,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.unitconvert.start_' + tab, startInstructions[tab] || startInstructions.convert)),
+              h('details', { className: 'math-learning-note' },
+                h('summary', null, t('stem.unitconvert.about_model', 'About this activity')),
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
               )
             );
           })(),
@@ -1081,10 +1085,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-6 shadow-sm' },
 
-              h('div', { className: 'flex items-center gap-4 justify-center' },
+              h('div', { className: 'math-conversion-fields' },
 
                 h('div', { className: 'text-center' },
+                  h('label', { htmlFor: 'unitconvert-value', className: 'block text-sm font-bold mb-1' }, t('stem.unitconvert.value_to_convert', 'Value to convert')),
                   h('input', {
+                    id: 'unitconvert-value',
                     type: 'text', inputMode: 'decimal', value: valueDraft,
                     'aria-label': t('stem.unitconvert.value_to_convert', 'Value to convert'),
                     min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
@@ -1098,7 +1104,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight',
                     step: '0.01'
                   }),
+                  h('label', { htmlFor: 'unitconvert-from', className: 'block mt-2 text-sm font-bold' }, t('stem.unitconvert.from_unit', 'From unit')),
                   h('select', {
+                    id: 'unitconvert-from',
                     'aria-label': t('stem.unitconvert.from_unit', 'From unit'), value: d.fromUnit,
                     onChange: function(e) { upd('fromUnit', e.target.value); },
                     style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },
@@ -1121,6 +1129,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 }, '\u21C4'),
 
                 h('div', { className: 'text-center' },
+                  h('p', { className: 'text-sm font-bold' }, t('stem.unitconvert.result_label', 'Converted result')),
                   h('p', {
                     key: fmtResult,
                     role: 'status',
@@ -1130,7 +1139,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     className: 'text-2xl font-black text-cyan-700 py-1 tracking-tight',
                     style: { animation: 'ucResultPop 0.3s ease-out' }
                   }, hideConversionResult ? '?' : fmtResult),
+                  h('label', { htmlFor: 'unitconvert-to', className: 'block mt-2 text-sm font-bold' }, t('stem.unitconvert.to_unit', 'To unit')),
                   h('select', {
+                    id: 'unitconvert-to',
                     'aria-label': t('stem.unitconvert.to_unit', 'To unit'), value: d.toUnit,
                     onChange: function(e) { upd('toUnit', e.target.value); },
                     style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },

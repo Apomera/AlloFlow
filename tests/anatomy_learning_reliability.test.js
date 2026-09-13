@@ -11,7 +11,7 @@ function session(file, extra = {}) {
   const render = () => tool.render(makeCtx({ toolData: data, gradeLevel: '9', announceToSR: message => announcements.push(message), setToolData: updater => { data = typeof updater === 'function' ? updater(data) : updater; } }));
   const button = predicate => { const b = find(render(), n => n.type === 'button' && predicate(n)); expect(b).not.toBeNull(); return b; };
   const html = () => { const root = document.createElement('div'); root.innerHTML = renderTool('anatomy', data, { gradeLevel: '9' }); return root; };
-  return { data: () => data.anatomy, announcements, button, html,
+  return { data: () => data.anatomy, announcements, button, html, captureQuestion: () => find(render(), n => n.props?.['data-anatomy-quiz-panel']).ref({}),
     patch: patch => { data = { anatomy: { ...data.anatomy, ...patch } }; },
     click: label => button(n => n.props['aria-label'] === label || text(n).trim() === label).props.onClick(),
     answer: id => button(n => n.props['data-anatomy-quiz-option'] === id).props.onClick(),
@@ -24,10 +24,11 @@ beforeEach(resetStemLab);
 afterEach(() => vi.restoreAllMocks());
 for (const file of paths) {
   describe(`Anatomy learning reliability in ${file}`, () => {
-    for (const [index, correctId] of [[0, 'skull'], [1, 'true'], [2, 'skeletal'], [3, 'sternum'], [5, 'false']]) {
+    for (const [index, expectedId] of [[0, 'skull'], [1, 'true'], [2, 'skeletal'], [3, 'sternum'], [5, 'false']]) {
       for (const correct of [true, false]) {
         it(`keeps question ${index} and options stable after a ${correct ? 'correct' : 'wrong'} answer and reload`, () => {
-          const s = session(file, { quizIdx: index });
+          const s = session(file, { quizIdx: index }); s.captureQuestion();
+          const correctId=index%4===1?(s.data()._quizQuestion.binaryTrue?'true':'false'):expectedId;
           const prompt = s.prompt(); const options = s.options();
           expect(options).toContain(correctId);
           const chosen = correct ? correctId : options.find(id => id !== correctId);

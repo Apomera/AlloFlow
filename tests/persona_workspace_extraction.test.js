@@ -140,10 +140,10 @@ describe('Persona workspace extraction', () => {
       expect(text.match(/loadModule\('PersonaWorkspace',/g)).toHaveLength(1);
       expect(text).toContain("window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace',");
       expect(text).toContain('onBack={() => setActiveView(\'input\')}');
-      // Source mirrors share the canonical pinned URL; the desktop build rewrites it.
+      // Canonical Canvas uses the CDN; desktop source hosts load their local public bundle.
       const canonicalLoader = shell.match(/loadModule\('PersonaWorkspace', '[^']+'\)/)?.[0];
       expect(canonicalLoader).toBeTruthy();
-      expect(text).toContain(canonicalLoader);
+      expect([canonicalLoader, "loadModule('PersonaWorkspace', './view_persona_workspace_module.js')"].some(loader => text.includes(loader))).toBe(true);
     }
     expect(readFileSync('build.js', 'utf8')).toContain("buildPersonaWorkspaceModule(src)");
   });

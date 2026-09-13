@@ -181,7 +181,8 @@ for (const immersive of [false, true]) {
       await mountActiveAdventure(page, theme, { props: { immersiveShowChoices: true }, state: { isImmersiveMode: immersive, currentScene: { text: 'Study the river before choosing your next step.', options } } });
       const region = page.locator('[data-adventure-actions]');
       await expect(region.locator('[data-adventure-choice]')).toHaveCount(6);
-      expect(await region.evaluate((el: HTMLElement) => el.scrollHeight > el.clientHeight && el.scrollWidth <= el.clientWidth)).toBe(true);
+      const scroller = immersive ? region : page.locator('[data-adventure-flow]');
+      expect(await scroller.evaluate((el: HTMLElement) => el.scrollHeight > el.clientHeight && el.scrollWidth <= el.clientWidth)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const textBox = await region.locator('[data-help-key="adventure_choice_btn"] > span').nth(1).boundingBox();
       expect(textBox!.width).toBeGreaterThanOrEqual(135);
@@ -190,12 +191,12 @@ for (const immersive of [false, true]) {
       await page.keyboard.press('Tab');
       await expect(region.locator('[data-adventure-listen]').last()).toBeFocused();
       const target = await region.locator('[data-adventure-listen]').last().boundingBox();
-      const box = await region.boundingBox();
+      const box = await scroller.boundingBox();
       expect(target!.height).toBeGreaterThanOrEqual(44); expect(target!.width).toBeGreaterThanOrEqual(44);
       expect(target!.y).toBeGreaterThanOrEqual(box!.y); expect(target!.y + target!.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
       await page.keyboard.press('Enter');
       expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
-      await region.evaluate((el: HTMLElement) => { el.scrollTop = 0; });
+      if (immersive) await region.evaluate((el: HTMLElement) => { el.scrollTop = 0; });
       await axe(page, '[data-adventure-actions]');
       if (immersive) {
         const toggle = page.locator('[data-help-key="adventure_choice_toggle"]');
@@ -595,7 +596,9 @@ for (const theme of ['light', 'dark', 'contrast']) {
     await expect(fit).toHaveCount(0);
     await expect(scene.locator('[data-adventure-prose]')).toBeVisible();
     await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isImageLoading: true, loadingStage: 'Drawing the river scene' } }));
-    await expect(frame.getByRole('status')).toHaveText('Drawing the river scene');
+    await expect(frame).toHaveCount(0);
+    await expect(scene.getByRole('status')).toContainText('Drawing the river scene');
+    await expect(scene.getByRole('status')).toContainText('You can start reading now.');
     await page.addStyleTag({ content: 'html { font-size: 20px; }' });
     await axe(page, '[aria-labelledby="adventure-current-scene-heading"]');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -825,4 +828,107 @@ test('immersive class-action controls keep the response composer teacher control
   await page.evaluate(() => (window as any).__updateAdventure({ isTeacherMode: true }));
   await expect(page.locator('[data-adventure-composer]')).toHaveCount(1);
   await expect(page.locator('[data-adventure-actions]').getByRole('button', { name: /collect class actions/i })).toHaveCount(1);
+});
+
+test('standard phone play keeps prose visible and shares one scroll flow with its choices', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await load(page, 'light');
+  await mountActiveAdventure(page, 'light', { state: { sceneImage: null, sceneImagePreview: null, history: notebookHistory() } });
+  const flow = page.locator('[data-adventure-flow]');
+  const scene = page.locator('[data-adventure-current-scene]');
+  await expect(scene.locator('[data-adventure-prose]')).toBeInViewport();
+  await expect(page.locator('[data-adventure-illustration]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Open journey log', exact: true })).toBeInViewport();
+  await expect(page.locator('[data-adventure-toolbar]')).toContainText('Read aloud');
+  await expect(page.locator('[data-adventure-jump-to-actions]')).toBeInViewport();
+  await page.locator('[data-adventure-jump-to-actions]').click();
+  await expect(page.locator('[data-adventure-actions="standard"]')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-help-key="adventure_choice_btn"]').first()).toBeFocused();
+  await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { currentScene: { text: 'A new scene begins with evidence from the wetland.', options: ['Investigate'] } } }));
+  await expect(scene).toBeFocused();
+  await expect(scene.locator('[data-adventure-prose]')).toBeInViewport();
+  expect(await flow.evaluate((el: HTMLElement) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await axe(page);
+});
+
+test('locked student launch exposes Start before the expandable teacher settings', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await load(page, 'dark');
+  await mountActiveAdventure(page, 'dark', { props: { showNewGameSetup: true, studentProjectSettings: { adventurePermissions: { lockAllSettings: true } } }, state: { currentScene: null, history: [], sceneImage: null } });
+  await expect(page.getByText('Your adventure is ready', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'start', exact: true })).toBeInViewport();
+  await expect(page.getByLabel('Episode length', { exact: true })).not.toBeVisible();
+  await page.getByText('View teacher settings', { exact: true }).click();
+  await expect(page.getByLabel('Episode length', { exact: true })).toBeDisabled();
+  await expect(page.locator('[data-adventure-actions]')).toHaveCount(0);
+  await axe(page);
+});
+
+for (const immersive of [false, true]) {
+  const label = immersive ? 'reading view' : 'standard view';
+  test('Evidence Debate chooses a position before writing in ' + label, async ({ page }, info) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await load(page, 'light');
+    await mountActiveAdventure(page, 'light', { props: { adventureInputMode: 'debate', adventureFreeResponseEnabled: true, immersiveShowChoices: true },
+      state: { isImmersiveMode: immersive, debatePhase: 'setup', currentScene: { text: 'Which water policy will you defend?', options: ['Conserve first', 'Expand supply', 'Combine both'] } } });
+    const actions = page.locator('[data-adventure-actions="' + (immersive ? 'immersive' : 'standard') + '"]');
+    await expect(actions.locator('[data-adventure-composer]')).toHaveCount(0);
+    await expect(actions.getByText(/First, choose a position/)).toBeVisible();
+    await actions.getByRole('button', { name: 'Conserve first', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual(['Conserve first']);
+    await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { debatePhase: 'active', currentScene: { text: 'What evidence supports your position?', options: [] } } }));
+    await expect(actions.getByRole('textbox', { name: 'Your argument', exact: true })).toBeVisible();
+    await expect(actions.locator('[data-adventure-debate-setup]')).toHaveCount(0);
+    await axe(page);
+    await page.screenshot({ path: info.outputPath('debate-' + immersive + '.png'), fullPage: true });
+  });
+
+  test('written debate can start with a learner position if suggestions are absent in ' + label, async ({ page }) => {
+    await load(page, 'light');
+    await mountActiveAdventure(page, 'light', { props: { adventureInputMode: 'debate', adventureFreeResponseEnabled: true, immersiveShowChoices: true },
+      state: { isImmersiveMode: immersive, debatePhase: 'setup', currentScene: { text: 'What position will you explore?', options: [] } } });
+    await expect(page.getByRole('textbox', { name: 'Your position', exact: true })).toBeVisible();
+  });
+
+  test('Social Practice gives relevant response guidance in ' + label, async ({ page }, info) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await load(page, 'dark');
+    await mountActiveAdventure(page, 'dark', { props: { isSocialStoryMode: true, adventureFreeResponseEnabled: true, immersiveShowChoices: true }, state: { isImmersiveMode: immersive } });
+    await expect(page.getByRole('textbox', { name: 'What could you say or do?', exact: true })).toBeVisible();
+    await expect(page.locator('[data-adventure-composer]')).toContainText('boundaries or support');
+    await axe(page);
+    await page.screenshot({ path: info.outputPath('social-' + immersive + '.png'), fullPage: true });
+  });
+}
+
+test('Systems resources beyond the first five can be expanded on a phone', async ({ page }, info) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await load(page, 'light');
+  const resources = Array.from({ length: 8 }, (_, i) => ({ name: 'Community resource ' + (i + 1), quantity: 100 + i, unit: 'units' }));
+  await mountActiveAdventure(page, 'light', { props: { adventureInputMode: 'system', enableFactionResources: true }, state: { systemResources: resources } });
+  const region = page.locator('[data-adventure-resources]');
+  await expect(region.getByText('Community resource 8', { exact: true })).not.toBeVisible();
+  await region.locator('summary').click();
+  await region.getByText('Community resource 8', { exact: true }).scrollIntoViewIfNeeded();
+  await expect(region.getByText('Community resource 8', { exact: true })).toBeInViewport();
+  await axe(page);
+  await page.screenshot({ path: info.outputPath('systems-resources-phone.png'), fullPage: true });
+});
+
+test('Reading view keeps a long Systems inventory within the phone viewport', async ({ page }, info) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await load(page, 'dark');
+  const resources = Array.from({ length: 16 }, (_, i) => ({ name: 'Long community resource name ' + (i + 1), quantity: 1000.5, unit: 'credits' }));
+  await mountActiveAdventure(page, 'dark', { props: { adventureInputMode: 'system', enableFactionResources: true, showImmersiveInventory: true }, state: { isImmersiveMode: true, systemResources: resources } });
+  const panel = page.locator('#adventure-immersive-inventory');
+  await expect(panel).toBeVisible();
+  await panel.getByText('Long community resource name 16', { exact: true }).scrollIntoViewIfNeeded();
+  await expect(panel.getByText('Long community resource name 16', { exact: true })).toBeInViewport();
+  expect(await panel.getByText('Long community resource name 16', { exact: true }).evaluate((node: HTMLElement) => {
+    const box = node.getBoundingClientRect();
+    return node.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+  })).toBe(true);
+  expect(await panel.evaluate((node: HTMLElement) => node.scrollWidth <= node.clientWidth && node.getBoundingClientRect().bottom <= innerHeight)).toBe(true);
+  await page.screenshot({ path: info.outputPath('systems-reading-inventory.png'), fullPage: true });
 });

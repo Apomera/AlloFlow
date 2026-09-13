@@ -1,0 +1,308 @@
+[
+  {
+    "id": "crx-term-1",
+    "kind": "term",
+    "file": "crx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red pair and a blue pair become two red-blue pairs, with an arrow between the before and after groups.",
+    "altHash": "img-7zr-55ec8a76"
+  },
+  {
+    "id": "crx-term-2",
+    "kind": "term",
+    "file": "crx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red atom pair and a blue atom pair sit to the left of a rightward arrow.",
+    "altHash": "img-5k3-6e659ef7"
+  },
+  {
+    "id": "crx-term-3",
+    "kind": "term",
+    "file": "crx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rightward arrow leads toward two red-blue atom pairs.",
+    "altHash": "img-5qn-8354fac7"
+  },
+  {
+    "id": "crx-term-4",
+    "kind": "term",
+    "file": "crx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four water molecule models close together at left become four widely separated models at right, keeping each molecule intact.",
+    "altHash": "img-9uv-96b0fbcb"
+  },
+  {
+    "id": "crx-term-5",
+    "kind": "term",
+    "file": "crx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A beaker of dark blue liquid appears beside a beaker of paler blue liquid, connected by an arrow.",
+    "altHash": "img-4mn-3fde1a5f"
+  },
+  {
+    "id": "crx-term-6",
+    "kind": "term",
+    "file": "crx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four water molecule models close together at left become four widely separated models at right, keeping each molecule intact.",
+    "altHash": "img-9uv-96b0fbcb"
+  },
+  {
+    "id": "crx-term-7",
+    "kind": "term",
+    "file": "crx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Gold solid particles appear within and near the bottom of pale liquid in an open beaker.",
+    "altHash": "img-5jj-5514b406"
+  },
+  {
+    "id": "crx-term-8",
+    "kind": "term",
+    "file": "crx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Pale bubbles rise through a blue liquid in an open beaker.",
+    "altHash": "img-6bz-769c9d36"
+  },
+  {
+    "id": "crx-term-9",
+    "kind": "term",
+    "file": "crx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red pair and a blue pair become two red-blue pairs, with an arrow between the before and after groups.",
+    "altHash": "img-7zr-55ec8a76"
+  },
+  {
+    "id": "crx-term-10",
+    "kind": "term",
+    "file": "crx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two outlined system boxes contain the same numbers of red and blue atoms, paired differently before and after.",
+    "altHash": "img-9mn-f01184b1"
+  },
+  {
+    "id": "crx-anchor-1",
+    "kind": "anchor",
+    "file": "crx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Pale bubbles rise through a blue liquid in an open beaker.",
+    "altHash": "img-6bz-769c9d36"
+  },
+  {
+    "id": "crx-anchor-2",
+    "kind": "anchor",
+    "file": "crx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A beaker of dark blue liquid appears beside a beaker of paler blue liquid, connected by an arrow.",
+    "altHash": "img-4mn-3fde1a5f"
+  },
+  {
+    "id": "crx-anchor-3",
+    "kind": "anchor",
+    "file": "crx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A thermometer with a red column stands beside a beaker of liquid.",
+    "altHash": "img-54r-134deef8"
+  },
+  {
+    "id": "crx-anchor-4",
+    "kind": "anchor",
+    "file": "crx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An orange-gold rod has several wavy lines above it to suggest emitted energy.",
+    "altHash": "img-ffv-b84055bf"
+  },
+  {
+    "id": "crx-anchor-5",
+    "kind": "anchor",
+    "file": "crx-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Gold solid particles appear within and near the bottom of pale liquid in an open beaker.",
+    "altHash": "img-5jj-5514b406"
+  },
+  {
+    "id": "crx-anchor-6",
+    "kind": "anchor",
+    "file": "crx-anchor-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two outlined system boxes contain the same numbers of red and blue atoms, paired differently before and after.",
+    "altHash": "img-9mn-f01184b1"
+  },
+  {
+    "id": "crx-sort-1",
+    "kind": "sort",
+    "file": "crx-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A smooth gray iron nail sits beside a nail coated with rough reddish-brown rust.",
+    "altHash": "img-5f3-6a855542"
+  },
+  {
+    "id": "crx-sort-2",
+    "kind": "sort",
+    "file": "crx-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A silver spoon with dark tarnish patches lies beside a clean silver spoon.",
+    "altHash": "img-5nz-38bba311"
+  },
+  {
+    "id": "crx-sort-3",
+    "kind": "sort",
+    "file": "crx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Pale bubbles rise through a blue liquid in an open beaker.",
+    "altHash": "img-6bz-769c9d36"
+  },
+  {
+    "id": "crx-sort-4",
+    "kind": "sort",
+    "file": "crx-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two cut apple halves have contrasting pale fresh and browned surfaces.",
+    "altHash": "img-6eb-f728278f"
+  },
+  {
+    "id": "crx-sort-5",
+    "kind": "sort",
+    "file": "crx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four gold square tokens in a cluster are followed by four matching tokens dispersed in a blue liquid.",
+    "altHash": "img-6o7-30c370c8"
+  },
+  {
+    "id": "crx-sort-6",
+    "kind": "sort",
+    "file": "crx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four water molecule models close together at left become four widely separated models at right, keeping each molecule intact.",
+    "altHash": "img-9uv-96b0fbcb"
+  },
+  {
+    "id": "crx-sort-7",
+    "kind": "sort",
+    "file": "crx-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A thick copper-wire coil lies beside a thinner curved length of copper wire.",
+    "altHash": "img-6sv-9d665486"
+  },
+  {
+    "id": "crx-sort-8",
+    "kind": "sort",
+    "file": "crx-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A shallow dish has white crystals along one edge, with a bowl of salt and a glass of clear water behind it.",
+    "altHash": "img-6mf-d8dd9a94"
+  },
+  {
+    "id": "crx-sort-9",
+    "kind": "sort",
+    "file": "crx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two closely grouped carbon-dioxide molecule models are followed by two widely separated matching models.",
+    "altHash": "img-93r-7c997049"
+  },
+  {
+    "id": "crx-sort-10",
+    "kind": "sort",
+    "file": "crx-sort-10.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An unlit ivory candle stands beside a dish holding a flattened pool of ivory wax.",
+    "altHash": "img-3yn-1d74193d"
+  },
+  {
+    "id": "crx-lesson-1",
+    "kind": "lesson",
+    "file": "crx-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red pair and a blue pair become two red-blue pairs, with an arrow between the before and after groups.",
+    "altHash": "img-7zr-55ec8a76"
+  },
+  {
+    "id": "crx-lesson-2",
+    "kind": "lesson",
+    "file": "crx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four water molecule models close together at left become four widely separated models at right, keeping each molecule intact.",
+    "altHash": "img-9uv-96b0fbcb"
+  },
+  {
+    "id": "crx-lesson-3",
+    "kind": "lesson",
+    "file": "crx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Pale bubbles rise through a blue liquid in an open beaker.",
+    "altHash": "img-6bz-769c9d36"
+  },
+  {
+    "id": "crx-lesson-4",
+    "kind": "lesson",
+    "file": "crx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A beaker of dark blue liquid appears beside a beaker of paler blue liquid, connected by an arrow.",
+    "altHash": "img-4mn-3fde1a5f"
+  },
+  {
+    "id": "crx-lesson-5",
+    "kind": "lesson",
+    "file": "crx-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A smooth gray iron nail sits beside a nail coated with rough reddish-brown rust.",
+    "altHash": "img-k6f-9d07444b"
+  },
+  {
+    "id": "crx-lesson-6",
+    "kind": "lesson",
+    "file": "crx-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two cut apple halves have contrasting pale fresh and browned surfaces.",
+    "altHash": "img-jvv-a66994b9"
+  },
+  {
+    "id": "crx-lesson-7",
+    "kind": "lesson",
+    "file": "crx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Gold solid particles appear within and near the bottom of pale liquid in an open beaker.",
+    "altHash": "img-5jj-5514b406"
+  },
+  {
+    "id": "crx-lesson-8",
+    "kind": "lesson",
+    "file": "crx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two outlined system boxes contain the same numbers of red and blue atoms, paired differently before and after.",
+    "altHash": "img-9mn-f01184b1"
+  }
+]

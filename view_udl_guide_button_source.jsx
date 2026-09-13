@@ -23,7 +23,8 @@ function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t, subtitle })
 
   return (
     <button
-      aria-label={t('common.message')}
+      type="button"
+      aria-expanded={showUDLGuide}
       id="tour-tool-udl"
       data-help-key="tool_udl"
       onClick={handleToggleShowUDLGuide}
@@ -31,14 +32,14 @@ function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t, subtitle })
     >
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-2xl ${showUDLGuide ? 'bg-indigo-700' : 'bg-indigo-100 text-indigo-600'}`}>
-          <MessageSquare size={20} />
+          <MessageSquare size={20} aria-hidden="true" />
         </div>
         <div className="text-left">
           <div className="font-bold text-sm">{t('sidebar.ai_guide')}</div>
           <div className={`text-xs ${showUDLGuide ? 'text-indigo-200' : 'text-slate-600'}`}>{subtitle || t('sidebar.ai_guide_sub')}</div>
         </div>
       </div>
-      {showUDLGuide ? <ChevronDown size={20}/> : <ArrowRight size={20} className="opacity-50 group-hover:opacity-100 transition-opacity"/>}
+      {showUDLGuide ? <ChevronDown size={20} aria-hidden="true"/> : <ArrowRight size={20} aria-hidden="true" className="opacity-50 group-hover:opacity-100 transition-opacity"/>}
     </button>
   );
 }

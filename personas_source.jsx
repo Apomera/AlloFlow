@@ -747,6 +747,7 @@ const createPersonas = (deps) => {
             selectedCharacters: [],
             chatHistory: [],
             isLoading: false,
+            turnError: null,
             avatarUrl: null,
             isImageLoading: false,
             avatarGenerationFailed: false,
@@ -1601,7 +1602,8 @@ const createPersonas = (deps) => {
                 reflectionSubmitted: false,
                 harmonyScore: canResumePanel ? clampInteger(updatedA.panelHarmonyScore ?? updatedB.panelHarmonyScore, 0, 100, 10) : 10,
                 earnedBadges: canResumePanel ? [...(updatedA.panelEarnedBadges || updatedB.panelEarnedBadges || [])] : [],
-                isLoading: false
+                isLoading: false,
+            turnError: null
             }));
             setIsPersonaChatOpen(true);
             if (!isPersonaFreeResponse) {
@@ -1685,6 +1687,7 @@ const createPersonas = (deps) => {
             ...prev,
             chatHistory: persistedChatHistory,
             isLoading: false,
+            turnError: null,
             suggestions: [],
             isGeneratingSuggestions: false,
             suggestionsError: null,
@@ -2035,6 +2038,7 @@ const createPersonas = (deps) => {
             ...prev,
             chatHistory: optimisticHistory,
             isLoading: true,
+            turnError: null,
             panelSuggestions: [],
             isGeneratingPanelSuggestions: false,
             panelSuggestionsError: null,
@@ -2257,6 +2261,7 @@ const createPersonas = (deps) => {
                     ...prev,
                     chatHistory: rolledBackHistory,
                     isLoading: false,
+                    turnError: true,
                     panelSuggestions: isPersonaFreeResponse ? prev.panelSuggestions : previousPanelSuggestions,
                     isGeneratingPanelSuggestions: false,
                     panelSuggestionsError: null,
@@ -2274,6 +2279,7 @@ const createPersonas = (deps) => {
                         ...prev,
                         chatHistory: (prev.chatHistory || []).filter(message => !message || pendingPersonaTurnIds.get(message) !== pendingTurnId),
                         isLoading: false,
+                        turnError: true,
                         panelSuggestions: isPersonaFreeResponse ? prev.panelSuggestions : previousPanelSuggestions,
                         isGeneratingPanelSuggestions: false,
                         personaSummary: previousPersonaSummary
@@ -2298,14 +2304,14 @@ const createPersonas = (deps) => {
         const textToSend = overrideInput || personaInput;
         if (!textToSend || !textToSend.trim() || textToSend.trim().length > 2000) return;
         if (personaState.isLoading || activeTurnRequest) return;
+        if (personaState.mode === 'panel' && personaState.selectedCharacters.length === 2) {
+            return handlePanelChatSubmit(textToSend, fromSuggestion);
+        }
         const allowedSuggestionOptions = normalizeSingleSuggestions(personaState.suggestions, 6);
         const allowedChoices = allowedSuggestionOptions.map(option => option.text);
         if (!isPersonaFreeResponse && (!fromSuggestion || !allowedChoices.includes(textToSend.trim()))) {
             addToast(t('persona.panel_choose_response'), 'warning');
             return;
-        }
-        if (personaState.mode === 'panel' && personaState.selectedCharacters.length === 2) {
-            return handlePanelChatSubmit(textToSend, fromSuggestion);
         }
         if (!personaState.selectedCharacter) return;
         // Question-craft tally (single mode): tiered picks record their hidden
@@ -2370,7 +2376,8 @@ const createPersonas = (deps) => {
             isGeneratingSummary: false,
             personaSummary: null,
             personaSummaryError: null,
-            isLoading: true
+            isLoading: true,
+            turnError: null
         }));
         const requestToken = personaSessionToken;
         try {
@@ -2636,6 +2643,7 @@ const createPersonas = (deps) => {
                     ...prev,
                     chatHistory: rolledBackHistory,
                     isLoading: false,
+                    turnError: true,
                     suggestions: isPersonaFreeResponse ? prev.suggestions : previousSuggestions,
                     isGeneratingSuggestions: false,
                     suggestionsError: null,
@@ -2652,6 +2660,7 @@ const createPersonas = (deps) => {
                         ...prev,
                         chatHistory: (prev.chatHistory || []).filter(message => !message || pendingPersonaTurnIds.get(message) !== pendingTurnId),
                         isLoading: false,
+                        turnError: true,
                         suggestions: isPersonaFreeResponse ? prev.suggestions : previousSuggestions,
                         isGeneratingSuggestions: false,
                         personaSummary: previousPersonaSummary

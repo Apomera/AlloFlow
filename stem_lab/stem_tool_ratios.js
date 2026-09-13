@@ -1366,7 +1366,7 @@
           })(),
           h('form', { className: 'flex flex-col sm:flex-row gap-2', 'aria-labelledby': 'ratio-challenge-prompt', onSubmit: function(event) { event.preventDefault(); checkChallenge(); } },
             h('label', { className: 'flex-1', htmlFor: 'ratio-challenge-answer' },
-              h('span', { id: 'ratio-challenge-answer-label', className: 'sr-only' }, t('stem.ratios.challenge_answer', "Challenge answer")),
+              h('span', { id: 'ratio-challenge-answer-label', className: 'block text-sm font-bold mb-1' }, t('stem.ratios.challenge_answer', "Challenge answer")),
               h('div', { className: 'flex items-center rounded-lg', style: inputStyle },
                 challenge.prefix && h('span', { className: 'pl-3 font-bold', 'aria-hidden': 'true' }, challenge.prefix),
                 h('input', {

@@ -223,8 +223,9 @@ describe('remediation deep-dive hardening', () => {
     expect(pipe).toContain("const _ACTIVE_BATCH_STATUS_PREFIX = 'pdf_active_batch_status_v4_';");
     expect(pipe).toContain('schemaVersion: 4,');
     expect(pipe).toContain('_withBatchCheckpointRootLock(async () =>');
-    expect(pipe).toContain('const queue = _sourceQueue.filter(Boolean);');
-    expect(pipe.indexOf('const queue = _sourceQueue.filter(Boolean);')).toBeLessThan(pipe.indexOf('setPdfBatchProcessing(true);'));
+    // Each run owns cloned queue entries so recovery cannot mutate the source queue.
+    expect(pipe).toContain('const queue = _sourceQueue.filter(Boolean).map(item => ({ ...item }));');
+    expect(pipe.indexOf('const queue = _sourceQueue.filter(Boolean).map(item => ({ ...item }));')).toBeLessThan(pipe.indexOf('setPdfBatchProcessing(true);'));
     expect(pipe).toContain('rootWriteId: _newBatchCheckpointId()');
     expect(pipe).toContain('writeId: _newBatchCheckpointId()');
     expect(pipe).toContain('_sameBatchFilesRecord(activeFilesRec, initialFilesRec)');

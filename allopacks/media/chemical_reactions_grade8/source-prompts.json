@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "chemical_reactions_grade8",
+    "key": "rust",
+    "prompt": "Square educational image for a middle-school AlloPack. Matte gouache material studies. Two iron nails side by side, one smooth gray and one with a clearly rough reddish-brown rusty coating. Isolated on warm ivory, close-up material comparison. Do not imply the nails are weighed or exactly the same final mass. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-rust.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7ceccd84-5314-4ed7-af0e-33382db4ddd7.png",
+    "alt": "A smooth gray iron nail sits beside a nail coated with rough reddish-brown rust.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "chemical_reactions_grade8",
+    "key": "apple",
+    "prompt": "Square educational image for a middle-school AlloPack. Matte gouache material studies. Two cut apple halves side by side, one fresh pale cream and one with a visibly browned cut surface. Same type and approximate size. Skin red and green, no rot or mold. A material-change observation, no arrows. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-apple.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-2c0261fc-936d-4e57-8886-a4be78dbbf68.png",
+    "alt": "Two cut apple halves have contrasting pale fresh and browned surfaces.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "chemical_reactions_grade8",
+    "key": "wire",
+    "prompt": "Square educational image for a middle-school AlloPack. Matte gouache material studies. A loose copper wire coil beside a longer thinner gently curved copper wire, both clean reddish metallic copper rendered in matte gouache. No power source, sparks, electricity or tools. Illustrate form and thickness differences without claiming exact equal mass. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-wire.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-14bd55ae-8198-40ff-9238-50785ac8e486.png",
+    "alt": "A thick copper-wire coil lies beside a thinner curved length of copper wire.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "chemical_reactions_grade8",
+    "key": "salt",
+    "prompt": "Square educational image for a middle-school AlloPack. Matte gouache material studies. A shallow unmarked ceramic dish containing a small amount of clear salt solution and an edge of white salt crystals where liquid has evaporated. No flame, no heat source, no labels. Materials clearly visible. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-salt.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0e7254db-6aa7-43e3-9cc2-1066d615c275.png",
+    "alt": "A shallow dish has white crystals along one edge, with a bowl of salt and a glass of clear water behind it.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "chemical_reactions_grade8",
+    "key": "wax",
+    "prompt": "Square educational image for a middle-school AlloPack. Matte gouache material studies. An unlit short ivory candle beside a small pool of cooled ivory wax in a dish. No flame, no smoke, no soot. Focus on wax changing form, not burning. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-wax.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-ca33a427-26cb-42e7-b156-e10b1f73bd8b.png",
+    "alt": "An unlit ivory candle stands beside a dish holding a flattened pool of ivory wax.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "chemical_reactions_grade8",
+    "key": "silver",
+    "prompt": "Square educational image for a middle-school AlloPack. Matte gouache material studies. An isolated silver spoon with dark gray-black tarnish patches on its bowl, beside a clean shiny silver spoon of similar shape. Matte painterly rendering, no polishing chemicals or action. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-silver.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-a8d246d0-eba3-4c6e-bdba-35bb8e4e1156.png",
+    "alt": "A silver spoon with dark tarnish patches lies beside a clean silver spoon.",
+    "reviewedAt": "2026-09-12"
+  }
+]

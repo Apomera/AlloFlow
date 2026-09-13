@@ -208,7 +208,7 @@ describe('the audit modal reads the combined signal', () => {
     expect(view).toContain('if (pipelineRunActive) blockers.push(');
     expect(view).toContain('if (pdfAutoContinueRunning) blockers.push(');
     // The destructive "Start New Audit" control must not be reachable over a live run either.
-    expect(view).toContain('disabled={_remediationBusy}');
+    expect(view).toContain('disabled={_modalDismissBusy}');
   });
 
   it('no longer arms Fix & Verify from the one-shot flag alone', () => {

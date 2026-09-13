@@ -750,7 +750,7 @@ describe('Geometry World bridge runtime behavior', () => {
     }
   });
 
-  it('deduplicates and capacity-limits a returning build after the sandbox floor loads', () => {
+  it.each([false, true])('deduplicates and capacity-limits a returning build (independent terrain: %s)', (independentTerrain) => {
     loadBuilderWithCore();
     const pure = window.StemLab.geometryWorldBuilderPure;
     const placed = [];
@@ -775,7 +775,9 @@ describe('Geometry World bridge runtime behavior', () => {
       },
       logEvent: vi.fn(),
     };
-    const blocks = Array.from({ length: 900 }, (_, x) => ({ x, y: 0, z: 0, type: 'wood', shape: 'cube', rotation: 0 }));
+    if (independentTerrain) engine.getConstructionBlockCount = function () { return Object.values(this.blocks).filter(m => !m.userData._lessonBlock).length; };
+    const capacity = independentTerrain ? 1500 : 875;
+    const blocks = Array.from({ length: 1600 }, (_, i) => ({ x: i % 40, y: 0, z: Math.floor(i / 40), type: 'wood', shape: 'cube', rotation: 0 }));
     blocks.push({ x: 0, y: 0, z: 0, type: 'gold', shape: 'quarter', rotation: 3 });
     window.__alloGeometryWorldPendingBuild = { sourceModel: geometrySource(blocks) };
     const messages = [];
@@ -786,12 +788,12 @@ describe('Geometry World bridge runtime behavior', () => {
     };
 
     expect(pure.restorePendingEditableBuild(ctx, engine)).toBe(true);
-    expect(placed).toHaveLength(875);
-    expect(Object.keys(engine.blocks)).toHaveLength(1500);
-    expect(new Set(placed.map((block) => `${block.x},${block.y},${block.z}`)).size).toBe(875);
+    expect(placed).toHaveLength(capacity);
+    expect(Object.keys(engine.blocks)).toHaveLength(625 + capacity);
+    expect(new Set(placed.map((block) => `${block.x},${block.y},${block.z}`)).size).toBe(capacity);
     expect(Math.min(...placed.map((block) => block.y))).toBe(1);
-    expect(engine.logEvent).toHaveBeenCalledWith('print_lab_return', expect.objectContaining({ blocks: 875, requestedBlocks: 900, truncated: true }));
-    expect(messages.join(' ')).toContain('prevented 25 additional blocks');
+    expect(engine.logEvent).toHaveBeenCalledWith('print_lab_return', expect.objectContaining({ blocks: capacity, requestedBlocks: 1600, truncated: true }));
+    expect(messages.join(' ')).toContain('prevented ' + (1600 - capacity) + ' additional blocks');
     expect(window.__alloGeometryWorldPendingBuild).toBeUndefined();
   });
 

@@ -114,11 +114,11 @@ describe('Applied Challenge Studio export model', () => {
   it('exposes one export model with scope-aware phases, prompts, and status labels', () => {
     expect(typeof AC.exportModel).toBe('function');
     const model = AC.exportModel(challenge().data);
-    expect(model.phases.map((p) => p.id)).toEqual(['workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'transferReflection']);
+    expect(model.phases.map((p) => p.id)).toEqual(['workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'testReflection', 'revision', 'transferReflection']);
     expect(model.phases[0].prompt).toBe('CUSTOM PHASE PROMPT for framing.');
-    expect(model.phases[1].label).toBe('3. Possible designs or approaches');
+    expect(model.phases[1].label).toBe('2. Possible designs or approaches');
     expect(model.familyLabel).toBe('Design');
-    expect(model.evidenceLedger[0].statusLabel).toBe('Verified lesson evidence');
+    expect(model.evidenceLedger[0].statusLabel).toBe('Needs checking');
     expect(model.validationCycles[0].plan.methodLabel).toBe('Constraint test');
     expect(model.validationCycles[0].observation.outcomeLabel).toBe('Challenges the current direction');
     expect(model.validationCycles[0].decision.actionLabel).toBe('Revise part of it');
@@ -167,7 +167,7 @@ describe('Applied Challenge Studio HTML export', () => {
     expect(framing.getAttribute('data-allo-question')).toBe('1. Frame the challenge');
     expect(framing.className).toContain('alloflow-response-input');
     expect(section.textContent).toContain('CUSTOM PHASE PROMPT for framing.');
-    expect(section.textContent).toContain('3. Possible designs or approaches');
+    expect(section.textContent).toContain('2. Possible designs or approaches');
     expect(section.textContent).not.toContain('HIDDEN IN COMPACT SCOPE');
   });
 
@@ -185,12 +185,12 @@ describe('Applied Challenge Studio HTML export', () => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const text = doc.querySelector('.applied-challenge-export').textContent;
     for (const expected of [
-      'Gravity storage is cheaper to run.', 'Verified lesson evidence', 'Needs elevation.',
+      'Gravity storage is cheaper to run.', 'Needs checking', 'Needs elevation.',
       'Peer feedback', 'Constraint test', 'Does the design meet the budget constraint?', 'Challenges the current direction', 'Revise part of it', 'Add a gravity option.',
       'What if the terrain is flat?', 'How would you verify elevation?',
       'Notice the tradeoff.', 'Gravity-fed', 'What would fail first?',
       'Junior engineer', 'Town council', 'Maintenance staff',
-      'FEEDBACK QUESTION SURVIVES EXPORT', 'Grounded in verified facts', 'Teacher-verified lesson facts',
+      'FEEDBACK QUESTION SURVIVES EXPORT', 'Feedback for an earlier draft', 'Teacher-verified lesson facts',
     ]) expect(text, expected).toContain(expected);
     expect(html).not.toContain('PRIVATE SOURCE EXCERPT');
   });
@@ -239,10 +239,12 @@ describe('Applied Challenge Studio pass 2: self-check, teacher comment, compact 
       'criterion-9': { rating: 'met', note: 'orphan' },
       'constraint-0': { rating: 'bogus', note: '' },
     }, brief);
-    expect(Object.keys(check)).toEqual(['criterion-0']);
-    expect(H.appliedChallengeSelfCheckItems(brief).map((i) => i.key)).toEqual(['criterion-0', 'criterion-1', 'constraint-0']);
+    const items = H.appliedChallengeSelfCheckItems(brief);
+    expect(Object.keys(check)).toEqual([items[0].key]);
+    expect(check[items[0].key]).toMatchObject({ rating: 'pending', needsReview: true, note: 'See paragraph 2.' });
+    expect(new Set(items.map(i => i.key)).size).toBe(3);
     const data = { brief, criteriaCheck: { 'criterion-0': { rating: 'partly', note: '' } } };
-    expect(H.appliedChallengeSelfCheckProgress(data)).toEqual({ rated: 1, total: 3 });
+    expect(H.appliedChallengeSelfCheckProgress(data)).toEqual({ rated: 0, total: 3 });
     expect(H.appliedChallengeDraftFingerprint(data)).not.toBe(H.appliedChallengeDraftFingerprint({ brief }));
     expect(H.buildAppliedChallengeFeedbackPrompt(data)).toContain('selfCheck holds the student');
     expect(H.buildAppliedChallengeFeedbackPrompt({ brief })).not.toContain('selfCheck holds the student');
@@ -258,13 +260,13 @@ describe('Applied Challenge Studio pass 2: self-check, teacher comment, compact 
     const html = render(item, false);
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const section = doc.querySelector('.applied-challenge-export');
-    expect(section.textContent).toContain('Partly met');
+    expect(section.textContent).toContain('Not rated yet');
     expect(section.textContent).toContain('Evidence is in paragraph two.');
     expect(section.textContent).toContain('Uses lesson evidence');
     expect(section.textContent).toContain('TEACHER COMMENT REACHES THE STUDENT COPY');
-    expect(section.querySelectorAll('textarea[data-allo-response-key$="selfcheck-constraint-0"]').length).toBe(1);
+    expect(section.querySelectorAll('textarea[data-allo-response-key*="selfcheck-constraint-"]').length).toBe(1);
     const model = AC.exportModel(item.data);
-    expect(model.selfCheck.map((r) => r.rating)).toEqual(['partly', 'pending']);
+    expect(model.selfCheck.map((r) => r.rating)).toEqual(['pending', 'pending']);
     expect(model.teacherComment.text).toContain('TEACHER COMMENT');
   });
 });
@@ -285,7 +287,8 @@ describe('Applied Challenge Studio host wiring', () => {
     expect(dispatcher).toContain("_acAmbient(appliedChallengeFamily, 'decide')");
     expect(dispatcher).toContain("_acAmbient(appliedChallengeScope, 'standard')");
     expect(source).toContain('props.setAppliedChallengeFamily');
-    expect(source).toContain('#applied-challenge-print-root');
+    expect(source).toContain("id='applied-challenge-print-root'");
+    expect(source).toContain('renderAppliedChallengePreset(data, preset, t)');
   });
 });
 

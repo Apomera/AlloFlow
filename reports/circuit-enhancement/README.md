@@ -659,3 +659,548 @@ Browser checks passed timing enable/disable, retained settings, undo, gain-bandw
 - [Earlier diode browser regression](timing29-diodes-browser-log.txt)
 - [Timing-aware waveform CSV](timing29-waveform.csv)
 - [Source integrity checks](timing29-integrity.json)
+
+
+## Thirtieth pass: measurement windows and sine comparison
+
+- Added optional waveform measurements to the connected scope. Whole-run, last-source-cycle, and custom intervals have visible S/E cursors and shaded regions on both voltage and current plots. Custom times support exact values, sliders, and assigning the existing scope cursor to either boundary. Preferences persist in the workspace. Measurement controls do not change electrical settings, undo history, the selected part, or playback cursor.
+- Added separate voltage/current interval statistics: signed mean, total RMS, AC RMS around the mean, minimum/maximum, and peak-to-peak range. Cursor differences show the interpolated start/end values and signed change. Integration is weighted by elapsed time, so closely packed adaptive samples do not receive disproportionate weight. RMS concepts and waveform cursor use align with [Tektronix’s scope primer](https://www.tek.com/de/documents/primer/oscilloscope-basics) and [time/amplitude measurement tutorial](https://www.tek.com/en/blog/basic-time-and-amplitude-measurements-tbs2000-oscilloscope-part-3-3-xyzs-series); the numerical implementation is original to the workbench.
+- Added gain magnitude, dB gain, signed phase, and sine-fit residual when comparing a different selected component with an independent sine source. Voltage references compare voltage in V/V; current references compare signed branch current in A/A. Negative phase means the output sine lags its reference. A half-cycle difference is labeled inversion; gain and phase are unavailable for an output without a measurable sine component.
+- Added a dotted coral fitted-sine overlay in the selected interval. Its sine plus DC value uses the same scale as the selected trace; scale bounds include the fit. The residual is the RMS remaining after that fit, divided by the fitted sine RMS. It can include startup, distortion, and other frequencies. It is explicitly labeled as a fit residual, not THD. The final source cycle is a useful window preset but does not prove that a circuit has settled.
+- Added a separate interval CSV with S/E times, SI voltage/current statistics, interpolation/integration method, comparison source/frequency, fitted peak amplitude, gain, phase, and residual. Existing full-waveform and snapshot exports retain their formats. Unknown readings remain blank. Reversed or zero-length windows display a repairable message and suppress interval readings, markers, fits, and export; failed runs show no stale measurements.
+
+Numerical conventions: statistics integrate the displayed piecewise-linear trace. On each clipped segment of duration h with endpoint readings a and b, the mean numerator is h(a+b)/2 and the square integral is h(a²+ab+b²)/3. AC RMS uses a second centered pass to preserve small ripple on large offsets. Duplicate switch timestamps are zero-duration boundaries, never artificial ramps. At a boundary that is exactly a switch event, S uses the after side and E uses the before side. Any unknown reading affecting a positive-duration segment suppresses that metric’s interval statistics; independently known metrics remain available.
+
+Sine comparison uses a time-weighted least-squares fit of a constant, sine, and cosine at the reference frequency. Three-point Gauss–Legendre quadrature integrates each linear trace segment. At least one full source period is required, and any segment longer than 1/16 of that period blocks the fit. Source and output are fitted over the same interval before computing magnitude and phase. The result describes the sampled response, including simulation/interpolation error; it does not replace general AC analysis, spectral instruments, a stability analysis, or physical device measurements.
+
+
+Verification: **347 targeted tests passed across eighteen files**, including **28 new measurement cases**. After the final flat-output gain guard and compact-unit refinement, all **28 measurement tests passed again**. Coverage includes exact unevenly sampled ramps, clipped interval boundaries, signed DC/RMS, tiny ripple on a large offset, switch-side conventions, unknown gaps, invalid ranges, non-integer-cycle sine fitting, positive/negative phase, inversion, current-source units, known harmonic residual, sparse/short-window rejection, SI export, and failed-run rendering. An actual bandwidth-limited follower’s final cycle is checked against its analytical gain and phase. Acceptance bounds describe these examples, not a general simulator error guarantee.
+
+Browser verification passed interval presets and exact controls, cursor assignment, unchanged circuit/history/cursor state, retained preferences, fitted curves, voltage/current comparisons, residual reduction after increasing slew rate, interval download, DC-source fallback, flat-output gain/phase suppression, and invalid-run recovery. Scoped axe reported zero violations at 1280, 390, and 320 px, with no page errors or horizontal page overflow. The earlier timing browser suite also passed. Visual review covered the desktop measurements/overlay and phone controls; it prompted clearer engineering units and compact typography. The comparison definition-list markup was corrected after the accessibility check identified it. Browser validation uses the isolated local React 18 circuit host.
+
+JavaScript syntax, source/public byte parity, and scoped whitespace checks passed. The numerical circuit solver is unchanged; measurement helpers process its completed traces. Custom boundaries are saved as fractions of the full run duration and scale with a changed time window. The existing projected 3D board, camera, routing, and component catalog remain available. Temporary staging scripts and backups were removed.
+
+- [Bandwidth measurement panel](measure30-bandwidth-panel.jpg)
+- [Bandwidth plot and measurement interval](measure30-bandwidth-plot.jpg)
+- [Slew waveform against a fitted sine](measure30-slew-plot.jpg)
+- [Slew distortion measurements](measure30-slew-panel.jpg)
+- [Phone interval controls and statistics](measure30-panel-320.jpg)
+- [Phone scope](measure30-plot-320.jpg)
+- [347-test regression](measure30-regression-results.txt)
+- [28 final measurement checks](measure30-final-results.txt)
+- [Browser and accessibility results](measure30-browser-results.json)
+- [Earlier timing browser regression](measure30-timing-browser-log.txt)
+- [Window measurements CSV](measure30-window.csv)
+- [Source integrity checks](measure30-integrity.json)
+
+
+## Thirty-first pass: time zoom and level-crossing navigation
+
+- Added saved 1–64× scope time zoom, focus on the S–E measurement interval, earlier/later pan, a whole-run overview with the sampled cursor, a position slider, and full-run reset. Plot keyboard controls are +/− to zoom, left/right to pan, and Home to reset. An offscreen notice keeps the board/meter timestamp explicit and offers to bring the cursor into view. Zoom and scale changes preserve circuit settings, undo history, measurements, and sampled time. Saved view bounds are fractions of the full run duration.
+- Added optional **Trace range** voltage scaling for selected op-amps. This makes small signals visible without the full output-window range compressing the curve. The selected signal, source comparison, and fitted sine share the scale across the complete run; time zoom does not rescale it. **Include output limits** restores the earlier view. Output-limit lines outside the selected scale are omitted with an explanation; the existing operating-point card retains their numeric values.
+- Added a level-crossing finder for the selected component’s voltage or signed current. It supports rising, falling, and either-direction searches, exact/sliding level entry, separate retained voltage/current levels, and a whole-trace midpoint shortcut. Current level entry uses mA and stores/exports A. Previous/next, go-to, and focus actions move to a real calculated sample. Focus uses at least 8× time zoom, retaining a closer existing view.
+- Added a pink crossing marker and threshold line. The finder distinguishes interpolated crossings, samples at the threshold, instantaneous switch jumps, and finite intervals held at the threshold before reaching the other side. Jumps retain their exact timestamp and navigate to the after snapshot. The white cursor, board, and meters always display a calculated sample, with the distinction from an interpolated crossing explained in the panel.
+- Added spacing since the previous same-direction crossing and its reciprocal. The panel explains that 1/Δt is a repetition rate only when the pattern repeats; alternating directions are not confused with a full period. Crossing CSV records component/metric, SI level, direction, estimated time, end of a held-level interval, method, sampled time/side, same-direction spacing, and reciprocal spacing. Empty and failed searches have no export.
+
+Numerical conventions: trace clipping interpolates only between known adjacent readings, retains vertical segments at duplicate event timestamps, and does not connect across unknowns. It changes neither the solver’s samples nor the measurement window. Crossing search requires known readings on opposite sides of the threshold. A touch that reverses direction, a trace that stays at the threshold, and a start/end boundary without both sides are not counted. Samples within 1e−12 of the largest absolute trace value or level are treated as equal to the threshold (an all-zero trace uses a unit scale). An equality interval is reported explicitly; no single crossing time or spacing is inferred through that hold. Unknown samples break both crossing detection and spacing comparisons. Search runs across the entire calculated trace, independent of zoom.
+
+This is a recorded-trace search, not acquisition triggering, re-arming, hysteresis, pulse-width triggering, or a guarantee that unobserved events between samples were captured. Zoom enlarges existing samples without adding time resolution. Direction/threshold terminology and the distinction between triggering and event search are informed by [Tektronix’s triggering and event-search primer](https://www.tek.com/en/documents/primer/triggering-fundamentals-pinpoint-triggering-and-event-search-mark-dpo7000-0). The implementation is original to this workbench; no external simulator code was incorporated.
+
+
+Verification: **377 targeted tests passed across nineteen files**, including **30 new navigation/crossing cases**. Tests cover bounded view normalization, centering at run boundaries, interpolation while clipping, exact vertical jump preservation, gaps, nonuniform rising/falling crossings, direction filters, threshold touches and incomplete boundaries, held-level intervals, same-direction spacing, small signals, rounding at sine endpoints, SI current exports, and failed-state rendering. A real switched network verifies the exact jump timestamp and after-state selection. The browser checks the amplifier’s measured crossing spacing near its expected 1 kHz rate while allowing its small transient/numerical deviation.
+
+Browser verification passed time zoom and S–E focus without changes to circuit/history/time/statistics, optional signal-range/output-limit scales, clipped waveform and fitted-sine paths, 64× limits, keyboard zoom/pan/reset, overview movement, offscreen-cursor recovery, crossing navigation/focus, spacing, download, direction/level editing, retained current/voltage thresholds, exact switch-side navigation, saved view/search state, unknown current handling, and failed-run recovery. Scoped axe reported zero violations at 1280, 390, and 320 px, with no page errors or horizontal page overflow. The previous measurement and timing browser suites also passed. Visual review covered the focused small-signal plot, phone navigation, and phone crossing finder.
+
+JavaScript syntax, source/public byte parity, scoped whitespace, and source-preservation checks passed. Existing circuit-solving, time-integration, and measurement mathematics are unchanged. Camera/component geometry remains unchanged outside the scope; only the new navigation CSS was added outside the connected workspace. Temporary staging scripts and backups were removed.
+
+- [Focused small-signal crossing](scope31-crossing-focus.jpg)
+- [Measurement interval under time zoom](scope31-measurement-zoom.jpg)
+- [Desktop time navigation](scope31-navigation-desktop.jpg)
+- [Crossing finder and spacing](scope31-crossings-desktop.jpg)
+- [Exact switch jump under zoom](scope31-switch-jump.jpg)
+- [Phone time navigation](scope31-navigation-320.jpg)
+- [Phone crossing finder](scope31-finder-320.jpg)
+- [Phone plot](scope31-plot-320.jpg)
+- [377-test regression](scope31-regression-results.txt)
+- [Navigation browser and accessibility results](scope31-browser-results.json)
+- [Earlier measurement browser regression](scope31-measure-browser-log.txt)
+- [Earlier timing browser regression](scope31-timing-browser-log.txt)
+- [Crossing times CSV](scope31-crossings.csv)
+- [Source integrity checks](scope31-integrity.json)
+
+
+## Thirty-second pass: dimensional board materials and live instruments
+
+- Refined the projected 3D board with a layered rim, mounting screws, a graded surface, contact shadows, metallic terminal pads and bent leads, ceramic resistor highlights, and shaded source, capacitor, switch and amplifier packages. Material IDs are unique per board instance. Existing cathode bands, resistor bands, coil geometry, source markings, and state-dependent switch levers remain visible. Separate terminal leads replace the misleading full-width lead previously drawn underneath every package, including open switches.
+- Made 3D packages directly selectable. Their existing HTML label buttons remain the keyboard alternative; clicking a package also focuses its label. Added **Focus selected**, which centers the selected part in the scrollable viewport without changing camera zoom. Added saved surface-grid visibility and route emphasis. Emphasis dims other routes and packages while keeping every component and connection in the circuit. Probe collars distinguish the two meter leads, and labels now have stronger depth and selection styling.
+- Added a **Board instrument dock** with a component selector, signed voltage/current/power readings, stored energy, and shortcuts to edit the selected component, place both probes across it, or open its full scope. The full scope has a return shortcut that finds the selected component on the board. Shortcuts scroll and transfer keyboard focus to the destination.
+- Added two compact whole-run voltage/current previews with separate scales, a shared time cursor, synchronized play/pause, previous/next calculated-sample controls, and keyboard stepping. Click the preview or scrub its slider to seek a calculated snapshot. Home/End select the first/last sample. Switch-event selection and Before/After controls preserve both states at the exact event timestamp and update the rendered lever, meters, and full scope together. The preview preserves duplicate switch timestamps and breaks paths across unknown readings.
+- Refined the dock for phones with stacked sections, taller waveforms, a two-column action layout, a full-width scope shortcut, and controls that stay inside the page. Failed runs suppress time previews and playback while showing undetermined readings; DC mode explains how to enable time exploration. Board view preferences, selection, probes, camera changes, and time navigation preserve electrical settings and undo history.
+
+Verification: **377 targeted tests passed across nineteen files**. After the final package-selection, phone-layout, and scope-shortcut refinements, **40 focused checks passed again across three files**. The SVG accessibility inventory now includes the sixteenth, explicitly named board-scope SVG. Browser checks pass direct package selection and focus, camera centering at desktop/phone widths, grid/emphasis persistence, probe placement, editor/scope shortcuts, shared playback, cursor boundary keys, same-timestamp switch states, unknown current handling, failed-run recovery, and saved workspace restoration. Scoped axe reports zero violations at 1280, 390, and 320 px, with no page errors or horizontal page overflow.
+
+All **30 bundled examples** retain non-overlapping component/node labels and routes without fallback. Dense 16-component boards pass both perspectives and 35°/70° tilt at desktop and phone widths; flat-mode camera restrictions remain correct. The controlled-source editor and CSV checks in the layout suite also pass. Visual review covered the open switch, amplifier dock, phone dock, and dense board; it prompted the final taller previews and wider phone actions.
+
+JavaScript syntax, source/public byte parity, scoped whitespace, and source-preservation checks pass. The electrical solver, integration, full-scope mathematics, and unrelated workspaces remain byte-preserved. This is still a projected SVG board; it does not add physical mesh rendering, unrestricted orbit, breadboard contact connectivity, or new component models. The dock displays existing samples and does not increase numerical time resolution. Validation uses the isolated local React 18 circuit host. Temporary staging files and backups were removed.
+
+- [Enhanced open-switch board](board32-switch-board.jpg)
+- [Amplifier board](board32-amplifier-board.jpg)
+- [Desktop instrument dock](board32-amplifier-dock.jpg)
+- [Before/after switch controls](board32-switch-dock.jpg)
+- [Phone dock](board32-dock-320.jpg)
+- [Phone board focused on the selected part](board32-board-320.jpg)
+- [Dense board materials and routing](board32-layout-qa/control27-dense-board.jpg)
+- [377-test regression](board32-regression-results.txt)
+- [Final 40-test regression](board32-final-focused-results.txt)
+- [Browser and accessibility results](board32-browser-results.json)
+- [All examples and dense layouts](board32-layout-qa/control27-layout-browser-results.json)
+- [Source integrity checks](board32-integrity.json)
+
+
+## Thirty-third pass: stored-energy gauges and learning explorer
+
+- Added a saved **Stored energy** board overlay. Raised projected gauges and compact label bars show capacitor energy in mint and inductor energy in lilac, with exact joule readings in place of their normal value labels. Gauges share one maximum across every storage component and the complete calculated run. The scale stays fixed when selecting a different part, scrubbing time, navigating peaks, or changing the camera. DC uses its own equilibrium snapshot. Other component markings and current arrows remain available.
+- Added a **Follow stored energy** explorer beneath the board dock. It compares each capacitor and inductor, shows total stored energy and net signed power into storage, and distinguishes storing, returning, zero instantaneous power, and undetermined power. Energy and power can be known independently. The cards select the same component used by the board, dock, inspector, and full scope.
+- Added a selected-part explanation with E = ½CV² or E = ½LI², current parameter/readout values, change from the first calculated sample, and the largest known energy sample. **Go to energy peak** seeks that real sample, preserving its before/after switch side. Equal maxima retain the earliest calculated occurrence. A small expandable learning prompt explains why doubling voltage or current magnitude quadruples energy and why reversing its sign does not make energy negative.
+- Preserved unknowns: missing, non-finite, or negative energy readings do not set gauge levels or maxima. An unknown starting energy leaves its delta undetermined. A failed run supplies no stale energy reference and disables peak navigation. A circuit with no storage elements gives relevant example suggestions. All-known-zero energy uses an empty gauge. The UI explains that zero net storage power may also occur while components exchange energy.
+- Kept the board layer static and tied to calculated snapshots. Gauges are explicitly illustrative meters; no physical electric/magnetic field, heating, or mesh simulation was added. Their geometry fits the existing package clearance envelope. Responsive cards, a wider mobile peak button, retained label sizes, and explicit selection colors keep the layer usable on narrow screens. Visual review prompted raised gauges and a correction to inherited selected-card contrast.
+
+Verification: **396 targeted tests passed across twenty files**, including **19 new energy cases**. After the visual refinements, **29 focused checks passed again across three files**. Cases cover one shared scale, independent signed power, exact zero, unknown/invalid readings, missing initial state, repeated maxima and switch-side retention, solver energy units for negative voltage/current, real flyback continuity with a power reversal, optional rendering, failed-state suppression, and no-storage guidance.
+
+Browser checks pass scale/peak agreement with actual calculated frames, shared selection and cursor state, unchanged electrical settings/history, before/after flyback behavior, camera/flat-view compatibility, explanatory prompts, distinct DC/time references, saved overlay restoration, and failed-run recovery. Scoped axe reports zero violations at 1280, 390, and 320 px, with no page errors or horizontal page overflow. All **30 examples** retain clear labels and routes without fallback with the energy layer enabled. Dense 16-component boards pass both perspectives and 35°/70° tilts at desktop and phone widths; the layout suite also retains controlled-source editing and CSV checks. Validation uses the isolated local React 18 circuit host.
+
+Source/public byte parity, JavaScript syntax, scoped whitespace, and source-preservation checks pass. The electrical solver, integration, and existing scope mathematics remain unchanged; the new helpers read completed frames. Maxima are the largest known calculated samples, not guaranteed continuous-time extrema. The layer adds pedagogy and presentation rather than new component-model coverage. Temporary staging files and backups were removed.
+
+- [RLC board at capacitor peak energy](energy33-rlc-board.jpg)
+- [Desktop stored-energy explorer](energy33-panel-1280.jpg)
+- [Flyback energy returned after opening](energy33-flyback-panel.jpg)
+- [Flyback board](energy33-flyback-board.jpg)
+- [Phone energy explorer](energy33-panel-320.jpg)
+- [Phone board](energy33-board-320.jpg)
+- [Dense board with energy gauges](energy33-layout-qa/control27-dense-board.jpg)
+- [396-test regression](energy33-regression-results.txt)
+- [Final 29 focused checks](energy33-final-results.txt)
+- [Browser and accessibility results](energy33-browser-results.json)
+- [All-example and dense-layout results](energy33-layout-qa/control27-layout-browser-results.json)
+- [Source integrity checks](energy33-integrity.json)
+
+
+## Thirty-fourth pass: node tracing and current-balance inspection
+
+- Added a saved **Inspect network nodes** board action alongside the red/black probe actions. Selecting a node in inspection mode leaves the probe positions untouched. Choosing a probe action restores probe placement; **Finish inspecting** closes the panel and returns keyboard focus to the inspection toggle. The inspected node remains stable when a terminal or sensing input selects another component. Saved references to a node absent from the current topology fall back to a used node.
+- Added a **Node connection inspector** with the selected node's voltage relative to 0, current entering, current leaving, and the signed leaving-minus-entering residual. Each actual A/B terminal has its own component selector, opposite-node label, magnitude, and explicit into/out/zero/unknown direction. Both terminals are retained when a component connects back to the same node. Known currents can still be inspected when the node's absolute voltage is floating. Unknown branch currents leave aggregate currents and their residual undetermined; failed solutions suppress stale readings.
+- Added node-specific route emphasis. Only terminal routes attached to the inspected node are highlighted; cyan arrows enter it and amber arrows leave it. Unrelated terminal routes and packages dim. Zero-current and unknown branches have no direction arrow; unknown highlighted routes are dashed. The selected branch gets drawing priority at overlaps. Direction arrows render above wire paths and use different positions for incoming/outgoing flows to reduce occlusion by shared routes and labels. Default component emphasis remains available outside node inspection.
+- Separated voltage-sensing inputs from current-carrying A/B terminals in the inspector. Their dashed purple connections are highlighted only when they reference the inspected node, and their ideal zero input current is excluded from the current totals. Current-controlled sources retain their existing source-branch sensing relationship rather than acquiring fictitious node input terminals. The normal selected-component sensing display returns outside node-inspection mode.
+- Added **Focus inspected node**, which centers and focuses the named node without changing camera zoom, and **Measure node relative to 0**, which explicitly places both meter leads. Terminal selection uses the same component as the board dock, editor, and scope. The inspector follows the shared calculated cursor, including before/after switch states. It combines with stored-energy gauges, voltage coloring, both projected perspectives, flat view, zoom, and saved emphasis settings.
+- Added a compact current-conservation explanation covering ideal nodes, floating references, same-node terminals, and numerical residuals. The legend adapts to sensing links and the voltage overlay. Responsive cards, visible flow labels, strong selection contrast, keyboard focus restoration, and phone-safe controls keep the workflow accessible.
+
+Verification: **422 targeted tests passed across twenty-one files**, including **26 new node/arrow cases**. After the arrow-layer and legend refinements, **36 focused checks passed across three files**. Coverage includes terminal orientation, negative and very small currents, shared feeders, same-node loops, floating voltages with known current, ambiguous ideal-source sharing, voltage/current-sensing distinctions, repeated sensing inputs, open contacts, failed readings, fallback nodes, degenerate route geometry, arrow direction, optional rendering, and accessibility labels.
+
+Final browser checks pass independent inspection/probe actions, shared component selection with a stable node, explicit probe measurement, centered keyboard focus and close-focus restoration, switch-induced flow reversal, open-contact arrow suppression, energy/voltage-overlay compatibility, sensing-only connections, floating and unknown currents, failed solutions, saved inspection state, and desktop/phone controls. Scoped axe reports zero violations at 1280, 390, and 320 px, with no page errors or horizontal page overflow. Visual review covered the shared feeder, switch flyback, desktop panel, and phone panel, and prompted the arrow layering/position and shorter legend refinements.
+
+All **30 examples** retain clear labels and routes without fallback while inspection and energy gauges are enabled. Dense 16-component boards pass both perspectives and 35°/70° tilts at desktop and phone widths. The reused layout harness temporarily exits inspection for its existing selected-source sensing-link assertion, then restores inspection for dense-board checks; the inspector intentionally filters those links to the chosen node. Controlled-source editing and CSV checks also pass. Validation uses the isolated local React 18 host.
+
+Source/public byte parity, JavaScript syntax, scoped whitespace, and source-preservation checks pass. Electrical solving, integration, energy calculations, and existing scope mathematics are unchanged. The inspector derives terminal incidence and signed flows from completed snapshots; it does not change topology, merge wire crossings, add physical node storage, or implement new component models. Temporary staging files and backups were removed.
+
+- [Shared feeder with incoming/outgoing routes](nodes34-feeder-board.jpg)
+- [Node current-balance panel](nodes34-feeder-panel.jpg)
+- [Flyback directions and energy gauge](nodes34-flyback-board.jpg)
+- [Flyback node readings](nodes34-flyback-panel.jpg)
+- [Sensing-only input connections](nodes34-sensing-panel.jpg)
+- [Phone node inspector](nodes34-panel-320.jpg)
+- [Phone focused node](nodes34-board-320.jpg)
+- [422-test regression](nodes34-regression-results.txt)
+- [36 focused checks](nodes34-final-results.txt)
+- [Browser and accessibility results](nodes34-browser-results.json)
+- [Example/dense-layout results](nodes34-layout-qa/control27-layout-browser-results.json)
+- [Source integrity checks](nodes34-integrity.json)
+
+
+## Thirty-fifth pass: held samples and visual change comparison
+
+- Added **Hold this sample** beneath the board instrument dock in Time response. Holding pauses playback and records the exact calculated instant, including its before/after switch side. The reference follows component selection and the current probe pair across the entire network. **Return to held sample**, **Replace held sample**, and **Clear held sample** provide direct navigation and recovery.
+- Added a responsive comparison panel with held/cursor timestamps, signed time difference, and held/cursor/change readings for selected-part voltage, current, absorbed power, stored energy, and differential probe voltage. Paired bars share a symmetric zero-centered scale within each measurement; hatched cyan identifies held values, cream identifies cursor values. Changes are cursor minus held, with explicit positive signs. Unknown values have no bar or invented difference, and signed differences never overflow into visible infinities. The full-width probe card avoids a spare column on desktop. **Hide comparison readings** keeps the reference and scope markers available in a compact view.
+- Added cyan diamond markers and distinctive dashed vertical lines in both the board preview and full scope, reusing the existing SVGs and scales. Cream cursor circles remain separate. At a switch, the held diamond remains at the actual before/after value even when the live cursor shares its timestamp. Unknown trace values retain a time marker without a fabricated point. Full-scope markers respect time zoom; an off-screen reference is described in the legend while the board overview keeps it visible.
+- References persist only a version, normalized electrical-design/time-window identity, exact time, and side. A restored reference resolves to a real frame in the current calculation. Circuit edits, duration changes, DC mode, failed solutions, and malformed or inexact saved cursors suppress comparison readings and markers. Undo can restore the matching design and reactivate its reference. Camera, selection, probes, overlays, reflection, and scope navigation do not invalidate it or add electrical undo entries. Holding does not copy functions or persist stale numerical readings.
+- Added an expandable explanation of signed changes, capacitor/inductor continuity, zero-duration switch comparisons, negative absorbed power, and floating/unknown measurements. Native buttons provide keyboard actions and expansion state; clearing restores focus to Hold this sample or the active DC mode when the panel disappears. Hold announcements are tied to their reference, preventing a stale timestamp message after saved-state restoration.
+
+Verification: **457 targeted tests passed across twenty-two files**, including **35 new held-sample cases**. **84 focused checks across four files** passed again after the final announcement correction. New coverage includes serialization, recomputation, exact switch-side identity, view independence, model/duration changes, malformed references, nonfinite and missing readings, signed subtraction, inductor flyback continuity, floating differential measurements, immutable frames, marker clipping, and unavailable-reference presentation.
+
+Browser validation covers RC charging and backward-time comparison, probe reversal, component changes, switch before/after stepping, contact state, energy and node-inspection compatibility, electrical edit/undo behavior, time-window changes, playback pause on hold, DC recovery, saved-state restoration, floating probes, ambiguous ideal-source currents, failed runs, collapse/expand, and keyboard focus. Scoped axe reports zero violations at 1280, 390, and 320 px, without page errors or horizontal page overflow. Visual review covered desktop and phone cards/dock plus coincident switch markers. It prompted the full-width probe card, compact-view control, and corrected saved-reference announcement.
+
+Source/public byte parity, JavaScript syntax, scoped whitespace, and source-preservation audits pass. Existing electrical solving, adaptive integration, scope mathematics, topology/routing, and other workspaces are unchanged. This pass expands instruments and interpretation of calculated samples; it does not add a device model, live trigger, CircuitJS file interchange, or a new 3D rendering engine. The board retains its projected SVG geometry. Validation uses the isolated local React 18 host. Temporary edit scripts, staging files, and backups were removed.
+
+- [Flyback sample comparison](hold35-flyback-panel.jpg)
+- [Before/after markers in the full scope](hold35-flyback-scope.jpg)
+- [Flyback board and energy gauge](hold35-flyback-board.jpg)
+- [RC held/cursor comparison](hold35-rc-panel.jpg)
+- [Final desktop comparison](hold35-panel-1280.jpg)
+- [Phone comparison](hold35-panel-320.jpg)
+- [Phone instrument dock](hold35-dock-320.jpg)
+- [457-test regression](hold35-regression-results.txt)
+- [84 final focused checks](hold35-final-results.txt)
+- [Browser and accessibility results](hold35-browser-results.json)
+- [Source integrity checks](hold35-integrity.json)
+
+
+## Thirty-sixth pass: dimensional capacitor and inductor cutaways
+
+- Added **Component cutaway** beside the board appearance controls. Opening it selects an available capacitor or inductor when needed, without adding an electrical edit. Its component menu shares selection with the board, dock, editor, and scope. Choosing a non-storage part leaves an explicit selection prompt; a network without storage gets an actionable example suggestion. **Find cutaway part on board** centers the existing package, and closing the cutaway restores keyboard focus to its toggle.
+- Added dimensional capacitor plates and copper windings on a raised base, with metallic shading, plate edges, an insulating-gap sheet, lead connections, named A/B terminals, and optional transparent housing. Capacitor plate colors and signs follow the actual signed terminal voltage; field arrows point from positive to negative. Coil-current arrows follow signed current while closed lilac loops illustrate magnetic storage. Unknown fields suppress lines and current arrows; unknown plate polarity uses question marks. Zero state remains visually distinct from unknown state. Captions sit outside the SVG for readable, unclipped phone labels.
+- Added signed plate-charge readouts, Q_A = C V and Q_B = −Q_A, with SI capacitance conversion and pC/nC/µC/mC/C formatting. Inductors show current-change rate from V/L with millihenry-to-henry conversion. This is the instantaneous constitutive slope, not a finite difference between adjacent samples. Both views retain calculated voltage, current, energy, and absorbed power, including negative power and known internal voltages in a floating network. Failed solves hide stale derived values and field states.
+- Added a cursor/held cutaway comparison using the exact shared reference from pass 35. Both views inspect the same part, including distinct before/after switch samples at one timestamp. **Hold for cutaway comparison**, **Replace cutaway reference**, and **Return to cutaway reference** share the existing board reference and playback pause behavior. References that no longer match the circuit/window remain unavailable. Separate material IDs prevent collisions when two scenes render together.
+- Added a local **Cutaway time cursor** and previous/next calculated-sample controls. Arrow keys step through exact samples, including switch sides; Home/End reach the first/last frames. These controls update the board and full scope through the same cursor and pause playback. Field and housing toggles persist and change presentation only. Readout cards use desktop columns, stacked phone comparisons, and full-width final power cards where needed.
+- Added explanations of charge polarity, equal/opposite plate charge, signed current slope, storage continuity, and negative absorbed power. The field drawings have a fixed illustrative symbol/line count. They do not compute field strength or direction for the coil, dimensions, material parameters, winding turns, or geometry-dependent capacitance/inductance. No charges are animated across the capacitor gap. The renderer is a conceptual projected cutaway, and no automatic animation was added.
+
+Verification: **488 targeted tests passed across twenty-three files**, including **31 new cutaway cases**; the initial focused run passed **89 checks in four files**. Coverage includes positive/negative/zero charge, SI conversions, both current directions, charged zero-power storage, flyback current/energy continuity with reversed slope, floating internal voltage, missing/nonfinite values, failed-state suppression, immutable solved state, quantity formatting, optional rendering, field directions, exact held sides, and empty-state guidance. The accessible SVG inventory increases from sixteen to seventeen declarations.
+
+Final browser checks pass shared selection, electrical/history preservation, held/cursor comparison, plate polarity reversal after terminal swapping, layer independence, exact sample navigation and endpoints, board focus, invalid-reference suppression, negative coil current, floating circuits, failed models, empty and non-storage selections, saved preferences, unique material IDs, and compatibility with both board views, stored-energy gauges, and node inspection. Scoped axe reports zero violations at 1280, 390, and 320 px. There are no page errors or horizontal page overflow; inspected scene geometry stays inside its viewport. Visual review led to moving captions below the scene, adding local time navigation, and filling the last inductor readout row.
+
+Source/public byte parity, syntax, scoped whitespace, and source-preservation audits pass. Existing electrical solving, time integration, scope mathematics, held-reference helpers, board geometry, and other workspaces are unchanged. New calculations are derived readouts of the existing lumped model. No device family, spatial electromagnetic solver, full-orbit 3D engine, or physical breadboard connectivity was added. Browser checks use the isolated local React 18 host. Temporary edit/staging files and backups were removed.
+
+Physics references: the charge/voltage and polarity explanation follows [OpenStax, Capacitors and Capacitance](https://openstax.org/books/university-physics-volume-2/pages/8-1-capacitors-and-capacitance); the electric/magnetic storage discussion follows [OpenStax, Energy in a Magnetic Field](https://openstax.org/books/university-physics-volume-2/pages/14-3-energy-in-a-magnetic-field). The cutaway includes these links in its expandable lesson.
+
+- [Capacitor charge comparison](cutaway36-charge-panel.jpg)
+- [Detailed capacitor view](cutaway36-capacitor.jpg)
+- [Reversed plate polarity](cutaway36-negative-capacitor.jpg)
+- [Before/after flyback cutaways](cutaway36-flyback-panel.jpg)
+- [Detailed inductor view](cutaway36-inductor.jpg)
+- [Phone cutaway comparison](cutaway36-panel-320.jpg)
+- [488-test regression](cutaway36-regression-results.txt)
+- [89 focused checks](cutaway36-focused-results.txt)
+- [Browser/accessibility and scene bounds](cutaway36-browser-results.json)
+- [Source integrity checks](cutaway36-integrity.json)
+
+
+## Thirty-seventh pass: Zener regulation, clipping, and junction curves
+
+- Added a **Generic Zener** junction in connected DC and time response. The knee is adjustable from 1.8 to 24 V, with a 1 to 1000 Ω breakdown slope resistance; defaults are 5.1 V and 10 Ω. The existing forward exponential and reverse leakage remain. Below V = −Vz, the current adds (V + Vz)/Rz and the tangent conductance adds 1/Rz. The resulting branch is continuous at its sharp knee. Bias readouts distinguish forward conduction, reverse bias, the knee, reverse breakdown, and unknown voltage. Model settings participate in the existing electrical editing, undo, normalization, and saved-reference validation.
+- Added **Zener shunt regulator**, **Zener line regulation**, and **Back-to-back Zener limiter**, bringing the connected example catalog to 33. The regulator starts with a 9 V supply, 330 Ω series resistor, and 1 kΩ load. The line example sweeps its supply from 3 to 12 V; the limiter uses opposed junctions to clip both sine polarities. Questions ask learners to predict loss of regulation, explain the finite slope of a plateau, and account for both diode drops. Example-specific red/black probes open with positive load voltage while previous examples retain their probe defaults.
+- Added a responsive **junction I–V curve** for silicon, Schottky, and Zener models. It uses linear voltage/current axes, separate forward/reverse segments, an amber breakdown branch, and explicit zero axes. **Breakdown detail** zooms around the knee and omits the zero-voltage axis when it is outside the chart. Endpoint precision increases for narrow views. The current range is selectable at ±1, ±20, or ±200 mA. Changing the view or range preserves the electrical design/history and cursor.
+- Added a cream live operating-point marker and a cyan held-sample diamond using the existing validated same-run reference. These are circuit operating points on a component characteristic, not time-axis samples. Outside-range or undetermined points are omitted and explained rather than pinned to a chart edge. Signed voltage/current and absorbed-power readings remain beneath the chart. Accessible chart names include the part, bias state, readings, and point visibility.
+- Added a lilac projected Zener package, bent cathode mark, and amber reverse-breakdown outline. The physical cathode band remains at terminal B. Package dimensions and routing geometry are preserved. Appended knee voltage, slope resistance, and bias-state columns to DC and transient CSV; previous columns keep their positions. Source/public app copies remain byte-identical.
+
+Model scope: this is a generic teaching junction with a sharp onset and a constant reverse slope. Vz is not the usual datasheet voltage specified at a rated test current. Forward series resistance, soft breakdown knees, junction capacitance, reverse recovery, temperature dependence, noise, heating, ratings, and damage are not modeled. Include external current-limiting resistance. The [Nexperia Zener application note](https://assets.nexperia.com/documents/application-note/AN90031.pdf) informed the distinction between breakdown onset, test-current voltage, and nonzero dynamic resistance; the implementation is not a fit to a named device or a full SPICE/CircuitJS diode model.
+
+Verification: **526 targeted tests passed across twenty-four files**, including **38 new Zener/curve checks**. The main run passed 482 checks in 22 files; two workers timed out before startup, and all 44 checks in those two files subsequently passed with fresh process workers. No test assertions failed. An initial focused run passed 65 checks before the breakdown-detail refinement. References cover independent regulator load-line roots at positive/negative supplies, a closed-form regulated voltage and slope, load dropout, reverse current drive, floating and parallel networks, direct reverse power, knee continuity, and diagnostics for excessive ideal forward drive. Capacitor charging across the knee agrees with a piecewise analytical transient; opposed-Zener peak voltages and branch currents agree with independent inverse-junction/load-line roots. Tests also cover current and power balance, metadata alignment, narrow-axis precision, model immutability, curve samples, and hidden invalid/out-of-range points. The accessible SVG inventory increases from seventeen to eighteen declarations.
+
+Browser checks pass model editing, polarity reversal, undo, existing junction presets, chart-region/range changes, shared held/live points, load/source scope selection, both limiter polarities, saved display settings, and failed-state suppression. All three new examples solve with clear routes and nonoverlapping board labels. Scoped axe finds zero violations at 1280, 390, and 320 px; there are no page errors, horizontal page overflow, or nonfinite SVG paths. Browser checks use the isolated local React 18 host. The Playwright harness dispatches native range-input events because direct fill compares differently serialized floating-point step values. Visual review covers the regulator editor/board, knee-detail chart, and phone comparison.
+
+The source audit identifies the intended diode-law, metadata, editor, board-presentation, and example-loading changes. It verifies 86 existing connected-workspace functions unchanged, including nonlinear iteration, state integration, scope mathematics, camera/routing, held references, and storage cutaways. This pass adds a diode constitutive branch; it does not replace the numerical methods or change other workspaces. Syntax, scoped whitespace, and source/public parity checks pass. The [roadmap](circuitjs-parity-roadmap.md) now records Zener coverage and the remaining analog, digital, editing, and rendering stages.
+
+- [Regulator editor](zener37-regulator-editor.jpg)
+- [Projected Zener board](zener37-regulator-board.jpg)
+- [Breakdown detail](zener37-knee-detail.jpg)
+- [Held and live operating points](zener37-held-curve.jpg)
+- [Line-regulation scope](zener37-line-output-scope.jpg)
+- [Signal-limiter scope](zener37-limiter-scope.jpg)
+- [Phone I–V explorer](zener37-curve-320.jpg)
+- [Main regression run](zener37-regression-results.txt)
+- [44-test worker-startup retry](zener37-retry-results.txt)
+- [Initial focused checks](zener37-focused-results.txt)
+- [Browser and accessibility results](zener37-browser-results.json)
+- [Source integrity checks](zener37-integrity.json)
+
+
+## Thirty-eighth pass: internal diode resistance and voltage/power exploration
+
+- Added optional **internal series resistance** to connected silicon, Schottky, and Zener diodes. Values range from 0 to 1000 Ω, normalized to 0.001 Ω precision. Zero resistance retains the previous normalized model shape and junction behavior. Switching junction presets preserves the chosen resistance; zero restores the earlier junction-only model. This resistance is separate from an external circuit resistor and from a Zener’s breakdown slope resistance.
+- Added an implicit local solve for Vterminal = Vjunction + Rs × I(Vjunction), using a monotone bracket and safeguarded Newton steps, bounded to 90 iterations. The terminal tangent conductance is gj/(1 + Rs × gj). The existing forward step limit follows the internal junction voltage when Rs is present, so a large resistive terminal drop does not incorrectly consume the forward-junction iteration budget. No clipped-current substitute is used. The original zero-Rs path and its excessive-forward-drive diagnostic remain.
+- Added **Diode internal resistance**, **Diode resistance under a current sweep**, and **Two resistances in a Zener**, bringing the connected catalog to 36 examples. Current-driven lessons ask learners to distinguish logarithmic junction voltage from the linear I × Rs contribution, predict the square-law power increase, compare a held sample with a peak, and separate Rs from a Zener’s reverse-slope resistance. Source/terminal limits are unchanged; a current source may require a terminal voltage above the voltage-source setting range.
+- Added a dimensional **Inside the diode model** inspector with shaded resistance/junction blocks, metallic lead connections, signed current arrows, readable external part/node captions, and an explicit equivalent-model explanation. The panel shows Vterminal, I × Rs, Vjunction, and the common current. A two-color bar and keyed numerical readings separate I²Rs from Vjunction × I. These sum to the existing terminal absorbed power and are not added again to the circuit total. At zero power the bar is empty; unknown voltage/current suppress calculated contributions and arrows. The view opens initially for a nonzero-Rs model; its disclosure preference is saved when changed.
+- Updated the I–V plot to show the **terminal characteristic** when Rs is enabled. A persisted **Compare junction alone** toggle adds a clipped lilac dotted reference for the same junction with Rs = 0 on shared axes. Curve samples are generated from junction voltage and projected through Vterminal = Vj + RsI, so the selected current range and shifted reverse knee stay consistent with the model. Live and held markers remain terminal operating points from the same validated run; the dotted curve is an alternative model, not another measured trace. The existing warning explains off-chart points. Bias states are determined from internal junction voltage rather than the full terminal drop.
+- Updated the forward reference drops, model assumptions, and global limits. Appended Rs, junction voltage, series voltage, junction power, and series power to DC and transient CSV while retaining all prior column positions. Old Zener metadata checks now explicitly verify its position immediately before the five appended columns.
+
+Model scope: Rs is a constant, lumped ohmic resistance in both directions. The intrinsic silicon/Schottky exponential and Zener sharp-knee branch remain the existing teaching models. This does not add junction capacitance, reverse recovery, temperature dependence, noise, heating, damage, or a fit to a named commercial device. The illustration is an equivalent circuit in a dimensional style, not a chip cross-section or physical geometry model. The [ngspice manual, Junction Diodes](https://ngspice.sourceforge.io/docs/ngspice-manual.pdf) provides the reference context for an optional series-resistance parameter; Circuit Bench implements its own bounded local solve and does not claim equivalence to ngspice’s complete diode model.
+
+Verification: **555 targeted checks passed in 25 files**, including **29 new resistance cases**. The initial focused run passed 96 checks; after the final visual refinements, another **96 checks in four files passed**. References include independent parametric junction/terminal values, bisection roots, terminal derivatives, and separately wired resistor-plus-diode networks for all three presets in both polarities. A 100 mA source with Rs up to 1 kΩ verifies internal-junction step limiting above 100 V terminal voltage. Additional cases cover reverse-knee classification, floating and same-node networks, explicit unknown readings, signed voltage and positive power, current/power conservation, CSV reconstruction, curve endpoints, and model immutability. A piecewise analytical capacitor charge validates the series-loaded Zener transient; a sinusoidal current sweep matches the closed-form forward drop and checks held-reference invalidation after resistance changes.
+
+Browser checks pass editing/undo, zero resistance, preset changes, large terminal drops, current sweeps, live/held points, reverse current, Rs/Rz separation, saved curve/disclosure preferences, and failure suppression. All three new examples solve with clear routes. Scoped axe finds zero violations at 1280, 390, and 320 px; there are no page errors, horizontal overflow, nonfinite SVG paths, or duplicate gradient/clip IDs. Visual review led to moving model labels outside the SVG, strengthening the metallic lead connections, and keying the power bar colors to their numerical labels. The browser host is the isolated local React 18 workbench.
+
+The source audit confirms byte-identical source/public files and 88 unchanged connected-workspace functions, including matrix solving, time integration, scope calculations, camera/routing, held references, and the board renderer. The intended numerical changes are the new local diode equation and its junction-based forward-step limiter. Other workspaces remain unchanged. Syntax and scoped whitespace checks pass. The [coverage roadmap](circuitjs-parity-roadmap.md) records the added diode behavior and remaining semiconductor, digital, editing, and rendering stages.
+
+- [Dimensional diode model and power split](resistance38-forward-inside.jpg)
+- [Terminal and junction I–V comparison](resistance38-forward-curve.jpg)
+- [Held/peak curve comparison](resistance38-held-curve.jpg)
+- [Current-driven scope](resistance38-sweep-scope.jpg)
+- [Zener voltage and power split](resistance38-zener-inside.jpg)
+- [Zener curve comparison](resistance38-zener-curve.jpg)
+- [Phone model inspector](resistance38-inside-320.jpg)
+- [Phone I–V curve](resistance38-curve-320.jpg)
+- [555-test regression](resistance38-regression-results.txt)
+- [96 final focused checks](resistance38-final-results.txt)
+- [Browser/accessibility results](resistance38-browser-results.json)
+- [Source integrity checks](resistance38-integrity.json)
+
+
+## Thirty-ninth pass: harmonic exploration and waveform reconstruction
+
+- Added an optional **Harmonic explorer** to connected time response, with a direct **Open harmonic explorer** shortcut that opens the panel, scrolls to it, and transfers keyboard focus. Analyze the selected component's signed voltage or current against an independent periodic source's frequency. Settings persist across ordinary display changes; the three new investigations open the explorer automatically.
+- Added **Build a triangle from harmonics**, **Clipping makes new harmonics**, and **A filter reshapes pulse harmonics**, bringing the connected catalog to **39 examples**. The investigations connect waveform symmetry to odd/even orders, amplifier output limits to distortion, and RC attenuation to harmonic frequency. They guide prediction, component comparison, and reconstruction using the existing electrical models.
+- Added native keyboard-operable H1–H12 bars with **linear amplitude** and **log amplitude** views, selected-order frequency/RMS/peak/relative-amplitude readings, signed DC mean, AC RMS, and explicitly limited **THD through the requested order**. Log height is relative to the tallest amplitude, uses 20 log10(amplitude/tallest), and clips the visible bar below −60 dB. Selecting a bar retains its numerical values even when its height is too small to see. Undetermined orders use a patterned unknown state, never zero. Numerically negligible display readings are marked approximately zero; CSV retains the calculated values.
+- Added a shared-scale waveform comparison of the last reference cycle with either **DC + all measured harmonics** or **DC + the selected harmonic**. The curves use signed cosine/sine coefficients with the measurement start as phase origin. The panel explains that the source frequency may differ from the output's fundamental, that finite harmonic sums can overshoot edges, and that harmonic amplitudes are not power. Phone charts keep sufficient vertical space and place their labels outside the SVG.
+- Added a separate 1–8 complete-source-cycle interval and selectable highest order from H2 through H12. **Show interval in scope** focuses that time interval without changing the existing S–E measurements. An accessible numerical table and **Export harmonics CSV** provide SI amplitudes, signed coefficients, DC/RMS, phase origin, sample gap, requested/supported order, availability, and method metadata for reconstruction.
+
+Numerical method: integrate the Fourier projection of each calculated straight-line segment directly, with elapsed-time weighting and a rectangular interval containing a whole number of reference cycles. Mean removal and scale normalization protect small ripple on large offsets. Centered sinc/odd integrals use series expansions for very small steps. Duplicate switch timestamps retain the correct before/after sides without inventing a ramp. There is no uniform resampling or FFT, and opening the instrument does not alter solver steps or electrical state.
+
+The resolution guard requires the largest original sample gap overlapping the interval to be no more than 1/(16 × harmonic frequency). Unsupported orders remain unavailable, and the requested THD is withheld if any requested order is unsupported. Relative amplitudes and THD also require a resolvable H1. This guard does not certify the underlying continuous waveform: finer simulation steps can change small harmonics. Incomplete intervals, failed runs, unknown readings, and missing explicit references suppress results. Notices identify endpoint mismatch, an interval containing scheduled switching, and other source frequencies that are not integer multiples of the chosen base.
+
+Scope: this is a source-referenced, finite-order harmonic analysis of a simulated interval. THD uses the RMS root-sum-square of H2 through the requested order divided by H1; it excludes DC and all higher orders. Startup, unrelated frequencies, finite sampling, and settling can affect the projection. It does not add arbitrary-frequency FFT spectra, window functions, noise analysis, general AC small-signal analysis, new device physics, or a mesh-based 3D renderer. The [NI Fourier analysis guide](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHDjCAO&l=en-US) provides reference context for source-referenced harmonics and truncated THD; [Analog Devices' coherent-sampling discussion](https://www.analog.com/en/resources/technical-articles/coherent-sampling-vs-window-sampling.html) explains why interval/cycle alignment matters. Circuit Bench uses its own direct piecewise-linear integration method.
+
+Verification: **586 checks passed in 26 files**, including **31 new harmonic cases**. An initial focused run passed 63 checks; after the final scope shortcut, **93 checks in four files passed**. Analytical references include linear-interpolated sine attenuation, exact triangle coefficients, square-wave coefficients with duplicate event times, ramp coefficients, known third/fifth harmonic distortion, signed reconstruction, and actual RC transfer magnitudes by harmonic order. Other cases cover highly uneven spacing, millivolt ripple on a large offset, absent fundamentals, current units, unknown currents, missing coverage, sparse original intervals, missing sources, multiple frequencies, invalid windows, CSV reconstruction, and stale-value suppression.
+
+Final browser checks pass keyboard harmonic selection, direct shortcut/focus, isolation/summing, log/linear viewing, voltage/current changes, complete-cycle selection, independent scope focus, saved settings, CSV download, component comparison, and DC/time switching. All three new examples solve with clear board routes. Scoped axe reports **zero violations at 1280, 390, and 320 px**, with no horizontal overflow, browser page errors, nonfinite SVG paths, or duplicate gradient/clip IDs. Visual review corrected selected-button contrast, strengthened the phone reconstruction plot, and replaced roundoff-sized DC readouts with approximately-zero presentation. Browser QA uses the isolated local React 18 workbench.
+
+The source audit confirms byte-identical source/public copies, **100 unchanged connected-workspace functions**, and unchanged other workspaces. Only the existing scope and workbench wiring functions changed; four harmonic helper/presentation functions were added. Matrix solving, diode laws, integration, existing measurements, board rendering, routing, camera behavior, and held references remain unchanged. All 20 SVG declarations have an explicit image role and accessible name. Syntax and scoped whitespace checks pass. The [coverage roadmap](circuitjs-parity-roadmap.md) distinguishes this instrument from the remaining broader spectral and CircuitJS coverage work.
+
+- [Logarithmic harmonic explorer](harmonics39-triangle-log.jpg)
+- [Individual harmonic reconstruction](harmonics39-triangle-isolated.jpg)
+- [Amplifier clipping investigation](harmonics39-harmonic-clipping.jpg)
+- [Pulse-filter investigation](harmonics39-harmonic-smoothing.jpg)
+- [Desktop explorer](harmonics39-explorer-1280.jpg)
+- [Phone explorer](harmonics39-explorer-320.jpg)
+- [Example SI export](harmonics39-export.csv)
+- [586-test regression](harmonics39-regression-results.txt)
+- [93 final checks](harmonics39-final-results.txt)
+- [Browser/accessibility results](harmonics39-browser-results.json)
+- [Source integrity checks](harmonics39-integrity.json)
+
+
+## Fortieth pass: orbitable 3D board and shared simulation state
+
+- Added **Orbit 3D board** to the connected workbench. This is a real WebGL scene with 360° horizontal orbit, elevation from 15° to 85° above the board, perspective projection, depth testing, and ray-based component/node selection. Existing projected and flat views remain available. The new scene reuses the application's bundled Three.js r128 and OrbitControls through the shared local-first loader; no dependency or asset installation was needed.
+- Added solid resistor bodies and bands, capacitor packages, copper helical inductors, diode bodies and cathode bands, source and amplifier packages, switches with moving levers, metallic pads/leads, node posts, mounting hardware, and a layered board. Materials have roughness and metalness, with directional/hemisphere lighting and soft shadows. Color-space handling keeps the materials from washing out. Close-up review connected the visible coil ends and capacitor/switch leads to their terminals.
+- Converted the existing flat routing plan into stable world-space connections. Paths keep their positions as the camera moves. Distinct wire elevations and real occlusion clarify crossings, while named nodes remain the electrical authority. Dashed sensing links are separate from current-carrying leads. Decorative grid and sensing lines do not intercept picking; opaque packages and physical wires retain depth-aware selection behavior.
+- Added **Isometric**, **Front**, **Rear**, **Overhead**, **Fit whole board**, and **Focus selected in 3D** controls. Camera fitting accounts for scene corners, view angle, and viewport aspect ratio. Rotation, elevation, zoom, and pan are saved independently of the electrical model. Arrow keys rotate/tilt, Shift plus arrows pan, plus/minus zoom, Home fits the scene, and F focuses the selected part. The canvas has a visible keyboard-focus outline; named component and node controls provide alternatives to picking small objects.
+- Connected the scene to the existing selected component, voltage probes, node inspector, scope cursor, and board instruments. Node-voltage colors, conventional-current arrows, exact before/after switch positions, and capacitor/inductor energy gauges follow the same solved snapshot. Energy gauges use the existing shared whole-run joule reference. Camera and display changes preserve component values, edit history, selected time, and held samples.
+- Added optional **Drag to orbit**, persistent label visibility, and **Lightweight rendering**. Gestures start disabled so the canvas permits ordinary page scrolling. Enabling gestures supports rotation, zoom, and pan; disabling them restores vertical scrolling. Lightweight rendering disables shadows and caps pixel ratio at one; the normal mode caps it at 1.5. Frames render on changes rather than in a continuous idle animation loop, and hidden/offscreen scenes defer drawing.
+- Added bounded engine loading, a clear projected-board fallback, graphics-context-loss handling, and **Retry 3D graphics** with a fresh canvas. Leaving the view disposes controls, observers/listeners, geometries, materials, textures, shadow resources, and the renderer. The implementation follows the ownership/lifecycle APIs in the pinned [OrbitControls source](https://github.com/mrdoob/three.js/blob/r128/examples/js/controls/OrbitControls.js) and [WebGLRenderer source](https://github.com/mrdoob/three.js/blob/r128/src/renderers/WebGLRenderer.js).
+
+Scope: this pass adds a 3D presentation layer driven by the existing lumped circuit simulation. The packages, pin shapes, dimensions, and lead heights are illustrative, not hardware pinouts or an electrically modeled breadboard. It does not calculate electromagnetic fields, physical device geometry, temperature, or charge transport. Connections still come from the named-node editor. Current arrows and energy gauges describe calculated values, not particle speed or field strength. The electrical solver, component coverage, integration method, and 39-example catalog are unchanged.
+
+Try **Connected circuits → RLC ringing → Orbit 3D board**. Scrub the board time cursor, switch to **Stored energy**, and focus the capacitor or inductor. **Inductor flyback** adds an exact before/after switch comparison in the same 3D scene.
+
+Verification: **605 checks passed in 27 files**, including **19 new orbit cases**. The focused geometry/loader/presentation run passed 29 checks; after the final lead and instruction refinements, **109 checks in six files passed**. New coverage includes saved-camera bounds and angle wrapping, finite dense scenes with every supported device family, route endpoints and named-node mapping, separate sensing links, camera corner fitting at multiple aspect ratios and elevations, electrical/held-reference invariance, shared loader requirements/failure/timeout behavior, accessible controls, and exact switch-side timestamps.
+
+Final browser checks render **all 39 examples** with the expected component count, finite geometry, and clear routes. Picking works after four camera orientations; pointer and keyboard navigation, node probing/inspection, saved poses, exact switch-state changes, labels, graphics quality, overlays, and held-state preservation pass. The idle renderer stays idle, exiting the scene releases its GPU geometry, context-loss retry creates a working fresh scene, and a failed asset load offers the working projected view. Scoped axe reports **zero violations at 1280, 390, and 320 px**, with no horizontal overflow or browser page errors. Desktop, close-up, and phone screenshots were visually reviewed. These checks use the isolated local React 18 workbench and the bundled real Three.js runtime in headless Chromium with software WebGL; they are not a hardware GPU performance benchmark.
+
+The source audit confirms byte-identical source/public files and **105 unchanged connected-workspace functions**, including matrix solving, all device laws, time integration, scope/harmonic measurements, routing, projected rendering, and held references. Only the existing workbench wiring function changed; six new 3D helper/presentation functions were added. Other workspaces and vendor assets remain unchanged. Syntax and scoped whitespace checks pass. The [coverage roadmap](circuitjs-parity-roadmap.md) now records the implemented mesh/orbit layer separately from future physical-breadboard, field, and device-model work.
+
+- [Orbitable RLC board](orbit40-rlc-isometric.jpg)
+- [Close-up component and lead detail](orbit40-capacitor-detail.jpg)
+- [Stored-energy overlay](orbit40-energy.jpg)
+- [Node-voltage overlay](orbit40-voltage.jpg)
+- [Switch before opening](orbit40-switch-before.jpg)
+- [Switch after opening](orbit40-switch-after.jpg)
+- [Desktop 3D workbench](orbit40-board-1280.jpg)
+- [Phone 3D workbench](orbit40-board-320.jpg)
+- [605-test regression](orbit40-regression-results.txt)
+- [109 final checks](orbit40-final-results.txt)
+- [Browser/accessibility and catalog results](orbit40-browser-results.json)
+- [Source integrity checks](orbit40-integrity.json)
+
+
+## Forty-first pass: current trails and signed branch readings in 3D
+
+- Added **Current trails** to the orbit board, with **Selected branch**, **All visible branches**, and **Off** settings. Small instanced markers follow the existing rounded lead geometry and reverse with the calculated conventional current. They respect node inspection and branch emphasis, leave sensing links unanimated, and do not intercept component or node picking. Static direction arrows remain available independently of trails.
+- Added **Play current trails**, **Pause current trails**, and keyboard-operable **Step current trails**. The scene starts paused. Playback describes the displayed DC or time snapshot; it does not move the simulation cursor, change component values, or invalidate a held sample. Display mode persists, while playback requires an explicit action when reopening the scene.
+- Added selected-component **A/B terminal badges** and a readable branch panel that maps terminals to named nodes, displays signed current and voltage, and explains signed power. Positive current enters A; negative current reverses that direction. Positive power describes electrical energy entering the component and negative power describes energy leaving it. Capacitor guidance keeps lead-current markers distinct from charge crossing a dielectric; inductor guidance connects sustained current with returning stored energy.
+- Respect both the operating system's reduced-motion setting, including changes while the board is open, and the circuit's saved motion pause. Manual stepping remains available. A deliberate **Resume circuit motion** action is offered when the shared circuit pause is the blocker. Playback stops when reduced motion or the shared pause turns on and does not restart merely because reduced motion turns off.
+- Keep GPU work bounded: markers share geometry/materials, each lead uses an instanced mesh with at most 24 markers, and active drawing is capped near 30 frames per second. Paused scenes render on changes, playback suspends offscreen or in a hidden document, and shadow maps update when scene settings or data change. Instance buffers are disposed alongside the existing scene resources. Resize handling avoids clearing an unchanged drawing buffer, readiness reflects a completed draw, and passive scroll handling refreshes the scene on demand.
+
+Model scope: these are direction markers for one solved lumped-circuit snapshot. Illustrative travel speed and spacing do not encode current magnitude, drift velocity, transit time, or individual particles. Markers stop at the component's leads rather than depicting transport through its interior. Unknown/nonfinite currents receive no direction; exactly zero current and finite magnitudes at or below 1 pA receive no trail, with distinct explanations in the readout. Current magnitude remains available numerically. No new device physics, electromagnetic fields, physical breadboard connectivity, netlist editing, or CircuitJS component coverage is added. The conventional-current sign convention is described in [OpenStax's current discussion](https://openstax.org/books/university-physics-volume-2/pages/9-1-electrical-current) and its treatment of [signed circuit traversal](https://openstax.org/books/university-physics-volume-2/pages/10-3-kirchhoffs-rules).
+
+Try **Connected circuits → RLC ringing → Orbit 3D board**. Choose a component, use **Focus selected in 3D**, and step or play its current trails. Move the existing time cursor to compare current directions. In **Inductor flyback**, compare the switch-event sides and select the inductor: current can keep its direction while the signed-power reading changes to delivering energy.
+
+Verification: the expanded circuit regression passed **758 checks in 48 files**, including **20 new trail tests**. After the final redraw refinement, **49 checks in four files passed**. Coverage includes signed direction independent of voltage/power, solved source/load behavior, ambiguous ideal-source currents, zero and subthreshold readings, finite bounded trail placement, opposite A/B lead travel, equal illustrative speed, electrical/held-state preservation, accessible controls, and capacitor teaching text. The wider suite exposed a pre-existing accessibility test that assumed there were only 12 tables; the baseline already had 15. The updated test parses the source and verifies a direct nonempty caption for every table while retaining the reference-table checks.
+
+The final browser run uses the bundled real Three.js runtime in the isolated React 18 workbench, with Chromium software WebGL. It covers all **39 examples**, real RLC sign reversals, exact switch-event sides, open/unknown/failed-current suppression, selected/all/off trail filtering, node incidence, manual stepping, playback without cursor movement, held-state preservation, live motion preferences, offscreen suspension, picking, camera persistence, context-loss recovery, fallback, and GPU disposal. Scoped axe reports **zero violations at 1280, 390, and 320 px**, with no horizontal overflow or browser page errors. Screenshots require actual board pixels and allow a bounded compositor wait; merely finding a canvas or a ready attribute is insufficient. This is functional and visual validation, not a hardware GPU benchmark.
+
+Source audit: the source and public copy are byte-identical; **109 existing connected-workspace functions remain unchanged**, including all electrical solving, integration, measurement, routing, and held-reference functions. Only the orbit scene, orbit presentation, and workbench wiring changed; two pure trail/reading helpers were added. Other workspaces are preserved. Syntax and scoped whitespace checks pass.
+
+- [Selected current trail](flow41-selected-trails.png)
+- [All visible branches](flow41-all-trails.png)
+- [Capacitor close-up and terminal mapping](flow41-capacitor-detail.png)
+- [Inductor returning energy](flow41-flyback-reading.png)
+- [Desktop board](flow41-board-1280.png)
+- [Narrow-phone board](flow41-board-320.png)
+- [758-test regression](flow41-regression-results.txt)
+- [49 final checks](flow41-final-results.txt)
+- [Browser, pixel, and accessibility results](flow41-browser-results.json)
+- [Source integrity](flow41-integrity.json)
+
+
+## Forty-second pass: expanded 3D workspace and exact-sample navigation
+
+- Added **Expand 3D workspace**, an in-app expanded view with a larger scene and a separate controls/readings panel on wide screens. Phones use a single-column layout with a persistent **Return to workbench** action. Phone canvas proportions follow the available width, reducing empty vertical space and bringing the time controls and component selector closer to the board. The normal inline view remains available.
+- Replaced the row of camera-preset buttons with a compact **Camera view** selector for Isometric, Front, Rear, and Overhead. A modified angle is shown as Custom view; the rear preset correctly matches the camera's wrapped −180° angle. **Fit whole board** and **Focus selected in 3D** remain prominent. **Camera & display** groups rotation, tilt, zoom, gesture, label, and rendering-quality controls in a keyboard-operable disclosure that remembers whether it is open.
+- Added **Simulation snapshot** controls to both 3D layouts for valid time runs: **Play/Pause 3D response**, previous/next calculated samples, and an accessible sample-position slider. They use the existing playback controller and seek function. The slider enumerates actual stored samples; it does not imply uniform time spacing. Adjacent before/after switch snapshots retain their distinct sides at the same timestamp. Manual seeking pauses response playback. Current-trail controls remain a separate illustrative animation of the displayed snapshot.
+- Keep component selection, probes, camera settings, electrical edits/history, and held references across view transitions. The expanded view itself is temporary and does not reopen automatically. Current-trail playback pauses when changing layouts. Entering and leaving the expanded view disposes the previous canvas's graphics resources and recreates the scene from the same shared state using the already-loaded engine; the rendering implementation is unchanged.
+- Use a native modal dialog so the expanded board is displayed above surrounding app layers and background controls are inert. Escape returns to the inline workbench without also closing the enclosing tool, and focus returns to the expansion button. Closing and failed opening restore the prior page overflow value and CSS priority. A failed opening leaves the inline board available and keyboard focus recoverable. This follows the native [HTML dialog behavior](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element) without requiring browser fullscreen permission.
+
+Try **Connected circuits → RLC ringing → Orbit 3D board → Expand 3D workspace**. Select a capacitor or inductor, focus it, and play or step the response. In **Inductor flyback**, previous/next sample controls cross the switch event while keeping both calculated sides visible at the same time value.
+
+Verification: **145 relevant regression checks in nine files passed**, followed by **49 final checks in four files** after the JavaScript refinements. Real-browser checks cover preset recognition, disclosure persistence, larger scene area, native modality, focus/Tab/Escape behavior, selection/probe/camera/held preservation, shared response playback, first/last sample bounds, exact before/after switch states and lever positions, trail playback followed by idle rendering, context-loss retry inside the expanded view, repeated GPU disposal, failed dialog opening, and prior scroll-style restoration. These checks exercise the existing RLC ringing and inductor-flyback examples; the 39-example catalog is unchanged.
+
+Final responsive validation covers inline and expanded views at **1280 × 1000, 390 × 1000, 320 × 1000, and 844 × 390**. Scoped axe reports zero violations and no horizontal overflow; browser page-error logs are empty. Screenshots capture the visible viewport and assert rendered board pixels, avoiding oversized headless captures that can omit a WebGL layer. Desktop, phone, and landscape captures are retained. The browser runs in the isolated local React 18 harness with bundled Three.js r128 and Chromium software WebGL; this is not a hardware performance benchmark.
+
+The source and public copy are byte-identical. Only the orbit presentation function, workbench wiring, and orbit stylesheet changed. **112 existing connected-workspace functions remain unchanged**, including the renderer, electrical solver, integration, routing, measurements, and held references. All other source code is preserved apart from whitespace. Syntax and scoped whitespace checks pass. This pass expands workspace usability and navigation; it adds no device models, electromagnetic simulation, physical breadboard connectivity, or CircuitJS interchange.
+
+- [Expanded desktop workspace](space42-expanded-1280.png)
+- [Expanded phone workspace](space42-expanded-320.png)
+- [Compact inline phone view](space42-inline-320.png)
+- [Inductor close-up](space42-inductor-detail.png)
+- [Exact switch-event navigation](space42-switch-event.png)
+- [Landscape workspace](space42-expanded-landscape.png)
+- [145 regression checks](space42-regression-results.txt)
+- [49 final checks](space42-final-results.txt)
+- [Interaction and lifecycle results](space42-browser-results.json)
+- [Final responsive/accessibility results](space42-responsive-results.json)
+- [Source integrity](space42-integrity.json)
+
+
+## Forty-third pass: live signal instruments inside the 3D workspace
+
+- Added a **Trace** instrument for the selected 3D component, with **Voltage A − B**, **Current A → B**, **Power absorbed**, and **Stored energy**. The expanded desktop view places it in the side panel and keeps the large 3D scene. Inline and phone layouts place it after the playback controls. Resizing an open expanded view moves the single instrument between these locations without recreating the graphics renderer.
+- The plot uses the existing calculated samples and an elapsed-time axis, with a fixed whole-run vertical scale for each part/metric, a dashed zero line, amber switch-event lines, a live cursor, and the existing held-sample diamond/readout. The stored sample slider continues to enumerate samples rather than imply uniform time spacing. Unknown and nonfinite readings break the path instead of becoming zero or joining across an unknown interval.
+- **Lowest** and **Highest** visit the first calculated sample with the corresponding value, preserving the exact before/after side of a switch. Clicking the plot uses the workbench's existing nearest-sample seek. Arrow keys step samples; Home/End reach the first/last sample. All these actions pause shared response playback and keep the model, edit history, and held reference intact. These are sampled extrema, not a search for an exact continuous-time peak.
+- The selected signal preference persists across layout and component changes. Stored energy is available for capacitors and inductors. Selecting another part temporarily shows voltage while retaining the stored-energy preference for returning to a storage component. An ambiguous ideal-source current displays **Undetermined**, with no trace point or available extrema.
+- **Read this trace** reveals terminal/sign guidance, zero/scale and gap explanations, navigation help, and held/cursor timestamps. Negative power is shown as energy returning to the network. Textual readings and an SVG description accompany the visual plot; keyboard controls and visible focus indicators remain available. Phone playback controls come before the plot and its expandable explanation.
+
+Try **Connected circuits → RLC ringing → Orbit 3D board → Expand 3D workspace**. Select the inductor, choose **Power absorbed**, and visit **Lowest** to see it returning energy. Switch to **Stored energy**, then compare the trace with the board's energy layer. In **Inductor flyback**, select the switch and use the plot's arrow keys to step between the before/after snapshots at one time value.
+
+Validation: **181 tests in 11 files pass after the final layout refinement**, including **17 new signal tests** for nonuniform time positions, duplicate event times/sides, first tied extrema, unknown/nonfinite gaps, unavailable data, stable zero baselines, very large/subnormal values, storage-only energy availability, signed source/load power, solver/held preservation, textual alternatives, and DC omission. An earlier focused run passed 95 checks in five files.
+
+The browser checks use the existing RLC ringing and inductor-flyback examples plus an ambiguous parallel-source circuit. They compare every displayed metric/path/cursor against the existing solver data, exercise extremum and pointer/keyboard seeking, shared playback pause, held references, responsive placement, modal focus return, and actual 3D switch-lever states. Inline and expanded views at **1280 × 1000, 390 × 1000, 320 × 1000, and 844 × 390** have zero scoped axe violations, no horizontal overflow, and no browser page errors. Eight viewport captures require rendered board pixels; separate signal and landscape images are retained. Final desktop, phone, and signal-panel screenshots were visually reviewed.
+
+Browser validation runs in the isolated local React 18 workbench using bundled Three.js r128 and Chromium software WebGL. It does not measure hardware GPU performance or establish full-host application integration. The source/public copy is byte-identical; **112 existing connected-workspace functions are unchanged**, including the renderer, solver, device laws, time integration, routing, measurements, and held-reference functions. Only the orbit presentation and workbench wiring changed; two signal presentation/helper functions and styling were added. All remaining code is preserved apart from whitespace. This improves exploration of existing simulations; device coverage and the 39-example catalog remain unchanged.
+
+- [Expanded desktop scene and signal instrument](signal43-expanded-1280.png)
+- [Inductor delivering energy](signal43-inductor-power.png)
+- [Desktop signal instrument](signal43-trace-1280.png)
+- [Phone workspace](signal43-expanded-320.png)
+- [Phone signal plot](signal43-trace-320.png)
+- [Exact switch-event comparison](signal43-switch-event.png)
+- [Undetermined source current](signal43-undetermined.png)
+- [Final 181-test results](signal43-final-results.txt)
+- [Browser, pixel, and accessibility results](signal43-browser-results.json)
+- [Source integrity](signal43-integrity.json)
+
+
+## Forty-fourth pass: differential probing inside the 3D workspace
+
+- Added a **Voltage probes** instrument to the orbit board, including its expanded workspace. Its signed voltage stays visible when the native disclosure is closed, and the open/closed preference persists. Opening it reveals distinct red/black lead controls, each node's voltage relative to reference node 0, and clear placement instructions.
+- **Swap 3D probes** reverses the pair. **Probe selected part** places red at terminal A and black at terminal B. **Place red/black** selects the active lead, then a 3D node click or named-node selector places it. These actions share the existing workbench probe state and return from node inspection to probe placement. They preserve the circuit, edit history, selected time, and held sample.
+- Added **Scene layer** inside the 3D controls for current directions, node voltages, and stored energy. The voltage legend uses the same palette and scale as the renderer, labels node potentials relative to 0, and identifies undetermined readings. Time runs retain their existing whole-run voltage scale; energy gauges retain their shared joule scale.
+- The meter uses the existing solver's differential voltage directly. A known difference between floating nodes remains available even when their individual voltages relative to 0 are undetermined. Same-node zero, equal known potentials, unused nodes, unresolved differences, and failed calculations receive distinct explanations. Unknown or nonfinite readings never become fabricated zeroes.
+- If a valid sample is held, the meter compares the current probe pair at both snapshots and displays the signed change, cursor minus held. Moving or swapping leads updates both readings consistently. Before/after switch samples remain distinct even at one timestamp. Live announcements pause during response playback.
+
+Try **Connected circuits → Orbit 3D board → Expand 3D workspace → Voltage probes**. Select a resistor and use **Probe selected part**, then **Swap 3D probes** to see polarity reverse. Choose **Node voltages** to compare the reference-relative wire colors with the differential meter. For a time run, hold a sample in the workbench before expanding, then step the 3D response to compare its probe voltage.
+
+Validation: the **14-file regression passed 225 checks and encountered one setup timeout** in the held-sample comparison file. That complete file then passed **35 checks in isolation**, completing verification of **226 unique checks**, including **15 new meter checks** covering divider voltages, reversed leads, known floating differences, same-node and equal-potential zeroes, separately floating sections, unused nodes, failed calculations, nonfinite suppression, same-pair held comparisons, exact switch-event sides, and accessible presentation. The initial focused run encountered six loading/rendering timeouts at the default 5-second test/10-second hook limits. The broad run used one worker and 30-second test/hook limits after browser validation; the isolated comparison retry used a 60-second hook limit.
+
+Real-browser checks exercise a divider, a floating source/load, and the existing inductor-flyback example. They verify actual 3D node picking with both leads, shared workbench/probe state, scene-layer changes, inspection exit, disclosure persistence, modal focus return, signed held/current differences, exact switch sides and lever positions, and playback announcement behavior. Inline and expanded views at **1280 × 1000, 390 × 1000, 320 × 1000, and 844 × 390** have zero scoped axe violations, no horizontal overflow, and no browser page errors. Eight viewport captures assert rendered board pixels; separate instrument, floating-circuit, switch-comparison, and landscape images are retained. Desktop and narrow-phone instrument previews were visually reviewed.
+
+The source/public copies are byte-identical. **114 existing connected-workspace functions remain unchanged**, including the renderer, solver, device laws, integration, waveform instruments, routing, and held-reference calculations. Only the orbit presentation and workbench wiring changed; two meter helper/presentation functions and styling were added. All other source code is preserved apart from whitespace. No dependencies, device models, physical meter loading, or electrical breadboard connectivity were added; the 39-example catalog is unchanged.
+
+Browser validation uses the isolated local React 18 workbench, bundled Three.js r128, and Chromium software WebGL. It verifies functional rendering and interaction rather than hardware GPU performance or complete host-application integration.
+
+- [Expanded voltage board and instrument](meter44-expanded-1280.png)
+- [Narrow-phone voltmeter](meter44-instrument-320.png)
+- [Known difference between floating nodes](meter44-floating-instrument.png)
+- [Floating circuit in 3D](meter44-floating-board.png)
+- [Signed switch-event comparison](meter44-switch-comparison.png)
+- [Phone workspace](meter44-expanded-320.png)
+- [Regression results](meter44-regression-results.txt)
+- [Successful isolated comparison retry](meter44-comparison-retry-results.txt)
+- [Browser, pixel, and accessibility results](meter44-browser-results.json)
+- [Source integrity](meter44-integrity.json)
+
+## Forty-fifth pass: trapezoidal RLC integration and a candid parity audit
+
+Added an optional **Trapezoidal · RLC accuracy** time-response method while preserving **Backward Euler · damped** as the default. A responsive method card explains numerical damping, event restarts, local versus accumulated error, and the distinction between calculation losses and physical resistor dissipation. The new **Ideal LC: where does the energy go?** investigation brings the connected catalog to **40 examples** and reports the final stored energy as a fraction of its starting value.
+
+Try **Connected circuits → Ideal LC: where does the energy go? → Load network example**. Inspect the energy percentage, switch between methods, and explore the calculated response in the scope or **Orbit 3D board**. Changing method stops playback and resets time to zero; held samples are valid only for the corresponding method, circuit, and duration. Circuit components, edit history, selected part, probes, and board view remain available. DC equilibrium ignores the integration preference.
+
+The RLC implementation uses independently written Norton companion equations with terminal A-to-B current and A-minus-B voltage. For a time step h, the trapezoidal capacitor conductance is 2C/h and its history injection is −(2C/h)Vprevious − Iprevious. The inductor conductance is h/(2L), with history Iprevious + (h/(2L))Vprevious. Both state and complementary readings come from the accepted trajectory. Rejected full/half-step trials do not change either history.
+
+Startup, source corners, scheduled switch events, and unknown complementary readings use backward Euler for the next accepted interval before trapezoidal resumes. Switch constraints still produce separate, exact before/after snapshots while carrying capacitor voltage and inductor current continuously. Incompatible constraints and calculations exceeding 4000 attempted intervals still fail without exposing a partial trace. Timed op-amps always retain their existing backward Euler dominant-pole/slew model. Mixed RLC/op-amp runs use a conservative first-order error estimate; pure trapezoidal RLC runs use the second-order step-doubling Richardson factor of three and a cube-root step controller. This is a local error estimate, not a guarantee on accumulated phase or amplitude error. Nonlinear changes and very stiff networks can still produce ringing or encounter the existing calculation limits.
+
+Time CSV preserves all earlier column positions, reports the actual integration method or constraint solve at each sample, and appends `requested_integration` and `integration_restart`. Mixed-method runs are explicitly labeled. Existing backward Euler held-reference keys remain compatible; a trapezoidal reference cannot resolve against a backward Euler run. The two existing diode CSV tests now assert their original absolute column positions instead of assuming those columns remain the final columns.
+
+For the new source-free, 100 mH / 100 µF circuit with 5 V initial capacitor voltage and zero initial inductor current, over 100 ms (approximately five periods):
+
+| Measurement | Backward Euler | Trapezoidal with startup restart |
+| --- | ---: | ---: |
+| Energy remaining at the end | 87.924337% | 99.998549% |
+| Largest voltage error against 5 cos(t / √LC) | 0.309817 V | 0.023276 V |
+| Accepted intervals | 3897 | 372 |
+| Rejected trial intervals | 3 | 3 |
+
+Both use the same configured local tolerances. Each accepted interval retains two calculated half-step samples. After its startup interval, the linear lossless LC trapezoidal energy is conserved to the numerical precision checked by the test; phase error still accumulates. The above figures describe this benchmark only. They are not a universal accuracy ratio or a direct CircuitJS benchmark.
+
+Validation: **540 tests passed across all 22 connected-circuit test files**, including **25 new integration checks**. Independent references cover capacitor/inductor companion steps, RC/RL startup, floating RC response, RLC overshoot and resistor loss, lossless LC energy/phase, and a closed-form nonlinear diode/capacitor response. Additional checks cover missing history, initial unknown readings, parallel capacitors, bounded failures, source corners, exact switch continuity and restarts, mixed op-amp timing, op-amp-only compatibility, algebraic traces, exports, held-reference identity, and accessible presentation. Initial checks exposed two invalid test assumptions (the initial voltage of an isolated inductor need not be known, and local tolerance does not bound total five-period phase error); the tests now check preserved unknown readings and an explicit 0.5%-of-amplitude voltage-error bound. Two older CSV tests assumed their fields remained the suffix and were updated to verify fixed positions after the appended provenance columns. The final complete suite passes.
+
+All **39 earlier catalog trajectories are exactly unchanged under the default method**, including adaptive timestamps and component voltage/current/power/energy readings, compared against the pass-44 source. All 39 also solve under trapezoidal. Real-browser checks load all **40 investigations** and verify method selection, keyboard control, saved DC/time preference, stopped playback and reset time, invalidated held samples, retained editor state, exact switch sides, downloaded CSV metadata, and explicit op-amp timing limits. Layouts at **1280 × 1000, 390 × 1000, 320 × 1000, and 844 × 390** have zero scoped axe violations, no horizontal overflow, and no browser page errors. Three expanded 3D viewport captures verify actual rendered board pixels. Desktop and 320 px method views were visually reviewed.
+
+The source/public files are byte-identical. The function audit preserves **111 of 118 existing connected-workspace functions**, changes seven solver/provenance/presentation functions, and adds four integration helper/control functions. The 3D renderer, routing, diode laws, op-amp laws, and measurement algorithms are unchanged. Browser checks use isolated local React 18 and bundled Three.js r128 with Chromium software WebGL; they do not benchmark hardware GPU performance or the full host application.
+
+**Parity assessment:** this closes one numerical-method gap, but Circuit Bench remains several major engineering stages short of full CircuitJS coverage. The most consequential omissions are general BJT/MOSFET devices, digital and sequential logic/timers, larger free-form circuit editing/subcircuits/file interchange, and coupled magnetic/distributed components. General numerical robustness and representative cross-simulator comparisons are also needed. Visual sophistication, menu counts, and the number of teaching examples cannot establish a defensible completion percentage. The updated [parity roadmap](circuitjs-parity-roadmap.md#current-parity-assessment) separates current coverage from these gaps, using the primary [CircuitJS example catalog](https://www.falstad.com/circuit/e-index.html), [editor documentation](https://www.falstad.com/circuit/doc/overview.html), and [solver internals](https://github.com/pfalstad/circuitjs1/blob/master/INTERNALS.md). CircuitJS supports both backward Euler and trapezoidal integration; matching those choices alone does not establish model or numerical parity.
+
+- [Desktop method controls and scope](integration45-workbench.png)
+- [Narrow-phone method explanation](integration45-method-320.png)
+- [LC investigation in the expanded 3D workspace](integration45-orbit-1280.png)
+- [Phone 3D investigation](integration45-orbit-320.png)
+- [Final 540-test results](integration45-final-results.txt)
+- [Analytical energy/voltage benchmark](integration45-accuracy.json)
+- [39-example comparison against pass 44](integration45-catalog-results.json)
+- [Browser and accessibility results](integration45-browser-results.json)
+- [Downloaded switch-response CSV](integration45-switch-export.csv)
+- [Source integrity](integration45-integrity.json)
+
+The retained [browser QA](integration45-qa.cjs) runs against the current source. The [numerical benchmark script](integration45-benchmark.cjs) can run independently; an optional first argument supplies a historical source file for a baseline comparison. The recorded historical comparison identifies its baseline hash in the integrity report.
+
+## Forty-sixth pass: general NPN and PNP transistors
+
+Added a **Bipolar transistor · NPN / PNP** component to the connected workspace. Collector, emitter, and base can connect to any named node. Forward/reverse current gain and saturation current are configurable. The independently written memoryless Ebers–Moll model runs in DC and time response, including circuits with existing diodes, controlled sources, capacitors, and inductors. Networks without transistors retain their previous nonlinear path.
+
+Five guided investigations bring the catalog to **45**: NPN base-driven switching, PNP high-side switching, a loaded emitter follower, a common-emitter amplifier, and a two-transistor current mirror. Try **Connected circuits → NPN: a base-driven switch → Load network example**, select Q3, then choose **Orbit 3D board → Expand 3D workspace**. Open **Transistor currents** to connect the waveform to the three lead currents. The amplifier and follower examples show why base loading matters; the mirror includes both base currents.
+
+The three-terminal inspector shows signed collector/base/emitter current, VBE, VBC, VCE, total absorbed power, and the current bias region. Region descriptions follow junction polarity instead of a fixed 0.6 V threshold. **Probe base–emitter** and **Probe collector–emitter** use the actual selected nodes. Flat/projected symbols have polarity-correct emitter arrows, a base wire routed visibly around its own package, and terminal labels above the lead pads, clear of the component nameplate; the orbit package has three labeled leads, NPN/PNP coloring, and separate current arrows/trails driven by each terminal's calculated current. The node inspector includes every terminal incidence, including tied terminals. Desktop and phone layouts retain keyboard controls, visible focus, readable stacked readings, and advanced-model disclosures.
+
+All three terminal currents are defined as entering the transistor, so IC + IB + IE = 0. The shared waveform uses VCE and collector current IC. Total device power is **VCE × IC + VBE × IB**, including base-drive power. For polarity sign s = +1 for NPN and −1 for PNP, define F = Is·expm1(s·VBE/VT) and R = Is·expm1(s·VBC/VT). Then IC = s·[F − (1 + 1/βR)R], IB = s·[F/βF + R/βR], and IE = −IC − IB. VT is fixed at 25.85 mV. The transport equations and four junction-bias regions were checked against the primary [MIT 6.012 bipolar-transistor lecture](https://ocw.mit.edu/courses/6-012-microelectronic-devices-and-circuits-spring-2009/resources/mit6_012s09_lec18/).
+
+The nonlinear solver stamps an analytic three-terminal Jacobian, limits forward-junction iteration advances, and checks terminal-current residuals and junction-voltage convergence. Nonfinite exponentials, undetermined junction differences, and exhausted iterations produce an explicit unavailable result. Failed time constraints suppress stale transistor readings. The model does not simulate junction capacitance, charge storage, Early effect, breakdown, temperature changes, damage, or commercial-device pinouts. Multiple-transistor nonlinear feedback can have multiple equilibria; convergence does not certify a unique latch state. Existing network and calculation limits remain in place.
+
+CSV retains earlier column positions and appends model, base-node, gain, Is, VT, VBE/VBC, three terminal currents, VCE, region, and total transistor power fields. Existing generic voltage/current aliases correspond to VCE/IC; explicit transistor columns remove that ambiguity. Changing the base connection, polarity, or gain recalculates the circuit, resets time, invalidates an incompatible held sample, updates the 3D topology, and participates in undo.
+
+Validation covers **572 unique circuit checks across 23 files**, including **32 new transistor checks**. Independent checks include alpha-form transport equations, finite-difference Jacobians for both polarities, loaded DC roots found by nested bisection, saturation/cutoff/reverse operation, base-loaded followers/mirrors, floating and tied terminals, current/power conservation, RC dynamics, and capacitor continuity across a base-drive switch. Export, held-state, geometry, and accessible presentation checks are included.
+
+The broad regression passed 552 checks, encountered two setup timeouts and one worker-start timeout, and caught one new analytical RC assertion with a tighter budget than the established integration checks. The three loading-affected files subsequently passed all 65 checks in isolation. Investigation of the numerical assertion found that the biased transistor and an independently constructed constant-current source produce matching complete RC trajectories: maximum analytical voltage errors are **1.94013 mV with backward Euler** and **77.73264 µV with trapezoidal**, with identical step counts. The transistor collector current matches the independent transport expression. The test now uses the existing 200 µV trapezoidal RC budget and additionally compares every accepted sample against the equivalent circuit; no solver tolerance or implementation was changed. All 55 transistor/integration checks then passed. After terminal-caption corrections, all 56 transistor/node-inspection checks passed. A visual follow-up found that a base wire could approach through its own package and become hidden. The base route now approaches from outside the package; two additional flat/projected checks verify the approach and avoid body crossings. All 83 transistor, routing/camera, orbit, and node-inspection checks passed after this refinement.
+
+All **40 prior default catalog trajectories remain exactly unchanged**, including adaptive timestamps, switch sides, and component voltage/current/power/energy readings, compared with the pass-45 source. All **45 examples solve with both time-integration preferences**, and all five new transistor examples also solve in DC. DC equilibrium is available in 43 catalog examples; the two existing flyback examples retain their incompatible ideal DC constraints and are intended for time response. The benchmark compares these DC outcomes against the prior source as well. New examples converge within 23 nonlinear iterations; the largest sampled current-balance residual among them is below 1 femtoampere.
+
+Final real-browser QA loads all 45 investigations and checks clear orbit routes, base-node/polarity/gain editing and undo, probe actions, held invalidation, node-current inspection, CSV downloads, and flat/projected/orbit views. Actual 3D trail instance positions agree with collector/base/emitter current signs for both NPN and PNP before and after manual stepping. Inline and expanded layouts at **1280 × 1000, 390 × 1000, 320 × 1000, and 844 × 390** have zero scoped axe violations, no horizontal overflow, and no page errors. Five captures verify rendered board pixels; desktop/phone controls and board views were visually inspected. These checks use isolated local React 18, bundled Three.js r128, and Chromium software WebGL; they do not establish hardware GPU performance or complete host-application integration.
+
+The source/public files are byte-identical. An audit of all named function declarations preserves **235 of 257 existing functions**, changes 22, adds 10, and removes none. Changes cover the nonlinear-device adapter, three-terminal connectivity/readings, board geometry/trails, editing, and measurement labels. The existing transient integrator remains unchanged. No dependency or CircuitJS source code was added.
+
+This closes the general bipolar-transistor coverage gap. **MOSFETs, digital and sequential logic/timers, larger editing/subcircuits/circuit-file interchange, and magnetic/distributed devices** remain major stages toward CircuitJS coverage. Charge-aware semiconductor models and representative numerical comparisons are also still needed. See the updated [parity roadmap](circuitjs-parity-roadmap.md#current-parity-assessment) and the primary [CircuitJS example catalog](https://www.falstad.com/circuit/e-index.html). A defensible overall completion percentage still requires a weighted benchmark inventory.
+
+- [NPN switch in the expanded 3D workspace](bjt46-npn-orbit.png)
+- [PNP high-side switch and three lead currents](bjt46-pnp-orbit.png)
+- [Desktop transistor editor](bjt46-editor-1280.png)
+- [Narrow-phone transistor editor](bjt46-editor-320.png)
+- [Phone 3D workspace](bjt46-expanded-320.png)
+- [Common-emitter amplifier scope](bjt46-amplifier-scope.png)
+- [Final browser and accessibility results](bjt46-browser-results.json)
+- [Final transistor/integration checks](bjt46-final-numerical-results.txt)
+- [Final transistor, routing, orbit, and node-inspection checks](bjt46-final-routing-results.txt)
+- [Earlier transistor/node-inspection checks](bjt46-final-presentation-results.txt)
+- [Successful loading-affected retries](bjt46-loading-retry-results.txt)
+- [Original regression record](bjt46-regression-results.txt)
+- [Independent RC comparison](bjt46-rc-results.json)
+- [All-example and historical comparison](bjt46-catalog-results.json)
+- [Transistor response CSV](bjt46-pnp-export.csv)
+- [Source integrity](bjt46-integrity.json)
+
+The retained [browser QA](bjt46-qa.cjs) and [RC benchmark](bjt46-rc-benchmark.cjs) run against the current source. The [catalog script](bjt46-catalog.cjs) accepts an optional historical source path; without it, it writes a separate current-results file so the recorded pass-45 comparison remains intact. The historical baseline hash is recorded in the integrity report.

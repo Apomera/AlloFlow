@@ -113,7 +113,7 @@ const GoldenThreadPanel = ({
     className: "text-amber-500 fill-current"
   }), /*#__PURE__*/React.createElement("h5", {
     className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
-  }, t('persona.golden_thread') || 'Golden Thread'), isEditing && /*#__PURE__*/React.createElement("span", {
+  }, t('blueprint.lesson_focus') || 'Lesson focus'), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] text-amber-700 italic ml-auto"
   }, t('persona.edits_apply_before_generation') || 'Edits apply before generation')), /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
@@ -133,7 +133,17 @@ const GoldenThreadPanel = ({
     className: "text-sm text-slate-700 italic leading-relaxed"
   }, "\"", eq, "\"") : /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-500 italic"
-  }, t('persona.none_set') || '(none set)')), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.none_set') || '(none set)')), /*#__PURE__*/React.createElement("details", {
+    "data-testid": "bp-lesson-focus-details",
+    open: isEditing,
+    className: "group/focus border-t border-amber-200 pt-1"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden"
+  }, t('blueprint.concepts_and_vocabulary') || 'Concepts and vocabulary', /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 14,
+    "aria-hidden": "true",
+    className: "shrink-0 transition-transform motion-reduce:transition-none group-open/focus:rotate-180"
+  })), /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
@@ -203,7 +213,7 @@ const GoldenThreadPanel = ({
     className: "text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
   })), !isEditing && terms.length === 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500 italic"
-  }, t('persona.none_set') || '(none set)'))));
+  }, t('persona.none_set') || '(none set)')))));
 };
 const InteractiveBlueprintCard = React.memo(({
   config,
@@ -581,11 +591,11 @@ const InteractiveBlueprintCard = React.memo(({
   })[field] || String(field || '').replace(/([A-Z])/g, ' $1').trim();
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_card_panel",
-    className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl"
+    className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-sm w-full min-w-0 max-w-2xl"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between mb-4 pb-3 border-b border-indigo-50"
+    className: "flex flex-wrap items-start justify-between gap-3 mb-3 pb-3 border-b border-indigo-50"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
+    className: "flex min-w-0 flex-1 basis-56 items-start gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 p-2 rounded-lg text-indigo-600"
   }, /*#__PURE__*/React.createElement(Sparkles, {
@@ -594,39 +604,19 @@ const InteractiveBlueprintCard = React.memo(({
     className: "font-bold text-indigo-900 text-sm"
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1.5"
+  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : isRunning ? t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.' : t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.'))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-1.5"
   }, hasFailureDiagnostics && typeof onOpenErrorLog === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-testid": "bp-open-error-log",
     onClick: onOpenErrorLog,
-    className: "p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
+    className: "inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
     title: t('blueprint.open_error_log') || 'Open error log',
     "aria-label": t('blueprint.open_error_log') || 'Open error log'
   }, /*#__PURE__*/React.createElement(AlertTriangle, {
     size: 14,
     "aria-hidden": "true"
-  })), run && typeof onCopyDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-testid": "bp-copy-diagnostics",
-    onClick: onCopyDiagnostics,
-    className: "p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
-    title: t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics',
-    "aria-label": t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'
-  }, /*#__PURE__*/React.createElement(Copy, {
-    size: 14,
-    "aria-hidden": "true"
-  })), run && typeof onDownloadDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-testid": "bp-download-diagnostics",
-    onClick: onDownloadDiagnostics,
-    className: "p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
-    title: t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report',
-    "aria-label": t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'
-  }, /*#__PURE__*/React.createElement(Download, {
-    size: 14,
-    "aria-hidden": "true"
-  })), /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("span", null, t('blueprint.open_error_log') || 'Open error log')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_edit_toggle_btn",
     "aria-label": isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'),
@@ -650,19 +640,33 @@ const InteractiveBlueprintCard = React.memo(({
     className: "mt-1 font-semibold",
     "data-testid": "bp-matrix-retry-guidance"
   }, t('blueprint.matrix_unavailable_retry') || 'Choose Generate again to retry after generation planning finishes loading.')), /*#__PURE__*/React.createElement("div", {
-    "data-testid": "bp-generation-matrix-summary",
-    role: "status",
-    "aria-live": "polite",
-    className: "mb-3 rounded-lg border border-sky-200 bg-sky-50 p-2.5 text-[11px] leading-relaxed text-sky-950"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "font-bold"
-  }, t('blueprint.generation_impact') || 'Generation impact'), /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-plan-overview",
+    className: "mb-3 text-xs leading-relaxed text-slate-700"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-slate-800"
+  }, items.length, " ", t('blueprint.resources_in_plan') || 'resources in this plan'), /*#__PURE__*/React.createElement("div", {
     className: "mt-0.5"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
   }, t('blueprint.audience') || 'Audience', ":"), ' ', blueprintGrades.length ? blueprintGrades.join(', ') : blueprintSettings.gradeLevel || config?.instructionalContext?.instructionalGrade || t('fullpack.current_grade') || 'Current grade', ' · ', /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, t('blueprint.output_languages') || 'Output languages', ":"), ' ', (blueprintLanguages.length ? blueprintLanguages : configuredLanguages).join(', ')), /*#__PURE__*/React.createElement("div", {
+  }, t('blueprint.output_languages') || 'Output languages', ":"), ' ', (blueprintLanguages.length ? blueprintLanguages : configuredLanguages).join(', '))), /*#__PURE__*/React.createElement("details", {
+    "data-testid": "bp-generation-matrix-summary",
+    open: blueprintAdaptedPolicy === 'prohibited',
+    className: "group/plan-details mb-3 rounded-lg border border-slate-200 text-xs leading-relaxed text-slate-700"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
+  }, t('blueprint.plan_details') || 'Generation and text settings', /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 14,
+    "aria-hidden": "true",
+    className: "shrink-0 transition-transform motion-reduce:transition-none group-open/plan-details:rotate-180"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "border-t border-slate-200 p-2.5"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "mb-2"
+  }, t('blueprint.details_help') || 'Check how source text, reading levels, languages, and existing resources will be used.'), /*#__PURE__*/React.createElement("div", {
+    className: "font-bold"
+  }, t('blueprint.generation_impact') || 'Generation impact'), /*#__PURE__*/React.createElement("div", {
     className: "mt-1",
     "data-testid": "bp-text-access-summary"
   }, /*#__PURE__*/React.createElement("span", {
@@ -678,7 +682,7 @@ const InteractiveBlueprintCard = React.memo(({
     className: "font-semibold"
   }, t('blueprint.translation_policy') || 'Translation policy', ":"), ' ', String(blueprintSettings.translationMode), ' · ', /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, t('blueprint.attached_translation') || 'Attached translation', ":"), ' ', resolvedTranslationTarget || t('blueprint.translation_off') || 'off / no target resolved', embeddedGlossaryLanguages.length ? ` · ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}` : '')), run?.settingsStale && /*#__PURE__*/React.createElement("div", {
+  }, t('blueprint.attached_translation') || 'Attached translation', ":"), ' ', resolvedTranslationTarget || t('blueprint.translation_off') || 'off / no target resolved', embeddedGlossaryLanguages.length ? ` · ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}` : ''))), run?.settingsStale && /*#__PURE__*/React.createElement("div", {
     "data-testid": "bp-settings-stale-notice",
     role: "status",
     className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
@@ -774,7 +778,7 @@ const InteractiveBlueprintCard = React.memo(({
     size: 16,
     "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow grid grid-cols-1 sm:grid-cols-3 gap-2"
+    className: "min-w-0 flex-grow grid grid-cols-1 gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "col-span-1"
   }, /*#__PURE__*/React.createElement("select", {
@@ -790,13 +794,13 @@ const InteractiveBlueprintCard = React.memo(({
     className: "mt-1 text-[10px] leading-snug text-slate-600",
     "aria-live": "polite"
   }, getToolDesc(item.type))), /*#__PURE__*/React.createElement("div", {
-    className: "col-span-2"
-  }, /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.enter_item'),
-    type: "text",
+    className: "col-span-1"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    "aria-label": (t('fullpack.instruction') || 'Instruction') + ': ' + getToolLabel(item.type),
+    rows: 2,
     value: item.directive,
     onChange: e => handleDirectiveChange(idx, e.target.value),
-    className: "w-full text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic",
+    className: "w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic",
     placeholder: t('blueprint.placeholder_instruction')
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -816,7 +820,7 @@ const InteractiveBlueprintCard = React.memo(({
     size: 14
   }), " ", t('blueprint.add_step'))) : /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_resource_list_review",
-    className: "space-y-3 mb-6"
+    className: "space-y-3 mb-4"
   }, items.map((item, idx) => {
     // Per-resource visual identity comes from the ONE existing
     // registry (_ALLO_STATION_STYLES in the host, mirrored to
@@ -956,7 +960,7 @@ const InteractiveBlueprintCard = React.memo(({
     }, _st ? /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, _st.icon) : idx + 1), /*#__PURE__*/React.createElement("div", {
-      className: "flex-grow"
+      className: "min-w-0 flex-grow break-words"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs font-bold px-2 py-0.5 rounded border uppercase tracking-wider inline-flex items-center gap-1 w-fit mb-1"
       // WCAG 1.4.3: the station registry's `stroke` is a
@@ -993,10 +997,10 @@ const InteractiveBlueprintCard = React.memo(({
       "aria-controls": `bp-desc-${item.id}`,
       "data-testid": "bp-desc-toggle",
       "data-help-key": "blueprint_resource_desc_toggle",
-      className: "ml-1 text-[10px] font-bold w-4 h-4 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400",
+      className: "ml-1 inline-flex min-h-8 items-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
       title: t('blueprint.what_is_this') || 'What does this resource do?',
       "aria-label": `${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`
-    }, "?"), typeof onPreviewStep === 'function' && (_status === 'landed' || _status === 'partial') && !_missing && _runtimeVariants.length <= 1 && /*#__PURE__*/React.createElement("button", {
+    }, t('blueprint.about_resource') || 'About'), typeof onPreviewStep === 'function' && (_status === 'landed' || _status === 'partial') && !_missing && _runtimeVariants.length <= 1 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "bp-preview-btn",
       "data-help-key": "blueprint_preview_step_btn",
@@ -1015,11 +1019,12 @@ const InteractiveBlueprintCard = React.memo(({
     }, t('blueprint.preview_step_short') || 'Preview'), typeof onRebuildStep === 'function' && _status && _status !== 'running' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "bp-rebuild-btn",
+      disabled: !!isRunning,
       "data-help-key": "blueprint_rebuild_step_btn",
       onClick: () => onRebuildStep(item.id),
       title: t('blueprint.rebuild_step') || 'Rebuild just this step',
       "aria-label": `${t('blueprint.rebuild_step') || 'Rebuild just this step'}: ${getToolLabel(item.type)}`,
-      className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
+      className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
     }, t('blueprint.rebuild_step_short') || 'Rebuild'), openDescIds.indexOf(item.id) !== -1 && getToolDesc(item.type) && /*#__PURE__*/React.createElement("p", {
       id: `bp-desc-${item.id}`,
       "data-testid": "bp-desc-body",
@@ -1034,14 +1039,27 @@ const InteractiveBlueprintCard = React.memo(({
       className: "block mt-1 opacity-80 break-words"
     }, t('blueprint.failure_log_help') || 'Technical details remain in the on-device error log; copied and downloaded diagnostics are sanitized.')), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
-    }, "\"", item.directive || "No specific instructions.", "\""), /*#__PURE__*/React.createElement("p", {
+    }, "\"", item.directive || "No specific instructions.", "\""), /*#__PURE__*/React.createElement("details", {
+      "data-testid": "bp-row-details",
+      className: "group/row-details mt-1"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
+    }, t('blueprint.row_details') || 'Generation details', /*#__PURE__*/React.createElement(ChevronDown, {
+      size: 13,
+      "aria-hidden": "true",
+      className: "shrink-0 transition-transform motion-reduce:transition-none group-open/row-details:rotate-180"
+    })), /*#__PURE__*/React.createElement("p", {
       "data-testid": "bp-row-generation-impact",
       "data-resource-key": item.id,
       "data-matrix-status": _rowMatrixUnavailable ? 'unavailable' : _generationVariants.length ? 'ready' : 'pending',
       className: "mt-1 text-[10px] leading-relaxed text-sky-900"
     }, _rowMatrixUnavailable ? /*#__PURE__*/React.createElement("span", {
       "data-testid": "bp-row-matrix-unavailable"
-    }, t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.') : _generationVariants.length ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}` : t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.'), (_runtimeVariants.length > 1 || _failedRuntimeVariants.length > 0 || _missingRuntimeVariants.length > 0) && /*#__PURE__*/React.createElement("div", {
+    }, t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.') : _generationVariants.length ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}` : t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.'), _runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && /*#__PURE__*/React.createElement("ul", {
+      className: "mt-1 space-y-1 break-all text-[10px] text-slate-500"
+    }, _runtimeVariants.map((variant, index) => variant && (variant.artifactId || variant.resourceId) ? /*#__PURE__*/React.createElement("li", {
+      key: variant.generationIdentity || index
+    }, t('blueprint.artifact_id') || 'Artifact', ": ", variant.artifactId || variant.resourceId) : null))), (_runtimeVariants.length > 1 || _failedRuntimeVariants.length > 0 || _missingRuntimeVariants.length > 0) && /*#__PURE__*/React.createElement("div", {
       "data-testid": "bp-variant-results",
       className: "mt-2 rounded border border-slate-200 bg-white p-2"
     }, /*#__PURE__*/React.createElement("div", {
@@ -1071,11 +1089,7 @@ const InteractiveBlueprintCard = React.memo(({
         className: "flex flex-wrap items-center gap-x-1.5 gap-y-1"
       }, /*#__PURE__*/React.createElement("span", {
         className: "font-bold"
-      }, isSuccessful ? t('blueprint.status_landed') || 'Done' : isMissingArtifact ? t('blueprint.resource_missing') || 'Resource gone' : variant && variant.status === 'interrupted' ? t('blueprint.status_interrupted') || 'Interrupted' : t('blueprint.status_failed') || 'Failed'), /*#__PURE__*/React.createElement("span", null, audience), /*#__PURE__*/React.createElement("span", {
-        className: "uppercase opacity-75"
-      }, variant && variant.action || 'generate'), artifactId && /*#__PURE__*/React.createElement("span", {
-        className: "break-all opacity-75"
-      }, t('blueprint.artifact_id') || 'Artifact', ": ", artifactId), isSuccessful && typeof onPreviewStep === 'function' && /*#__PURE__*/React.createElement("button", {
+      }, isSuccessful ? t('blueprint.status_landed') || 'Done' : isMissingArtifact ? t('blueprint.resource_missing') || 'Resource gone' : variant && variant.status === 'interrupted' ? t('blueprint.status_interrupted') || 'Interrupted' : t('blueprint.status_failed') || 'Failed'), /*#__PURE__*/React.createElement("span", null, audience), isSuccessful && typeof onPreviewStep === 'function' && /*#__PURE__*/React.createElement("button", {
         type: "button",
         "data-testid": "bp-preview-variant-btn",
         onClick: () => {
@@ -1089,7 +1103,26 @@ const InteractiveBlueprintCard = React.memo(({
     })))));
   }), items.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-center text-slate-600 text-sm italic py-4"
-  }, t('blueprint.empty_plan'))), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
+  }, t('blueprint.empty_plan'))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 pt-3 border-t border-slate-100"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "blueprint_cancel_btn",
+    disabled: !!isRunning,
+    "aria-label": t('common.cancel'),
+    onClick: onCancel,
+    className: "flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+  }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "blueprint_generate_pack_btn",
+    "aria-label": isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('blueprint.generate_resources') || 'Generate resources',
+    disabled: !!isRunning || items.length === 0,
+    onClick: onConfirm,
+    className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 14,
+    className: "text-yellow-700 fill-current"
+  }), " ", isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('blueprint.generate_resources') || 'Generate resources')), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
     className: "pt-3 border-t border-slate-100",
     "data-testid": "bp-template-save"
   }, !showTemplateSave ? /*#__PURE__*/React.createElement("button", {
@@ -1161,25 +1194,40 @@ const InteractiveBlueprintCard = React.memo(({
     "data-testid": "bp-template-save-cancel",
     onClick: () => setShowTemplateSave(false),
     className: "text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
-  }, t('common.cancel') || 'Cancel')))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-3 pt-3 border-t border-slate-100"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "blueprint_cancel_btn",
-    "aria-label": t('common.cancel'),
-    onClick: onCancel,
-    className: "flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-  }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "blueprint_generate_pack_btn",
-    "aria-label": isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('common.generate'),
-    disabled: !!isRunning,
-    onClick: onConfirm,
-    className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
-  }, /*#__PURE__*/React.createElement(Sparkles, {
+  }, t('common.cancel') || 'Cancel')))), run && (typeof onCopyDiagnostics === 'function' || typeof onDownloadDiagnostics === 'function') && /*#__PURE__*/React.createElement("details", {
+    "data-testid": "bp-troubleshooting",
+    className: "group/support mt-3 border-t border-slate-200 text-xs text-slate-600"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
+  }, t('fullpack.troubleshooting') || 'Troubleshooting', /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
-    className: "text-yellow-700 fill-current"
-  }), " ", isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('blueprint.generate'))));
+    "aria-hidden": "true",
+    className: "shrink-0 transition-transform motion-reduce:transition-none group-open/support:rotate-180"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "my-2 leading-relaxed"
+  }, t('fullpack.troubleshooting_help') || 'Technical details for investigating a generation problem.'), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, run && typeof onCopyDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-copy-diagnostics",
+    onClick: onCopyDiagnostics,
+    className: "inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+    title: t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics',
+    "aria-label": t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'
+  }, /*#__PURE__*/React.createElement(Copy, {
+    size: 14,
+    "aria-hidden": "true"
+  }), t('fullpack.copy_diagnostics') || 'Copy diagnostics'), run && typeof onDownloadDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-download-diagnostics",
+    onClick: onDownloadDiagnostics,
+    className: "inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+    title: t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report',
+    "aria-label": t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'
+  }, /*#__PURE__*/React.createElement(Download, {
+    size: 14,
+    "aria-hidden": "true"
+  }), t('fullpack.download_report') || 'Download report'))));
 });
 const HarmonyMeter = ({
   score

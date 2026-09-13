@@ -257,7 +257,7 @@ describe('Anatomy model-aware canvas toolbar', () => {
     }, { gradeLevel: '9' }));
     resetStemLab();
     const youngBlueprint = parseMarkup(renderAnatomy(filePath, {
-      _bodyView3d: true,
+      complexity: 1, _bodyView3d: true,
       _body3dStyle: 'blueprint',
     }));
     resetStemLab();

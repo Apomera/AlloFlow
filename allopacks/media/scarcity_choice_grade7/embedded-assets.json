@@ -1,0 +1,290 @@
+[
+  {
+    "id": "scx-term-1",
+    "kind": "term",
+    "file": "scx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four gold demand circles point toward one teal shared-resource box.",
+    "altHash": "img-eiz-924b1174"
+  },
+  {
+    "id": "scx-term-2",
+    "kind": "term",
+    "file": "scx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four gold demand circles point toward one teal shared-resource box.",
+    "altHash": "img-eiz-924b1174"
+  },
+  {
+    "id": "scx-term-3",
+    "kind": "term",
+    "file": "scx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A path forks toward teal and gold arrowheads.",
+    "altHash": "img-9rz-ed685f71"
+  },
+  {
+    "id": "scx-term-4",
+    "kind": "term",
+    "file": "scx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Teal and gold boxes have arrows pointing in opposite directions between them.",
+    "altHash": "img-4lb-c89db4ca"
+  },
+  {
+    "id": "scx-term-5",
+    "kind": "term",
+    "file": "scx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A taller teal option stands beside a shorter gold option, with an arrow toward the gold option.",
+    "altHash": "img-52z-c3970be8"
+  },
+  {
+    "id": "scx-term-6",
+    "kind": "term",
+    "file": "scx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A path forks toward teal and gold arrowheads.",
+    "altHash": "img-9rz-ed685f71"
+  },
+  {
+    "id": "scx-term-7",
+    "kind": "term",
+    "file": "scx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal checkmark crosses a large gold circle.",
+    "altHash": "img-bwv-fca67f46"
+  },
+  {
+    "id": "scx-term-8",
+    "kind": "term",
+    "file": "scx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A crossed-out gray past-cost card sits left of a dividing line, with a forward arrow on the right.",
+    "altHash": "img-9lj-7a50829d"
+  },
+  {
+    "id": "scx-term-9",
+    "kind": "term",
+    "file": "scx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three teal blocks are stacked while one gold block is shown separately above them.",
+    "altHash": "img-5mv-d9def8c8"
+  },
+  {
+    "id": "scx-term-10",
+    "kind": "term",
+    "file": "scx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A branching path has a gold circle beside one option and an arrow toward it.",
+    "altHash": "img-c7b-8fda2e8a"
+  },
+  {
+    "id": "scx-anchor-1",
+    "kind": "anchor",
+    "file": "scx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four gold demand circles point toward one teal shared-resource box.",
+    "altHash": "img-eiz-924b1174"
+  },
+  {
+    "id": "scx-anchor-2",
+    "kind": "anchor",
+    "file": "scx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A path forks toward teal and gold arrowheads.",
+    "altHash": "img-9rz-ed685f71"
+  },
+  {
+    "id": "scx-anchor-3",
+    "kind": "anchor",
+    "file": "scx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A taller teal option stands beside a shorter gold option, with an arrow toward the gold option.",
+    "altHash": "img-52z-c3970be8"
+  },
+  {
+    "id": "scx-anchor-4",
+    "kind": "anchor",
+    "file": "scx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A crossed-out gray past-cost card sits left of a dividing line, with a forward arrow on the right.",
+    "altHash": "img-9lj-7a50829d"
+  },
+  {
+    "id": "scx-anchor-5",
+    "kind": "anchor",
+    "file": "scx-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three teal blocks are stacked while one gold block is shown separately above them.",
+    "altHash": "img-5mv-d9def8c8"
+  },
+  {
+    "id": "scx-sort-1",
+    "kind": "sort",
+    "file": "scx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A numberless clock has two hands inside a teal rim.",
+    "altHash": "img-evb-cb1eaab6"
+  },
+  {
+    "id": "scx-sort-2",
+    "kind": "sort",
+    "file": "scx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three colored car shapes fill a row of marked parking spaces.",
+    "altHash": "img-4z7-ceb90b8c"
+  },
+  {
+    "id": "scx-sort-3",
+    "kind": "sort",
+    "file": "scx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold mound of sand has a few dark grains on its surface.",
+    "altHash": "img-7fz-dc949581"
+  },
+  {
+    "id": "scx-sort-4",
+    "kind": "sort",
+    "file": "scx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Blue airflow lines pass above two green hills.",
+    "altHash": "img-gfj-2e518ecd"
+  },
+  {
+    "id": "scx-sort-5",
+    "kind": "sort",
+    "file": "scx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three broad blue wave lines cross the page.",
+    "altHash": "img-nyn-95f04777"
+  },
+  {
+    "id": "scx-sort-6",
+    "kind": "sort",
+    "file": "scx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Gold sunlight arrows fall onto an open green field.",
+    "altHash": "img-96z-2a6e0f42"
+  },
+  {
+    "id": "scx-sort-7",
+    "kind": "sort",
+    "file": "scx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A blank ticket outline has a gold perforation line near one end.",
+    "altHash": "img-56z-4431d6eb"
+  },
+  {
+    "id": "scx-sort-8",
+    "kind": "sort",
+    "file": "scx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A crossed-out gray past-cost card sits left of a dividing line, with a forward arrow on the right.",
+    "altHash": "img-9lj-7a50829d"
+  },
+  {
+    "id": "scx-sort-9",
+    "kind": "sort",
+    "file": "scx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A crossed-out gray past-cost card sits left of a dividing line, with a forward arrow on the right.",
+    "altHash": "img-9lj-7a50829d"
+  },
+  {
+    "id": "scx-lesson-1",
+    "kind": "lesson",
+    "file": "scx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A crafted-paper community room has one open floor area with folded furniture along the wall.",
+    "altHash": "img-tp3-824431f0"
+  },
+  {
+    "id": "scx-lesson-2",
+    "kind": "lesson",
+    "file": "scx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four gold demand circles point toward one teal shared-resource box.",
+    "altHash": "img-eiz-924b1174"
+  },
+  {
+    "id": "scx-lesson-3",
+    "kind": "lesson",
+    "file": "scx-lesson-3.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Crafted-paper instruments include a drum, guitar, saxophone, keyboard and violin.",
+    "altHash": "img-18vr-da68dc18"
+  },
+  {
+    "id": "scx-lesson-4",
+    "kind": "lesson",
+    "file": "scx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A path forks toward teal and gold arrowheads.",
+    "altHash": "img-9rz-ed685f71"
+  },
+  {
+    "id": "scx-lesson-5",
+    "kind": "lesson",
+    "file": "scx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Teal and gold boxes have arrows pointing in opposite directions between them.",
+    "altHash": "img-4lb-c89db4ca"
+  },
+  {
+    "id": "scx-lesson-6",
+    "kind": "lesson",
+    "file": "scx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A taller teal option stands beside a shorter gold option, with an arrow toward the gold option.",
+    "altHash": "img-52z-c3970be8"
+  },
+  {
+    "id": "scx-lesson-7",
+    "kind": "lesson",
+    "file": "scx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A crossed-out gray past-cost card sits left of a dividing line, with a forward arrow on the right.",
+    "altHash": "img-9lj-7a50829d"
+  },
+  {
+    "id": "scx-lesson-8",
+    "kind": "lesson",
+    "file": "scx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three teal blocks are stacked while one gold block is shown separately above them.",
+    "altHash": "img-5mv-d9def8c8"
+  }
+]

@@ -1,0 +1,302 @@
+[
+  {
+    "resourceId": "st-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nWhen someone asks what a book was about, it is easy to say \"it was good\" and get stuck. This week you learn a way to tell it back that always works.\n\n1. Read **Three Parts of Every Story**.\n2. Learn the words in **Story Words**, then win the **Crossword** and the **Matching** game.\n3. Keep the **Retell It in Three Parts** chart where you can see it.\n4. Sort the cards in **Beginning, Middle, or End?**\n5. Use the **Retelling Frames** out loud with a partner before you write anything.\n6. Take **Story Check**.\n7. Lock it in with **Remember the Three Parts**.\n8. Peek at **Story Questions Kids Ask** if something is bugging you.\n9. Finish with **Design: A Retelling Card for a Reading Buddy** — make something a younger kid can really use.\n\nYour job this week: retell one book out loud to somebody at home, in order, without skipping the middle. 📚\n\nPicture panels: Meet the story; Trouble and attempts; An ending; Retell and check. Pictures support the lesson text and do not replace decoding or evidence from narration. Key lesson word-part examples have native editable labels; other schematic marks illustrate organization. Read sort statements in their supplied context. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nWhen someone asks what a book was about, it is easy to say \"it was good\" and get stuck. This week you learn a useful way to organize a retelling.\n\n1. Read **Retell a Story in Three Parts**.\n2. Learn the words in **Story Words**, then win the **Crossword** and the **Matching** game.\n3. Keep the **Retell It in Three Parts** chart where you can see it.\n4. Sort the cards in **Beginning, Middle, or End?**\n5. Use the **Retelling Frames** out loud with a partner before you write anything.\n6. Take **Story Check**.\n7. Lock it in with **Remember the Three Parts**.\n8. Peek at **Story Questions Kids Ask** if something is bugging you.\n9. Finish with **Design: A Retelling Card for a Reading Buddy** — make something a younger kid can really use.\n\nYour job this week: retell one book out loud to somebody at home, in order, without skipping the middle. 📚\n\nPicture panels: Meet the story; Trouble and attempts; An ending; Retell and check. Pictures support the lesson text and do not replace decoding or evidence from narration. Key lesson word-part examples have native editable labels; other schematic marks illustrate organization. Read sort statements in their supplied context. Educator review is pending.\n\nSort context: Sam receives a bike on a summer morning in his driveway. Its wheel wobbles; trying to straighten it himself does not work. He stops riding. His aunt helps repair it and checks that it is safe. He reaches the park, puts away the wrench and thanks her. Sort the cards within this sequence, not by assuming a bicycle or wrench always belongs in one story part."
+  },
+  {
+    "resourceId": "st-reading",
+    "path": "title",
+    "from": "Three Parts of Every Story",
+    "to": "Retell a Story in Three Parts"
+  },
+  {
+    "resourceId": "st-reading",
+    "path": "data",
+    "from": "## Three Parts of Every Story\n\nEvery **story** has three parts. Once you know them, you can tell any book back to somebody.\n\nThe **beginning** tells you who and where. You meet the **character**, and you find out the **setting** — the place and the time.\n\nThe **middle** is where the trouble starts. Something goes wrong. That trouble is the **problem**. The character tries to fix it, and the first try often flops.\n\nThe **end** is where the trouble gets fixed at last. That fix is the **solution**. Then things go quiet again.\n\nHere is a short one. Ada gets a new puppy. The puppy chews her shoe, then her hat, then her library book. Ada hides them all, but the puppy keeps finding them. So Ada gives the puppy a rope toy of its own. Now the puppy chews the rope, and the shoes are safe.\n\nCan you hear the three parts? The puppy arrives. The chewing goes on and on. The rope toy fixes it.\n\nNow **retell** it. Say the beginning, then the middle, then the end. Keep that **order**. If you tell the end first, nobody knows why the rope toy matters.\n\nOne more trick. Listen for the word \"but.\" Stories turn at a but. Ada loved her puppy, but it chewed her things. That little word is the door into the middle.",
+    "to": "## Retell a Story in Three Parts\n\nA **story** tells about characters and events. A beginning, middle and end can help us organize a **retell** in our own words. Stories can be built in different ways; not every story ends with a solved problem.\n\nThe **beginning** often introduces a **character** and the **setting**, where and when the story takes place. In the **middle**, events develop. A **problem** may lead a character to try something. The **end** shows how the story finishes. Sometimes there is a **solution**; sometimes a question remains.\n\nHere is an invented example. Ada gets a puppy. It chews her shoe, hat and library book. She hides the things, but the puppy finds them. Ada gives it a rope toy. In this story it chews the toy instead, and the shoes are safe.\n\nAt the beginning the puppy arrives. In the middle the chewing causes trouble and hiding things does not work. At the end the rope toy helps solve the problem. This is a story, not a guide to training a real puppy.\n\nRetell key events in **order** so a listener can follow the changes. You can speak, write, use AAC or point to pictures with support. Go back to the story when you need to check.\n\nBut can signal a change: Ada liked her puppy, but it chewed her things. It is a clue, not a rule. Find the actual events rather than searching only for one word."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.0.def",
+    "from": "Something that happens to somebody, told from start to finish.",
+    "to": "An account of characters and events, real or invented."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.1.def",
+    "from": "The first part, where you meet who it is about and find out where they are.",
+    "to": "The first part, which often introduces characters and setting."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.2.def",
+    "from": "The part where trouble shows up and somebody tries to fix it.",
+    "to": "The part where the main events develop."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.3.def",
+    "from": "The last part, where the trouble is settled and things go quiet.",
+    "to": "The last part, showing how the story finishes, with or without a solved problem."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.4.def",
+    "from": "A person or an animal that things happen to in a book.",
+    "to": "A person, animal or other being that takes part in a story."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.7.def",
+    "from": "The way the trouble finally gets fixed.",
+    "to": "A way a story problem is addressed or solved."
+  },
+  {
+    "resourceId": "st-glossary",
+    "path": "data.8.def",
+    "from": "To say what happened in your own words, in the right order.",
+    "to": "To tell key events again in your own words, keeping their meaning and connections."
+  },
+  {
+    "resourceId": "st-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "Listen for the word but",
+    "to": "Look for changes; but may be a clue"
+  },
+  {
+    "resourceId": "st-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "How is it fixed?",
+    "to": "How does the story finish?"
+  },
+  {
+    "resourceId": "st-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "How do things settle?",
+    "to": "Is the problem solved or left open?"
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.instructions",
+    "from": "Two cards hold what you need for any book. Look at the example, then make one of your own and say how it helps.",
+    "to": "Two cards offer a frame for the practice stories. Look at the example, then make one of your own and say how it helps."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.sourceExcerpt",
+    "from": "The beginning tells you who and where. The middle is where the trouble starts. The end is where the trouble gets fixed at last. One more trick. Listen for the word \"but.\" Stories turn at a but.",
+    "to": "The beginning often introduces a character and the setting. In the middle, events develop. The end shows how the story finishes. But can signal a change; it is a clue, not a rule."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.lessonRef.title",
+    "from": "Three Parts of Every Story",
+    "to": "Retell a Story in Three Parts"
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "The end is where the solution fixes the problem and things go quiet.",
+    "to": "The end shows how the story finishes; in this practice story the problem is solved."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.essentialFacts.3",
+    "from": "Telling the end first makes the rest stop making sense.",
+    "to": "Starting with earlier events can help a listener understand later events."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Three fingers. Thumb up: WHO and WHERE. Pointer up: WHAT WENT WRONG. Middle finger up: HOW IT GOT FIXED. Count them on your hand while you retell, and you cannot skip the middle.",
+    "to": "Put three cards in a row: beginning, middle, end. Point to each while you retell the puppy story. Use gestures or AAC if that works better for you."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Your fingers go up in a fixed order. You cannot shuffle them. So the hand keeps the parts from coming out backwards.",
+    "to": "Three cards or gestures can cue an order you choose. Point to each part while retelling; no particular hand movement is required."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Give each one a finger and a short question.",
+    "to": "Give each part a card, gesture or short question."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Retell a book while counting on your hand.",
+    "to": "Retell while pointing, gesturing or using your preferred communication support."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.coachPrompts.0",
+    "from": "Which finger do people forget when they retell too fast?",
+    "to": "Which part needs another detail in your retelling?"
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "If you tell the end first, nobody knows why the rope toy matters.",
+    "to": "Telling the chewing problem before the solution helps explain why the rope toy matters."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.0.hookFact.sourceTitle",
+    "from": "Three Parts of Every Story (this lesson)",
+    "to": "Retell a Story in Three Parts (this lesson)"
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.1.target",
+    "from": "The word but is the door into the middle of a story",
+    "to": "But can be a clue to a change in a story"
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.1.essentialFacts.0",
+    "from": "Stories turn at the word but.",
+    "to": "But can mark a contrast or change; it does not always mark a story problem."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "The turn is where the problem begins.",
+    "to": "In this example the contrast introduces the chewing problem."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "BUT is a door. Say the sentence and stop right at the word but. Then push the door open. Everything after it is the trouble. Ada loved her puppy | BUT | it chewed her things.",
+    "to": "In Ada liked her puppy, but it chewed her things, but signals a contrast. Draw a door to remember that change. Other uses of but may not introduce a story problem."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.1.mapping",
+    "from": "A door is where one room ends and another begins. That is exactly what the word but does, between the calm beginning and the messy middle.",
+    "to": "A door can remind you to notice a change. This is an analogy, not a rule for locating every story middle."
+  },
+  {
+    "resourceId": "st-memory",
+    "path": "data.cards.1.hookFact.sourceTitle",
+    "from": "Three Parts of Every Story (this lesson)",
+    "to": "Retell a Story in Three Parts (this lesson)"
+  },
+  {
+    "resourceId": "st-sort",
+    "path": "data.items.5.content",
+    "from": "Sam's aunt shows him how to tighten the bolt",
+    "to": "Sam stops riding; his aunt repairs the wheel and checks the bike"
+  },
+  {
+    "resourceId": "st-sort",
+    "path": "meta",
+    "from": "3 buckets • 8 cards • a different story than the reading, on purpose",
+    "to": "3 categories; 8 events from one supplied practice story"
+  },
+  {
+    "resourceId": "st-quiz",
+    "path": "data.questions.0.question",
+    "from": "Which part tells you who the character is and where they are?",
+    "to": "In our three-part practice frame, which part introduces the character and setting?"
+  },
+  {
+    "resourceId": "st-quiz",
+    "path": "data.questions.3.options.1",
+    "from": "The end stops making sense if it comes first",
+    "to": "It helps listeners follow how one event leads to another"
+  },
+  {
+    "resourceId": "st-quiz",
+    "path": "data.questions.3.correctAnswer",
+    "from": "The end stops making sense if it comes first",
+    "to": "It helps listeners follow how one event leads to another"
+  },
+  {
+    "resourceId": "st-quiz",
+    "path": "data.questions.4.question",
+    "from": "Where in a sentence is a story most likely to turn?",
+    "to": "Which wording can be a clue that events are changing, even though it is not a rule?"
+  },
+  {
+    "resourceId": "st-quiz",
+    "path": "data.questions.6.question",
+    "from": "Think of a book you have read. What was the problem, and how was it solved?",
+    "to": "Think of a story with a problem. What was the problem, and how was it addressed? Say if it remained unresolved."
+  },
+  {
+    "resourceId": "st-quiz",
+    "path": "data.questions.6.expectedAnswer",
+    "from": "Answers vary. A full answer names one trouble that got in the character's way, then names the thing that finally fixed it, and the two match each other.",
+    "to": "Accept a text-supported problem and explanation of how characters addressed it, including an unresolved ending where appropriate."
+  },
+  {
+    "resourceId": "st-frames",
+    "path": "data.items.4.text",
+    "from": "At the end, ____ fixed it by ____.",
+    "to": "At the end, ____. The problem was solved / partly addressed / left open because ____."
+  },
+  {
+    "resourceId": "st-frames",
+    "path": "data.rubric",
+    "from": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Storyteller |\n|---|---|---|---|\n| Order | Parts come out jumbled | Beginning and end are in order | All three parts in order, no backing up |\n| The middle | Skipped or one word | Names the problem | Names the problem and at least one try that did not work |\n| Your own words | Copies whole sentences from the book | Mostly own words | All own words, and still true to the book |",
+    "to": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Storyteller |\n|---|---|---|---|\n| Order | Parts come out jumbled | Beginning and end are in order | All three parts in order, no backing up |\n| The middle | Skipped or one word | Names the problem | Names the key middle events and explains their connections |\n| Your own words | Copies whole sentences from the book | Mostly own words | All own words, and still true to the book |"
+  },
+  {
+    "resourceId": "st-faq",
+    "path": "data.1.answer",
+    "from": "No. Reading out loud uses the author's words. Retelling uses yours. That is why it is harder, and also why your teacher can tell whether you understood it.",
+    "to": "Reading aloud uses the written words. Retelling selects key events in your own words or supported communication. Both can help you understand a story."
+  },
+  {
+    "resourceId": "st-faq",
+    "path": "data.2.answer",
+    "from": "Long enough that someone who has not read the book could follow it. Three good sentences often beat twenty rushed ones. If your listener looks confused, you skipped the middle.",
+    "to": "Include enough key events for someone to follow. Ask what your listener needs clarified; confusion can have many causes, not just a missing middle."
+  },
+  {
+    "resourceId": "st-faq",
+    "path": "data.3.answer",
+    "from": "Go back and look for the word but, or for the moment things went wrong. That is almost always where the middle starts. Then ask yourself what the character tried.",
+    "to": "Reread or review the pictures. Ask what happened after the beginning and before the ending. A word such as but can help, but is not required."
+  },
+  {
+    "resourceId": "st-faq",
+    "path": "data.5.answer",
+    "from": "You can, and grown-up writers sometimes do it on purpose. But it is a hard trick. Learn to tell it in order first, and save the flashy way for when the plain way is easy.",
+    "to": "Yes, stories sometimes begin with a later event. For this task, practice chronological order and explain connections clearly."
+  },
+  {
+    "resourceId": "st-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "The end is where the solution fixes the problem.",
+    "to": "The end shows how the story finishes; a problem may be solved or left open."
+  },
+  {
+    "resourceId": "st-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "Told out of order, the end stops making sense.",
+    "to": "Chronological order helps a listener follow the reasons for events in this task."
+  },
+  {
+    "resourceId": "st-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A student made a card with three big boxes and no words at all.",
+    "to": "A student made a card with three big pictures and short editable labels: beginning, middle, end."
+  },
+  {
+    "resourceId": "st-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Now retell it. Say the beginning, then the middle, then the end. Keep that order. If you tell the end first, nobody knows why the rope toy matters.",
+    "to": "Now retell it. Say the beginning, then the middle, then the end. Keep that order. Telling the chewing problem before the solution helps explain why the rope toy matters."
+  },
+  {
+    "resourceId": "st-challenge",
+    "path": "data.lessonRef.title",
+    "from": "Three Parts of Every Story",
+    "to": "Retell a Story in Three Parts"
+  }
+]

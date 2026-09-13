@@ -1,0 +1,317 @@
+[
+  {
+    "id": "clx-term-1",
+    "kind": "term",
+    "file": "clx-term-1.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Elongated pale rectangular cells have thin purple walls and small purple nuclei near their edges, without green chloroplasts.",
+    "altHash": "img-cqj-03a6c74d"
+  },
+  {
+    "id": "clx-term-2",
+    "kind": "term",
+    "file": "clx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold particles and arrows pass through a central membrane channel; a larger purple particle remains on one side.",
+    "altHash": "img-6tn-9a86f964"
+  },
+  {
+    "id": "clx-term-3",
+    "kind": "term",
+    "file": "clx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A large purple circular nucleus contains a dark nucleolus and a winding strand.",
+    "altHash": "img-bpb-22efb3c8"
+  },
+  {
+    "id": "clx-term-4",
+    "kind": "term",
+    "file": "clx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An orange oval organelle contains a repeatedly folded internal line.",
+    "altHash": "img-dcf-daa0d4e0"
+  },
+  {
+    "id": "clx-term-5",
+    "kind": "term",
+    "file": "clx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An oval cell outlined in teal contains a purple nucleus, orange folded mitochondria, small dark ribosomes and a small blue compartment.",
+    "altHash": "img-nav-16e1eae1"
+  },
+  {
+    "id": "clx-term-6",
+    "kind": "term",
+    "file": "clx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two purple ribosome subunits straddle a teal strand while a gold bead chain emerges nearby.",
+    "altHash": "img-86b-8d5c10e5"
+  },
+  {
+    "id": "clx-term-7",
+    "kind": "term",
+    "file": "clx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equally sized brown cell walls contain a large blue water-filled compartment at left and a smaller one at right.",
+    "altHash": "img-673-0e87fc93"
+  },
+  {
+    "id": "clx-term-8",
+    "kind": "term",
+    "file": "clx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A green oval organelle contains three stacks of flattened green discs.",
+    "altHash": "img-esr-328c9a87"
+  },
+  {
+    "id": "clx-term-9",
+    "kind": "term",
+    "file": "clx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular plant-cell model has a brown wall, teal inner membrane, large blue vacuole, purple nucleus, green chloroplasts and orange mitochondria.",
+    "altHash": "img-e5v-a8440aab"
+  },
+  {
+    "id": "clx-term-10",
+    "kind": "term",
+    "file": "clx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Purple folded membranes connect by a vesicle and arrows to gold curved stacks and a small outgoing vesicle.",
+    "altHash": "img-dkn-257cf101"
+  },
+  {
+    "id": "clx-term-11",
+    "kind": "term",
+    "file": "clx-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular plant-cell model has a brown wall, teal inner membrane, large blue vacuole, purple nucleus, green chloroplasts and orange mitochondria.",
+    "altHash": "img-e5v-a8440aab"
+  },
+  {
+    "id": "clx-term-12",
+    "kind": "term",
+    "file": "clx-term-12.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A compound microscope has an eyepiece, rotating objectives, a slide on its stage, focus knobs and a light in its base.",
+    "altHash": "img-a93-556e4c5a"
+  },
+  {
+    "id": "clx-anchor-1",
+    "kind": "anchor",
+    "file": "clx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold particles and arrows pass through a central membrane channel; a larger purple particle remains on one side.",
+    "altHash": "img-6tn-9a86f964"
+  },
+  {
+    "id": "clx-anchor-2",
+    "kind": "anchor",
+    "file": "clx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A large purple circular nucleus contains a dark nucleolus and a winding strand.",
+    "altHash": "img-bpb-22efb3c8"
+  },
+  {
+    "id": "clx-anchor-3",
+    "kind": "anchor",
+    "file": "clx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An orange oval organelle contains a repeatedly folded internal line.",
+    "altHash": "img-dcf-daa0d4e0"
+  },
+  {
+    "id": "clx-anchor-4",
+    "kind": "anchor",
+    "file": "clx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Purple folded membranes connect by a vesicle and arrows to gold curved stacks and a small outgoing vesicle.",
+    "altHash": "img-dkn-257cf101"
+  },
+  {
+    "id": "clx-anchor-5",
+    "kind": "anchor",
+    "file": "clx-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equally sized brown cell walls contain a large blue water-filled compartment at left and a smaller one at right.",
+    "altHash": "img-673-0e87fc93"
+  },
+  {
+    "id": "clx-sort-1",
+    "kind": "sort",
+    "file": "clx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular plant-cell model has a brown wall, teal inner membrane, large blue vacuole, purple nucleus, green chloroplasts and orange mitochondria.",
+    "altHash": "img-e5v-a8440aab"
+  },
+  {
+    "id": "clx-sort-2",
+    "kind": "sort",
+    "file": "clx-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Rectangular leaf cells contain many small green chloroplasts around pale central regions.",
+    "altHash": "img-hhv-acdfc1be"
+  },
+  {
+    "id": "clx-sort-3",
+    "kind": "sort",
+    "file": "clx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equally sized brown cell walls contain a large blue water-filled compartment at left and a smaller one at right.",
+    "altHash": "img-673-0e87fc93"
+  },
+  {
+    "id": "clx-sort-4",
+    "kind": "sort",
+    "file": "clx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A large purple circular nucleus contains a dark nucleolus and a winding strand.",
+    "altHash": "img-bpb-22efb3c8"
+  },
+  {
+    "id": "clx-sort-5",
+    "kind": "sort",
+    "file": "clx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold particles and arrows pass through a central membrane channel; a larger purple particle remains on one side.",
+    "altHash": "img-6tn-9a86f964"
+  },
+  {
+    "id": "clx-sort-6",
+    "kind": "sort",
+    "file": "clx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An orange oval organelle contains a repeatedly folded internal line.",
+    "altHash": "img-dcf-daa0d4e0"
+  },
+  {
+    "id": "clx-sort-7",
+    "kind": "sort",
+    "file": "clx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two purple ribosome subunits straddle a teal strand while a gold bead chain emerges nearby.",
+    "altHash": "img-86b-8d5c10e5"
+  },
+  {
+    "id": "clx-sort-8",
+    "kind": "sort",
+    "file": "clx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An oval cell outlined in teal contains a purple nucleus, orange folded mitochondria, small dark ribosomes and a small blue compartment.",
+    "altHash": "img-nav-16e1eae1"
+  },
+  {
+    "id": "clx-sort-9",
+    "kind": "sort",
+    "file": "clx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An oval cell outlined in teal contains a purple nucleus, orange folded mitochondria, small dark ribosomes and a small blue compartment.",
+    "altHash": "img-nav-16e1eae1"
+  },
+  {
+    "id": "clx-sort-10",
+    "kind": "sort",
+    "file": "clx-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Purple folded membranes connect by a vesicle and arrows to gold curved stacks and a small outgoing vesicle.",
+    "altHash": "img-dkn-257cf101"
+  },
+  {
+    "id": "clx-lesson-1",
+    "kind": "lesson",
+    "file": "clx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Brown polygonal walls surround empty pale compartments in an illustrated cork section.",
+    "altHash": "img-1y97-644b9732"
+  },
+  {
+    "id": "clx-lesson-2",
+    "kind": "lesson",
+    "file": "clx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rectangular plant-cell model has a brown wall, teal inner membrane, large blue vacuole, purple nucleus, green chloroplasts and orange mitochondria.",
+    "altHash": "img-e5v-a8440aab"
+  },
+  {
+    "id": "clx-lesson-3",
+    "kind": "lesson",
+    "file": "clx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An oval cell outlined in teal contains a purple nucleus, orange folded mitochondria, small dark ribosomes and a small blue compartment.",
+    "altHash": "img-nav-16e1eae1"
+  },
+  {
+    "id": "clx-lesson-4",
+    "kind": "lesson",
+    "file": "clx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold particles and arrows pass through a central membrane channel; a larger purple particle remains on one side.",
+    "altHash": "img-6tn-9a86f964"
+  },
+  {
+    "id": "clx-lesson-5",
+    "kind": "lesson",
+    "file": "clx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An orange oval organelle contains a repeatedly folded internal line.",
+    "altHash": "img-dcf-daa0d4e0"
+  },
+  {
+    "id": "clx-lesson-6",
+    "kind": "lesson",
+    "file": "clx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A green oval organelle contains three stacks of flattened green discs.",
+    "altHash": "img-esr-328c9a87"
+  },
+  {
+    "id": "clx-lesson-7",
+    "kind": "lesson",
+    "file": "clx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equally sized brown cell walls contain a large blue water-filled compartment at left and a smaller one at right.",
+    "altHash": "img-673-0e87fc93"
+  },
+  {
+    "id": "clx-lesson-8",
+    "kind": "lesson",
+    "file": "clx-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two similarly sized potted seedlings stand side by side; the left leaves are upright and the right leaves droop.",
+    "altHash": "img-14pr-80d5d584"
+  }
+]

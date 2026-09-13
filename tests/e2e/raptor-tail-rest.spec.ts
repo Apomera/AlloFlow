@@ -20,13 +20,19 @@ test.describe('Raptor resting tail',()=>{
       c._rhCommand('pause');step(60000);const paused=c._rhSnapshot();c._rhCommand('pause');
       return {flying,entering,resting,turning,paused};
     });
+    const featherFinish=await page.evaluate(()=>{const w=window as any,bird=w.tailScene.getObjectByName('raptor-head-rig').parent,tail=bird.getObjectByName('fan-tail-silhouette'),primary=bird.getObjectByName('left-primary-0'),vanes=bird.getObjectByName('layered-flight-feathers--1');return {name:tail.material.map.name,shared:tail.material.map===vanes.material.map&&(!primary||tail.material.map===primary.material.map),primaryVertices:primary?primary.geometry.attributes.position.count:0,repeat:tail.material.map.repeat.toArray()};});
+    expect(featherFinish).toEqual({name:'raptor-flight-vane',shared:true,primaryVertices:species==='redTail'?18:0,repeat:[1,1]});
+    const wingLayers=await page.evaluate(()=>{const bird=(window as any).tailScene.getObjectByName('raptor-head-rig').parent;return ['left-tapered-wing','right-tapered-wing'].flatMap(name=>bird.getObjectByName(name).parent.children).map(mesh=>({opaque:!mesh.material.transparent,folded:mesh.geometry.morphAttributes.position.length===1}));});
+    expect(wingLayers.every(layer=>layer.opaque&&layer.folded)).toBe(true);
+    const bodyMarks=await page.evaluate(()=>{const material=(window as any).tailScene.getObjectByName('raptor-contour-body').material;return {compiled:!!material.userData.bodyMarkingsCompiled,kind:material.userData.bodyMarkingKind,torsoMap:material.map.name,repeat:material.map.repeat.toArray()};});
+    expect(bodyMarks).toEqual({compiled:true,kind:species==='redTail'?'streaked-belly-band':'pale-throat-patch',torsoMap:'raptor-torso-plumage',repeat:[2,2]});
     if(species==='greatHorned')expect(result.resting.tailBandsCompiled).toBe(true);
     expect(result.flying.tailClosure).toBe(0);expect(result.entering.tailClosure).toBeGreaterThan(0);expect(result.entering.tailClosure).toBeLessThan(0.3);
     expect(result.resting.footToeCount).toBe(4);expect(result.resting.footForwardToes).toBe(species==='greatHorned'?2:3);
     expect(result.resting.footExtension).toBeGreaterThan(0.999);expect(result.flying.footExtension).toBe(0);
     expect(result.resting.footSurfaceClearance).toBeGreaterThanOrEqual(0);expect(result.resting.footSurfaceClearance).toBeLessThan(0.012);
     expect(result.resting.footPositionVersion).toBe(result.flying.footPositionVersion);
-    expect(result.resting.wingMorphCount).toBeGreaterThanOrEqual(8);
+    expect(result.resting.wingMorphCount).toBe(4+result.resting.leftPrimaryFeatherCount+result.resting.rightPrimaryFeatherCount);
     expect(result.resting.wingRestSpan).toBeLessThan(0.32);
     expect(result.flying.wingRestSpan).toBeGreaterThan(0.95);
     expect(result.entering.wingRestSpan).toBeGreaterThan(result.resting.wingRestSpan);
@@ -41,7 +47,7 @@ test.describe('Raptor resting tail',()=>{
       const copy=bird.clone(true);copy.position.set(0,0,0);copy.rotation.set(0,0,0);copy.scale.setScalar(1);study.add(copy);
       const camera=new T.PerspectiveCamera(35,renderer.domElement.clientWidth/renderer.domElement.clientHeight,0.01,100);camera.position.set(1.9,0.3,2.5).multiplyScalar(Math.max(1,0.9/camera.aspect));camera.lookAt(0,-0.10,0.10);renderer.render(study,camera);return renderer.domElement.toDataURL('image/png');
     });
-    writeFileSync('scratch/raptor-flight-review/contour-rest-'+species+'.png',Buffer.from(portrait.split(',')[1],'base64'));
+    writeFileSync('scratch/raptor-flight-review/torso-flow-rest-'+species+'.png',Buffer.from(portrait.split(',')[1],'base64'));
     const launch=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{const step=(window as any).stepTail;c._rhCommand('hold',{key:' ',pressed:true});step(25);const first=c._rhSnapshot();for(let i=0;i<30;i++)step(25);c._rhCommand('hold',{key:' ',pressed:false});return {first,last:c._rhSnapshot()};});
     expect(launch.first.footExtension).toBeLessThan(result.resting.footExtension);expect(launch.first.footExtension).toBeGreaterThan(0.7);
     expect(launch.last.footExtension).toBeLessThan(0.003);expect(launch.last.footPositionVersion).toBe(result.flying.footPositionVersion);
@@ -57,7 +63,14 @@ test.describe('Raptor resting tail',()=>{
       const copy=bird.clone(true);copy.position.set(0,0,0);copy.rotation.set(0,0,0);copy.scale.setScalar(1);study.add(copy);
       const size=renderer.getSize(new T.Vector2());renderer.setSize(960,640,false);const camera=new T.PerspectiveCamera(35,1.5,0.01,100);camera.position.set(0,5,6);camera.lookAt(0,0,-0.1);renderer.render(study,camera);const image=renderer.domElement.toDataURL('image/png');renderer.setSize(size.x,size.y,false);return image;
     });
-    writeFileSync('scratch/raptor-flight-review/contour-flight-'+species+'.png',Buffer.from(flightStudy.split(',')[1],'base64'));
+    writeFileSync('scratch/raptor-flight-review/torso-flow-flight-'+species+'.png',Buffer.from(flightStudy.split(',')[1],'base64'));
+    const underside=await page.evaluate(()=>{
+      const w=window as any,T=w.THREE,renderer=w.tailRenderer,bird=w.tailScene.getObjectByName('raptor-head-rig').parent,study=new T.Scene();study.background=new T.Color(0x182f3b);
+      study.add(new T.HemisphereLight(0xe2f2ff,0xafa28c,1.2));const light=new T.DirectionalLight(0xffecd2,1.1);light.position.set(1,-3,4);study.add(light);
+      const copy=bird.clone(true);copy.position.set(0,0,0);copy.rotation.set(0,0,0);copy.scale.setScalar(1);study.add(copy);
+      const size=renderer.getSize(new T.Vector2());renderer.setSize(800,640,false);const camera=new T.PerspectiveCamera(32,1.25,0.01,100);camera.position.set(1.0,-2.6,2.3);camera.lookAt(0,0,0);renderer.render(study,camera);const image=renderer.domElement.toDataURL('image/png');renderer.setSize(size.x,size.y,false);return image;
+    });
+    writeFileSync('scratch/raptor-flight-review/torso-flow-underside-'+species+'.png',Buffer.from(underside.split(',')[1],'base64'));
     const strikeFoot=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('strike');(window as any).stepTail(16);const s=c._rhSnapshot();c._rhCommand('pause');return s;});
     expect(strikeFoot.footExtension).toBeGreaterThan(0.02);expect(strikeFoot.footExtension).toBeLessThan(0.4);
     await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(true);

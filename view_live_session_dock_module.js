@@ -83,6 +83,8 @@ function LiveSessionDockView(props) {
     resolveWordSoundsAudioDeliveryState,
     retryInteractiveOrganizerStudents,
     retryableLiveOrganizerUids,
+    retryMailboxImagesForStudent,
+    mailboxImageVersion,
     rosterEntries,
     rosterKey,
     sessionData,
@@ -112,6 +114,12 @@ function LiveSessionDockView(props) {
     units,
     updateLivePresenterCue
   } = props;
+  const imageApi = window.AlloModules?.LiveAac;
+  const MailboxImageStatus = imageApi?.MailboxImageStatus;
+  const resourcesWithImages = React.useMemo(() => new Set((history || []).filter(resource => {
+    const manifest = imageApi?.mailboxResourceImages?.(resource);
+    return manifest && (manifest.sources.length || manifest.omitted);
+  }).map(resource => resource.id)), [history, imageApi]);
   return /*#__PURE__*/React.createElement("div", {
     ref: liveDockPanelRef,
     tabIndex: -1,
@@ -1691,6 +1699,7 @@ function LiveSessionDockView(props) {
         key: uid,
         style: {
           display: 'flex',
+          flexWrap: 'wrap',
           alignItems: 'center',
           gap: 6,
           padding: '0.3rem 0.45rem',
@@ -1758,7 +1767,14 @@ function LiveSessionDockView(props) {
           borderRadius: 6,
           padding: '0.05rem 0.3rem'
         }
-      }, organizerProgressLabel) : null, entry.wsProgress && wsAudioNeedsAttention ? /*#__PURE__*/React.createElement("span", {
+      }, organizerProgressLabel) : null, MailboxImageStatus && _alloMbBridgeActive() && resourcesWithImages.has(targetId || viewing) && /*#__PURE__*/React.createElement(MailboxImageStatus, {
+        entry: entry,
+        resourceId: targetId || viewing,
+        resourceAt: targetAt,
+        now: dockNow,
+        mailboxVersion: mailboxImageVersion,
+        onRetry: () => retryMailboxImagesForStudent(uid, targetId || viewing)
+      }), entry.wsProgress && wsAudioNeedsAttention ? /*#__PURE__*/React.createElement("span", {
         style: {
           display: 'inline-flex',
           alignItems: 'center',

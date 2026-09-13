@@ -90,7 +90,7 @@ describe('retained creation after closing its measurement inspector', () => {
     app.click('Close measurement inspector');
     expect(app.state().measureResult).toBeNull();
     app.click('Expand Free Build Studio');
-    expect(app.host.querySelector('[aria-label="Build summary"]').textContent).toContain('2Selected');
+    expect(app.host.querySelector('[aria-label="Selected build summary"]').textContent).toContain('2Blocks selected');
     expect(app.host.textContent).toContain('Showcase creation');
     expect(app.host.textContent).toContain('Explore measurements');
     expect(app.host.querySelector('[aria-label="Print Lab block envelope"]')).toBeTruthy();
@@ -135,7 +135,7 @@ describe('retained creation after closing its measurement inspector', () => {
     expect(app.state().builderPanel).toBe('measure');
     expect(app.host.querySelector('[data-builder-panel="build"]')).toBeTruthy();
     app.click('Expand Free Build Studio');
-    expect(app.host.querySelector('[aria-label="Build summary"]').textContent).toContain('3Selected');
+    expect(app.host.querySelector('[aria-label="Selected build summary"]').textContent).toContain('3Blocks selected');
     expect(app.host.querySelector('[aria-label="Print Lab block envelope"]')).toBeTruthy();
     expect(app.engine._builderSelection.blocks).toHaveLength(3);
     app.click('Explore measurements');
@@ -244,7 +244,7 @@ describe('retained creation after closing its measurement inspector', () => {
       else Object.assign(app.engine.blocks[key].userData, { _measurementLayer: 'lesson', _lessonBlock: true });
     };
     invalidate('1,1,0'); app.refresh();
-    expect(app.host.querySelector('[aria-label="Build summary"]').textContent).toContain('1Selected');
+    expect(app.host.querySelector('[aria-label="Selected build summary"]').textContent).toContain('1Blocks selected');
     expect(app.engine._builderSelection.blocks).toHaveLength(1);
     invalidate('0,1,0'); app.refresh();
     expect(app.engine._builderSelection).toBeNull();

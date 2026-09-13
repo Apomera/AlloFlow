@@ -29,7 +29,7 @@ function ConceptSortView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isIndependentMode = props.isIndependentMode;
   var generatedContent = props.generatedContent;
-  var conceptSortImageScale = props.conceptSortImageScale;
+  var conceptSortImageScale = props.conceptSortImageScale || 2.0;
   var csEdit = props.csEdit;
   var csAddingCatId = props.csAddingCatId;
   var csAddingText = props.csAddingText;
@@ -121,7 +121,7 @@ function ConceptSortView(props) {
     max: "3.0",
     step: "0.05",
     value: conceptSortImageScale,
-    onChange: e => setConceptSortImageScale(parseFloat(e.target.value) || 1.0),
+    onChange: e => setConceptSortImageScale(parseFloat(e.target.value) || 2.0),
     "aria-label": (t('concept_sort.image_scale_label') || 'Card image size') + ', ' + conceptSortImageScale.toFixed(2) + ' times',
     title: t('concept_sort.image_scale_hint') || 'Scales card visuals in the review panel and during play.',
     className: "w-24 sm:w-32 accent-amber-600"
@@ -129,9 +129,9 @@ function ConceptSortView(props) {
     className: "text-[10px] font-mono text-amber-800 min-w-[2.5em] text-right"
   }, conceptSortImageScale.toFixed(2), "×"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => setConceptSortImageScale(1.5),
+    onClick: () => setConceptSortImageScale(2.0),
     className: "text-[10px] text-amber-700 hover:text-amber-900 hover:underline",
-    title: t('common.reset') || 'Reset to 1.5×',
+    title: t('common.reset') || 'Reset to 2×',
     "aria-label": "Reset image size to default"
   }, "reset")), typeof setConceptSortAutoRemoveWords === 'function' && /*#__PURE__*/React.createElement("label", {
     className: "flex items-center gap-1.5 bg-white/80 border border-amber-200 rounded-full px-2.5 py-1 cursor-pointer text-[10px] font-bold text-amber-800 uppercase tracking-wider",
@@ -211,22 +211,22 @@ function ConceptSortView(props) {
         "data-help-key": "concept_sort_item",
         className: "flex flex-col gap-1 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors"
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center gap-2"
+        className: "flex flex-wrap items-center gap-2"
       }, item.image ? /*#__PURE__*/React.createElement("img", {
         src: item.image,
         alt: "",
         className: "object-contain rounded shrink-0 bg-white border border-slate-100",
         loading: "lazy",
         style: {
-          width: Math.round(32 * conceptSortImageScale) + 'px',
-          height: Math.round(32 * conceptSortImageScale) + 'px'
+          width: Math.round(48 * conceptSortImageScale) + 'px',
+          height: Math.round(48 * conceptSortImageScale) + 'px'
         }
       }) : /*#__PURE__*/React.createElement("div", {
         className: "rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-600 text-[10px]",
         title: "No image",
         style: {
-          width: Math.round(32 * conceptSortImageScale) + 'px',
-          height: Math.round(32 * conceptSortImageScale) + 'px'
+          width: Math.round(48 * conceptSortImageScale) + 'px',
+          height: Math.round(48 * conceptSortImageScale) + 'px'
         }
       }, "—"), isEditingItem ? /*#__PURE__*/React.createElement("input", {
         type: "text",
@@ -257,7 +257,7 @@ function ConceptSortView(props) {
           id: item.id,
           text: item.content
         }),
-        className: "flex-1 text-left text-xs text-slate-700 hover:text-slate-900 truncate",
+        className: "flex-1 min-w-[120px] min-h-11 break-words text-left text-sm text-slate-700 hover:text-slate-900",
         title: "Click to edit",
         "aria-label": `Edit item ${item.content}`
       }, item.content), /*#__PURE__*/React.createElement("select", {

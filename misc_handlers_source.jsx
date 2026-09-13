@@ -1895,9 +1895,12 @@ async function runAutoFixLoop(maxRounds, deps) {
         // auto-save reads pdfFixResultRef and was one render behind,
         // silently missing the last round's improvements.
         setPdfFixResult(snapshot);
-        // An audit-only refresh is deliberately single-shot. Whether it recovered
-        // full evidence or remained partial, the final branch gives the honest result.
-        if (result._auditOnly) break;
+        // A refresh with no actionable findings stays single-shot. If recovered
+        // evidence reveals issues, use the remaining round budget to fix them.
+        // This is also the direct Resume/Fix Remaining path, without a wrapper retry.
+        if (result._auditOnly && _aiIssuesOf(cur).length === 0
+            && !(cur.axeAudit && cur.axeAudit.totalViolations > 0)
+            && !(cur.secondEngineAudit && cur.secondEngineAudit.failViolations > 0)) break;
       }
       // Terminal outcomes belong only to the exact controller and generation.
       // A replacement run resets the shared abort flag, so that flag alone cannot

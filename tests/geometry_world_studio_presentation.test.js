@@ -16,8 +16,10 @@ function fixture() {
     createRadialGradient(){return {addColorStop(){}};},
   }));
   const React={createElement(type,props,...children){return {type,props:{...props,children}};},useRef(value){return {current:value};},
-    useState(value){return [value,()=>{}];},useEffect(){},isValidElement(node){return !!node?.props;},
-    Children:{toArray(value){return Array.isArray(value)?value:[value];}},cloneElement(node,props,children){return {type:node.type,props:{...node.props,...props,children}};}};
+    // This fixture performs one render: memo factories run on that initial render.
+    useMemo(factory){return factory();},
+    useState(value){return [typeof value==='function'?value():value,()=>{}];},useEffect(){},isValidElement(node){return !!node?.props;},
+    Children:{toArray(value){return Array.isArray(value)?value:[value];}},cloneElement(node,props,...children){return {type:node.type,props:{...node.props,...props,...(children.length?{children:children.length===1?children[0]:children}:{})}};}};
   window.StemLab={_registry:{geometryWorld:{aliases:[],render(ctx){return ctx.React.createElement('main',{id:'geoworld-fs-workspace'});}}}};
   if(!document.getElementById('allo-geometryworld-builder-css')){const style=document.createElement('style');style.id='allo-geometryworld-builder-css';document.head.appendChild(style);}
   new Function(readFileSync('stem_lab/stem_tool_geometryworld_builder.js','utf8'))();

@@ -42,7 +42,8 @@ function discoverPairs() {
     let body = '';
     try { body = fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (_) { continue; }
     const src = (body.match(/[a-z0-9_]+_source\.jsx/i) || [])[0];
-    const mod = (body.match(/[a-z0-9_]+_module\.js/i) || [])[0];
+    // Generated-file notices can name the builder before the actual output.
+    const mod = (body.match(/[a-z0-9_]+_module\.js/ig) || []).find(name => !name.startsWith('_build_'));
     if (!src || !mod) continue;
     if (!fs.existsSync(path.join(ROOT, src)) || !fs.existsSync(path.join(ROOT, mod))) continue;
     pairs.push({ builder: f, source: src, module: mod });

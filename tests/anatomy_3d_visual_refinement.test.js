@@ -291,7 +291,7 @@ describe('Anatomy model visual refinement', () => {
     expect(source).toContain('function syncSurfaceTone()');
     expect(source).toContain("object.userData.surfaceMaterialRole === 'detail'");
     expect(source).toContain('marker.visible = !!(canvas._anatomy3dVisibleMarkerIds');
-    expect(source).toContain("var markerItems = canvas.getAttribute('data-anatomy-3d-style') === 'clinical' && importedModel && importedModel.visible");
+    expect(source).toContain("var markerItems = canvas.getAttribute('data-anatomy-body-markers-visible') === 'false'");
   });
 
   it.each(ANATOMY_PATHS)('prefers the local GLTF loader and retains resilient fallbacks in %s', (filePath) => {
@@ -327,7 +327,7 @@ describe('Anatomy model visual refinement', () => {
     expect(source).toContain('var floorReferenceGrid = new THREE.GridHelper(3.5, 8');
     expect(source).toContain("floorReferenceGrid.name = 'blueprint-floor-grid'");
     expect(source).toContain("blueprintStageGroup.visible = body3dStyle === 'blueprint'");
-    expect(source).toContain("if (blueprintStageGroup) blueprintStageGroup.visible = resolvedStyle === 'blueprint';");
+    expect(source).toContain("if (blueprintStageGroup) blueprintStageGroup.visible = resolvedStyle === 'blueprint' && (!currentCameraPreset || currentCameraPreset === 'body');");
     expect(source).toContain('depthWrite: false, side: THREE.FrontSide');
 
     expect(source).toContain("selectionCueGroup.name = 'selected-structure-cue'");

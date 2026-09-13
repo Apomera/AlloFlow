@@ -8,7 +8,15 @@ const { materializeFixture } = require('./remediation_benchmark_corpus.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const run = promisify(execFile);
 async function renderPdf(html, pdf) {
-  return run(process.execPath, [path.join(ROOT, 'agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs'), '--html', html, '--pdf', pdf], { cwd: ROOT, windowsHide: true, timeout: 120000, maxBuffer: 4 * 1024 * 1024 });
+  const startedAt = Date.now();
+  try {
+    return await run(process.execPath, [path.join(ROOT, 'agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs'), '--html', html, '--pdf', pdf], { cwd: ROOT, windowsHide: true, timeout: 120000, maxBuffer: 4 * 1024 * 1024 });
+  } catch (error) {
+    const elapsedMs = Date.now() - startedAt;
+    const detail = String(error.stdout || error.stderr || error.message || '').trim().slice(0, 4000);
+    throw new Error('Tagged PDF renderer failed after ' + elapsedMs + ' ms (exit=' + (error.code ?? 'unknown')
+      + ', signal=' + (error.signal || 'none') + ', killed=' + !!error.killed + ', timeout=120000 ms). ' + detail, { cause: error });
+  }
 }
 function expectations(plan) {
   const headings = plan.blocks.filter(b => b.type === 'heading').map(b => ({ level: b.level, name: b.text }));

@@ -579,6 +579,7 @@
       ,'.wc-pilot-rainbow-challenge>*{position:relative;z-index:1}.wc-pilot-rainbow-challenge::before{z-index:2}.wc-pilot-rainbow-challenge[data-stage="4"]::after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 22%,rgba(250,204,21,.28) 0 2px,transparent 3px),radial-gradient(circle at 94% 35%,rgba(56,189,248,.28) 0 2px,transparent 3px),radial-gradient(circle at 84% 86%,rgba(192,132,252,.24) 0 2.5px,transparent 3.5px),linear-gradient(118deg,transparent 25%,rgba(255,255,255,.2) 46%,transparent 64%);background-size:auto,auto,auto,220% 100%;animation:wc-pilot-completion-glimmer 7s ease-in-out infinite}.wc-pilot-rainbow-progress i{position:relative;overflow:hidden}.wc-pilot-rainbow-progress i:nth-child(1)[data-complete=true]{background:linear-gradient(90deg,#0ea5e9,#67e8f9)}.wc-pilot-rainbow-progress i:nth-child(2)[data-complete=true]{background:linear-gradient(90deg,#f59e0b,#fde68a)}.wc-pilot-rainbow-progress i:nth-child(3)[data-complete=true]{background:linear-gradient(90deg,#ef4444,#facc15,#22c55e,#0ea5e9,#8b5cf6)}.wc-pilot-rainbow-progress i:nth-child(4)[data-complete=true]{background:linear-gradient(90deg,#8b5cf6,#0ea5e9,#22c55e,#facc15,#ef4444)}.wc-pilot-rainbow-progress i[data-complete=true]::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.72) 48%,transparent 72%);transform:translateX(-120%);animation:wc-pilot-progress-shine 3.6s ease-in-out infinite}.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-orb{animation:wc-pilot-orb-celebrate 4.2s ease-in-out infinite}.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-count{border-color:rgba(139,92,246,.42);box-shadow:0 0 0 3px rgba(196,181,253,.12),0 5px 16px rgba(109,40,217,.14)}'
       ,'@keyframes wc-pilot-prism-veil{0%{opacity:.2}100%{opacity:.46}}@keyframes wc-pilot-rain-shimmer{to{stroke-dashoffset:-50}}@keyframes wc-pilot-mote-float{0%,100%{opacity:.22;transform:translateY(4px) scale(.82)}50%{opacity:.7;transform:translateY(-7px) scale(1.12)}}@keyframes wc-pilot-prism-sweep{to{stroke-dashoffset:-76}}@keyframes wc-pilot-antisolar-pulse{0%,100%{opacity:.42;transform:scale(.88)}50%{opacity:.9;transform:scale(1.12)}}@keyframes wc-pilot-optics-seal-in{from{opacity:0;transform:translateY(9px) scale(.96)}to{opacity:.94;transform:translateY(0) scale(1)}}@keyframes wc-pilot-progress-shine{0%,58%{transform:translateX(-120%)}82%,100%{transform:translateX(120%)}}@keyframes wc-pilot-completion-glimmer{0%,100%{background-position:0 0,0 0,0 0,120% 0}50%{background-position:0 0,0 0,0 0,-80% 0}}@keyframes wc-pilot-orb-celebrate{0%,100%{transform:scale(1);filter:saturate(1)}50%{transform:scale(1.06);filter:saturate(1.25) brightness(1.08)}}@media(prefers-reduced-motion:reduce){.wc-pilot-rainbow-veil,.wc-pilot-rain-shaft,.wc-pilot-rain-mote,.wc-pilot-prism-sweep,.wc-pilot-antisolar-ring,.wc-pilot-optics-seal,.wc-pilot-rainbow-progress i[data-complete=true]::after,.wc-pilot-rainbow-challenge[data-stage="4"]::after,.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-orb{animation:none!important;transform:none!important}}@media(forced-colors:active){.wc-pilot-stage[data-optics-stage="3"],.wc-pilot-stage[data-optics-stage="4"]{border-color:CanvasText;box-shadow:none}}'
       ,'.wc-pilot-rainbow-challenge{position:relative;overflow:hidden;padding:16px;border:1px solid rgba(14,165,233,.34);border-radius:17px;background:radial-gradient(circle at 92% 4%,rgba(168,85,247,.16),transparent 30%),radial-gradient(circle at 5% 95%,rgba(34,211,238,.15),transparent 36%),linear-gradient(145deg,rgba(240,249,255,.96),rgba(245,243,255,.88));box-shadow:0 12px 32px rgba(15,23,42,.08)}.wc-pilot-rainbow-challenge::before{content:"";position:absolute;top:0;right:0;left:0;height:4px;background:linear-gradient(90deg,#ef4444,#f97316,#facc15,#22c55e,#0ea5e9,#6366f1,#a855f7)}.wc-pilot-rainbow-head{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px}.wc-pilot-rainbow-orb{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 50% 62%,#e0f2fe 0 33%,transparent 35%),conic-gradient(from 210deg,#ef4444,#facc15,#22c55e,#0ea5e9,#a855f7,#ef4444);box-shadow:inset 0 0 0 6px rgba(255,255,255,.76),0 6px 18px rgba(14,116,144,.18)}.wc-pilot-rainbow-copy{min-width:0}.wc-pilot-rainbow-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#0369a1}.wc-pilot-rainbow-copy h3{margin:2px 0;font-size:18px;line-height:1.15;color:#0f172a}.wc-pilot-rainbow-copy p{margin:0;font-size:11px;line-height:1.4;color:#475569}.wc-pilot-rainbow-count{padding:5px 9px;border:1px solid rgba(2,132,199,.28);border-radius:999px;background:rgba(255,255,255,.72);color:#075985;font-size:11px;font-weight:900;white-space:nowrap}.wc-pilot-rainbow-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:13px 0 8px}.wc-pilot-rainbow-progress i{height:7px;border-radius:999px;background:rgba(148,163,184,.26)}.wc-pilot-rainbow-progress i[data-complete=true]{background:linear-gradient(90deg,#0ea5e9,#8b5cf6);box-shadow:0 0 12px rgba(14,165,233,.22)}.wc-pilot-rainbow-status{margin:0 0 10px;padding:8px 10px;border-left:3px solid #0284c7;border-radius:0 9px 9px 0;background:rgba(224,242,254,.7);color:#0c4a6e;font-size:11px;font-weight:800;line-height:1.45}.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-status{border-left-color:#16a34a;background:rgba(220,252,231,.72);color:#166534}.wc-pilot-rainbow-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}.wc-pilot-rainbow-step{min-width:0;padding:8px;border:1px solid rgba(148,163,184,.28);border-radius:10px;background:rgba(255,255,255,.7)}.wc-pilot-rainbow-step span{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:900;color:#334155}.wc-pilot-rainbow-step span::before{content:"";flex:0 0 auto;width:13px;height:13px;border:1px solid #94a3b8;border-radius:50%;background:#fff}.wc-pilot-rainbow-step[data-complete=true] span::before{content:"✓";display:grid;place-items:center;border-color:#059669;background:#059669;color:#fff;font-size:9px}.wc-pilot-rainbow-step small{display:block;margin-top:3px;font-size:9px;line-height:1.35;color:#64748b}.wc-pilot-rainbow-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:11px}.wc-pilot-rainbow-action{min-height:42px;padding:9px 13px;border:1px solid #0369a1;border-radius:10px;background:linear-gradient(135deg,#0284c7,#6d28d9);color:#fff;font-size:11px;font-weight:900;cursor:pointer;box-shadow:0 6px 16px rgba(3,105,161,.18)}.wc-pilot-rainbow-action:hover:not(:disabled){filter:brightness(1.08)}.wc-pilot-rainbow-action:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-rainbow-action:disabled{cursor:not-allowed;filter:grayscale(.35);opacity:.56;box-shadow:none}.wc-pilot-rainbow-alignment{font-size:10px;font-weight:800;color:#475569}.wc-pilot-rainbow-science{margin-top:11px;border-top:1px solid rgba(148,163,184,.28);padding-top:9px}.wc-pilot-rainbow-science summary{color:#075985;font-size:11px;font-weight:900;cursor:pointer}.wc-pilot-rainbow-science summary:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-rainbow-science-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}.wc-pilot-rainbow-science-grid>div{padding:8px;border-radius:9px;background:rgba(255,255,255,.66)}.wc-pilot-rainbow-science-grid strong{display:block;font-size:11px;color:#0f172a}.wc-pilot-rainbow-science-grid span{display:block;margin-top:2px;font-size:9.5px;line-height:1.4;color:#475569}.wc-pilot-rainbow-science-note{margin:8px 0 0;font-size:10px;line-height:1.45;color:#334155}'
+      ,'.wc-pilot-rainbow-visual{mask-image:linear-gradient(to bottom,#000 0%,#000 58%,transparent 96%)}.wc-pilot-rainbow-visual::after{display:none}.wc-pilot-rainbow-svg{mix-blend-mode:normal;filter:none}.wc-pilot-rainbow-visual *{animation:none!important}.wc-pilot-rainbow-visual :is(.wc-pilot-rainbow-veil,.wc-pilot-rain-curtain,.wc-pilot-rain-motes,.wc-pilot-prism-sweep,.wc-pilot-rainbow-glints,.wc-pilot-optics-seal,.wc-pilot-rainbow-horizon-haze){display:none}.wc-pilot-rainbow-visual .wc-pilot-rainbow-mist{opacity:.12}.wc-pilot-rainbow-visual .wc-pilot-alexander-band{opacity:.1}.wc-pilot-rainbow-visual[data-annotations=false] :is(.wc-pilot-rainbow-label,.wc-pilot-antisolar-marker){display:none}.wc-pilot-stage[data-learning-pause=true] .wc-pilot-rainbow-visual{opacity:.25}@media(max-width:700px){.wc-pilot-rainbow-visual .wc-pilot-rainbow-label{display:none}}'
       ,'.wc-pilot-rainbow-geometry{position:relative;margin:11px 0;padding:7px;border:1px solid rgba(14,165,233,.25);border-radius:13px;background:linear-gradient(180deg,rgba(224,242,254,.72),rgba(255,255,255,.62));overflow:hidden}.wc-pilot-rainbow-geometry svg{display:block;width:100%;height:auto;max-height:132px}.wc-optics-sky{fill:url(#wcPilotOpticsSky)}.wc-optics-horizon{stroke:rgba(14,116,144,.24)}.wc-optics-sun-ray{stroke:#f59e0b;stroke-width:2;stroke-linecap:round;opacity:.5}.wc-optics-sun-core{fill:#fbbf24;stroke:#fff7cc;stroke-width:3}.wc-optics-light-path{fill:none;stroke:#fde68a;stroke-width:3;stroke-linecap:round;stroke-dasharray:7 7;opacity:.48}.wc-optics-observer-head{fill:#0f172a;stroke:#e0f2fe;stroke-width:2}.wc-optics-observer-body{fill:none;stroke:#0f172a;stroke-width:7;stroke-linecap:round}.wc-optics-eye{fill:#38bdf8;stroke:#fff;stroke-width:1.5}.wc-optics-aim{fill:none;stroke:#0ea5e9;stroke-width:3;stroke-linecap:round;stroke-dasharray:8 7;opacity:.42}.wc-optics-aim-arrow{fill:#0ea5e9;opacity:.56}.wc-optics-rain{stroke:#38bdf8;stroke-width:2.4;stroke-linecap:round;opacity:.42}.wc-optics-bow-primary,.wc-optics-bow-secondary{fill:none;stroke-linecap:round;stroke-width:5;opacity:.35}.wc-optics-bow-primary{stroke:#f97316}.wc-optics-bow-secondary{stroke:#8b5cf6}.wc-optics-label{fill:#0c4a6e;font-size:11px;font-weight:900;letter-spacing:.06em;text-anchor:middle}.wc-pilot-rainbow-geometry[data-sun-ready=true] .wc-optics-sun-core{filter:url(#wcPilotOpticsGlow)}.wc-pilot-rainbow-geometry[data-sun-ready=true] .wc-optics-light-path{opacity:1;animation:wc-optics-flow 2.8s linear infinite}.wc-pilot-rainbow-geometry[data-view-ready=true] .wc-optics-aim,.wc-pilot-rainbow-geometry[data-view-ready=true] .wc-optics-aim-arrow{opacity:1}.wc-pilot-rainbow-geometry[data-rain-ready=true] .wc-optics-rain,.wc-pilot-rainbow-geometry[data-rain-ready=true] .wc-optics-bow-primary{opacity:.92}.wc-pilot-rainbow-geometry[data-double-ready=true] .wc-optics-bow-secondary{opacity:.78;filter:url(#wcPilotOpticsGlow)}.wc-pilot-optics-caption{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:5px}.wc-pilot-optics-caption span{padding:4px 6px;border-radius:7px;background:rgba(255,255,255,.62);color:#64748b;font-size:9.5px;font-weight:800;text-align:center}.wc-pilot-optics-caption span[data-ready=true]{background:rgba(209,250,229,.78);color:#047857}@keyframes wc-optics-flow{to{stroke-dashoffset:-28}}'
       ,'.wc-pilot-rainbow-raylab{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}.wc-pilot-rainbow-ray-card{min-width:0;padding:8px;border:1px solid rgba(148,163,184,.24);border-radius:10px;background:rgba(255,255,255,.68)}.wc-pilot-drop-diagram{display:block;width:100%;height:auto;max-height:118px;margin-bottom:5px;border-radius:8px;background:radial-gradient(circle at 50% 46%,rgba(186,230,253,.3),rgba(224,242,254,.08) 60%,transparent 61%)}.wc-pilot-drop-shell{fill:rgba(186,230,253,.2);stroke:#0284c7;stroke-width:2}.wc-pilot-drop-highlight{fill:none;stroke:rgba(255,255,255,.85);stroke-width:3;stroke-linecap:round}.wc-pilot-ray-sun{stroke:#facc15;stroke-width:3;stroke-linecap:round}.wc-pilot-ray-inside{fill:none;stroke:#f8fafc;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:7 5;animation:wc-ray-travel 3s linear infinite}.wc-pilot-ray-red{stroke:#ef4444;stroke-width:3;stroke-linecap:round}.wc-pilot-ray-violet{stroke:#8b5cf6;stroke-width:3;stroke-linecap:round}.wc-pilot-ray-bounce{fill:#facc15;stroke:#fff;stroke-width:1.5}.wc-pilot-ray-count{fill:#075985;font-size:13px;font-weight:900;text-anchor:middle}.wc-pilot-rainbow-ray-card strong{display:block;font-size:11px;color:#0f172a}.wc-pilot-rainbow-ray-card>span{display:block;margin-top:2px;font-size:9.5px;line-height:1.4;color:#475569}.wc-pilot-dark-band-mini{position:relative;height:72px;margin-bottom:8px;overflow:hidden;border-radius:8px;background:linear-gradient(180deg,rgba(224,242,254,.5),rgba(186,230,253,.2))}.wc-pilot-dark-band-mini span{position:absolute;left:50%;bottom:-47px;transform:translateX(-50%);border-radius:50% 50% 0 0}.wc-pilot-dark-band-mini .is-secondary{width:128px;height:105px;border:7px solid #8b5cf6;opacity:.5}.wc-pilot-dark-band-mini .is-band{bottom:-38px;width:109px;height:88px;border:15px solid rgba(15,23,42,.72)}.wc-pilot-dark-band-mini .is-primary{bottom:-27px;width:88px;height:69px;border:7px solid #f97316;opacity:.82}@keyframes wc-ray-travel{to{stroke-dashoffset:-36}}'
       ,'.wc-pilot-rainbow-receipt{position:relative;margin-top:12px;padding:12px;border:1px solid rgba(16,185,129,.38);border-radius:13px;background:linear-gradient(145deg,rgba(236,253,245,.9),rgba(224,242,254,.78));box-shadow:0 8px 22px rgba(15,23,42,.06);overflow:hidden}.wc-pilot-rainbow-receipt::after{content:"✦";position:absolute;right:12px;top:5px;color:#8b5cf6;font-size:26px;opacity:.3}.wc-pilot-rainbow-receipt-head{display:flex;align-items:flex-start;gap:8px;padding-right:30px}.wc-pilot-rainbow-receipt-check{display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:#059669;color:#fff;font-size:16px;font-weight:900}.wc-pilot-rainbow-receipt-head strong{display:block;color:#065f46;font-size:12px}.wc-pilot-rainbow-receipt-head span{display:block;margin-top:2px;color:#475569;font-size:9.5px;line-height:1.4}.wc-pilot-rainbow-receipt dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:9px 0}.wc-pilot-rainbow-receipt dl>div{padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.68)}.wc-pilot-rainbow-receipt dt{font-size:8.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#64748b}.wc-pilot-rainbow-receipt dd{margin:2px 0 0;color:#075985;font-size:11px;font-weight:900;line-height:1.3}.wc-pilot-rainbow-receipt button{min-height:38px;padding:7px 10px;border:1px solid #0f766e;border-radius:9px;background:#0f766e;color:#fff;font-size:10px;font-weight:900;cursor:pointer}.wc-pilot-rainbow-receipt button:hover{background:#115e59}.wc-pilot-rainbow-receipt button:focus-visible{outline:3px solid #facc15;outline-offset:2px}'
@@ -656,10 +657,13 @@
       ,'.dark .wc-pilot-sky-waypoints{border-color:rgba(45,212,191,.2);background:linear-gradient(135deg,rgba(15,118,110,.18),rgba(30,27,75,.26));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.dark .wc-pilot-sky-waypoints-kicker{color:#5eead4}.dark .wc-pilot-sky-waypoints-head strong,.dark .wc-pilot-sky-waypoints-list button strong{color:#f8fafc}.dark .wc-pilot-sky-waypoints-head small,.dark .wc-pilot-sky-waypoints-list button small{color:#cbd5e1}.dark .wc-pilot-sky-waypoints-count{border-color:rgba(45,212,191,.28);background:rgba(15,118,110,.25);color:#99f6e4!important}.dark .wc-pilot-sky-waypoints[data-complete=true] .wc-pilot-sky-waypoints-count{background:rgba(6,78,59,.7);color:#a7f3d0!important}.dark .wc-pilot-sky-waypoint-step,.dark .wc-pilot-sky-waypoints-list button{border-color:rgba(148,163,184,.25);background:rgba(15,23,42,.72);color:#cbd5e1}.dark .wc-pilot-sky-waypoint-step span{color:#5eead4}.dark .wc-pilot-sky-waypoint-step:not(:disabled):hover,.dark .wc-pilot-sky-waypoints-list button:hover{border-color:#2dd4bf;background:#0f172a}.dark .wc-pilot-sky-waypoints-list li[data-crossed=true] button{border-color:color-mix(in srgb,var(--wc-waypoint) 50%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-waypoint) 20%,#0f172a),rgba(15,23,42,.82))}.dark .wc-pilot-sky-waypoints-status{background:rgba(6,78,59,.38);color:#a7f3d0}.dark .wc-pilot-sky-probe-temperature{border-color:color-mix(in srgb,var(--wc-probe-state) 55%,white);background:color-mix(in srgb,var(--wc-probe-state) 25%,rgba(15,23,42,.9));color:#f8fafc;box-shadow:0 4px 10px rgba(2,6,23,.28)}'
       ,'@media(max-width:560px){.wc-pilot-sky-waypoints-head{display:grid}.wc-pilot-sky-waypoints-count{justify-self:start}.wc-pilot-sky-waypoints-controls{grid-template-columns:50px minmax(0,1fr) 50px}.wc-pilot-sky-waypoints-list li{flex-basis:104px}}@media(max-width:380px){.wc-pilot-sky-waypoints{padding:7px}.wc-pilot-sky-waypoints-controls{grid-template-columns:44px minmax(0,1fr) 44px}.wc-pilot-sky-waypoint-step{padding:3px}.wc-pilot-sky-waypoint-step small{font-size:6.5px}.wc-pilot-sky-waypoints-list li{flex-basis:98px}.wc-pilot-sky-probe-temperature{right:2px;min-width:31px;padding-inline:3px;font-size:7px}}@media(prefers-reduced-motion:reduce){.wc-pilot-sky-waypoints-list li[data-current=true] button>i{animation:none!important}.wc-pilot-sky-waypoint-step,.wc-pilot-sky-waypoints-list button{transition:none!important}.wc-pilot-sky-waypoint-step:not(:disabled):hover,.wc-pilot-sky-waypoints-list button:hover,.wc-pilot-sky-waypoints-list li[data-current=true] button{transform:none}}'
       ,'@media(forced-colors:active){.wc-pilot-sky-waypoints,.wc-pilot-sky-waypoint-step,.wc-pilot-sky-waypoints-list button,.wc-pilot-sky-waypoints-count,.wc-pilot-sky-waypoints-status,.wc-pilot-sky-probe-temperature{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none;filter:none}.wc-pilot-sky-waypoints-kicker,.wc-pilot-sky-waypoints-head strong,.wc-pilot-sky-waypoints-head small,.wc-pilot-sky-waypoint-step span,.wc-pilot-sky-waypoints-list button strong,.wc-pilot-sky-waypoints-list button small{color:CanvasText}.wc-pilot-sky-waypoints-list::before{background:CanvasText}.wc-pilot-sky-waypoints-list button>i{border:2px solid CanvasText;background:Canvas;box-shadow:none}.wc-pilot-sky-waypoints-list li[data-crossed=true] button>i{background:Highlight}.wc-pilot-sky-waypoints-list li[data-current=true] button{outline:3px solid Highlight;outline-offset:1px}.wc-pilot-sky-waypoints-list li[data-next=true]:not([data-current=true]) button{border-style:dashed}.wc-pilot-sky-probe-temperature[data-freezing=true]{border-style:dashed}}@media print{.wc-pilot-sky-waypoints{border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-waypoints-head strong,.wc-pilot-sky-waypoints-head small,.wc-pilot-sky-waypoints-kicker,.wc-pilot-sky-waypoints-count,.wc-pilot-sky-waypoints-list button strong,.wc-pilot-sky-waypoints-list button small,.wc-pilot-sky-waypoints-status{color:#000!important}.wc-pilot-sky-waypoint-step{display:none}.wc-pilot-sky-waypoints-controls{display:block}.wc-pilot-sky-waypoints-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible}.wc-pilot-sky-waypoints-list::before{display:none}.wc-pilot-sky-waypoints-list button,.wc-pilot-sky-waypoints-count,.wc-pilot-sky-waypoints-status{border:1px solid #000;background:#fff;box-shadow:none;transform:none}.wc-pilot-sky-waypoints-list li[data-current=true] button{outline:2px solid #000}.wc-pilot-sky-probe-temperature{border:1px solid #000;background:#fff;color:#000;box-shadow:none;backdrop-filter:none}}'
-      ,'@media(forced-colors:active){.wc-pilot-hud,.wc-pilot-pad,.wc-pilot-key,.wc-pilot-scenario,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-journey-guide,.wc-pilot-journey-step,.wc-pilot-alt{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-key[aria-pressed=true],.wc-pilot-scenario[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-pilot-journey-guide>h4,.wc-pilot-journey-step>span,.wc-pilot-journey-step>strong,.wc-pilot-journey-step>small{color:CanvasText}.wc-pilot-form-dot,.wc-pilot-ladder-you,.wc-pilot-gauge-track i{background:CanvasText!important;box-shadow:none!important}}'
+      ,'@media(forced-colors:active){.wc-pilot-hud,.wc-pilot-pad,.wc-pilot-key,.wc-pilot-scenario,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-journey-guide,.wc-pilot-journey-step,.wc-pilot-alt{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-key.is-reset{color:CanvasText!important}.wc-pilot-key,.wc-pilot-camera-btn,.wc-pilot-btn{forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;text-shadow:none}.wc-pilot-key[aria-pressed=true],.wc-pilot-camera-btn[aria-pressed=true],.wc-pilot-btn[aria-pressed=true]{background:Highlight!important;color:HighlightText!important}.wc-pilot-form-badge,.wc-pilot-form-badge strong{background:Canvas!important;color:CanvasText!important}.wc-pilot-key[aria-pressed=true],.wc-pilot-scenario[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-pilot-journey-guide>h4,.wc-pilot-journey-step>span,.wc-pilot-journey-step>strong,.wc-pilot-journey-step>small{color:CanvasText}.wc-pilot-form-dot,.wc-pilot-ladder-you,.wc-pilot-gauge-track i{background:CanvasText!important;box-shadow:none!important}}'
       ,'.wc-pilot-stage[data-camera-mode=water]::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 47%,transparent 42%,rgba(2,12,27,.08) 68%,rgba(2,12,27,.36) 100%),linear-gradient(115deg,rgba(125,211,252,.08),transparent 28%,transparent 72%,rgba(34,211,238,.07));box-shadow:inset 0 0 48px rgba(56,189,248,.15)}'
       ,'.wc-pilot-camera-switch{position:absolute;z-index:6;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:stretch;gap:2px;padding:3px;border:1px solid rgba(186,230,253,.3);border-radius:12px;background:rgba(3,18,31,.94);box-shadow:0 8px 24px rgba(2,12,27,.2)}.wc-pilot-camera-btn{min-height:34px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#bae6fd;font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer}.wc-pilot-camera-btn:hover{background:rgba(14,116,144,.55);color:#fff}.wc-pilot-camera-btn[aria-pressed=true]{background:#e0f2fe;color:#075985;box-shadow:0 2px 10px rgba(2,12,27,.24)}.wc-pilot-camera-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-camera-help{min-width:34px;padding-inline:8px;color:#fef3c7}'
       ,'.wc-pilot-route{position:absolute;z-index:5;left:50%;bottom:76px;transform:translateX(-50%);width:min(390px,calc(100% - 250px));padding:8px 10px;border:1px solid rgba(167,243,208,.38);border-radius:11px;background:rgba(3,18,31,.94);box-shadow:0 10px 26px rgba(2,12,27,.26);color:#e0f2fe;pointer-events:none}.wc-pilot-route-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#6ee7b7}.wc-pilot-route strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#fff}.wc-pilot-route small{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#bae6fd}'
+      ,'.wc-pilot-pore-closeup{display:flex;align-items:center;gap:9px;margin-top:8px;padding-top:7px;border-top:1px solid rgba(186,230,253,.25)}.wc-pilot-pore-closeup svg{flex:0 0 76px;width:76px;height:56px}.wc-pilot-pore-closeup>div{min-width:0}.wc-pilot-pore-closeup strong{font-size:11px;line-height:1.35}.wc-pilot-pore-closeup small{font-size:9px;line-height:1.4;color:#bae6fd}@media(max-width:560px){.wc-pilot-pore-closeup{gap:7px}.wc-pilot-pore-closeup svg{flex-basis:58px;width:58px;height:44px}}@media(forced-colors:active){.wc-pilot-pore-closeup{border-color:CanvasText}.wc-pilot-pore-closeup svg{forced-color-adjust:none}.wc-pilot-pore-closeup small{color:CanvasText}}'
+      ,'.wc-pilot-collection-story{display:flex;align-items:center;gap:10px;padding:8px 10px;margin:10px 0;border:1px solid rgba(125,211,252,.4);border-radius:12px;background:linear-gradient(125deg,rgba(14,116,144,.22),rgba(30,58,138,.12));color:#a5e5fc}.wc-pilot-collection-story svg{flex:0 0 82px;width:82px;height:58px}.wc-pilot-collection-story strong{display:block;font-size:13px;line-height:1.35;color:#ecfeff}.wc-pilot-collection-story small{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:#bae6fd}@media(max-width:560px){.wc-pilot-collection-story{gap:8px;padding:7px 8px}.wc-pilot-collection-story svg{flex-basis:64px;width:64px;height:48px}}@media(forced-colors:active){.wc-pilot-collection-story{background:Canvas;border-color:CanvasText;color:CanvasText}.wc-pilot-collection-story strong,.wc-pilot-collection-story small{color:CanvasText}}'
+      ,'.wc-pilot-route.is-landing{--landing-accent:#7dd3fc;border-left:3px solid var(--landing-accent);background:linear-gradient(120deg,rgba(8,47,66,.97),rgba(3,18,31,.96))}.wc-pilot-route.is-landing[data-pathway=permeable]{--landing-accent:#fcd9a0}.wc-pilot-route.is-landing[data-pathway=plant]{--landing-accent:#86efac}.wc-pilot-route.is-landing[data-pathway=hard]{--landing-accent:#c4b5fd}.wc-pilot-landing-summary{display:flex;align-items:center;gap:10px}.wc-pilot-landing-glyph{display:flex;align-items:center;justify-content:center;flex:0 0 42px;height:44px;border:1px solid currentColor;border-radius:10px;color:var(--landing-accent);background:rgba(255,255,255,.045)}.wc-pilot-landing-copy{min-width:0}.wc-pilot-route.is-landing .wc-pilot-route-kicker{color:var(--landing-accent);font-size:8px}.wc-pilot-route.is-landing strong{font-size:14px}.wc-pilot-route.is-landing .wc-pilot-landing-aim{margin-top:7px;padding-top:6px;border-top:1px solid rgba(186,230,253,.2);line-height:1.45}@media(forced-colors:active){.wc-pilot-route.is-landing{background:Canvas;border-color:CanvasText;--landing-accent:CanvasText}.wc-pilot-landing-glyph{background:Canvas;color:CanvasText}.wc-pilot-route.is-landing .wc-pilot-landing-aim{border-color:CanvasText}}'
       ,'.wc-pilot-launch{position:absolute;z-index:9;inset:0;display:grid;place-items:center;padding:18px;overflow:auto;background:linear-gradient(145deg,rgba(2,12,27,.84),rgba(3,47,67,.7));backdrop-filter:blur(5px)}.wc-pilot-launch-card{width:min(660px,100%);padding:20px;border:1px solid rgba(186,230,253,.38);border-radius:18px;background:linear-gradient(145deg,rgba(3,18,31,.95),rgba(8,47,73,.94));box-shadow:0 24px 70px rgba(2,6,23,.48);color:#e0f2fe}.wc-pilot-launch-kicker{display:block;margin-bottom:5px;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch h3{margin:0;font-size:clamp(21px,3vw,30px);line-height:1.08;letter-spacing:-.025em;color:#fff}.wc-pilot-launch-intro{margin:7px 0 13px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-launch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.wc-pilot-launch-step{padding:9px 10px;border:1px solid rgba(125,211,252,.2);border-radius:11px;background:rgba(15,23,42,.48)}.wc-pilot-launch-step span{display:block;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch-step strong{display:block;margin-top:3px;font-size:12px;line-height:1.3;color:#f8fafc}.wc-pilot-launch-science{margin:10px 0;padding:8px 10px;border-left:3px solid #34d399;border-radius:0 8px 8px 0;background:rgba(6,78,59,.3);font-size:11px;line-height:1.45;color:#d1fae5}.wc-pilot-launch-actions{display:flex;gap:7px;flex-wrap:wrap}.wc-pilot-launch-btn{flex:1 1 190px;min-height:42px;padding:9px 13px;border:1px solid #7dd3fc;border-radius:10px;background:#0369a1;color:#fff;font-size:12px;font-weight:900;cursor:pointer}.wc-pilot-launch-btn:hover{background:#0369a1}.wc-pilot-launch-btn.is-water{border-color:#67e8f9;background:rgba(14,116,144,.65)}.wc-pilot-launch-btn:focus-visible{outline:3px solid #facc15;outline-offset:3px}'
       ,'@media(max-width:700px){.wc-pilot-camera-switch{top:8px;right:8px;left:8px;transform:none;justify-content:center}.wc-pilot-camera-btn{padding-inline:7px}.wc-pilot-route{top:200px;right:8px;bottom:auto;left:auto;width:min(58%,260px);transform:none}.wc-pilot-launch{place-items:start center;padding:10px}.wc-pilot-launch-card{padding:14px}.wc-pilot-launch-grid{grid-template-columns:1fr}.wc-pilot-launch-step{padding:6px 8px}.wc-pilot-launch-intro{margin-bottom:9px}.wc-pilot-launch-science{margin:8px 0}.wc-pilot-launch-btn{min-height:38px}}'
       ,'@media(max-width:700px){.wc-pilot-stage[data-onboarding=true]{min-height:620px}}'
@@ -668,7 +672,7 @@
       ,'.wc-pilot-key.is-move{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1}.wc-pilot-key-hint{font:800 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;color:#bae6fd;opacity:.9}.wc-pilot-cycle{z-index:6;bottom:98px;border-color:rgba(253,224,71,.55);pointer-events:auto}.wc-pilot-cycle-hint{color:#fde68a!important}.wc-pilot-cycle-btn{margin-top:7px;min-height:32px;padding:5px 12px;font-size:11px}@media(max-width:700px){.wc-pilot-cycle{top:64px;bottom:auto;left:8px;right:8px;width:auto}}@media(forced-colors:active){.wc-pilot-cycle{border-color:CanvasText}.wc-pilot-cycle-hint,.wc-pilot-key-hint{color:CanvasText!important}}'
       ,'.wc-pilot-hud-toggle{display:none}@keyframes wc-pilot-gauge-pop{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}.wc-pilot-gauge.is-pop{animation:wc-pilot-gauge-pop .32s ease;transform-origin:left center}@media(prefers-reduced-motion:reduce){.wc-pilot-gauge.is-pop{animation:none!important}}@media(max-width:700px){.wc-pilot-hud-toggle{display:inline-block}.wc-pilot-stage[data-hud=compact] .wc-pilot-readouts,.wc-pilot-stage[data-hud=compact] .wc-pilot-buoy,.wc-pilot-stage[data-hud=compact] .wc-pilot-place,.wc-pilot-stage[data-hud=compact] .wc-pilot-ladder,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-gauge,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-hud-kicker,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left .wc-pilot-hud-kicker{display:none}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left{grid-template-columns:1fr;right:auto;min-width:0;padding:5px 8px}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right{bottom:auto;top:100px}}'
       ,'.wc-pilot-hud-right{max-width:min(272px,34%)}.wc-pilot-goal{padding:7px 8px;border:1px solid rgba(110,231,183,.28);border-radius:8px;background:rgba(6,78,59,.34)}.wc-pilot-goal span{display:block;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a7f3d0}.wc-pilot-goal strong{display:block;margin-top:2px;font-size:11px;line-height:1.35;font-weight:700;color:#f0fdf4}@media(max-width:700px){.wc-pilot-hud-right{max-width:60%;gap:4px;padding:6px 8px}.wc-pilot-hud-right .wc-pilot-micro{display:none}.wc-pilot-goal{padding:5px 7px}.wc-pilot-goal strong{font-size:10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}@media(forced-colors:active){.wc-pilot-goal{border:1px solid CanvasText;background:Canvas}.wc-pilot-goal span,.wc-pilot-goal strong{color:CanvasText}}'
-      ,'.wc-pilot-buoy[data-state=pathway]{background:rgba(99,102,241,.2);color:#e0e7ff}.wc-pilot-readouts.is-pathway dd{font-size:11px;line-height:1.22}.wc-pilot-route.is-process{border-color:rgba(165,243,252,.5);background:linear-gradient(145deg,rgba(3,18,31,.96),rgba(30,41,59,.94))}.wc-pilot-route-progress{height:6px;margin-top:6px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-route-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4ade80)}.wc-pilot-key-pathway{min-width:128px;background:#0f766e;border-color:#5eead4}.wc-pilot-key-pathway:hover{background:#0d9488}@media(forced-colors:active){.wc-pilot-route-progress{border:1px solid CanvasText;background:Canvas}.wc-pilot-route-progress i{background:Highlight}.wc-pilot-key-pathway{background:Highlight;color:HighlightText}}'
+      ,'.wc-pilot-buoy[data-state=pathway]{background:rgba(99,102,241,.2);color:#e0e7ff}.wc-pilot-readouts.is-pathway dd{font-size:11px;line-height:1.22}.wc-pilot-route.is-process{border-color:rgba(165,243,252,.5);background:linear-gradient(145deg,rgba(3,18,31,.96),rgba(30,41,59,.94))}@media(min-width:701px){.wc-pilot-leaf-energy{bottom:92px}}.wc-pilot-route-progress{height:6px;margin-top:6px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-route-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4ade80)}.wc-pilot-key-pathway{min-width:128px;background:#0f766e;border-color:#5eead4}.wc-pilot-key-pathway:hover{background:#0d9488}@media(forced-colors:active){.wc-pilot-route-progress{border:1px solid CanvasText;background:Canvas}.wc-pilot-route-progress i{background:Highlight}.wc-pilot-key-pathway{background:Highlight;color:HighlightText}}'
       ,".wc-investigation{--wi-bg:#f3faf7;--wi-ink:#143d34;--wi-muted:#355e55;--wi-line:#b6d6c8;--wi-button:#176450;background:var(--wi-bg);color:var(--wi-ink);border:1px solid var(--wi-line);border-radius:14px;padding:14px 16px;margin:0 0 14px;font:400 14px/1.5 system-ui,sans-serif;box-sizing:border-box}\n.wc-investigation.is-dark{--wi-bg:#102b28;--wi-ink:#e7faf1;--wi-muted:#bbd8cb;--wi-line:#47786a;--wi-button:#16634f}\n.wc-investigation h3,.wc-investigation strong{font-size:18px;line-height:1.3;margin:0;display:block;color:var(--wi-ink)}\n.wc-investigation p{margin:6px 0;color:var(--wi-muted)}.wc-investigation small{display:block;font-size:12px;line-height:1.5;color:var(--wi-muted)}\n.wc-investigation-kicker{display:block;color:var(--wi-muted);font-size:11px;font-weight:750;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px}\n.wc-investigation-invite,.wc-investigation-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.wc-investigation-invite>div{min-width:0}.wc-investigation-invite p{margin-bottom:0}\n.wc-investigation-button{flex-shrink:0;min-height:44px;padding:9px 14px;border:1px solid var(--wi-button);border-radius:9px;background:var(--wi-button);color:#fff;font:650 13px/1.35 system-ui,sans-serif;cursor:pointer}.wc-investigation-button:hover:not(:disabled){filter:brightness(1.1)}.wc-investigation-button.is-secondary{background:transparent;border-color:var(--wi-line);color:var(--wi-ink)}.wc-investigation-button:disabled{opacity:.55;cursor:default}\n.wc-investigation :is(button,input,textarea,summary):focus-visible,.wc-learning-drawer>summary:focus-visible{outline:3px solid #b45309;outline-offset:3px}.wc-investigation.is-dark :is(button,input,textarea,summary):focus-visible{outline-color:#facc15}\n.wc-investigation-step{font-size:12px;font-weight:750;white-space:nowrap}.wc-investigation-steps{display:flex;gap:5px;list-style:none;margin:10px 0;padding:0;flex-wrap:wrap}.wc-investigation-steps li{padding:3px 8px;border-bottom:3px solid var(--wi-line);font-size:11px;color:var(--wi-muted)}.wc-investigation-steps li[aria-current=step]{border-color:var(--wi-button);font-weight:800;color:var(--wi-ink)}.wc-investigation-steps li[data-done=true]::before{content:'\u2713 ';font-weight:800}\n.wc-investigation-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px}.wc-investigation-actions>span{flex:1 1 220px;font-size:12px;color:var(--wi-muted)}.wc-investigation-prediction{border:0;padding:0;margin:0}.wc-investigation-prediction legend{font-weight:600;margin-bottom:7px}.wc-investigation-prediction label{display:inline-flex;gap:8px;align-items:center;min-height:44px;padding:7px 12px;margin:0 8px 5px 0;border:1px solid var(--wi-line);border-radius:9px;cursor:pointer}.wc-investigation-prediction input{width:18px;height:18px;accent-color:var(--wi-button)}\n.wc-investigation-notebook{border-top:1px solid var(--wi-line);margin-top:12px;padding-top:4px}.wc-investigation-notebook>summary{cursor:pointer;min-height:40px;padding:8px 0;font-weight:700}.wc-investigation-table{max-width:100%;overflow:auto}.wc-investigation table{width:100%;border-collapse:collapse;font-size:13px}.wc-investigation caption{text-align:left;font-size:12px;padding:6px 0}.wc-investigation td,.wc-investigation th{border-bottom:1px solid var(--wi-line);padding:9px;text-align:left}.wc-investigation-readout{font-weight:700;padding:8px 0}.wc-investigation-reflection{display:block;margin:10px 0;font-weight:650}.wc-investigation textarea{display:block;box-sizing:border-box;width:100%;resize:vertical;margin-top:5px;padding:10px;border:1px solid var(--wi-line);border-radius:8px;background:var(--wi-bg);color:var(--wi-ink);font:400 14px/1.5 system-ui,sans-serif}\n.wc-learning-drawer{margin:12px 0;border:1px solid #b8d4e3;border-radius:12px;background:#f5faff;padding:0 12px}.wc-learning-drawer>summary{padding:12px 0;min-height:44px;font-size:13px;font-weight:700;color:#164e63;cursor:pointer}.dark .wc-learning-drawer{background:#102333;border-color:#3c6177}.dark .wc-learning-drawer>summary{color:#d5efff}.wc-learning-drawer[open]>summary{margin-bottom:12px}\n.wc-mode-bar{margin-bottom:10px}.wc-mode-tab{min-height:44px;padding:7px 10px}.wc-mode-tab small,.wc-mode-kind{display:none}.wc-explorer-root>.wc-view-switch{margin-top:0}.wc-pilot-hud-toggle{display:inline-block}.wc-pilot-stage[data-hud=compact] .wc-pilot-readouts,.wc-pilot-stage[data-hud=compact] .wc-pilot-buoy,.wc-pilot-stage[data-hud=compact] .wc-pilot-place,.wc-pilot-stage[data-hud=compact] .wc-pilot-ladder,.wc-pilot-stage[data-hud=compact] .wc-pilot-micro,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left .wc-pilot-hud-kicker{display:none}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left{width:auto;min-width:0;padding:9px 12px}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right{max-width:230px}.wc-pilot-canvas{height:clamp(360px,52vh,560px)}\n@media(max-width:700px){.wc-investigation-invite{align-items:stretch;flex-direction:column;gap:10px}.wc-investigation-invite .wc-investigation-button{align-self:flex-start}.wc-investigation{padding:12px}.wc-investigation-heading{align-items:flex-start;flex-direction:column;gap:5px}.wc-investigation h3,.wc-investigation strong{font-size:17px}.wc-investigation-steps{gap:2px}.wc-investigation-steps li{font-size:10px;padding:3px 5px}.wc-investigation-actions .wc-investigation-button{flex:1 1 160px}.wc-investigation-prediction label{margin-right:4px;padding-inline:8px}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right{max-width:58%}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-gauge{display:none}.wc-mode-bar{flex-wrap:nowrap;overflow-x:auto}.wc-mode-tab{flex:1 0 auto;min-width:80px}.wc-mode-tab strong{font-size:11px}}\n.theme-contrast .wc-investigation{--wi-bg:#000;--wi-ink:#ffff00;--wi-muted:#fff;--wi-line:#ffff00;--wi-button:#174f3a}.theme-contrast .wc-learning-drawer{background:#000;border-color:#ffff00}.theme-contrast .wc-learning-drawer>summary{color:#ffff00}\n@media(forced-colors:active){.wc-investigation{--wi-bg:Canvas;--wi-ink:CanvasText;--wi-muted:CanvasText;--wi-line:CanvasText;--wi-button:Highlight}.wc-investigation-button{background:Highlight;color:HighlightText;border-color:ButtonText}.wc-investigation-button.is-secondary{background:Canvas;color:CanvasText}.wc-investigation-prediction input{accent-color:auto}.wc-learning-drawer{background:Canvas;border-color:CanvasText}.wc-learning-drawer>summary{color:CanvasText}}\n@media print{.wc-investigation{break-inside:avoid}.wc-investigation-button,.wc-investigation-steps{display:none}}\n"
       ,'.wc-pilot-stage[data-large-scene=true] .wc-pilot-canvas{height:max(580px,82vh);height:max(580px,82svh)}.wc-pilot-camera-switch{flex-wrap:wrap;max-width:calc(100% - 20px);justify-content:center}.wc-pilot-size-btn{min-height:44px}.wc-pilot-stage[data-learning-pause=true] .wc-pilot-hud-right,.wc-pilot-stage[data-learning-pause=true] .wc-pilot-route{visibility:hidden}.wc-pilot-notice{position:absolute;z-index:9;left:50%;top:64px;transform:translateX(-50%);width:min(520px,calc(100% - 28px));max-height:calc(100% - 150px);overflow:auto;padding:18px 20px;border:2px solid #7dd3fc;border-radius:16px;background:#08283c;color:#f0f9ff;box-shadow:0 14px 44px #02061788;scrollbar-gutter:stable}.wc-pilot-notice-kicker{font-size:11px;font-weight:800;color:#bae6fd;letter-spacing:.05em}.wc-pilot-notice h3{font-size:21px;margin:5px 0;color:#fff;font-weight:850}.wc-pilot-notice p{font-size:13px;line-height:1.55;margin:9px 0}.wc-pilot-notice-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;font-weight:800;color:#e0f2fe}.wc-pilot-notice-flow>span:not([aria-hidden]){border:1px solid #64748b;padding:4px 9px;border-radius:20px}.wc-pilot-notice-evidence{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;padding:10px;border:1px solid #47758b;border-radius:10px;background:#12394f}.wc-pilot-notice-evidence dt{font-size:11px;color:#bae6fd}.wc-pilot-notice-evidence dd{margin:3px 0 0;font-size:13px;font-weight:750;color:#fff}.wc-pilot-notice .wc-pilot-btn{position:sticky;bottom:0;box-shadow:0 -5px 10px #08283c;min-height:44px;background:#bae6fd;color:#082f49;border:1px solid #7dd3fc}.wc-pilot-notice .wc-pilot-btn:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.wc-pilot-landing-aim{border-top:1px solid #64748b;padding-top:6px;margin-top:6px}@media(max-width:700px){.wc-pilot-camera-switch{gap:1px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));max-width:none}.wc-pilot-camera-btn{white-space:normal;min-height:44px;line-height:1.2}.wc-pilot-camera-btn{padding-inline:5px;font-size:10px}.wc-pilot-stage[data-learning-pause=true]{min-height:700px}.wc-pilot-stage[data-learning-pause=true] .wc-pilot-canvas{height:700px}.wc-pilot-notice{top:65px;padding:13px;max-height:calc(100% - 185px)}.wc-pilot-notice h3{font-size:19px}.wc-pilot-notice-evidence{grid-template-columns:1fr;gap:8px}.wc-pilot-notice p{font-size:12px}}.theme-contrast .wc-pilot-notice,.theme-contrast .wc-pilot-notice-evidence{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}.theme-contrast .wc-pilot-notice :is(h3,p,span,dt,dd){color:#ffff00!important}@media(forced-colors:active){.wc-pilot-notice,.wc-pilot-notice-evidence{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-pilot-notice :is(h3,p,span,dt,dd){color:CanvasText}.wc-pilot-notice .wc-pilot-btn{background:ButtonFace;color:ButtonText;border-color:ButtonText}}'
       ,'.wc-pilot-missions{border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0c4a6e;font-size:13px}.wc-pilot-missions>summary{padding:12px 14px;min-height:44px;cursor:pointer;font-weight:800}.wc-pilot-mission-summary{display:inline;margin-left:10px;font-size:12px;font-weight:650}.wc-pilot-missions>p,.wc-pilot-mission-options,.wc-pilot-mission-progress{margin:10px 14px 14px}.wc-pilot-mission-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.wc-pilot-mission-option{display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid #94a3b8;border-radius:10px;background:#fff}.wc-pilot-missions strong{font-size:14px}.wc-pilot-missions p{font-size:13px;line-height:1.5}.wc-pilot-mission-option p{flex:1;margin:0}.wc-pilot-missions button{min-height:44px;padding:8px 10px;border:1px solid #075985;border-radius:8px;background:#075985;color:#fff;font-size:12px;font-weight:750;cursor:pointer}.wc-pilot-missions :is(button,summary,textarea):focus-visible{outline:3px solid #b45309;outline-offset:3px}.wc-pilot-mission-progress{padding:14px;border:1px solid #64748b;border-radius:10px}.wc-pilot-mission-progress>ol{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:12px 0}.wc-pilot-mission-progress>ol>li{padding:7px 10px;border:1px solid #94a3b8;border-radius:8px}.wc-pilot-mission-progress li[data-done=true]{background:#d1fae5;color:#064e3b;border-color:#059669}.wc-pilot-mission-progress li[aria-current=step]{border:2px solid #075985;font-weight:750}.wc-pilot-mission-insight{padding:10px;border-left:3px solid #059669;background:#ecfdf5;color:#064e3b}.wc-pilot-mission-evidence{padding:8px 0}.wc-pilot-mission-evidence summary{min-height:44px;cursor:pointer;padding:10px 0}.wc-pilot-mission-evidence ol{padding-left:20px}.wc-pilot-mission-progress label{display:block;font-weight:700;margin:8px 0}.wc-pilot-mission-progress textarea{display:block;width:100%;max-width:100%;padding:10px;background:#fff;color:#0f172a;border:1px solid #64748b;border-radius:8px;font:inherit;resize:vertical}.wc-pilot-mission-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.wc-pilot-root.is-dark .wc-pilot-missions,.wc-pilot-root.is-dark .wc-pilot-mission-option{background:#102b3d;color:#e0f2fe}.wc-pilot-root.is-dark .wc-pilot-missions .wc-pilot-mission-insight{background:#143c36;color:#d1fae5}.wc-pilot-root.is-dark .wc-pilot-missions button{background:#bae6fd;color:#082f49}.wc-pilot-root.is-dark .wc-pilot-mission-progress textarea{background:#08283c;color:#e0f2fe}.wc-pilot-root.is-dark .wc-pilot-missions :focus-visible{outline-color:#fde68a}.wc-pilot-root.is-dark .wc-pilot-mission-progress li[aria-current=step]{border-color:#7dd3fc}@media(max-width:700px){.wc-pilot-mission-options{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-mission-summary{display:block;margin:4px 0 0}.wc-pilot-mission-progress{padding:10px}}@media(max-width:370px){.wc-pilot-mission-options{grid-template-columns:1fr}}.theme-contrast .wc-pilot-missions,.theme-contrast .wc-pilot-mission-option,.theme-contrast .wc-pilot-mission-progress,.theme-contrast .wc-pilot-mission-insight,.theme-contrast .wc-pilot-mission-progress textarea{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){.wc-pilot-missions,.wc-pilot-mission-option,.wc-pilot-mission-progress,.wc-pilot-mission-insight,.wc-pilot-mission-progress textarea,.wc-pilot-mission-progress li{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.wc-pilot-missions button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
@@ -2881,7 +2885,7 @@
     snow: { id: 'snow', label: 'Snowflake', stage: 'precipitation', tint: 0xf0f9ff,
       science: 'You are falling as solid ice. This enlarged crystal with six branches is one example; real snow has many shapes and can contain joined crystals. Temperature and moisture shape crystal growth. In this model, entering air above freezing melts you into rain.' },
     runoff: { id: 'runoff', label: 'Surface runoff', stage: 'collection', tint: 0x22d3ee,
-      science: 'You landed faster than the ground could absorb you, so you are flowing downhill over the surface toward a stream. Runoff carries sediment and whatever the land surface holds.' },
+      science: 'You landed faster than the ground could absorb you, so you are flowing downhill over the surface toward a stream, lake, or ocean. Runoff carries sediment and whatever the land surface holds.' },
     soil: { id: 'soil', label: 'Soil water', stage: 'infiltration', tint: 0xa3e635,
       science: 'You soaked into pore spaces between soil grains. How fast depends on permeability: sand takes you in quickly, clay and pavement turn you back into runoff.' },
     groundwater: { id: 'groundwater', label: 'Groundwater', stage: 'infiltration', tint: 0x818cf8,
@@ -3288,6 +3292,9 @@
   function wcPilotObjective(state, env) {
     switch (state.form) {
       case 'liquid':
+        if (state.sunlightZone === 'outside') return state.energy > 0.55
+          ? _pt('pilot_obj_liquid_outside_nearly', 'Your energy is building. You can become vapor here, or move into the marked sunlit water to gain energy faster.')
+          : _pt('pilot_obj_liquid_outside', 'Evaporation still happens outside the sunlight ring. Stay here to observe slower energy gain, or move into the ring to compare.');
         return state.energy > 0.55
           ? _pt('pilot_obj_liquid_nearly', 'Almost vapour - stay in the sunlit water until the energy bar fills.')
           : _pt('pilot_obj_liquid', 'Hold in the sunlit shallows. Sunlight, dry air, and wind are all loading you with enough energy to escape as vapour.');
@@ -3314,7 +3321,7 @@
       case 'snow':
         return _pt('pilot_obj_snow', 'Falling as snow. If you pass below {m} m you will melt into rain on the way down.', { m: Math.round(env.freezingM) });
       case 'runoff':
-        return _pt('pilot_obj_runoff', 'You could not soak in. Follow the glowing downhill current toward a stream; move forward to compress the journey.');
+        return _pt('pilot_obj_runoff_water', 'You could not soak in. Follow the glowing downhill current toward open water; move forward to compress the journey.');
       case 'soil':
         return _pt('pilot_obj_soil', 'You infiltrated. Percolate through connected pores toward the glowing water table; sink to travel faster.');
       case 'groundwater':
@@ -3526,6 +3533,7 @@
       dryAirExposure: wcPilotNotebookNumber(value.dryAirExposure, 0, 1, 0),
       pathwayProgress: wcPilotNotebookNumber(value.pathwayProgress, 0, 1, 0),
       surface: WC_PILOT_NOTEBOOK_SURFACES.indexOf(value.surface) >= 0 ? value.surface : 'water',
+      landingSurface: value.surface === 'water' && ['lake', 'stream', 'ocean'].indexOf(value.landingSurface) >= 0 ? value.landingSurface : '',
       elapsed: elapsed
     };
   }
@@ -12146,16 +12154,31 @@ const d = labToolData.waterCycle || {};
               topColor: { value: new THREE.Color(0x1e3a8a) },
               midColor: { value: new THREE.Color(0x38bdf8) },
               horizonColor: { value: new THREE.Color(0xdbeafe) },
-              offset: { value: 12.0 }
+              offset: { value: 12.0 },
+              sunDirection: { value: new THREE.Vector3(-120, 190, 90).normalize() },
+              glowColor: { value: new THREE.Color(0xffefd0) },
+              glowStrength: { value: 0.18 }
             };
             var sky = new THREE.Mesh(
               new THREE.SphereGeometry(900, 32, 20),
               new THREE.ShaderMaterial({
                 side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyUniforms,
-                vertexShader: 'varying vec3 vW;void main(){vec4 wp=modelMatrix*vec4(position,1.0);vW=wp.xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-                fragmentShader: 'uniform vec3 topColor;uniform vec3 midColor;uniform vec3 horizonColor;uniform float offset;varying vec3 vW;void main(){float hgt=normalize(vW+vec3(0.0,offset,0.0)).y;float t=clamp(hgt,0.0,1.0);vec3 c=mix(horizonColor,midColor,smoothstep(0.0,0.35,t));c=mix(c,topColor,smoothstep(0.32,0.95,t));gl_FragColor=vec4(c,1.0);}'
+                vertexShader: 'varying vec3 vSkyDirection;void main(){vSkyDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+                fragmentShader: [
+                  'uniform vec3 topColor;uniform vec3 midColor;uniform vec3 horizonColor;uniform float offset;',
+                  'uniform vec3 sunDirection;uniform vec3 glowColor;uniform float glowStrength;varying vec3 vSkyDirection;',
+                  'void main(){vec3 skyDirection=normalize(vSkyDirection+vec3(0.0,offset,0.0));',
+                  'float t=clamp(skyDirection.y,0.0,1.0);',
+                  'vec3 c=mix(horizonColor,midColor,smoothstep(0.0,0.35,t));',
+                  'c=mix(c,topColor,smoothstep(0.32,0.95,t));',
+                  'float sunFacing=max(0.0,dot(normalize(vSkyDirection),sunDirection));',
+                  'float aureole=pow(sunFacing,48.0)*0.6+pow(sunFacing,420.0)*0.4;',
+                  'c=mix(c,glowColor,clamp(aureole*glowStrength,0.0,0.4));',
+                  'gl_FragColor=vec4(c,1.0);}'
+                ].join('\n')
               })
             );
+            sky.name = 'pilot-atmosphere-sky';
             scene.add(sky);
             // Far plane pushed out to 1500: at 900 the ridge line at z=-320 sat
             // deep in the fog and read as a grey smear rather than as mountains.
@@ -12170,20 +12193,13 @@ const d = labToolData.waterCycle || {};
             sun.position.set(-120, 190, 90);
             scene.add(sun);
             var sunDisc = new THREE.Mesh(
-              new THREE.SphereGeometry(22, 20, 14),
+              new THREE.SphereGeometry(9, 20, 14),
               new THREE.MeshBasicMaterial({ color: 0xfffbe8, fog: false })
             );
             sunDisc.position.copy(sun.position).multiplyScalar(3.1);
             scene.add(sunDisc);
-            var sunHalo = new THREE.Mesh(
-              new THREE.SphereGeometry(34, 20, 14),
-              new THREE.MeshBasicMaterial({
-                color: 0xfff4c2, transparent: true, opacity: 0.18,
-                blending: THREE.AdditiveBlending, depthWrite: false, fog: false
-              })
-            );
-            sunHalo.position.copy(sunDisc.position);
-            scene.add(sunHalo);
+            sunDisc.name = 'pilot-sun-disc';
+
 
             // ── Ocean ────────────────────────────────────────────────────────
             // A displaced plane rather than a flat one: a still mirror reads as a
@@ -12315,19 +12331,53 @@ const d = labToolData.waterCycle || {};
             // A translucent coastal shelf reveals water depth: pale turquoise
             // near land, deep blue offshore. The land hides its centre, leaving
             // a narrow shallow-water band instead of one flat ocean colour.
+            // A subdivided shelf fades out offshore and can follow the same
+            // ocean triangles as the sunlight marker and shoreline foam.
+            var coastShelfCurve = new THREE.CatmullRomCurve3(COAST_OUTLINE.map(function(point) {
+              return new THREE.Vector3(point.x, 0, point.z);
+            }), true, 'centripetal', 0.42);
+            var coastShelfSegments = COAST_OUTLINE.length * 8;
+            var coastShelfVertices = [], coastShelfFade = [], coastShelfIndices = [];
+            var coastShelfPoint = new THREE.Vector3();
+            for (var shelfRing = 0; shelfRing <= coastShelfSegments; shelfRing++) {
+              coastShelfCurve.getPoint(shelfRing / coastShelfSegments, coastShelfPoint);
+              for (var shelfAcross = 0; shelfAcross <= 5; shelfAcross++) {
+                var shelfT = shelfAcross / 5;
+                coastShelfVertices.push(COAST_CENTRE_X + (coastShelfPoint.x - COAST_CENTRE_X) * (1.04 + shelfT * 0.09), 0,
+                  COAST_CENTRE_Z + (coastShelfPoint.z - COAST_CENTRE_Z) * (1.055 + shelfT * 0.11));
+                coastShelfFade.push(Math.pow(1 - shelfT, 1.7));
+                if (shelfRing < coastShelfSegments && shelfAcross < 5) {
+                  var shelfVertex = shelfRing * 6 + shelfAcross;
+                  coastShelfIndices.push(shelfVertex, shelfVertex + 6, shelfVertex + 1,
+                    shelfVertex + 1, shelfVertex + 6, shelfVertex + 7);
+                }
+              }
+            }
+            var coastShelfGeometry = new THREE.BufferGeometry();
+            coastShelfGeometry.setAttribute('position', new THREE.Float32BufferAttribute(coastShelfVertices, 3));
+            coastShelfGeometry.setAttribute('coastalFade', new THREE.Float32BufferAttribute(coastShelfFade, 1));
+            coastShelfGeometry.setIndex(coastShelfIndices); coastShelfGeometry.computeVertexNormals();
             var coastalShelf = new THREE.Mesh(
-              new THREE.ShapeGeometry(outlineShape(COAST_OUTLINE, 1.12, 1.16), 12),
+              coastShelfGeometry,
               new THREE.MeshPhongMaterial({
                 color: 0x22d3ee, specular: 0xbae6fd, shininess: 74,
                 transparent: true, opacity: 0.24, depthWrite: false,
                 side: THREE.DoubleSide, blending: THREE.NormalBlending
               })
             );
-            coastalShelf.rotation.x = -Math.PI / 2;
-            coastalShelf.position.y = 0.8;
+            coastalShelf.name = 'pilot-coastal-shallows';
+            coastalShelf.position.y = 0.08; coastalShelf.frustumCulled = false; coastalShelf.renderOrder = 2;
+            coastalShelf.material.onBeforeCompile = function(shader) {
+              shader.vertexShader = 'attribute float coastalFade; varying float vCoastalFade;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvCoastalFade = coastalFade;');
+              shader.fragmentShader = 'varying float vCoastalFade;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>',
+                'diffuseColor.a *= vCoastalFade;\n#include <alphatest_fragment>');
+            };
+            coastalShelf.material.customProgramCacheKey = function() { return 'pilot-coastal-shelf-fade-v1'; };
             scene.add(coastalShelf);
 
-            // Sunlit band: where evaporation actually charges. Making the fast
+            // Sunlit band: where this model adds evaporation energy faster. Making the fast
             // water VISIBLE is the difference between "hold still somewhere" and
             // "hold still where the sun is hitting the water".
             // A ring rather than a filled disc: a soft additive disc over bright
@@ -12338,23 +12388,71 @@ const d = labToolData.waterCycle || {};
             // patch of sunlit sea and started reading as the sea itself.
             var SUN_PATCH_R = 26;
             var START_X = -150, START_Z = 40;
+            function isPilotSunlitWater(x, z) {
+              return surfaceUnder(x, z) === 'water'
+                && (x - START_X) * (x - START_X) + (z - START_Z) * (z - START_Z) < SUN_PATCH_R * SUN_PATCH_R;
+            }
             var sunPatch = new THREE.Mesh(
               new THREE.RingGeometry(SUN_PATCH_R - 0.65, SUN_PATCH_R, 80),
               new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.65, depthWrite: false, side: THREE.DoubleSide, blending: THREE.NormalBlending })
             );
-            sunPatch.rotation.x = -Math.PI / 2;
-            sunPatch.position.set(START_X, 1.6, START_Z);
+            sunPatch.name = 'pilot-sunlight-boundary';
+            sunPatch.geometry.rotateX(-Math.PI / 2);
+            sunPatch.position.set(START_X, 0.14, START_Z);
+            sunPatch.frustumCulled = false;
             scene.add(sunPatch);
+            var sunlightCanvas = document.createElement('canvas');
+            sunlightCanvas.width = sunlightCanvas.height = 128;
+            var sunlightContext = sunlightCanvas.getContext('2d');
+            var sunlightGradient = sunlightContext.createRadialGradient(64, 64, 0, 64, 64, 64);
+            sunlightGradient.addColorStop(0, 'rgba(255,244,191,0.6)');
+            sunlightGradient.addColorStop(0.55, 'rgba(255,232,152,0.32)');
+            sunlightGradient.addColorStop(1, 'rgba(255,232,152,0)');
+            sunlightContext.fillStyle = sunlightGradient; sunlightContext.fillRect(0, 0, 128, 128);
+            var sunlightTexture = new THREE.CanvasTexture(sunlightCanvas);
+            sunlightTexture.name = 'pilot-sunlight-soft-fill';
             var sunPatchFill = new THREE.Mesh(
-              new THREE.CircleGeometry(SUN_PATCH_R - 2.2, 48),
-              new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+              new THREE.RingGeometry(0, SUN_PATCH_R - 0.9, 80, 8),
+              new THREE.MeshBasicMaterial({ color: 0xffffff, map: sunlightTexture, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide, blending: THREE.NormalBlending })
             );
-            sunPatchFill.rotation.x = -Math.PI / 2;
-            sunPatchFill.position.set(START_X, 1.2, START_Z);
+            sunPatchFill.name = 'pilot-sunlight-fill';
+            sunPatchFill.geometry.rotateX(-Math.PI / 2);
+            sunPatchFill.position.set(START_X, 0.1, START_Z);
+            sunPatchFill.frustumCulled = false;
             scene.add(sunPatchFill);
             var sunPatchLabel = makeLabelSprite(t('stem.watercycle.pilot_sunlit_water', 'SUNLIT WATER'), 'rgba(180,83,9,0.92)', '#fffbeb');
-            sunPatchLabel.position.set(START_X, 15, START_Z);
+            sunPatchLabel.name = 'pilot-sunlight-label';
+            sunPatchLabel.position.set(START_X, 10, START_Z + SUN_PATCH_R + 6);
             scene.add(sunPatchLabel);
+            // Cache triangle weights once. Following the actual ocean vertices
+            // also follows a paused or reduced-motion surface without a new clock.
+            function cacheSunlightSurface(mesh) {
+              var positions = mesh.geometry.attributes.position;
+              var grid = oceanGeo.parameters.widthSegments, stride = grid + 1;
+              var cellSize = oceanGeo.parameters.width / grid;
+              var halfSize = oceanGeo.parameters.width / 2;
+              var samples = [];
+              for (var i = 0; i < positions.count; i++) {
+                var gx = (mesh.position.x + positions.getX(i) + halfSize) / cellSize;
+                var gz = (mesh.position.z + positions.getZ(i) + halfSize) / cellSize;
+                var col = Math.max(0, Math.min(grid - 1, Math.floor(gx)));
+                var row = Math.max(0, Math.min(grid - 1, Math.floor(gz)));
+                var u = gx - col, v = gz - row, a = row * stride + col;
+                samples.push(u + v <= 1
+                  ? [a, a + stride, a + 1, 1 - u - v, v, u]
+                  : [a + stride, a + stride + 1, a + 1, 1 - u, u + v - 1, 1 - v]);
+              }
+              mesh.userData.surfaceSamples = samples;
+            }
+            cacheSunlightSurface(sunPatch); cacheSunlightSurface(sunPatchFill);
+            function updateSunlightSurface(mesh) {
+              var positions = mesh.geometry.attributes.position, waterPositions = oceanGeo.attributes.position;
+              mesh.userData.surfaceSamples.forEach(function(sample, index) {
+                positions.setY(index, waterPositions.getY(sample[0]) * sample[3]
+                  + waterPositions.getY(sample[1]) * sample[4] + waterPositions.getY(sample[2]) * sample[5]);
+              });
+              positions.needsUpdate = true;
+            }
 
             // ── Land: beach, meadow, ridge ───────────────────────────────────
             var land = new THREE.Group();
@@ -12463,7 +12561,7 @@ const d = labToolData.waterCycle || {};
             // pyramids. This deterministic height field makes a continuous
             // catchment with foothills, saddles and several irregular summits.
             // Vertex metadata is retained so the same geometry can reveal a
-            // scientifically meaningful snow line when the scenario changes.
+            // illustrative elevation-based snow line when the scenario changes.
             function makeWatershedRidgeGeometry(width, depth, xSegments, zSegments, seed, heightScale) {
               var ridgeGeometry = new THREE.PlaneGeometry(width, depth, xSegments, zSegments);
               ridgeGeometry.rotateX(-Math.PI / 2);
@@ -12488,6 +12586,11 @@ const d = labToolData.waterCycle || {};
                   + Math.cos((ridgeX + ridgeZ) * 0.027 + seed) * 0.032;
                 var ridgeHeight = ridgeCrossSection * ridgeEdgeTaper * heightScale
                   * (0.18 + ridgeSpine * 0.9) * (0.95 + ridgeFold);
+                // Narrow, coherent gullies break up the smooth ridge faces.
+                // This is static relief, not a simulated erosion process.
+                var ridgeGully = Math.pow(0.5 + 0.5 * Math.sin(ridgeX * 0.078
+                  + Math.sin(ridgeZ * 0.026 + seed) * 1.8), 9);
+                ridgeHeight *= 1 - ridgeGully * 0.22 * ridgeCrossSection;
                 ridgeHeight = Math.max(0, ridgeHeight);
                 ridgePositions.setY(ridgeVertex, ridgeHeight);
                 ridgeHeights[ridgeVertex] = Math.min(1, ridgeHeight / (heightScale * 1.04));
@@ -12498,6 +12601,7 @@ const d = labToolData.waterCycle || {};
               ridgePositions.needsUpdate = true;
               ridgeGeometry.setAttribute('color', new THREE.BufferAttribute(ridgeColors, 3));
               ridgeGeometry.computeVertexNormals();
+              ridgeGeometry.setAttribute('ridgeHeight', new THREE.BufferAttribute(ridgeHeights, 1));
               ridgeGeometry.userData.wcHeightFactors = ridgeHeights;
               ridgeGeometry.userData.wcLightFactors = ridgeLight;
               return ridgeGeometry;
@@ -12563,10 +12667,32 @@ const d = labToolData.waterCycle || {};
             ridgeBackdrop.userData.wcBackdrop = true;
             ridge.add(ridgeBackdrop);
 
+            var ridgeWinterSnow = { value: 0 };
+            [ridgeSurface, ridgeBackdrop].forEach(function(ridgeLayer) {
+              ridgeLayer.material.onBeforeCompile = function(shader) {
+                shader.uniforms.ridgeWinterSnow = ridgeWinterSnow;
+                shader.vertexShader = 'attribute float ridgeHeight;\nvarying vec3 vRidgePosition;\nvarying float vRidgeHeight;\nvarying float vRidgeUp;\n' + shader.vertexShader;
+                shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                  '#include <begin_vertex>\nvRidgePosition = position; vRidgeHeight = ridgeHeight; vRidgeUp = abs(normal.y);');
+                shader.fragmentShader = 'uniform float ridgeWinterSnow;\nvarying vec3 vRidgePosition;\nvarying float vRidgeHeight;\nvarying float vRidgeUp;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+                  '#include <color_fragment>',
+                  'float ridgeSnowLine = 0.43 + sin(vRidgePosition.x * 0.027 + vRidgePosition.z * 0.016) * 0.045;',
+                  'float ridgeSnowPatch = sin(vRidgePosition.x * 0.11 + sin(vRidgePosition.z * 0.047) * 2.8) * 0.027;',
+                  'float ridgeSnowCover = smoothstep(ridgeSnowLine - 0.035, ridgeSnowLine + 0.17, vRidgeHeight + ridgeSnowPatch);',
+                  'ridgeSnowCover *= smoothstep(0.25, 0.78, vRidgeUp) * ridgeWinterSnow;',
+                  'float ridgeDrift = 0.95 + 0.05 * sin(vRidgePosition.z * 0.28 + sin(vRidgePosition.x * 0.063) * 2.0);',
+                  'vec3 ridgeSnowTint = mix(vec3(0.67, 0.80, 0.88), vec3(0.94, 0.97, 1.0), vRidgeUp) * ridgeDrift;',
+                  'diffuseColor.rgb = mix(diffuseColor.rgb, ridgeSnowTint, ridgeSnowCover);'
+                ].join('\n'));
+                ridgeLayer.userData.snowShader = shader;
+              };
+              ridgeLayer.material.customProgramCacheKey = function() { return 'pilot-ridge-slope-snow-v1'; };
+            });
             function paintWatershedRidge(isDesert, isWinter) {
+              ridgeWinterSnow.value = isWinter ? 1 : 0;
               var ridgeLow = new THREE.Color();
               var ridgeHigh = new THREE.Color();
-              var ridgeSnow = new THREE.Color(0xf4f8fb);
               var ridgeHaze = new THREE.Color(isDesert ? 0xd6bd8d : isWinter ? 0xd7e3ed : 0xb8cfdd);
               if (isDesert) {
                 ridgeLow.setHex(0x594737); ridgeHigh.setHex(0xb08a5e);
@@ -12592,13 +12718,6 @@ const d = labToolData.waterCycle || {};
                   var ridgeGrain = Math.sin(ridgeVertices.getX(ridgeColorIndex) * 0.19
                     + Math.sin(ridgeVertices.getZ(ridgeColorIndex) * 0.11) * 2.1);
                   ridgeColor.multiplyScalar(0.74 + ridgeLightFactor * 0.23 + ridgeGrain * 0.045);
-                  if (isWinter) {
-                    var snowLineVariation = 0.46 + (ridgeLightFactor - 0.5) * 0.11;
-                    var snowCover = Math.max(0, Math.min(1,
-                      (ridgeHeightFactor - snowLineVariation) / 0.23
-                    ));
-                    ridgeColor.lerp(ridgeSnow, snowCover * (0.96 - exposedRock * 0.35));
-                  }
                   if (ridgeLayer.userData.wcBackdrop) {
                     ridgeColor.lerp(ridgeHaze, 0.38 + ridgeLayerIndex * 0.04);
                   }
@@ -12714,12 +12833,108 @@ const d = labToolData.waterCycle || {};
             // Lake: the second open-water landing target, inland so that
             // "steer back to water" is a real navigational choice.
             var lake = new THREE.Mesh(
-              new THREE.CircleGeometry(34, 40),
-              new THREE.MeshStandardMaterial({ color: 0x0e7490, roughness: 0.2, metalness: 0.3 })
+              new THREE.CircleGeometry(34, 96),
+              new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xa5c8cc, shininess: 96 })
             );
             lake.rotation.x = -Math.PI / 2;
             lake.position.set(268, 8.6, -104);
+            lake.name = 'pilot-lake-water';
+            var pilotLakeTime = { value: 0 };
+            lake.material.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotLakeTime = pilotLakeTime;
+              shader.vertexShader = 'varying vec3 vPilotLakeWorld;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
+                '#include <worldpos_vertex>\nvPilotLakeWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+              shader.fragmentShader = 'varying vec3 vPilotLakeWorld;\nuniform float pilotLakeTime;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>',
+                '#include <color_fragment>\nfloat lakeRadius = length(vPilotLakeWorld.xz - vec2(268.0, -104.0)) / 34.0;\nfloat lakeShallows = smoothstep(0.45, 1.0, lakeRadius);\nfloat lakeShelf = smoothstep(0.79, 0.99, lakeRadius + sin(vPilotLakeWorld.x * 0.37 + sin(vPilotLakeWorld.z * 0.29)) * 0.012);\nfloat lakeBedGrain = fract(sin(dot(floor(vPilotLakeWorld.xz * 3.2), vec2(127.1, 311.7))) * 43758.5453);\nfloat lakeBedDetail = 1.0 - smoothstep(24.0, 100.0, length(vViewPosition));\nvec3 lakeWaterTint = mix(vec3(0.045, 0.18, 0.24), vec3(0.16, 0.43, 0.43), lakeShallows);\ndiffuseColor.rgb *= mix(lakeWaterTint, vec3(0.25, 0.39, 0.34) * (0.94 + lakeBedGrain * 0.12 * lakeBedDetail), lakeShelf * 0.55);');
+              shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
+                '#include <normal_fragment_maps>',
+                'float lakeWaveA = dot(vPilotLakeWorld.xz, vec2(0.85, 0.44)) - pilotLakeTime * 1.3 + sin(dot(vPilotLakeWorld.xz, vec2(0.17, 0.23))) * 0.9;',
+                'float lakeWaveB = dot(vPilotLakeWorld.xz, vec2(-0.37, 1.1)) + pilotLakeTime * 0.8 + sin(dot(vPilotLakeWorld.xz, vec2(0.31, -0.13))) * 0.65;',
+                'float lakeDetail = 1.0 - smoothstep(90.0, 350.0, length(vViewPosition));',
+                'normal = normalize(normal + mat3(viewMatrix) * vec3(sin(lakeWaveA) * 0.048, 0.0, cos(lakeWaveB) * 0.036) * lakeDetail);'
+              ].join('\n'));
+              shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>',
+                '#include <envmap_fragment>\nfloat lakeFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, vec3(0.52, 0.68, 0.72), lakeFresnel * 0.28);');
+              lake.userData.surfaceShader = shader;
+            };
+            lake.material.customProgramCacheKey = function() { return 'pilot-lake-depth-ripples-v3'; };
             land.add(lake);
+            var lakeShore = new THREE.Group(); lakeShore.name = 'pilot-lake-shore';
+            lakeShore.position.set(268, 0, -104);
+            var lakeShoreVertices = [], lakeShoreUV = [], lakeShoreIndices = [], lakeShoreColors = [];
+            var lakeShoreRadii = [34, 34.8, 36.2, 37.2], lakeShoreHeights = [8.58, 8.85, 9, 8.25];
+            for (var lakeRing = 0; lakeRing <= 96; lakeRing++) {
+              var lakeAngle = lakeRing / 96 * Math.PI * 2;
+              for (var lakeAcross = 0; lakeAcross < 4; lakeAcross++) {
+                var lakeR = lakeShoreRadii[lakeAcross] + (lakeAcross / 3) * Math.sin(lakeAngle * 7) * 0.7;
+                lakeShoreVertices.push(Math.cos(lakeAngle) * lakeR, lakeShoreHeights[lakeAcross], Math.sin(lakeAngle) * lakeR);
+                lakeShoreUV.push(lakeRing / 8, lakeAcross / 3);
+                var shoreTone = [0.48, 0.74, 1.06, 0.84][lakeAcross]
+                  * (0.96 + Math.sin(lakeAngle * 11) * 0.04);
+                lakeShoreColors.push(shoreTone, shoreTone * (lakeAcross < 2 ? 1.04 : 0.97),
+                  shoreTone * (lakeAcross < 2 ? 0.96 : 0.86));
+                // Leave the southwest outlet open to the existing stream.
+                var lakeMidAngle = (lakeRing + 0.5) / 96 * Math.PI * 2;
+                if (lakeRing < 96 && lakeAcross < 3 && Math.abs(lakeMidAngle - 2.63) > 0.2) {
+                  var shoreVertex = lakeRing * 4 + lakeAcross;
+                  lakeShoreIndices.push(shoreVertex, shoreVertex + 4, shoreVertex + 1,
+                    shoreVertex + 1, shoreVertex + 4, shoreVertex + 5);
+                }
+              }
+            }
+            var lakeShoreGeometry = new THREE.BufferGeometry();
+            lakeShoreGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lakeShoreVertices, 3));
+            lakeShoreGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(lakeShoreUV, 2));
+            lakeShoreGeometry.setAttribute('color', new THREE.Float32BufferAttribute(lakeShoreColors, 3));
+            lakeShoreGeometry.setIndex(lakeShoreIndices); lakeShoreGeometry.computeVertexNormals();
+            var lakeShoreMaterial = new THREE.MeshPhongMaterial({color: 0x82765b, map: ridgeTexture, vertexColors: true, shininess: 5, side: THREE.DoubleSide});
+            var lakeShoreGround = new THREE.Mesh(lakeShoreGeometry, lakeShoreMaterial);
+            lakeShoreGround.name = 'pilot-lake-shore-ground'; lakeShore.add(lakeShoreGround);
+            lakeShore.updateMatrixWorld(true);
+            var lakeShoreRay = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+            function lakeShoreSurfaceY(x, z) {
+              lakeShoreRay.ray.origin.set(x + 268, 500, z - 104);
+              var shoreHits = lakeShoreRay.intersectObject(lakeShoreGround, false);
+              return shoreHits.length ? shoreHits[0].point.y : NaN;
+            }
+            var lakeStones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1),
+              new THREE.MeshPhongMaterial({color: 0x8a8b79, map: ridgeTexture, shininess: 12}), 48);
+            lakeStones.name = 'pilot-lake-shore-stones';
+            var lakeStoneDummy = new THREE.Object3D();
+            for (var lakeStoneIndex = 0; lakeStoneIndex < 48; lakeStoneIndex++) {
+              var lakeStoneAngle = 2.83 + (lakeStoneIndex + 0.5 + Math.sin(lakeStoneIndex * 2.39) * 0.3) / 48 * (Math.PI * 2 - 0.4);
+              var lakeStoneRadius = 34.8 + (lakeStoneIndex % 4) * 0.5 + Math.sin(lakeStoneAngle * 7) * 0.35;
+              lakeStoneDummy.position.set(Math.cos(lakeStoneAngle) * lakeStoneRadius, 9.05,
+                Math.sin(lakeStoneAngle) * lakeStoneRadius);
+              lakeStoneDummy.rotation.set(lakeStoneIndex * 0.37, lakeStoneIndex * 0.71, lakeStoneIndex * 0.23);
+              var lakeStoneSize = 0.45 + (lakeStoneIndex % 5) * 0.13;
+              var lakeStoneGround = lakeShoreSurfaceY(lakeStoneDummy.position.x, lakeStoneDummy.position.z);
+              lakeStoneDummy.position.y = (Number.isFinite(lakeStoneGround) ? lakeStoneGround : 8.85) + lakeStoneSize * 0.12;
+              lakeStoneDummy.scale.set(lakeStoneSize, lakeStoneSize * 0.55, lakeStoneSize * 0.85);
+              lakeStoneDummy.updateMatrix(); lakeStones.setMatrixAt(lakeStoneIndex, lakeStoneDummy.matrix);
+            }
+            lakeShore.add(lakeStones);
+            // Fine gravel shares the existing stones' geometry, material, and texture.
+            var lakeGravel = new THREE.InstancedMesh(lakeStones.geometry, lakeStones.material, 128);
+            lakeGravel.name = 'pilot-lake-shore-gravel';
+            var lakeGravelColor = new THREE.Color(), lakeGravelPlaced = 0;
+            for (var lakeGravelIndex = 0; lakeGravelIndex < 128; lakeGravelIndex++) {
+              var gravelAngle = 2.9 + ((lakeGravelIndex * 0.61803398875) % 1) * (Math.PI * 2 - 0.54);
+              var gravelRadius = 34.55 + ((lakeGravelIndex * 0.41421356) % 1) * 1.7 + Math.sin(gravelAngle * 7) * 0.3;
+              var gravelX = Math.cos(gravelAngle) * gravelRadius, gravelZ = Math.sin(gravelAngle) * gravelRadius;
+              var gravelGround = lakeShoreSurfaceY(gravelX, gravelZ);
+              if (!Number.isFinite(gravelGround)) continue;
+              var shoreGravelSize = 0.12 + (lakeGravelIndex % 6) * 0.038;
+              lakeStoneDummy.position.set(gravelX, gravelGround + shoreGravelSize * 0.08, gravelZ);
+              lakeStoneDummy.rotation.set(lakeGravelIndex * 0.31, lakeGravelIndex * 2.399963, lakeGravelIndex * 0.19);
+              lakeStoneDummy.scale.set(shoreGravelSize * 1.2, shoreGravelSize * 0.5, shoreGravelSize);
+              lakeStoneDummy.updateMatrix(); lakeGravel.setMatrixAt(lakeGravelPlaced, lakeStoneDummy.matrix);
+              lakeGravelColor.setHex([0xc4b79e, 0xa3b2a7, 0xd0c8b4, 0x8c9e98][lakeGravelIndex % 4]);
+              lakeGravel.setColorAt(lakeGravelPlaced, lakeGravelColor); lakeGravelPlaced++;
+            }
+            lakeGravel.count = lakeGravelPlaced; lakeShore.add(lakeGravel); land.add(lakeShore);
 
             // A real watershed needs connected water, not an isolated blue disk.
             // This stream links the upland lake to the sea and doubles as a
@@ -12765,14 +12980,370 @@ const d = labToolData.waterCycle || {};
               return geometry;
             }
             var streamGroup = new THREE.Group();
+            streamGroup.name = 'pilot-watershed-stream';
+            // A small static mask opens the terrain along the same stream curve
+            // used for landing checks. It prevents terrace faces from severing it.
+            var streamChannelCanvas = document.createElement('canvas');
+            streamChannelCanvas.width = streamChannelCanvas.height = 512;
+            var streamChannelContext = streamChannelCanvas.getContext('2d');
+            streamChannelContext.fillStyle = '#000'; streamChannelContext.fillRect(0, 0, 512, 512);
+            streamChannelContext.strokeStyle = '#fff'; streamChannelContext.lineWidth = 9.6;
+            streamChannelContext.lineCap = 'round'; streamChannelContext.lineJoin = 'round';
+            streamChannelContext.beginPath();
+            var streamChannelPoint = new THREE.Vector3();
+            for (var channelIndex = 0; channelIndex <= 192; channelIndex++) {
+              streamCurve.getPointAt(channelIndex / 192, streamChannelPoint);
+              var channelX = (streamChannelPoint.x - 64) * 2, channelY = (streamChannelPoint.z + 144) * 2;
+              if (channelIndex === 0) streamChannelContext.moveTo(channelX, channelY);
+              else streamChannelContext.lineTo(channelX, channelY);
+            }
+            streamChannelContext.stroke();
+            // Match the existing circular lake landing boundary; terrain must
+            // not cover its water surface at the meadow's higher display level.
+            streamChannelContext.fillStyle = '#fff'; streamChannelContext.beginPath();
+            streamChannelContext.arc((268 - 64) * 2, (-104 + 144) * 2, 34 * 2, 0, Math.PI * 2);
+            streamChannelContext.fill();
+            var streamChannelTexture = new THREE.CanvasTexture(streamChannelCanvas);
+            streamChannelTexture.flipY = false; streamChannelTexture.generateMipmaps = false;
+            streamChannelTexture.minFilter = THREE.LinearFilter;
+            var pilotStreamChannelActive = { value: 1 };
+            streamGroup.userData.channelMask = streamChannelTexture;
+            var streamBankVertices = [], streamBankUV = [], streamBankIndices = [], streamBankColors = [];
+            var streamBankPoint = new THREE.Vector3(), streamBankTangent = new THREE.Vector3();
+            var streamBankNextTangent = new THREE.Vector3();
+            var streamBankOffsets = [2.5, 3.05, 3.75, 4.15], streamBankHeights = [0.2, 0.45, 0.6, 0.03];
+            for (var bankSideIndex = 0; bankSideIndex < 2; bankSideIndex++) {
+              var bankSign = bankSideIndex ? -1 : 1;
+              for (var bankRing = 0; bankRing <= 96; bankRing++) {
+                streamCurve.getPointAt(bankRing / 96, streamBankPoint);
+                streamCurve.getTangentAt(bankRing / 96, streamBankTangent);
+                streamCurve.getTangentAt(Math.min(1, bankRing / 96 + 0.025), streamBankNextTangent);
+                var bendDirection = streamBankTangent.x * streamBankNextTangent.z - streamBankTangent.z * streamBankNextTangent.x;
+                var gravelShelf = Math.max(0, Math.min(0.65, bankSign * bendDirection * 8));
+                for (var bankAcross = 0; bankAcross < 4; bankAcross++) {
+                  var bankOffset = bankSign * (streamBankOffsets[bankAcross] + Math.sin(bankRing * 0.57) * 0.12
+                    + gravelShelf * bankAcross / 3);
+                  streamBankVertices.push(streamBankPoint.x - streamBankTangent.z * bankOffset,
+                    streamBankPoint.y + streamBankHeights[bankAcross], streamBankPoint.z + streamBankTangent.x * bankOffset);
+                  streamBankUV.push(bankRing / 8, bankAcross / 3);
+                  // Dark waterline, damp gravel, then a drier upper margin.
+                  var bankTone = [0.48, 0.76, 1.1, 0.88][bankAcross] * (0.95 + Math.sin(bankRing * 1.7) * 0.05);
+                  streamBankColors.push(bankTone, bankTone * (bankAcross > 1 ? 0.94 : 1.02), bankTone * (bankAcross > 1 ? 0.79 : 0.94));
+                  if (bankRing < 96 && bankAcross < 3) {
+                    var bankVertex = bankSideIndex * 97 * 4 + bankRing * 4 + bankAcross;
+                    streamBankIndices.push(bankVertex, bankVertex + 4, bankVertex + 1,
+                      bankVertex + 1, bankVertex + 4, bankVertex + 5);
+                  }
+                }
+              }
+            }
+            var streamBankGeometry = new THREE.BufferGeometry();
+            streamBankGeometry.setAttribute('position', new THREE.Float32BufferAttribute(streamBankVertices, 3));
+            streamBankGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(streamBankUV, 2));
+            streamBankGeometry.setAttribute('color', new THREE.Float32BufferAttribute(streamBankColors, 3));
+            streamBankGeometry.setIndex(streamBankIndices); streamBankGeometry.computeVertexNormals();
+            var streamBanks = new THREE.Mesh(streamBankGeometry,
+              new THREE.MeshPhongMaterial({color: 0x675f49, map: ridgeTexture, vertexColors: true, shininess: 7, side: THREE.DoubleSide}));
+            streamBanks.name = 'pilot-stream-wet-banks';
+            streamGroup.add(streamBanks);
+            // A wider terrain opening is filled with sloping banks sampled from
+            // the existing land. Keep the narrow water mask for landing effects.
+            var streamTerrainCanvas = document.createElement('canvas');
+            streamTerrainCanvas.width = streamTerrainCanvas.height = 512;
+            var streamTerrainContext = streamTerrainCanvas.getContext('2d');
+            streamTerrainContext.fillStyle = '#000'; streamTerrainContext.fillRect(0, 0, 512, 512);
+            streamTerrainContext.strokeStyle = '#fff'; streamTerrainContext.lineWidth = 48;
+            streamTerrainContext.lineCap = 'round'; streamTerrainContext.lineJoin = 'round';
+            streamTerrainContext.beginPath();
+            for (var terrainChannelIndex = 0; terrainChannelIndex <= 192; terrainChannelIndex++) {
+              streamCurve.getPointAt(terrainChannelIndex / 192, streamChannelPoint);
+              var terrainChannelX = (streamChannelPoint.x - 64) * 2;
+              var terrainChannelY = (streamChannelPoint.z + 144) * 2;
+              if (terrainChannelIndex === 0) streamTerrainContext.moveTo(terrainChannelX, terrainChannelY);
+              else streamTerrainContext.lineTo(terrainChannelX, terrainChannelY);
+            }
+            streamTerrainContext.stroke();
+            streamTerrainContext.fillStyle = '#fff'; streamTerrainContext.beginPath();
+            streamTerrainContext.arc((268 - 64) * 2, (-104 + 144) * 2, 34 * 2, 0, Math.PI * 2);
+            streamTerrainContext.fill();
+            var streamTerrainTexture = new THREE.CanvasTexture(streamTerrainCanvas);
+            streamTerrainTexture.flipY = false; streamTerrainTexture.generateMipmaps = false;
+            streamTerrainTexture.minFilter = THREE.LinearFilter;
+            streamGroup.userData.terrainMask = streamTerrainTexture;
+            var streamTerrainPositions = [], streamTerrainUV = [], streamTerrainIndices = [];
+            var streamTerrainBlend = [], streamTerrainMaterials = [];
+            var streamTerrainPoint = new THREE.Vector3(), streamTerrainTangent = new THREE.Vector3();
+            var streamTerrainNextTangent = new THREE.Vector3();
+            var streamTerrainRay = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+            var streamTerrainSurfaces = [wetSand, beach, meadow, hardpan];
+            land.updateMatrixWorld(true);
+            // Sample at setup only: no terrain raycasts or mesh rebuilding per frame.
+            for (var terrainBankSide = 0; terrainBankSide < 2; terrainBankSide++) {
+              var terrainBankSign = terrainBankSide ? -1 : 1;
+              for (var terrainBankRing = 0; terrainBankRing <= 192; terrainBankRing++) {
+                var terrainBankU = terrainBankRing / 192;
+                streamCurve.getPointAt(terrainBankU, streamTerrainPoint);
+                streamCurve.getTangentAt(terrainBankU, streamTerrainTangent);
+                streamCurve.getTangentAt(Math.min(1, terrainBankU + 0.025), streamTerrainNextTangent);
+                var terrainBankHorizontal = Math.max(0.001, Math.hypot(streamTerrainTangent.x, streamTerrainTangent.z));
+                var terrainBankNX = -streamTerrainTangent.z / terrainBankHorizontal;
+                var terrainBankNZ = streamTerrainTangent.x / terrainBankHorizontal;
+                var terrainBankBend = streamTerrainTangent.x * streamTerrainNextTangent.z
+                  - streamTerrainTangent.z * streamTerrainNextTangent.x;
+                var terrainBankShelf = Math.max(0, Math.min(0.65, terrainBankSign * terrainBankBend * 8));
+                // Overlap the final gravel row slightly to avoid an exposed seam.
+                var terrainBankInner = (4.15 + Math.sin(terrainBankRing * 0.285) * 0.12 + terrainBankShelf)
+                  * terrainBankHorizontal - 0.08;
+                var terrainBankOuterX = streamTerrainPoint.x + terrainBankNX * terrainBankSign * 13;
+                var terrainBankOuterZ = streamTerrainPoint.z + terrainBankNZ * terrainBankSign * 13;
+                streamTerrainRay.ray.origin.set(terrainBankOuterX, 500, terrainBankOuterZ);
+                var terrainBankHits = streamTerrainRay.intersectObjects(streamTerrainSurfaces, false);
+                var terrainBankTop = terrainBankHits.length ? terrainBankHits[0].point.y : -0.3;
+                var terrainBankMaterial = terrainBankHits.length ? terrainBankHits[0].object.material : wetSand.material;
+                for (var terrainBankAcross = 0; terrainBankAcross <= 8; terrainBankAcross++) {
+                  var terrainBankT = terrainBankAcross / 8;
+                  var terrainBankEase = terrainBankT * terrainBankT * (3 - 2 * terrainBankT);
+                  var terrainBankOffset = terrainBankInner + (13 - terrainBankInner) * terrainBankT;
+                  var terrainBankY = (streamTerrainPoint.y + 0.02) * (1 - terrainBankEase)
+                    + (terrainBankTop - 0.035) * terrainBankEase;
+                  streamTerrainPositions.push(streamTerrainPoint.x + terrainBankNX * terrainBankSign * terrainBankOffset,
+                    terrainBankY, streamTerrainPoint.z + terrainBankNZ * terrainBankSign * terrainBankOffset);
+                  streamTerrainUV.push(terrainBankRing / 16, terrainBankT);
+                  streamTerrainBlend.push(terrainBankEase); streamTerrainMaterials.push(terrainBankMaterial);
+                  if (terrainBankRing < 192 && terrainBankAcross < 8) {
+                    var terrainBankVertex = terrainBankSide * 193 * 9 + terrainBankRing * 9 + terrainBankAcross;
+                    streamTerrainIndices.push(terrainBankVertex, terrainBankVertex + 9, terrainBankVertex + 1,
+                      terrainBankVertex + 1, terrainBankVertex + 9, terrainBankVertex + 10);
+                  }
+                }
+              }
+            }
+            var streamTerrainGeometry = new THREE.BufferGeometry();
+            streamTerrainGeometry.setAttribute('position', new THREE.Float32BufferAttribute(streamTerrainPositions, 3));
+            streamTerrainGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(streamTerrainUV, 2));
+            streamTerrainGeometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(streamTerrainPositions.length), 3));
+            streamTerrainGeometry.setIndex(streamTerrainIndices); streamTerrainGeometry.computeVertexNormals();
+            var streamTerrainBanks = new THREE.Mesh(streamTerrainGeometry,
+              new THREE.MeshStandardMaterial({color: 0xffffff, map: ridgeTexture, vertexColors: true, roughness: 1, side: THREE.DoubleSide}));
+            streamTerrainBanks.name = 'pilot-stream-terrain-banks';
+            streamGroup.add(streamTerrainBanks);
+            function paintStreamTerrainBanks() {
+              var terrainBankColors = streamTerrainGeometry.attributes.color;
+              var terrainBankInnerColor = streamBanks.material.color.clone().multiplyScalar(0.85);
+              var terrainBankColor = new THREE.Color();
+              for (var terrainColorIndex = 0; terrainColorIndex < streamTerrainBlend.length; terrainColorIndex++) {
+                terrainBankColor.copy(terrainBankInnerColor).lerp(streamTerrainMaterials[terrainColorIndex].color,
+                  streamTerrainBlend[terrainColorIndex]);
+                terrainBankColors.setXYZ(terrainColorIndex, terrainBankColor.r, terrainBankColor.g, terrainBankColor.b);
+              }
+              terrainBankColors.needsUpdate = true;
+            }
             var streamMesh = new THREE.Mesh(
               flattenStreamTube(new THREE.TubeGeometry(streamCurve, 96, 2.75, 8, false), 0.12),
               new THREE.MeshPhongMaterial({
-                color: 0x0e7490, specular: 0xbae6fd, shininess: 72,
+                color: 0x285c68, specular: 0x9ebabc, shininess: 92,
                 transparent: true, opacity: 0.94
               })
             );
+            streamMesh.name = 'pilot-stream-water';
+            // Cross-channel coordinates let shading follow the actual bends.
+            var streamSurfacePositions = streamMesh.geometry.attributes.position;
+            var streamCrossChannel = [], streamProfilePoint = new THREE.Vector3(), streamProfileTangent = new THREE.Vector3();
+            for (var profileRing = 0; profileRing <= 96; profileRing++) {
+              streamCurve.getPointAt(profileRing / 96, streamProfilePoint);
+              streamCurve.getTangentAt(profileRing / 96, streamProfileTangent);
+              var profileHorizontal = Math.max(0.001, Math.hypot(streamProfileTangent.x, streamProfileTangent.z));
+              for (var profileSide = 0; profileSide <= 8; profileSide++) {
+                var profileIndex = profileRing * 9 + profileSide;
+                streamCrossChannel.push(((streamSurfacePositions.getX(profileIndex) - streamProfilePoint.x) * -streamProfileTangent.z
+                  + (streamSurfacePositions.getZ(profileIndex) - streamProfilePoint.z) * streamProfileTangent.x) / (2.75 * profileHorizontal));
+              }
+            }
+            streamMesh.geometry.setAttribute('streamCrossChannel', new THREE.Float32BufferAttribute(streamCrossChannel, 1));
+            var pilotStreamTime = { value: 0 };
+            streamMesh.material.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotStreamTime = pilotStreamTime;
+              shader.vertexShader = 'attribute float streamCrossChannel;\nvarying float vStreamCrossChannel;\nvarying vec3 vPilotStreamWorld;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvStreamCrossChannel = streamCrossChannel;');
+              shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
+                '#include <worldpos_vertex>\nvPilotStreamWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+              shader.fragmentShader = 'varying float vStreamCrossChannel;\nvarying vec3 vPilotStreamWorld;\nuniform float pilotStreamTime;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+                '#include <color_fragment>',
+                'float streamShallow = smoothstep(0.22, 0.95, abs(vStreamCrossChannel));',
+                'float streamGravel = fract(sin(dot(floor(vPilotStreamWorld.xz * 3.2), vec2(127.1, 311.7))) * 43758.5453);',
+                'float gravelDetail = 1.0 - smoothstep(25.0, 100.0, length(vViewPosition));',
+                'vec3 streamShallowTint = vec3(0.27, 0.39, 0.34) * (0.9 + streamGravel * 0.18 * gravelDetail);',
+                'diffuseColor.rgb = mix(diffuseColor.rgb * 0.84, streamShallowTint, streamShallow * 0.7);'
+              ].join('\n'));
+              shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
+                '#include <normal_fragment_maps>',
+                'float streamA = dot(vPilotStreamWorld.xz, vec2(1.6, 0.7)) - pilotStreamTime * 2.4;',
+                'float streamB = dot(vPilotStreamWorld.xz, vec2(-0.6, 1.9)) + pilotStreamTime * 1.1;',
+                'float streamDetail = 1.0 - smoothstep(70.0, 300.0, length(vViewPosition));',
+                'normal = normalize(normal + mat3(viewMatrix) * vec3(sin(streamA) * 0.055, 0.0, cos(streamB) * 0.035) * streamDetail);'
+              ].join('\n'));
+              shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>',
+                '#include <envmap_fragment>\nfloat streamFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, vec3(0.48, 0.65, 0.69), streamFresnel * 0.2);');
+              streamMesh.userData.surfaceShader = shader;
+            };
+            streamMesh.material.customProgramCacheKey = function() { return 'pilot-stream-depth-ripples-v2'; };
             streamGroup.add(streamMesh);
+            // Small broken wave crests identify steeper reaches. This is a
+            // visual riffle cue, not a discharge or sediment-transport solver.
+            var riffleVertices = [], riffleUV = [], riffleIndices = [];
+            var rifflePoint = new THREE.Vector3(), riffleTangent = new THREE.Vector3();
+            for (var riffleStep = 1; riffleStep < 91; riffleStep++) {
+              var riffleU = riffleStep / 96;
+              streamCurve.getPointAt(riffleU, rifflePoint); streamCurve.getTangentAt(riffleU, riffleTangent);
+              if (riffleTangent.y > -0.055 || Math.hypot(rifflePoint.x - 268, rifflePoint.z + 104) < 35) continue;
+              var riffleStart = riffleVertices.length / 3;
+              var riffleHorizontal = Math.max(0.001, Math.hypot(riffleTangent.x, riffleTangent.z));
+              for (var riffleColumn = 0; riffleColumn <= 12; riffleColumn++) {
+                var acrossRiffle = (riffleColumn / 12 - 0.5) * 4.1;
+                var riffleBend = Math.sin(riffleColumn / 12 * Math.PI) * 0.22;
+                for (var riffleEdge = 0; riffleEdge < 2; riffleEdge++) {
+                  var alongRiffle = riffleBend + (riffleEdge - 0.5) * 0.2;
+                  riffleVertices.push(rifflePoint.x + (-riffleTangent.z * acrossRiffle + riffleTangent.x * alongRiffle) / riffleHorizontal,
+                    rifflePoint.y + 0.36 + riffleTangent.y * alongRiffle,
+                    rifflePoint.z + (riffleTangent.x * acrossRiffle + riffleTangent.z * alongRiffle) / riffleHorizontal);
+                  riffleUV.push(riffleColumn / 12, riffleStep / 96);
+                }
+                if (riffleColumn < 12) {
+                  var rv = riffleStart + riffleColumn * 2;
+                  riffleIndices.push(rv, rv + 1, rv + 2, rv + 1, rv + 3, rv + 2);
+                }
+              }
+            }
+            var streamRiffleGeometry = new THREE.BufferGeometry();
+            streamRiffleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(riffleVertices, 3));
+            streamRiffleGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(riffleUV, 2));
+            streamRiffleGeometry.setIndex(riffleIndices);
+            var streamRiffleMaterial = new THREE.MeshBasicMaterial({color: 0xd1e7df, transparent: true, opacity: 0.5,
+              depthWrite: false, side: THREE.DoubleSide});
+            streamRiffleMaterial.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotStreamTime = pilotStreamTime;
+              shader.vertexShader = 'varying vec2 vRiffleUV;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRiffleUV = uv;');
+              shader.fragmentShader = 'varying vec2 vRiffleUV;\nuniform float pilotStreamTime;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>',
+                'float riffleEdgeFade = sin(vRiffleUV.x * 3.14159);\nfloat riffleBreaks = smoothstep(-0.3, 0.5, sin(vRiffleUV.x * 34.0 + vRiffleUV.y * 79.0));\ndiffuseColor.a *= riffleEdgeFade * riffleBreaks * (0.7 + 0.3 * sin(pilotStreamTime * 1.4 + vRiffleUV.y * 42.0));\n#include <alphatest_fragment>');
+              streamRiffles.userData.surfaceShader = shader;
+            };
+            streamRiffleMaterial.customProgramCacheKey = function() { return 'pilot-stream-riffles-v1'; };
+            var streamRiffles = new THREE.Mesh(streamRiffleGeometry, streamRiffleMaterial);
+            streamRiffles.name = 'pilot-stream-riffles'; streamRiffles.renderOrder = 3;
+            streamGroup.add(streamRiffles);
+            // Whitewater follows the existing surface on steeper reaches and
+            // dissipates downstream. Strength is illustrative, not an air-content
+            // or discharge calculation, and does not alter the simulated route.
+            var streamCascadeGeometry = streamMesh.geometry.clone();
+            var cascadeAlong = [], cascadeStrength = [], cascadeHeight = [];
+            var cascadePoint = new THREE.Vector3(), cascadeTangent = new THREE.Vector3();
+            var cascadeCarry = 0, cascadeLength = streamCurve.getLength();
+            for (var cascadeRing = 0; cascadeRing <= 96; cascadeRing++) {
+              var cascadeU = cascadeRing / 96;
+              streamCurve.getPointAt(cascadeU, cascadePoint); streamCurve.getTangentAt(cascadeU, cascadeTangent);
+              var cascadeSlope = Math.max(0, -cascadeTangent.y);
+              var cascadeLocal = Math.max(0, Math.min(1, (cascadeSlope - 0.065) / 0.16));
+              cascadeCarry = Math.max(cascadeLocal, cascadeCarry * Math.exp(-cascadeLength / (96 * 9)));
+              var cascadeOutsideLake = Math.hypot(cascadePoint.x - 268, cascadePoint.z + 104) >= 35;
+              for (var cascadeSide = 0; cascadeSide <= 8; cascadeSide++) {
+                var cascadeIndex = cascadeRing * 9 + cascadeSide;
+                cascadeAlong.push(cascadeU * cascadeLength);
+                cascadeStrength.push(cascadeOutsideLake ? cascadeCarry : 0);
+                cascadeHeight.push(streamSurfacePositions.getY(cascadeIndex) - cascadePoint.y);
+              }
+            }
+            streamCascadeGeometry.setAttribute('cascadeAlong', new THREE.Float32BufferAttribute(cascadeAlong, 1));
+            streamCascadeGeometry.setAttribute('cascadeStrength', new THREE.Float32BufferAttribute(cascadeStrength, 1));
+            streamCascadeGeometry.setAttribute('cascadeHeight', new THREE.Float32BufferAttribute(cascadeHeight, 1));
+            var streamCascadeMaterial = new THREE.MeshBasicMaterial({color: 0xd7ece8, transparent: true, opacity: 0.53,
+              depthWrite: false, side: THREE.DoubleSide});
+            streamCascadeMaterial.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotStreamTime = pilotStreamTime;
+              shader.vertexShader = 'attribute float streamCrossChannel;\nattribute float cascadeAlong;\nattribute float cascadeStrength;\nattribute float cascadeHeight;\nvarying vec4 vCascade;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                '#include <begin_vertex>\nvCascade = vec4(cascadeAlong, streamCrossChannel, cascadeStrength, cascadeHeight);');
+              shader.fragmentShader = [
+                'varying vec4 vCascade;',
+                'uniform float pilotStreamTime;',
+                'float cascadeHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                'float cascadeNoise(vec2 p) {',
+                '  vec2 cell = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+                '  return mix(mix(cascadeHash(cell), cascadeHash(cell + vec2(1.0, 0.0)), f.x),',
+                '    mix(cascadeHash(cell + vec2(0.0, 1.0)), cascadeHash(cell + vec2(1.0)), f.x), f.y);',
+                '}'
+              ].join('\n') + '\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>', [
+                'float cascadeCross = vCascade.y;',
+                'vec2 cascadeTravel = vec2(cascadeCross * 5.0 + sin(vCascade.x * 0.19) * 0.5, vCascade.x * 0.6 - pilotStreamTime * 1.1);',
+                'float cascadeBroken = cascadeNoise(cascadeTravel) * 0.7 + cascadeNoise(cascadeTravel * 2.6 + vec2(7.3, 2.1)) * 0.3;',
+                'float cascadeFoam = smoothstep(0.48, 0.78, cascadeBroken);',
+                'float cascadeEdge = 1.0 - smoothstep(0.5, 0.94, abs(cascadeCross));',
+                'float cascadeTop = smoothstep(0.0, 0.18, vCascade.w);',
+                'diffuseColor.a *= vCascade.z * cascadeEdge * cascadeTop * (0.025 + cascadeFoam * 0.975);',
+                '#include <alphatest_fragment>'
+              ].join('\n'));
+              streamCascades.userData.surfaceShader = shader;
+            };
+            streamCascadeMaterial.customProgramCacheKey = function() { return 'pilot-stream-cascades-v2'; };
+            var streamCascades = new THREE.Mesh(streamCascadeGeometry, streamCascadeMaterial);
+            streamCascades.name = 'pilot-stream-cascades'; streamCascades.position.y = 0.055;
+            streamCascades.renderOrder = 3; streamGroup.add(streamCascades);
+            var streamStoneGeometry = new THREE.IcosahedronGeometry(1, 1);
+            var streamStoneMaterial = new THREE.MeshPhongMaterial({color: 0x7d8175, map: ridgeTexture, shininess: 14});
+            var streamStones = new THREE.InstancedMesh(streamStoneGeometry, streamStoneMaterial, 56);
+            streamStones.name = 'pilot-stream-bank-stones';
+            // Ground decorative detail on the displayed banks once at setup.
+            // This does not change the water-landing or soil simulation model.
+            streamBanks.updateMatrixWorld(true); streamTerrainBanks.updateMatrixWorld(true);
+            var streamDetailRay = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+            function streamDetailSurfaceY(x, z, fallback) {
+              streamDetailRay.ray.origin.set(x, 500, z);
+              var detailHits = streamDetailRay.intersectObjects([streamBanks, streamTerrainBanks], false);
+              return detailHits.length ? detailHits[0].point.y : fallback;
+            }
+            var streamStoneDummy = new THREE.Object3D(), streamStonePoint = new THREE.Vector3();
+            var streamStoneTangent = new THREE.Vector3(), streamStoneColor = new THREE.Color();
+            for (var streamStoneIndex = 0; streamStoneIndex < 56; streamStoneIndex++) {
+              var stoneU = 0.045 + (streamStoneIndex + Math.sin(streamStoneIndex * 2.39) * 0.32) / 55 * 0.89;
+              streamCurve.getPointAt(stoneU, streamStonePoint); streamCurve.getTangentAt(stoneU, streamStoneTangent);
+              var stoneSide = streamStoneIndex % 2 ? -1 : 1;
+              var stoneOffset = stoneSide * (3.1 + (streamStoneIndex % 3) * 0.45);
+              streamStoneDummy.position.set(streamStonePoint.x - streamStoneTangent.z * stoneOffset,
+                streamStonePoint.y + 0.5, streamStonePoint.z + streamStoneTangent.x * stoneOffset);
+              streamStoneDummy.rotation.set(streamStoneIndex * 0.17, streamStoneIndex * 0.71, streamStoneIndex * 0.31);
+              var stoneSize = 0.45 + (streamStoneIndex % 5) * 0.14;
+              streamStoneDummy.position.y = streamDetailSurfaceY(streamStoneDummy.position.x,
+                streamStoneDummy.position.z, streamStonePoint.y + 0.5) + stoneSize * 0.12;
+              streamStoneDummy.scale.set(stoneSize, stoneSize * 0.55, stoneSize * 0.85);
+              streamStoneDummy.updateMatrix(); streamStones.setMatrixAt(streamStoneIndex, streamStoneDummy.matrix);
+              streamStoneColor.setHex(streamStoneIndex % 3 === 0 ? 0xc0b29b : streamStoneIndex % 3 === 1 ? 0x8eaaa5 : 0xb3b7b4);
+              streamStones.setColorAt(streamStoneIndex, streamStoneColor);
+            }
+            streamGroup.add(streamStones);
+            // A single instanced layer breaks up the smooth bank strips. Small
+            // gravel stays above the waterline and outside the navigable channel.
+            var streamGravel = new THREE.InstancedMesh(streamStoneGeometry, streamStoneMaterial, 144);
+            streamGravel.name = 'pilot-stream-bank-gravel';
+            for (var gravelIndex = 0; gravelIndex < 144; gravelIndex++) {
+              var gravelU = 0.035 + ((gravelIndex * 0.61803398875) % 1) * 0.91;
+              streamCurve.getPointAt(gravelU, streamStonePoint); streamCurve.getTangentAt(gravelU, streamStoneTangent);
+              var gravelSide = gravelIndex % 2 ? -1 : 1;
+              var gravelOffset = gravelSide * (3.1 + ((gravelIndex * 0.41421356) % 1) * 0.8);
+              var gravelSize = 0.13 + (gravelIndex % 7) * 0.039;
+              streamStoneDummy.position.set(streamStonePoint.x - streamStoneTangent.z * gravelOffset,
+                streamStonePoint.y + 0.54, streamStonePoint.z + streamStoneTangent.x * gravelOffset);
+              streamStoneDummy.rotation.set(gravelIndex * 0.41, gravelIndex * 2.399963, gravelIndex * 0.23);
+              streamStoneDummy.position.y = streamDetailSurfaceY(streamStoneDummy.position.x,
+                streamStoneDummy.position.z, streamStonePoint.y + 0.5) + gravelSize * 0.08;
+              streamStoneDummy.scale.set(gravelSize * 1.35, gravelSize * 0.48, gravelSize);
+              streamStoneDummy.updateMatrix(); streamGravel.setMatrixAt(gravelIndex, streamStoneDummy.matrix);
+              streamStoneColor.setHex([0xc0ae8f, 0x9faaa0, 0x788b83, 0xc6bca6][gravelIndex % 4]);
+              streamGravel.setColorAt(gravelIndex, streamStoneColor);
+            }
+            streamGroup.add(streamGravel);
             var streamIce = new THREE.Mesh(
               flattenStreamTube(new THREE.TubeGeometry(streamCurve, 96, 2.9, 8, false), 0.08),
               new THREE.MeshPhongMaterial({
@@ -12780,8 +13351,25 @@ const d = labToolData.waterCycle || {};
                 transparent: true, opacity: 0.64, depthWrite: false
               })
             );
+            streamIce.name = 'pilot-stream-ice';
             streamIce.visible = false;
             streamGroup.add(streamIce);
+            // Suppress the upstream decoration inside the lake so its outlet
+            // joins an open body of water rather than drawing a canal across it.
+            [streamMesh, streamBanks, streamStones, streamIce, streamCascades, streamTerrainBanks].forEach(function(streamPart) {
+              var streamCompile = streamPart.material.onBeforeCompile;
+              var streamCache = streamPart.material.customProgramCacheKey.call(streamPart.material);
+              streamPart.material.onBeforeCompile = function(shader, renderer) {
+                streamCompile.call(this, shader, renderer);
+                shader.vertexShader = 'varying vec2 vPilotLakeJoinXZ;\n' + shader.vertexShader;
+                shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
+                  '#include <worldpos_vertex>\nvec4 lakeJoinVertex = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\nlakeJoinVertex = instanceMatrix * lakeJoinVertex;\n#endif\nvPilotLakeJoinXZ = (modelMatrix * lakeJoinVertex).xz;');
+                shader.fragmentShader = 'varying vec2 vPilotLakeJoinXZ;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <clipping_planes_fragment>',
+                  '#include <clipping_planes_fragment>\nif (distance(vPilotLakeJoinXZ, vec2(268.0, -104.0)) < 33.9) discard;');
+              };
+              streamPart.material.customProgramCacheKey = function() { return streamCache + '-lake-outlet-v1'; };
+            });
             scene.add(streamGroup);
 
             // Shared-geometry terrain detail keeps the coast from reading as a
@@ -12807,75 +13395,165 @@ const d = labToolData.waterCycle || {};
             rockField.instanceMatrix.needsUpdate = true;
             land.add(rockField);
 
-            var REED_COUNT = 34;
-            var reedField = new THREE.InstancedMesh(
-              new THREE.ConeGeometry(0.42, 3.8, 5),
-              new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 1 }),
-              REED_COUNT
-            );
-            var reedPoint = new THREE.Vector3();
-            var reedTangent = new THREE.Vector3();
-            for (var reedIndex = 0; reedIndex < REED_COUNT; reedIndex++) {
-              var reedU = 0.06 + (reedIndex / (REED_COUNT - 1)) * 0.86;
-              streamCurve.getPointAt(reedU, reedPoint);
-              streamCurve.getTangentAt(reedU, reedTangent);
-              var reedSide = reedIndex % 2 ? 1 : -1;
-              var reedOffset = reedSide * (3.5 + (reedIndex % 4) * 0.8);
-              var reedScale = 0.72 + (reedIndex % 7) * 0.07;
-              terrainDummy.position.set(
-                reedPoint.x - reedTangent.z * reedOffset,
-                reedPoint.y + 1.7 * reedScale,
-                reedPoint.z + reedTangent.x * reedOffset
-              );
-              terrainDummy.rotation.set(0, reedIndex * 0.63, 0);
-              terrainDummy.scale.set(reedScale, reedScale, reedScale);
-              terrainDummy.updateMatrix();
-              reedField.setMatrixAt(reedIndex, terrainDummy.matrix);
+            // Curved, tapered blades form loose clumps along the moist bank.
+            // One instanced mesh replaces the upright cone markers.
+            var reedVertices = [], reedColors = [], reedFlex = [], reedIndices = [];
+            for (var reedBlade = 0; reedBlade < 6; reedBlade++) {
+              var reedAngle = reedBlade * 2.399963;
+              var reedHeight = 1.45 + (reedBlade % 4) * 0.3;
+              var reedLean = 0.45 + (reedBlade % 3) * 0.2;
+              for (var reedSegment = 0; reedSegment <= 5; reedSegment++) {
+                var bladeT = reedSegment / 5;
+                var bladeBend = 0.08 + reedLean * bladeT * bladeT;
+                var bladeWidth = 0.13 * (1 - bladeT) * (0.7 + Math.sin(bladeT * Math.PI) * 0.3);
+                for (var bladeEdge = 0; bladeEdge < 2; bladeEdge++) {
+                  var bladeSide = bladeEdge ? 1 : -1;
+                  reedVertices.push(Math.cos(reedAngle) * bladeBend - Math.sin(reedAngle) * bladeWidth * bladeSide,
+                    reedHeight * bladeT, Math.sin(reedAngle) * bladeBend + Math.cos(reedAngle) * bladeWidth * bladeSide);
+                  reedColors.push(0.55 + bladeT * 0.45, 0.65 + bladeT * 0.35, 0.48 + bladeT * 0.32);
+                  reedFlex.push(bladeT * bladeT);
+                }
+                if (reedSegment < 5) {
+                  var bladeVertex = reedBlade * 12 + reedSegment * 2;
+                  reedIndices.push(bladeVertex, bladeVertex + 2, bladeVertex + 1,
+                    bladeVertex + 1, bladeVertex + 2, bladeVertex + 3);
+                }
+              }
             }
+            var reedGeometry = new THREE.BufferGeometry();
+            reedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(reedVertices, 3));
+            reedGeometry.setAttribute('color', new THREE.Float32BufferAttribute(reedColors, 3));
+            reedGeometry.setAttribute('reedFlex', new THREE.Float32BufferAttribute(reedFlex, 1));
+            reedGeometry.setIndex(reedIndices); reedGeometry.computeVertexNormals();
+            var REED_COUNT = 72;
+            var reedField = new THREE.InstancedMesh(reedGeometry,
+              new THREE.MeshStandardMaterial({color: 0x68764b, vertexColors: true, roughness: 1, side: THREE.DoubleSide}), REED_COUNT);
+            reedField.name = 'pilot-stream-bank-grasses'; reedField.frustumCulled = false;
+            reedField.material.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotStreamTime = pilotStreamTime;
+              shader.vertexShader = 'attribute float reedFlex;\nuniform float pilotStreamTime;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
+                '#include <begin_vertex>',
+                'float reedPhase = instanceMatrix[3].x * 0.37 + instanceMatrix[3].z * 0.23;',
+                'transformed.x += sin(pilotStreamTime * 1.2 + reedPhase) * reedFlex * 0.12;',
+                'transformed.z += cos(pilotStreamTime * 0.9 + reedPhase) * reedFlex * 0.07;'
+              ].join('\n'));
+              reedField.userData.surfaceShader = shader;
+            };
+            reedField.material.customProgramCacheKey = function() { return 'pilot-bank-grass-v1'; };
+            var reedPoint = new THREE.Vector3(), reedTangent = new THREE.Vector3();
+            var reedColor = new THREE.Color(), reedPlaced = 0;
+            for (var reedIndex = 0; reedIndex < REED_COUNT; reedIndex++) {
+              var reedCluster = Math.floor(reedIndex / 3);
+              var reedU = 0.17 + reedCluster / 23 * 0.73 + Math.sin(reedIndex * 2.39) * 0.008;
+              streamCurve.getPointAt(reedU, reedPoint); streamCurve.getTangentAt(reedU, reedTangent);
+              // Short groups and open gaps keep the corridor readable from water level.
+              var reedSide = reedCluster % 2 ? 1 : -1;
+              var reedOffset = reedSide * (4.6 + ((reedIndex * 0.61803398875) % 1) * 3.1);
+              var reedX = reedPoint.x - reedTangent.z * reedOffset;
+              var reedZ = reedPoint.z + reedTangent.x * reedOffset;
+              if (Math.hypot(reedX - 268, reedZ + 104) < 36) continue;
+              var reedGround = streamDetailSurfaceY(reedX, reedZ, NaN);
+              if (!Number.isFinite(reedGround)) continue;
+              var reedScale = 0.64 + ((reedIndex * 0.41421356) % 1) * 0.48;
+              terrainDummy.position.set(reedX, reedGround - 0.035, reedZ);
+              terrainDummy.rotation.set(0, reedIndex * 2.399963, 0);
+              terrainDummy.scale.set(reedScale, reedScale * (0.82 + (reedIndex % 3) * 0.11), reedScale);
+              terrainDummy.updateMatrix(); reedField.setMatrixAt(reedPlaced, terrainDummy.matrix);
+              reedColor.setHex([0xe0dec1, 0xb9c69d, 0xd2d7b1, 0xaebc99][reedIndex % 4]);
+              reedField.setColorAt(reedPlaced, reedColor); reedPlaced++;
+            }
+            reedField.count = reedPlaced;
             reedField.instanceMatrix.needsUpdate = true;
             land.add(reedField);
+            // Sparse lake-edge clumps reuse the river grass and its shared clock.
+            var lakeGrass = new THREE.InstancedMesh(reedGeometry, reedField.material, 40);
+            lakeGrass.name = 'pilot-lake-shore-grasses'; lakeGrass.frustumCulled = false;
+            var lakeGrassPlaced = 0;
+            for (var lakeGrassIndex = 0; lakeGrassIndex < 40; lakeGrassIndex++) {
+              var lakeGrassCluster = Math.floor(lakeGrassIndex / 2);
+              var lakeGrassAngle = 2.98 + lakeGrassCluster / 20 * (Math.PI * 2 - 0.7)
+                + (lakeGrassIndex % 2) * 0.025;
+              var lakeGrassRadius = 35.9 + ((lakeGrassIndex * 0.61803398875) % 1) * 0.7
+                + Math.sin(lakeGrassAngle * 7) * 0.45;
+              var lakeGrassX = Math.cos(lakeGrassAngle) * lakeGrassRadius;
+              var lakeGrassZ = Math.sin(lakeGrassAngle) * lakeGrassRadius;
+              var lakeGrassGround = lakeShoreSurfaceY(lakeGrassX, lakeGrassZ);
+              if (!Number.isFinite(lakeGrassGround)) continue;
+              var lakeGrassScale = 0.56 + (lakeGrassIndex % 5) * 0.075;
+              terrainDummy.position.set(lakeGrassX, lakeGrassGround - 0.035, lakeGrassZ);
+              terrainDummy.rotation.set(0, lakeGrassIndex * 2.399963, 0);
+              terrainDummy.scale.set(lakeGrassScale, lakeGrassScale, lakeGrassScale);
+              terrainDummy.updateMatrix(); lakeGrass.setMatrixAt(lakeGrassPlaced, terrainDummy.matrix);
+              reedColor.setHex([0xd5d6b2, 0xb7c49c, 0xe0dbc0][lakeGrassIndex % 3]);
+              lakeGrass.setColorAt(lakeGrassPlaced, reedColor); lakeGrassPlaced++;
+            }
+            lakeGrass.count = lakeGrassPlaced; lakeShore.add(lakeGrass);
 
-            // Layered foam keeps the water-to-land seam from reading as a hard
-            // edge while staying far cheaper than another animated surface.
-            var shoreFoam = new THREE.Group();
-            shoreFoam.name = 'pilot-shore-foam';
+            // Broken ribbons sit on the ocean rather than floating above it.
+            // Static samples avoid per-frame raycasts; shader gaps soften crests.
+            var shoreFoam = new THREE.Group(); shoreFoam.name = 'pilot-shore-foam';
             for (var foamBand = 0; foamBand < 3; foamBand++) {
-              var foamScaleX = 1.055 + foamBand * 0.018;
-              var foamScaleZ = 1.075 + foamBand * 0.022;
+              var foamScaleX = 1.055 + foamBand * 0.018, foamScaleZ = 1.075 + foamBand * 0.022;
               var foamKnots = COAST_OUTLINE.map(function(point) {
-                return new THREE.Vector3(
-                  COAST_CENTRE_X + (point.x - COAST_CENTRE_X) * foamScaleX,
-                  2.1,
-                  COAST_CENTRE_Z + (point.z - COAST_CENTRE_Z) * foamScaleZ
-                );
+                return new THREE.Vector3(COAST_CENTRE_X + (point.x - COAST_CENTRE_X) * foamScaleX, 0,
+                  COAST_CENTRE_Z + (point.z - COAST_CENTRE_Z) * foamScaleZ);
               });
               var foamCurve = new THREE.CatmullRomCurve3(foamKnots, true, 'centripetal', 0.45);
               var shoreSampleCount = COAST_OUTLINE.length * 5;
-              var foamPoints = foamCurve.getPoints(shoreSampleCount);
-              // Broken, tapered fragments follow the same coast outline.
-              // Gaps avoid outlining the entire island like a contour drawing.
-              var foamPositions = [], foamColors = [];
-              for (var foamSample = 0; foamSample < foamPoints.length - 1; foamSample++) {
+              var foamPositions = [], foamUV = [], foamIndices = [];
+              var foamPoint = new THREE.Vector3(), foamTangent = new THREE.Vector3();
+              for (var foamSample = 0; foamSample < shoreSampleCount; foamSample++) {
                 var foamPresence = Math.sin(foamSample * 0.43 + foamBand * 1.9)
                   + Math.sin(foamSample * 0.17 - foamBand * 0.7) * 0.6;
                 if (foamPresence < -0.15) continue;
-                var foamStart = foamPoints[foamSample], foamEnd = foamPoints[foamSample + 1];
                 var foamCoverage = Math.min(0.94, 0.35 + Math.max(0, foamPresence) * 0.4);
-                foamPositions.push(foamStart.x, foamStart.y, foamStart.z,
-                  foamStart.x + (foamEnd.x - foamStart.x) * foamCoverage,
-                  foamEnd.y, foamStart.z + (foamEnd.z - foamStart.z) * foamCoverage);
-                var foamBrightness = 0.38 + Math.max(0, foamPresence) * 0.32;
-                foamColors.push(foamBrightness, foamBrightness, foamBrightness, 0.07, 0.07, 0.07);
+                var foamWidth = (0.6 + Math.max(0, foamPresence) * 0.45) * (1 - foamBand * 0.12);
+                var foamBase = foamPositions.length / 3;
+                for (var foamStep = 0; foamStep <= 4; foamStep++) {
+                  var foamT = foamStep / 4;
+                  var foamU = (foamSample + foamT * foamCoverage) / shoreSampleCount;
+                  foamCurve.getPoint(foamU, foamPoint); foamCurve.getTangent(foamU, foamTangent);
+                  for (var foamAcross = 0; foamAcross <= 2; foamAcross++) {
+                    var foamOffset = (foamAcross - 1) * foamWidth;
+                    foamPositions.push(foamPoint.x - foamTangent.z * foamOffset, 0, foamPoint.z + foamTangent.x * foamOffset);
+                    foamUV.push(foamT, foamAcross / 2);
+                    if (foamStep < 4 && foamAcross < 2) {
+                      var foamVertex = foamBase + foamStep * 3 + foamAcross;
+                      foamIndices.push(foamVertex, foamVertex + 3, foamVertex + 1,
+                        foamVertex + 1, foamVertex + 3, foamVertex + 4);
+                    }
+                  }
+                }
               }
               var foamGeometry = new THREE.BufferGeometry();
               foamGeometry.setAttribute('position', new THREE.Float32BufferAttribute(foamPositions, 3));
-              foamGeometry.setAttribute('color', new THREE.Float32BufferAttribute(foamColors, 3));
-              var foamLine = new THREE.LineSegments(foamGeometry,
-                new THREE.LineBasicMaterial({ color: 0xe0f2fe, vertexColors: true, transparent: true,
-                  opacity: 0.34 - foamBand * 0.08, depthWrite: false }));
-              foamLine.userData.baseOpacity = 0.34 - foamBand * 0.08;
-              shoreFoam.add(foamLine);
+              foamGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(foamUV, 2));
+              foamGeometry.setIndex(foamIndices);
+              var foamMesh = new THREE.Mesh(foamGeometry, new THREE.MeshBasicMaterial({color: 0xd5e5dc,
+                transparent: true, opacity: 0.38 - foamBand * 0.075, depthWrite: false, side: THREE.DoubleSide}));
+              foamMesh.name = 'pilot-coastal-foam-' + foamBand;
+              foamMesh.position.y = 0.12; foamMesh.renderOrder = 3; foamMesh.frustumCulled = false;
+              foamMesh.userData.baseOpacity = 0.38 - foamBand * 0.075;
+              foamMesh.material.onBeforeCompile = function(shader) {
+                shader.uniforms.pilotCoastTime = pilotWaterUniforms.rippleTime;
+                shader.vertexShader = 'varying vec2 vCoastUV; varying vec2 vCoastXZ;\n' + shader.vertexShader;
+                shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                  '#include <begin_vertex>\nvCoastUV = uv; vCoastXZ = position.xz;');
+                shader.fragmentShader = 'varying vec2 vCoastUV; varying vec2 vCoastXZ; uniform float pilotCoastTime;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>', [
+                  'float coastEdge = sin(vCoastUV.x * 3.14159265) * sin(vCoastUV.y * 3.14159265);',
+                  'float coastPatch = sin(vCoastXZ.x * 1.7 + sin(vCoastXZ.y * 0.83)) * sin(vCoastXZ.y * 1.31 - vCoastXZ.x * 0.47);',
+                  'float coastBreath = 0.82 + 0.18 * sin(pilotCoastTime * 0.85 + vCoastXZ.x * 0.09 + vCoastXZ.y * 0.12);',
+                  'diffuseColor.a *= coastEdge * smoothstep(-0.8, 0.5, coastPatch) * coastBreath;',
+                  '#include <alphatest_fragment>'
+                ].join('\n'));
+                this.userData.surfaceShader = shader;
+              };
+              foamMesh.material.customProgramCacheKey = function() { return 'pilot-coastal-foam-ribbon-v1'; };
+              cacheSunlightSurface(foamMesh); shoreFoam.add(foamMesh);
             }
+            cacheSunlightSurface(coastalShelf);
             scene.add(shoreFoam);
 
             // ── Reference planes: cloud base and freezing level ──────────────
@@ -12907,15 +13585,21 @@ const d = labToolData.waterCycle || {};
               c2.lineTo(6, 6 + r); c2.quadraticCurveTo(6, 6, r, 6);
               c2.closePath(); c2.fill(); c2.stroke();
               c2.fillStyle = ink;
-              c2.font = 'bold 42px system-ui, -apple-system, Segoe UI, sans-serif';
+              var labelFontPx = 42;
+              do {
+                c2.font = 'bold ' + labelFontPx + 'px system-ui, -apple-system, Segoe UI, sans-serif';
+                if (c2.measureText(text).width <= 464 || labelFontPx <= 18) break;
+                labelFontPx -= 2;
+              } while (labelFontPx > 0);
               c2.textAlign = 'center'; c2.textBaseline = 'middle';
-              c2.fillText(text, 256, 50);
+              c2.fillText(text, 256, 50, 464);
               var tex = new THREE.CanvasTexture(cv);
               tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter;
               var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, fog: false }));
               // World units, not pixels. At 72 wide these labels were larger than
               // the mountains and "SUNLIT WATER" covered a third of the frame.
               sp.scale.set(16, 3, 1);
+              sp.userData.labelText = text;
               sp.userData.dispose = function() { tex.dispose(); };
               return sp;
             }
@@ -12928,6 +13612,8 @@ const d = labToolData.waterCycle || {};
             // were already spatially real, but an unlabeled patch of terrain
             // made the learner guess which scientific choice it represented.
             var landingLabels = new THREE.Group();
+            landingLabels.name = 'pilot-landing-labels';
+            var landingLabelForward = new THREE.Vector3(), landingLabelDelta = new THREE.Vector3();
             [
               { text: t('stem.watercycle.pilot_target_lake', 'LAKE - COLLECTION'), x: 268, y: 23, z: -104, bg: 'rgba(3,105,161,0.92)', ink: '#f0f9ff', openWater: true },
               { text: t('stem.watercycle.pilot_target_stream', 'STREAM - COLLECTION'), x: 177, y: 18, z: -23, bg: 'rgba(8,145,178,0.92)', ink: '#ecfeff', openWater: true },
@@ -13049,24 +13735,19 @@ const d = labToolData.waterCycle || {};
             // and its collection role visible. The curve and mesh are shared with
             // the landing model, so the visual pathway and the physics agree.
             var STREAM_FLOW_COUNT = 28;
-            var streamFlowPos = new Float32Array(STREAM_FLOW_COUNT * 3);
+            var streamFlowPos = new Float32Array(STREAM_FLOW_COUNT * 6);
             var streamFlowSeed = new Float32Array(STREAM_FLOW_COUNT);
             var streamFlowPoint = new THREE.Vector3();
+            var streamFlowTail = new THREE.Vector3(), streamFlowTangent = new THREE.Vector3();
             for (var streamFlowIndex = 0; streamFlowIndex < STREAM_FLOW_COUNT; streamFlowIndex++) {
               streamFlowSeed[streamFlowIndex] = streamFlowIndex / STREAM_FLOW_COUNT;
-              streamCurve.getPointAt(streamFlowSeed[streamFlowIndex], streamFlowPoint);
-              streamFlowPos[streamFlowIndex * 3] = streamFlowPoint.x;
-              streamFlowPos[streamFlowIndex * 3 + 1] = streamFlowPoint.y + 1.1;
-              streamFlowPos[streamFlowIndex * 3 + 2] = streamFlowPoint.z;
             }
             var streamFlowGeo = new THREE.BufferGeometry();
             streamFlowGeo.setAttribute('position', new THREE.BufferAttribute(streamFlowPos, 3));
-            var streamFlow = new THREE.Points(streamFlowGeo, new THREE.PointsMaterial({
-              color: 0xa5f3fc, size: 2.5,
-              map: makeDotTexture('rgba(236,254,255,1)', 'rgba(34,211,238,0.4)'),
-              transparent: true, opacity: 0.82, depthWrite: false,
-              blending: THREE.AdditiveBlending, sizeAttenuation: true
+            var streamFlow = new THREE.LineSegments(streamFlowGeo, new THREE.LineBasicMaterial({
+              color: 0xc4e4e0, transparent: true, opacity: 0.56, depthWrite: false
             }));
+            streamFlow.name = 'pilot-stream-flow-streaks';
             streamFlow.frustumCulled = false;
             scene.add(streamFlow);
 
@@ -13110,28 +13791,145 @@ const d = labToolData.waterCycle || {};
             // oversized avatar into a weather event without allocating a single
             // object during a frame: rain is streaks; snow is slow crystals.
             var RAIN_STREAK_COUNT = 84;
-            var rainFieldPos = new Float32Array(RAIN_STREAK_COUNT * 6);
+            var rainFieldPos = new Float32Array(RAIN_STREAK_COUNT * 12);
+            var rainFieldAlpha = new Float32Array(RAIN_STREAK_COUNT * 4);
             var rainFieldSeed = new Float32Array(RAIN_STREAK_COUNT * 3);
             for (var ri = 0; ri < RAIN_STREAK_COUNT; ri++) {
               rainFieldSeed[ri * 3] = -48 + ((ri * 37) % 97);
               rainFieldSeed[ri * 3 + 1] = ((ri * 53) % 120);
               rainFieldSeed[ri * 3 + 2] = -42 + ((ri * 61) % 89);
-              var rainY = 60 - rainFieldSeed[ri * 3 + 1];
-              rainFieldPos[ri * 6] = rainFieldSeed[ri * 3];
-              rainFieldPos[ri * 6 + 1] = rainY;
-              rainFieldPos[ri * 6 + 2] = rainFieldSeed[ri * 3 + 2];
-              rainFieldPos[ri * 6 + 3] = rainFieldSeed[ri * 3] + 1.2;
-              rainFieldPos[ri * 6 + 4] = rainY - 10;
-              rainFieldPos[ri * 6 + 5] = rainFieldSeed[ri * 3 + 2] + 0.8;
             }
             var rainFieldGeo = new THREE.BufferGeometry();
             rainFieldGeo.setAttribute('position', new THREE.BufferAttribute(rainFieldPos, 3));
+            rainFieldGeo.setAttribute('rainAlpha', new THREE.BufferAttribute(rainFieldAlpha, 1));
             var rainField = new THREE.LineSegments(rainFieldGeo, new THREE.LineBasicMaterial({
-              color: 0x93c5fd, transparent: true, opacity: 0.48, depthWrite: false
+              color: 0xc5e4f4, transparent: true, opacity: 0.65, depthWrite: false
             }));
+            rainField.name = 'pilot-rain-field';
+            rainField.material.onBeforeCompile = function(shader) {
+              shader.vertexShader = 'attribute float rainAlpha; varying float vRainAlpha;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                '#include <begin_vertex>\nvRainAlpha = rainAlpha;');
+              shader.fragmentShader = 'varying float vRainAlpha;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>',
+                '#include <color_fragment>\ndiffuseColor.a *= vRainAlpha;');
+            };
             rainField.frustumCulled = false;
             rainField.visible = false;
             scene.add(rainField);
+
+            // One pooled receipt of the parcel's actual water landing. It is
+            // illustrative motion, not an additional source of simulated water.
+            var oceanLanding = new THREE.Group();
+            oceanLanding.name = 'pilot-ocean-landing'; oceanLanding.visible = false; oceanLanding.renderOrder = 4;
+            var landingRingGeometry = new THREE.RingGeometry(0.94, 1, 64);
+            var landingSurfaceKind = { value: 0 }; // ocean, lake, stream
+            var landingSurfaceHeight = 0;
+            function clipLandingToWater(material) {
+              material.pilotStreamChannelTexture = streamChannelTexture;
+              material.onBeforeCompile = function(shader) {
+                shader.uniforms.landingSurfaceKind = landingSurfaceKind;
+                shader.uniforms.landingChannelMask = { value: streamChannelTexture };
+                shader.vertexShader = 'varying vec2 vLandingXZ;\n' + shader.vertexShader;
+                shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                  '#include <begin_vertex>\nvLandingXZ = (modelMatrix * vec4(position, 1.0)).xz;');
+                shader.fragmentShader = 'uniform float landingSurfaceKind; uniform sampler2D landingChannelMask; varying vec2 vLandingXZ;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+                  '#include <color_fragment>',
+                  'if (landingSurfaceKind > 0.5 && landingSurfaceKind < 1.5) {',
+                  '  diffuseColor.a *= 1.0 - smoothstep(33.5, 34.0, distance(vLandingXZ, vec2(268.0, -104.0)));',
+                  '} else if (landingSurfaceKind > 1.5) {',
+                  '  vec2 channelUV = (vLandingXZ - vec2(64.0, -144.0)) / 256.0;',
+                  '  if (any(lessThan(channelUV, vec2(0.0))) || any(greaterThan(channelUV, vec2(1.0)))) discard;',
+                  '  diffuseColor.a *= smoothstep(0.25, 0.8, texture2D(landingChannelMask, channelUV).r);',
+                  '}',
+                  'if (diffuseColor.a < 0.01) discard;'
+                ].join('\n'));
+              };
+              material.customProgramCacheKey = function() { return 'pilot-water-landing-shore-v1'; };
+            }
+            var landingRings = [];
+            for (var landingRingIndex = 0; landingRingIndex < 3; landingRingIndex++) {
+              var landingRing = new THREE.Mesh(landingRingGeometry, new THREE.MeshBasicMaterial({
+                color: 0xc7edfa, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide
+              }));
+              clipLandingToWater(landingRing.material);
+              landingRing.rotation.x = -Math.PI / 2;
+              oceanLanding.add(landingRing); landingRings.push(landingRing);
+            }
+            var landingSprayPositions = new Float32Array(18 * 3);
+            var landingSprayGeometry = new THREE.BufferGeometry();
+            landingSprayGeometry.setAttribute('position', new THREE.BufferAttribute(landingSprayPositions, 3));
+            var landingSpray = new THREE.Points(landingSprayGeometry, new THREE.PointsMaterial({
+              color: 0xe0f2fe, size: 0.65, transparent: true, opacity: 0.7, depthWrite: false,
+              map: makeDotTexture('rgba(240,249,255,1)', 'rgba(125,211,252,0.4)')
+            }));
+            clipLandingToWater(landingSpray.material);
+            landingSpray.frustumCulled = false; oceanLanding.add(landingSpray); scene.add(oceanLanding);
+            var oceanLandingTime = -1;
+            function beginOceanLanding(source) {
+              oceanLandingTime = sim.elapsed;
+              oceanLanding.userData.source = source === 'groundwater' || source === 'runoff' ? source : 'rain';
+              canvasEl.dataset.waterLandingSource = oceanLanding.userData.source;
+              var landingLakeX = px - 268, landingLakeZ = pz + 104;
+              landingSurfaceKind.value = lake.visible && landingLakeX * landingLakeX + landingLakeZ * landingLakeZ < 34 * 34
+                ? 1 : streamUnder(px, pz) ? 2 : 0;
+              landingSurfaceHeight = collectedWaterSurfaceY(px, pz);
+              oceanLanding.rotation.y = 0;
+              if (landingSurfaceKind.value === 2) {
+                var closestLandingSample = 0, closestLandingDistance = Infinity;
+                streamSurfaceSamples.forEach(function(sample, index) {
+                  var distance = (sample.x - px) * (sample.x - px) + (sample.z - pz) * (sample.z - pz);
+                  if (distance < closestLandingDistance) { closestLandingDistance = distance; closestLandingSample = index; }
+                });
+                var landingTangent = streamCurve.getTangentAt(closestLandingSample / (streamSurfaceSamples.length - 1));
+                oceanLanding.rotation.y = Math.atan2(landingTangent.x, landingTangent.z);
+              }
+              oceanLanding.userData.surface = ['ocean', 'lake', 'stream'][landingSurfaceKind.value];
+              canvasEl.dataset.waterLandingSurface = oceanLanding.userData.surface;
+              oceanLanding.position.set(px, 0, pz);
+              oceanLanding.visible = true;
+            }
+            function updateOceanLanding() {
+              if (!oceanLanding.visible) return;
+              var age = Math.max(0, sim.elapsed - oceanLandingTime);
+              var seeping = oceanLanding.userData.source === 'groundwater';
+              var inflowing = oceanLanding.userData.source === 'runoff';
+              var surfaceArrival = seeping || inflowing;
+              var landingDuration = seeping ? 2.4 : inflowing ? 2.1 : 1.8;
+              if (age >= landingDuration) { oceanLanding.visible = false; canvasEl.dataset.oceanLanding = 'hidden'; canvasEl.dataset.waterLanding = 'hidden'; return; }
+              var visualAge = motionReduced ? 0.38 : age + (surfaceArrival ? 0.34 : 0.1);
+              var waveTime = motionReduced ? 0 : sim.elapsed;
+              var inlandLanding = landingSurfaceKind.value > 0;
+              var streamLanding = landingSurfaceKind.value === 2;
+              oceanLanding.position.y = inlandLanding ? landingSurfaceHeight + 0.14
+                : 1.2 + Math.sin(oceanLanding.position.x * 0.072 + waveTime * 1.3) * 0.9
+                  + Math.cos(oceanLanding.position.z * 0.058 + waveTime * 0.9) * 0.7;
+              landingRings.forEach(function(ring, index) {
+                var ringAge = Math.max(0, visualAge - index * 0.16) * (seeping ? 0.6 : inflowing ? 0.8 : 1);
+                // Start outside the enlarged parcel so the teaching pause shows
+                // an emergence cue immediately; the shoreline mask still clips it.
+                var ringRadius = streamLanding ? (surfaceArrival ? 3.4 : 1.4) + ringAge * (1.8 - index * 0.2)
+                  : (surfaceArrival ? 4.2 : inlandLanding ? 2.8 : 3.6) + ringAge * (5.5 - index * 0.6);
+                // Mesh-local Y becomes the long axis along the stream after rotation.
+                ring.scale.set(ringRadius * (streamLanding ? 0.65 : 1), ringRadius, 1);
+                ring.material.opacity = ringAge > 0 ? Math.max(0, 0.68 * (1 - ringAge / 1.8)) : 0;
+                // Fade moving inflow rings out before the pooled cue is hidden.
+                if (surfaceArrival && !motionReduced) ring.material.opacity *= Math.min(1, (landingDuration - age) / 0.45);
+              });
+              landingSpray.visible = !surfaceArrival && !motionReduced && visualAge < 0.8;
+              for (var sprayIndex = 0; sprayIndex < 18; sprayIndex++) {
+                var sprayAngle = sprayIndex * 2.399963;
+                var sprayRadius = (streamLanding ? 0.9 : inlandLanding ? 2.3 : 3.2) + visualAge * (streamLanding ? 1.2 : 2.4 + (sprayIndex % 4) * 0.55);
+                landingSprayPositions[sprayIndex * 3] = Math.cos(sprayAngle) * sprayRadius;
+                landingSprayPositions[sprayIndex * 3 + 1] = Math.max(0, (5 + (sprayIndex % 3)) * visualAge - 9 * visualAge * visualAge);
+                landingSprayPositions[sprayIndex * 3 + 2] = Math.sin(sprayAngle) * sprayRadius;
+              }
+              landingSprayGeometry.attributes.position.needsUpdate = true;
+              landingSpray.material.opacity = Math.max(0, 0.85 - visualAge);
+              canvasEl.dataset.waterLanding = motionReduced ? 'static-ripples' : seeping ? 'seep-ripples' : inflowing ? 'inflow-ripples' : 'ripples-and-spray';
+              canvasEl.dataset.oceanLanding = inlandLanding ? 'hidden' : canvasEl.dataset.waterLanding;
+            }
 
             // A small six-branched sprite stays distinguishable from liquid
             // droplets. It is an illustrative crystal, not a habit forecast.
@@ -13291,12 +14089,29 @@ const d = labToolData.waterCycle || {};
                 g.addColorStop(0.82, 'rgba(219,231,245,0.46)');
                 g.addColorStop(1, 'rgba(203,213,225,0)');
               } else {
-                g.addColorStop(0, 'rgba(226,234,246,0.98)');
-                g.addColorStop(0.55, 'rgba(203,215,232,0.92)');
+                g.addColorStop(0, 'rgba(156,179,199,0.98)');
+                g.addColorStop(0.55, 'rgba(174,194,214,0.92)');
                 g.addColorStop(0.84, 'rgba(163,180,204,0.4)');
                 g.addColorStop(1, 'rgba(148,163,184,0)');
               }
               c2.fillStyle = g; c2.fillRect(0, 0, 128, 128);
+              // Uneven, soft contours and restrained internal shading break up
+              // perfect circles without introducing noisy, sparkling textures.
+              var puffPixels = c2.getImageData(0, 0, 128, 128);
+              for (var puffY = 0; puffY < 128; puffY++) for (var puffX = 0; puffX < 128; puffX++) {
+                var puffDX = (puffX - 64) / 63, puffDY = (puffY - 64) / 63;
+                var puffRadius = Math.sqrt(puffDX * puffDX + puffDY * puffDY);
+                var puffAngle = Math.atan2(puffDY, puffDX);
+                var puffEdge = 0.94 + Math.sin(puffAngle * 5 + (topLit ? 0.7 : 2.1)) * 0.035
+                  + Math.sin(puffAngle * 9 - 0.8) * 0.02;
+                var puffFade = Math.max(0, Math.min(1, (puffEdge - puffRadius) / 0.38));
+                puffFade = puffFade * puffFade * (3 - 2 * puffFade);
+                var puffPixel = (puffY * 128 + puffX) * 4;
+                puffPixels.data[puffPixel + 3] = Math.min(puffPixels.data[puffPixel + 3], puffFade * 255);
+                var puffShade = 0.98 + 0.02 * Math.sin(puffDX * 11 + Math.sin(puffDY * 6)) * Math.sin(puffDY * 9);
+                for (var puffChannel = 0; puffChannel < 3; puffChannel++) puffPixels.data[puffPixel + puffChannel] *= puffShade;
+              }
+              c2.putImageData(puffPixels, 0, 0);
               var tx = new THREE.CanvasTexture(cv);
               tx.minFilter = THREE.LinearFilter; tx.magFilter = THREE.LinearFilter;
               return tx;
@@ -13347,9 +14162,11 @@ const d = labToolData.waterCycle || {};
               return g;
             }
             var ambientClouds = new THREE.Group();
-            for (var ci = 0; ci < 7; ci++) {
-              var cg = buildCumulus(ci * 1.7, 0.85 + (ci % 3) * 0.3);
-              cg.position.set(-420 + ci * 145, 0, -620 + (ci % 4) * 96);
+            ambientClouds.name = 'pilot-ambient-clouds';
+            var ambientCloudVisualTime = 0;
+            for (var ci = 0; ci < 9; ci++) {
+              var cg = buildCumulus(ci * 1.7, 0.95 + (ci % 3) * 0.3, 12 + ci % 3);
+              cg.position.set(-460 + ci * 118, 0, -650 + (ci % 3) * 150);
               cg.userData.baseX = cg.position.x;
               cg.userData.baseY = (ci % 3) * 16;
               ambientClouds.add(cg);
@@ -13381,11 +14198,13 @@ const d = labToolData.waterCycle || {};
               new THREE.SphereGeometry(5.2, 20, 14),
               new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false })
             );
+            vaporShell.name = 'pilot-vapor-shell';
             parcel.add(vaporShell);
             var vaporMarker = new THREE.Mesh(
               new THREE.IcosahedronGeometry(3.4, 1),
               new THREE.MeshBasicMaterial({ color: 0xe0f2fe, wireframe: true, transparent: true, opacity: 0.5 })
             );
+            vaporMarker.name = 'pilot-vapor-marker';
             parcel.add(vaporMarker);
 
             var dropletMesh = new THREE.Mesh(
@@ -13501,6 +14320,59 @@ const d = labToolData.waterCycle || {};
               new THREE.LineBasicMaterial({color: 0xf0f9ff, transparent: true, opacity: 0.48, depthWrite: false}));
             snowMesh.add(snowCrystalEdges);
             parcel.add(snowMesh);
+            // A pooled transition illustration keeps melting legible at a
+            // learning pause without adding a second simulated water parcel.
+            var meltingSnow = new THREE.Group(); meltingSnow.name = 'pilot-melting-snow';
+            var meltingCrystalMaterial = snowCrystalMaterial.clone();
+            meltingCrystalMaterial.transparent = true; meltingCrystalMaterial.opacity = 0.82;
+            meltingCrystalMaterial.depthWrite = false; meltingCrystalMaterial.roughness = 0.06;
+            var meltingCrystal = new THREE.Mesh(snowGeometry, meltingCrystalMaterial);
+            meltingSnow.add(meltingCrystal);
+            var meltingDropPreview = new THREE.Mesh(rainMesh.geometry, rainMesh.material);
+            meltingDropPreview.name = 'pilot-melt-drop-preview'; meltingDropPreview.visible = false;
+            meltingSnow.add(meltingDropPreview);
+            var meltBeadMaterial = new THREE.MeshPhongMaterial({color: 0x91c9db, specular: 0xffffff,
+              shininess: 100, envMap: parcelReflectionTexture, reflectivity: 0.35,
+              transparent: true, opacity: 0.85, depthWrite: false});
+            var meltBeads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 10, 8), meltBeadMaterial, 6);
+            meltBeads.name = 'pilot-melt-beads'; meltingSnow.add(meltBeads);
+            var meltDummy = new THREE.Object3D(), meltViewDirection = new THREE.Vector3();
+            var meltingElapsed = 0;
+            meltingSnow.visible = false; scene.add(meltingSnow);
+            function beginSnowMelt() {
+              meltingElapsed = 0.18; meltingSnow.visible = true;
+              meltingSnow.quaternion.copy(snowMesh.quaternion);
+            }
+            function updateSnowMelt(dt) {
+              if (!meltingSnow.visible) return;
+              if (sim.form !== 'rain' || meltingElapsed >= 1.6) {
+                meltingSnow.visible = false; rainMesh.scale.set(1.12, 0.82, 1.12);
+                canvasEl.dataset.snowMeltCue = 'hidden'; return;
+              }
+              if (!input.paused && !document.hidden) meltingElapsed += dt;
+              var meltProgress = motionReduced ? 0.48 : Math.min(1, meltingElapsed / 1.6);
+              var meltEase = meltProgress * meltProgress * (3 - 2 * meltProgress);
+              meltingCrystal.scale.setScalar(1 - meltEase * 0.74);
+              meltingCrystalMaterial.opacity = 0.82 * (1 - meltEase);
+              meltBeadMaterial.opacity = 0.85 * (1 - meltEase);
+              for (var meltIndex = 0; meltIndex < 6; meltIndex++) {
+                var meltAngle = meltIndex * Math.PI / 3;
+                var meltRadius = 4.6 * (1 - meltEase) + 0.4;
+                meltDummy.position.set(Math.cos(meltAngle) * meltRadius, Math.sin(meltAngle) * meltRadius, 0.2);
+                meltDummy.scale.setScalar(0.6 + meltEase * 0.65); meltDummy.updateMatrix();
+                meltBeads.setMatrixAt(meltIndex, meltDummy.matrix);
+              }
+              meltBeads.instanceMatrix.needsUpdate = true;
+              var meltDropScale = 0.45 + meltEase * 0.55;
+              rainMesh.scale.set(1.12 * meltDropScale, 0.82 * meltDropScale, 1.12 * meltDropScale);
+              meltingDropPreview.visible = input.cameraMode === 'water';
+              meltingDropPreview.scale.copy(rainMesh.scale);
+              if (input.cameraMode === 'water') {
+                camera.getWorldDirection(meltViewDirection);
+                meltingSnow.position.copy(camera.position).addScaledVector(meltViewDirection, 70);
+              } else meltingSnow.position.copy(parcel.position);
+              canvasEl.dataset.snowMeltCue = motionReduced ? 'static' : 'melting';
+            }
             var iceEdges = new THREE.LineSegments(new THREE.EdgesGeometry(iceMesh.geometry, 24),
               new THREE.LineBasicMaterial({color: 0xe0f2fe, transparent: true, opacity: 0.5, depthWrite: false}));
             iceMesh.add(iceEdges);
@@ -13936,8 +14808,14 @@ const d = labToolData.waterCycle || {};
               new THREE.Vector3(0, 4.8, 70)
             ], false, 'centripetal', 0.42);
             var runoffPathway = new THREE.Group();
-            runoffPathway.add(makePathwayRibbon(runoffLocalCurve, 0x38bdf8, 0.78, 0.48));
-            var runoffBeads = makePathwayBeads(runoffLocalCurve, 0xe0f2fe, 2.35, 0.17);
+            runoffPathway.name = 'pilot-runoff-pathway';
+            var runoffRibbon = makePathwayRibbon(runoffLocalCurve, 0x75c7d7, 0.42, 0.42);
+            runoffRibbon.name = 'pilot-runoff-route';
+            runoffRibbon.material.blending = THREE.NormalBlending;
+            runoffPathway.add(runoffRibbon);
+            var runoffBeads = makePathwayBeads(runoffLocalCurve, 0xc4eff5, 1.5, 0.17);
+            runoffBeads.name = 'pilot-runoff-flow';
+            runoffBeads.material.blending = THREE.NormalBlending;
             runoffPathway.add(runoffBeads);
             runoffPathway.visible = false;
             scene.add(runoffPathway);
@@ -13949,19 +14827,126 @@ const d = labToolData.waterCycle || {};
               new THREE.Vector3(-4, -7.4, 56),
               new THREE.Vector3(0, 4.2, 70)
             ], false, 'centripetal', 0.42);
+            // Open a local window through the surface while exploring below it.
+            // Keep the surrounding landscape visible and restore it without recompiling.
+            var pilotCutawayWindow = { value: new THREE.Vector4(0, 0, 18, 0) };
+            [ocean, wetSand, beach, meadow, hardpan, streamTerrainBanks].forEach(function(surface) {
+              var previousCompile = surface.material.onBeforeCompile;
+              var previousCacheKey = surface.material.customProgramCacheKey.call(surface.material);
+              if (surface !== ocean && surface !== streamTerrainBanks) surface.material.pilotStreamChannelTexture = streamTerrainTexture;
+              surface.material.onBeforeCompile = function(shader, renderer) {
+                previousCompile.call(this, shader, renderer);
+                shader.uniforms.pilotCutawayWindow = pilotCutawayWindow;
+                shader.vertexShader = 'varying vec2 vPilotCutawayXZ;\n' + shader.vertexShader;
+                shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
+                  '#include <worldpos_vertex>\nvPilotCutawayXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
+                shader.fragmentShader = 'varying vec2 vPilotCutawayXZ;\nuniform vec4 pilotCutawayWindow;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <clipping_planes_fragment>',
+                  '#include <clipping_planes_fragment>\nif (pilotCutawayWindow.w > 0.5 && distance(vPilotCutawayXZ, pilotCutawayWindow.xy) < pilotCutawayWindow.z) discard;');
+              };
+              var cutawayCompile = surface.material.onBeforeCompile;
+              if (surface !== ocean && surface !== streamTerrainBanks) {
+                surface.material.onBeforeCompile = function(shader, renderer) {
+                  cutawayCompile.call(this, shader, renderer);
+                  shader.uniforms.pilotStreamChannel = { value: streamTerrainTexture };
+                  shader.uniforms.pilotStreamChannelActive = pilotStreamChannelActive;
+                  shader.fragmentShader = 'uniform sampler2D pilotStreamChannel;\nuniform float pilotStreamChannelActive;\n' + shader.fragmentShader;
+                  shader.fragmentShader = shader.fragmentShader.replace('#include <clipping_planes_fragment>',
+                    '#include <clipping_planes_fragment>\nvec2 streamChannelUV = (vPilotCutawayXZ - vec2(64.0, -144.0)) / 256.0;\nif (pilotStreamChannelActive > 0.5 && all(greaterThanEqual(streamChannelUV, vec2(0.0))) && all(lessThanEqual(streamChannelUV, vec2(1.0))) && texture2D(pilotStreamChannel, streamChannelUV).r > 0.5) discard;');
+                };
+              }
+              surface.material.customProgramCacheKey = function() { return previousCacheKey + '-subsurface-stream-banks-v3'; };
+            });
+            // A shared, static pore-space illustration under the 3D rock grains.
+            // Blue occupies gaps; the solid grains stay visibly distinct. This
+            // is a cutaway key, not a porosity measurement or a fluid solver.
+            var poreCanvas = document.createElement('canvas'); poreCanvas.width = poreCanvas.height = 256;
+            var poreContext = poreCanvas.getContext('2d');
+            poreContext.fillStyle = '#4b9fb8'; poreContext.fillRect(0, 0, 256, 256);
+            for (var poreRow = -1; poreRow < 5; poreRow++) {
+              for (var poreColumn = -1; poreColumn < 5; poreColumn++) {
+                var poreCenterX = poreColumn * 64 + (poreRow % 2 ? 32 : 0);
+                var poreCenterY = poreRow * 64;
+                var poreSeed = (((poreRow + 4) % 4) * 17 + ((poreColumn + 4) % 4) * 11) % 9;
+                poreContext.beginPath();
+                for (var poreCorner = 0; poreCorner < 7; poreCorner++) {
+                  var poreAngle = poreCorner / 7 * Math.PI * 2 + poreSeed * 0.13;
+                  var poreRadius = 27 + Math.sin(poreCorner * 2.1 + poreSeed) * 2;
+                  var poreX = poreCenterX + Math.cos(poreAngle) * poreRadius;
+                  var poreY = poreCenterY + Math.sin(poreAngle) * poreRadius;
+                  if (poreCorner === 0) poreContext.moveTo(poreX, poreY); else poreContext.lineTo(poreX, poreY);
+                }
+                poreContext.closePath();
+                poreContext.fillStyle = ['#89978f', '#a3a494', '#748b90'][poreSeed % 3];
+                poreContext.fill(); poreContext.strokeStyle = '#526e79'; poreContext.lineWidth = 2; poreContext.stroke();
+              }
+            }
+            var aquiferPoreTexture = new THREE.CanvasTexture(poreCanvas);
+            aquiferPoreTexture.wrapS = aquiferPoreTexture.wrapT = THREE.RepeatWrapping;
+            aquiferPoreTexture.repeat.set(3, 3);
+            aquiferPoreTexture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
             var groundwaterPathway = new THREE.Group();
+            groundwaterPathway.name = 'pilot-groundwater-cutaway';
             var aquiferWindow = new THREE.Mesh(
               new THREE.PlaneGeometry(32, 70),
               new THREE.MeshBasicMaterial({
-                color: 0x4338ca, transparent: true, opacity: 0.13,
+                color: 0xffffff, map: aquiferPoreTexture, transparent: true, opacity: 0.84,
                 depthWrite: false, side: THREE.DoubleSide
               })
             );
+            aquiferWindow.name = 'pilot-saturated-pore-bed';
+            var aquiferUV = aquiferWindow.geometry.attributes.uv;
+            for (var aquiferUVIndex = 0; aquiferUVIndex < aquiferUV.count; aquiferUVIndex++) aquiferUV.setY(aquiferUVIndex, aquiferUV.getY(aquiferUVIndex) * 2);
+            aquiferUV.needsUpdate = true;
+            var aquiferUVBase = new Float32Array(aquiferUV.array);
             aquiferWindow.rotation.x = -Math.PI / 2;
             aquiferWindow.position.set(0, -11.8, 35);
             groundwaterPathway.add(aquiferWindow);
-            groundwaterPathway.add(makePathwayRibbon(groundwaterLocalCurve, 0x818cf8, 0.9, 0.52));
+            // Rock matrix surrounds the highlighted teaching route. Gaps between
+            // grains help distinguish groundwater from a hollow underground river.
+            var aquiferGrainGeometry = new THREE.IcosahedronGeometry(1, 1);
+            var aquiferGrainMaterial = new THREE.MeshPhongMaterial({
+              color: 0xffffff, map: ridgeTexture, shininess: 8
+            });
+            var aquiferGrains = new THREE.InstancedMesh(aquiferGrainGeometry, aquiferGrainMaterial, 96);
+            aquiferGrains.name = 'pilot-aquifer-grains';
+            var geologyDummy = new THREE.Object3D(), geologyColor = new THREE.Color();
+            var aquiferSample = new THREE.Vector3();
+            function shapeAquiferGrains(pathStretch) {
+              // Keep the pore pattern at the same scale when the route extends
+              // toward a more distant spring; the shared soil texture stays fixed.
+              for (var poreUVIndex = 0; poreUVIndex < aquiferUV.count; poreUVIndex++) {
+                aquiferUV.setY(poreUVIndex, aquiferUVBase[poreUVIndex * 2 + 1] * pathStretch);
+              }
+              aquiferUV.needsUpdate = true;
+            for (var grainIndex = 0; grainIndex < 96; grainIndex++) {
+              var grainU = (grainIndex + 0.5) / 96;
+              groundwaterLocalCurve.getPointAt(grainU, aquiferSample);
+              var grainSide = grainIndex % 2 ? -1 : 1;
+              geologyDummy.position.set(aquiferSample.x + grainSide * (3.8 + (grainIndex % 5) * 1.45),
+                aquiferSample.y - 1.8 + (grainIndex % 3) * 1.1, aquiferSample.z);
+              geologyDummy.rotation.set(grainIndex * 0.73, grainIndex * 0.41, grainIndex * 0.19);
+              geologyDummy.scale.set(0.9 + (grainIndex % 4) * 0.2, 0.7 + (grainIndex % 3) * 0.16, 1.05);
+              geologyDummy.updateMatrix();
+              // The route stretches to the spring; its individual rocks must not.
+              geologyDummy.matrix.elements[2] /= pathStretch;
+              geologyDummy.matrix.elements[6] /= pathStretch;
+              geologyDummy.matrix.elements[10] /= pathStretch;
+              aquiferGrains.setMatrixAt(grainIndex, geologyDummy.matrix);
+              geologyColor.setHex(grainIndex % 3 === 0 ? 0x729699 : grainIndex % 3 === 1 ? 0xb8b9a4 : 0x899eab);
+              aquiferGrains.setColorAt(grainIndex, geologyColor);
+            }
+              aquiferGrains.instanceMatrix.needsUpdate = true;
+            }
+            shapeAquiferGrains(1);
+            groundwaterPathway.add(aquiferGrains);
+            var groundwaterRibbon = makePathwayRibbon(groundwaterLocalCurve, 0x67b6d2, 0.35, 0.22);
+            groundwaterRibbon.name = 'pilot-groundwater-route';
+            groundwaterRibbon.material.blending = THREE.NormalBlending;
+            groundwaterPathway.add(groundwaterRibbon);
             var groundwaterBeads = makePathwayBeads(groundwaterLocalCurve, 0xc7d2fe, 2.5, 0.075);
+            groundwaterBeads.name = 'pilot-groundwater-flow';
+            groundwaterBeads.material.size = 1.4; groundwaterBeads.material.blending = THREE.NormalBlending;
             groundwaterPathway.add(groundwaterBeads);
             groundwaterPathway.visible = false;
             scene.add(groundwaterPathway);
@@ -13973,25 +14958,59 @@ const d = labToolData.waterCycle || {};
               new THREE.Vector3(1.6, -10.5, 0)
             ], false, 'centripetal', 0.42);
             var soilCutaway = new THREE.Group();
+            soilCutaway.name = 'pilot-soil-cutaway';
+            var soilGeology = new THREE.Group();
+            soilGeology.name = 'pilot-soil-layers';
+            soilCutaway.add(soilGeology);
             var soilColumn = new THREE.Mesh(
-              new THREE.CylinderGeometry(13, 13, 19, 32, 1, true),
+              new THREE.CylinderGeometry(13, 13, 19, 32, 1, true, Math.PI / 3, Math.PI * 4 / 3),
               new THREE.MeshBasicMaterial({
                 color: 0x92400e, transparent: true, opacity: 0.16,
                 depthWrite: false, side: THREE.DoubleSide
               })
             );
             soilColumn.position.y = -1.2;
-            soilCutaway.add(soilColumn);
+            soilGeology.add(soilColumn);
+            var soilLayerColors = [0x6b4632, 0xa17a50, 0x7d8787];
+            for (var layerIndex = 0; layerIndex < 3; layerIndex++) {
+              var soilLayer = new THREE.Mesh(
+                new THREE.CylinderGeometry(12.95, 12.95, 6.1, 40, 1, true, Math.PI / 3, Math.PI * 4 / 3),
+                new THREE.MeshPhongMaterial({color: soilLayerColors[layerIndex], map: ridgeTexture,
+                  shininess: 3, side: THREE.DoubleSide})
+              );
+              soilLayer.position.y = 5 - layerIndex * 6.2;
+              soilGeology.add(soilLayer);
+            }
+            var soilGrains = new THREE.InstancedMesh(aquiferGrainGeometry,
+              new THREE.MeshPhongMaterial({color: 0xffffff, map: ridgeTexture, shininess: 4}), 66);
+            soilGrains.name = 'pilot-soil-grains';
+            for (var soilGrainIndex = 0; soilGrainIndex < 66; soilGrainIndex++) {
+              var soilAngle = Math.PI / 3 + ((soilGrainIndex * 17) % 67) / 67 * Math.PI * 4 / 3;
+              var soilRadius = 7.8 + (soilGrainIndex % 4) * 1.1;
+              var soilY = 7.3 - ((soilGrainIndex * 13) % 67) / 67 * 17;
+              geologyDummy.position.set(Math.sin(soilAngle) * soilRadius, soilY, Math.cos(soilAngle) * soilRadius);
+              geologyDummy.rotation.set(soilGrainIndex * 0.31, soilGrainIndex * 0.83, soilGrainIndex * 0.17);
+              geologyDummy.scale.set(0.55 + (soilGrainIndex % 3) * 0.22, 0.4 + (soilGrainIndex % 4) * 0.18, 0.65);
+              geologyDummy.updateMatrix(); soilGrains.setMatrixAt(soilGrainIndex, geologyDummy.matrix);
+              geologyColor.setHex(soilLayerColors[soilY > 2 ? 0 : soilY > -4.2 ? 1 : 2]);
+              soilGrains.setColorAt(soilGrainIndex, geologyColor);
+            }
+            soilGeology.add(soilGrains);
             var waterTableDisc = new THREE.Mesh(
               new THREE.CircleGeometry(13, 36),
               new THREE.MeshBasicMaterial({
-                color: 0x6366f1, transparent: true, opacity: 0.34,
+                color: 0xffffff, map: aquiferPoreTexture, transparent: true, opacity: 0.62,
                 depthWrite: false, side: THREE.DoubleSide
               })
             );
             waterTableDisc.rotation.x = -Math.PI / 2;
             waterTableDisc.position.y = -10.6;
+            waterTableDisc.name = 'pilot-soil-water-table';
             soilCutaway.add(waterTableDisc);
+            var waterTableRim = new THREE.Mesh(new THREE.RingGeometry(12.7, 13, 64),
+              new THREE.MeshBasicMaterial({color: 0x7dd3fc, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false}));
+            waterTableRim.rotation.x = -Math.PI / 2; waterTableRim.position.y = -10.5;
+            soilCutaway.add(waterTableRim);
             var soilPorePositions = new Float32Array(42 * 3);
             for (var poreIndex = 0; poreIndex < 42; poreIndex++) {
               var poreAngle = poreIndex * 2.399963;
@@ -14003,11 +15022,13 @@ const d = labToolData.waterCycle || {};
             var soilPoreGeometry = new THREE.BufferGeometry();
             soilPoreGeometry.setAttribute('position', new THREE.BufferAttribute(soilPorePositions, 3));
             var soilPores = new THREE.Points(soilPoreGeometry, new THREE.PointsMaterial({
-              color: 0xfbbf24, size: 1.25, transparent: true, opacity: 0.5,
+              color: 0xbae6fd, size: 0.85, map: dropTex, transparent: true, opacity: 0.65,
               depthWrite: false, sizeAttenuation: true
             }));
             soilCutaway.add(soilPores);
             var infiltrationBeads = makePathwayBeads(infiltrationLocalCurve, 0xa5f3fc, 2.45, 0.12);
+            infiltrationBeads.name = 'pilot-infiltration-flow';
+            infiltrationBeads.material.size = 1.6; infiltrationBeads.material.blending = THREE.NormalBlending;
             soilCutaway.add(infiltrationBeads);
             soilCutaway.visible = false;
             scene.add(soilCutaway);
@@ -14020,18 +15041,162 @@ const d = labToolData.waterCycle || {};
               new THREE.Vector3(6, 32, -2)
             ], false, 'centripetal', 0.42);
             var plantPathway = new THREE.Group();
-            var rootSegments = new THREE.LineSegments(
-              new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(-1, 8, 0), new THREE.Vector3(-10, 1.5, 7),
-                new THREE.Vector3(-1, 8, 0), new THREE.Vector3(9, 0.4, 4),
-                new THREE.Vector3(-1, 8, 0), new THREE.Vector3(-7, -1.2, -8),
-                new THREE.Vector3(-1, 8, 0), new THREE.Vector3(8, 2.2, -7)
-              ]),
-              new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.64, depthWrite: false })
-            );
+            plantPathway.name = 'pilot-plant-cutaway';
+            // Enlarged botanical context around the existing teaching route.
+            // The open stem reveals the highlighted xylem path, not a hollow plant.
+            var plantRootMaterial = new THREE.MeshPhongMaterial({color: 0xb39b69,
+              map: ridgeTexture, shininess: 3});
+            var plantRootGeometry = new THREE.CylinderGeometry(0.65, 1, 1, 7);
+            var rootSegments = new THREE.InstancedMesh(plantRootGeometry, plantRootMaterial, 72);
+            rootSegments.name = 'pilot-plant-roots';
+            var rootDummy = new THREE.Object3D(), rootStart = new THREE.Vector3(), rootEnd = new THREE.Vector3();
+            var rootAxis = new THREE.Vector3(0, 1, 0), rootDirection = new THREE.Vector3();
+            var rootInstance = 0;
+            function addPlantRootSegment(a, b, thickness) {
+              rootDirection.subVectors(b, a);
+              rootDummy.position.copy(a).add(b).multiplyScalar(0.5);
+              rootDummy.quaternion.setFromUnitVectors(rootAxis, rootDirection.clone().normalize());
+              rootDummy.scale.set(thickness, rootDirection.length(), thickness);
+              rootDummy.updateMatrix(); rootSegments.setMatrixAt(rootInstance++, rootDummy.matrix);
+            }
+            for (var rootIndex = 0; rootIndex < 6; rootIndex++) {
+              var rootAngle = rootIndex * Math.PI / 3 + 0.2;
+              for (var rootPart = 0; rootPart < 4; rootPart++) {
+                var rootU = rootPart / 4, rootV = (rootPart + 1) / 4;
+                rootStart.set(-1 + Math.cos(rootAngle) * rootU * 12, 7.5 - rootU * 9, Math.sin(rootAngle) * rootU * 12);
+                rootEnd.set(-1 + Math.cos(rootAngle) * rootV * 12, 7.5 - rootV * 9, Math.sin(rootAngle) * rootV * 12);
+                addPlantRootSegment(rootStart, rootEnd, 0.75 - rootU * 0.5);
+                for (var rootSide = -1; rootSide <= 1; rootSide += 2) {
+                  rootStart.copy(rootEnd);
+                  rootEnd.set(rootStart.x + Math.cos(rootAngle + rootSide * 0.9) * 3.4,
+                    rootStart.y - 1.8, rootStart.z + Math.sin(rootAngle + rootSide * 0.9) * 3.4);
+                  addPlantRootSegment(rootStart, rootEnd, 0.18 - rootU * 0.1);
+                  rootEnd.copy(rootStart);
+                }
+              }
+            }
             plantPathway.add(rootSegments);
-            plantPathway.add(makePathwayRibbon(plantLocalCurve, 0x4ade80, 0.72, 0.58));
-            var plantBeads = makePathwayBeads(plantLocalCurve, 0xd1fae5, 2.5, 0.12);
+            var plantSoilBed = new THREE.Mesh(new THREE.CircleGeometry(15.9, 48),
+              new THREE.MeshPhongMaterial({color: 0x72513b, map: ridgeTexture, shininess: 2, side: THREE.DoubleSide}));
+            plantSoilBed.name = 'pilot-plant-soil-bed';
+            plantSoilBed.rotation.x = -Math.PI / 2; plantSoilBed.position.y = -4;
+            plantPathway.add(plantSoilBed);
+            var plantSoilGrains = new THREE.InstancedMesh(aquiferGrainGeometry,
+              new THREE.MeshPhongMaterial({color: 0x8b775c, map: ridgeTexture, shininess: 2}), 24);
+            plantSoilGrains.name = 'pilot-plant-soil-grains';
+            for (var plantGrainIndex = 0; plantGrainIndex < 24; plantGrainIndex++) {
+              var plantGrainAngle = plantGrainIndex * 2.399963;
+              var plantGrainRadius = 4 + (plantGrainIndex % 5) * 2.1;
+              rootDummy.position.set(Math.cos(plantGrainAngle) * plantGrainRadius, -3.6, Math.sin(plantGrainAngle) * plantGrainRadius);
+              rootDummy.rotation.set(0, plantGrainAngle, 0.2);
+              rootDummy.scale.set(0.65 + (plantGrainIndex % 3) * 0.3, 0.5, 0.8);
+              rootDummy.updateMatrix(); plantSoilGrains.setMatrixAt(plantGrainIndex, rootDummy.matrix);
+            }
+            plantPathway.add(plantSoilGrains);
+            var plantStemGeometry = new THREE.TubeGeometry(plantLocalCurve, 64, 1.65, 12, false);
+            var plantStemIndices = [];
+            // Omit a longitudinal strip, leaving the water route visible inside.
+            for (var stemRing = 0; stemRing < 64; stemRing++) {
+              for (var stemSide = 2; stemSide < 10; stemSide++) {
+                var stemA = stemRing * 13 + stemSide, stemB = (stemRing + 1) * 13 + stemSide;
+                plantStemIndices.push(stemA, stemB, stemA + 1, stemB, stemB + 1, stemA + 1);
+              }
+            }
+            plantStemGeometry.setIndex(plantStemIndices);
+            var plantStem = new THREE.Mesh(plantStemGeometry,
+              new THREE.MeshPhongMaterial({color: 0x648e40, shininess: 16, side: THREE.DoubleSide,
+                transparent: true, opacity: 0.52, depthWrite: false}));
+            plantStem.name = 'pilot-plant-stem';
+            plantPathway.add(plantStem);
+            // One shared, deterministic surface texture adds quiet leaf detail.
+            // It is botanical shading, not a measured cellular or stomatal map.
+            var plantLeafCanvas = document.createElement('canvas');
+            plantLeafCanvas.width = plantLeafCanvas.height = 128;
+            var plantLeafContext = plantLeafCanvas.getContext('2d');
+            plantLeafContext.fillStyle = '#ebf0dc'; plantLeafContext.fillRect(0, 0, 128, 128);
+            for (var leafMark = 0; leafMark < 180; leafMark++) {
+              var leafMarkX = (leafMark * 47.13) % 128, leafMarkY = (leafMark * 29.71) % 128;
+              plantLeafContext.fillStyle = leafMark % 3 ? 'rgba(87,111,55,0.10)' : 'rgba(255,255,225,0.24)';
+              plantLeafContext.beginPath();
+              plantLeafContext.ellipse(leafMarkX, leafMarkY, 1.5 + leafMark % 3, 0.8 + leafMark % 2, -0.45, 0, Math.PI * 2);
+              plantLeafContext.fill();
+            }
+            plantLeafContext.strokeStyle = 'rgba(248,255,213,0.25)'; plantLeafContext.lineWidth = 0.7;
+            for (var fineVein = 8; fineVein < 124; fineVein += 8) {
+              plantLeafContext.beginPath(); plantLeafContext.moveTo(fineVein, 64);
+              plantLeafContext.lineTo(fineVein + 12, 5); plantLeafContext.moveTo(fineVein, 64);
+              plantLeafContext.lineTo(fineVein + 12, 123); plantLeafContext.stroke();
+            }
+            var plantLeafTexture = new THREE.CanvasTexture(plantLeafCanvas);
+            plantLeafTexture.name = 'pilot-leaf-surface-texture';
+            var plantLeafMaterial = new THREE.MeshPhongMaterial({color: 0x589844, map: plantLeafTexture,
+              specular: 0x77945e, shininess: 22, side: THREE.DoubleSide, vertexColors: true,
+              transparent: true, depthWrite: false});
+            var plantLeafWaterView = { value: 0 };
+            plantLeafMaterial.onBeforeCompile = function(shader) {
+              shader.uniforms.plantLeafWaterView = plantLeafWaterView;
+              shader.fragmentShader = 'uniform float plantLeafWaterView;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>',
+                'diffuseColor.a *= mix(1.0, 0.06 + 0.94 * smoothstep(3.0, 14.0, length(vViewPosition)), plantLeafWaterView);\n#include <alphatest_fragment>');
+            };
+            plantLeafMaterial.customProgramCacheKey = function() { return 'pilot-plant-leaf-near-view-v1'; };
+            var plantVeinMaterial = new THREE.LineBasicMaterial({color: 0xb7d28a, transparent: true, opacity: 0.72});
+            var plantLeaves = new THREE.Group(); plantLeaves.name = 'pilot-plant-leaves';
+            function makePlantLeaf(length, width) {
+              var leafGroup = new THREE.Group(), vertices = [], colors = [], indices = [], veins = [], leafUVs = [];
+              function leafPoint(u, across) {
+                return new THREE.Vector3(u * length, Math.sin(u * Math.PI) * 1.4 - Math.abs(across) * 0.38,
+                  across * width * Math.pow(Math.sin(u * Math.PI), 0.85));
+              }
+              for (var row = 0; row <= 18; row++) {
+                for (var column = 0; column <= 6; column++) {
+                  var across = column / 3 - 1, lp = leafPoint(row / 18, across);
+                  vertices.push(lp.x, lp.y, lp.z);
+                  leafUVs.push(row / 18, column / 6);
+                  var edgeTint = 1 - Math.abs(across) * 0.25;
+                  colors.push(edgeTint, edgeTint, edgeTint * 0.9);
+                  if (row < 18 && column < 6) {
+                    var li = row * 7 + column;
+                    indices.push(li, li + 7, li + 1, li + 1, li + 7, li + 8);
+                  }
+                }
+              }
+              var leafGeometry = new THREE.BufferGeometry();
+              leafGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+              leafGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+              leafGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(leafUVs, 2));
+              leafGeometry.setIndex(indices); leafGeometry.computeVertexNormals();
+              leafGroup.add(new THREE.Mesh(leafGeometry, plantLeafMaterial));
+              for (var veinIndex = 0; veinIndex < 18; veinIndex++) {
+                var va = leafPoint(veinIndex / 18, 0), vb = leafPoint((veinIndex + 1) / 18, 0);
+                va.y += 0.035; vb.y += 0.035; veins.push(va, vb);
+              }
+              for (var branchVein = 2; branchVein < 16; branchVein += 2) {
+                for (var veinSide = -1; veinSide <= 1; veinSide += 2) {
+                  var vc = leafPoint(branchVein / 18, 0), vd = leafPoint((branchVein + 1.5) / 18, veinSide * 0.88);
+                  vc.y += 0.045; vd.y += 0.045; veins.push(vc, vd);
+                }
+              }
+              leafGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(veins), plantVeinMaterial));
+              return leafGroup;
+            }
+            for (var leafIndex = 0; leafIndex < 4; leafIndex++) {
+              var sideLeaf = makePlantLeaf(10 + leafIndex, 3.5 + leafIndex * 0.25);
+              plantLocalCurve.getPointAt(0.48 + leafIndex * 0.105, sideLeaf.position);
+              sideLeaf.rotation.set(0, leafIndex * 2.3 + 0.8, 0.16);
+              plantLeaves.add(sideLeaf);
+            }
+            var releaseLeaf = makePlantLeaf(13, 4.4);
+            releaseLeaf.position.set(1, 30.7, -2);
+            releaseLeaf.name = 'pilot-plant-release-leaf';
+            plantLeaves.add(releaseLeaf); plantPathway.add(plantLeaves);
+            var plantRibbon = makePathwayRibbon(plantLocalCurve, 0x79cde2, 0.38, 0.46);
+            plantRibbon.name = 'pilot-plant-water-route';
+            plantRibbon.material.blending = THREE.NormalBlending;
+            plantPathway.add(plantRibbon);
+            var plantBeads = makePathwayBeads(plantLocalCurve, 0xc4f1ff, 1.5, 0.12);
+            plantBeads.name = 'pilot-plant-water-flow';
+            plantBeads.material.blending = THREE.NormalBlending;
             plantPathway.add(plantBeads);
             plantPathway.visible = false;
             scene.add(plantPathway);
@@ -14230,8 +15395,20 @@ const d = labToolData.waterCycle || {};
 
             function orientPathwayToWater(group, x, z) {
               var target = nearestPathwayWaterTarget(x, z);
+              if (group === runoffPathway && lake.visible) {
+                var targetLakeX = target.x - 268, targetLakeZ = target.z + 104;
+                var originLakeX = x - 268, originLakeZ = z + 104;
+                var originLakeDistance = Math.sqrt(originLakeX * originLakeX + originLakeZ * originLakeZ);
+                if (targetLakeX * targetLakeX + targetLakeZ * targetLakeZ < 34 * 34 && originLakeDistance > 34) {
+                  // Runoff joins just inside the shore instead of crossing the lake.
+                  // Leave room for the enlarged parcel and shoreline-clipped rings.
+                  target.set(268 + originLakeX * 30 / originLakeDistance, 8.7, -104 + originLakeZ * 30 / originLakeDistance);
+                }
+              }
               var dx = target.x - x, dz = target.z - z;
-              var distance = Math.max(24, Math.sqrt(dx * dx + dz * dz));
+              // Both routes meet nearby water without a minimum length overshooting it.
+              var distance = Math.max(0.01, Math.sqrt(dx * dx + dz * dz));
+              group.userData.waterTarget = { x: target.x, z: target.z };
               group.position.set(x, 0, z);
               group.rotation.set(0, Math.atan2(dx, dz), 0);
               group.scale.set(1, 1, distance / 70);
@@ -14241,8 +15418,36 @@ const d = labToolData.waterCycle || {};
             function beginSurfacePathway(form) {
               activePathwayKind = form;
               pathwayAnchorX = px; pathwayAnchorZ = pz;
-              if (form === 'runoff') orientPathwayToWater(runoffPathway, px, pz);
-              else if (form === 'groundwater') orientPathwayToWater(groundwaterPathway, px, pz);
+              if (form === 'runoff') {
+                orientPathwayToWater(runoffPathway, px, pz);
+                var runoffTarget = runoffPathway.userData.waterTarget;
+                var runoffEndHeight = 3.2 + collectedWaterSurfaceY(runoffTarget.x, runoffTarget.z);
+                // A schematic downhill profile ends at the displayed water level.
+                // Short connections also have smaller bends rather than tight loops.
+                var runoffBendScale = Math.min(1, runoffPathway.scale.z);
+                var runoffBends = [0, 7, -5, 6, 0];
+                var runoffHeights = [4.6, 3.5, 2, 0.6, 0];
+                runoffLocalCurve.points.forEach(function(point, index) {
+                  point.x = runoffBends[index] * runoffBendScale;
+                  point.y = runoffEndHeight + runoffHeights[index];
+                });
+                runoffLocalCurve.updateArcLengths();
+                var previousRunoffGeometry = runoffRibbon.geometry;
+                runoffRibbon.geometry = new THREE.TubeGeometry(runoffLocalCurve, 72, 0.42, 7, false);
+                previousRunoffGeometry.dispose();
+              }
+              else if (form === 'groundwater') {
+                orientPathwayToWater(groundwaterPathway, px, pz);
+                var springTarget = groundwaterPathway.userData.waterTarget;
+                // The route's last point is the same enlarged parcel centre used
+                // by surface water. Rebuild only when a route starts or restores.
+                groundwaterLocalCurve.points[4].y = 3.2 + collectedWaterSurfaceY(springTarget.x, springTarget.z);
+                groundwaterLocalCurve.updateArcLengths();
+                var previousGroundwaterGeometry = groundwaterRibbon.geometry;
+                groundwaterRibbon.geometry = new THREE.TubeGeometry(groundwaterLocalCurve, 72, 0.35, 7, false);
+                previousGroundwaterGeometry.dispose();
+                shapeAquiferGrains(groundwaterPathway.scale.z);
+              }
               else if (form === 'soil') {
                 soilCutaway.position.set(px, 0, pz);
                 soilCutaway.rotation.set(0, 0, 0);
@@ -14304,6 +15509,13 @@ const d = labToolData.waterCycle || {};
               collectionCues.forEach(function(cue) { cue.sprite.visible = false; cue.startedAt = -1; });
               collectionCueNext = 0;
               canvasEl.dataset.collectionCue = 'hidden';
+              oceanLanding.visible = false; oceanLandingTime = -1;
+              meltingSnow.visible = false; meltingElapsed = 0; rainMesh.scale.set(1.12, 0.82, 1.12);
+              canvasEl.dataset.snowMeltCue = 'hidden';
+              canvasEl.dataset.oceanLanding = 'hidden';
+              canvasEl.dataset.waterLanding = 'hidden';
+              canvasEl.dataset.waterLandingSurface = 'none';
+              canvasEl.dataset.waterLandingSource = 'none';
               fieldCx = px; fieldCz = pz; fieldCy = m2u(env.lclM);
               coalesceCooldown = 0;
               // Reference planes and their labels are positioned FROM the
@@ -14328,7 +15540,8 @@ const d = labToolData.waterCycle || {};
               var sunHorizontalDistance = 240;
               sun.position.set(-192, Math.tan(sunElevationRad) * sunHorizontalDistance, 144);
               sunDisc.position.copy(sun.position).normalize().multiplyScalar(720);
-              sunHalo.position.copy(sunDisc.position);
+              skyUniforms.sunDirection.value.copy(sun.position).normalize();
+              ambientCloudVisualTime = 0;
               ambientClouds.children.forEach(function(cg) { cg.position.y = m2u(env.lclM) + cg.userData.baseY; });
 
               // ── Terrain follows the scenario ────────────────────────────
@@ -14340,7 +15553,7 @@ const d = labToolData.waterCycle || {};
               var biome = env.id;
               var isDesert = biome === 'desertBasin';
               var isWinter = biome === 'mountainWinter';
-              sunHalo.material.color.setHex(isWinter ? 0xe8f3ff : isDesert ? 0xffd38a : 0xfff4c2);
+              skyUniforms.glowColor.value.setHex(isWinter ? 0xe8f3ff : isDesert ? 0xffe3af : 0xffefd0);
               // Atmospheric perspective belongs to the biome too. The warm
               // mineral haze of a desert, blue winter air and humid coastal
               // light now separate the scenarios before a learner reads a word.
@@ -14354,17 +15567,26 @@ const d = labToolData.waterCycle || {};
               wetSand.material.color.setHex(isDesert ? 0x7d6848 : isWinter ? 0x8fa2ad : 0x6f6653);
               hardpan.material.color.setHex(isDesert ? 0x8a6f4a : isWinter ? 0xaeb9c2 : 0x6b5a45);
               lake.visible = !isDesert;   // a desert basin has no standing lake
-              lake.material.color.setHex(isWinter ? 0x67a6ba : 0x0e7490);
+              lake.material.color.setHex(isWinter ? 0xb9d5e2 : 0xffffff);
+              lakeShore.visible = !isDesert;
+              lakeShoreMaterial.color.setHex(isWinter ? 0xbdc7c7 : 0x82765b);
+              lakeStones.material.color.setHex(isWinter ? 0xb8c8ce : 0x8a8b79);
               coastalShelf.material.color.setHex(isWinter ? 0x7dd3fc : isDesert ? 0x0891b2 : 0x22d3ee);
               coastalShelf.material.opacity = isWinter ? 0.17 : isDesert ? 0.18 : 0.24;
               streamGroup.visible = !isDesert;
+              pilotStreamChannelActive.value = isDesert ? 0 : 1;
               streamFlow.visible = !isDesert;
               streamIce.visible = isWinter && !isDesert;
               streamMesh.material.opacity = isWinter ? 0.68 : 0.94;
-              streamFlow.material.opacity = isWinter ? 0.26 : 0.82;
+              streamFlow.material.opacity = isWinter ? 0.2 : 0.56;
+              streamBanks.material.color.setHex(isWinter ? 0x8a9290 : 0x675f49);
+              paintStreamTerrainBanks();
+              streamStoneMaterial.color.setHex(isWinter ? 0xa6b4b5 : 0x7d8175);
+              streamRiffles.visible = !isWinter && !isDesert;
+              streamCascades.visible = !isWinter && !isDesert;
               streamFlowRate = isWinter ? 0.018 : 0.075;
               reedField.visible = !isDesert;
-              reedField.material.color.setHex(isWinter ? 0x64785d : 0x4d7c0f);
+              reedField.material.color.setHex(isWinter ? 0x93876a : 0x68764b);
               rockField.material.color.setHex(isDesert ? 0x806a52 : isWinter ? 0x7d8992 : 0x6b6258);
               landingLabels.children.forEach(function(targetLabel) {
                 if (targetLabel.userData.openWaterTarget) targetLabel.visible = !isDesert;
@@ -14397,6 +15619,13 @@ const d = labToolData.waterCycle || {};
               if (sim.form === 'runoff' || sim.form === 'soil'
                 || sim.form === 'groundwater' || sim.form === 'plant') {
                 beginSurfacePathway(sim.form);
+              } else if (sim.form === 'transpiring') {
+                // Restore the plant beneath its release point instead of retaining
+                // an unrelated previous plant's location.
+                plantPathway.position.set(px - 6, 0, pz + 2);
+                plantPathway.rotation.set(0, 0, 0); plantPathway.scale.set(1, 1, 1);
+                plantPathway.updateMatrixWorld(true);
+                pathwayReleaseLift = Math.max(0, plantLocalCurve.getPointAt(1).y - m2u(30));
               }
               input.scenario = sim.scenario;
               input.cameraMode = restored.cameraMode;
@@ -14416,6 +15645,43 @@ const d = labToolData.waterCycle || {};
                 if (streamDx * streamDx + streamDz * streamDz < 6.2 * 6.2) return true;
               }
               return false;
+            }
+            // Rendering height only: the teaching model keeps its existing
+            // altitude and storage rules while inland water sits on its surface.
+            function collectedWaterSurfaceY(x, z) {
+              var waterLakeX = x - 268, waterLakeZ = z + 104;
+              if (lake.visible && waterLakeX * waterLakeX + waterLakeZ * waterLakeZ < 34 * 34) return lake.position.y;
+              var waterBestDistance = 6.2 * 6.2, waterSurfaceY = 0;
+              if (streamGroup.visible) {
+                // Project onto adjacent route segments so travelling collected
+                // water follows the slope without stepping between sample heights.
+                for (var waterSampleIndex = 0; waterSampleIndex < streamSurfaceSamples.length - 1; waterSampleIndex++) {
+                  var waterSample = streamSurfaceSamples[waterSampleIndex];
+                  var waterNextSample = streamSurfaceSamples[waterSampleIndex + 1];
+                  var waterSegmentX = waterNextSample.x - waterSample.x;
+                  var waterSegmentZ = waterNextSample.z - waterSample.z;
+                  var waterSegmentLengthSq = waterSegmentX * waterSegmentX + waterSegmentZ * waterSegmentZ;
+                  var waterAlong = waterSegmentLengthSq > 0 ? Math.max(0, Math.min(1,
+                    ((x - waterSample.x) * waterSegmentX + (z - waterSample.z) * waterSegmentZ) / waterSegmentLengthSq)) : 0;
+                  var waterDX = x - waterSample.x - waterAlong * waterSegmentX;
+                  var waterDZ = z - waterSample.z - waterAlong * waterSegmentZ;
+                  var waterDistance = waterDX * waterDX + waterDZ * waterDZ;
+                  if (waterDistance < waterBestDistance) {
+                    waterBestDistance = waterDistance;
+                    waterSurfaceY = waterSample.y + waterAlong * (waterNextSample.y - waterSample.y) + 0.33;
+                  }
+                }
+              }
+              return waterSurfaceY;
+            }
+            // A display detail within the existing water pathway. The kernel
+            // continues to use water/permeable/plant/hard for its contact rules.
+            function landingSurfaceUnder(x, z) {
+              var surface = surfaceUnder(x, z);
+              if (surface !== 'water') return surface;
+              var lakeX = x - 268, lakeZ = z + 104;
+              if (lake.visible && lakeX * lakeX + lakeZ * lakeZ < 34 * 34) return 'lake';
+              return streamUnder(x, z) ? 'stream' : 'ocean';
             }
             function surfaceUnder(x, z) {
               // Lake centre (268, -104), radius 34 - the same numbers the lake
@@ -14554,6 +15820,7 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.parcelElapsed = String(Math.round(sim.elapsed * 10) / 10);
                 canvasEl.dataset.pilotScenario = sim.scenario;
                 canvasEl.dataset.pilotSurface = surfaceUnder(px, pz);
+                canvasEl.dataset.pilotLandingSurface = landingSurfaceUnder(px, pz);
                 canvasEl.dataset.pilotCamera = input.cameraMode === 'water' ? 'water' : 'follow';
                 canvasEl.dataset.pilotWindMs = String(env.windMs);
                 canvasEl.dataset.pilotPathwayProgress = String(Math.round((sim.pathwayProgress || 0) * 100));
@@ -14576,7 +15843,8 @@ const d = labToolData.waterCycle || {};
                   ambientC: WCPK.ambientTempC(env, sim.altitudeM),
                   rh: WCPK.parcelRH(env, sim.altitudeM),
                   buoyancyC: WCPK.buoyancyC(env, sim.altitudeM),
-                  vy: sim.vy, surface: surfaceUnder(px, pz),
+                  vy: sim.vy, surface: surfaceUnder(px, pz), landingSurface: landingSurfaceUnder(px, pz),
+                  sunlightZone: sim.form !== 'liquid' ? 'hidden' : isPilotSunlitWater(px, pz) ? 'inside' : 'outside',
                   cameraMode: input.cameraMode === 'water' ? 'water' : 'follow',
                   rainbow: Object.assign({}, pilotRainbowOptics),
                   reason: reason || 'tick'
@@ -14721,13 +15989,13 @@ const d = labToolData.waterCycle || {};
                 }
               }
 
-              // Evaporation only charges in the sunlit patch, and only over water.
+              // The marked patch accelerates evaporation; outside it the kernel still adds energy at a lower rate.
               var currentSurface = surfaceUnder(px, pz);
               var overWater = currentSurface === 'water';
               // Same radius and centre as the ring mesh above, read from the same
               // constant: if the gate and the drawn marker ever disagreed, the
               // learner would be told to sit in a circle that does not charge.
-              var inSunPatch = (px - START_X) * (px - START_X) + (pz - START_Z) * (pz - START_Z) < SUN_PATCH_R * SUN_PATCH_R;
+              var inSunPatch = isPilotSunlitWater(px, pz);
 
               var formBeforeStep = sim.form;
               if (!input.paused) {
@@ -14739,11 +16007,23 @@ const d = labToolData.waterCycle || {};
                 sim.x = px; sim.z = pz;
               }
               if (sim.form !== formBeforeStep) {
+                if ((formBeforeStep === 'groundwater' || formBeforeStep === 'runoff') && sim.form === 'liquid') {
+                  // The kernel resets progress on discharge. Finish the visible
+                  // route before placing surface water, rather than stopping at
+                  // the preceding frame's position.
+                  placeOnSurfacePathway(formBeforeStep, 1);
+                  sim.x = px; sim.z = pz;
+                }
                 if (sim.form === 'runoff' || sim.form === 'soil'
                   || sim.form === 'groundwater' || sim.form === 'plant') {
                   beginSurfacePathway(sim.form);
                 }
-                if (formBeforeStep === 'plant' && sim.form === 'transpiring') pathwayReleaseLift = 26;
+                if (formBeforeStep === 'plant' && sim.form === 'transpiring') {
+                  // Finish the xylem route before the kernel resets its progress.
+                  var leafArrivalY = placeOnSurfacePathway('plant', 1);
+                  sim.x = px; sim.z = pz;
+                  pathwayReleaseLift = Math.max(0, leafArrivalY - m2u(sim.altitudeM));
+                }
               }
 
               // Repopulate collectables once the learner is a droplet, so a long
@@ -14763,18 +16043,31 @@ const d = labToolData.waterCycle || {};
               // Surface forms float ON the water rather than through it. At
               // altitude 0 the parcel centre is the waterline, so half the sphere
               // was buried and it read as a dome, not a drop.
-              var surfaceLift = (sim.form === 'liquid' || sim.form === 'runoff') ? 3.2
+              var surfaceLift = sim.form === 'liquid' ? 3.2 + collectedWaterSurfaceY(px, pz)
+                : sim.form === 'runoff' ? 3.2
                 : (sim.form === 'soil' || sim.form === 'plant') ? 1.5
                 : (sim.form === 'groundwater') ? -6 : 0;
+              // Ease the enlarged rain parcel onto the same visible waterline
+              // as collected water. This is only a near-surface drawing offset:
+              // altitude, contact timing, energy, and phase rules stay in the kernel.
+              if (f === 'rain' && overWater) {
+                var rainApproach = Math.max(0, Math.min(1, 1 - py / 80));
+                rainApproach = rainApproach * rainApproach * (3 - 2 * rainApproach);
+                surfaceLift = (3.2 + collectedWaterSurfaceY(px, pz)) * rainApproach;
+              }
               var pathwayDisplayY = (f === 'runoff' || f === 'soil' || f === 'groundwater' || f === 'plant')
                 ? placeOnSurfacePathway(f, sim.pathwayProgress || 0) : null;
+              if (f !== 'plant' && f !== 'transpiring' && f !== 'vapor') pathwayReleaseLift = 0;
+              var leafDisplayLift = 0;
               if (pathwayReleaseLift > 0 && (f === 'transpiring' || f === 'vapor')) {
-                pathwayReleaseLift = Math.max(0, pathwayReleaseLift - dt * (motionReduced ? 16 : 5.2));
-              } else if (f !== 'plant') {
-                pathwayReleaseLift = 0;
+                // Blend teaching-scale canopy height into atmospheric altitude.
+                // This altitude-based offset never sinks merely because time passes.
+                // Its slope stays above 0.5, so upward motion stays visually upward.
+                var aboveCanopy = Math.max(0, py - m2u(30));
+                leafDisplayLift = pathwayReleaseLift * Math.exp(-aboveCanopy / (2 * pathwayReleaseLift));
               }
               var parcelDisplayY = pathwayDisplayY == null
-                ? py + surfaceLift + pathwayReleaseLift
+                ? py + surfaceLift + leafDisplayLift
                 : pathwayDisplayY;
               parcel.position.set(px, parcelDisplayY, pz);
               sim.x = px; sim.z = pz;
@@ -14787,10 +16080,17 @@ const d = labToolData.waterCycle || {};
               landingLabels.visible = WCPK.isFalling(f) && sim.altitudeM < 1700;
               canvasEl.dataset.pilotCamera = waterView ? 'water' : 'follow';
               var subsurfaceFocus = f === 'soil' || f === 'groundwater';
+              var plantFocus = f === 'plant' || f === 'transpiring';
+              pilotCutawayWindow.value.set(plantFocus ? plantPathway.position.x : f === 'soil' ? soilCutaway.position.x : px,
+                plantFocus ? plantPathway.position.z : f === 'soil' ? soilCutaway.position.z : pz,
+                plantFocus ? 16 : f === 'soil' ? 18 : 32, subsurfaceFocus || plantFocus ? 1 : 0);
               runoffPathway.visible = f === 'runoff';
               soilCutaway.visible = f === 'soil';
+              if (soilCutaway.visible) soilGeology.rotation.y = yaw;
               groundwaterPathway.visible = f === 'groundwater';
               plantPathway.visible = f === 'plant' || f === 'transpiring';
+              plantLeafWaterView.value = waterView ? 1 : 0;
+              plantVeinMaterial.opacity = waterView ? 0.28 : 0.72;
               canvasEl.dataset.pathwayVisual = f === 'runoff' ? 'gravity-runoff-ribbon'
                 : f === 'soil' ? 'soil-pore-cutaway'
                 : f === 'groundwater' ? 'saturated-aquifer-flow'
@@ -14807,12 +16107,16 @@ const d = labToolData.waterCycle || {};
               treeGroup.visible = !subsurfaceFocus;
               rockField.visible = !subsurfaceFocus;
               reedField.visible = env.id !== 'desertBasin' && !subsurfaceFocus;
+              lakeGrass.visible = reedField.visible;
               if (runoffPathway.visible) updatePathwayBeads(runoffBeads, t);
               if (soilCutaway.visible) updatePathwayBeads(infiltrationBeads, t);
               if (groundwaterPathway.visible) updatePathwayBeads(groundwaterBeads, t);
               if (plantPathway.visible) updatePathwayBeads(plantBeads, t);
-              liquidMesh.visible = (f === 'liquid' || f === 'runoff' || f === 'soil' || f === 'groundwater' || f === 'plant');
-              vaporShell.visible = (f === 'vapor' || f === 'transpiring');
+              // Leaf water remains liquid while the kernel accumulates evaporation
+              // energy. Use the vapor marker only after the actual phase change,
+              // matching the molecular lens and transition evidence.
+              liquidMesh.visible = (f === 'liquid' || f === 'runoff' || f === 'soil' || f === 'groundwater' || f === 'plant' || f === 'transpiring');
+              vaporShell.visible = f === 'vapor';
               vaporMarker.visible = vaporShell.visible;
               dropletMesh.visible = (f === 'droplet');
               iceMesh.visible = (f === 'ice');
@@ -14834,7 +16138,7 @@ const d = labToolData.waterCycle || {};
               } else if (f === 'soil' || f === 'groundwater') {
                 liquidMesh.material.color.setHex(f === 'soil' ? 0xa3e635 : 0x818cf8);
                 liquidMesh.scale.setScalar(0.8);
-              } else if (f === 'plant') {
+              } else if (f === 'plant' || f === 'transpiring') {
                 liquidMesh.material.color.setHex(0x4ade80); liquidMesh.scale.setScalar(0.75);
               } else if (f === 'runoff') {
                 liquidMesh.material.color.setHex(0x22d3ee); liquidMesh.scale.setScalar(0.9);
@@ -14988,8 +16292,8 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.antisolarAlignment = String(pilotRainbowOptics.alignmentPercent);
               rainField.material.opacity = showingRain
                 ? 0.42 + pilotRainbowOptics.primaryStrength * 0.2 : 0.38;
-              sunHalo.material.opacity = 0.1 + env.solar * 0.055
-                + pilotRainbowOptics.primaryStrength * 0.12;
+              skyUniforms.glowStrength.value = 0.13 + env.solar * 0.11
+                + pilotRainbowOptics.primaryStrength * 0.06;
               var rainbowExposureGoal = pilotRainbowOptics.primaryVisible ? 0.93 : 0.84;
               renderer.toneMappingExposure += (rainbowExposureGoal - renderer.toneMappingExposure)
                 * (motionReduced ? 1 : Math.min(1, dt * 2.5));
@@ -15001,17 +16305,31 @@ const d = labToolData.waterCycle || {};
                 rainField.position.set(px, py, pz);
                 var rainAttr = rainFieldGeo.attributes.position;
                 for (var rf = 0; rf < RAIN_STREAK_COUNT; rf++) {
-                  var rainPhase = motionReduced
-                    ? rainFieldSeed[rf * 3 + 1]
-                    : (rainFieldSeed[rf * 3 + 1] + t * 68) % 120;
-                  var rainLocalY = 60 - rainPhase;
-                  rainAttr.array[rf * 6] = rainFieldSeed[rf * 3];
-                  rainAttr.array[rf * 6 + 1] = rainLocalY;
-                  rainAttr.array[rf * 6 + 2] = rainFieldSeed[rf * 3 + 2];
-                  rainAttr.array[rf * 6 + 3] = rainFieldSeed[rf * 3] + 1.2;
-                  rainAttr.array[rf * 6 + 4] = rainLocalY - 10;
-                  rainAttr.array[rf * 6 + 5] = rainFieldSeed[rf * 3 + 2] + 0.8;
+                  var rainPhase = motionReduced ? rainFieldSeed[rf * 3 + 1]
+                    : (rainFieldSeed[rf * 3 + 1] + t * (58 + (rf % 7) * 3)) % 120;
+                  var rainHeadY = 60 - rainPhase;
+                  var rainLength = 5 + (rf % 6) * 1.3;
+                  var rainSlant = env.windMs * 0.035 * rainLength;
+                  var rainHeadX = rainFieldSeed[rf * 3] + env.windMs * 0.035 * rainPhase;
+                  var rainZ = rainFieldSeed[rf * 3 + 2];
+                  var rainWorldX = px + rainHeadX, rainWorldZ = pz + rainZ;
+                  // Clip to each water surface, including raised inland water.
+                  // Terrestrial geometry continues to use normal depth testing.
+                  var rainFloor = surfaceUnder(rainWorldX, rainWorldZ) === 'water'
+                    ? collectedWaterSurfaceY(rainWorldX, rainWorldZ) - py : -Infinity;
+                  var rainHidden = rainHeadY + rainLength < rainFloor;
+                  for (var rainVertex = 0; rainVertex < 4; rainVertex++) {
+                    var rainAlong = rainVertex === 0 ? 0 : rainVertex === 3 ? 1 : 0.55;
+                    var rainY = rainHeadY + rainLength * (1 - rainAlong);
+                    var clippedAlong = rainY < rainFloor ? Math.max(0, Math.min(1, (rainHeadY + rainLength - rainFloor) / rainLength)) : rainAlong;
+                    var rainOffset = rf * 12 + rainVertex * 3;
+                    rainAttr.array[rainOffset] = rainHeadX - rainSlant * (1 - clippedAlong);
+                    rainAttr.array[rainOffset + 1] = Math.max(rainFloor, rainY);
+                    rainAttr.array[rainOffset + 2] = rainZ;
+                    rainFieldAlpha[rf * 4 + rainVertex] = rainHidden ? 0 : rainVertex === 0 ? 0.04 : rainVertex === 3 ? 0.9 : 0.36;
+                  }
                 }
+                rainFieldGeo.attributes.rainAlpha.needsUpdate = true;
                 rainAttr.needsUpdate = true;
               }
               if (showingSnow) {
@@ -15060,9 +16378,14 @@ const d = labToolData.waterCycle || {};
               // Background clouds share that same downwind direction. Their
               // slow wrap across the landscape makes advection readable at the
               // world scale as well as immediately around the learner.
+              if (!motionReduced) ambientCloudVisualTime = t;
+              canvasEl.dataset.ambientCloudMotion = motionReduced ? 'still' : 'wind';
               ambientClouds.children.forEach(function(cg) {
-                var driftingX = cg.userData.baseX + (motionReduced ? 0 : t * env.windMs * 0.18);
+                var driftingX = cg.userData.baseX + ambientCloudVisualTime * env.windMs * 0.18;
                 cg.position.x = -510 + ((((driftingX + 510) % 1020) + 1020) % 1020);
+                var cloudEdgeFade = Math.max(0, Math.min(1, (510 - Math.abs(cg.position.x)) / 70));
+                cloudEdgeFade = cloudEdgeFade * cloudEdgeFade * (3 - 2 * cloudEdgeFade);
+                cg.children.forEach(function(lobe) { lobe.material.opacity = 0.97 * cloudEdgeFade; });
               });
 
               // The stream is an actual moving link from inland storage to the
@@ -15077,14 +16400,28 @@ const d = labToolData.waterCycle || {};
                     ? streamFlowSeed[sfp]
                     : (streamFlowSeed[sfp] + t * streamFlowRate) % 1;
                   streamCurve.getPointAt(streamU, streamFlowPoint);
-                  streamAttr.array[sfp * 3] = streamFlowPoint.x;
-                  streamAttr.array[sfp * 3 + 1] = streamFlowPoint.y + 1.1;
-                  streamAttr.array[sfp * 3 + 2] = streamFlowPoint.z;
+                  streamCurve.getPointAt(Math.min(1, streamU + 0.004 + (sfp % 3) * 0.002), streamFlowTail);
+                  streamCurve.getTangentAt(streamU, streamFlowTangent);
+                  var streamLane = ((sfp * 7) % 9 - 4) * 0.35;
+                  streamAttr.array[sfp * 6] = streamFlowPoint.x - streamFlowTangent.z * streamLane;
+                  streamAttr.array[sfp * 6 + 1] = streamFlowPoint.y + 0.37;
+                  streamAttr.array[sfp * 6 + 2] = streamFlowPoint.z + streamFlowTangent.x * streamLane;
+                  streamAttr.array[sfp * 6 + 3] = streamFlowTail.x - streamFlowTangent.z * streamLane;
+                  streamAttr.array[sfp * 6 + 4] = streamFlowTail.y + 0.37;
+                  streamAttr.array[sfp * 6 + 5] = streamFlowTail.z + streamFlowTangent.x * streamLane;
+                  var lakeFlowX = streamFlowPoint.x - 268, lakeFlowZ = streamFlowPoint.z + 104;
+                  if (lakeFlowX * lakeFlowX + lakeFlowZ * lakeFlowZ < 34 * 34) {
+                    streamAttr.array[sfp * 6 + 1] = streamAttr.array[sfp * 6 + 4] = -9999;
+                  }
                 }
                 streamAttr.needsUpdate = true;
               }
 
-              if (!motionReduced) pilotWaterUniforms.rippleTime.value = t;
+              if (!motionReduced) {
+                pilotLakeTime.value = t * (env.id === 'mountainWinter' ? 0.35 : 1);
+                pilotStreamTime.value = t * streamFlowRate / 0.075;
+                pilotWaterUniforms.rippleTime.value = t;
+              }
               canvasEl.dataset.waterReflection = 'fresnel-sky-ripples';
               // Ocean shimmer.
               if (!motionReduced) {
@@ -15119,18 +16456,21 @@ const d = labToolData.waterCycle || {};
               waterGlintAttr.needsUpdate = true;
               waterGlints.material.opacity = Math.max(0.34, Math.min(0.7,
                 0.34 + env.solar * 0.22 + (motionReduced ? 0 : Math.sin(t * 1.1) * 0.06)));
-              coastalShelf.material.opacity += ((env.id === 'mountainWinter' ? 0.17 : env.id === 'desertBasin' ? 0.18 : 0.24)
-                + (motionReduced ? 0 : Math.sin(t * 0.74) * 0.025) - coastalShelf.material.opacity) * Math.min(1, dt * 2.4);
+              updateSunlightSurface(coastalShelf);
+              coastalShelf.material.opacity = (env.id === 'mountainWinter' ? 0.17 : env.id === 'desertBasin' ? 0.18 : 0.24)
+                + Math.sin(pilotWaterUniforms.rippleTime.value * 0.74) * 0.015;
               canvasEl.dataset.waterSurface = 'depth-layer-glints-foam';
-              shoreFoam.children.forEach(function(line, foamIndex) {
-                line.material.opacity = line.userData.baseOpacity + (motionReduced
-                  ? 0 : Math.sin(t * 1.45 + foamIndex * 0.9) * 0.045);
-              });
-              sunPatchFill.material.opacity = 0.055 + (motionReduced ? 0 : Math.sin(t * 1.1) * 0.012);
+              shoreFoam.children.forEach(function(foamMesh) { updateSunlightSurface(foamMesh); });
+              var receivingSunlight = overWater && inSunPatch;
+              sunPatch.material.opacity = receivingSunlight ? 0.85 : 0.5;
+              sunPatch.material.color.setHex(receivingSunlight ? 0xffe29a : 0xcabf98);
+              sunPatchFill.material.opacity = receivingSunlight ? 0.22 : 0.12;
               // The marker is only meaningful while you are liquid and looking
               // for somewhere to evaporate; once airborne it is visual noise.
               var atSurface = sim.form === 'liquid';
               sunPatch.visible = atSurface; sunPatchFill.visible = atSurface; sunPatchLabel.visible = atSurface;
+              if (atSurface) { updateSunlightSurface(sunPatch); updateSunlightSurface(sunPatchFill); }
+              canvasEl.dataset.sunlightZone = !atSurface ? 'hidden' : receivingSunlight ? 'inside' : 'outside';
 
               // The learner's cloud darkens the surface below it. Besides adding
               // depth, the shadow connects a high cloud to the watershed that may
@@ -15205,12 +16545,33 @@ const d = labToolData.waterCycle || {};
                 waypointRing.scale.setScalar(Math.min(1, waypointMaxScale));
                 waypointRing.quaternion.copy(camera.quaternion);
               }
+              if (landingLabels.visible) {
+                camera.getWorldDirection(landingLabelForward);
+                var landingLabelPixelLimit = (canvasEl.clientWidth || W) < 560 ? 128 : 168;
+                landingLabels.children.forEach(function(label) {
+                  landingLabelDelta.copy(label.position).sub(camera.position);
+                  var labelDepth = landingLabelDelta.dot(landingLabelForward);
+                  var labelWorldWidth = landingLabelPixelLimit * 2 * Math.tan(camera.fov * Math.PI / 360)
+                    * Math.max(0.01, labelDepth) / Math.max(1, canvasEl.clientHeight || H);
+                  var labelWidth = Math.min(25, labelWorldWidth);
+                  label.scale.set(labelWidth, labelWidth * 4.7 / 25, 1);
+                  // Labels should not fill the learner's view when passing nearby.
+                  var labelNearFade = Math.max(0, Math.min(1, (labelDepth - 8) / 16));
+                  label.material.opacity = labelNearFade * labelNearFade * (3 - 2 * labelNearFade);
+                });
+              }
               updateCollectionCues();
-              sky.position.set(px, py, pz);
+              // Celestial features follow the camera's translation, so their
+              // direction and sky colour stay stable as the parcel travels.
+              sky.position.copy(camera.position);
+              sunDisc.position.copy(camera.position).addScaledVector(skyUniforms.sunDirection.value, 720);
 
               if (sim.form !== lastForm) {
                 var previousForm = lastForm;
                 beginLatentEnergyCue(previousForm, sim.form);
+                if (previousForm === 'snow' && sim.form === 'rain') beginSnowMelt();
+                if (previousForm === 'rain' && sim.form === 'liquid' && surfaceUnder(px, pz) === 'water') beginOceanLanding();
+                if ((previousForm === 'groundwater' || previousForm === 'runoff') && sim.form === 'liquid' && surfaceUnder(px, pz) === 'water') beginOceanLanding(previousForm);
                 if (sim.form === 'cloud') { pitch = -0.08; }
                 lastForm = sim.form;
                 if (input.pauseAtChanges) input.paused = true;
@@ -15223,6 +16584,8 @@ const d = labToolData.waterCycle || {};
               // Update after detecting a transition so its first paused frame
               // already shows the energy direction and follows the current camera.
               updateLatentEnergyCue(dt, t);
+              updateOceanLanding();
+              updateSnowMelt(dt);
               drawLandingMap(now);
               renderer.render(scene, camera);
             }
@@ -15817,7 +17180,10 @@ const d = labToolData.waterCycle || {};
                 var prevSnap = cur.snapshot;
                 var missionUpdate = WCPK.advanceMission(cur.mission, prevSnap, next);
                 autosavePilotNotebook(wc, cur, next, next.reason || 'checkpoint', next.reason === 'pagehide');
-                if (missionUpdate === cur.mission && prevSnap && prevSnap.form === next.form
+                // A checkpoint, reset, or scenario selection must publish its
+                // exact reading even when it falls within the live HUD throttle.
+                if (['restore', 'reset', 'scenario'].indexOf(next.reason) < 0
+                  && missionUpdate === cur.mission && prevSnap && prevSnap.form === next.form
                   && Math.abs((prevSnap.altitudeM || 0) - next.altitudeM) < 25
                   && prevSnap.droplets === next.droplets
                   && Math.abs((prevSnap.energy || 0) - next.energy) < 0.04
@@ -15825,6 +17191,8 @@ const d = labToolData.waterCycle || {};
                   && Math.abs((prevSnap.dryAirExposure || 0) - (next.dryAirExposure || 0)) < 0.04
                   && prevSnap.loops === next.loops
                   && prevSnap.surface === next.surface
+                  && prevSnap.landingSurface === next.landingSurface
+                  && prevSnap.sunlightZone === next.sunlightZone
                   && prevSnap.cameraMode === next.cameraMode
                   && prevSnap.navigationCue === next.navigationCue
                   && prevSnap.navigationKind === next.navigationKind
@@ -15849,6 +17217,7 @@ const d = labToolData.waterCycle || {};
                 };
                 if (['reset', 'restore', 'scenario'].indexOf(next.reason) >= 0) {
                   patch.pilot.reviewChange = null; patch.pilot.reviewReturnId = ''; patch.pilot.noticeChangeId = '';
+                  patch.pilot.lastCycle = null;
                 }
                 if (missionUpdate && missionUpdate.status === 'complete' && missionUpdate !== cur.mission) {
                   patch.pilot.missionResults = Object.assign({}, cur.missionResults || {});
@@ -15916,6 +17285,7 @@ const d = labToolData.waterCycle || {};
                       dryAirExposure: next.dryAirExposure || 0,
                       pathwayProgress: next.pathwayProgress || 0,
                       surface: next.surface,
+                      landingSurface: next.landingSurface || '',
                       elapsed: next.elapsed || 0
                     }
                   });
@@ -16621,9 +17991,24 @@ const d = labToolData.waterCycle || {};
               water: { label: t('stem.watercycle.pilot_surface_water', 'Open water'), outcome: t('stem.watercycle.pilot_surface_water_outcome', 'Collection - join a stream, lake, or the ocean') },
               permeable: { label: t('stem.watercycle.pilot_surface_soil', 'Permeable soil'), outcome: t('stem.watercycle.pilot_surface_soil_outcome', 'Infiltration - enter pores in soil and rock') },
               plant: { label: t('stem.watercycle.pilot_surface_plant', 'Forest canopy'), outcome: t('stem.watercycle.pilot_surface_plant_outcome', 'Plant uptake - travel through roots and xylem') },
-              hard: { label: t('stem.watercycle.pilot_surface_hard', 'Hard ground'), outcome: t('stem.watercycle.pilot_surface_hard_outcome', 'Runoff - flow downhill toward a stream') }
+              hard: { label: t('stem.watercycle.pilot_surface_hard', 'Hard ground'), outcome: t('stem.watercycle.pilot_surface_hard_water_outcome', 'Runoff - flow downhill toward open water') }
             };
-            var surfacePathway = surfacePathways[snap.surface] || surfacePathways.water;
+            var waterLandingPathways = {
+              lake: { label: t('stem.watercycle.pilot_surface_lake', 'Lake'), outcome: t('stem.watercycle.pilot_surface_lake_outcome', 'Collection — join water stored in the lake') },
+              stream: { label: t('stem.watercycle.pilot_surface_stream', 'Stream'), outcome: t('stem.watercycle.pilot_surface_stream_outcome', 'Collection — join flowing stream water') },
+              ocean: { label: t('stem.watercycle.pilot_surface_ocean', 'Ocean'), outcome: t('stem.watercycle.pilot_surface_ocean_outcome', 'Collection — return to ocean storage') }
+            };
+            var surfacePathway = (snap.surface === 'water' && waterLandingPathways[snap.landingSurface])
+              || surfacePathways[snap.surface] || surfacePathways.water;
+            var landingGlyphPath = snap.surface === 'plant'
+              ? 'M16 29V15M16 21C5 22 5 13 5 13C14 12 16 16 16 21M16 16C26 17 28 7 28 7C18 6 16 10 16 16'
+              : snap.surface === 'permeable'
+                ? 'M16 3C16 3 11 9 11 12A5 5 0 0 0 21 12C21 9 16 3 16 3M4 21H28M10 25V29M16 24V30M22 25V29'
+                : snap.surface === 'hard'
+                  ? 'M5 8L12 18L25 23M20 16L25 23L17 26M4 22L12 27L28 31'
+                  : snap.landingSurface === 'stream'
+                    ? 'M10 3C26 10 3 18 20 29M16 3C32 10 9 18 26 29M18 15L15 19L20 21'
+                    : 'M16 3C16 3 11 9 11 12A5 5 0 0 0 21 12C21 9 16 3 16 3M3 23Q7 19 11 23T19 23T27 23M3 29Q7 25 11 29T19 29T27 29';
             var pilotLastCycle = pilotStored.lastCycle && typeof pilotStored.lastCycle === 'object' ? pilotStored.lastCycle : null;
             var hudCompact = pilotStored.hudCompact !== false;
             function missionCopy(id) {
@@ -16964,9 +18349,9 @@ const d = labToolData.waterCycle || {};
             var landPathwayMeta = {
               runoff: {
                 kicker: t('stem.watercycle.pilot_surface_journey', 'Surface journey'),
-                label: t('stem.watercycle.pilot_runoff_to_stream', 'Runoff → stream'),
+                label: t('stem.watercycle.pilot_runoff_to_water', 'Runoff → open water'),
                 outcome: t('stem.watercycle.pilot_runoff_driver', 'Gravity and slope move water downhill.'),
-                progressLabel: t('stem.watercycle.pilot_to_stream', 'To stream'),
+                progressLabel: t('stem.watercycle.pilot_to_open_water', 'To open water'),
                 driver: t('stem.watercycle.pilot_gravity_slope', 'Gravity + slope'),
                 storage: t('stem.watercycle.pilot_surface_flow', 'Surface flow'),
                 timescale: t('stem.watercycle.pilot_minutes_hours', 'Minutes–hours')
@@ -17000,6 +18385,17 @@ const d = labToolData.waterCycle || {};
               }
             };
             var activeLandPathway = landPathwayMeta[snap.form] || null;
+            var plantDetailStage = pathwayProgressPct < 25 ? 'root' : pathwayProgressPct < 80 ? 'stem' : 'leaf';
+            var plantDetailTitle = plantDetailStage === 'root'
+              ? t('stem.watercycle.pilot_root_detail_title', 'Roots take in liquid water')
+              : plantDetailStage === 'stem' ? t('stem.watercycle.pilot_stem_detail_title', 'Xylem carries liquid upward')
+              : t('stem.watercycle.pilot_leaf_detail_title', 'Next: liquid becomes vapor');
+            var plantDetailKey = plantDetailStage === 'root'
+              ? t('stem.watercycle.pilot_root_detail_key', 'Root detail · blue marks water')
+              : plantDetailStage === 'stem' ? t('stem.watercycle.pilot_stem_detail_key', 'Stem detail · channels enlarged')
+              : t('stem.watercycle.pilot_leaf_detail_key', 'Leaf pore (stoma) · vapor is invisible');
+            var showingPoreCloseup = snap.form === 'soil' || snap.form === 'groundwater';
+            var saturatedPoreCloseup = snap.form === 'groundwater';
             var pilotRouteCounts = pilotStored.routes || {};
             var pilotRouteRows = [
               { id: 'water', label: surfacePathways.water.label, timescale: t('stem.watercycle.pilot_days_millennia', 'Days–millennia') },
@@ -17120,7 +18516,7 @@ const d = labToolData.waterCycle || {};
                 },
                 'runoff>liquid': {
                   process: t('stem.watercycle.pilot_receipt_stream_collection', 'Surface-water collection'),
-                  cause: t('stem.watercycle.pilot_receipt_stream_collection_cause', 'Gravity and slope carried the runoff into connected open water, where it joined the stream-to-ocean network.')
+                  cause: t('stem.watercycle.pilot_receipt_runoff_collection_cause', 'Gravity and slope carried the runoff into a stream, lake, or ocean. You are still liquid water; collection changes where you are stored, not your phase.')
                 },
                 'soil>groundwater': {
                   process: t('stem.watercycle.pilot_receipt_percolation', 'Percolation'),
@@ -17139,21 +18535,52 @@ const d = labToolData.waterCycle || {};
                 process: t('stem.watercycle.pilot_receipt_pathway_change', 'Water pathway change'),
                 cause: t('stem.watercycle.pilot_receipt_pathway_change_cause', 'The model\'s measured thresholds changed your form or pathway under the conditions you encountered.')
               };
+              var collectionStories = {
+                lake: {
+                  label: t('stem.watercycle.pilot_collection_lake_label', 'Lake storage'),
+                  cause: t('stem.watercycle.pilot_collection_lake_cause', 'Gravity brought the raindrop into the lake. It joined water stored at the surface; collection changed its location, not its liquid state.'),
+                  prompt: t('stem.watercycle.pilot_collection_lake_prompt', 'The lake stores this water for now. What could move it onward: an outlet, seepage, or evaporation?'),
+                  outline: 'M8 39C12 23 75 23 82 39C77 53 14 53 8 39Z',
+                  water: 'M16 38C29 32 63 32 75 38M20 43C35 47 59 47 70 42'
+                },
+                stream: {
+                  label: t('stem.watercycle.pilot_collection_stream_label', 'Stream flow'),
+                  cause: t('stem.watercycle.pilot_collection_stream_cause', 'Gravity brought the raindrop into the stream. It joined flowing surface water; collection changed its location, not its liquid state.'),
+                  prompt: t('stem.watercycle.pilot_collection_stream_prompt', 'How could the slope of the ground influence where this stream carries the water next?'),
+                  outline: 'M10 26C35 14 46 50 82 37M8 38C33 26 44 62 80 49',
+                  water: 'M23 31C40 30 45 48 65 44M60 39L66 44L60 48'
+                },
+                ocean: {
+                  label: t('stem.watercycle.pilot_collection_ocean_label', 'Ocean storage'),
+                  cause: t('stem.watercycle.pilot_collection_ocean_cause', 'Gravity returned the raindrop to the ocean. It joined the ocean’s surface water; collection changed its location, not its liquid state.'),
+                  prompt: t('stem.watercycle.pilot_collection_ocean_prompt', 'What energy source could help this ocean water evaporate and return to the air?'),
+                  outline: 'M6 33Q15 24 24 33T42 33T60 33T78 33M6 44Q15 35 24 44T42 44T60 44T78 44',
+                  water: 'M13 54Q22 46 31 54T49 54T67 54'
+                }
+              };
+              var collectionStory = key === 'rain>liquid' && change.surface === 'water'
+                ? collectionStories[change.landingSurface] || null : null;
               var fromMeta = WCPK.forms[change.from];
               var toMeta = WCPK.forms[change.to];
               var landingChange = (change.from === 'rain' || change.from === 'snow')
                 && (change.to === 'liquid' || change.to === 'soil' || change.to === 'plant' || change.to === 'runoff');
               var evidence;
               if (landingChange) {
-                var landedPathway = surfacePathways[change.surface] || surfacePathways.water;
+                var landedPathway = (change.surface === 'water' && waterLandingPathways[change.landingSurface])
+                  || surfacePathways[change.surface] || surfacePathways.water;
                 evidence = t('stem.watercycle.pilot_receipt_surface_evidence', '{surface} · surface pathway')
                   .replace('{surface}', landedPathway.label);
               } else if (key === 'rain>vapor') {
                 evidence = t('stem.watercycle.pilot_receipt_dry_air_evidence', 'Dry-air exposure · {pct}%')
                   .replace('{pct}', Math.round((change.dryAirExposure || 0) * 100));
-              } else if (key === 'liquid>vapor' || key === 'transpiring>vapor') {
-                evidence = t('stem.watercycle.pilot_receipt_energy_evidence', 'Energy threshold · {pct}%')
-                  .replace('{pct}', Math.round((change.energy == null ? 1 : change.energy) * 100));
+              } else if (key === 'transpiring>vapor') {
+                // The leaf transition resets energy; that zero is a post-change
+                // state, not the threshold that caused evaporation.
+                evidence = t('stem.watercycle.pilot_leaf_threshold_reached', 'Evaporation threshold reached · liquid → vapor');
+              } else if (key === 'liquid>vapor') {
+                // The kernel clears energy after evaporation. Describe the
+                // crossed threshold rather than displaying that reset as 0%.
+                evidence = t('stem.watercycle.pilot_surface_threshold_reached', 'Evaporation threshold reached · liquid → vapor');
               } else if (key === 'vapor>droplet' || key === 'vapor>ice') {
                 evidence = t('stem.watercycle.pilot_receipt_saturation_evidence', '{rh}% RH · nucleus captured')
                   .replace('{rh}', Math.round(change.rh || 0));
@@ -17180,7 +18607,8 @@ const d = labToolData.waterCycle || {};
                 from: fromMeta ? fromMeta.label : change.from,
                 to: toMeta ? toMeta.label : change.to,
                 process: rule.process,
-                cause: rule.cause,
+                cause: collectionStory ? collectionStory.cause : rule.cause,
+                collectionStory: collectionStory,
                 evidence: evidence,
                 energyDirection: energyDirection,
                 energyLabel: energyLabel
@@ -17404,6 +18832,7 @@ const d = labToolData.waterCycle || {};
 
                 onboardingComplete && !pilotErrorMessage && rainbowOptics.primaryVisible && h('div', {
                   className: 'wc-pilot-rainbow-visual',
+                  'data-annotations': String(!hudCompact),
                   'data-double': String(rainbowOptics.secondaryVisible),
                   'aria-hidden': 'true'
                 },
@@ -17413,11 +18842,7 @@ const d = labToolData.waterCycle || {};
                   },
                     h('defs', null,
                       h('filter', { id: 'wcPilotRainbowGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
-                        h('feGaussianBlur', { stdDeviation: '1.7', result: 'softGlow' }),
-                        h('feMerge', null,
-                          h('feMergeNode', { in: 'softGlow' }),
-                          h('feMergeNode', { in: 'SourceGraphic' })
-                        )
+                        h('feGaussianBlur', { stdDeviation: '1.1' })
                       ),
                       h('radialGradient', { id: 'wcPilotRainbowMist', cx: '50%', cy: '100%', r: '72%' },
                         h('stop', { offset: '0%', stopColor: '#e0f2fe', stopOpacity: '.52' }),
@@ -17468,7 +18893,7 @@ const d = labToolData.waterCycle || {};
                     ),
                     h('ellipse', { className: 'wc-pilot-rainbow-mist', cx: 400, cy: 438, rx: 355, ry: 105 }),
                     rainbowOptics.secondaryVisible && h('path', {
-                      className: 'wc-pilot-alexander-band', d: pilotRainbowArcPath(328), strokeWidth: 27
+                      className: 'wc-pilot-alexander-band', d: pilotRainbowArcPath(335), strokeWidth: 36
                     }),
                     rainbowOptics.secondaryVisible && h('path', {
                       className: 'wc-pilot-prism-sweep', d: pilotRainbowArcPath(346)
@@ -17478,16 +18903,16 @@ const d = labToolData.waterCycle || {};
                     }, pilotRainbowSecondaryColors.map(function(color, index) {
                       return h('path', {
                         key: 'secondary-' + color, className: 'wc-pilot-rainbow-arc',
-                        d: pilotRainbowArcPath(374 - index * 5.4), stroke: color, strokeWidth: 8.5,
-                        style: { opacity: rainbowOptics.secondaryStrength * (0.94 - index * 0.035) }
+                        d: pilotRainbowArcPath(374 - index * 2.8), stroke: color, strokeWidth: 4.2,
+                        style: { opacity: rainbowOptics.secondaryStrength * (0.48 - index * 0.018) }
                       });
                     })),
                     h('g', { className: 'wc-pilot-rainbow-primary', filter: 'url(#wcPilotRainbowGlow)' },
                       pilotRainbowPrimaryColors.map(function(color, index) {
                         return h('path', {
                           key: 'primary-' + color, className: 'wc-pilot-rainbow-arc',
-                          d: pilotRainbowArcPath(314 - index * 5.4), stroke: color, strokeWidth: 9,
-                          style: { opacity: rainbowOptics.primaryStrength * (0.98 - index * 0.035) }
+                          d: pilotRainbowArcPath(314 - index * 2.8), stroke: color, strokeWidth: 4.2,
+                          style: { opacity: rainbowOptics.primaryStrength * (0.72 - index * 0.025) }
                         });
                       })
                     ),
@@ -17496,8 +18921,8 @@ const d = labToolData.waterCycle || {};
                       h('text', { x: 400, y: 140 }, t('stem.watercycle.pilot_rainbow_primary_label', 'PRIMARY · 42°'))
                     ),
                     rainbowOptics.secondaryVisible && h('g', { className: 'wc-pilot-rainbow-label' },
-                      h('rect', { x: 282, y: 54, width: 236, height: 24, rx: 12 }),
-                      h('text', { x: 400, y: 70 }, t('stem.watercycle.pilot_rainbow_secondary_label', 'SECONDARY · 51° · REVERSED'))
+                      h('rect', { x: 282, y: 154, width: 236, height: 24, rx: 12 }),
+                      h('text', { x: 400, y: 170 }, t('stem.watercycle.pilot_rainbow_secondary_label', 'SECONDARY · 51° · REVERSED'))
                     ),
                     rainbowOptics.secondaryVisible && h('g', { className: 'wc-pilot-rainbow-glints' },
                       h('circle', { className: 'wc-pilot-rainbow-glint', cx: 208, cy: 126, r: 3.5 }),
@@ -17653,6 +19078,12 @@ const d = labToolData.waterCycle || {};
                 // Progress toward the next transition. Which bar shows depends on
                 // the form, because "what is stopping me" is a different quantity
                 // at each stage and a single generic meter would teach nothing.
+                (snap.form === 'liquid' || snap.form === 'transpiring') && h('div', {
+                  className: 'sr-only', role: 'progressbar',
+                          'aria-label': t('stem.watercycle.pilot_evaporation_model_progress', 'Model progress to evaporation'),
+                          'aria-valuenow': Math.round(Math.max(0, Math.min(1, snap.energy || 0)) * 100),
+                          'aria-valuemin': 0, 'aria-valuemax': 100
+                }),
                 h('div', {
                   className: 'wc-pilot-hud wc-pilot-hud-right',
                   'data-form': snap.form,
@@ -17671,8 +19102,12 @@ const d = labToolData.waterCycle || {};
                     ? h('div', { className: 'wc-pilot-gauge' },
                         h('span', null, t('stem.watercycle.pilot_energy_absorbed', 'Energy absorbed')),
                         h('div', { className: 'wc-pilot-gauge-track' },
-                          h('i', { style: { width: Math.round(snap.energy * 100) + '%' } })),
-                        h('small', null, snap.energy >= 1 ? t('stem.watercycle.pilot_escaping_as_vapour', 'Escaping as vapour') : t('stem.watercycle.pilot_sunlit_water_charges_you_fastest', 'Sunlit water charges you fastest')))
+                          h('i', { style: { width: Math.round(Math.max(0, Math.min(1, snap.energy || 0)) * 100) + '%' } })),
+                        h('small', null, snap.energy >= 1 ? t('stem.watercycle.pilot_escaping_as_vapour', 'Escaping as vapour') : snap.form === 'transpiring' ? t('stem.watercycle.pilot_leaf_energy_hint', 'Leaf water absorbs energy before becoming vapor') : snap.sunlightZone === 'outside'
+                          ? t('stem.watercycle.pilot_evaporation_outside_hint', 'Outside sunlight zone · slower evaporation')
+                          : snap.sunlightZone === 'inside'
+                            ? t('stem.watercycle.pilot_evaporation_inside_hint', 'Inside sunlight zone · faster evaporation')
+                            : t('stem.watercycle.pilot_sunlit_water_charges_you_fastest', 'Sunlit water charges you fastest')))
                     : snap.form === 'vapor'
                       ? h('div', { className: 'wc-pilot-gauge' },
                           h('span', null, t('stem.watercycle.pilot_saturation', 'Saturation')),
@@ -17741,6 +19176,16 @@ const d = labToolData.waterCycle || {};
                       .replace('{climate}', WCPK.scenarios[reviewChange.scenario].label).replace('{n}', reviewChange.sequence)),
                   h('div', { className: 'wc-pilot-notice-flow' },
                     h('span', null, noticeMeta.from), h('span', { 'aria-hidden': 'true' }, '→'), h('span', null, noticeMeta.to)),
+                  noticeMeta.collectionStory && h('div', { className: 'wc-pilot-collection-story', 'data-water-body': noticeRecord.landingSurface },
+                    h('svg', { viewBox: '0 0 90 62', width: 90, height: 62, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8,
+                      strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: 'false' },
+                      h('path', { d: 'M45 3C45 3 40 9 40 12A5 5 0 0 0 50 12C50 9 45 3 45 3', fill: 'currentColor', fillOpacity: .18 }),
+                      h('path', { d: 'M45 20V25M42 23L45 26L48 23', strokeDasharray: '2 2' }),
+                      h('path', { d: noticeMeta.collectionStory.outline, strokeOpacity: .7 }),
+                      h('path', { d: noticeMeta.collectionStory.water })),
+                    h('div', null,
+                      h('strong', null, noticeMeta.collectionStory.label),
+                      h('small', null, t('stem.watercycle.pilot_collection_still_liquid', 'Already liquid as rain. Still liquid after collection.')))),
                   h('p', { id: 'wcPilotNoticeCause' }, noticeMeta.cause),
                   h('dl', { className: 'wc-pilot-notice-evidence' },
                     h('div', null, h('dt', null, t('stem.watercycle.pilot_notice_evidence', 'Model reading at the change')), h('dd', null, noticeMeta.evidence)),
@@ -17750,7 +19195,7 @@ const d = labToolData.waterCycle || {};
                           ? t('stem.watercycle.pilot_energy_arrows_in', 'Arrows point toward the water.')
                           : t('stem.watercycle.pilot_energy_arrows_out', 'Arrows point away from the water.'),
                         ' ', t('stem.watercycle.pilot_energy_arrows_model', 'Energy indicator; not water particles.'))))),
-                  h('p', { className: 'wc-pilot-notice-prompt' }, t('stem.watercycle.pilot_notice_prompt', 'What condition caused this change? Use the recorded evidence to explain it.'))),
+                  h('p', { className: 'wc-pilot-notice-prompt' }, noticeMeta.collectionStory ? noticeMeta.collectionStory.prompt : t('stem.watercycle.pilot_notice_prompt', 'What condition caused this change? Use the recorded evidence to explain it.'))),
                   reviewNeighbors && h('nav', { className: 'wc-pilot-review-nav', 'aria-label': t('stem.watercycle.pilot_review_nav_label', 'Browse recorded observations') },
                     h('button', { type: 'button', disabled: !reviewNeighbors.earlierId,
                       'aria-label': t('stem.watercycle.pilot_review_nav_earlier_aria', 'Earlier recorded observation'),
@@ -17780,16 +19225,44 @@ const d = labToolData.waterCycle || {};
                 ),
 
                 choosingLanding && onboardingComplete && h('div', {
-                  className: 'wc-pilot-route',
-                  'aria-label': t('stem.watercycle.pilot_landing_pathway_aria', 'Current landing target: {surface}. {outcome}')
+                  className: 'wc-pilot-route is-landing', 'data-landing-surface': snap.landingSurface || snap.surface,
+                  'data-pathway': snap.surface || 'water',
+                  'aria-label': t('stem.watercycle.pilot_landing_surface_aria', 'Surface below you: {surface}. {outcome}')
                     .replace('{surface}', surfacePathway.label).replace('{outcome}', surfacePathway.outcome)
                 },
-                  h('span', { className: 'wc-pilot-route-kicker' }, t('stem.watercycle.pilot_landing_choice', 'Landing pathway')),
-                  h('strong', null, t('stem.watercycle.pilot_over_surface', 'Over {surface}').replace('{surface}', surfacePathway.label)),
-                  h('small', null, surfacePathway.outcome),
+                  h('div', { className: 'wc-pilot-landing-summary' },
+                    h('span', { className: 'wc-pilot-landing-glyph', 'aria-hidden': true },
+                      h('svg', { viewBox: '0 0 32 34', width: 32, height: 34, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8,
+                        strokeLinecap: 'round', strokeLinejoin: 'round', focusable: 'false' }, h('path', { d: landingGlyphPath }))),
+                    h('div', { className: 'wc-pilot-landing-copy' },
+                      h('span', { className: 'wc-pilot-route-kicker' }, t('stem.watercycle.pilot_surface_below', 'Surface below you')),
+                      h('strong', null, surfacePathway.label),
+                      h('small', null, surfacePathway.outcome))),
                   h('small', { className: 'wc-pilot-landing-aim' },
-                    t('stem.watercycle.pilot_landing_goal_v2', 'Chosen goal: {surface}. Steer before touching down.')
+                    t('stem.watercycle.pilot_landing_goal_v3', 'Goal: {surface}. Wind and steering can change where you land.')
                       .replace('{surface}', (surfacePathways[pilotStored.landingGoal] || surfacePathways.water).label))
+                ),
+
+                snap.form === 'transpiring' && onboardingComplete && !noticeVisible && h('div', {
+                  className: 'wc-pilot-route is-process wc-pilot-leaf-energy',
+                  'aria-label': t('stem.watercycle.pilot_leaf_energy_aria', 'At the leaf: liquid water absorbs energy before becoming vapor')
+                },
+                  h('span', { className: 'wc-pilot-route-kicker' }, t('stem.watercycle.pilot_at_leaf', 'At the leaf')),
+                  h('strong', null, t('stem.watercycle.pilot_leaf_still_liquid', 'Still liquid · absorbing energy')),
+                  h('div', { className: 'wc-pilot-pore-closeup' },
+                    h('svg', { viewBox: '0 0 80 58', width: 80, height: 58, 'aria-hidden': true, focusable: 'false' },
+                      h('rect', { x: 1, y: 1, width: 78, height: 56, rx: 8, fill: '#183b35', stroke: '#a6cfb6', strokeWidth: 1 }),
+                      h('path', { d: 'M3 41Q18 31 31 39M49 39Q64 31 77 41', fill: 'none', stroke: '#99c773', strokeWidth: 9 }),
+                      h('path', { d: 'M34 33Q24 48 34 54M46 33Q56 48 46 54', fill: 'none', stroke: '#cee3a4', strokeWidth: 4, strokeLinecap: 'round' }),
+                      h('path', { d: 'M40 17C37 23 33 27 33 31A7 7 0 0 0 47 31C47 27 43 23 40 17Z', fill: '#9be4fc', stroke: '#e0f7ff', strokeWidth: 1 }),
+                      h('path', { d: 'M7 17H25M20 12L25 17L20 22', fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                    h('div', null,
+                      h('strong', null, t('stem.watercycle.pilot_leaf_energy_key', 'Orange arrow: energy enters')),
+                      h('small', null, t('stem.watercycle.pilot_leaf_energy_schematic', 'Enlarged leaf view · vapor will be invisible')))),
+                  h('div', { className: 'wc-pilot-route-progress', role: 'progressbar',
+                    'aria-label': t('stem.watercycle.pilot_leaf_energy_progress', 'Model progress to vapor'),
+                    'aria-valuenow': Math.round(Math.max(0, Math.min(1, snap.energy || 0)) * 100), 'aria-valuemin': 0, 'aria-valuemax': 100
+                  }, h('i', { style: { width: Math.round(Math.max(0, Math.min(1, snap.energy || 0)) * 100) + '%' } }))
                 ),
 
                 activeLandPathway && onboardingComplete && h('div', {
@@ -17799,6 +19272,39 @@ const d = labToolData.waterCycle || {};
                   h('span', { className: 'wc-pilot-route-kicker' }, activeLandPathway.kicker),
                   h('strong', null, activeLandPathway.label),
                   h('small', null, activeLandPathway.outcome),
+                  snap.form === 'plant' && h('div', { className: 'wc-pilot-pore-closeup wc-pilot-plant-closeup', 'data-plant-detail': plantDetailStage },
+                    h('svg', { viewBox: '0 0 80 58', width: 80, height: 58, 'aria-hidden': true, focusable: 'false' },
+                      h('rect', { x: 1, y: 1, width: 78, height: 56, rx: 8, fill: '#183b35', stroke: '#a6cfb6', strokeWidth: 1 }),
+                      plantDetailStage === 'root' ? h('g', null,
+                        h('path', { d: 'M3 24Q20 19 38 24T77 23V55H3Z', fill: '#705843' }),
+                        h('path', { d: 'M39 5V27L27 44M39 27L52 45M33 35L18 32M45 35L63 32', fill: 'none', stroke: '#dac394', strokeWidth: 4, strokeLinecap: 'round' }),
+                        h('path', { d: 'M12 43L23 40M19 36L23 40L20 44M65 43L55 40M59 36L55 40L58 44M39 22V10M35 14L39 10L43 14', fill: 'none', stroke: '#9be4fc', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }))
+                      : plantDetailStage === 'stem' ? h('g', null,
+                        h('rect', { x: 15, y: 3, width: 50, height: 52, rx: 8, fill: '#739e58' }),
+                        [24, 40, 56].map(function(x) { return h('g', { key: x },
+                          h('path', { d: 'M'+x+' 52V6', stroke: '#b9dec3', strokeWidth: 9 }),
+                          h('path', { d: 'M'+x+' 52V6', stroke: '#3889a4', strokeWidth: 5 }),
+                          h('path', { d: 'M'+x+' 40V18M'+(x-3)+' 22L'+x+' 18L'+(x+3)+' 22', fill: 'none', stroke: '#d5f7ff', strokeWidth: 1.8, strokeLinejoin: 'round' })); }))
+                      : h('g', null,
+                        h('ellipse', { cx: 40, cy: 38, rx: 5, ry: 12, fill: '#071e26' }),
+                        h('path', { d: 'M36 25C17 17 14 53 35 51Q27 38 36 25ZM44 25C63 17 66 53 45 51Q53 38 44 25Z', fill: '#99c773', stroke: '#d2e9a8', strokeWidth: 1.2 }),
+                        h('path', { d: 'M40 35V12M36 16L40 12L44 16', fill: 'none', stroke: '#9be4fc', strokeWidth: 1.8, strokeDasharray: '2 3', strokeLinecap: 'round' }),
+                        [[29,9],[49,7],[39,4]].map(function(p,i) { return h('circle', { key:i, cx:p[0], cy:p[1], r:1.5, fill:'#c4eeff' }); }))),
+                    h('div', null, h('strong', null, plantDetailTitle), h('small', null, plantDetailKey))),
+                  showingPoreCloseup && h('div', { className: 'wc-pilot-pore-closeup', 'data-saturation': saturatedPoreCloseup ? 'saturated' : 'unsaturated' },
+                    h('svg', { viewBox: '0 0 80 58', width: 80, height: 58, 'aria-hidden': true, focusable: 'false' },
+                      h('rect', { x: 1, y: 1, width: 78, height: 56, rx: 8, fill: saturatedPoreCloseup ? '#4aa6c0' : '#172e40', stroke: '#a5d9e7', strokeWidth: 1 }),
+                      !saturatedPoreCloseup && h('path', { d: 'M4 20Q19 24 27 16L33 26Q18 35 4 28ZM26 35Q31 30 39 34L36 49Q29 55 24 49ZM53 21Q66 27 77 23V33Q61 35 53 29ZM55 45Q63 41 68 52L72 57H52Z', fill: '#4aa6c0' }),
+                      ['M8 8L23 5L28 15L20 24L6 20Z', 'M38 5L52 7L56 19L45 25L32 17Z',
+                        'M65 7L76 12L73 26L61 24L58 15Z', 'M11 32L23 29L29 39L24 51L10 49L5 41Z',
+                        'M41 31L54 29L59 42L48 53L35 48L32 39Z', 'M67 34L76 32L77 49L66 53L61 44Z'].map(function(grainPath, index) {
+                        return h('path', { key: index, d: grainPath, fill: index % 2 ? '#a6a99c' : '#87998f', stroke: '#394f55', strokeWidth: 1.5 });
+                      })),
+                    h('div', null,
+                      h('strong', null, saturatedPoreCloseup
+                        ? t('stem.watercycle.pilot_pores_saturated', 'Water fills connected pores')
+                        : t('stem.watercycle.pilot_pores_unsaturated', 'Air and water share pore space')),
+                      h('small', null, t('stem.watercycle.pilot_pore_closeup_key', 'Illustration · gray is rock; blue is water')))),
                   h('div', {
                     className: 'wc-pilot-route-progress', role: 'progressbar',
                     'aria-label': activeLandPathway.progressLabel,

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kitchen Lab · 3D Skills Studio</title>
+  <link rel="stylesheet" href="kitchen_studio.css">
+  <script defer src="../../vendor/three-r128/three.min.js"></script>
+  <script defer src="../../vendor/three-r128/OrbitControls.js"></script>
+  <script defer src="kitchen_studio_engine.js"></script>
+  <script defer src="kitchen_studio_service.js"></script>
+  <script defer src="kitchen_studio.js"></script>
+</head>
+<body>
+  <a class="skip" href="#actions">Skip the 3D view and go to actions</a>
+  <main>
+    <nav class="lab-switch" aria-label="Kitchen Lab spaces"><span aria-current="page">Skills studio</span><a href="recipe_lab.html">Prepare a full recipe →</a></nav>
+    <header class="hero">
+      <div><p class="eyebrow">KITCHEN LAB / SKILLS STUDIO</p><h1>Small actions.<br><span>Real kitchen confidence.</span></h1><p>Try a technique, see what changes, and explain your decision.</p></div>
+      <div class="hero-note"><span class="status-dot"></span> YOUR PACE, YOUR PRACTICE<p>6 stations · 12 challenges · No countdown<br>Keyboard and 3D controls</p></div>
+    </header>
+    <nav class="taskbar" aria-label="Move around the studio"><p><span id="taskbarContext">YOUR CURRENT TASK</span><strong id="taskbarTitle"></strong></p><div><button id="goTask" type="button">Go to actions</button><button id="goKitchen" type="button">View kitchen</button><button id="goPlan" type="button" hidden>Meal plan</button></div></nav>
+    <details id="serviceCard" class="service-card">
+      <summary><span><span class="eyebrow">THE CONNECTED CHALLENGE</span><strong>Dinner for four</strong></span><span id="serviceSummary">Bring six skills together in one meal</span></summary>
+      <div class="service-body"><p>Prepare a chicken dinner with vegetables and sauce, then store the leftovers. Put six decisions into a connected rehearsal, with time to explain each one.</p><p class="muted">Untimed · Pause whenever you need · Six decision checkpoints, not a real-time cooking model. Each retry keeps its earlier evidence.</p>
+      <ol id="serviceSteps" class="service-steps" aria-label="Dinner rehearsal checkpoints"></ol>
+      <div class="service-controls"><label for="serviceMode">Rehearsal mode</label><select id="serviceMode"><option value="demonstrate">Demonstrate my knowledge</option><option value="practice">Rehearse with coaching</option></select><button type="button" id="serviceStart">Start rehearsal</button><button type="button" id="serviceResume" hidden>Resume rehearsal</button><button type="button" id="servicePause" hidden>Pause for station practice</button></div>
+      <p id="serviceStatus" class="muted" role="status" aria-live="polite"></p></div>
+    </details>
+    <section class="workspace" aria-label="Kitchen practice workspace">
+      <div class="visual-column">
+        <div class="scene-card">
+          <div class="scene-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="kitchenHeading" tabindex="-1">The practice kitchen</h2></div><button id="viewToggle" type="button" aria-pressed="false">Use text view</button></div>
+          <div id="replayBanner" class="replay-banner" hidden><span>REPLAY · <strong id="replaySceneStep"></strong></span><div class="replay-scene-controls"><button id="replayScenePrevious" type="button" aria-label="Previous replay action">Previous</button><button id="replaySceneNext" type="button" aria-label="Next replay action">Next</button><button id="returnLatest" type="button">Return to latest</button></div></div><div class="scene-viewport"><div id="stationLens" class="station-lens" aria-hidden="true"><span id="lensTitle"></span><strong id="lensValue"></strong><span id="lensDetail"></span></div>
+          <div id="scene" role="img" aria-label="Interactive 3D kitchen with sink, cutting board, hob, oven, measuring jug, and refrigerator. Equivalent controls follow below."></div>
+          <div id="fallback" hidden><h3>Your kitchen, in words</h3><p>The sink and prep board are on the left. The hob and oven are in the center. The measuring jug and refrigerator are on the right. Every station and action is available in the controls below.</p></div>
+          </div>
+          <div class="scene-toolbar"><span id="sceneStatus">Drag to orbit · Scroll to zoom · Select a station</span><div class="camera-buttons"><button id="focusView" type="button" aria-pressed="false">Focus station</button><button id="rotateLeft" type="button" aria-label="Rotate view left">↶</button><button id="rotateRight" type="button" aria-label="Rotate view right">↷</button><button id="resetView" type="button">Reset view</button></div></div>
+          <p id="sceneDescription" class="observation"></p>
+        </div>
+        <nav id="stations" class="stations" aria-label="Choose a skill station"></nav>
+
+      </div>
+      <section class="coach" aria-labelledby="missionTitle">
+        <div class="row"><p class="eyebrow" id="stationNumber"></p><span class="pill" id="skill"></span></div>
+        <h2 id="missionTitle"></h2><p id="brief" class="brief"></p>
+        <ol class="phase-rail" aria-label="Learning sequence"><li id="phaseAct" aria-current="step">1 · Practice</li><li id="phaseExplain">2 · Explain</li><li id="phaseRecord">3 · Record</li></ol>
+        <div class="challenge-picker"><label for="scenario">Your challenge</label><select id="scenario"></select></div>
+        <div class="mode-group"><label for="mode">Learning mode</label><select id="mode"><option value="practice">Practice with coaching</option><option value="demonstrate">Demonstrate my knowledge</option></select></div>
+        <p id="modeDescription" class="muted"></p>
+        <div class="goal"><strong>Success looks like</strong><p id="goal"></p></div>
+        <div class="row"><button id="hint" type="button" aria-expanded="false" aria-controls="hintText">Show a thinking prompt</button></div>
+        <section id="hintText" class="hint coaching-card" hidden aria-labelledby="coachHeading"><h3 id="coachHeading">Your next step</h3><p id="coachPrompt"></p><p id="coachNext" class="coach-next"></p><p id="coachWhy"></p><div class="row"><button id="hintMore" type="button">Show a suggested next step</button><button id="coachRetry" type="button" hidden>Start a fresh attempt</button></div><p id="hintAccounting" class="muted" hidden>Requested support stays in this attempt’s evidence. Reopening the same hint does not count twice.</p></section>
+        <details class="plan-card"><summary>Make a prediction <span>optional</span></summary><label for="plan">What will you do first, and what do you expect to change?</label><textarea id="plan" rows="2" maxlength="600" placeholder="I will… because… I expect to see…"></textarea><p class="muted">Your prediction is saved before your first action. Explain aloud instead if you prefer.</p></details>
+        <div class="work-observation"><span class="eyebrow">LATEST WORKSPACE</span><p id="workObservation"></p></div>
+        <h3 id="actions" tabindex="-1">1. Make your moves</h3><div id="actionButtons" class="actions"></div>
+        <p id="feedback" role="status" aria-live="polite" aria-atomic="true" class="feedback"></p>
+        <div class="criteria-card"><div class="row"><h3>What you have shown</h3><span id="criteriaCount"></span></div><ul id="criteriaList"></ul></div>
+        <div id="reasoning" hidden>
+          <h3>2. Explain the decision</h3><fieldset><legend id="question"></legend><div id="answers"></div></fieldset>
+          <label class="reflection-label" for="reflection">3. Transfer it to another kitchen</label><p id="transfer" class="muted"></p><textarea id="reflection" rows="3" maxlength="2000" placeholder="Write your thinking, or explain it aloud to your teacher."></textarea><p class="muted">Optional written reflection. Your teacher can review spoken, signed, or practical explanations too.</p>
+          <button id="submit" type="button" class="primary">Record my evidence</button>
+        </div>
+        <section id="result" class="result" hidden aria-label="Attempt results"></section>
+        <details id="replayPanel" class="replay-panel" hidden><summary>Replay your decisions</summary><p>Review each action in the kitchen view or read its effect here. Your recorded evidence stays unchanged.</p><label for="replayStep">Action to inspect</label><input id="replayStep" type="range" min="0" max="0" value="0" step="1"><div class="row"><button id="replayPrevious" type="button">Previous action</button><output id="replayPosition" for="replayStep"></output><button id="replayNext" type="button">Next action</button></div><p id="replayAction" class="replay-action"></p><p id="replayObservation" role="status" aria-live="polite" aria-atomic="true"></p><p id="replayWorkspace" class="muted"></p><p class="muted">What changed after this action? Which observation supports your explanation?</p><div class="row"><button id="replayKitchen" type="button">See this step in the kitchen</button><button id="replayClose" type="button">Finish replay</button></div></details>
+        <details class="log"><summary>Action notebook <span id="logCount"></span></summary><ol id="actionLog"></ol></details>
+        <div class="row attempt-tools"><button id="retry" type="button">Start a fresh attempt</button><button id="newChallenge" type="button">Try another challenge</button></div>
+      </section>
+        <section class="progress-card"><div class="row"><h2>Your evidence</h2><span id="progressCount">0 of 6 stations</span></div><progress id="progress" max="6" value="0" aria-label="Stations with submitted evidence"></progress><p id="masteryCount" class="mastery-count"></p><div id="nextPracticeCard" class="next-practice"><p class="eyebrow">A NEXT STEP FOR YOU</p><p id="nextPracticeReason"></p><button id="nextPractice" type="button"></button></div><p id="storageStatus">Progress stays in this browser. Export a copy to share with your teacher.</p><div class="row"><button id="export" type="button">Download evidence</button><button id="exportReadable" type="button">Download readable report</button><button id="reviewToggle" type="button" aria-expanded="false" aria-controls="portfolio">Review attempts</button></div><div id="portfolio" hidden></div></section>
+    </section>
+    <footer><p>This simplified simulation practices decisions and explanations. Knife control, handwashing technique, and real cooking performance need observation in a supervised kitchen. Simulated cooking steps do not predict real cooking times.</p><p>Food safety: <a href="https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/safe-temperature-chart" target="_blank" rel="noopener">USDA temperature guidance</a> · <a href="https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety" target="_blank" rel="noopener">Leftovers and food safety</a></p></footer>
+  </main>
+</body>
+</html>

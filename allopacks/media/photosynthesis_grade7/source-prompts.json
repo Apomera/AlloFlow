@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "photosynthesis_grade7",
+    "key": "leaf",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Botanical colored-pencil and watercolor studies. One healthy green broad bean leaf on a short petiole, clear central vein and branching smaller veins, seen from above. Restrained watercolor washes and colored-pencil detail. No water droplets, no face, no inset. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-leaf.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-cade8908-e4a7-4021-b826-2d30b91ae2f4.png",
+    "alt": "A green leaf has a central vein, many branching veins and a short petiole.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "photosynthesis_grade7",
+    "key": "roots",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Botanical colored-pencil and watercolor studies. A small healthy bean seedling in a transparent conceptual soil cutaway, two broad leaves and branching roots spreading through brown soil. Roots visibly contact soil moisture shown by a few small blue droplets; not a jar of floating roots. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-roots.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-65c732c0-8d66-4dd3-b5a8-5aa23afa326b.png",
+    "alt": "A seedling has two broad leaves above soil and a network of roots among blue moisture symbols below.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "photosynthesis_grade7",
+    "key": "tree",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Botanical colored-pencil and watercolor studies. A mature oak tree with a broad leafy crown, woody trunk and visible upper roots, isolated botanical watercolor and colored pencil on warm ivory. No people or buildings; tree structure and growth are the subject. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-tree.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-4b0bb3a5-d0b5-449e-8dcf-d23c3fe8f1ff.png",
+    "alt": "A mature oak has a broad green crown, branching woody trunk and spreading roots.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "photosynthesis_grade7",
+    "key": "algae",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Botanical colored-pencil and watercolor studies. An artistic microscope-inspired view of varied green freshwater algae: small oval cells and short filaments in pale blue water. Clearly an illustration of microscopic photosynthetic organisms, no fish or seaweed forest. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-algae.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-9a5c18db-2ce3-4c9a-90c5-4805cc463cca.png",
+    "alt": "Green oval cells, colonies and segmented filaments appear in a pale blue circular microscope-style field.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "photosynthesis_grade7",
+    "key": "food",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Botanical colored-pencil and watercolor studies. A bean plant with several leaves and one developing green pod, roots visible beneath a simple soil line. Botanical watercolor and pencil. The pod contains stored plant material made using photosynthesis; no sugar cubes, no factory, no human. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-food.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-499d54ef-fd91-478b-af07-3c96dc1118aa.png",
+    "alt": "A leafy bean plant bears flowers and a green pod above a branching root system.",
+    "reviewedAt": "2026-09-12"
+  }
+]

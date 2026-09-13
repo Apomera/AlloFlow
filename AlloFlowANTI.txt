@@ -692,6 +692,31 @@ function _alloMbColSnap(st, watch, changes) {
     forEach: (fn) => currentDocs.forEach((d) => fn(d)),
   };
 }
+async function _alloLessonBoardConditionalUpdate(ref, plan) {
+  const bridge = _alloMbBridgeState;
+  if (!bridge || !bridge.isTeacher || ref?.__alloMbRef !== 'session' || ref.code !== bridge.code) throw new Error('This board connection has changed.');
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const snapshot = await _alloMbDocCall({ a: 'dget', ps: [{ p: ref.p }] });
+    if (_alloMbBridgeState !== bridge) throw new Error('This board connection has changed.');
+    const entry = (snapshot.docs || []).find(item => item.p === ref.p && !item.missing);
+    if (!entry || !Number.isInteger(entry.w)) throw new Error('The live board is unavailable.');
+    const patch = plan(entry.d);
+    if (!patch || !Object.keys(patch).length) return;
+    if (!Object.keys(patch).every(key => key === 'escapeRoomState' || key.startsWith('escapeRoomState.'))) throw new Error('Invalid board update.');
+    try {
+      const result = await _alloMbDocCall({ a: 'dpatch', p: ref.p, u: patch, xw: entry.w });
+      if (result?.ok === false) { const error = new Error(result.e || 'Board update failed.'); error.code = result.e; throw error; }
+      if (_alloMbBridgeState === bridge) {
+        const cachedVersion = bridge.docs?.get?.(ref.p)?.w;
+        if (result?.d !== undefined && Number.isInteger(result.w) && (!Number.isInteger(cachedVersion) || result.w >= cachedVersion)) _alloMbStoreAndFire(ref.p, { w: result.w, d: result.d, missing: false });
+        _alloMbSendNudge();
+      }
+      return;
+    } catch (error) {
+      if (!String(error.code || '').includes('conflict') || attempt === 2) throw error;
+    }
+  }
+}
 function _applyMbSessionAdapter() {
   if (doc.__alloMbWrapped) return;
   const baseDoc = doc, baseGetDoc = getDoc, baseSetDoc = setDoc, baseUpdateDoc = updateDoc,
@@ -1379,9 +1404,9 @@ function _buildAlloPackShareUrl(encodedPack, aiPolicy = 'off') {
 // Code.gs remains the one canonical source. The generated CDN module serves
 // Canvas and online sessions; the compact gzip fallback preserves first-use
 // offline/Desktop copying without keeping 2,590 lines of Apps Script inline.
-const ALLO_MB_SCRIPT_VERSION = 21;
-const ALLO_MB_SCRIPT_SHA256 = 'b3c5706fb4538bc80843cd17119d8de281b82791deddff4406798ec7c1d6d16a';
-const ALLO_MB_SCRIPT_BYTES = 128369;
+const ALLO_MB_SCRIPT_VERSION = 23;
+const ALLO_MB_SCRIPT_SHA256 = 'cf91247446b7878ab392d5dd3e06f4e06e91009c295c89e6aa50672bdf84b232';
+const ALLO_MB_SCRIPT_BYTES = 129663;
 const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';
 const _alloValidateMailboxScriptSource = async (candidate) => {
     if (!candidate || typeof candidate.source !== 'string') return '';
@@ -1584,19 +1609,48 @@ function _alloNextPollDelay({ baseMs = ALLO_MB_POLL_MS, idleMs = 0, errorCount =
 // encoded pack once every part of that rid has arrived (else null). Both the
 // mailbox poll and the WebRTC channel feed the same store, and `applied`
 // dedups the double delivery (channel-fast copy + mailbox replay copy).
+function _alloPruneResChunks(store, now = Date.now()) {
+    if (!store) return;
+    for (const group of ['parts', 'pending', 'failures']) {
+        const slots = store[group] || {};
+        Object.keys(slots).forEach(rid => { if (now - (slots[rid].at || 0) > 5 * 60 * 1000) delete slots[rid]; });
+    }
+    if (store.applied) while (store.applied.size > 256) store.applied.delete(store.applied.values().next().value);
+}
+function _alloFinishResChunk(store, rid, success) {
+    if (!store || !store.pending || !Object.prototype.hasOwnProperty.call(store.pending, rid)) return;
+    delete store.pending[rid];
+    if (success) {
+        (store.applied || (store.applied = new Set())).add(rid);
+        if (store.failures) delete store.failures[rid];
+    } else {
+        const failures = store.failures || (store.failures = Object.create(null));
+        const previous = Object.prototype.hasOwnProperty.call(failures, rid) ? failures[rid].count : 0;
+        Object.defineProperty(failures, rid, { value: { count: previous + 1, at: Date.now() }, enumerable: true, configurable: true });
+    }
+    _alloPruneResChunks(store);
+}
 function _alloCollectResChunk(store, v) {
-    if (!store || !v || v.kind !== 'res' || typeof v.rid !== 'string' || !v.rid
+    if (!store || !v || v.kind !== 'res' || typeof v.rid !== 'string' || !v.rid || v.rid.length > 160
         || !Number.isSafeInteger(v.part) || !Number.isSafeInteger(v.of)
-        || v.part < 1 || v.of < 1 || v.part > v.of || typeof v.data !== 'string') return null;
-    if (store.applied && store.applied.has(v.rid)) return null;
+        || v.part < 1 || v.of < 1 || v.of > 256 || v.part > v.of || typeof v.data !== 'string' || v.data.length > 90 * 1024) return null;
+    _alloPruneResChunks(store);
     const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+    if (store.applied?.has(v.rid) || (store.pending && own(store.pending, v.rid))
+        || (store.failures && own(store.failures, v.rid) && store.failures[v.rid].count >= 3)) return null;
     const slots = store.parts || (store.parts = Object.create(null));
-    if (!own(slots, v.rid)) Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null) }, enumerable: true, configurable: true });
+    if (!own(slots, v.rid)) {
+        if (Object.keys(slots).length >= 16) delete slots[Object.keys(slots)[0]];
+        Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null), chars: 0, at: Date.now() }, enumerable: true, configurable: true });
+    }
     const slot = slots[v.rid];
-    // Replayed chunks may be identical, but cannot change the declared size
-    // or replace a part already received through the other delivery channel.
     if (slot.of !== v.of || (own(slot.got, v.part) && slot.got[v.part] !== v.data)) return null;
-    slot.got[v.part] = v.data;
+    if (!own(slot.got, v.part)) {
+        const buffered = Object.values(slots).reduce((sum, value) => sum + value.chars, 0);
+        if (slot.chars + v.data.length > 12 * 1024 * 1024 || buffered + v.data.length > 16 * 1024 * 1024) { delete slots[v.rid]; return null; }
+        slot.chars += v.data.length;
+        slot.got[v.part] = v.data;
+    }
     if (Object.keys(slot.got).length !== slot.of) return null;
     const parts = [];
     for (let part = 1; part <= slot.of; part += 1) {
@@ -1604,7 +1658,8 @@ function _alloCollectResChunk(store, v) {
         parts.push(slot.got[part]);
     }
     delete slots[v.rid];
-    if (store.applied) store.applied.add(v.rid);
+    const pending = store.pending || (store.pending = Object.create(null));
+    Object.defineProperty(pending, v.rid, { value: { at: Date.now() }, enumerable: true, configurable: true });
     return parts.join('');
 }
 // Non-trickle ICE: over slow mailbox signaling, one complete SDP each way
@@ -8847,10 +8902,14 @@ const normalizeLiveActivityProgress = (value) => {
         || typeof at !== 'number' || !Number.isFinite(at) || at <= 0) return null;
     return { version: 1, activityId, kind, status, completed, total, at };
 };
+const normalizeMailboxImageDelivery = value => _alloLiveAacModule()?.normalizeMailboxImageDelivery?.(value) || null;
+const canWriteMailboxImageDelivery = () => {
+    try { return Number(window.__alloMailboxParticipantVersion || 0) >= 23; } catch (_) { return false; }
+};
 const canWriteLiveActivityProgress = () => {
     try {
-        const isMailboxStudent = new URLSearchParams(window.location.search || '').has('allo_mb');
-        return !isMailboxStudent || Number(alloReadMailboxConfigCache()?.v || 0) >= 19;
+        const isMailboxStudent = window.__alloQrStudentMode?.type === 'mailbox-live' || new URLSearchParams(window.location.search || '').has('allo_mb');
+        return !isMailboxStudent || Number(window.__alloMailboxParticipantVersion || 0) >= 19;
     } catch (_) { return true; }
 };
 const summarizeLiveOrganizerProgress = ({ roster, interactiveOrganizer } = {}) => {
@@ -9518,6 +9577,8 @@ const SESSION_TIER1_LEAVES = new Set([
   // completed/total counts, and timestamp. It lets the Command Center render
   // the same content-free progress contract across Firebase and Class Mailbox.
   'activityProgress',
+  // Independent image receipt: resource/assignment ids, bounded counts and time only.
+  'imageDelivery',
   // Session AI policy (teacher-managed): aiPolicy = { studentAi: 'off'|'student-byok' }.
   // The teacher's chosen student-AI posture for the session — students read it to
   // enable/disable their personal AI connection (the QR-pathways policy machinery;
@@ -10073,6 +10134,16 @@ const writeToSession = async (sessionRef, payload) => {
         return Promise.reject(new Error('writeToSession: invalid organizer progress receipt'));
       }
       nextPayload[path] = normalizedProgress;
+    }
+    safePayload = nextPayload;
+  }
+  const imageDeliveryPaths = Object.keys(safePayload).filter(path => String(path).split('.').pop() === 'imageDelivery');
+  if (imageDeliveryPaths.length) {
+    const nextPayload = { ...safePayload };
+    for (const path of imageDeliveryPaths) {
+      const receipt = normalizeMailboxImageDelivery(nextPayload[path]);
+      if (!receipt) return Promise.reject(new Error('writeToSession: invalid image delivery receipt'));
+      nextPayload[path] = receipt;
     }
     safePayload = nextPayload;
   }
@@ -10635,7 +10706,7 @@ const GLOSS_INITIAL_STATE = {
   newGlossaryTerm: '',
   glossaryImageStyle: '',
   isAddingTerm: false,
-  glossaryImageSize: 128,
+  glossaryImageSize: 192,
   glossaryTier2Count: 4,
   glossaryTier3Count: 6,
   glossaryDefinitionLevel: 'Same as Source Text',
@@ -11174,6 +11245,10 @@ if (typeof window !== 'undefined') {
   };
 }
 // END ALLO_ARTIFACT_INSTANCE_IDENTITY
+function MailboxImageDeliveryMonitor(props) {
+  const Real = _alloLiveAacModule()?.MailboxImageDeliveryMonitor;
+  return Real ? React.createElement(Real, props) : null;
+}
 function LiveAacBoardDialog(props) {
   const Real = _alloLiveAacModule() && _alloLiveAacModule().LiveAacBoardDialog;
   return Real && Real !== LiveAacBoardDialog ? React.createElement(Real, props) : null;
@@ -12739,10 +12814,17 @@ Return ONLY JSON in this shape:
       }, 1000);
       return () => { active = false; clearTimeout(handler); };
   }, [studentResponses, isTeacherMode, showStudentEntry, studentWorkSaveAttempt]);
+  const generationViewOwnerRef = useRef(null);
   const [generatedContent, _setGeneratedContent] = useState(null);
-  const setGeneratedContent = useCallback((nextContent) => {
+  const generationDisplayStateRef = useRef({ resource: null, view: 'input' });
+  generationDisplayStateRef.current.resource = generatedContent;
+  const setGeneratedContent = useCallback((nextContent, generationOwner = null) => {
+      const displayed = generationDisplayStateRef.current.resource;
+      if (!generationOwner && typeof nextContent !== 'function' && (nextContent?.id !== displayed?.id || nextContent?.type !== displayed?.type)) generationViewOwnerRef.current = null;
       _setGeneratedContent(previous => {
+          if (generationOwner && generationOwner !== generationViewOwnerRef.current) return previous;
           const candidate = typeof nextContent === 'function' ? nextContent(previous) : nextContent;
+          if (generationOwner !== generationViewOwnerRef.current && (candidate?.id !== previous?.id || candidate?.type !== previous?.type)) generationViewOwnerRef.current = null;
           return ensureArtifactInstanceId(candidate);
       });
   }, []);
@@ -13611,7 +13693,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '344218afa';
+    var pluginCdnVersion = '52ce7145b';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -13975,31 +14057,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=344218afa');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=344218afa');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=344218afa');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=344218afa');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=344218afa');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=344218afa');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=344218afa');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=52ce7145b');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=52ce7145b');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=52ce7145b');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=52ce7145b');
+    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=52ce7145b');
+    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=52ce7145b');
+    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=52ce7145b');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
-    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=344218afa');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=344218afa');
+    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=52ce7145b');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=52ce7145b');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=e880c18c');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=344218afa');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=344218afa');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=344218afa');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=344218afa');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=344218afa');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=344218afa');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=52ce7145b');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=52ce7145b');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=52ce7145b');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=52ce7145b');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=52ce7145b');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=52ce7145b');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=47162871');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=48b865cc');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=b4bec1f0');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=344218afa');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=344218afa');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=344218afa');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a3fb7ab7');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6c225180');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=52ce7145b');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=52ce7145b');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=52ce7145b');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -14012,43 +14094,43 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=344218afa'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=344218afa');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=344218afa');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=344218afa');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=52ce7145b'); }; })();
+    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=52ce7145b');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=52ce7145b');
+    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=52ce7145b');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=344218afa');
+        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=52ce7145b');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=344218afa');
+        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=52ce7145b');
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=344218afa'); };
-    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=344218afa'); };
-    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=344218afa'); };
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=344218afa');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=344218afa');
+    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=52ce7145b'); };
+    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=52ce7145b'); };
+    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=52ce7145b'); };
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=52ce7145b');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=52ce7145b');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=344218afa'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=52ce7145b'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=344218afa'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=344218afa'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=52ce7145b'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=344218afa'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=52ce7145b'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
@@ -14060,68 +14142,68 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=344218afa'); }; })();
-    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=344218afa'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=52ce7145b'); }; })();
+    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=52ce7145b'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=344218afa'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=52ce7145b'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=344218afa'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=52ce7145b'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=344218afa');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=344218afa');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=344218afa');
-    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=344218afa'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=52ce7145b');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=52ce7145b');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=52ce7145b');
+    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=52ce7145b'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=344218afa');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=344218afa');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=344218afa');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=344218afa');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=344218afa');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=344218afa');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=344218afa');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=344218afa');
+    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=52ce7145b');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=52ce7145b');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=52ce7145b');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=52ce7145b');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=52ce7145b');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=52ce7145b');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=52ce7145b');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=52ce7145b');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=344218afa');
+      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=52ce7145b');
     };
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=344218afa');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=344218afa');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=344218afa'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=344218afa'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=344218afa'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=344218afa'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=344218afa'); }; })();
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=52ce7145b');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=52ce7145b');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=52ce7145b'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=344218afa'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=52ce7145b'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=344218afa');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=344218afa');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=52ce7145b');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=52ce7145b');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=af265f93');
-    window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=344218afa'); };
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=344218afa');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=344218afa');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=344218afa');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=344218afa');
+    window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=52ce7145b'); };
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=52ce7145b');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=52ce7145b');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=52ce7145b');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=52ce7145b');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=344218afa'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=52ce7145b'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=344218afa');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=52ce7145b');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=344218afa');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=344218afa'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=344218afa'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=52ce7145b');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=52ce7145b'); }; })();
     // Large document features stay off the network until a workflow actually
     // needs them. These loaders deliberately have no permanent "requested"
     // latch: the registry owns deduplication and an exact failed-module retry.
@@ -14129,7 +14211,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=344218afa');
+      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=52ce7145b');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -14182,15 +14264,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Teaching-script research and editor load only when a teacher opens a plan.
     window.__alloLazyLessonTeachingScript = function() {
       const retry = name => window.__alloModuleRegistry?.[name]?.status === 'failed' && window.__alloRetryModule(name);
-      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=344218afa');
-      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=344218afa');
-      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=344218afa');
+      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=52ce7145b');
+      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=52ce7145b');
+      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=52ce7145b');
       if (!window.AlloModules?.ResourceContentFingerprint && !retry('ResourceContentFingerprint')) loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
     };
     window.__alloLazyLessonTeachingResearch = () => {
       if (window.AlloModules?.LessonTeachingResearch) return;
       if (window.__alloModuleRegistry?.LessonTeachingResearchModule?.status === 'failed') window.__alloRetryModule('LessonTeachingResearchModule');
-      else loadModule('LessonTeachingResearchModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_research_module.js?v=344218afa');
+      else loadModule('LessonTeachingResearchModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_research_module.js?v=52ce7145b');
     };
     window.__alloEnsureLessonTeachingScript = () => Promise.all([
       ['LessonTeachingScriptModule', 'LessonTeachingScript'],
@@ -14202,54 +14284,54 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=b3668673'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=344218afa'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=344218afa'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=344218afa'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=344218afa'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=344218afa'); }; })();
-    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=344218afa'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=ecb85e42'); }; })();
-    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=b1e106e9'); }; })();
-    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=5de2ab37'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=4727fcee'); }; })();
+    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=dabce57a'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=306cdfdb'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=344218afa'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=344218afa'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=52ce7145b'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=52ce7145b'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=344218afa'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=344218afa');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=344218afa'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=52ce7145b'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=52ce7145b');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=52ce7145b'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=344218afa');
+    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=52ce7145b');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=888ff3fb');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=344218afa');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=344218afa');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=344218afa');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=344218afa');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=344218afa');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=344218afa'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=344218afa'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=344218afa'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=344218afa'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=344218afa'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=344218afa'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=344218afa'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=344218afa'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=344218afa'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=344218afa'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=344218afa'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=344218afa'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=344218afa'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=344218afa');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=344218afa');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=344218afa');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=52ce7145b');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=52ce7145b');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=52ce7145b');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=52ce7145b');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=52ce7145b');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=52ce7145b'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=52ce7145b'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=52ce7145b'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=52ce7145b'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=52ce7145b'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=52ce7145b'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=52ce7145b');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=52ce7145b');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=52ce7145b');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=344218afa');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=344218afa');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=344218afa');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=52ce7145b');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=52ce7145b');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=52ce7145b');
     window.__alloLazyPdfAuditView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.PdfAuditView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.PdfAuditView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('PdfAuditView');
-      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=344218afa');
+      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=52ce7145b');
       return true;
     };
     window.__alloEnsurePdfAuditView = function() {
@@ -14258,14 +14340,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('PdfAuditView', '__alloLazyPdfAuditView', 'PdfAuditView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=344218afa');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=344218afa');
+    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=52ce7145b');
+    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=52ce7145b');
     window.__alloLazyExportPreviewView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.ExportPreviewView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.ExportPreviewView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('ExportPreviewView');
-      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=344218afa');
+      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=52ce7145b');
       return true;
     };
     window.__alloEnsureExportPreviewView = function() {
@@ -14274,17 +14356,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=344218afa');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=344218afa');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=344218afa');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=344218afa');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=344218afa');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=344218afa');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=344218afa');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=344218afa');
-    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=344218afa'); };
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=52ce7145b');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=52ce7145b');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=52ce7145b');
+    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=52ce7145b');
+    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=52ce7145b');
+    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=52ce7145b');
+    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=52ce7145b');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=52ce7145b');
+    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=52ce7145b'); };
     window.__alloEnsureSidebarPanels();
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=344218afa');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=52ce7145b');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -14306,11 +14388,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=188e3e93');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=344218afa');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=52ce7145b');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=344218afa');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=344218afa');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=344218afa');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=52ce7145b');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=52ce7145b');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=52ce7145b');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -14335,23 +14417,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=344218afa');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=344218afa');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=344218afa');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=344218afa');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=344218afa');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=52ce7145b');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=52ce7145b');
+    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=52ce7145b');
+    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=52ce7145b');
+    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=52ce7145b');
     loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=344218afa');
+    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=52ce7145b');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=344218afa');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=344218afa');
+    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=52ce7145b');
+    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=52ce7145b');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=344218afa');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=344218afa');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=344218afa');
+    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=52ce7145b');
+    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=52ce7145b');
+    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=52ce7145b');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -14366,84 +14448,86 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     }; })();
     if (window.__alloStandardsSnapshotsRequested) window.__alloLazyStandardsSnapshots();
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=344218afa');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=344218afa');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=344218afa');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=344218afa');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=344218afa');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=344218afa');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=344218afa');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=344218afa');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=52ce7145b');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=52ce7145b');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=52ce7145b');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=52ce7145b');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=52ce7145b');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=52ce7145b');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=52ce7145b');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=52ce7145b');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=5ebfbbb5');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
     // Unified live-session content channel (SessionTransport stage 1).
     loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=e9c93913');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=e99bcb50');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=32af9127');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=344218afa');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=52ce7145b');
     // File selection must promote intake ahead of deferred background tools.
     // The registry handles in-flight deduplication and failed-load retries.
-    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=344218afa'); };
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=344218afa');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=344218afa');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=344218afa');
-    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=344218afa');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=344218afa');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=344218afa');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=e2691224');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=344218afa');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=344218afa');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=344218afa');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=344218afa');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=344218afa');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=344218afa');
+    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=52ce7145b'); };
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=52ce7145b');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=52ce7145b');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=52ce7145b');
+    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=52ce7145b');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=52ce7145b');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=52ce7145b');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=f8601d00');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=52ce7145b');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=52ce7145b');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=52ce7145b');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=52ce7145b');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=52ce7145b');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=52ce7145b');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=f81b5ec1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=344218afa');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=344218afa');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=344218afa');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=344218afa');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=344218afa');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=a5200c44'); }; })();
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=52ce7145b');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=52ce7145b');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=52ce7145b');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=52ce7145b');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=52ce7145b');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=bd163a6e'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=344218afa');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=344218afa');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=344218afa');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=344218afa');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=344218afa');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=344218afa');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=739d7079'); }; })();
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=52ce7145b');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=52ce7145b');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=52ce7145b');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=52ce7145b');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=52ce7145b');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=52ce7145b');
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=e739e9ba'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=344218afa');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=344218afa');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=344218afa');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=52ce7145b');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=52ce7145b');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=52ce7145b');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
-    loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
+    loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=344218afa');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=344218afa');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=344218afa');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=344218afa');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=344218afa');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=344218afa');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=344218afa');
-    loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=344218afa');
-    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=344218afa');
-    loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=344218afa');
-    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=344218afa');
-    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=344218afa');
-    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=344218afa');
-    window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=344218afa'); };
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=344218afa');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=344218afa');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=344218afa');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=344218afa');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=52ce7145b');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=52ce7145b');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=52ce7145b');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=52ce7145b');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=52ce7145b');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=52ce7145b');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=52ce7145b');
+    loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=52ce7145b');
+    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=52ce7145b');
+    loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=52ce7145b');
+    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=52ce7145b');
+    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=52ce7145b');
+    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=52ce7145b');
+    window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=52ce7145b'); };
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=52ce7145b');
+    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=52ce7145b');
+    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=52ce7145b');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=52ce7145b');
+    window.__alloLazyConceptQuestSolo = () => loadModule('ConceptQuestSoloModule', 'https://alloflow-cdn.pages.dev/concept_quest_solo_module.js?v=52ce7145b');
     window.__alloLazyConnectedEscape = () => loadModule('ConnectedEscapeRoomModule', 'https://alloflow-cdn.pages.dev/connected_escape_room_module.js?v=2a8d292216');
     window.__alloLazyConnectedEscape();
-    window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=2d7318ae40');
+    window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=1f53dc08d2');
     window.__alloLazyLessonBoard();
+    window.__alloLessonBoardConditionalUpdate = _alloLessonBoardConditionalUpdate;
     window.__alloLessonBoardMailboxVersion = () => _alloMbBridgeState?.isTeacher ? Number(alloReadMailboxConfigCache()?.v || 0) : null;
     window.__alloLazyMathJs = (function() { var started=false; return function() {
       if (started || window.math) return;
@@ -14905,7 +14989,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
 
           var s = document.createElement('script');
           var retrySuffix = attempt > 1 ? '&retry=' + Date.now() : '';
-          s.src = pluginCdnBase + mod + '?v=' + pluginCdnVersion + retrySuffix;
+          var modeVersion = mod === 'arcade_mode_concept_pictionary.js' ? 'a225e174ea' : pluginCdnVersion;
+          s.src = pluginCdnBase + mod + '?v=' + modeVersion + retrySuffix;
           s.setAttribute('data-allo-plugin-module', mod);
           s.setAttribute('data-allo-plugin-attempt', String(attempt));
           // Dependency order is enforced by loadStemModuleWithDependencies;
@@ -15782,7 +15867,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     return () => clearTimeout(timer);
   }, [visualSupportsPayload && visualSupportsPayload.payloadId, visualSupportsPayload && visualSupportsPayload.expiresAt]);
   const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
-  const [activeView, setActiveView] = useState('input');
+  const [activeView, _setActiveView] = useState('input');
+  generationDisplayStateRef.current.view = activeView;
+  const setActiveView = useCallback((value, generationOwner = null) => {
+      // Invalidate synchronously so a late result in the same React batch
+      // cannot win before the navigation state updater is evaluated.
+      if (!generationOwner && typeof value !== 'function' && value !== generationDisplayStateRef.current.view) generationViewOwnerRef.current = null;
+      _setActiveView(previous => {
+          if (generationOwner && generationOwner !== generationViewOwnerRef.current) return previous;
+          const next = typeof value === 'function' ? value(previous) : value;
+          if (next !== previous && generationOwner !== generationViewOwnerRef.current) generationViewOwnerRef.current = null;
+          return next;
+      });
+  }, []);
   const [showReadThisPage, setShowReadThisPage] = useState(false);
   const [focusNarrationEnabled, setFocusNarrationEnabled] = useState(false);
   const rtpReadingRef = useRef(false);
@@ -18047,6 +18144,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     selectedCharacters: [],
     chatHistory: [],
     isLoading: false,
+      turnError: null,
     avatarUrl: null,
     isImageLoading: false,
     avatarGenerationFailed: false,
@@ -23436,7 +23534,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           let canReportAudioStatus = true;
           let canReportAudioDeliveryAt = true;
           try {
-              const isMailboxStudent = new URLSearchParams(window.location.search || '').has('allo_mb');
+              const isMailboxStudent = window.__alloQrStudentMode?.type === 'mailbox-live' || new URLSearchParams(window.location.search || '').has('allo_mb');
               const mailboxVersion = Number(alloReadMailboxConfigCache()?.v || 0);
               canReportAudioStatus = !isMailboxStudent || mailboxVersion >= 14;
               canReportAudioDeliveryAt = !isMailboxStudent || mailboxVersion >= 16;
@@ -25254,12 +25352,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Image scale multiplier — applies to edit-mode thumbnails AND card images in
   // the play view (ConceptSortGame). 1.0 = baseline, 0.5 = half, 2.5 = 2.5x.
   // Persisted per-user so a teacher who finds tiny visuals annoying for younger
-  // students can set 1.5 once and have it stick across decks.
+  // students can adjust the default 2.0 once and have it stick across decks.
   const [conceptSortImageScale, setConceptSortImageScale] = useState(() => {
     try {
       const v = parseFloat(localStorage.getItem('alloflow_concept_sort_image_scale'));
-      return (isFinite(v) && v >= 0.5 && v <= 3.0) ? v : 1.5;
-    } catch (e) { return 1.5; }
+      return (isFinite(v) && v >= 0.5 && v <= 3.0) ? v : 2.0;
+    } catch (e) { return 2.0; }
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_concept_sort_image_scale', String(conceptSortImageScale)); } catch (e) {} }, [conceptSortImageScale]);
   // Per-item refinement prompt inputs (mirrors glossaryRefinementInputs pattern).
@@ -25816,6 +25914,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const mbPeersRef = useRef({});
   const [mbMode, setMbMode] = useState('sync');
   const mbSentPacksRef = useRef({});
+  const mbPreparedImagesRef = useRef(new WeakMap());
+  const mbImageNoticeRef = useRef(new Map());
   const mailboxResourcePublishQueuesRef = useRef({});
   const mbPackItemsRef = useRef([]);
   const mbLivePackRef = useRef(null);
@@ -25909,6 +26009,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return () => clearTimeout(timer);
   }, [mbStudent, isTeacherMode, history, homeworkShelf, directionsProgress, globalPoints, gameCompletions]);
   const mbChunkStoreRef = useRef(null);
+  const [mbResourceReceiveError, setMbResourceReceiveError] = useState(false);
+  useEffect(() => {
+      if (!mbStudent) { mbChunkStoreRef.current = null; setMbResourceReceiveError(false); return undefined; }
+      const timer = setInterval(() => _alloPruneResChunks(mbChunkStoreRef.current), 30000);
+      return () => { clearInterval(timer); mbChunkStoreRef.current = null; };
+  }, [mbStudent]);
+  const retryMailboxReceivedResources = () => {
+      mbChunkStoreRef.current = { parts: {}, applied: mbChunkStoreRef.current?.applied || new Set() };
+      mbStudentCursorRef.current = 0;
+      setMbResourceReceiveError(false);
+      retryLiveSessionResources();
+      _alloMbNudge();
+  };
   const mbRtcRef = useRef(null);
   const mbNicknameRef = useRef('Student');
   const mbHandRef = useRef(false);
@@ -26468,7 +26581,33 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!moduleApi || typeof moduleApi.serializeResourceForStudentPack !== 'function') {
           throw new Error('[student-pack] LiveAac serializer is not available');
       }
-      return moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel });
+      const prepared = item && audioChannel === 'live' ? mbPreparedImagesRef.current.get(item)?.resource : null;
+      return prepared || moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel });
+  };
+  const prepareMailboxResourceImages = async (item) => {
+      const cache = mbPreparedImagesRef.current;
+      if (cache.has(item)) return cache.get(item).promise;
+      const entry = {};
+      entry.promise = (async () => {
+          const api = _alloLiveAacModule();
+          if (!api?.prepareMailboxResource) throw new Error('Image delivery tools are still loading. Please retry.');
+          const result = await api.prepareMailboxResource(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel: 'live' });
+          entry.resource = result.resource;
+          const report = result.report;
+          if (report.omitted || report.resized) {
+              const signature = JSON.stringify(report);
+              if (mbImageNoticeRef.current.get(item.id) !== signature) {
+                  mbImageNoticeRef.current.set(item.id, signature);
+                  if (mbImageNoticeRef.current.size > 100) mbImageNoticeRef.current.delete(mbImageNoticeRef.current.keys().next().value);
+                  addToast('"' + (item.title || item.type) + '": ' + (report.omitted
+                      ? report.omitted + ' image(s) could not be included' + (report.tooLarge ? ' because they exceed the size limit' : ' because their format or URL is unsupported') + '. Use a smaller PNG, JPEG, WebP or AVIF picture and resend.'
+                      : report.resized + ' image(s) resized for delivery. Your original pictures are unchanged.'), report.omitted ? 'warning' : 'info');
+              }
+          }
+          return result.resource;
+      })().catch(error => { cache.delete(item); throw error; });
+      cache.set(item, entry);
+      return entry.promise;
   };
   const describeSavedFollowUpLiveFailure = (reason) => {
       if (reason === 'inactive-session') return 'Start or resume a live session before sending this follow-up.';
@@ -26624,7 +26763,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const assertCurrent = () => { if (opts.isCurrent && !opts.isCurrent()) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
       assertCurrent();
       const flags = { open: opts.open !== false, quiet: opts.quiet === true };
-      const packItem = _alloSerializeResourceForStudentPack(item);
+      const packItem = await prepareMailboxResourceImages(item);
       if (!packItem) return { rtcCount: 0 };
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
       assertCurrent();
@@ -26817,6 +26956,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           publish: () => enqueueLiveSessionResourcePublish({ queues: mailboxResourcePublishQueuesRef.current, sessionKey, publish: async () => {
               assertCurrent();
               const candidates = _alloStudentSafeResources(history);
+              for (const item of candidates) { assertCurrent(); await prepareMailboxResourceImages(item); }
+              assertCurrent();
               mbPackItemsRef.current = candidates;
               // Unified content channel (SessionTransport stage 2): the pack
               // CYCLE ALGORITHM (removals, fingerprint dedupe with per-item
@@ -26934,7 +27075,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       (async () => {
                           try {
                               for (const item of (mbPackItemsRef.current || [])) {
-                                  const packItem = _alloSerializeResourceForStudentPack(item);
+                                  const packItem = await prepareMailboxResourceImages(item);
                                   if (!packItem) continue;
                                   const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
                                   const parts = _alloSplitPackChunks(encoded);
@@ -27214,6 +27355,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (hostPackOnMailboxRef.current) hostPackOnMailboxRef.current(pendingResourceIds);
       }
   }, [mbConfig]);
+  const reportMailboxImageProgress = useCallback(async (progress) => {
+      if (!mbStudent || isTeacherMode || !activeSessionCode || !user?.uid || !canWriteMailboxImageDelivery()) return;
+      const receipt = normalizeMailboxImageDelivery({
+          version: 1,
+          resourceId: String(progress.resourceId || '').trim().replace(/[^A-Za-z0-9:_-]/g, '-').slice(0, 160),
+          status: progress.status, loaded: progress.ready, total: progress.total, omitted: progress.omitted, assignmentAt: progress.assignmentAt, at: Date.now(),
+      });
+      if (!receipt) return;
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+      await writeToSession(sessionRef, { ['roster.' + user.uid + '.imageDelivery']: receipt });
+  }, [mbStudent, isTeacherMode, activeSessionCode, user, activeSessionAppId]);
+  const retryMailboxImagesForStudent = async (uid, resourceId) => {
+      if (!mbLive || !isTeacherMode) throw new Error('Start a mailbox session first.');
+      const item = history.find(resource => resource?.id === resourceId);
+      if (!item) throw new Error('The resource is no longer in this pack.');
+      await _mbPushOneResource(item, { open: false, quiet: true });
+      const result = await handleSetStudentResource(uid, resourceId, { allowIncompleteAudio: true });
+      if (result?.failed) throw new Error('The resource could not be reassigned.');
+  };
   const toggleMbHand = useCallback(async () => {
       if (!mbStudent) return;
       const next = !mbHandUp;
@@ -27297,7 +27457,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           try {
               let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
               resource = _alloStudentSafeResources([resource])[0];
-              if (!resource) return;
+              if (!resource) throw new Error('The transferred resource is not a valid student resource');
+              if (mbChunkStoreRef.current !== store) return;
               setHistory(prev => {
                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
                   const next = [...rest, resource];
@@ -27310,8 +27471,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               // open=false delivers quietly into the pack (async-mode share);
               // open=true (default) follows the teacher like sync mode.
               if (v.open !== false) setPendingQrAssignmentResource(resource);
+              _alloFinishResChunk(store, v.rid, true);
+              setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
               if (!v.quiet) addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
           } catch (decodeErr) {
+              if (mbChunkStoreRef.current !== store) return;
+              _alloFinishResChunk(store, v.rid, false);
+              setMbResourceReceiveError(true);
+              if ((store.failures?.[v.rid]?.count || 0) < 3) mbStudentCursorRef.current = 0;
               warnLog('Mailbox resource decode failed', decodeErr);
           }
       }
@@ -29735,9 +29902,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [appliedChallengeAgencyMode, setAppliedChallengeAgencyMode] = useState('progressive');
   const [appliedChallengeScope, setAppliedChallengeScope] = useState('standard');
   const [appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions] = useState('');
+  const [appliedChallengePlan, setAppliedChallengePlan] = useState({});
   const [memoryAidSelectionMode, setMemoryAidSelectionMode] = useState('auto-mix');
   const [memoryAidTypes, setMemoryAidTypes] = useState(['acronym-acrostic', 'chunking', 'story-chain']);
-  const [memoryAidAuthorshipMode, setMemoryAidAuthorshipMode] = useState('progressive');
+  const [memoryAidAuthorshipMode, setMemoryAidAuthorshipMode] = useState('generated');
   const [memoryAidReflectionLevel, setMemoryAidReflectionLevel] = useState('quick');
   const [memoryAidReasoningRequired, setMemoryAidReasoningRequired] = useState(false);
   const [memoryAidCount, setMemoryAidCount] = useState(3);
@@ -32634,7 +32802,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       appliedChallengeFamily,
       appliedChallengeAgencyMode,
       appliedChallengeScope,
-      appliedChallengeCustomInstructions,
+      appliedChallengeCustomInstructions, appliedChallengePlan,
       memoryAidSelectionMode,
       memoryAidTypes,
       memoryAidAuthorshipMode,
@@ -32949,13 +33117,58 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // changes. Keyed on the id through a ref rather than on the object, because
   // generatedContent is re-created on every edit to the same resource and that
   // would clear the teacher's filter mid-session.
+  const glossaryLiveRef = React.useRef({});
+  glossaryLiveRef.current = { resource: generatedContent, history, activeView, inputText };
+  const glossaryTaskRegistryRef = React.useRef(new Map());
+  React.useEffect(() => () => {
+      glossaryTaskRegistryRef.current.forEach(task => task.controller.abort());
+      glossaryTaskRegistryRef.current.clear();
+  }, []);
+  const _alloGlossaryTaskDeps = () => ({
+      generatedContent, setGeneratedContent, setHistory,
+      getGlossaryLive: () => glossaryLiveRef.current,
+      glossaryTaskRegistry: glossaryTaskRegistryRef.current,
+  });
+  const _alloBeginGlossaryTask = (index, fields, channel) => {
+      const helpers = window.AlloModules && window.AlloModules.GlossaryHelpers;
+      return helpers?.beginGlossaryTask(_alloGlossaryTaskDeps(), index, fields, channel);
+  };
   const prevGlossaryResourceIdRef = React.useRef(null);
   React.useEffect(() => {
       const currentId = generatedContent?.id || null;
       if (prevGlossaryResourceIdRef.current === currentId) return;
       prevGlossaryResourceIdRef.current = currentId;
       glossaryDispatch({ type: 'GLOSS_RESET' });
+      if (generatedContent?.type === 'glossary') {
+          setIsInteractiveFlashcards(false);
+          setFlashcardIndex(0);
+          setIsFlashcardFlipped(false);
+          setFlashcardFeedback(null);
+          setFlashcardScore(0);
+          setFlashcardOptions([]);
+          setIsMemoryGame(false);
+          setIsMatchingGame(false);
+          setIsCrosswordGame(false);
+          setIsBingoGame(false);
+          setIsStudentBingoGame(false);
+          setIsWordScrambleGame(false);
+          setGameMode(null);
+      }
+      // A return visit should still show work that is running for this glossary.
+      const images = {}, etymologies = {};
+      let adding = false;
+      glossaryTaskRegistryRef.current.forEach(task => {
+          if (task.finished || task.controller.signal.aborted) return;
+          if (task.resourceId === currentId && task.channel === 'image') images[task.entryKey] = true;
+          if (task.resourceId === currentId && task.channel === 'etymology') etymologies[task.entryKey] = true;
+          if (task.invocationId === currentId && task.channel.startsWith('add:')) adding = true;
+      });
+      setIsGeneratingTermImage(images);
+      setIsGeneratingEtymology(etymologies);
+      setIsAddingTerm(adding);
       setGlossarySearchTerm('');
+      setIsRunningHealthCheck(false);
+      setShowHealthCheckPanel(false);
   }, [generatedContent?.id]);
   const toFocusText = (text) => {
       if (!text) return null;
@@ -33078,7 +33291,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const renderFormattedText = (text, enableGlossary = true, isDarkBg = false) => {
     const _m = window.AlloModules && window.AlloModules.ViewRenderers;
     if (_m && typeof _m.renderFormattedText === "function") return _m.renderFormattedText(text, enableGlossary, isDarkBg, _alloViewRenderersDeps());
-    throw new Error("[renderFormattedText] ViewRenderers module not loaded - reload the page");
+    // The AI Guide can open before its optional formatter has loaded.
+    // Keep its text readable; React escapes it and later renders use the formatter.
+    return text == null ? null : <span className="whitespace-pre-wrap break-words">{String(text)}</span>;
   };
   const BilingualFieldRenderer = React.memo(({ text, className = "" }) => {
     if (!text) return null;
@@ -33535,7 +33750,7 @@ const parseTaggedContent = (text) => {
   const teachingScriptStateRef = React.useRef({});
   const teachingScriptControllerRef = React.useRef(null);
   const teachingScriptTeacher = isTeacherMode && !isParentMode && !isIndependentMode;
-  const teachingScriptActor = String(appId || '') + '|' + String(selectedProfileId || '') + '|' + String(user?.uid || '');
+  const teachingScriptActor = JSON.stringify([String(appId || ''), String(selectedProfileId || ''), String(user?.uid || ''), String(canvasRecoveryCurrentIdRef.current || '')]);
   const teachingScriptCanGenerate = !!(ai && typeof ai.generateText === 'function' && (
     _isCanvasEnv || _aiConfig?.apiKey || ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom', 'onnx-npu'].includes(_aiConfig?.backend)
   ));
@@ -33584,15 +33799,15 @@ const parseTaggedContent = (text) => {
     return controller ? controller.generate(current.generatedContent.id, settings) : Promise.resolve({ ok: false, error: 'Teaching-script tools are still loading. Retry the tools.' });
   };
   const onCancelTeachingScript = planId => teachingScriptControllerRef.current?.cancel(planId);
-  const onUpdateTeachingScript = (planId, versionId, steps) => getTeachingScriptController()?.saveEdits(planId, versionId, steps) || { ok: false, error: 'Teaching-script tools are still loading.' };
+  const onUpdateTeachingScript = (planId, versionId, steps, expectedSteps) => getTeachingScriptController()?.saveEdits(planId, versionId, steps, expectedSteps) || { ok: false, error: 'Teaching-script tools are still loading.' };
   const teachingScriptPlan = history.find(item => item?.type === 'lesson-plan' && String(item.id) === String(generatedContent?.id)) || generatedContent;
   const teachingScriptMaterials = teachingScriptLoadState === 'ready' && window.AlloModules?.LessonTeachingScriptHost
     ? window.AlloModules.LessonTeachingScriptHost.availableMaterials(teachingScriptPlan, history) : [];
   const teachingScriptDefaultSettings = teachingScriptLoadState === 'ready' && window.AlloModules?.LessonTeachingScriptHost
     ? window.AlloModules.LessonTeachingScriptHost.defaultSettings(teachingScriptPlan, { language: leveledTextLanguage }, teachingScriptMaterials) : {};
   const onOpenTeachingMaterial = materialId => {
-    const material = teachingScriptMaterials.find(item => String(item.id) === String(materialId));
-    if (teachingScriptTeacher && material) handleRestoreView(material);
+    const matches = teachingScriptMaterials.filter(item => String(item.id) === String(materialId));
+    if (teachingScriptTeacher && matches.length === 1) handleRestoreView(matches[0]);
   };
 
   const _sketchVisionBackend = String((_aiConfig && _aiConfig.backend) || 'gemini').trim().toLowerCase();
@@ -33682,12 +33897,33 @@ const parseTaggedContent = (text) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_aiConfigKey]);
 
+  const glossaryHealthCheckIdRef = React.useRef(null);
+  const glossaryHealthCheckTimerRef = React.useRef(null);
+  const glossaryHealthFollowUpTimerRef = React.useRef(null);
+  const glossaryHealthSignature = generatedContent?.type === 'glossary' && Array.isArray(generatedContent.data)
+      ? JSON.stringify(generatedContent.data.map(item => item && [item.term, item.def, item.tier])) : '';
   const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
-    const _m = window.AlloModules && window.AlloModules.ExportHandlers;
-    if (_m && typeof _m.runGlossaryHealthCheck === 'function') {
-      return _m.runGlossaryHealthCheck(terms, sourceText, { debugLog, warnLog, callGemini, setIsRunningHealthCheck, setShowHealthCheckPanel, setGlossaryHealthCheck });
-    }
-    return null;
+    const module = window.AlloModules && window.AlloModules.ExportHandlers;
+    const live = glossaryLiveRef.current.resource;
+    if (!module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;
+    const signature = JSON.stringify(terms.map(item => item && [item.term, item.def, item.tier]));
+    const task = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask({
+        generatedContent: live, getGlossaryLive: () => glossaryLiveRef.current,
+        glossaryTaskRegistry: glossaryTaskRegistryRef.current,
+    }, null, [], 'health');
+    if (!task) return null;
+    const current = () => task.visible() && signature === JSON.stringify((glossaryLiveRef.current.resource?.data || []).map(item => item && [item.term, item.def, item.tier]));
+    glossaryHealthCheckIdRef.current = String(live.id) + ':' + signature;
+    try {
+        const result = await module.runGlossaryHealthCheck(terms, sourceText, {
+            debugLog, warnLog,
+            callGemini: (...args) => { args[5] = task.signal; return callGemini(...args); },
+            setIsRunningHealthCheck: value => { if (current()) setIsRunningHealthCheck(value); },
+            setShowHealthCheckPanel: value => { if (current()) setShowHealthCheckPanel(value); },
+            setGlossaryHealthCheck: value => { if (current()) setGlossaryHealthCheck(value); },
+        });
+        return current() ? result : null;
+    } finally { task.finish(); }
   }, [callGemini]);
   const fetchReplacementSuggestion = React.useCallback(async (existingTerms, addedTerm, sourceText) => {
     try {
@@ -33712,43 +33948,38 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
     return null;
   }, [callGemini]);
-  const glossaryHealthCheckIdRef = React.useRef(null);
-  const glossaryHealthCheckTimerRef = React.useRef(null);
   useEffect(() => {
-      if (generatedContent?.type === 'glossary' && Array.isArray(generatedContent?.data) && generatedContent?.data.length > 0) {
-          if (glossaryHealthCheckIdRef.current !== generatedContent.id) {
-              if (glossaryHealthCheckTimerRef.current) {
-                  clearTimeout(glossaryHealthCheckTimerRef.current);
-                  glossaryHealthCheckTimerRef.current = null;
-              }
-              glossaryHealthCheckIdRef.current = generatedContent.id;
-              setGlossaryHealthCheck(null);
-              debugLog('🩺 [HealthCheck] Auto-trigger fired! Glossary has', generatedContent?.data.length, 'terms. Waiting 12s...');
-              const currentId = generatedContent.id;
-              const currentData = generatedContent?.data;
-              glossaryHealthCheckTimerRef.current = setTimeout(() => {
-                  glossaryHealthCheckTimerRef.current = null;
-                  debugLog('🩺 [HealthCheck] Timer elapsed, calling runGlossaryHealthCheck now...');
-                  const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-                  const sourceText = (history.slice().reverse().find(h => h && h.type === 'analysis')?.data?.originalText) || inputText || '';
-                  runGlossaryHealthCheck(currentData, sourceText).then(hc => {
-                      debugLog('🩺 [HealthCheck] runGlossaryHealthCheck returned:', hc ? 'SUCCESS' : 'NULL', hc?.error ? '(error)' : '', hc?.summary || '');
-                      if (hc && hc.summary && !hc.error && alloBotRef?.current) {
-                          setTimeout(() => {
-                              let followUp = `Health check complete! ${hc.summary}`;
-                              if (hc.definitionGradeLevel) followUp += ` Definitions are at a ${hc.definitionGradeLevel} reading level.`;
-                              if (hc.coverageGaps && hc.coverageGaps.length > 0) {
-                                  followUp += ` You might also want to add "${hc.coverageGaps[0].term}".`;
-                              }
-                              alloBotRef.current.speak(followUp, 'teaching');
-                          }, 6000);
-                      }
-                  });
-              }, 3000);
-          }
-      }
-      return () => { if (glossaryHealthCheckTimerRef.current) { clearTimeout(glossaryHealthCheckTimerRef.current); glossaryHealthCheckTimerRef.current = null; } };
-  }, [generatedContent, history, runGlossaryHealthCheck]);
+      const resource = glossaryLiveRef.current.resource;
+      if (activeView !== 'glossary') return;
+      if (resource?.type !== 'glossary' || !resource.data?.length) return;
+      const key = String(resource.id) + ':' + glossaryHealthSignature;
+      let active = true;
+      setIsRunningHealthCheck(false);
+      setGlossaryHealthCheck(null);
+      glossaryHealthCheckTimerRef.current = setTimeout(async () => {
+          glossaryHealthCheckTimerRef.current = null;
+          if (!active || glossaryHealthCheckIdRef.current === key) return;
+          const state = glossaryLiveRef.current;
+          const sourceText = [...state.history].reverse().find(item => item?.type === 'analysis')?.data?.originalText || state.inputText || '';
+          const report = await runGlossaryHealthCheck(state.resource.data, sourceText);
+          if (!active || !report?.summary || report.error) return;
+          glossaryHealthFollowUpTimerRef.current = setTimeout(() => {
+              if (!active || !alloBotRef?.current) return;
+              let followUp = 'Health check complete! ' + report.summary;
+              if (report.definitionGradeLevel) followUp += ' Definitions are at a ' + report.definitionGradeLevel + ' reading level.';
+              if (report.coverageGaps?.length) followUp += ' You might also want to add "' + report.coverageGaps[0].term + '".';
+              alloBotRef.current.speak(followUp, 'teaching');
+          }, 6000);
+      }, 3000);
+      return () => {
+          active = false;
+          clearTimeout(glossaryHealthCheckTimerRef.current);
+          clearTimeout(glossaryHealthFollowUpTimerRef.current);
+          glossaryHealthCheckTimerRef.current = null;
+          glossaryHealthFollowUpTimerRef.current = null;
+          if (glossaryHealthCheckIdRef.current === key) glossaryHealthCheckIdRef.current = null;
+      };
+  }, [activeView, generatedContent?.id, glossaryHealthSignature, runGlossaryHealthCheck]);
   const resilientJsonParse = async (jsonString, attempt = 1) => {
       try {
           return JSON.parse(cleanJson(jsonString));
@@ -34498,52 +34729,20 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
   };
   const handlePrintGame = () => {
-      if (!gameData) return;
-      const printContent = document.getElementById('printable-game-area').innerHTML;
-      let teacherGridHtml = '<div class="grid-container" dir="' + (gameData.isRtl ? 'rtl' : 'ltr') + '">';
-      gameData.grid.forEach((row, r) => {
-          teacherGridHtml += '<div class="grid-row">';
-          row.forEach((char, c) => {
-              const isSolution = gameData.solutions.includes(`${r}-${c}`);
-              teacherGridHtml += `<div class="grid-cell ${isSolution ? 'highlight' : ''}">${char}</div>`;
-          });
-          teacherGridHtml += '</div>';
-      });
-      teacherGridHtml += '</div>';
+      if (!gameData || !Array.isArray(gameData.grid) || !gameData.grid.length) return;
+      const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+      const solutions = new Set(gameData.solutions || []);
+      const columns = Math.max(1, ...gameData.grid.map(row => row.length));
+      const direction = gameData.isRtl ? 'rtl' : 'ltr';
+      const grid = teacher => '<table class="puzzle-grid" dir="' + direction + '" aria-label="' + esc(t('glossary.word_search_title')) + '"><tbody>' + gameData.grid.map((row, r) => '<tr>' + row.map((char, c) => '<td' + (teacher && solutions.has(r + '-' + c) ? ' class="solution"' : '') + '><span>' + esc(char) + '</span></td>').join('') + '</tr>').join('') + '</tbody></table>';
+      const words = '<ul class="word-list">' + (gameData.words || []).map(word => '<li dir="auto">' + esc(word) + '</li>').join('') + '</ul>';
       const win = window.open('', '', 'height=700,width=900');
       if (!win) { addToast(t('toasts.pop_up_blocked_allow_pop'), 'error'); return; }
-      const pageTitle = t('glossary.print_puzzle_title');
-      const answerKeyTitle = t('glossary.print_answer_key');
-      const teacherCopySubtitle = t('glossary.print_teacher_copy');
-      win.document.write(`<html><head><title>${pageTitle}</title>`);
-      win.document.write(`
-        <style>
-            body { font-family: sans-serif; padding: 20px; }
-            .page-break { page-break-before: always; }
-            .grid-container { display: inline-block; border: 2px solid #333; padding: 2px; }
-            .grid-row { display: flex; }
-            .grid-cell { width: 30px; height: 30px; border: 1px solid #ccc; display: flex; justify-content: center; align-items: center; font-weight: bold; margin: 1px; font-family: monospace; }
-            .highlight { background-color: #bbf7d0 !important; color: #14532d; border-color: #86efac; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .word-list { margin-top: 20px; column-count: 2; }
-            h2 { text-align: center; color: #333; }
-            h3 { text-align: center; color: #666; font-size: 1rem; margin-top: -10px; margin-bottom: 20px;}
-            .no-print { display: none; }
-            .print-only { display: block; }
-        </style>
-      `);
-      win.document.write('</head><body>');
-      win.document.write('<div class="student-version">');
-      win.document.write(printContent);
-      win.document.write('</div>');
-      win.document.write('<div class="page-break"></div>');
-      win.document.write('<div class="teacher-version">');
-      win.document.write(`<h2>${answerKeyTitle}</h2><h3>${teacherCopySubtitle}</h3>`);
-      win.document.write('<div style="display:flex; justify-content:center;">' + teacherGridHtml + '</div>');
-      win.document.write('<div class="word-list">');
-      gameData.words.forEach(w => win.document.write(`<div>${w}</div>`));
-      win.document.write('</div>');
-      win.document.write('</div>');
-      win.document.write('</body></html>');
+      // Build both sheets from puzzle data. Live DOM carries found-word marks
+      // and depends on app-only Tailwind styles that a new window does not have.
+      win.document.write('<!doctype html><html lang="' + esc(document.documentElement.lang || 'en') + '" dir="' + direction + '"><head><meta charset="utf-8"><title>' + esc(t('glossary.print_puzzle_title')) + '</title><style>' +
+          '@page{margin:12mm}*{box-sizing:border-box}body{font:12pt/1.4 Arial,sans-serif;margin:0;color:#000;background:#fff}h1,h2,h3{text-align:center}h1,h2{font-size:20pt;margin:0 0 12pt}h3{font-size:12pt;font-weight:normal}.student-version,.teacher-version{max-width:180mm;margin:0 auto}.teacher-version{break-before:page}.puzzle-grid{border-collapse:collapse;table-layout:fixed;width:100%;max-width:160mm;margin:12pt auto;break-inside:avoid}.puzzle-grid td{border:1px solid #777;text-align:center;padding:0;width:' + (100 / columns) + '%}.puzzle-grid td span{display:flex;align-items:center;justify-content:center;aspect-ratio:1;font:700 ' + Math.min(16, 360 / columns) + 'pt monospace}.solution span{outline:2px solid #000;outline-offset:-3px;border-radius:50%}.word-list{display:flex;flex-wrap:wrap;justify-content:center;gap:8pt 18pt;padding:0;list-style:none}.word-list li{overflow-wrap:anywhere;max-width:100%}.name-line{display:flex;justify-content:space-between;font-size:11pt;margin-bottom:14pt}' +
+          '</style></head><body><section class="student-version"><h1>' + esc(t('glossary.word_search_title')) + '</h1><div class="name-line"><span>' + esc(t('matching.print_name')) + ': ____________________</span><span>' + esc(t('matching.print_date')) + ': ______________</span></div>' + grid(false) + '<h3>' + esc(t('glossary.word_search_find')) + '</h3>' + words + '</section><section class="teacher-version"><h2>' + esc(t('glossary.print_answer_key')) + '</h2><h3>' + esc(t('glossary.print_teacher_copy')) + '</h3>' + grid(true) + words + '</section></body></html>');
       win.document.close();
       setTimeout(() => win.print(), 500);
   };
@@ -36230,6 +36429,58 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     });
   };
   window.__alloGetReadAloudAudioBridge = _getReadAloudBridge;
+  // Lesson audio uses the same synthesis/encoding service, with a private version store.
+  const createTeachingScriptAudio = (planId, versionId) => {
+    const modules = window.AlloModules || {};
+    if (!modules.createReadAloudAudioService || !modules.KaraokeAudioStore || !modules.LessonTeachingScript?.createAudioController) throw new Error('Audio tools are still loading. Try again.');
+    const actor = teachingScriptStateRef.current.actorKey;
+    const getPlan = () => {
+      const current = teachingScriptStateRef.current;
+      const matches = (current.history || []).filter(item => item?.type === 'lesson-plan' && String(item.id) === String(planId));
+      if (current.actorKey !== actor || !current.isTeacherMode || current.isParentMode || current.isIndependentMode || String(current.generatedContent?.id) !== String(planId) || matches.length !== 1) throw new Error('Reopen this saved lesson before preparing audio.');
+      return matches[0];
+    };
+    const getVersion = () => {
+      const matches = (getPlan().data?.teachingScripts || []).filter(item => String(item?.id) === String(versionId));
+      if (matches.length !== 1) throw new Error('This script version is no longer available.');
+      return matches[0];
+    };
+    const fingerprint = value => JSON.stringify([modules.LessonTeachingScript.spokenSegments(value), value.inputSnapshot?.settings?.language || getPlan().config?.language || 'English']);
+    const original = fingerprint(getVersion());
+    const checkedVersion = () => {
+      const current = getVersion();
+      if (fingerprint(current) !== original) throw new Error('The script wording changed. Reopen its audio controls.');
+      return current;
+    };
+    const store = modules.KaraokeAudioStore.createStore();
+    const saved = getPlan().lessonScriptAudio;
+    if (saved && Object.prototype.hasOwnProperty.call(saved, versionId)) store.hydrate(saved[versionId]);
+    const language = checkedVersion().inputSnapshot?.settings?.language || getPlan().config?.language || 'English';
+    const profile = { voice: selectedVoice || 'Kore', language, speed: voiceSpeed || 1, synthesisRate: voiceSpeed || 1, voiceResolverVersion: 2,
+      requestedProvider: String(_aiConfig.ttsProvider || 'auto') + ':' + String(_aiConfig.backend || 'gemini'), requestedModel: String(_aiConfig.models?.tts || GEMINI_MODELS.tts || '') };
+    return modules.LessonTeachingScript.createAudioController({ planId, store, createService: modules.createReadAloudAudioService,
+      getVersion: checkedVersion, getProfile: () => profile,
+      synthesize: async ({ text, signal, force }) => {
+        checkedVersion(); let provenance = {};
+        const url = await callTTS(text, profile.voice, profile.speed, { language, signal, force, priority: 'interactive', maxRetries: 1, onResolvedProfile: value => { provenance = value || {}; } }, language);
+        checkedVersion(); if (!url) throw new Error('No audio was returned. Check your voice settings and try again.');
+        return { url, provenance };
+      }, encode: _encodeReadAloudBridgeAudio,
+      persist: ({ payload, signal }) => {
+        checkedVersion(); if (signal?.aborted) throw new DOMException('Audio saving stopped.', 'AbortError');
+        const accepted = onUpdateResource(planId, previous => {
+          if (teachingScriptStateRef.current.actorKey !== actor || signal?.aborted) return previous;
+          const current = previous.data?.teachingScripts?.find(item => String(item?.id) === String(versionId));
+          if (!current || fingerprint(current) !== original) return previous;
+          const audio = { ...(previous.lessonScriptAudio || {}), [versionId]: payload };
+          const ids = new Set(previous.data.teachingScripts.map(item => String(item.id)));
+          return { ...previous, lessonScriptAudio: Object.fromEntries(Object.entries(audio).filter(([id]) => ids.has(id))) };
+        });
+        if (accepted === false || accepted?.ok === false) throw new Error('Audio could not be added to this saved lesson.');
+      }
+    });
+  };
+
   const _findGlossaryReadAloudSegment = (request) => {
     const resource = _ensureGlossaryReadAloudEntryIds();
     if (!resource || String(resource.type || '').toLowerCase() !== 'glossary') return null;
@@ -36462,6 +36713,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       .map(([id, s]) => [id, { name: s.name, emoji: s.emoji, ...s.cssVars }])
   );
   const [exportTheme, setExportTheme] = useState('professional');
+  const _docPipelineHostStateRef = React.useRef(null);
   window.__docPipelineState = {
     exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
@@ -36484,6 +36736,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     setExportAuditLoading, setExportAuditResult,
     setError,
   };
+  _docPipelineHostStateRef.current = window.__docPipelineState;
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   // The pipeline owns session-scoped breaker, re-entry, and progress state. Constructing it in
   // the render body used to erase that state on every toast/progress render. Keep one instance per
@@ -36519,6 +36772,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       return proxy;
     };
     _docPipelineInstanceRef.current = _createDocPipeline({
+      getState: () => _docPipelineHostStateRef.current,
+      getDocumentEpoch: capturePdfDocumentIntakeEpoch,
       callGemini: _livePipelineCall('callGemini', async () => ''),
       callGeminiSingleAttempt: _livePipelineCall('callGeminiSingleAttempt', async () => ''),
       callGeminiVision: _livePipelineCall('callGeminiVision', async () => ''),
@@ -38766,11 +39021,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       };
   }, [mbJoinError, mbJoinRetryable]);
   const handleExportPDF = () => {
-      handleExport('print');
+      return handleExport('print', { lessonPlanId: generatedContent?.id });
   };
   const handleCopyToClipboard = async () => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
-    if (_m && typeof _m.handleCopyToClipboard === 'function') return _m.handleCopyToClipboard({ generatedContent, sourceTopic, gradeLevel, addToast, t, warnLog });
+    if (_m && typeof _m.handleCopyToClipboard === 'function') {
+      const matches = (_resourceMutationStateRef.current.history || []).filter(item => item?.type === 'lesson-plan' && String(item.id) === String(generatedContent?.id));
+      return _m.handleCopyToClipboard({ generatedContent: matches.length === 1 ? matches[0] : null, isParentMode, isIndependentMode, addToast, t, warnLog });
+    }
   };
     const _builderOpenerElRef = React.useRef(null);
   const _builderDraftRestoreRef = React.useRef(false);
@@ -41389,16 +41647,30 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
     addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
   };
-  const handleExport = async (mode = 'html') => {
+  const handleExport = async (mode = 'html', options = {}) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.handleExport === 'function') {
+      let lessonExport = null;
+      if (Object.prototype.hasOwnProperty.call(options, 'lessonPlanId')) {
+        const matches = (_resourceMutationStateRef.current.history || []).filter(item => item?.type === 'lesson-plan' && String(item.id) === String(options.lessonPlanId));
+        lessonExport = matches.length === 1 && typeof _m.prepareLessonPlanExport === 'function' ? _m.prepareLessonPlanExport(matches[0]) : null;
+        if (!lessonExport) { addToast && addToast(t('lesson_plan.export_unavailable') || 'The saved lesson plan could not be found. Reopen it from History and try again.', 'error'); return false; }
+      }
       return _m.handleExport(mode, {
         _docPipeline, addToast, t,
         generateFullPackHTML, getExportableHistory, getSkippedResources,
         sourceTopic, studentResponses, exportConfig, history,
         auditOutputAccessibility, runAxeAudit,
         alloBotRef, warnLog,
-        safeDownloadBlob
+        safeDownloadBlob,
+        ...(lessonExport ? {
+          sourceTopic: lessonExport.topic,
+          history: [lessonExport.resource],
+          getExportableHistory: () => [lessonExport.resource],
+          getSkippedResources: () => [],
+          studentResponses: {},
+          exportConfig: { ...exportConfig, includeLessonPlan: true, includeTeacherKey: false, assessmentMode: false, includeStudentResponses: false, annotations: [] }
+        } : {})
       });
     }
     addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
@@ -42193,6 +42465,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       const entry = _alloReadMailboxEntryParam('allo_mb');
       if (!entry || !entry.c || !entry.k) return undefined;
       const mbJoinCode = String(entry.c).toUpperCase();
+      window.__alloMailboxParticipantVersion = 0;
       let mbJoinCancelled = false;
       _alloSetQrStudentAiPolicy('pending', { type: 'mailbox-live', code: mbJoinCode }, { clearCredentials: true });
       setHasSelectedMode(true);
@@ -42217,11 +42490,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
 
       (async () => {
           try {
-              const joined = await _alloMailboxCallWithRetry(entry.u, {
-                  a: 'join', c: mbJoinCode, k: String(entry.k)
-              }, 2, 600);
+              const [joined, capability] = await Promise.all([
+                  _alloMailboxCallWithRetry(entry.u, { a: 'join', c: mbJoinCode, k: String(entry.k) }, 2, 600),
+                  _alloMailboxCall(entry.u, { a: 'hello' }, 4000).catch(() => null),
+              ]);
               if (mbJoinCancelled) return;
               if (!joined?.uid || !joined?.pt) throw new Error('Mailbox script must be updated to v7');
+              window.__alloMailboxParticipantVersion = Number(capability?.v || 0);
               const student = {
                   url: entry.u,
                   code: mbJoinCode,
@@ -42952,7 +43227,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setMbJoinRetryable(false);
       setMbJoinStatus('Contacting the class mailbox…');
       setActiveView('input');
-      setInputText("");
+      setInputText('');
       setShowUDLGuide(true);
       const botIntro = t('progression.bot_intro', { topic: option.nextTopic });
       setUdlMessages(prev => [...prev, { role: 'model', text: botIntro }]);
@@ -43354,8 +43629,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   // was repeated inline per wrapper — ~3 copies). Built fresh per
   // call so it always reads current state; module destructuring ignores
   // any key an individual function does not use.
+  const adventureImageStateRef = useRef(adventureState);
+  adventureImageStateRef.current = adventureState;
   const _alloAdventureSessionHandlersDeps = () => ({
       adventureState,
+      getAdventureState: () => adventureImageStateRef.current,
       pendingAdventureUpdate,
       adventureChanceMode,
       adventureDifficulty,
@@ -43449,11 +43727,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (_m && typeof _m.generateAdventureImage === "function") return _m.generateAdventureImage(sceneText, targetTurn, _alloAdventureSessionHandlersDeps());
     throw new Error("[generateAdventureImage] AdventureSessionHandlers module not loaded - reload the page");
   };
-  useEffect(() => {
-    if (adventureScrollRef.current) {
-        adventureScrollRef.current.scrollTop = adventureScrollRef.current.scrollHeight;
-    }
-  }, [adventureState.history, adventureState.currentScene]);
+  // AdventureView owns scene/recap scrolling in its shared reading flow.
   const generateNarrativeLedger = async (currentHistory) => {
     const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
     if (_m && typeof _m.generateNarrativeLedger === "function") return _m.generateNarrativeLedger(currentHistory, _alloAdventureSessionHandlersDeps());
@@ -44040,14 +44314,19 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   };
   const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
-    const instruction = instructionOverride || glossaryRefinementInputs[index];
+    const entry = generatedContent.data?.[index];
+    const inputKey = entry?.entryId || entry?.glossaryEntryId || entry?.id;
+    const refinementKey = inputKey ? (entry.entryId || entry.glossaryEntryId ? 'entry:' : 'id:') + inputKey : 'index:' + index;
+    const instruction = instructionOverride || glossaryRefinementInputs[refinementKey] || glossaryRefinementInputs[index];
     if (!instruction) return;
     const currentItem = generatedContent?.data[index];
     if (!currentItem || !currentItem.image) {
         addToast(t('glossary.actions.no_image_refine'), "error");
         return;
     }
-    setIsGeneratingTermImage(prev => ({ ...prev, [index]: true }));
+    const task = _alloBeginGlossaryTask(index, ['term', 'def', 'image'], 'image');
+    if (!task) return;
+    task.busy(setIsGeneratingTermImage, true);
     addToast(t('visuals.actions.refining_icon'), "info");
     try {
         const rawBase64 = currentItem.image.split(',')[1];
@@ -44056,21 +44335,20 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             Instruction: ${instruction}
             Maintain the simple, flat vector art style. White background.
         `;
-        const newImageBase64 = await callGeminiImageEdit(refinementPrompt, rawBase64);
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...newData[index], image: newImageBase64 };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        const newImageBase64 = await callGeminiImageEdit(refinementPrompt, rawBase64, undefined, undefined, null, { signal: task.signal });
+        if (!newImageBase64) throw new Error('No edited image returned');
+        if (!task.commit(() => ({ image: newImageBase64 })) || !task.visible()) return;
         if (!instructionOverride) {
-            setGlossaryRefinementInputs(prev => ({ ...prev, [index]: '' }));
+            setGlossaryRefinementInputs(prev => prev[refinementKey] === instruction ? ({ ...prev, [refinementKey]: '' }) : prev);
         }
         addToast(t('visuals.actions.icon_refined'), "success");
     } catch (e) {
+        if (!task.isCurrent() || !task.visible()) return;
         warnLog("Glossary image refinement failed", e);
         addToast(t('visuals.actions.refinement_failed'), "error");
     } finally {
-        setIsGeneratingTermImage(prev => ({ ...prev, [index]: false }));
+        task.busy(setIsGeneratingTermImage, false);
+        task.finish();
     }
   };
   const handleRefineImage = async () => {
@@ -46488,7 +46766,7 @@ ${_alloActivityContext(activity)}
       translationMode, translationTargetChoices, resolveTranslationPolicy,
       useEmojis, universalImageStyle, imageGenerationStyle, imageAspectRatio, outlineType, visualStyle,
       visualCustomStyle, visualLayoutMode, quizMode, noteTakingTemplateType, anchorChartType,
-      appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions,
+      appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions, appliedChallengePlan,
       memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, memoryAidIncludeVisuals, memoryAidIncludeHookFacts, mcqVisualMode,
       isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode,
       adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode,
@@ -46954,13 +47232,13 @@ ${_alloActivityContext(activity)}
       enqueuePersonaTtsMessages(newMessages);
   }, [personaState.chatHistory, personaAutoRead, personaAutoReadEpoch, personaTtsVoiceSignature]);
   useEffect(() => {
-    if (isPersonaChatOpen && isDictationMode && personaAutoSend && personaInput.trim().length > 0) {
+    if (isPersonaChatOpen && isDictationMode && personaAutoSend && isPersonaFreeResponse && !personaState.isLoading && !personaState.turnError && personaInput.trim().length > 0) {
         const timer = setTimeout(() => {
             handlePersonaChatSubmit();
         }, HESITATION_DELAY);
         return () => clearTimeout(timer);
     }
-  }, [personaInput, isPersonaChatOpen, isDictationMode, personaAutoSend]);
+  }, [personaInput, isPersonaChatOpen, isDictationMode, personaAutoSend, isPersonaFreeResponse, personaState.isLoading, personaState.turnError]);
   const handleSaveReflection = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.handleSaveReflection === "function") return _m.handleSaveReflection(_alloPhaseKHelpersDeps());
@@ -47364,6 +47642,9 @@ ${_alloActivityContext(activity)}
   }, [isEscapeTimerRunning, escapeTimeLeft, escapeRoomState.isActive, escapeRoomState.isEscaped, escapeRoomState.isGameOver, escapeRoomState.timerEnabled, t, addToast]);
   const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
+    const viewOwner = {};
+    if (switchView) generationViewOwnerRef.current = viewOwner;
+    const ownsView = () => switchView && generationViewOwnerRef.current === viewOwner;
     if (type) setAlloGenerationType(type);
     console.log('[VisualDebug] handleGenerate shim called with type=', type, 'module loaded?', !!_m);
     if (_m && typeof _m.handleGenerate === "function") return _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, Object.assign({
@@ -47388,7 +47669,7 @@ ${_alloActivityContext(activity)}
         appliedChallengeFamily,
         appliedChallengeAgencyMode,
         appliedChallengeScope,
-        appliedChallengeCustomInstructions,
+        appliedChallengeCustomInstructions, appliedChallengePlan,
         memoryAidSelectionMode,
         memoryAidTypes,
         memoryAidAuthorshipMode,
@@ -47465,8 +47746,8 @@ ${_alloActivityContext(activity)}
         setIsReviewGame,
         setReviewGameState,
         setGuidedStep,
-        setGeneratedContent,
-        setActiveView,
+        setGeneratedContent: value => { if (ownsView()) setGeneratedContent(value, viewOwner); },
+        setActiveView: value => { if (ownsView()) setActiveView(value, viewOwner); },
         setHistory,
         setError,
         setShowKokoroOfferModal,
@@ -47487,7 +47768,7 @@ ${_alloActivityContext(activity)}
         formatLessonDNA,
         getDifferentiationGrades,
         getGroupDifferentiationContext,
-        flyToElement,
+        flyToElement: (...args) => { if (ownsView()) flyToElement(...args); },
         fisherYatesShuffle,
         sanitizeTruncatedCitations,
         normalizeCitationPlacement,
@@ -47576,7 +47857,7 @@ ${_alloActivityContext(activity)}
         setPresentationState,
         setProcessingProgress,
         setShowQuizAnswers,
-        setStickers,
+        setStickers: value => { if (ownsView()) setStickers(value); },
         calculateReadability,
         callGeminiImageEdit,
         checkAccuracyWithSearch,
@@ -48308,8 +48589,9 @@ ${_alloActivityContext(activity)}
   const handleGlossarySelectionChange = (index) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
     const newData = [...generatedContent?.data];
+    if (!newData[index]) return;
     const current = newData[index].isSelected !== false;
-    newData[index].isSelected = !current;
+    newData[index] = { ...newData[index], isSelected: !current };
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
@@ -48328,6 +48610,7 @@ ${_alloActivityContext(activity)}
   // Narrow dependency bundle for glossary image creation. Keeping this local
   // also makes Universal-style inheritance explicit for add/quick-add flows.
   const _alloGlossaryImageDeps = () => ({
+    ..._alloGlossaryTaskDeps(), history,
     gradeLevel, selectedLanguages, useEmojis, callGemini, cleanJson,
     addToast, t, callImagen, autoRemoveWords, callGeminiImageEdit, warnLog,
     setHistory, generatedContent, setGeneratedContent, setIsAddingTerm,
@@ -48364,47 +48647,42 @@ ${_alloActivityContext(activity)}
   };
   const handleGenerateTermImage = async (index, term) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
-    setIsGeneratingTermImage(prev => ({ ...prev, [index]: true }));
+    const task = _alloBeginGlossaryTask(index, ['term', 'def', 'image'], 'image');
+    if (!task) return;
+    task.busy(setIsGeneratingTermImage, true);
     try {
         const definition = generatedContent?.data[index]?.def || "";
         const effectiveGlossaryStyle = String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim();
         const styleInstruction = effectiveGlossaryStyle ? `Style: ${effectiveGlossaryStyle}.` : 'Simple, clear, flat vector art style.';
         const prompt = `Icon style illustration of "${term}" (Context: ${definition}). ${styleInstruction} White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
-        let imageUrl = await callImagen(prompt);
+        let imageUrl = await callImagen(prompt, undefined, undefined, { signal: task.signal });
+        if (!task.isCurrent()) return;
         if (autoRemoveWords) {
              try {
-                 addToast(t('visuals.actions.auto_remove_toast'), "info");
+                 if (task.visible()) addToast(t('visuals.actions.auto_remove_toast'), "info");
                  const rawBase64 = imageUrl.split(',')[1];
                  const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                 imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                 imageUrl = await callGeminiImageEdit(editPrompt, rawBase64, undefined, undefined, null, { signal: task.signal });
              } catch (editErr) {
                  warnLog("Auto-remove text failed for regenerated term:", term, editErr);
              }
         }
-        setGeneratedContent(prev => {
-            if (!prev || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
-            const liveIdx = prev.data.findIndex(d => d && d.term === term);
-            if (liveIdx === -1) {
-                warnLog("Term no longer exists, discarding generated image for:", term);
-                return prev;
-            }
-            const newData = [...prev.data];
-            newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
-            const updated = { ...prev, data: newData };
-            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
-            return updated;
-        });
+        if (!imageUrl) throw new Error('No image returned');
+        if (!task.commit(() => ({ image: imageUrl })) || !task.visible()) return;
         addToast(t('glossary.actions.icon_generated', { term: term }), "success");
     } catch (e) {
+        if (!task.isCurrent() || !task.visible()) return;
         warnLog("Unhandled error:", e);
         addToast(t('glossary.actions.icon_failed'), "error");
     } finally {
-        setIsGeneratingTermImage(prev => ({ ...prev, [index]: false }));
+        task.busy(setIsGeneratingTermImage, false);
+        task.finish();
     }
   };
   const handleGenerateTermEtymology = async (index, term) => {
     const _m = window.AlloModules && window.AlloModules.GlossaryHelpers;
     if (_m && typeof _m.handleGenerateTermEtymology === "function") return _m.handleGenerateTermEtymology(index, term, {
+        ..._alloGlossaryTaskDeps(),
         inputText,
         selectedLanguages,
         studentInterests,
@@ -49899,8 +50177,8 @@ ${_alloActivityContext(activity)}
       });
   };
   const getReviewCategories = () => {
-      if (!generatedContent?.data?.questions) return [];
-      const questions = generatedContent?.data.questions;
+      if (!Array.isArray(generatedContent?.data?.questions)) return [];
+      const questions = generatedContent.data.questions;
       const categories = [
           { name: t('review_game.cat_concepts'), questions: [] },
           { name: t('review_game.cat_vocab'), questions: [] },
@@ -49908,15 +50186,15 @@ ${_alloActivityContext(activity)}
       ];
       let gameIndex = 0;
       questions.forEach((q, i) => {
-          // The board-style review game is a rapid MCQ activity. Structured,
-          // numeric, and written formats remain available in the assessment view.
-          if (!q || (q.type && q.type !== 'mcq') || !Array.isArray(q.options) || q.options.length < 2) return;
+          // Every authored item belongs on the board. The review dialog presents
+          // each format with its answer guide; teams can answer aloud or on paper.
+          if (!q || typeof q !== 'object' || Array.isArray(q)) return;
           const catIndex = gameIndex % 3;
           const points = (Math.floor(gameIndex / 3) + 1) * 100;
           categories[catIndex].questions.push({ ...q, points, originalIndex: i });
           gameIndex += 1;
       });
-      return categories;
+      return categories.filter(category => category.questions.length > 0);
   };
   const toggleTheme = () => {
     setTheme(prev => {
@@ -51179,6 +51457,15 @@ ${_alloActivityContext(activity)}
           <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-violet-300 bg-violet-50 px-2 py-1 text-xs font-bold text-violet-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>
         </div>
       )}
+      <MailboxImageDeliveryMonitor
+          enabled={!isTeacherMode && !!mbStudent && !!activeSessionCode}
+          resource={generatedContent}
+          sessionKey={String(activeSessionAppId || appId) + '|' + String(activeSessionCode || '')}
+          assignmentAt={resolveLiveStudentResourceTarget({ entry: sessionData?.roster?.[user?.uid], groups: sessionData?.groups, currentResourceId: sessionData?.currentResourceId, sessionMode: sessionData?.mode })?.resourceAt}
+          onReceipt={reportMailboxImageProgress}
+          receiveError={mbResourceReceiveError}
+          onRetryResource={retryMailboxReceivedResources}
+      />
       {!isTeacherMode && sharedHostedActivity && (
         <>
           <button type="button" onClick={() => setShowSharedHostedActivity(true)} className="fixed bottom-20 left-4 z-[140] flex min-h-11 items-center gap-2 rounded-full border-2 border-sky-300 bg-white px-4 py-2 text-sm font-black text-sky-900 shadow-xl hover:border-sky-500 no-print" aria-haspopup="dialog">
@@ -51604,7 +51891,7 @@ ${_alloActivityContext(activity)}
     adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureState,
     adventureTypingPaceEnabled, adventureFluencyEnabled, setAdventureTypingPaceEnabled, setAdventureFluencyEnabled, adventureAutoRead, setAdventureAutoRead, stopPlayback,
     aiCapability, aiStandardQuery, anchorChartCustomInstructions, anchorChartType,
-    appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengeFamily,
+    appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengePlan, appliedChallengeFamily,
     appliedChallengeScope, appliedChallengeSelectionMode, autoAttachManipulatives, autoRemoveWords,
     brainstormCustomInstructions, bridgeSimType, bridgeStepCount, callGemini, callGeminiVision,
     checkAccuracyWithSearch, conceptImageMode, conceptInput, conceptItemCount,
@@ -51648,7 +51935,7 @@ ${_alloActivityContext(activity)}
     setAdventureConsistentCharacters, setAdventureCustomArtStyle, setAdventureCustomInstructions,
     setAdventureDifficulty, setAdventureFreeResponseEnabled, setAdventureInputMode,
     setAdventureLanguageMode, setAdventureState, setAiStandardQuery, setAnchorChartCustomInstructions,
-    setAnchorChartType, setAppliedChallengeAgencyMode, setAppliedChallengeCustomInstructions,
+    setAnchorChartType, setAppliedChallengeAgencyMode, setAppliedChallengeCustomInstructions, setAppliedChallengePlan,
     setAppliedChallengeFamily, setAppliedChallengeScope, setAppliedChallengeSelectionMode,
     setAutoAttachManipulatives, setAutoRemoveWords, setBrainstormCustomInstructions, setBridgeSimType,
     setBridgeStepCount, setCheckAccuracyWithSearch, setConceptImageMode, setConceptInput,
@@ -51805,9 +52092,9 @@ ${_alloActivityContext(activity)}
         >
           {isZenMode && (
               <button
-                  aria-label={t('common.minimize')}
+                  type="button" aria-label={t('common.exit_focus')}
                 onClick={handleSetIsZenModeToFalse}
-                className="absolute top-4 right-4 z-[150] bg-slate-800/80 hover:bg-slate-800 text-white px-4 py-2 rounded-full backdrop-blur-md transition-all font-bold text-xs flex items-center gap-2 shadow-lg border border-white/20 animate-in fade-in slide-in-from-top-4"
+                className="self-end shrink-0 m-2 min-h-11 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg border border-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 <Minimize size={14} /> {t('common.exit_focus')}
               </button>
@@ -52655,7 +52942,7 @@ ${_alloActivityContext(activity)}
                     chunkReaderAutoPlay, chunkReaderSpeed, chunkReaderReadAlong,
                     chunkReaderSweepPct, chunkReaderMood, chunkTypewriterCharIdx, isCrawlReaderActive, isKaraokeOverlayActive,
                     isAnalyzingPos, isCheckingLevel, isCheckingAlignment,
-                    isLineFocusMode, focusedParagraphIndex, isZenMode,
+                    isLineFocusMode, focusedParagraphIndex, isZenMode, onFocusViewChange: setIsZenMode,
                     definitionData, phonicsData, revisionData, selectionMenu,
                     isCustomReviseOpen, customReviseInstruction,
                     latestGlossary, history, complexityLevel, saveOriginalOnAdjust,
@@ -52980,7 +53267,7 @@ ${_alloActivityContext(activity)}
                     openAdventureActionVote,
                     renderFormattedText, formatInteractiveText, splitTextToSentences,
                     stopPlayback, executeStartAdventure, adventureEffects,
-                    saveAdventureFluencyResult, gradeLevel,
+                    saveAdventureFluencyResult, gradeLevel, sourceTopic,
                     ErrorBoundary, AdventureAmbience, AdventureShop, AnimatedNumber,
                     ClimaxProgressBar, ConfettiExplosion, InventoryGrid
                 })}
@@ -53036,7 +53323,7 @@ ${_alloActivityContext(activity)}
                     onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
                     allowRuntimeAi: !studentAiFeaturesHidden,
                     generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callGemini: studentAiFeaturesHidden ? null : callGemini, addToast, gradeLevel, t,
+                    callImagen: isTeacherMode ? callImagen : null, handleNoteUpdate, callGemini: studentAiFeaturesHidden ? null : callGemini, addToast, gradeLevel, t,
                     onPrint: (item, options) => handlePrintResourceSheet(item, options),
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
@@ -53181,6 +53468,9 @@ ${_alloActivityContext(activity)}
                     t, generatedContent: teachingScriptPlan, sourceTopic, gradeLevel,
                     isTeacherMode, isIndependentMode, isParentMode,
                     teachingScriptMaterials, teachingScriptLoadState,
+                    teachingScriptDraftScope: teachingScriptTeacher ? teachingScriptActor : '',
+                    createTeachingScriptAudio,
+                    teachingScriptAudioProfile: JSON.stringify([selectedVoice, voiceSpeed, _aiConfig.ttsProvider, _aiConfig.backend, _aiConfig.models?.tts]),
                     onRetryTeachingScriptLoad: () => setTeachingScriptLoadAttempt(previous => previous + 1),
                     onGenerateTeachingScript, onCancelTeachingScript, onUpdateTeachingScript, onOpenTeachingMaterial,
                     capabilities: { canGenerate: teachingScriptCanGenerate, canResearch: typeof window.fetch === 'function' },
@@ -53195,7 +53485,7 @@ ${_alloActivityContext(activity)}
                     setActiveStation, setStemLabTool, setShowStemLab, setStemLabTab,
                     handleToggleIsEditingLessonPlan, handleCopyToClipboard, handleExportPDF,
                     handleLessonPlanChange, handleGenerateExtensionGuide,
-                    handleExport, handleGenerateProgression,
+                    handleExport: mode => handleExport(mode, { lessonPlanId: generatedContent?.id }), handleGenerateProgression,
                     handleSetProgressionDataToNull, handleActivateNextLesson,
                     getRows, normalizeMaterialItem, renderFormattedText, addToast,
                     BilingualFieldRenderer
@@ -53740,7 +54030,7 @@ ${_alloActivityContext(activity)}
         havenRewardReceipt, history, interactiveOrganizerRetrying, interactiveOrganizerSync, isStudyTimerRunning, launchPreparedLiveInteraction, liveActivitySnapshots, liveAudioStatusNow,
         liveDockPanelRef, liveOrganizer, liveOrganizerSummary, livePresenterCuesByResourceId, liveSessionQaEnabled, normalizeClassGoal, normalizeClassGoals, normalizeLiveOrganizerProgress,
         openChecklistGoalId, openLiveActivityDashboard, recentHavenRecognition, resolveClassGoalTeamUids, resolveLiveStudentResourceTarget, resolveWordSoundsAudioDeliveryState, retryInteractiveOrganizerStudents, retryableLiveOrganizerUids,
-        rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
+        retryMailboxImagesForStudent, mailboxImageVersion: Number(mbConfig?.v || 0), rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
         setIsWordSoundsMode, setLivePollPreset, setLiveSessionQaEnabled, setOpenChecklistGoalId, setPictionaryInitialMode, setPictionaryPreparedInteraction, setRosterKey, setShowHavenRewardAudit,
         setShowLiveDock, setShowLivePollingPanel, setShowPictionaryHost, setShowSessionModal, setWordSoundsAutoReview, showHavenRewardAudit, signalMeta, studyTimeLeft,
         t, toggleSessionMode, units, updateLivePresenterCue
@@ -55596,6 +55886,7 @@ ${_alloActivityContext(activity)}
                     onClose: () => setIsAlloHavenOpen(false),
                     callImagen,
                     callGemini,
+                    callGeminiVision,
                     callGeminiImageEdit,
                     callGeminiAudio,
                     callTTS,

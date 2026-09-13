@@ -1,0 +1,281 @@
+[
+  {
+    "id": "wfx-term-1",
+    "kind": "term",
+    "file": "wfx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blank tiles sit together inside one larger rounded frame.",
+    "altHash": "img-4a3-d52b4b02"
+  },
+  {
+    "id": "wfx-term-2",
+    "kind": "term",
+    "file": "wfx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One large blank teal tile sits alone on an ivory background.",
+    "altHash": "img-36f-ce787661"
+  },
+  {
+    "id": "wfx-term-3",
+    "kind": "term",
+    "file": "wfx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One gold dot sits beside three curved lines spreading to the right.",
+    "altHash": "img-dnz-f9d01d87"
+  },
+  {
+    "id": "wfx-term-4",
+    "kind": "term",
+    "file": "wfx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One gold starting tile sits beside a longer teal ending tile with an underline.",
+    "altHash": "img-3wz-392983a2"
+  },
+  {
+    "id": "wfx-term-5",
+    "kind": "term",
+    "file": "wfx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow points at the first of two differently sized blank tiles.",
+    "altHash": "img-42j-b5b0fdc7"
+  },
+  {
+    "id": "wfx-term-6",
+    "kind": "term",
+    "file": "wfx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows have different-colored first tiles and matching long teal ending tiles.",
+    "altHash": "img-5fb-be0f38e3"
+  },
+  {
+    "id": "wfx-term-7",
+    "kind": "term",
+    "file": "wfx-term-7.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "An orange felt cat sits on a teal mat beside a separate purple hat.",
+    "altHash": "img-hyb-e25ae856"
+  },
+  {
+    "id": "wfx-term-8",
+    "kind": "term",
+    "file": "wfx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The middle tile in a row of three blank tiles is gold; the others are teal.",
+    "altHash": "img-443-f1ddda78"
+  },
+  {
+    "id": "wfx-term-9",
+    "kind": "term",
+    "file": "wfx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate colored sound dots lead toward an arrow, above one long teal tile.",
+    "altHash": "img-6xv-5d81b046"
+  },
+  {
+    "id": "wfx-term-10",
+    "kind": "term",
+    "file": "wfx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Gold circles alternate with teal rectangles in a repeating row.",
+    "altHash": "img-6jz-f33d801f"
+  },
+  {
+    "id": "wfx-anchor-1",
+    "kind": "anchor",
+    "file": "wfx-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An orange felt cat sits on a teal mat beside a separate purple hat.",
+    "altHash": "img-di7-dd14ed95"
+  },
+  {
+    "id": "wfx-anchor-2",
+    "kind": "anchor",
+    "file": "wfx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A mop has a long brown handle and teal cleaning strands.",
+    "altHash": "img-9rr-dbb58685"
+  },
+  {
+    "id": "wfx-anchor-3",
+    "kind": "anchor",
+    "file": "wfx-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A pink felt pig pushes its snout into loose soil beside a forked twig.",
+    "altHash": "img-aqj-3fca71f7"
+  },
+  {
+    "id": "wfx-anchor-4",
+    "kind": "anchor",
+    "file": "wfx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One gold starting tile sits beside a longer teal ending tile with an underline.",
+    "altHash": "img-3wz-392983a2"
+  },
+  {
+    "id": "wfx-sort-1",
+    "kind": "sort",
+    "file": "wfx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A broad-brimmed purple hat has a gold band.",
+    "altHash": "img-7if-e249ac5e"
+  },
+  {
+    "id": "wfx-sort-2",
+    "kind": "sort",
+    "file": "wfx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A wooden baseball bat has a gold handle wrap.",
+    "altHash": "img-7jz-1236a24c"
+  },
+  {
+    "id": "wfx-sort-3",
+    "kind": "sort",
+    "file": "wfx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A thin, level rectangular slab is shown at an angle.",
+    "altHash": "img-63r-8da85c11"
+  },
+  {
+    "id": "wfx-sort-4",
+    "kind": "sort",
+    "file": "wfx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A mop has a long brown handle and teal cleaning strands.",
+    "altHash": "img-9rr-dbb58685"
+  },
+  {
+    "id": "wfx-sort-5",
+    "kind": "sort",
+    "file": "wfx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A red and gold spinning top has a short upright handle.",
+    "altHash": "img-cbr-1eb60fba"
+  },
+  {
+    "id": "wfx-sort-6",
+    "kind": "sort",
+    "file": "wfx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A ball rests before a tall barrier; a short horizontal trail lies behind it.",
+    "altHash": "img-50f-d6a49b3e"
+  },
+  {
+    "id": "wfx-sort-7",
+    "kind": "sort",
+    "file": "wfx-sort-7.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A pink felt pig pushes its snout into loose soil beside a forked twig.",
+    "altHash": "img-aqj-3fca71f7"
+  },
+  {
+    "id": "wfx-sort-8",
+    "kind": "sort",
+    "file": "wfx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A shovel blade reaches into a patch of soil.",
+    "altHash": "img-7kv-701db80e"
+  },
+  {
+    "id": "wfx-sort-9",
+    "kind": "sort",
+    "file": "wfx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A slender brown twig has two side branches.",
+    "altHash": "img-aqv-9f48653f"
+  },
+  {
+    "id": "wfx-lesson-1",
+    "kind": "lesson",
+    "file": "wfx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "An orange felt cat sits on a teal mat beside a separate purple hat.",
+    "altHash": "img-1g3b-425313b5"
+  },
+  {
+    "id": "wfx-lesson-2",
+    "kind": "lesson",
+    "file": "wfx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blank tiles sit together inside one larger rounded frame.",
+    "altHash": "img-4a3-d52b4b02"
+  },
+  {
+    "id": "wfx-lesson-3",
+    "kind": "lesson",
+    "file": "wfx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One gold starting tile sits beside a longer teal ending tile with an underline.",
+    "altHash": "img-3wz-392983a2"
+  },
+  {
+    "id": "wfx-lesson-4",
+    "kind": "lesson",
+    "file": "wfx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow points at the first of two differently sized blank tiles.",
+    "altHash": "img-42j-b5b0fdc7"
+  },
+  {
+    "id": "wfx-lesson-5",
+    "kind": "lesson",
+    "file": "wfx-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A pink felt pig pushes its snout into loose soil beside a forked twig.",
+    "altHash": "img-1873-9c466b3e"
+  },
+  {
+    "id": "wfx-lesson-6",
+    "kind": "lesson",
+    "file": "wfx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A mop has a long brown handle and teal cleaning strands.",
+    "altHash": "img-9rr-dbb58685"
+  },
+  {
+    "id": "wfx-lesson-7",
+    "kind": "lesson",
+    "file": "wfx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separate colored sound dots lead toward an arrow, above one long teal tile.",
+    "altHash": "img-6xv-5d81b046"
+  },
+  {
+    "id": "wfx-lesson-8",
+    "kind": "lesson",
+    "file": "wfx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Gold circles alternate with teal rectangles in a repeating row.",
+    "altHash": "img-6jz-f33d801f"
+  }
+]

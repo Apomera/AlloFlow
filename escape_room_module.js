@@ -260,7 +260,7 @@
     var awardXP = function(state, points, suffix) {
       var id = escapeRoomScoreId(state.escapeRoomState) + ':' + suffix;
       var previous = state.completedActivities && typeof state.completedActivities.get === 'function' ? state.completedActivities.get(id) || 0 : 0;
-      handleScoreUpdate(points, 'Escape Room', id);
+      handleScoreUpdate(points, 'Puzzle Challenge', id);
       return Math.max(0, points - previous);
     };
 
@@ -311,11 +311,11 @@
       });
       setState.setEscapeTimeLeft(totalTime);
       setState.setIsEscapeTimerRunning(false);
-      var escapeRoomPrompt = escapeRoomLanguageDirective(state) + 'You are creating an ADVANCED educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.\n' +
+      var escapeRoomPrompt = escapeRoomLanguageDirective(state) + 'You are creating an ADVANCED educational Puzzle Challenge with DIVERSE PUZZLE TYPES based on the following content.\n' +
 'SOURCE CONTENT:\n' +
 inputText.substring(0, 6000) + '\n' +
 'TASK:\n' +
-'Generate a themed escape room with ' + puzzleCount + ' interactive objects. Each object hides a DIFFERENT TYPE of puzzle.\n' +
+'Generate a themed puzzle challenge with ' + puzzleCount + ' interactive objects. Each object hides a DIFFERENT TYPE of puzzle.\n' +
 'PUZZLE TYPES (use a variety - ensure good mix):\n' +
 '1. "mcq" - Multiple choice question with 4 options\n' +
 '2. "sequence" - Put 4-5 items in the correct order (chronological, size, importance, etc.)\n' +
@@ -555,11 +555,11 @@ inputText.substring(0, 6000) + '\n' +
           timeRemaining: 300
         });
       });
-      var escapeRoomPrompt = escapeRoomLanguageDirective(state) + 'You are creating an educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.\n' +
+      var escapeRoomPrompt = escapeRoomLanguageDirective(state) + 'You are creating an educational Puzzle Challenge with DIVERSE PUZZLE TYPES based on the following content.\n' +
 'SOURCE CONTENT:\n' +
 inputText.substring(0, 6000) + '\n' +
 'TASK:\n' +
-'Generate a themed escape room with exactly 10 interactive objects and exactly 10 puzzles. Each object hides one puzzle.\n' +
+'Generate a themed puzzle challenge with exactly 10 interactive objects and exactly 10 puzzles. Each object hides one puzzle.\n' +
 'BALANCED PUZZLE MIX - this is mandatory: use exactly 2 "mcq", 2 "sequence", 2 "matching", 2 "fillin", 1 "cipher", and 1 "scramble". Every listed type must appear at least once, and MCQs must never exceed 2 of the 10 puzzles. Do not convert non-MCQ puzzles into multiple choice.\n' +
 'TYPE CONTRACT: "mcq" has options + correctIndex; "sequence" has items + correctOrder; "matching" has pairs with left/right values; "fillin" has sentence + answer + wordbank; "cipher" has encodedText + answer + wordbank; "scramble" has scrambledWord + answer. Use these exact lowercase type names.\n' +
 'Return ONLY valid JSON:\n' +
@@ -1147,7 +1147,7 @@ inputText.substring(0, 6000) + '\n' +
         });
       });
       playSound('correct');
-      addToast(t('escape_room.preview_confirmed') || '\u2705 Escape Room locked \u2014 ready to play!', 'success');
+      addToast(t('escape_room.preview_confirmed') || '\u2705 Puzzle Challenge locked \u2014 ready to play!', 'success');
     };
 
     // ── updateEscapeRoomPuzzle ──
@@ -1242,7 +1242,7 @@ inputText.substring(0, 6000) + '\n' +
             });
           }
         } catch (eEmbed) { warnLog('Failed to embed escape room into parent resource:', eEmbed); }
-        addToast(t('escape_room.config_saved') || '\uD83D\uDCBE Escape Room saved! Load it anytime from settings.', 'success');
+        addToast(t('escape_room.config_saved') || '\uD83D\uDCBE Puzzle Challenge saved! Load it anytime from settings.', 'success');
       } catch (e) {
         warnLog('Failed to save escape room config:', e);
         addToast(t('errors.storage_full') || 'Storage full \u2014 could not save', 'error');
@@ -1334,13 +1334,13 @@ inputText.substring(0, 6000) + '\n' +
       try {
         var saved = safeGetItem('allo_saved_escape_room');
         if (!saved) {
-          addToast(t('escape_room.no_saved') || 'No saved Escape Room found', 'info');
+          addToast(t('escape_room.no_saved') || 'No saved Puzzle Challenge found', 'info');
           return;
         }
         var saveData = JSON.parse(saved);
         if (_hydrateConfig(saveData.config, saveData.difficulty)) {
           playSound('correct');
-          addToast(t('escape_room.loaded_saved') || '\uD83D\uDCC2 Saved Escape Room loaded! Review and launch when ready.', 'success');
+          addToast(t('escape_room.loaded_saved') || '\uD83D\uDCC2 Saved Puzzle Challenge loaded! Review and launch when ready.', 'success');
         }
       } catch (e) {
         warnLog('Failed to load saved escape room:', e);
@@ -1360,7 +1360,7 @@ inputText.substring(0, 6000) + '\n' +
       try {
         var ok = _hydrateConfig(saveData.config, saveData.difficulty);
         if (ok && opts && opts.silent !== true) {
-          addToast(t('escape_room.loaded_from_resource') || '\uD83D\uDCC2 Escape Room loaded from this exit ticket.', 'success');
+          addToast(t('escape_room.loaded_from_resource') || '\uD83D\uDCC2 Puzzle Challenge loaded from this assessment.', 'success');
         }
         return ok;
       } catch (e) {
@@ -2447,7 +2447,7 @@ inputText.substring(0, 6000) + '\n' +
               h(Key, { size: 32, className: 'text-amber-600' })
             ),
             h('h2', { className: 'text-2xl font-black text-slate-800 mb-1' },
-              '\uD83D\uDC41\uFE0F ' + (t('escape_room.preview_title') || 'Preview Escape Room')
+              '\uD83D\uDC41\uFE0F ' + (t('escape_room.preview_title') || 'Preview Puzzle Challenge')
             ),
             h('p', { className: 'text-slate-500 text-sm' }, t('escape_room.preview_desc') || 'Review and edit puzzles before students play. Click any field to edit.')
           ),

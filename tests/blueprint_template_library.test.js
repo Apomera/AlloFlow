@@ -216,7 +216,7 @@ describe('template modal wiring', () => {
     expect(src).toContain('bp-template-picker');
     // Only when no plan is active.
     expect(src).toMatch(/!activeBlueprint && Array\.isArray\(lessonTemplates\)/);
-    // Save handler reaches BOTH card mounts.
-    expect((src.match(/onSaveTemplate/g) || []).length).toBe(2);
+    // The active lesson card is the single editable Blueprint mount.
+    expect((src.match(/onSaveTemplate/g) || []).length).toBe(1);
   });
 });

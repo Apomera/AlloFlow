@@ -8068,6 +8068,7 @@ function ExportPreviewView(props) {
   }, [setShowBrandProfileEditor]);
 
   const hasGlossary = (history || []).some(h => h && h.type === 'glossary');
+  const hasGlossaryTranslations = (history || []).some(h => h?.type === 'glossary' && Array.isArray(h.data) && h.data.some(term => term?.translations && Object.values(term.translations).some(value => String(value || '').trim())));
   const hasTimeline = (history || []).some(h => h && h.type === 'timeline');
   const hasBrainstorm = (history || []).some(h => h && h.type === 'brainstorm');
   const hasConceptSort = (history || []).some(h => h && h.type === 'concept-sort');
@@ -9402,8 +9403,9 @@ const _downloadBRF = (brf) => {
                             🃏 Flash cards (fold-and-cut for paper, flip for digital)
                           </label>
                           <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'language-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'language-cards' }))} disabled={!exportConfig.includeGlossary} />
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'language-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'language-cards' }))} disabled={!exportConfig.includeGlossary || !hasGlossaryTranslations} />
                             🌐 Language cards (emphasizes translations)
+                            {!hasGlossaryTranslations && <span className="text-[11px] text-slate-600">— add translations first</span>}
                           </label>
                         </div>
                         {/* Image size — only relevant for table mode (cards have their own sizing). */}

@@ -249,8 +249,11 @@ describe('Ambiguous matching labels', () => {
 describe('Word-search print orientation', () => {
   it.each(['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt','desktop/web-app/src/App.jsx'])('%s keeps the answer key in the same direction as the playable puzzle', path => {
     const source=readFileSync(path,'utf8');
-    const start=source.indexOf('let teacherGridHtml =');
-    expect(source.slice(start,start+150)).toContain("gameData.isRtl ? 'rtl' : 'ltr'");
+    const start=source.indexOf('const handlePrintGame =');
+    const handler=source.slice(start,source.indexOf('const chunkText =',start));
+    expect(handler).toContain("gameData.isRtl ? 'rtl' : 'ltr'");
+    expect(handler).toContain('grid(false)');
+    expect(handler).toContain('grid(true)');
   });
 });
 

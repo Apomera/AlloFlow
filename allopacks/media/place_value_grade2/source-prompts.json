@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "place_value_grade2",
+    "key": "straws",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Layered paper and colored-pencil classroom manipulative study. Exactly ten straight gold straws side by side in a neat single row, tied together by one teal band across their middles. All ten separate top ends and bottom ends visible and countable. One bundle only. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-straws.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-18421656-85cb-43d6-bb21-13193bc7663b.png",
+    "alt": "Ten gold straws lie side by side, held together by a teal band.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "place_value_grade2",
+    "key": "ones",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Layered paper and colored-pencil classroom manipulative study. Exactly five separate gold straight straws parallel to one another with broad equal gaps. All fully visible, no band. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-ones.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-02d5e73b-f05e-4436-88ea-7ebdce07f230.png",
+    "alt": "Five separate gold straws lie parallel with clear gaps between them.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

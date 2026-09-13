@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "data_and_typical_grade6",
+    "key": "books",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Paper-cut and pastel still life. Five unlabelled upright paperback books of different heights and thicknesses, neatly separated, warm muted palette. Blank covers, no words or prices. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-books.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0d160b25-0fbe-4745-b515-361fa789c1fa.png",
+    "alt": "Five upright books with plain colored covers differ in height and thickness.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "data_and_typical_grade6",
+    "key": "bus",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Paper-cut and pastel scene. One small blue city bus at a quiet bus stop with a plain circular blank bus-stop sign and a bench, no people or readable signage. Side view, clear uncluttered shapes. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-bus.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-8c5f4190-2b22-4697-bd56-02ee940e4253.png",
+    "alt": "A blue bus stands beside a shelter, bench and blank round bus-stop sign.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

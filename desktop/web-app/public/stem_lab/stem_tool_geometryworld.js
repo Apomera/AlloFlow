@@ -118,7 +118,10 @@
       ".gw-root .gw-touch-joystick{background:#112d2b66!important;border:1px solid #e1ecd67d!important;box-shadow:inset 0 0 0 5px #e1ecd60a,0 4px 16px #092b252e}.gw-root .gw-touch-joystick-thumb{background:#d4e8cad9!important;border:1px solid #eff5e7;box-shadow:0 3px 10px #092b2566}.gw-root .gw-touch-look-zone{border:none!important;background:transparent!important;opacity:.45!important;width:42px!important;height:42px!important;right:86px!important;top:46%!important}.gw-root .gw-touch-look-zone>.gw-touch-look-label{display:none}.gw-root .gw-touch-look-reticle{border-color:#e1ecd680!important;background:#153d3422!important}.gw-root .gw-touch-mode-hint{background:#153d34ef!important;border-color:#afc7b644!important;color:#e7efdf!important;box-shadow:none;font-weight:600}",
       ".gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{bottom:194px!important}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){.gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{top:calc(50% - 112px);bottom:auto!important;left:12px!important;transform:none!important;max-width:calc(100% - 108px)!important}}",
       ".gw-placement-hint{position:absolute;bottom:186px;top:auto;left:50%;transform:translateX(-50%);z-index:25;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:max-content;max-width:min(440px,calc(100% - 36px));padding:7px 11px;border:1px solid #c4dfc770;border-radius:10px;background:#113b30f2;color:#e8f2e0;font-size:12px;font-weight:600;line-height:1.4;pointer-events:none;box-shadow:0 5px 18px #092b2533}.gw-placement-hint[data-allowed=\"false\"]{background:#502f29f2;border-color:#ecc3a3aa;color:#ffe3cc}.gw-placement-hint-mark{display:grid;flex:0 0 auto;place-items:center;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font-size:12px;font-weight:800}.gw-root .gw-action-feedback{background:#112d2bf2!important;border-color:#c4dfc766!important;color:#f5f0e5!important}",
-      ".gw-placement-hint .gw-placement-aim{pointer-events:auto;white-space:nowrap;margin-left:6px;padding:4px 9px;border-radius:8px;border:1px solid #c4dfc7aa;background:#1c5a48;color:#f1faf3;font:inherit;font-size:11px;font-weight:700;cursor:pointer;min-height:28px}.gw-placement-hint .gw-placement-aim:hover{background:#25705a}",
+      ".gw-placement-hint .gw-placement-aim{pointer-events:auto;white-space:nowrap;margin-left:6px;padding:4px 9px;border-radius:8px;border:1px solid #c4dfc7aa;background:#1c5a48;color:#f1faf3;font:inherit;font-size:11px;font-weight:700;cursor:pointer;min-height:44px;min-width:44px}.gw-placement-hint .gw-placement-aim:hover{background:#25705a}",
+      ".gw-placement-hint[data-placement-state=\"aim\"]{background:#f3eedcfa;color:#29473a;border-color:#b8c9ae;box-shadow:0 5px 18px #092b2524}.gw-placement-hint[data-placement-state=\"aim\"] .gw-placement-text{flex:1 1 150px;max-width:280px}.gw-placement-hint[data-placement-state=\"aim\"] .gw-placement-hint-mark{border-color:#96ae93}.gw-placement-hint .gw-placement-shortcut{display:inline-flex;align-items:center;gap:5px;padding-left:9px;margin-left:2px;border-left:1px solid #c4dfc74d;font-weight:500;white-space:nowrap}.gw-placement-shortcut kbd{display:grid;place-items:center;min-width:21px;min-height:21px;border:1px solid #c4dfc785;border-radius:5px;background:#d4e8ca12;font:700 11px system-ui,sans-serif}.theme-contrast .gw-root .gw-placement-hint[data-placement-state=\"aim\"],[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint[data-placement-state=\"aim\"]{background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gw-placement-hint .gw-placement-aim,[data-stem-theme=\"contrast\"] .gw-placement-hint .gw-placement-aim{background:#000;color:#0f0;border:2px solid #0f0}.theme-contrast .gw-placement-shortcut kbd,[data-stem-theme=\"contrast\"] .gw-placement-shortcut kbd{background:#000;color:#fff;border-color:#fff}",
+      ".gw-feedback-stack{display:contents}@media(min-width:801px) and (min-height:521px){#geoworld-fs-workspace .gw-feedback-stack{position:absolute;bottom:186px;left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;width:max-content;max-width:min(680px,calc(100% - 36px));pointer-events:none}#geoworld-fs-workspace .gw-feedback-stack>.gw-placement-hint,#geoworld-fs-workspace .gw-feedback-stack>.gw-action-feedback{position:relative!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:0;max-width:100%!important}}",
+      "@media(min-width:801px) and (min-height:521px) and (max-height:620px){#geoworld-fs-workspace .gw-feedback-stack{top:112px;bottom:auto}}",
       ".gw-npc-speech{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:2px 0 10px;padding:6px 8px;border-radius:10px;border:1px solid rgba(148,163,184,0.25);background:rgba(15,23,42,0.45)}.gw-npc-speech button{min-height:32px;padding:4px 10px;border-radius:8px;border:1px solid rgba(148,163,184,0.4);background:rgba(30,41,59,0.85);color:#e2e8f0;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.gw-npc-speech button[disabled]{opacity:.45;cursor:default}.gw-npc-speech .gw-npc-speech-play{border-color:rgba(251,191,36,0.55);color:#fde68a}.gw-npc-speech .gw-npc-speech-mute[aria-pressed=\"true\"]{opacity:.7}.gw-npc-speech .gw-npc-speech-auto{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#cbd5e1}.gw-npc-speech .gw-npc-speech-status{flex-basis:100%;font-size:10px;color:#94a3b8}.gw-npc-speech .gw-npc-speech-status[data-speech-status=\"error\"]{color:#fca5a5}.gw-npc-speech .gw-npc-speech-status[data-speech-status=\"speaking\"]{color:#86efac}@media(pointer:coarse){.gw-npc-speech button{min-height:44px;min-width:44px}}",
       ".gw-key-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;margin-left:5px;border-radius:4px;border:1px solid #64748b;background:#0b1220;color:#cbd5e1;font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;vertical-align:middle}",
       ".gw-shape-heading{cursor:pointer;background:transparent;border:0;color:inherit;font:inherit;display:inline-flex;align-items:center;padding:0 4px;min-height:24px}.gw-shape-heading:hover .gw-key-badge,.gw-shape-rotate:hover .gw-key-badge{border-color:#fbbf24;color:#fde68a}.gw-shape-rotate[disabled]{opacity:.45;cursor:default}",
@@ -139,6 +142,7 @@
       ".theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],#gw-representation-sentence-starter),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],#gw-representation-sentence-starter){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,[data-geometry-representation-connection]>label,.gw-measure-view-progress-caption,.gw-measure-prompt,#gw-representation-connect-prompt,#gw-representation-sentence-starter,.gw-measure-self-check,.gw-measure-block-count,[data-geometry-material-breakdown]),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,[data-geometry-representation-connection]>label,.gw-measure-view-progress-caption,.gw-measure-prompt,#gw-representation-connect-prompt,#gw-representation-sentence-starter,.gw-measure-self-check,.gw-measure-block-count,[data-geometry-material-breakdown]){color:#ffff00!important}.theme-contrast .gw-root .gw-measure-card :is(.gw-layer-explorer button,.gw-measure-save-connection,.gw-measure-build-card),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(.gw-layer-explorer button,.gw-measure-save-connection,.gw-measure-build-card){background:#000!important;color:#00ff00!important;border:1px solid #00ff00!important}.theme-contrast .gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is([data-geometry-volume-representation],[data-geometry-prediction-result]) :is(select,textarea,input:not([type=\"checkbox\"])){background:#000!important;color:#ffff00!important;border-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card .gw-measure-view-progress-fill,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card .gw-measure-view-progress-fill{background:#00ff00!important}.theme-contrast .gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible,[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(button,select,textarea,input):focus-visible{outline-color:#00ff00!important}.theme-contrast .gw-root .gw-measure-card :is(input[type=\"range\"],input[type=\"checkbox\"]),[data-stem-theme=\"contrast\"] .gw-root .gw-measure-card :is(input[type=\"range\"],input[type=\"checkbox\"]){accent-color:#ffff00!important}",
       "@media(max-width:420px){#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar{box-sizing:border-box;gap:2px!important;padding:3px!important}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar button{box-sizing:border-box;flex:1 1 0!important;min-width:44px!important;min-height:44px!important;padding:4px 3px!important;font-size:11px!important}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-content{display:grid;grid-template-columns:auto;justify-content:center;justify-items:center;gap:1px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-content:has(.gw-utility-count){grid-template-columns:auto auto;column-gap:2px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-workspace-icon{grid-column:1;grid-row:1;width:14px;height:14px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-label{display:block!important;grid-column:1/-1;grid-row:2;font-size:11px;line-height:12px}#geoworld-fs-workspace.gw-root[data-geometry-mode][data-touch-active] .gw-action-bar.gw-action-bar .gw-utility-count{grid-column:2;grid-row:1;min-width:0;padding:0 2px;font-size:9px;line-height:12px}}",
       "@media(max-width:800px){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud{top:68px!important;bottom:auto!important;box-sizing:border-box;width:max-content;max-width:min(200px,calc(100% - 108px));max-height:calc(100% - 268px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#839c86 #173b35}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"][data-toolbar-collapsed=\"true\"]>.gw-coordinate-hud,#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"][data-fullscreen=\"true\"]>.gw-coordinate-hud{top:56px!important}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>summary{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:44px;min-height:44px!important;margin-bottom:0!important;list-style:none}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>summary::-webkit-details-marker{display:none}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>summary::after{content:\"+\";font:18px/1 ui-sans-serif,system-ui,sans-serif;color:#c7d7cd}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud[open]>summary::after{content:\"−\"}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud>button{box-sizing:border-box;min-width:44px;min-height:44px;font-size:10px!important}}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud{max-height:calc(50% - 188px)}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"] .gw-placement-hint{top:128px;bottom:auto;left:12px;transform:none;max-width:calc(100% - 174px)}}@media(max-width:800px) and (max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"] .gw-placement-hint{top:112px;bottom:auto;left:50%;right:auto;transform:translateX(-50%);max-width:min(460px,calc(100% - 40px))}}",
+      "@media(max-width:800px) and (min-height:520px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]>.gw-coordinate-hud[open]{max-height:calc(50% - 188px)}#geoworld-fs-workspace.gw-root[data-geometry-mode=\"sandbox\"][data-touch-active=\"false\"]:has(>.gw-coordinate-hud[open]) .gw-placement-hint{top:calc(50% - 108px)}}",
       '@media(prefers-reduced-motion:reduce){.gw-root button{transition:none!important;}.gw-achievement-toast{animation:none!important;}.gw-root *{scroll-behavior:auto!important;}}'
     ].join('');
     document.head.appendChild(uiStyle);
@@ -450,6 +454,17 @@
     var el = (elevationDeg || 0) * Math.PI / 180, az = (azimuthDeg || 0) * Math.PI / 180;
     var ce = Math.cos(el);
     return { x: ce * Math.sin(az), y: Math.sin(el), z: ce * Math.cos(az) };
+  }
+  // Keep inspection shadows around the subject, even when a fitted camera is
+  // far away. A manual move/look, return transition, or new lesson releases it.
+  function geometryWorldShadowAnchor(engine) {
+    var camera=engine.camera,creation=engine._creationFocus,preset=engine._viewPresetLighting,focus=null;
+    if(engine._previewReviewCamera && engine._previewReviewCamera.focus)focus=engine._previewReviewCamera.focus;
+    else if(creation && !creation.manual && !creation.returning && creation.lesson===engine._currentLesson && creation.frame)focus=creation.frame.target;
+    if(!focus && !creation && preset && preset.lesson===engine._currentLesson && engine._viewPreset!=='free' && camera.position.distanceToSquared(preset.position)<0.0001 && Math.abs(camera.quaternion.dot(preset.quaternion))>0.999999)focus=preset.target;
+    if(focus && [focus.x,focus.y,focus.z].every(function(v){return typeof v==='number' && isFinite(v);}))return {x:focus.x,y:focus.y,z:focus.z};
+    var ground=engine._currentLesson && engine._currentLesson.ground;
+    return {x:camera.position.x,y:ground && Number.isFinite(ground.y)?ground.y:0,z:camera.position.z};
   }
   // Interpolate two bearings the short way round, so a dawn-to-dusk fade swings
   // the sun across the sky it is nearest to instead of spinning the long way.
@@ -1745,51 +1760,353 @@
       ]
     },
     areaSurface: {
-      title: 'Area & Surface Area',
-      description: 'Explore how area relates to volume by examining layers of rectangular prisms.',
-      spawnPoint: [2, 3, 2],
-      objectives: [
-        'Find the area of the base layer (blue prism)',
-        'Count the layers to find the height',
-        'Calculate the volume using Area \u00d7 Height',
-        'Compare two prisms with the same volume but different shapes'
+      "title": "Area & Surface Area",
+      "description": "Follow three model studies from one layer to full volume, compare the surface areas of equal-volume prisms, then build your own layered model.",
+      "spawnPoint": [
+        5,
+        2.6,
+        -1
       ],
-      ground: { xMin: -4, xMax: 20, zMin: -4, zMax: 20, y: 0, type: 'grass' },
-      structures: [
-        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' },
-        // Prism A: 6x4x3 = 72 (flat and wide)
-        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 7, y2: 3, z2: 5, block: 'diamond' },
-        // Prism B: 3x3x8 = 72 (tall and narrow) — same volume!
-        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 14, y2: 8, z2: 4, block: 'gold' },
-        // Layered prism with visible layers (alternating colors)
-        { type: 'fill', x1: 2, y1: 1, z1: 10, x2: 6, y2: 1, z2: 14, block: 'sand' },
-        { type: 'fill', x1: 2, y1: 2, z1: 10, x2: 6, y2: 2, z2: 14, block: 'wood' },
-        { type: 'fill', x1: 2, y1: 3, z1: 10, x2: 6, y2: 3, z2: 14, block: 'sand' },
-        { type: 'fill', x1: 2, y1: 4, z1: 10, x2: 6, y2: 4, z2: 14, block: 'wood' },
+      "objectives": [
+        "Connect the blue prism’s base area to its 72 cubic units",
+        "Compare equal volumes built with different base areas and heights",
+        "Explain all four layers of the striped 100-unit prism",
+        "Compare the full surface areas of the two 72-unit prisms",
+        "Build and explain a layered 24-unit model on the sand work pad"
       ],
-      npcs: [
-        { position: [4, 1, 0], name: 'Area Guide', color: 0x7c3aed,
-          dialogue: 'Area = Length \u00d7 Width. It tells you how many blocks make ONE layer. Volume = Area \u00d7 Height (number of layers)!', question: null },
-        { position: [5, 4, 3], name: 'Flat Prism Quiz', color: 0x2563eb,
-          dialogue: 'This blue prism is 6 long, 4 wide, 3 tall. Let\u2019s find its volume step by step!',
-          question: { text: 'What is the base area? (6 \u00d7 4)', choices: ['24 square units', '10 square units', '18 square units'], correct: 0,
-            followUp: [
-              { text: 'Base area = 24. How many layers tall?', choices: ['3 layers', '4 layers', '6 layers'], correct: 0 },
-              { text: '24 \u00d7 3 = ?', choices: ['72 cubic units', '48 cubic units', '27 cubic units'], correct: 0 }
-            ] } },
-        { position: [13, 9, 3], name: 'Tall Prism Quiz', color: 0xf59e0b,
-          dialogue: 'This gold prism is 3\u00d73\u00d78. Different shape from the blue one!',
-          question: { text: 'What is 3 \u00d7 3 \u00d7 8?', choices: ['72 cubic units', '64 cubic units', '48 cubic units'], correct: 0,
-            followUp: [
-              { text: 'Blue = 72, Gold = 72. Same or different volume?', choices: ['Same volume! Different shape.', 'Gold is bigger', 'Blue is bigger'], correct: 0 }
-            ] } },
-        { position: [4, 5, 12], name: 'Layer Counter', color: 0x16a34a,
-          dialogue: 'Count the alternating layers! Each layer is 5\u00d75 blocks.',
-          question: { text: 'Area of one layer? (5 \u00d7 5)', choices: ['25 square units', '10 square units', '20 square units'], correct: 0,
-            followUp: [
-              { text: 'How many layers are stacked?', choices: ['4 layers', '5 layers', '3 layers'], correct: 0 },
-              { text: '25 \u00d7 4 = ?', choices: ['100 cubic units', '125 cubic units', '80 cubic units'], correct: 0 }
-            ] } }
+      "ground": {
+        "xMin": -4,
+        "xMax": 20,
+        "zMin": -4,
+        "zMax": 20,
+        "y": 0,
+        "type": "grass"
+      },
+      "structures": [
+        {
+          "type": "fill",
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 8,
+          "y2": 0,
+          "z2": 8,
+          "block": "stone",
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 2,
+          "x2": 7,
+          "y2": 3,
+          "z2": 5,
+          "block": "diamond"
+        },
+        {
+          "type": "fill",
+          "x1": 12,
+          "y1": 1,
+          "z1": 2,
+          "x2": 14,
+          "y2": 8,
+          "z2": 4,
+          "block": "gold"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 10,
+          "x2": 6,
+          "y2": 1,
+          "z2": 14,
+          "block": "sand"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 2,
+          "z1": 10,
+          "x2": 6,
+          "y2": 2,
+          "z2": 14,
+          "block": "wood"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 3,
+          "z1": 10,
+          "x2": 6,
+          "y2": 3,
+          "z2": 14,
+          "block": "sand"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 4,
+          "z1": 10,
+          "x2": 6,
+          "y2": 4,
+          "z2": 14,
+          "block": "wood"
+        },
+        {
+          "type": "fill",
+          "block": "stone",
+          "x1": 8,
+          "x2": 14,
+          "y1": 0,
+          "y2": 0,
+          "z1": 7,
+          "z2": 8,
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "block": "stone",
+          "x1": 8,
+          "x2": 9,
+          "y1": 0,
+          "y2": 0,
+          "z1": 8,
+          "z2": 18,
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "block": "sand",
+          "x1": 10,
+          "x2": 17,
+          "y1": 0,
+          "y2": 0,
+          "z1": 11,
+          "z2": 18,
+          "measurementLayer": "ground"
+        }
+      ],
+      "npcs": [
+        {
+          "position": [
+            4,
+            1,
+            0
+          ],
+          "name": "Area Guide",
+          "color": 8141549,
+          "dialogue": "Start with one layer: its area counts square units. Stack identical layers to find volume in cubic units. The blue and gold models are teaching models; use the sand pad beyond the striped prism for your own build. The activity guide offers hints and a place to review your reasoning.",
+          "question": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            4
+          ],
+          "name": "Flat Prism Quiz",
+          "color": 2450411,
+          "dialogue": "The blue prism beside me is 6 blocks long, 4 wide and 3 high. Its base has 24 square units. Predict the total, then use Measure on the model to compare your reasoning with its occupied volume.",
+          "question": {
+            "text": "What is the base area? (6 × 4)",
+            "choices": [
+              "24 square units",
+              "10 square units",
+              "18 square units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "Base area = 24. How many layers tall?",
+                "choices": [
+                  "3 layers",
+                  "4 layers",
+                  "6 layers"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "24 × 3 = ?",
+                "choices": [
+                  "72 cubic units",
+                  "48 cubic units",
+                  "27 cubic units"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            11,
+            1,
+            3
+          ],
+          "name": "Tall Prism Quiz",
+          "color": 16096779,
+          "dialogue": "This gold prism is 3 by 3 by 8. It holds the same 72 cubic units as the blue prism across the aisle. A smaller base needs more layers. Does equal volume also guarantee equal surface area? The activity guide includes a face-by-face comparison.",
+          "question": {
+            "text": "What is 3 × 3 × 8?",
+            "choices": [
+              "72 cubic units",
+              "64 cubic units",
+              "48 cubic units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "Blue = 72, Gold = 72. Same or different volume?",
+                "choices": [
+                  "Same volume! Different shape.",
+                  "Gold is bigger",
+                  "Blue is bigger"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            7,
+            1,
+            12
+          ],
+          "name": "Layer Counter",
+          "color": 1483594,
+          "dialogue": "Each striped layer is 5 by 5 blocks. Two sand layers and two wood layers make four layers in all. Measure treats the touching colors as one model: 100 cubic units. The color breakdown is 50 sand and 50 wood; it does not mean there are only two layers.",
+          "question": {
+            "text": "Area of one layer? (5 × 5)",
+            "choices": [
+              "25 square units",
+              "10 square units",
+              "20 square units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "How many layers are stacked?",
+                "choices": [
+                  "4 layers",
+                  "5 layers",
+                  "3 layers"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "25 × 4 = ?",
+                "choices": [
+                  "100 cubic units",
+                  "125 cubic units",
+                  "80 cubic units"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            18,
+            1,
+            13
+          ],
+          "name": "Layer Design Coach",
+          "question": null,
+          "dialogue": "Use this empty sand work pad for a 24-cubic-unit prism. One option is a 4 by 3 base with 2 layers. Try a second arrangement, such as 3 by 2 with 4 layers, leaving a gap between your models. Use full cubes and Measure to check each build. Review the evidence in your activity journal; this build is not automatically scored."
+        }
+      ],
+      "estimatedMinutes": 30,
+      "activities": [
+        {
+          "id": "area-base-to-volume",
+          "title": "One layer becomes a solid",
+          "npcName": "Flat Prism Quiz",
+          "position": [
+            9,
+            2.6,
+            5
+          ],
+          "challenge": "Examine the blue prism. Predict how many cubes are in one layer and how many are in all three layers, then use Measure on the model to compare your prediction.",
+          "hint": "The base is 6 by 4, so one layer covers 24 square units. There are 3 identical layers: 24 × 3. Measure selects the whole connected model, not just its top layer.",
+          "successCriteria": [
+            "I distinguish a base area of 24 square units from a volume of 72 cubic units.",
+            "I can explain why multiplying by 3 counts every layer once."
+          ],
+          "reflection": "Why does area use square units while the complete model uses cubic units?"
+        },
+        {
+          "id": "area-equal-volume",
+          "title": "Same volume, different silhouette",
+          "npcName": "Tall Prism Quiz",
+          "position": [
+            10,
+            2.6,
+            4
+          ],
+          "challenge": "Compare the tall gold prism with the lower blue prism across the aisle. Predict which contains more cubes, then measure each model and explain the result.",
+          "hint": "Gold has 9 square units in each of 8 layers. Blue has 24 in each of 3 layers. Both products are 72 even though their heights and footprints differ.",
+          "successCriteria": [
+            "I measured 72 cubic units in each model.",
+            "I can explain how a smaller base and a greater height can preserve volume."
+          ],
+          "reflection": "Which model would fit better on a narrow shelf, and what other dimension would you need to check?"
+        },
+        {
+          "id": "area-striped-layers",
+          "title": "Read the striped layers",
+          "npcName": "Layer Counter",
+          "position": [
+            9,
+            2.6,
+            13
+          ],
+          "challenge": "Walk around the striped prism and count its four layers. Predict its occupied volume and how many cubes use each material before measuring.",
+          "hint": "Each layer contains 5 × 5 = 25 cubes. Two sand layers contribute 50 cubes and two wood layers contribute another 50. Touching colors are measured together.",
+          "successCriteria": [
+            "I explain 25 × 4 = 100 cubic units.",
+            "I distinguish four physical layers from two material types, with 50 cubes of each."
+          ],
+          "reflection": "If you added a fifth layer, what would change about the volume and the model’s height?"
+        },
+        {
+          "id": "area-surface-comparison",
+          "title": "Count every outside face",
+          "npcName": "Tall Prism Quiz",
+          "position": [
+            10,
+            2.6,
+            1
+          ],
+          "challenge": "Compare the full exposed surface areas of the blue and gold prisms. Include all six sides, including the underside, as if each model were lifted off the ground. Measure each model to check your totals.",
+          "hint": "A rectangular prism has three pairs of faces. Blue: 2 × (6×4 + 6×3 + 4×3) = 108 square units. Gold: 2 × (3×3 + 3×8 + 3×8) = 114. The separate ground is not part of either measured model.",
+          "successCriteria": [
+            "I counted all six sides and found 108 square units for blue and 114 for gold.",
+            "I explain why two 72-unit volumes can need different amounts of covering material."
+          ],
+          "reflection": "Which model needs less wrapping, and how much less? Would the answer change if the underside did not need covering?"
+        },
+        {
+          "id": "area-layer-design",
+          "buildGoal": {"metric":"occupiedVolume","comparator":"eq","target":24,"unitCubesOnly":true},
+          "title": "Make your own layered prism",
+          "npcName": "Layer Design Coach",
+          "position": [
+            19,
+            2.6,
+            15
+          ],
+          "challenge": "Build a 24-cubic-unit prism from full cubes on the empty sand pad. Explain its base area and number of layers. If you want another challenge, build a different 24-unit prism beside it with an empty gap.",
+          "hint": "Try a 4 by 3 base and 2 layers: 12 × 2 = 24. A 3 by 2 base with 4 layers also works. Keep separate examples apart so Measure can select each connected build independently.",
+          "successCriteria": [
+            "My own connected build measures 24 cubic units.",
+            "I recorded its base area, height and an explanation of why their product is 24."
+          ],
+          "reflection": "What did changing the base and height do to your model’s silhouette? Review your evidence here; this build is a self-review activity, not an automatically scored task."
+        }
       ]
     },
     buildChallenge: {
@@ -1831,207 +2148,1330 @@
       ]
     },
     realWorld: {
-      title: 'Real-World Volume \u2014 Packing & Shipping',
-      description: 'Apply volume skills to real-world problems: packing boxes, filling containers, and calculating shipping costs!',
-      spawnPoint: [4, 2, 4],
-      objectives: [
-        'Find how many small boxes fit in the shipping container',
-        'Calculate the wasted space in a partially filled crate',
-        'Design a package that holds exactly 36 cubic units'
+      "title": "Real-World Volume — Packing & Shipping",
+      "description": "Apply volume skills to real-world problems: packing boxes, filling containers, and calculating shipping costs!",
+      "spawnPoint": [
+        5,
+        2.6,
+        10
       ],
-      ground: { xMin: -2, xMax: 22, zMin: -2, zMax: 22, y: 0, type: 'stone' },
-      structures: [
-        // Warehouse floor
-        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 20, y2: 0, z2: 20, block: 'stone' },
-        // Large shipping container (outer: 8x4x4)
-        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 9, y2: 1, z2: 5, block: 'wood' },
-        { type: 'fill', x1: 2, y1: 4, z1: 2, x2: 9, y2: 4, z2: 5, block: 'wood' },
-        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 2, y2: 4, z2: 5, block: 'wood' },
-        { type: 'fill', x1: 9, y1: 1, z1: 2, x2: 9, y2: 4, z2: 5, block: 'wood' },
-        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 9, y2: 4, z2: 2, block: 'wood' },
-        // Small boxes inside (2x2x2 each, placed in a row)
-        { type: 'fill', x1: 3, y1: 2, z1: 3, x2: 4, y2: 3, z2: 4, block: 'gold' },
-        { type: 'fill', x1: 5, y1: 2, z1: 3, x2: 6, y2: 3, z2: 4, block: 'diamond' },
-        { type: 'fill', x1: 7, y1: 2, z1: 3, x2: 8, y2: 3, z2: 4, block: 'gold' },
-        // Partially filled crate (6x6x3 outer, some blocks inside)
-        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 17, y2: 1, z2: 7, block: 'wood' },
-        { type: 'fill', x1: 12, y1: 2, z1: 2, x2: 12, y2: 3, z2: 7, block: 'wood' },
-        { type: 'fill', x1: 17, y1: 2, z1: 2, x2: 17, y2: 3, z2: 7, block: 'wood' },
-        { type: 'fill', x1: 12, y1: 2, z1: 2, x2: 17, y2: 3, z2: 2, block: 'wood' },
-        { type: 'fill', x1: 12, y1: 2, z1: 7, x2: 17, y2: 3, z2: 7, block: 'wood' },
-        // Partial fill inside
-        { type: 'fill', x1: 13, y1: 2, z1: 3, x2: 16, y2: 2, z2: 6, block: 'sand' },
-        // Open building area with sign
-        { type: 'fill', x1: 2, y1: 1, z1: 14, x2: 7, y2: 1, z2: 19, block: 'glass' },
+      "objectives": [
+        "Find how many small boxes fit in the shipping container",
+        "Calculate the wasted space in a partially filled crate",
+        "Design a package that holds exactly 36 cubic units"
       ],
-      npcs: [
-        { position: [5, 1, 1], name: 'Warehouse Manager', color: 0x7c3aed,
-          dialogue: 'Welcome to the warehouse! We need to figure out how many boxes fit in our containers. The shipping container is open on one side \u2014 look inside!', question: null },
-        { position: [5, 5, 3], name: 'Packing Expert', color: 0x2563eb,
-          dialogue: 'The container interior is 6\u00d72\u00d73. Each small box is 2\u00d72\u00d72. Let\u2019s figure out how many fit!',
-          question: { text: 'Container interior volume? (6\u00d72\u00d73)', choices: ['36 cubic units', '24 cubic units', '48 cubic units'], correct: 0,
-            followUp: [
-              { text: 'Each box = 2\u00d72\u00d72 = 8 cubic units. 36 \u00f7 8 = ?', choices: ['4 boxes with 4 units wasted', '3 boxes exactly', '6 boxes'], correct: 0 }
-            ] } },
-        { position: [14, 1, 1], name: 'Inventory Checker', color: 0xf59e0b,
-          dialogue: 'The crate interior is 4\u00d74\u00d72. The bottom layer has sand.',
-          question: { text: 'Crate total capacity? (4\u00d74\u00d72)', choices: ['32 cubic units', '16 cubic units', '24 cubic units'], correct: 0,
-            followUp: [
-              { text: '16 blocks of sand inside. Empty space = 32 - 16 = ?', choices: ['16 cubic units', '8 cubic units', '32 cubic units'], correct: 0 }
-            ] } },
-        { position: [4, 2, 16], name: 'Design Challenge', color: 0x16a34a,
-          dialogue: 'Build a box on the glass platform that holds EXACTLY 36 cubic units!',
-          question: { text: 'Which equals 36? (check each)', choices: ['6\u00d73\u00d72 = 36 \u2713', '5\u00d74\u00d72 = 40', '3\u00d73\u00d73 = 27'], correct: 0,
-            followUp: [
-              { text: 'Which is another way to make 36?', choices: ['4\u00d73\u00d73 = 36', '6\u00d76\u00d71 = 36', 'Both!'], correct: 2 }
-            ] } }
+      "ground": {
+        "xMin": -2,
+        "xMax": 22,
+        "zMin": -2,
+        "zMax": 22,
+        "y": 0,
+        "type": "stone"
+      },
+      "structures": [
+        {
+          "type": "fill",
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 20,
+          "y2": 0,
+          "z2": 20,
+          "block": "stone",
+          "id": "shipping-structure-1",
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 2,
+          "x2": 9,
+          "y2": 1,
+          "z2": 5,
+          "block": "wood",
+          "id": "shipping-structure-2"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 4,
+          "z1": 2,
+          "x2": 9,
+          "y2": 4,
+          "z2": 5,
+          "block": "wood",
+          "id": "shipping-structure-3"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 2,
+          "x2": 2,
+          "y2": 4,
+          "z2": 5,
+          "block": "wood",
+          "id": "shipping-structure-4"
+        },
+        {
+          "type": "fill",
+          "x1": 9,
+          "y1": 1,
+          "z1": 2,
+          "x2": 9,
+          "y2": 4,
+          "z2": 5,
+          "block": "wood",
+          "id": "shipping-structure-5"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 2,
+          "x2": 9,
+          "y2": 4,
+          "z2": 2,
+          "block": "wood",
+          "id": "shipping-structure-6"
+        },
+        {
+          "type": "fill",
+          "x1": 3,
+          "y1": 2,
+          "z1": 3,
+          "x2": 4,
+          "y2": 3,
+          "z2": 4,
+          "block": "gold",
+          "id": "shipping-structure-7"
+        },
+        {
+          "type": "fill",
+          "x1": 5,
+          "y1": 2,
+          "z1": 3,
+          "x2": 6,
+          "y2": 3,
+          "z2": 4,
+          "block": "diamond",
+          "id": "shipping-structure-8"
+        },
+        {
+          "type": "fill",
+          "x1": 7,
+          "y1": 2,
+          "z1": 3,
+          "x2": 8,
+          "y2": 3,
+          "z2": 4,
+          "block": "gold",
+          "id": "shipping-structure-9"
+        },
+        {
+          "type": "fill",
+          "x1": 12,
+          "y1": 1,
+          "z1": 2,
+          "x2": 17,
+          "y2": 1,
+          "z2": 7,
+          "block": "wood",
+          "id": "shipping-structure-10"
+        },
+        {
+          "type": "fill",
+          "x1": 12,
+          "y1": 2,
+          "z1": 2,
+          "x2": 12,
+          "y2": 3,
+          "z2": 7,
+          "block": "wood",
+          "id": "shipping-structure-11"
+        },
+        {
+          "type": "fill",
+          "x1": 17,
+          "y1": 2,
+          "z1": 2,
+          "x2": 17,
+          "y2": 3,
+          "z2": 7,
+          "block": "wood",
+          "id": "shipping-structure-12"
+        },
+        {
+          "type": "fill",
+          "x1": 12,
+          "y1": 2,
+          "z1": 2,
+          "x2": 17,
+          "y2": 3,
+          "z2": 2,
+          "block": "wood",
+          "id": "shipping-structure-13"
+        },
+        {
+          "type": "fill",
+          "x1": 12,
+          "y1": 2,
+          "z1": 7,
+          "x2": 17,
+          "y2": 3,
+          "z2": 7,
+          "block": "wood",
+          "id": "shipping-structure-14"
+        },
+        {
+          "type": "fill",
+          "x1": 13,
+          "y1": 2,
+          "z1": 3,
+          "x2": 16,
+          "y2": 2,
+          "z2": 6,
+          "block": "sand",
+          "id": "shipping-structure-15"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 14,
+          "x2": 7,
+          "y2": 1,
+          "z2": 19,
+          "block": "glass",
+          "id": "shipping-structure-16"
+        }
+      ],
+      "npcs": [
+        {
+          "position": [
+            5,
+            1,
+            1
+          ],
+          "name": "Warehouse Manager",
+          "color": 8141549,
+          "dialogue": "Welcome to the warehouse! We need to figure out how many boxes fit in our containers. The shipping container is open on one side — look inside!",
+          "question": null
+        },
+        {
+          "position": [
+            5,
+            1,
+            7
+          ],
+          "name": "Packing Expert",
+          "color": 2450411,
+          "dialogue": "Look through the open front of the shipping container. Its usable interior is 6 units long, 2 high, and 3 deep. Each small cube-shaped box is 2 by 2 by 2. Keep the boxes aligned with the container edges. Three fit along the length, one fits in the height, and one fits in the depth: 3 times 1 times 1 gives three boxes. The narrow space at the front remains empty. Volume alone cannot tell us whether a whole box fits.",
+          "question": {
+            "text": "What is the container interior volume? (6 by 2 by 3)",
+            "choices": [
+              "36 cubic units",
+              "24 cubic units",
+              "48 cubic units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "With 2 by 2 by 2 boxes aligned to the container edges, how many fit?",
+                "choices": [
+                  "3 boxes: 3 along the length, 1 high, 1 deep",
+                  "4 boxes because 36 divided by 8 is more than 4",
+                  "6 boxes because the length is 6"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "Three boxes occupy 3 times 8 = 24 cubic units. How much interior space remains?",
+                "choices": [
+                  "12 cubic units",
+                  "4 cubic units",
+                  "No empty space"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "Why can a fourth whole box not fit into the remaining front strip?",
+                "choices": [
+                  "The strip is only 1 unit deep, but a box needs 2",
+                  "The fourth box would have no volume",
+                  "A container can never hold more than three boxes"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            14,
+            1,
+            1
+          ],
+          "name": "Inventory Checker",
+          "color": 16096779,
+          "dialogue": "The crate interior is 4×4×2. The bottom layer has sand.",
+          "question": {
+            "text": "Crate total capacity? (4×4×2)",
+            "choices": [
+              "32 cubic units",
+              "16 cubic units",
+              "24 cubic units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "16 blocks of sand inside. Empty space = 32 - 16 = ?",
+                "choices": [
+                  "16 cubic units",
+                  "8 cubic units",
+                  "32 cubic units"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            1,
+            1,
+            16
+          ],
+          "name": "Design Challenge",
+          "color": 1483594,
+          "dialogue": "Use the glass platform to build a solid package model with exactly 36 unit cubes. Try 6 by 3 by 2, then a different arrangement such as 4 by 3 by 3. Measure your own blocks and explain how the dimensions multiply to 36. The protected platform is a work surface, not part of your package.",
+          "question": {
+            "text": "Which equals 36? (check each)",
+            "choices": [
+              "6×3×2 = 36 ✓",
+              "5×4×2 = 40",
+              "3×3×3 = 27"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "Which is another way to make 36?",
+                "choices": [
+                  "4×3×3 = 36",
+                  "6×6×1 = 36",
+                  "Both!"
+                ],
+                "correct": 2
+              }
+            ]
+          }
+        }
       ]
     },
     geometryGarden: {
-      title: 'The Geometry Garden \u2014 A Place to Discover',
-      description: 'No questions. No score. Just beautiful structures to explore and measure. Walk the path. Notice things. The world is the lesson.',
-      spawnPoint: [0, 2, 0],
-      objectives: [
-        'Walk the path through the garden',
-        'Use M to measure anything that interests you',
-        'Notice: which structures have the same volume but different shapes?',
-        'Find the hidden structure at the end of the path'
+      "title": "The Geometry Garden — A Place to Discover",
+      "description": "An ungraded garden of eight discoveries: follow a level path from one unit cube to layers, equal volumes, composite shapes, nested cubes, and a hidden stepped monument. Use Activities for optional hints, travel, and a reflection journal. No quiz answers or scores are required. Explore at your own pace.",
+      "spawnPoint": [
+        0,
+        2.6,
+        0
       ],
-      ground: { xMin: -6, xMax: 50, zMin: -10, zMax: 20, y: 0, type: 'grass' },
-      structures: [
-        // ── The Path (stone walkway winding through the garden) ──
-        { type: 'fill', x1: -2, y1: 0, z1: 4, x2: 48, y2: 0, z2: 6, block: 'stone' },
-
-        // ── Station 1: The Unit Cube (simplest form) ──
-        { type: 'fill', x1: 3, y1: 1, z1: 2, x2: 3, y2: 1, z2: 2, block: 'diamond' },
-        // Sign post
-        { type: 'fill', x1: 3, y1: 1, z1: 0, x2: 3, y2: 2, z2: 0, block: 'wood' },
-
-        // ── Station 2: A Row (1D — length) ──
-        { type: 'fill', x1: 8, y1: 1, z1: 2, x2: 12, y2: 1, z2: 2, block: 'diamond' },
-
-        // ── Station 3: A Flat Rectangle (2D — area emerges) ──
-        { type: 'fill', x1: 16, y1: 1, z1: 1, x2: 20, y2: 1, z2: 3, block: 'gold' },
-
-        // ── Station 4: A Rectangular Prism (3D — volume!) ──
-        { type: 'fill', x1: 24, y1: 1, z1: 1, x2: 28, y2: 3, z2: 3, block: 'diamond' },
-
-        // ── Station 5: Three shapes, one volume — CONVERGENCE ──
-        // All three = 24 cubic units. Different paths to the same truth.
-        // Prism A: 12x1x2 = 24 (flat slab)
-        { type: 'fill', x1: 32, y1: 1, z1: 0, x2: 43, y2: 2, z2: 0, block: 'gold' },
-        // Prism B: 4x3x2 = 24 (compact block)
-        { type: 'fill', x1: 32, y1: 1, z1: 8, x2: 35, y2: 2, z2: 10, block: 'gold' },
-        // Prism C: 2x2x6 = 24 (tall tower)
-        { type: 'fill', x1: 38, y1: 1, z1: 8, x2: 39, y2: 6, z2: 9, block: 'gold' },
-        // Glass convergence paths connecting all three (the student walks the convergence)
-        { type: 'fill', x1: 33, y1: 0, z1: 1, x2: 33, y2: 0, z2: 7, block: 'glass' },
-        { type: 'fill', x1: 34, y1: 0, z1: 7, x2: 38, y2: 0, z2: 7, block: 'glass' },
-        // Center marker where paths meet — one diamond block at the crossing point
-        { type: 'fill', x1: 35, y1: 1, z1: 4, x2: 35, y2: 1, z2: 4, block: 'diamond' },
-
-        // ── Station 6: The L-Block (composition) ──
-        // Two-tone for the same reason as the volumeExplorer L-block: the composition
-        // is the lesson, so the parts must be separable at a glance.
-        { type: 'fill', x1: 32, y1: 1, z1: -6, x2: 36, y2: 3, z2: -4, block: 'diamond' },
-        { type: 'fill', x1: 32, y1: 1, z1: -3, x2: 34, y2: 3, z2: -1, block: 'gold' },
-
-        // ── Station 7: Nested cubes (volume displacement) ──
-        // Outer shell: 5x5x5 hollow
-        { type: 'fill', x1: 42, y1: 1, z1: -8, x2: 46, y2: 5, z2: -4, block: 'glass' },
-        // Inner cube: 3x3x3 solid
-        { type: 'fill', x1: 43, y1: 2, z1: -7, x2: 45, y2: 4, z2: -5, block: 'gold' },
-
-        // ── The Hidden Garden (behind a wall, accessed by going around) ──
-        { type: 'fill', x1: 46, y1: 1, z1: 2, x2: 46, y2: 4, z2: 8, block: 'wood' },
-        // Secret structure behind the wall: a pyramid approximation
-        { type: 'fill', x1: 48, y1: 1, z1: 1, x2: 52, y2: 1, z2: 9, block: 'sand' },
-        { type: 'fill', x1: 49, y1: 2, z1: 2, x2: 51, y2: 2, z2: 8, block: 'sand' },
-        { type: 'fill', x1: 49, y1: 3, z1: 3, x2: 51, y2: 3, z2: 7, block: 'gold' },
-        { type: 'fill', x1: 50, y1: 4, z1: 4, x2: 50, y2: 4, z2: 6, block: 'gold' },
-        { type: 'fill', x1: 50, y1: 5, z1: 5, x2: 50, y2: 5, z2: 5, block: 'diamond' },
-
-        // ── Decorative garden elements ──
-        // Flower beds (colored blocks along the path)
-        { type: 'fill', x1: 5, y1: 1, z1: 7, x2: 7, y2: 1, z2: 7, block: 'sand' },
-        { type: 'fill', x1: 14, y1: 1, z1: 7, x2: 15, y2: 1, z2: 8, block: 'sand' },
-        { type: 'fill', x1: 22, y1: 1, z1: 7, x2: 23, y2: 1, z2: 7, block: 'sand' },
-        { type: 'fill', x1: 30, y1: 1, z1: 7, x2: 31, y2: 1, z2: 8, block: 'sand' },
-        // Benches (places to pause)
-        { type: 'fill', x1: 10, y1: 1, z1: 7, x2: 12, y2: 1, z2: 7, block: 'wood' },
-        { type: 'fill', x1: 28, y1: 1, z1: 7, x2: 30, y2: 1, z2: 7, block: 'wood' },
+      "objectives": [
+        "Follow eight optional discoveries at your own pace",
+        "Measure real blocks and distinguish length, area, and volume",
+        "Compare shapes, layers, and materials using evidence",
+        "Walk around the screen wall to find the hidden stepped monument"
       ],
-      npcs: [
-        { position: [0, 1, 3], name: 'Garden Keeper', color: 0x16a34a,
-          dialogue: 'Welcome to the Geometry Garden. No tests. No score. Walk the path. Measure anything. Notice patterns. Take your time.', question: null },
-        { position: [3, 2, 0], name: 'Station 1 Guide', color: 0x2563eb,
-          dialogue: 'This is a single unit cube \u2014 the building block of everything. Volume = 1 cubic unit. Press M to measure it!', question: null },
-        { position: [10, 2, 0], name: 'Station 2 Guide', color: 0x2563eb,
-          dialogue: 'A row of 5 blocks. This is 1-dimensional \u2014 just LENGTH. Press M: you\'ll see L=5, W=1, H=1. Volume = 5.', question: null },
-        { position: [18, 2, 0], name: 'Station 3 Guide', color: 0xf59e0b,
-          dialogue: 'Now a flat rectangle: 5\u00d73. This is 2-dimensional \u2014 LENGTH and WIDTH. Area = 15 square units. But volume? Measure it!', question: null },
-        { position: [26, 4, 0], name: 'Station 4 Guide', color: 0xf59e0b,
-          dialogue: 'A full 3D rectangular prism: 5\u00d73\u00d73. Three dimensions! Volume = L\u00d7W\u00d7H = 45. The jump from flat to solid is where volume lives.', question: null },
-        { position: [35, 1, 4], name: 'Convergence Guide', color: 0x7c3aed,
-          dialogue: 'Three shapes. All have volume = 24. A flat slab (12\u00d71\u00d72), a compact block (4\u00d73\u00d72), and a tall tower (2\u00d72\u00d76). Same volume \u2014 completely different shapes. Measure each one!', question: null },
-        { position: [48, 6, 5], name: 'Hidden Garden Sage', color: 0xdc2626,
-          dialogue: 'You found the hidden garden! This pyramid approximation uses layers of decreasing size. Each layer is a rectangular prism. The total volume is the sum of all layers. Real pyramids use calculus \u2014 but this is a start!', question: null }
+      "ground": {
+        "xMin": -6,
+        "xMax": 54,
+        "zMin": -10,
+        "zMax": 20,
+        "y": 0,
+        "type": "grass"
+      },
+      "structures": [
+        {
+          "type": "fill",
+          "x1": -2,
+          "y1": 0,
+          "z1": 4,
+          "x2": 45,
+          "y2": 0,
+          "z2": 6,
+          "block": "stone",
+          "id": "garden-main-path",
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "x1": 3,
+          "y1": 1,
+          "z1": 2,
+          "x2": 3,
+          "y2": 1,
+          "z2": 2,
+          "block": "diamond",
+          "id": "garden-structure-2"
+        },
+        {
+          "type": "fill",
+          "x1": 3,
+          "y1": 1,
+          "z1": 0,
+          "x2": 3,
+          "y2": 2,
+          "z2": 0,
+          "block": "wood",
+          "id": "garden-structure-3"
+        },
+        {
+          "type": "fill",
+          "x1": 8,
+          "y1": 1,
+          "z1": 2,
+          "x2": 12,
+          "y2": 1,
+          "z2": 2,
+          "block": "diamond",
+          "id": "garden-structure-4"
+        },
+        {
+          "type": "fill",
+          "x1": 16,
+          "y1": 1,
+          "z1": 1,
+          "x2": 20,
+          "y2": 1,
+          "z2": 3,
+          "block": "gold",
+          "id": "garden-structure-5"
+        },
+        {
+          "type": "fill",
+          "x1": 24,
+          "y1": 1,
+          "z1": 1,
+          "x2": 28,
+          "y2": 3,
+          "z2": 3,
+          "block": "diamond",
+          "id": "garden-structure-6"
+        },
+        {
+          "type": "fill",
+          "x1": 32,
+          "y1": 1,
+          "z1": 0,
+          "x2": 43,
+          "y2": 2,
+          "z2": 0,
+          "block": "gold",
+          "id": "garden-structure-7"
+        },
+        {
+          "type": "fill",
+          "x1": 32,
+          "y1": 1,
+          "z1": 8,
+          "x2": 35,
+          "y2": 2,
+          "z2": 10,
+          "block": "gold",
+          "id": "garden-structure-8"
+        },
+        {
+          "type": "fill",
+          "x1": 38,
+          "y1": 1,
+          "z1": 8,
+          "x2": 39,
+          "y2": 6,
+          "z2": 9,
+          "block": "gold",
+          "id": "garden-structure-9"
+        },
+        {
+          "type": "fill",
+          "x1": 33,
+          "y1": 0,
+          "z1": 1,
+          "x2": 33,
+          "y2": 0,
+          "z2": 7,
+          "block": "glass",
+          "id": "garden-structure-10",
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "x1": 34,
+          "y1": 0,
+          "z1": 7,
+          "x2": 38,
+          "y2": 0,
+          "z2": 7,
+          "block": "glass",
+          "id": "garden-structure-11",
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "x1": 35,
+          "y1": 1,
+          "z1": 4,
+          "x2": 35,
+          "y2": 1,
+          "z2": 4,
+          "block": "diamond",
+          "id": "garden-structure-12"
+        },
+        {
+          "type": "fill",
+          "x1": 32,
+          "y1": 1,
+          "z1": -7,
+          "x2": 36,
+          "y2": 3,
+          "z2": -5,
+          "block": "diamond",
+          "id": "garden-structure-13"
+        },
+        {
+          "type": "fill",
+          "x1": 32,
+          "y1": 1,
+          "z1": -4,
+          "x2": 34,
+          "y2": 3,
+          "z2": -2,
+          "block": "gold",
+          "id": "garden-structure-14"
+        },
+        {
+          "id": "nested-shell-bottom",
+          "type": "fill",
+          "x1": 42,
+          "y1": 1,
+          "z1": -8,
+          "x2": 46,
+          "y2": 1,
+          "z2": -4,
+          "block": "glass"
+        },
+        {
+          "id": "nested-shell-top",
+          "type": "fill",
+          "x1": 42,
+          "y1": 5,
+          "z1": -8,
+          "x2": 46,
+          "y2": 5,
+          "z2": -4,
+          "block": "glass"
+        },
+        {
+          "id": "nested-shell-left",
+          "type": "fill",
+          "x1": 42,
+          "y1": 2,
+          "z1": -8,
+          "x2": 42,
+          "y2": 4,
+          "z2": -4,
+          "block": "glass"
+        },
+        {
+          "id": "nested-shell-right",
+          "type": "fill",
+          "x1": 46,
+          "y1": 2,
+          "z1": -8,
+          "x2": 46,
+          "y2": 4,
+          "z2": -4,
+          "block": "glass"
+        },
+        {
+          "id": "nested-shell-back",
+          "type": "fill",
+          "x1": 43,
+          "y1": 2,
+          "z1": -8,
+          "x2": 45,
+          "y2": 4,
+          "z2": -8,
+          "block": "glass"
+        },
+        {
+          "id": "nested-shell-front",
+          "type": "fill",
+          "x1": 43,
+          "y1": 2,
+          "z1": -4,
+          "x2": 45,
+          "y2": 4,
+          "z2": -4,
+          "block": "glass"
+        },
+        {
+          "type": "fill",
+          "x1": 43,
+          "y1": 2,
+          "z1": -7,
+          "x2": 45,
+          "y2": 4,
+          "z2": -5,
+          "block": "gold",
+          "id": "nested-gold-cube"
+        },
+        {
+          "type": "fill",
+          "x1": 46,
+          "y1": 1,
+          "z1": 2,
+          "x2": 46,
+          "y2": 4,
+          "z2": 8,
+          "block": "wood",
+          "id": "garden-structure-17"
+        },
+        {
+          "type": "fill",
+          "x1": 48,
+          "y1": 1,
+          "z1": 1,
+          "x2": 52,
+          "y2": 1,
+          "z2": 9,
+          "block": "sand",
+          "id": "garden-structure-18"
+        },
+        {
+          "type": "fill",
+          "x1": 49,
+          "y1": 2,
+          "z1": 2,
+          "x2": 51,
+          "y2": 2,
+          "z2": 8,
+          "block": "sand",
+          "id": "garden-structure-19"
+        },
+        {
+          "type": "fill",
+          "x1": 49,
+          "y1": 3,
+          "z1": 3,
+          "x2": 51,
+          "y2": 3,
+          "z2": 7,
+          "block": "gold",
+          "id": "garden-structure-20"
+        },
+        {
+          "type": "fill",
+          "x1": 50,
+          "y1": 4,
+          "z1": 4,
+          "x2": 50,
+          "y2": 4,
+          "z2": 6,
+          "block": "gold",
+          "id": "garden-structure-21"
+        },
+        {
+          "type": "fill",
+          "x1": 50,
+          "y1": 5,
+          "z1": 5,
+          "x2": 50,
+          "y2": 5,
+          "z2": 5,
+          "block": "diamond",
+          "id": "garden-structure-22"
+        },
+        {
+          "type": "fill",
+          "x1": 5,
+          "y1": 1,
+          "z1": 7,
+          "x2": 7,
+          "y2": 1,
+          "z2": 7,
+          "block": "sand",
+          "id": "garden-structure-23"
+        },
+        {
+          "type": "fill",
+          "x1": 14,
+          "y1": 1,
+          "z1": 7,
+          "x2": 15,
+          "y2": 1,
+          "z2": 8,
+          "block": "sand",
+          "id": "garden-structure-24"
+        },
+        {
+          "type": "fill",
+          "x1": 22,
+          "y1": 1,
+          "z1": 7,
+          "x2": 23,
+          "y2": 1,
+          "z2": 7,
+          "block": "sand",
+          "id": "garden-structure-25"
+        },
+        {
+          "type": "fill",
+          "x1": 28,
+          "y1": 1,
+          "z1": 10,
+          "x2": 29,
+          "y2": 1,
+          "z2": 11,
+          "block": "sand",
+          "id": "garden-structure-26"
+        },
+        {
+          "type": "fill",
+          "x1": 10,
+          "y1": 1,
+          "z1": 7,
+          "x2": 12,
+          "y2": 1,
+          "z2": 7,
+          "block": "wood",
+          "id": "garden-structure-27"
+        },
+        {
+          "type": "fill",
+          "x1": 28,
+          "y1": 1,
+          "z1": 7,
+          "x2": 30,
+          "y2": 1,
+          "z2": 7,
+          "block": "wood",
+          "id": "garden-structure-28"
+        },
+        {
+          "id": "hidden-garden-turn",
+          "type": "fill",
+          "x1": 43,
+          "y1": 0,
+          "z1": 7,
+          "x2": 45,
+          "y2": 0,
+          "z2": 12,
+          "block": "stone",
+          "measurementLayer": "ground"
+        },
+        {
+          "id": "hidden-garden-approach",
+          "type": "fill",
+          "x1": 46,
+          "y1": 0,
+          "z1": 10,
+          "x2": 54,
+          "y2": 0,
+          "z2": 12,
+          "block": "stone",
+          "measurementLayer": "ground"
+        }
+      ],
+      "npcs": [
+        {
+          "position": [
+            0,
+            1,
+            3
+          ],
+          "name": "Garden Keeper",
+          "color": 1483594,
+          "dialogue": "Welcome to the Geometry Garden. No quizzes or scores are required. Follow the stone path, measure what interests you, and use Activities for eight optional discovery stops. Your journal is for observations and self-review. Near the far screen wall, the path turns around its end into the hidden garden. Take your time.",
+          "question": null
+        },
+        {
+          "position": [
+            4,
+            1,
+            0
+          ],
+          "name": "Station 1 Guide",
+          "color": 2450411,
+          "dialogue": "This is a single unit cube — the building block of everything. Volume = 1 cubic unit. Press M to measure it!",
+          "question": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            0
+          ],
+          "name": "Station 2 Guide",
+          "color": 2450411,
+          "dialogue": "This row highlights length: five unit cubes sit side by side. It is still a three-dimensional block model, with length 5, width 1, and height 1. Measure it to find volume 5 cubic units. What would happen if you added another row?",
+          "question": null
+        },
+        {
+          "position": [
+            18,
+            1,
+            0
+          ],
+          "name": "Station 3 Guide",
+          "color": 16096779,
+          "dialogue": "The top surface of this model is a 5 by 3 rectangle, with area 15 square units. The model is also one cube thick, so its volume is 15 cubic units. The numbers match here, but square units describe a surface and cubic units describe the solid. Compare both ideas as you measure.",
+          "question": null
+        },
+        {
+          "position": [
+            26,
+            1,
+            0
+          ],
+          "name": "Station 4 Guide",
+          "color": 16096779,
+          "dialogue": "This prism stacks three layers of 15 cubes. Its dimensions are 5 by 3 by 3, and its volume is 45 cubic units. Compare it with the one-layer gold model. What changes when you add layers while keeping the same base?",
+          "question": null
+        },
+        {
+          "position": [
+            36,
+            1,
+            4
+          ],
+          "name": "Convergence Guide",
+          "color": 8141549,
+          "dialogue": "Three gold shapes have volume 24: a 12 by 1 by 2 long slab, a 4 by 3 by 2 compact block, and a 2 by 2 by 6 tower. Measure each separately. Different dimensions can produce the same amount of occupied space. Which would you choose for a narrow site, and why?",
+          "question": null
+        },
+        {
+          "position": [
+            37,
+            1,
+            -5
+          ],
+          "name": "Composition Guide",
+          "color": 2450411,
+          "dialogue": "The cyan part of this L-shaped model is 5 by 3 by 3: 45 cubic units. The gold part is 3 by 3 by 3: 27 cubic units. They touch without overlapping, so the whole has volume 72. Measure the connected structure and use the material breakdown to compare the two parts.",
+          "question": null
+        },
+        {
+          "position": [
+            47,
+            1,
+            -6
+          ],
+          "name": "Nested Cube Guide",
+          "color": 16096779,
+          "dialogue": "A 5 by 5 by 5 glass shell surrounds a gold 3 by 3 by 3 cube. The outside bounding cube contains 125 unit positions. Its inner cube uses 27, leaving 98 glass cubes in the shell. The gold now fills the cavity. Measure the touching glass-and-gold model as one structure: 125 total, with 98 glass and 27 gold in the material breakdown.",
+          "question": null
+        },
+        {
+          "position": [
+            53,
+            1,
+            10
+          ],
+          "name": "Hidden Garden Sage",
+          "color": 14427686,
+          "dialogue": "You followed the path around the wall and found the stepped monument. Its five layers contain 45, 21, 15, 3, and 1 cubes, for a total of 85 cubic units. This stepped solid is an approximation, not an exact pyramid. Measure its occupied volume, then compare it with the larger bounding box. Why does the bounding box include so much empty space?",
+          "question": null
+        }
+      ],
+      "depth": "discovery",
+      "estimatedMinutes": 35,
+      "activities": [
+        {
+          "id": "garden-unit",
+          "title": "One cube, one unit",
+          "npcName": "Station 1 Guide",
+          "position": [
+            5,
+            2.6,
+            4
+          ],
+          "challenge": "Find the single cyan cube. Predict its dimensions, then measure it. Explain what one cubic unit means.",
+          "hint": "The separate wooden sign is scenery. Aim at the cyan cube itself. One unit of length runs along each of its three edges.",
+          "successCriteria": [
+            "I found length, width, and height of 1.",
+            "I connected one cube with one cubic unit."
+          ],
+          "reflection": "What makes this cube a useful unit for comparing all the larger models?"
+        },
+        {
+          "id": "garden-row",
+          "title": "A row highlights length",
+          "npcName": "Station 2 Guide",
+          "position": [
+            10,
+            2.6,
+            4
+          ],
+          "challenge": "Measure the five-cube cyan row. Compare it with the single cube, then imagine a second identical row beside it.",
+          "hint": "The row has dimensions 5 by 1 by 1. It models length clearly, but still has width, height, and volume.",
+          "successCriteria": [
+            "I found volume 5 cubic units.",
+            "I predicted 10 cubes in two adjacent rows."
+          ],
+          "reflection": "Which dimensions would change when you added a second row, and which would stay the same?"
+        },
+        {
+          "id": "garden-area",
+          "title": "A surface and a solid",
+          "npcName": "Station 3 Guide",
+          "position": [
+            18,
+            2.6,
+            5
+          ],
+          "challenge": "Study the top of the gold 5 by 3 model. Compare its 15-square-unit top surface with the volume of the one-layer solid.",
+          "hint": "Area counts covering squares. Volume counts unit cubes. This model is one cube thick, so its area and volume have the same numerical value but different units.",
+          "successCriteria": [
+            "I identified area 15 square units.",
+            "I identified volume 15 cubic units.",
+            "I explained the different units."
+          ],
+          "reflection": "When do the same numbers describe different measurements?"
+        },
+        {
+          "id": "garden-layers",
+          "title": "Layers make volume",
+          "npcName": "Station 4 Guide",
+          "position": [
+            26,
+            2.6,
+            5
+          ],
+          "challenge": "Compare the three-layer cyan prism with the one-layer gold rectangle. Predict, then measure, how the volume changes.",
+          "hint": "Each layer contains 5 times 3 = 15 cubes. Stack three equal layers to make 45.",
+          "successCriteria": [
+            "I compared one layer with three layers.",
+            "I found volume 45 cubic units."
+          ],
+          "reflection": "How can you calculate the volume without counting all 45 cubes individually?"
+        },
+        {
+          "id": "garden-equal",
+          "title": "Three shapes, equal volume",
+          "npcName": "Convergence Guide",
+          "position": [
+            37,
+            2.6,
+            5
+          ],
+          "challenge": "Find all three gold models near the crossing. Measure each separately and record a different set of dimensions for each.",
+          "hint": "The models are 12 by 1 by 2, 4 by 3 by 2, and 2 by 2 by 6. Each product is 24.",
+          "successCriteria": [
+            "I measured three different shapes with volume 24.",
+            "I compared the footprints and heights."
+          ],
+          "reflection": "Which model suits a narrow space, and which suits a height limit? Explain your choice."
+        },
+        {
+          "id": "garden-composite",
+          "title": "Add the parts of an L",
+          "npcName": "Composition Guide",
+          "position": [
+            38,
+            2.6,
+            -3
+          ],
+          "challenge": "Predict the volume of the cyan-and-gold L-shaped solid. Calculate each colored part, add them, then measure the whole.",
+          "hint": "The cyan part contains 45 cubes and the gold part contains 27. Touching parts with no overlap add to 72; the enclosing box includes empty space.",
+          "successCriteria": [
+            "I calculated 45 + 27 = 72.",
+            "I matched the material counts to the colored parts."
+          ],
+          "reflection": "Why would multiplying only the whole bounding dimensions overcount this L-shaped solid?"
+        },
+        {
+          "id": "garden-nested",
+          "title": "Look inside nested cubes",
+          "npcName": "Nested Cube Guide",
+          "position": [
+            48,
+            2.6,
+            -5
+          ],
+          "challenge": "Look through the glass shell at the gold cube. Calculate the outer cube, inner cube, and glass-only shell; then compare with Measure.",
+          "hint": "The outer 5-cube side gives 125 positions. The inner 3-cube side gives 27. Subtract to find 98 glass cubes. Since the gold touches the glass, Measure counts them together and lists both materials.",
+          "successCriteria": [
+            "I found 125 outer positions, 27 gold cubes, and 98 glass cubes.",
+            "I distinguished the shell from the filled model."
+          ],
+          "reflection": "What would the occupied volume become if the inner gold cube were removed? Explain without changing the protected model."
+        },
+        {
+          "id": "garden-hidden",
+          "title": "Discover the stepped monument",
+          "npcName": "Hidden Garden Sage",
+          "position": [
+            53,
+            2.6,
+            12
+          ],
+          "challenge": "Follow the stone turn around the screen wall. Count the five layer areas of the hidden stepped monument and compare their sum with Measure.",
+          "hint": "From bottom to top, the layers are 5 by 9, 3 by 7, 3 by 5, 1 by 3, and 1 by 1. Add 45 + 21 + 15 + 3 + 1.",
+          "successCriteria": [
+            "I found five layers and total occupied volume 85.",
+            "I explained why the 5 by 9 by 5 bounding box is larger than the solid."
+          ],
+          "reflection": "What did this final discovery show you about measuring a shape with empty corners?"
+        }
       ]
     },
     compositeVolume: {
-      title: 'Composite Volume \u2014 Breaking Apart & Combining',
-      description: 'Real objects aren\u2019t simple rectangles. Learn to decompose complex shapes into rectangular parts and add their volumes.',
-      spawnPoint: [3, 2, 3],
-      objectives: [
-        'Decompose the T-shape into 2 rectangular prisms',
-        'Calculate each part\u2019s volume and find the total',
-        'Solve the step pyramid by counting layer volumes',
-        'Design your own composite shape with exactly 50 cubic units'
+      "title": "Composite Volume — Breaking Apart & Combining",
+      "description": "Follow a two-color T, a stepped pyramid and an open U to compare decomposition with empty-space reasoning. Finish by building a connected 50-unit design.",
+      "spawnPoint": [
+        10,
+        2.6,
+        10
       ],
-      ground: { xMin: -2, xMax: 28, zMin: -2, zMax: 22, y: 0, type: 'grass' },
-      structures: [
-        { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 26, y2: 0, z2: 20, block: 'stone' },
-        // T-shape: horizontal bar (8x2x3) + vertical stem (2x2x5)
-        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 9, y2: 3, z2: 3, block: 'diamond' },
-        { type: 'fill', x1: 5, y1: 1, z1: 4, x2: 6, y2: 3, z2: 8, block: 'diamond' },
-        // Step pyramid: layer 1 (6x6x1=36), layer 2 (4x4x1=16), layer 3 (2x2x1=4)
-        { type: 'fill', x1: 14, y1: 1, z1: 2, x2: 19, y2: 1, z2: 7, block: 'gold' },
-        { type: 'fill', x1: 15, y1: 2, z1: 3, x2: 18, y2: 2, z2: 6, block: 'gold' },
-        { type: 'fill', x1: 16, y1: 3, z1: 4, x2: 17, y2: 3, z2: 5, block: 'gold' },
-        // U-shape: left wall + bottom + right wall
-        { type: 'fill', x1: 2, y1: 1, z1: 12, x2: 2, y2: 4, z2: 17, block: 'wood' },
-        { type: 'fill', x1: 2, y1: 1, z1: 17, x2: 7, y2: 4, z2: 17, block: 'wood' },
-        { type: 'fill', x1: 7, y1: 1, z1: 12, x2: 7, y2: 4, z2: 17, block: 'wood' },
-        // Open space for student building challenge (50 cu units)
-        { type: 'fill', x1: 14, y1: 0, z1: 12, x2: 24, y2: 0, z2: 18, block: 'sand' },
+      "objectives": [
+        "Decompose the two-color T into 48 and 20 cubic units",
+        "Explain the stepped pyramid as 36 + 16 + 4 cubic units",
+        "Distinguish the U’s 64 occupied cubic units from its 144-unit bounding box",
+        "Design and measure a connected composite shape with exactly 50 cubic units"
       ],
-      npcs: [
-        { position: [5, 1, 1], name: 'Decomposer', color: 0x7c3aed,
-          dialogue: 'Complex shapes can be split into rectangles! The T-shape has a top bar (8\u00d72\u00d73) and a stem (2\u00d72\u00d75).', question: null },
-        { position: [5, 4, 5], name: 'T-Shape Quiz', color: 0x2563eb,
-          dialogue: 'This T-shape has a top bar and a stem. Let\u2019s measure each part!',
-          question: { text: 'Top bar is 8\u00d72\u00d73. Volume?', choices: ['48 cubic units', '24 cubic units', '36 cubic units'], correct: 0,
-            followUp: [
-              { text: 'Stem is 2\u00d72\u00d75. Volume?', choices: ['20 cubic units', '10 cubic units', '30 cubic units'], correct: 0 },
-              { text: 'Total T-shape = 48 + 20 = ?', choices: ['68 cubic units', '48 cubic units', '96 cubic units'], correct: 0 }
-            ] } },
-        { position: [17, 4, 4], name: 'Pyramid Guide', color: 0xf59e0b,
-          dialogue: 'This step pyramid has 3 layers. Count each layer separately!',
-          question: { text: 'Bottom layer: 6\u00d76\u00d71. Volume?', choices: ['36 cubic units', '24 cubic units', '12 cubic units'], correct: 0,
-            followUp: [
-              { text: 'Middle layer: 4\u00d74\u00d71 = ?', choices: ['16 cubic units', '12 cubic units', '8 cubic units'], correct: 0 },
-              { text: 'Top layer: 2\u00d72\u00d71 = ?', choices: ['4 cubic units', '2 cubic units', '8 cubic units'], correct: 0 },
-              { text: 'Total pyramid: 36 + 16 + 4 = ?', choices: ['56 cubic units', '36 cubic units', '64 cubic units'], correct: 0 }
-            ] } },
-        { position: [4, 5, 14], name: 'U-Shape Sage', color: 0x16a34a,
-          dialogue: 'The U-shape is hollow. It has 3 rectangular parts: left wall, bottom, right wall.',
-          question: { text: 'Is a U-shape\u2019s volume more or less than the bounding box?', choices: ['Less \u2014 the hollow part is empty', 'Same \u2014 the box counts all space', 'More \u2014 the U has extra corners'], correct: 0,
-            followUp: [
-              { text: 'To find U-shape volume: bounding box minus hollow. Which is correct?', choices: ['V = outer - inner', 'V = outer + inner', 'V = outer \u00d7 inner'], correct: 0 }
-            ] } },
-        { position: [19, 1, 15], name: 'Design Challenge', color: 0xdc2626,
-          dialogue: 'Build a composite shape with EXACTLY 50 cubic units! Hint: 5\u00d75\u00d72 = 50.',
-          question: { text: 'Which does NOT equal 50?', choices: ['6\u00d74\u00d72 = 48 \u2717', '5\u00d75\u00d72 = 50 \u2713', '10\u00d75\u00d71 = 50 \u2713'], correct: 0 } }
+      "ground": {
+        "xMin": -2,
+        "xMax": 28,
+        "zMin": -2,
+        "zMax": 22,
+        "y": 0,
+        "type": "grass"
+      },
+      "structures": [
+        {
+          "type": "fill",
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 26,
+          "y2": 0,
+          "z2": 20,
+          "block": "stone",
+          "measurementLayer": "ground"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 2,
+          "x2": 9,
+          "y2": 3,
+          "z2": 3,
+          "block": "diamond"
+        },
+        {
+          "type": "fill",
+          "x1": 5,
+          "y1": 1,
+          "z1": 4,
+          "x2": 6,
+          "y2": 2,
+          "z2": 8,
+          "block": "gold"
+        },
+        {
+          "type": "fill",
+          "x1": 14,
+          "y1": 1,
+          "z1": 2,
+          "x2": 19,
+          "y2": 1,
+          "z2": 7,
+          "block": "gold"
+        },
+        {
+          "type": "fill",
+          "x1": 15,
+          "y1": 2,
+          "z1": 3,
+          "x2": 18,
+          "y2": 2,
+          "z2": 6,
+          "block": "gold"
+        },
+        {
+          "type": "fill",
+          "x1": 16,
+          "y1": 3,
+          "z1": 4,
+          "x2": 17,
+          "y2": 3,
+          "z2": 5,
+          "block": "gold"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 12,
+          "x2": 2,
+          "y2": 4,
+          "z2": 17,
+          "block": "wood"
+        },
+        {
+          "type": "fill",
+          "x1": 2,
+          "y1": 1,
+          "z1": 17,
+          "x2": 7,
+          "y2": 4,
+          "z2": 17,
+          "block": "wood"
+        },
+        {
+          "type": "fill",
+          "x1": 7,
+          "y1": 1,
+          "z1": 12,
+          "x2": 7,
+          "y2": 4,
+          "z2": 17,
+          "block": "wood"
+        },
+        {
+          "type": "fill",
+          "x1": 14,
+          "y1": 0,
+          "z1": 12,
+          "x2": 24,
+          "y2": 0,
+          "z2": 18,
+          "block": "sand",
+          "measurementLayer": "ground"
+        }
+      ],
+      "npcs": [
+        {
+          "position": [
+            5,
+            1,
+            1
+          ],
+          "name": "Decomposer",
+          "color": 8141549,
+          "dialogue": "The T has two touching parts with no overlap: a blue top bar, 8 long by 2 deep by 3 high, and a gold stem, 2 wide by 5 long by 2 high. Their colors help you see the split. Measure includes both connected parts together, so add their volumes.",
+          "question": null
+        },
+        {
+          "position": [
+            3,
+            1,
+            6
+          ],
+          "name": "T-Shape Quiz",
+          "color": 2450411,
+          "dialogue": "The blue top bar contains 8 × 2 × 3 = 48 cubes. The shorter gold stem contains 2 × 5 × 2 = 20. They touch without overlapping, so the complete T contains 68 cubic units. Measure either color to check the entire connected model.",
+          "question": {
+            "text": "Top bar is 8×2×3. Volume?",
+            "choices": [
+              "48 cubic units",
+              "24 cubic units",
+              "36 cubic units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "The stem is 2 wide, 5 long and 2 high. What is 2 × 5 × 2?",
+                "choices": [
+                  "20 cubic units",
+                  "10 cubic units",
+                  "30 cubic units"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "Total T-shape = 48 + 20 = ?",
+                "choices": [
+                  "68 cubic units",
+                  "48 cubic units",
+                  "96 cubic units"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            20,
+            1,
+            4
+          ],
+          "name": "Pyramid Guide",
+          "color": 16096779,
+          "dialogue": "This stepped pyramid has three one-block-high layers. Each footprint shrinks as you move upward: 6 by 6, then 4 by 4, then 2 by 2. Add the actual layers rather than filling its empty bounding box.",
+          "question": {
+            "text": "Bottom layer: 6×6×1. Volume?",
+            "choices": [
+              "36 cubic units",
+              "24 cubic units",
+              "12 cubic units"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "Middle layer: 4×4×1 = ?",
+                "choices": [
+                  "16 cubic units",
+                  "12 cubic units",
+                  "8 cubic units"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "Top layer: 2×2×1 = ?",
+                "choices": [
+                  "4 cubic units",
+                  "2 cubic units",
+                  "8 cubic units"
+                ],
+                "correct": 0
+              },
+              {
+                "text": "Total pyramid: 36 + 16 + 4 = ?",
+                "choices": [
+                  "56 cubic units",
+                  "36 cubic units",
+                  "64 cubic units"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            4,
+            1,
+            11
+          ],
+          "name": "U-Shape Sage",
+          "color": 1483594,
+          "dialogue": "This open U occupies 64 cubic units. Its 6 by 6 by 4 bounding box holds 144, but the 4 by 5 by 4 opening leaves 80 empty. You can also add two 24-unit side walls and the 16-unit back section between them. Count the two back corners only once.",
+          "question": {
+            "text": "Is a U-shape’s volume more or less than the bounding box?",
+            "choices": [
+              "Less — the hollow part is empty",
+              "Same — the box counts all space",
+              "More — the U has extra corners"
+            ],
+            "correct": 0,
+            "followUp": [
+              {
+                "text": "To find U-shape volume: bounding box minus hollow. Which is correct?",
+                "choices": [
+                  "V = outer - inner",
+                  "V = outer + inner",
+                  "V = outer × inner"
+                ],
+                "correct": 0
+              }
+            ]
+          }
+        },
+        {
+          "position": [
+            25,
+            1,
+            15
+          ],
+          "name": "Design Challenge",
+          "color": 14427686,
+          "dialogue": "Build a connected composite model with exactly 50 cubic units on the empty sand pad. Try a 5 by 3 base that is 2 layers high, then add a 5 by 2 section another 2 layers high on top: 30 + 20 = 50. Use Measure to check occupied volume. Review your own evidence in the activity guide; the build is not automatically scored.",
+          "question": {
+            "text": "Which does NOT equal 50?",
+            "choices": [
+              "6×4×2 = 48 ✗",
+              "5×5×2 = 50 ✓",
+              "10×5×1 = 50 ✓"
+            ],
+            "correct": 0
+          }
+        }
+      ],
+      "estimatedMinutes": 30,
+      "activities": [
+        {
+          "id": "composite-two-color-t",
+          "title": "Split the T without overlap",
+          "npcName": "T-Shape Quiz",
+          "position": [
+            3,
+            2.6,
+            9
+          ],
+          "challenge": "Identify the two colored parts of the T and calculate each volume. Predict the combined total, then measure the connected model and compare its material counts.",
+          "hint": "Blue: 8 × 2 × 3 = 48. Gold: 2 × 5 × 2 = 20. The shorter gold stem touches the bar without occupying any of its cells. Measure includes both colors in the same connected selection.",
+          "successCriteria": [
+            "I found 48 blue cubes and 20 gold cubes, totaling 68 cubic units.",
+            "I can explain why adding these parts neither misses nor double-counts any cells."
+          ],
+          "reflection": "Why would the T’s enclosing rectangular box contain more space than its actual blocks?"
+        },
+        {
+          "id": "composite-stepped-pyramid",
+          "title": "Add shrinking layers",
+          "npcName": "Pyramid Guide",
+          "position": [
+            22,
+            2.6,
+            5
+          ],
+          "challenge": "Study the pyramid from more than one side. Calculate the volume of each one-block-high layer, then use Measure to check your combined total.",
+          "hint": "The three layers contain 6 × 6 = 36, 4 × 4 = 16 and 2 × 2 = 4 cubes. Their sum is 56; a full 6 by 6 by 3 bounding box would contain 108.",
+          "successCriteria": [
+            "I can account for all 56 cubic units as 36 + 16 + 4.",
+            "I distinguish the occupied model from its larger 108-unit bounding box."
+          ],
+          "reflection": "If the next layer were one cube, what would the new volume be? Why would you add 1 instead of multiplying the old volume?"
+        },
+        {
+          "id": "composite-open-u",
+          "title": "Reason about the empty space",
+          "npcName": "U-Shape Sage",
+          "position": [
+            4,
+            2.6,
+            9
+          ],
+          "challenge": "Look into the open wooden U. Predict its occupied volume using subtraction, then check with Measure and a second method that adds separate wall sections.",
+          "hint": "Outer box: 6 × 6 × 4 = 144. Opening: 4 × 5 × 4 = 80. Occupied: 144 − 80 = 64. For addition, use two side walls of 24 plus only the 4 × 1 × 4 middle back section of 16; otherwise you count corners twice.",
+          "successCriteria": [
+            "I explain why the U contains 64 cubic units while its bounding box contains 144.",
+            "My addition and subtraction methods both give 64 and count each occupied cube once."
+          ],
+          "reflection": "What error would occur if you added three full 6-by-1-by-4 walls without accounting for their shared corners?"
+        },
+        {
+          "id": "composite-fifty-design",
+          "buildGoal": {"metric":"occupiedVolume","comparator":"eq","target":50,"unitCubesOnly":true},
+          "title": "Design a 50-unit step",
+          "npcName": "Design Challenge",
+          "position": [
+            25,
+            2.6,
+            18
+          ],
+          "challenge": "Build a connected composite shape from full cubes on the sand pad. Aim for exactly 50 cubic units, with at least two rectangular parts that create a step or recess. Measure your own build and record how you decomposed it.",
+          "hint": "One solution: a 5-by-3 base, 2 blocks high, gives 30 cubes. On its back two rows, add a 5-by-2 section another 2 blocks high, adding 20. The parts meet but do not overlap. Keep your build inside the sand pad and separate from other examples.",
+          "successCriteria": [
+            "My connected build has a step or recess and measures exactly 50 cubic units.",
+            "I recorded a decomposition whose non-overlapping parts add to 50."
+          ],
+          "reflection": "How many empty cubic units are inside your model’s bounding box? Use your measurements as evidence for this self-review; the build is not automatically scored."
+        }
       ]
     },
     fractionVolume: {
@@ -2351,6 +3791,1665 @@
       ]
     }
   };
+  // Original connected expedition. Register before deterministic answer rotation.
+  SAMPLE_LESSONS.geometryHarbor = {
+    "landscapeTheme": "coastal",
+    "title": "Geometry Harbor - An Area and Volume Expedition",
+    "description": "Help a waterfront community design gardens, reservoirs, a learning room, and an eastern arcade. A level promenade connects four districts, eight guided activities, and spacious design courts. Plan about 60 minutes, or pause after any district. Explore, predict, build, measure, explain, and revise. Activity checklists support self-review; NPC questions check mathematical reasoning.",
+    "depth": "expedition",
+    "estimatedMinutes": 60,
+    "spawnPoint": [
+      -22,
+      2.2,
+      17
+    ],
+    "objectives": [
+      "Arrival quay: build and revise",
+      "Market gardens: measure growing space",
+      "Market gardens: redesign the boundary",
+      "Reservoir works: predict and fill",
+      "Reservoir works: compare capacities",
+      "Makers pavilion: design and explain",
+      "Eastern arcade: build a repeating module",
+      "Community studio: revise a stepped design"
+    ],
+    "ground": {
+      "xMin": -27,
+      "xMax": 44,
+      "zMin": -27,
+      "zMax": 25,
+      "y": 0,
+      "type": "grass"
+    },
+    "structures": [
+      {
+        "id": "promenade-south",
+        "type": "fill",
+        "x1": -19,
+        "y1": 0,
+        "z1": 11,
+        "x2": 19,
+        "y2": 0,
+        "z2": 12,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "promenade-west",
+        "type": "fill",
+        "x1": -19,
+        "y1": 0,
+        "z1": -12,
+        "x2": -18,
+        "y2": 0,
+        "z2": 10,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "promenade-north",
+        "type": "fill",
+        "x1": -17,
+        "y1": 0,
+        "z1": -12,
+        "x2": 19,
+        "y2": 0,
+        "z2": -11,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "promenade-east",
+        "type": "fill",
+        "x1": 18,
+        "y1": 0,
+        "z1": -10,
+        "x2": 19,
+        "y2": 0,
+        "z2": 10,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "quay-practice-floor",
+        "type": "fill",
+        "x1": -24,
+        "y1": 0,
+        "z1": 13,
+        "x2": -19,
+        "y2": 0,
+        "z2": 18,
+        "block": "sand",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "garden-work-floor",
+        "type": "fill",
+        "x1": -6,
+        "y1": 0,
+        "z1": -9,
+        "x2": 5,
+        "y2": 0,
+        "z2": -4,
+        "block": "sand",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "reservoir-interior-floor",
+        "type": "fill",
+        "x1": 8,
+        "y1": 0,
+        "z1": -7,
+        "x2": 11,
+        "y2": 0,
+        "z2": -5,
+        "block": "diamond",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "makers-work-floor",
+        "type": "fill",
+        "x1": 3,
+        "y1": 0,
+        "z1": 14,
+        "x2": 8,
+        "y2": 0,
+        "z2": 19,
+        "block": "sand",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "quay-link",
+        "type": "fill",
+        "x1": -22,
+        "y1": 0,
+        "z1": 11,
+        "x2": -20,
+        "y2": 0,
+        "z2": 12,
+        "block": "wood",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "reservoir-link",
+        "type": "fill",
+        "x1": 13,
+        "y1": 0,
+        "z1": -1,
+        "x2": 17,
+        "y2": 0,
+        "z2": 0,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "cargo-six-cubes",
+        "type": "fill",
+        "x1": -15,
+        "y1": 1,
+        "z1": 14,
+        "x2": -13,
+        "y2": 1,
+        "z2": 15,
+        "block": "diamond"
+      },
+      {
+        "id": "garden-a-6-by-4",
+        "type": "fill",
+        "x1": -15,
+        "y1": 1,
+        "z1": -9,
+        "x2": -10,
+        "y2": 1,
+        "z2": -6,
+        "block": "gold"
+      },
+      {
+        "id": "garden-b-8-by-3",
+        "type": "fill",
+        "x1": -15,
+        "y1": 1,
+        "z1": 2,
+        "x2": -8,
+        "y2": 1,
+        "z2": 4,
+        "block": "diamond"
+      },
+      {
+        "id": "reservoir-back-wall",
+        "type": "fill",
+        "x1": 7,
+        "y1": 1,
+        "z1": -8,
+        "x2": 12,
+        "y2": 2,
+        "z2": -8,
+        "block": "stone"
+      },
+      {
+        "id": "reservoir-left-wall",
+        "type": "fill",
+        "x1": 7,
+        "y1": 1,
+        "z1": -7,
+        "x2": 7,
+        "y2": 2,
+        "z2": -5,
+        "block": "stone"
+      },
+      {
+        "id": "reservoir-right-wall",
+        "type": "fill",
+        "x1": 12,
+        "y1": 1,
+        "z1": -7,
+        "x2": 12,
+        "y2": 2,
+        "z2": -5,
+        "block": "stone"
+      },
+      {
+        "id": "reservoir-blue-6-by-2-by-2",
+        "type": "fill",
+        "x1": 7,
+        "y1": 1,
+        "z1": 3,
+        "x2": 12,
+        "y2": 2,
+        "z2": 4,
+        "block": "diamond"
+      },
+      {
+        "id": "reservoir-gold-4-by-3-by-2",
+        "type": "fill",
+        "x1": 10,
+        "y1": 1,
+        "z1": 7,
+        "x2": 13,
+        "y2": 2,
+        "z2": 9,
+        "block": "gold"
+      },
+      {
+        "id": "quay-bollard--23",
+        "type": "fill",
+        "x1": -23,
+        "y1": 1,
+        "z1": 20,
+        "x2": -23,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard--17",
+        "type": "fill",
+        "x1": -17,
+        "y1": 1,
+        "z1": 20,
+        "x2": -17,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard--11",
+        "type": "fill",
+        "x1": -11,
+        "y1": 1,
+        "z1": 20,
+        "x2": -11,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard--5",
+        "type": "fill",
+        "x1": -5,
+        "y1": 1,
+        "z1": 20,
+        "x2": -5,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard-1",
+        "type": "fill",
+        "x1": 1,
+        "y1": 1,
+        "z1": 20,
+        "x2": 1,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard-13",
+        "type": "fill",
+        "x1": 13,
+        "y1": 1,
+        "z1": 20,
+        "x2": 13,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard-19",
+        "type": "fill",
+        "x1": 19,
+        "y1": 1,
+        "z1": 20,
+        "x2": 19,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bollard-25",
+        "type": "fill",
+        "x1": 25,
+        "y1": 1,
+        "z1": 20,
+        "x2": 25,
+        "y2": 1,
+        "z2": 20,
+        "block": "wood"
+      },
+      {
+        "id": "quay-bench",
+        "type": "fill",
+        "x1": -10,
+        "y1": 1,
+        "z1": 17,
+        "x2": -7,
+        "y2": 1,
+        "z2": 17,
+        "block": "wood"
+      },
+      {
+        "id": "garden-bench",
+        "type": "fill",
+        "x1": -23,
+        "y1": 1,
+        "z1": 1,
+        "x2": -21,
+        "y2": 1,
+        "z2": 1,
+        "block": "wood"
+      },
+      {
+        "id": "reservoir-bench",
+        "type": "fill",
+        "x1": 22,
+        "y1": 1,
+        "z1": 7,
+        "x2": 24,
+        "y2": 1,
+        "z2": 7,
+        "block": "wood"
+      },
+      {
+        "id": "garden-trellis-west",
+        "type": "fill",
+        "x1": -24,
+        "y1": 1,
+        "z1": -8,
+        "x2": -24,
+        "y2": 3,
+        "z2": -8,
+        "block": "wood"
+      },
+      {
+        "id": "garden-trellis-east",
+        "type": "fill",
+        "x1": -21,
+        "y1": 1,
+        "z1": -8,
+        "x2": -21,
+        "y2": 3,
+        "z2": -8,
+        "block": "wood"
+      },
+      {
+        "id": "garden-trellis-lintel",
+        "type": "fill",
+        "x1": -24,
+        "y1": 4,
+        "z1": -8,
+        "x2": -21,
+        "y2": 4,
+        "z2": -8,
+        "block": "wood"
+      },
+      {
+        "id": "garden-trellis-cap",
+        "type": "fill",
+        "x1": -24,
+        "y1": 5,
+        "z1": -8,
+        "x2": -21,
+        "y2": 5,
+        "z2": -8,
+        "block": "grass"
+      },
+      {
+        "id": "lighthouse-west",
+        "type": "fill",
+        "x1": 22,
+        "y1": 1,
+        "z1": -17,
+        "x2": 22,
+        "y2": 5,
+        "z2": -15,
+        "block": "brick"
+      },
+      {
+        "id": "lighthouse-east",
+        "type": "fill",
+        "x1": 24,
+        "y1": 1,
+        "z1": -17,
+        "x2": 24,
+        "y2": 5,
+        "z2": -15,
+        "block": "brick"
+      },
+      {
+        "id": "lighthouse-back",
+        "type": "fill",
+        "x1": 23,
+        "y1": 1,
+        "z1": -17,
+        "x2": 23,
+        "y2": 5,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "lighthouse-front",
+        "type": "fill",
+        "x1": 23,
+        "y1": 1,
+        "z1": -15,
+        "x2": 23,
+        "y2": 5,
+        "z2": -15,
+        "block": "brick"
+      },
+      {
+        "id": "lighthouse-window-west",
+        "type": "fill",
+        "x1": 22,
+        "y1": 6,
+        "z1": -17,
+        "x2": 22,
+        "y2": 6,
+        "z2": -15,
+        "block": "glass"
+      },
+      {
+        "id": "lighthouse-window-east",
+        "type": "fill",
+        "x1": 24,
+        "y1": 6,
+        "z1": -17,
+        "x2": 24,
+        "y2": 6,
+        "z2": -15,
+        "block": "glass"
+      },
+      {
+        "id": "lighthouse-window-back",
+        "type": "fill",
+        "x1": 23,
+        "y1": 6,
+        "z1": -17,
+        "x2": 23,
+        "y2": 6,
+        "z2": -17,
+        "block": "glass"
+      },
+      {
+        "id": "lighthouse-window-front",
+        "type": "fill",
+        "x1": 23,
+        "y1": 6,
+        "z1": -15,
+        "x2": 23,
+        "y2": 6,
+        "z2": -15,
+        "block": "glass"
+      },
+      {
+        "id": "lighthouse-roof",
+        "type": "fill",
+        "x1": 22,
+        "y1": 7,
+        "z1": -17,
+        "x2": 24,
+        "y2": 7,
+        "z2": -15,
+        "block": "wood"
+      },
+      {
+        "id": "lighthouse-light",
+        "type": "fill",
+        "x1": 23,
+        "y1": 8,
+        "z1": -16,
+        "x2": 23,
+        "y2": 8,
+        "z2": -16,
+        "block": "torch"
+      },
+      {
+        "id": "makers-post-west",
+        "type": "fill",
+        "x1": 12,
+        "y1": 1,
+        "z1": 18,
+        "x2": 12,
+        "y2": 3,
+        "z2": 18,
+        "block": "wood"
+      },
+      {
+        "id": "makers-post-east",
+        "type": "fill",
+        "x1": 17,
+        "y1": 1,
+        "z1": 18,
+        "x2": 17,
+        "y2": 3,
+        "z2": 18,
+        "block": "wood"
+      },
+      {
+        "id": "makers-roof",
+        "type": "fill",
+        "x1": 12,
+        "y1": 4,
+        "z1": 17,
+        "x2": 17,
+        "y2": 4,
+        "z2": 19,
+        "block": "brick"
+      },
+      {
+        "id": "makers-display-plinth",
+        "type": "fill",
+        "x1": 14,
+        "y1": 1,
+        "z1": 19,
+        "x2": 15,
+        "y2": 1,
+        "z2": 19,
+        "block": "stone"
+      },
+      {
+        "id": "tree-1-trunk",
+        "type": "fill",
+        "x1": -24,
+        "y1": 1,
+        "z1": -17,
+        "x2": -24,
+        "y2": 2,
+        "z2": -17,
+        "block": "wood"
+      },
+      {
+        "id": "tree-1-crown",
+        "type": "fill",
+        "x1": -25,
+        "y1": 3,
+        "z1": -18,
+        "x2": -23,
+        "y2": 3,
+        "z2": -16,
+        "block": "grass"
+      },
+      {
+        "id": "tree-1-top",
+        "type": "fill",
+        "x1": -24,
+        "y1": 4,
+        "z1": -17,
+        "x2": -24,
+        "y2": 4,
+        "z2": -17,
+        "block": "grass"
+      },
+      {
+        "id": "tree-2-trunk",
+        "type": "fill",
+        "x1": -8,
+        "y1": 1,
+        "z1": -17,
+        "x2": -8,
+        "y2": 2,
+        "z2": -17,
+        "block": "wood"
+      },
+      {
+        "id": "tree-2-crown",
+        "type": "fill",
+        "x1": -9,
+        "y1": 3,
+        "z1": -18,
+        "x2": -7,
+        "y2": 3,
+        "z2": -16,
+        "block": "grass"
+      },
+      {
+        "id": "tree-2-top",
+        "type": "fill",
+        "x1": -8,
+        "y1": 4,
+        "z1": -17,
+        "x2": -8,
+        "y2": 4,
+        "z2": -17,
+        "block": "grass"
+      },
+      {
+        "id": "tree-3-trunk",
+        "type": "fill",
+        "x1": 7,
+        "y1": 1,
+        "z1": -17,
+        "x2": 7,
+        "y2": 2,
+        "z2": -17,
+        "block": "wood"
+      },
+      {
+        "id": "tree-3-crown",
+        "type": "fill",
+        "x1": 6,
+        "y1": 3,
+        "z1": -18,
+        "x2": 8,
+        "y2": 3,
+        "z2": -16,
+        "block": "grass"
+      },
+      {
+        "id": "tree-3-top",
+        "type": "fill",
+        "x1": 7,
+        "y1": 4,
+        "z1": -17,
+        "x2": 7,
+        "y2": 4,
+        "z2": -17,
+        "block": "grass"
+      },
+      {
+        "id": "tree-4-trunk",
+        "type": "fill",
+        "x1": 24,
+        "y1": 1,
+        "z1": 0,
+        "x2": 24,
+        "y2": 2,
+        "z2": 0,
+        "block": "wood"
+      },
+      {
+        "id": "tree-4-crown",
+        "type": "fill",
+        "x1": 23,
+        "y1": 3,
+        "z1": -1,
+        "x2": 25,
+        "y2": 3,
+        "z2": 1,
+        "block": "grass"
+      },
+      {
+        "id": "tree-4-top",
+        "type": "fill",
+        "x1": 24,
+        "y1": 4,
+        "z1": 0,
+        "x2": 24,
+        "y2": 4,
+        "z2": 0,
+        "block": "grass"
+      },
+      {
+        "id": "garden-border-base",
+        "type": "fill",
+        "x1": -24,
+        "y1": 1,
+        "z1": -4,
+        "x2": -22,
+        "y2": 1,
+        "z2": -2,
+        "block": "brick"
+      },
+      {
+        "id": "garden-border-green",
+        "type": "fill",
+        "x1": -24,
+        "y1": 2,
+        "z1": -4,
+        "x2": -22,
+        "y2": 2,
+        "z2": -2,
+        "block": "grass"
+      },
+      {
+        "id": "arcade-link-north",
+        "type": "fill",
+        "x1": 20,
+        "y1": 0,
+        "z1": -12,
+        "x2": 40,
+        "y2": 0,
+        "z2": -11,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-link-south",
+        "type": "fill",
+        "x1": 20,
+        "y1": 0,
+        "z1": 11,
+        "x2": 40,
+        "y2": 0,
+        "z2": 12,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-promenade-east",
+        "type": "fill",
+        "x1": 41,
+        "y1": 0,
+        "z1": -20,
+        "x2": 42,
+        "y2": 0,
+        "z2": 12,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-north-approach",
+        "type": "fill",
+        "x1": 28,
+        "y1": 0,
+        "z1": -15,
+        "x2": 40,
+        "y2": 0,
+        "z2": -14,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-court-link",
+        "type": "fill",
+        "x1": 26,
+        "y1": 0,
+        "z1": -20,
+        "x2": 27,
+        "y2": 0,
+        "z2": 12,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-pattern-pad",
+        "type": "fill",
+        "x1": 28,
+        "y1": 0,
+        "z1": -8,
+        "x2": 40,
+        "y2": 0,
+        "z2": -2,
+        "block": "sand",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-studio-pad",
+        "type": "fill",
+        "x1": 28,
+        "y1": 0,
+        "z1": 3,
+        "x2": 40,
+        "y2": 0,
+        "z2": 9,
+        "block": "sand",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-court-crossing",
+        "type": "fill",
+        "x1": 28,
+        "y1": 0,
+        "z1": 0,
+        "x2": 40,
+        "y2": 0,
+        "z2": 1,
+        "block": "wood",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-quay",
+        "type": "fill",
+        "x1": 28,
+        "y1": 0,
+        "z1": -21,
+        "x2": 40,
+        "y2": 0,
+        "z2": -20,
+        "block": "stone",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-canal",
+        "type": "fill",
+        "x1": 28,
+        "y1": 0,
+        "z1": -25,
+        "x2": 40,
+        "y2": 0,
+        "z2": -23,
+        "block": "water",
+        "measurementLayer": "ground"
+      },
+      {
+        "id": "arcade-module-0-left",
+        "type": "fill",
+        "x1": 29,
+        "y1": 1,
+        "z1": -17,
+        "x2": 29,
+        "y2": 3,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-0-right",
+        "type": "fill",
+        "x1": 31,
+        "y1": 1,
+        "z1": -17,
+        "x2": 31,
+        "y2": 3,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-0-lintel",
+        "type": "fill",
+        "x1": 29,
+        "y1": 4,
+        "z1": -17,
+        "x2": 31,
+        "y2": 4,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-1-left",
+        "type": "fill",
+        "x1": 33,
+        "y1": 1,
+        "z1": -17,
+        "x2": 33,
+        "y2": 3,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-1-right",
+        "type": "fill",
+        "x1": 35,
+        "y1": 1,
+        "z1": -17,
+        "x2": 35,
+        "y2": 3,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-1-lintel",
+        "type": "fill",
+        "x1": 33,
+        "y1": 4,
+        "z1": -17,
+        "x2": 35,
+        "y2": 4,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-2-left",
+        "type": "fill",
+        "x1": 37,
+        "y1": 1,
+        "z1": -17,
+        "x2": 37,
+        "y2": 3,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-2-right",
+        "type": "fill",
+        "x1": 39,
+        "y1": 1,
+        "z1": -17,
+        "x2": 39,
+        "y2": 3,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-module-2-lintel",
+        "type": "fill",
+        "x1": 37,
+        "y1": 4,
+        "z1": -17,
+        "x2": 39,
+        "y2": 4,
+        "z2": -17,
+        "block": "brick"
+      },
+      {
+        "id": "arcade-pergola-post-29",
+        "type": "fill",
+        "x1": 29,
+        "y1": 1,
+        "z1": -21,
+        "x2": 29,
+        "y2": 5,
+        "z2": -21,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-cap-29",
+        "type": "fill",
+        "x1": 29,
+        "y1": 6,
+        "z1": -21,
+        "x2": 29,
+        "y2": 6,
+        "z2": -21,
+        "block": "stone"
+      },
+      {
+        "id": "arcade-pergola-post-34",
+        "type": "fill",
+        "x1": 34,
+        "y1": 1,
+        "z1": -21,
+        "x2": 34,
+        "y2": 5,
+        "z2": -21,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-cap-34",
+        "type": "fill",
+        "x1": 34,
+        "y1": 6,
+        "z1": -21,
+        "x2": 34,
+        "y2": 6,
+        "z2": -21,
+        "block": "stone"
+      },
+      {
+        "id": "arcade-pergola-post-39",
+        "type": "fill",
+        "x1": 39,
+        "y1": 1,
+        "z1": -21,
+        "x2": 39,
+        "y2": 5,
+        "z2": -21,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-cap-39",
+        "type": "fill",
+        "x1": 39,
+        "y1": 6,
+        "z1": -21,
+        "x2": 39,
+        "y2": 6,
+        "z2": -21,
+        "block": "stone"
+      },
+      {
+        "id": "arcade-pergola-beam",
+        "type": "fill",
+        "x1": 29,
+        "y1": 6,
+        "z1": -20,
+        "x2": 39,
+        "y2": 6,
+        "z2": -20,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-rafter-30",
+        "type": "fill",
+        "x1": 30,
+        "y1": 7,
+        "z1": -22,
+        "x2": 30,
+        "y2": 7,
+        "z2": -19,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-rafter-33",
+        "type": "fill",
+        "x1": 33,
+        "y1": 7,
+        "z1": -22,
+        "x2": 33,
+        "y2": 7,
+        "z2": -19,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-rafter-36",
+        "type": "fill",
+        "x1": 36,
+        "y1": 7,
+        "z1": -22,
+        "x2": 36,
+        "y2": 7,
+        "z2": -19,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-pergola-rafter-39",
+        "type": "fill",
+        "x1": 39,
+        "y1": 7,
+        "z1": -22,
+        "x2": 39,
+        "y2": 7,
+        "z2": -19,
+        "block": "wood"
+      },
+      {
+        "id": "arcade-lantern-glass",
+        "type": "fill",
+        "x1": 34,
+        "y1": 7,
+        "z1": -20,
+        "x2": 34,
+        "y2": 8,
+        "z2": -20,
+        "block": "glass"
+      },
+      {
+        "id": "arcade-lantern-light",
+        "type": "fill",
+        "x1": 34,
+        "y1": 9,
+        "z1": -20,
+        "x2": 34,
+        "y2": 9,
+        "z2": -20,
+        "block": "torch"
+      },
+      {
+        "id": "studio-planter-29",
+        "type": "fill",
+        "x1": 29,
+        "y1": 1,
+        "z1": 18,
+        "x2": 30,
+        "y2": 1,
+        "z2": 19,
+        "block": "brick"
+      },
+      {
+        "id": "studio-planter-leaves-29",
+        "type": "fill",
+        "x1": 29,
+        "y1": 2,
+        "z1": 18,
+        "x2": 30,
+        "y2": 2,
+        "z2": 19,
+        "block": "grass"
+      },
+      {
+        "id": "studio-planter-35",
+        "type": "fill",
+        "x1": 35,
+        "y1": 1,
+        "z1": 18,
+        "x2": 36,
+        "y2": 1,
+        "z2": 19,
+        "block": "brick"
+      },
+      {
+        "id": "studio-planter-leaves-35",
+        "type": "fill",
+        "x1": 35,
+        "y1": 2,
+        "z1": 18,
+        "x2": 36,
+        "y2": 2,
+        "z2": 19,
+        "block": "grass"
+      },
+      {
+        "id": "studio-planter-41",
+        "type": "fill",
+        "x1": 41,
+        "y1": 1,
+        "z1": 18,
+        "x2": 42,
+        "y2": 1,
+        "z2": 19,
+        "block": "brick"
+      },
+      {
+        "id": "studio-planter-leaves-41",
+        "type": "fill",
+        "x1": 41,
+        "y1": 2,
+        "z1": 18,
+        "x2": 42,
+        "y2": 2,
+        "z2": 19,
+        "block": "grass"
+      },
+      {
+        "id": "studio-bench",
+        "type": "fill",
+        "x1": 33,
+        "y1": 1,
+        "z1": 16,
+        "x2": 37,
+        "y2": 1,
+        "z2": 16,
+        "block": "wood"
+      }
+    ],
+    "npcs": [
+      {
+        "position": [
+          -24,
+          1,
+          11
+        ],
+        "name": "Harbor Welcome",
+        "color": 1013358,
+        "dialogue": "Welcome to Geometry Harbor. Our waterfront needs useful designs that make careful use of space and materials. Follow the level stone promenade: the quay is here, the gardens are beside the trellis, and the reservoirs are below the lighthouse. Continue east along the two stone links to the brick arcade and community studio. The eight activity cards can guide you to each stop. Explore at your own pace. Questions check your reasoning; review your own builds using the activity checklist. Use Q to change shape, R to rotate, and Escape to free the cursor. Keep unit cubes selected for the counting challenges.",
+        "question": null
+      },
+      {
+        "position": [
+          -17,
+          1,
+          13
+        ],
+        "name": "1. Sora - Arrival Quay",
+        "color": 1013358,
+        "dialogue": "Start with the cyan cargo sample beside the quay: it is three cubes long, two wide, and one layer tall. Look down at the sand practice pad beside the arrival path. Use Place or B to build your own six-cube copy, then measure it with M. Remove only your own cubes and reshape them into a row of six. What changed, and what stayed the same? The sample is protected so everyone can compare their work.",
+        "question": {
+          "text": "How many unit cubes are in one 3 by 2 layer?",
+          "choices": [
+            "6 cubes",
+            "5 cubes",
+            "9 cubes"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "The cargo sample has one layer. What is its volume?",
+              "choices": [
+                "6 cubic units",
+                "6 square units",
+                "3 cubic units"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "You rearrange six cubes into a 6 by 1 by 1 row. What stays the same?",
+              "choices": [
+                "The volume is still 6 cubic units",
+                "The length is still 3 units",
+                "The volume becomes 8 cubic units"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "position": [
+          -16,
+          1,
+          -9
+        ],
+        "name": "2. Ada - Garden Area",
+        "color": 14251782,
+        "dialogue": "Follow the promenade toward the trellis to reach our garden district. The gold garden model has six tiles along its long edge and four along its short edge. Each tile covers one square unit. Count the rows, predict the area, then check the dimensions with Measure. We need growing space for twenty-four plants, one plant per tile. Remember: the model is one cube thick, but its planting surface is an area.",
+        "question": {
+          "text": "A garden has 4 rows with 6 planting tiles in each row. What is its area?",
+          "choices": [
+            "24 square units",
+            "10 square units",
+            "24 cubic units"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "At one plant per tile, how many plants fit in the gold garden?",
+              "choices": [
+                "24 plants",
+                "20 plants",
+                "48 plants"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "Why do we use square units for the planting surface?",
+              "choices": [
+                "We are counting a two-dimensional covering",
+                "Every shape must use cubic units",
+                "The number of rows is the perimeter"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "position": [
+          -7,
+          1,
+          3
+        ],
+        "name": "3. Rowan - Garden Design",
+        "color": 561586,
+        "dialogue": "The cyan garden model is eight tiles long and three wide. Compare its area and outside boundary with the gold six-by-four model. In the large sand work area beyond the gardens, build a one-layer rectangle using twenty-four unit cubes. Try six by four, then revise it to twelve by two. Count each outside edge once. Explain which shape needs less fencing. The work pad is twelve by six, so both designs fit.",
+        "question": {
+          "text": "What is the area of the cyan 8 by 3 garden?",
+          "choices": [
+            "24 square units, the same as the gold garden",
+            "22 square units",
+            "11 square units"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "What is the perimeter of the cyan 8 by 3 garden?",
+              "choices": [
+                "22 units: 8 + 3 + 8 + 3",
+                "24 units: 8 times 3",
+                "11 units: 8 + 3"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "The gold 6 by 4 garden has perimeter 20. Which model needs less fencing?",
+              "choices": [
+                "The gold garden, by 2 units",
+                "The cyan garden, by 2 units",
+                "Both need the same fencing"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "Your 12 by 2 revision still has area 24. What is its perimeter?",
+              "choices": [
+                "28 units",
+                "24 units",
+                "14 units"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "position": [
+          14,
+          1,
+          0
+        ],
+        "name": "4. Nia - Reservoir Works",
+        "color": 2450411,
+        "dialogue": "The open-front reservoir below the lighthouse has a cyan floor inside three stone walls. Its usable space is four cubes across, three from front to back, and two layers high. Count only the inside space, not the stone walls. Enter through the open front. Fill the inside with your own unit cubes one layer at a time, then measure your fill. Predict the second layer before you place it. You can remove your fill and try a different arrangement later.",
+        "question": {
+          "text": "How many cubes cover one 4 by 3 interior layer?",
+          "choices": [
+            "12 cubes",
+            "7 cubes",
+            "24 cubes"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "There is room for 2 layers of 12 cubes. What is the reservoir capacity?",
+              "choices": [
+                "24 cubic units",
+                "14 cubic units",
+                "12 square units"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "One layer is already filled. How many more cubes complete the second layer?",
+              "choices": [
+                "12 more cubes",
+                "24 more cubes",
+                "2 more cubes"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "position": [
+          16,
+          1,
+          6
+        ],
+        "name": "5. Ivo - Equal Capacity",
+        "color": 8141549,
+        "dialogue": "Beside the reservoir are two solid capacity models. The cyan one is six long, two wide, and two high. The gold one is four long, three wide, and two high. Measure them separately. Both fit twenty-four cubes, but their footprints differ. Compare their base areas and heights, then explain how a shorter length can be balanced by a wider base. These are capacity models; their outside surfaces are not the water capacity.",
+        "question": {
+          "text": "What is the volume of the cyan 6 by 2 by 2 model?",
+          "choices": [
+            "24 cubic units",
+            "12 cubic units",
+            "10 cubic units"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "What is the volume of the gold 4 by 3 by 2 model?",
+              "choices": [
+                "24 cubic units",
+                "9 cubic units",
+                "12 cubic units"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "How can both models have equal volume?",
+              "choices": [
+                "Each has a base area of 12 and 2 layers",
+                "They have the same length and width",
+                "The taller-looking color holds more cubes"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "position": [
+          10,
+          1,
+          15
+        ],
+        "name": "6. Mira - Makers Pavilion",
+        "color": 12458077,
+        "dialogue": "Return along the promenade to the open shelter and the sand makers pad. Design a twenty-four-cube model for a waterfront learning room. Choose dimensions that fit the six-by-six pad. Measure, explain your length-times-width-times-height calculation, then revise one dimension while keeping the same volume. A three-by-four-by-two room and a two-by-three-by-four room are possible. Review your evidence in the activity card. Keep or select only your own model when preparing a Showcase or Print Lab project; the harbor is our reference world.",
+        "question": {
+          "text": "A learning room model is 3 by 4 by 2. How many unit cubes does it use?",
+          "choices": [
+            "24 cubes",
+            "12 cubes",
+            "9 cubes"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "Which revised room uses the same number of cubes and fits the 6 by 6 pad?",
+              "choices": [
+                "2 by 3 by 4",
+                "2 by 3 by 3",
+                "3 by 3 by 3"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "Which evidence best explains that your design has the required volume?",
+              "choices": [
+                "Measured dimensions and a matching 24-cube count",
+                "Only its color and a nice name",
+                "Only the length of one edge"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "7. Tess - Arcade Patterns",
+        "position": [
+          28,
+          1,
+          -14
+        ],
+        "color": 13202770,
+        "dialogue": "Welcome to the eastern arcade. Follow either stone link from the old harbor: the paths form a level loop. Look at the three separate brick arches by the lantern pergola. Each module has two pillars of three cubes and a lintel of three more, so it contains nine cubes. On the large sand court south of this path, build three matching modules with one empty cell between them. Predict the total first, then measure each module separately. Count the empty gaps when planning your footprint, but never count them as volume. You can explore repeat tools later in Free Build.",
+        "question": {
+          "text": "Three separate nine-cube arch modules use how many cubes?",
+          "choices": [
+            "27 cubes",
+            "30 cubes including the gaps",
+            "36 cubes"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "Each arch occupies three columns. Three arches with two one-cell gaps span how many columns?",
+              "choices": [
+                "11 columns",
+                "9 columns",
+                "12 columns"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "8. Eli - Community Studio",
+        "position": [
+          41,
+          1,
+          2
+        ],
+        "color": 3636098,
+        "dialogue": "Our community needs a small stepped seating model. Start with a complete six-by-four layer of 24 unit cubes. Put a six-by-two layer of 12 cubes on one end. That makes 36 cubes with a step. Measure and record the model before revising it into a six-by-three-by-two prism. Both versions use 36 cubes, yet their exposed surfaces differ. Include the underside in your comparison. The southern sand court has space to keep both models side by side if you prefer. Measure each separately and explain which design better serves the community.",
+        "question": {
+          "text": "A 24-cube lower layer plus a 12-cube upper layer has what occupied volume?",
+          "choices": [
+            "36 cubic units",
+            "48 cubic units, the bounding box",
+            "12 cubic units"
+          ],
+          "correct": 0,
+          "followUp": [
+            {
+              "text": "A 6 by 3 by 2 solid prism has six-face surface area 2 × (18 + 12 + 6). What is it?",
+              "choices": [
+                "72 square units",
+                "36 square units",
+                "84 square units"
+              ],
+              "correct": 0
+            },
+            {
+              "text": "The stepped model has 84 exposed square faces; the prism has 72. Which uses less covering for equal occupied volume?",
+              "choices": [
+                "The prism, by 12 square units",
+                "The stepped model, by 12 square units",
+                "They use equal covering"
+              ],
+              "correct": 0
+            }
+          ]
+        }
+      }
+    ],
+    "activities": [
+      {
+        "id": "quay-practice",
+        "buildGoal": {
+          "metric": "blockCount",
+          "comparator": "eq",
+          "target": 6,
+          "unitCubesOnly": true
+        },
+        "title": "Arrival quay: build and revise",
+        "npcName": "1. Sora - Arrival Quay",
+        "position": [
+          -20,
+          2.2,
+          14
+        ],
+        "challenge": "On the sand practice pad, build a 3 by 2 by 1 cargo model from six unit cubes. Measure it, then reshape your cubes into a 6 by 1 by 1 row.",
+        "hint": "Aim down at a nearby floor tile. Use Place or B. Q cycles shapes; select the unit cube for this task. Use M to measure your own connected build.",
+        "successCriteria": [
+          "My first model contains exactly six unit cubes.",
+          "My revised model still contains six cubes.",
+          "I can name a dimension that changed and explain why the volume stayed the same."
+        ],
+        "reflection": "What changed when you rearranged the cargo, and what evidence shows that its volume did not change?"
+      },
+      {
+        "id": "garden-area",
+        "title": "Market gardens: measure growing space",
+        "npcName": "2. Ada - Garden Area",
+        "position": [
+          -17,
+          2.2,
+          -7
+        ],
+        "challenge": "Study the gold 6 by 4 garden model. Count rows, calculate the planting area, and explain how many plants fit at one plant per tile.",
+        "hint": "Count six tiles in one row and four rows. The planting surface is measured in square units even though we use blocks to model it.",
+        "successCriteria": [
+          "I identified the 6-unit and 4-unit edges.",
+          "I calculated 24 square units.",
+          "I explained why one plant per tile gives 24 plants."
+        ],
+        "reflection": "How do rows help you find the area without counting every tile individually?"
+      },
+      {
+        "id": "garden-perimeter",
+        "buildGoal": {
+          "metric": "footprintArea",
+          "comparator": "eq",
+          "target": 24,
+          "unitCubesOnly": true
+        },
+        "title": "Market gardens: redesign the boundary",
+        "npcName": "3. Rowan - Garden Design",
+        "position": [
+          -6,
+          2.2,
+          3
+        ],
+        "challenge": "Compare the gold 6 by 4 garden with the cyan 8 by 3 garden. On the 12 by 6 sand work pad, build 24 cubes in one layer, then revise to a 12 by 2 rectangle.",
+        "hint": "Area counts covered squares; perimeter counts outside unit edges. Walk around the boundary and include both pairs of opposite sides.",
+        "successCriteria": [
+          "I found area 24 for both reference gardens.",
+          "I compared perimeters 20 and 22.",
+          "My 12 by 2 revision has area 24 and perimeter 28.",
+          "I explained which arrangement needs less fencing."
+        ],
+        "reflection": "Why can equal planting areas need different amounts of fencing?"
+      },
+      {
+        "id": "reservoir-fill",
+        "buildGoal": {
+          "metric": "blockCount",
+          "comparator": "eq",
+          "target": 24,
+          "unitCubesOnly": true
+        },
+        "title": "Reservoir works: predict and fill",
+        "npcName": "4. Nia - Reservoir Works",
+        "position": [
+          15,
+          2.2,
+          -2
+        ],
+        "challenge": "Fill only the reservoir interior: x = 8 to 11, z = -7 to -5, and two layers above the cyan floor. Predict, fill one layer, then complete the second.",
+        "hint": "The interior is 4 by 3 by 2. Enter through the open front. Count your fill separately from the three protected stone walls.",
+        "successCriteria": [
+          "I predicted 12 cubes for one layer.",
+          "I placed two complete layers with no cubes outside the interior.",
+          "I checked that my fill contains 24 unit cubes."
+        ],
+        "reflection": "How did knowing the first layer help you predict the full capacity?"
+      },
+      {
+        "id": "reservoir-compare",
+        "title": "Reservoir works: compare capacities",
+        "npcName": "5. Ivo - Equal Capacity",
+        "position": [
+          16,
+          2.2,
+          4
+        ],
+        "challenge": "Measure the cyan 6 by 2 by 2 model and the gold 4 by 3 by 2 model separately. Explain their equal capacity using base area and layers.",
+        "hint": "The two models are separated by open space, so Measure should identify each one independently. Both bases contain 12 squares.",
+        "successCriteria": [
+          "I measured both models as 24 cubic units.",
+          "I found base area 12 and height 2 for each.",
+          "I explained how different dimensions can give equal volume."
+        ],
+        "reflection": "What changed between the two footprints, and how did that affect their capacity?"
+      },
+      {
+        "id": "makers-project",
+        "buildGoal": {
+          "metric": "occupiedVolume",
+          "comparator": "eq",
+          "target": 24,
+          "unitCubesOnly": true
+        },
+        "title": "Makers pavilion: design and explain",
+        "npcName": "6. Mira - Makers Pavilion",
+        "position": [
+          9,
+          2.2,
+          14
+        ],
+        "challenge": "On the 6 by 6 sand makers pad, design a connected room model using exactly 24 unit cubes. Measure it, revise its dimensions, and explain both versions.",
+        "hint": "Try 3 by 4 by 2, then 2 by 3 by 4. Use only your own model when preparing a Showcase or Print Lab project. The activity checklist is a self-review, not an automatic build grade.",
+        "successCriteria": [
+          "My model is connected and fits on the pad.",
+          "It contains exactly 24 unit cubes.",
+          "My revised design keeps volume 24.",
+          "I recorded dimensions and an explanation before preparing a shareable model."
+        ],
+        "reflection": "Which room would you choose for the harbor community, and what dimensions and measurements support your choice?"
+      },
+      {
+        "id": "arcade-patterns",
+        "title": "Eastern arcade: build a repeating module",
+        "npcName": "7. Tess - Arcade Patterns",
+        "position": [
+          28.5,
+          2.6,
+          -13.5
+        ],
+        "challenge": "Study the three brick arch modules near the lantern pergola. On the sand court at x = 28 to 40, z = -8 to -2, build three matching nine-cube arches with one-cell gaps. Predict the cube total and the full row width first.",
+        "hint": "One arch uses two 3-high pillars plus a 3-cube lintel: 9 cubes. Use X starts 29, 33, and 37, all at Z = -5. Three modules use 27 cubes and span 11 columns including gaps. Measure each disconnected arch separately; a single measurement should show 9, not 27.",
+        "successCriteria": [
+          "I predicted 27 occupied cubes and an 11-column row.",
+          "Each separate arch measures 9 cubic units.",
+          "I kept matching shapes and one-cell gaps.",
+          "I explained why gaps affect the footprint but not occupied volume."
+        ],
+        "reflection": "How would a fourth module change the cube total and the row width? Predict before building: 36 cubes and 15 columns, so this court would need a new arrangement."
+      },
+      {
+        "id": "community-studio",
+        "title": "Community studio: revise a stepped design",
+        "npcName": "8. Eli - Community Studio",
+        "position": [
+          41.5,
+          2.6,
+          1.5
+        ],
+        "buildGoal": {
+          "metric": "occupiedVolume",
+          "comparator": "eq",
+          "target": 36,
+          "unitCubesOnly": true
+        },
+        "challenge": "On the southern sand court at x = 28 to 40, z = 3 to 9, build a 6 by 4 lower layer and a 6 by 2 upper layer at one end. Record the 36-cube stepped model, then redesign it as a 6 by 3 by 2 prism. Compare all six sides, including the underside.",
+        "hint": "For the stepped model, use X = 28 to 33, Z = 3 to 6 at Y = 1; the upper layer uses Z = 3 to 4 at Y = 2. Its occupied volume is 36, bounding box volume 48, and exposed surface area 84. The revised prism has occupied volume 36 and surface area 72. An optional second model fits at X = 35 to 40; measure each model separately.",
+        "successCriteria": [
+          "My stepped model contains 36 unit cubes and leaves a usable step.",
+          "I distinguished its 36 occupied cubic units from its 48-unit bounding box.",
+          "I recorded both versions and compared surface areas 84 and 72.",
+          "I justified a design using its purpose, dimensions, volume, and covering."
+        ],
+        "reflection": "Would the community benefit more from the step or from saving 12 square units of covering? Explain the tradeoff. The numeric check confirms occupied volume; use this checklist to review shape and purpose."
+      }
+    ]
+  };
+
   // The authored lessons put the correct choice first in 82 of 83 questions,
   // so a student could clear a lesson by always tapping the top button.
   // Rotate each question by a per-question offset.
@@ -2393,7 +5492,7 @@
   })();
 
 
-  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
+  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze', 'geometryHarbor'];
   var MAX_BLOCKS = 1500; // Performance safety limit
   // Radians/second for arrow-key look. ~100°/s: fast enough to sweep a structure
   // without hunting, slow enough to land the crosshair on an NPC.
@@ -2418,6 +5517,178 @@
     return moved;
   }
   var MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS;
+
+  // Canvas guide graphics share a palette and vector symbols. Repainting an
+  // existing CanvasTexture keeps selection, export and NPC disposal unchanged.
+  function geometryGuideState(data, answered, waypoint) {
+    return { kind: data && data.question ? (answered ? 'complete' : 'question') : 'discovery',
+      tracked: !!(data && waypoint && waypoint.npcName === data.name) };
+  }
+
+  function geometryGuideLabelParts(data) {
+    var name = String(data && data.name || 'Guide');
+    var split = name.match(/^(.*?)\s[-–—]\s(.+)$/);
+    return { name: split ? split[1] : name,
+      detail: split ? split[2] : (data && data.question ? 'Activity guide' : 'Discovery guide') };
+  }
+
+  function geometryGuideContrast(engine) {
+    var now = Date.now();
+    if (engine._guideContrastAt && now - engine._guideContrastAt < 500) return engine._guideContrast;
+    engine._guideContrastAt = now;
+    engine._guideTouch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    var surface = engine.renderer && engine.renderer.domElement;
+    engine._guideContrast = !!(surface && surface.closest && surface.closest('.theme-contrast, [data-stem-theme="contrast"]'));
+    if (!engine._guideContrast && window.matchMedia) engine._guideContrast = window.matchMedia('(forced-colors: active)').matches;
+    return engine._guideContrast;
+  }
+
+  function geometryGuidePalette(contrast) {
+    return contrast ? { ink: '#000000', cream: '#ffffff', sage: '#ffffff', amber: '#ffff00', soft: '#000000' }
+      : { ink: '#183a34', cream: '#f5eedb', sage: '#c7deca', amber: '#e5bd6b', soft: '#48665a' };
+  }
+
+  function geometryGuideBox(ctx, x, y, width, height, radius, fill, stroke, lineWidth) {
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, width, height, radius); else ctx.rect(x, y, width, height);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
+  }
+
+  function geometryGuideSymbol(ctx, x, y, radius, kind, ink) {
+    ctx.save(); ctx.translate(x, y); ctx.strokeStyle = ink; ctx.fillStyle = ink;
+    ctx.lineWidth = Math.max(1.3, radius * 0.22); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    if (kind === 'complete') {
+      ctx.moveTo(-radius * 0.55, 0); ctx.lineTo(-radius * 0.12, radius * 0.42); ctx.lineTo(radius * 0.6, -radius * 0.48); ctx.stroke();
+    } else if (kind === 'discovery') {
+      ctx.moveTo(0, -radius * 0.72); ctx.lineTo(radius * 0.56, 0); ctx.lineTo(0, radius * 0.72); ctx.lineTo(-radius * 0.56, 0); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, Math.max(0.8, radius * 0.1), 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.moveTo(-radius * 0.4, -radius * 0.35);
+      ctx.bezierCurveTo(-radius * 0.4, -radius * 0.95, radius * 0.65, -radius * 0.95, radius * 0.43, -radius * 0.25);
+      ctx.bezierCurveTo(radius * 0.36, -radius * 0.05, 0, -radius * 0.03, 0, radius * 0.23); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, radius * 0.65, radius * 0.12, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function geometryGuideFitText(ctx, text, x, y, width, size, weight) {
+    ctx.font = (weight || '600') + ' ' + size + 'px system-ui, sans-serif';
+    while (size > 21 && ctx.measureText(text).width > width) {
+      size--; ctx.font = (weight || '600') + ' ' + size + 'px system-ui, sans-serif';
+    }
+    if (ctx.measureText(text).width > width) {
+      while (text.length > 1 && ctx.measureText(text + '…').width > width) text = text.slice(0, -1);
+      text += '…';
+    }
+    ctx.fillText(text, x, y);
+  }
+
+  function geometryPaintGuideCanvas(canvas, part, data, state, contrast) {
+    var ctx = canvas.getContext('2d'); if (!ctx) return;
+    var p = geometryGuidePalette(contrast), w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h); ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    if (part === 'label') {
+      var lines = geometryGuideLabelParts(data);
+      geometryGuideBox(ctx, 8, 8, w - 16, h - 16, 25, p.cream, p.ink, 5);
+      if (state.tracked) geometryGuideBox(ctx, 15, 15, w - 30, h - 30, 20, null, p.amber, 8);
+      ctx.fillStyle = state.tracked ? p.amber : p.sage;
+      ctx.beginPath(); ctx.arc(67, h / 2, 34, 0, Math.PI * 2); ctx.fill();
+      geometryGuideSymbol(ctx, 67, h / 2, 24, state.kind, p.ink);
+      ctx.fillStyle = p.ink; geometryGuideFitText(ctx, lines.name, 121, 61, w - 151, 40, '750');
+      ctx.fillStyle = p.soft; geometryGuideFitText(ctx, lines.detail, 121, 108, w - 151, 27, '550');
+    } else if (part === 'prompt') {
+      geometryGuideBox(ctx, 7, 7, w - 14, h - 14, 23, p.ink, p.cream, 4);
+      if (state.touch) { ctx.textAlign = 'center'; ctx.fillStyle = p.cream; ctx.font = '650 32px system-ui, sans-serif'; ctx.fillText('Tap Talk', w / 2, h / 2); return; }
+      geometryGuideBox(ctx, 22, 21, 51, 54, 10, p.cream);
+      ctx.textAlign = 'center'; ctx.fillStyle = p.ink; ctx.font = '750 32px system-ui, sans-serif'; ctx.fillText('E', 47, 49);
+      ctx.fillStyle = p.cream; ctx.font = '650 32px system-ui, sans-serif'; ctx.fillText('Talk', 187, 49);
+    } else if (part === 'marker') {
+      ctx.fillStyle = state.tracked ? p.amber : p.cream;
+      ctx.beginPath(); ctx.arc(w / 2, h / 2, 49, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = p.ink; ctx.lineWidth = 6; ctx.stroke();
+      geometryGuideSymbol(ctx, w / 2, h / 2, 32, state.kind, p.ink);
+    } else if (part === 'speech') {
+      geometryGuideBox(ctx, 10, 10, w - 20, h - 20, 22, p.ink, p.sage, 3);
+      ctx.fillStyle = p.cream; ctx.textAlign = 'center';
+      geometryGuideFitText(ctx, String(data.dialogue || ''), w / 2, h / 2, w - 48, 29, '500');
+    }
+  }
+
+  function geometryRefreshGuideSprites(engine, npc, index, contrast) {
+    var state = geometryGuideState(npc.data, !!(engine._answeredRef || {})[index], engine._activityWaypoint);
+    state.contrast = !!contrast; state.touch = !!engine._guideTouch;
+    var signature = [state.kind, state.tracked, state.contrast, state.touch, npc.data.name, npc.data.dialogue, !!npc._speechBubble].join('|');
+    if (npc._guideVisualSignature === signature) return;
+    npc._guideVisualSignature = signature;
+    [['label', npc.label], ['prompt', npc.prompt], ['marker', npc.qMark], ['speech', npc._speechBubble]].forEach(function(entry) {
+      var sprite = entry[1], texture = sprite && sprite.material && sprite.material.map;
+      if (!texture || !texture.image) return;
+      geometryPaintGuideCanvas(texture.image, entry[0], npc.data, state, contrast);
+      texture.needsUpdate = true;
+      sprite.material.toneMapped = false; sprite.material.depthWrite = false;
+      sprite.userData.geometryGuideState = { kind: state.kind, tracked: state.tracked, contrast: state.contrast };
+    });
+  }
+
+  function geometryGuideCameraBasis(camera) {
+    camera.updateWorldMatrix(true, false);
+    var e = camera.matrixWorld.elements, fx = -e[8], fz = -e[10];
+    var length = Math.sqrt(fx * fx + fz * fz);
+    // The camera pitch is limited, but retaining a deterministic heading also
+    // keeps preview/test cameras looking exactly down from producing NaN.
+    if (length < 0.00001) return { fx: 0, fz: -1 };
+    return { fx: fx / length, fz: fz / length };
+  }
+
+  function geometryGuideBearing(basis, dx, dz) {
+    return Math.atan2(dx * -basis.fz + dz * basis.fx, dx * basis.fx + dz * basis.fz);
+  }
+
+  function geometryPaintGuideCompass(ctx, w, h, engine, contrast) {
+    var p = geometryGuidePalette(contrast), basis = geometryGuideCameraBasis(engine.camera), half = Math.PI / 2;
+    ctx.clearRect(0, 0, w, h);
+    geometryGuideBox(ctx, 0.5, 0.5, w - 1, h - 1, 16, p.ink, p.sage, 1);
+    ctx.fillStyle = p.amber; ctx.beginPath(); ctx.moveTo(w / 2, 4); ctx.lineTo(w / 2 - 3, 8); ctx.lineTo(w / 2 + 3, 8); ctx.closePath(); ctx.fill();
+    ctx.font = '650 8px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    [['N', 0, -1], ['E', 1, 0], ['S', 0, 1], ['W', -1, 0]].forEach(function(cardinal) {
+      var angle = geometryGuideBearing(basis, cardinal[1], cardinal[2]);
+      if (Math.abs(angle) > half) return;
+      var x = w / 2 + angle / half * (w / 2 - 18);
+      ctx.fillStyle = p.sage; ctx.fillText(cardinal[0], x, 11);
+    });
+    var answered = engine._answeredRef || {}, trackedName = '';
+    var markers = engine.npcs.filter(function(npc) { return npc && npc.body; }).map(function(npc) {
+      var i = engine.npcs.indexOf(npc), dx = npc.body.position.x - engine.camera.position.x, dz = npc.body.position.z - engine.camera.position.z;
+      var state = geometryGuideState(npc.data, !!answered[i], engine._activityWaypoint);
+      if (state.tracked) trackedName = npc.data.name;
+      return { state: state, distance: dx * dx + dz * dz, angle: geometryGuideBearing(basis, dx, dz) };
+    });
+    // Distant guides are painted first, then nearby guides, then the pinned guide.
+    // This preserves exact bearings while ensuring the intended destination wins
+    // when multiple guides happen to line up in the same direction.
+    markers.sort(function(a, b) { return Number(a.state.tracked) - Number(b.state.tracked) || b.distance - a.distance; });
+    markers.forEach(function(marker) {
+      var state = marker.state, off = Math.abs(marker.angle) > half;
+      var x = off ? (marker.angle > 0 ? w - 9 : 9) : w / 2 + marker.angle / half * (w / 2 - 18);
+      var fill = state.tracked ? p.amber : state.kind === 'question' ? p.cream : p.sage;
+      if (off) {
+        var direction = marker.angle > 0 ? 1 : -1;
+        ctx.fillStyle = fill; ctx.strokeStyle = p.ink; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x + direction * 4, 21); ctx.lineTo(x - direction * 3, 16); ctx.lineTo(x - direction * 3, 26); ctx.closePath(); ctx.fill(); ctx.stroke();
+        if (state.tracked) { ctx.strokeStyle = p.amber; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, 21, 8, 0, Math.PI * 2); ctx.stroke(); }
+        return;
+      }
+      var radius = state.tracked ? 7 : 5.5;
+      ctx.fillStyle = fill; ctx.strokeStyle = p.ink; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, 21, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      geometryGuideSymbol(ctx, x, 21, radius * 0.74, state.kind, p.ink);
+      if (state.tracked) { ctx.strokeStyle = p.amber; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, 21, 9, 0, Math.PI * 2); ctx.stroke(); }
+    });
+    return trackedName;
+  }
+
 
   // ── Non-visual wayfinding ──
   // The compass strip and the minimap are the only way to tell where the characters
@@ -2450,7 +5721,7 @@
     var pending = list.filter(function (e) { return e.hasQuestion && !e.answered; });
     var head = pending.length
       ? pending.length + ' character' + (pending.length === 1 ? '' : 's') + ' still ' + (pending.length === 1 ? 'has' : 'have') + ' a question. '
-      : 'Every question here is answered. ';
+      : list.some(function(e){return e.hasQuestion;}) ? 'Every question here is answered. ' : 'These guides offer exploration without scored questions. ';
     var spoken = list.slice(0, maxCount || 4).map(function (e) {
       var steps = Math.max(1, Math.round(e.distance));
       return e.name + ' is ' + steps + ' step' + (steps === 1 ? '' : 's') + ' ' + describeBearing(e.bearingDeg)
@@ -2465,6 +5736,13 @@
   // is what makes chat history actually persist across loadLesson cycles.
   // For sample lessons, identity-lookup returns the SAMPLE_LESSONS key (matches
   // activeLesson). For non-sample (AI-generated) lessons, falls back to 'ai_generated'.
+  function summarizeActivityWaypoint(entries,waypoint) {
+    if(!waypoint || !waypoint.npcName)return '';
+    var entry=(entries||[]).find(function(e){return e&&e.name===waypoint.npcName&&isFinite(e.distance)&&isFinite(e.bearingDeg);});
+    if(!entry)return '';
+    var steps=Math.max(1,Math.round(entry.distance));
+    return 'Tracked activity: '+String(waypoint.title||waypoint.npcName).slice(0,180)+'. '+entry.name+' is '+steps+' step'+(steps===1?'':'s')+' '+describeBearing(entry.bearingDeg)+'.';
+  }
   function gwChatKey(lesson) {
     if (!lesson) return 'unknown';
     if (lesson._id) return lesson._id;
@@ -2724,43 +6002,260 @@
   }
 
   // ── AI World Generation Prompts (multi-pass) ──
-  var AI_WORLD_PROMPT_BASE = 'You are a geometry lesson designer for a 3D block-based math world. '
-    + 'Target grade level: {GRADE}. Topic: "{TOPIC}"\n\n'
-    + 'Generate a JSON object with this EXACT structure:\n'
-    + '{\n'
-    + '  "title": "Lesson Title",\n'
-    + '  "description": "Brief description for grade {GRADE} students",\n'
-    + '  "spawnPoint": [2, 3, 2],\n'
-    + '  "objectives": ["objective 1", "objective 2", "objective 3"],\n'
-    + '  "ground": { "xMin": -4, "xMax": 24, "zMin": -4, "zMax": 24, "y": 0, "type": "grass" },\n'
-    + '  "structures": [\n'
-    + '    { "type": "fill", "x1": 0, "y1": 0, "z1": 0, "x2": 8, "y2": 0, "z2": 8, "block": "stone" },\n'
-    + '    { "type": "fill", "x1": 2, "y1": 1, "z1": 2, "x2": 6, "y2": 3, "z2": 4, "block": "diamond" }\n'
-    + '  ],\n'
-    + '  "npcs": [\n'
-    + '    { "position": [x, y, z], "name": "Name", "color": 8048861,\n'
-    + '      "dialogue": "What the NPC says — explain the concept first!",\n'
-    + '      "question": null }\n'
-    + '  ]\n'
-    + '}\n\n'
-    + 'RULES:\n'
-    + '- Block types: stone, grass, wood, diamond, gold, sand, glass, brick, ice, water\n'
-    + '- NPC colors: 8048861 (purple), 2461147 (blue), 1484836 (green), 16096015 (amber), 14427142 (red)\n'
-    + '- Create 3-5 structures demonstrating the topic concept\n'
-    + '- Create 3-5 NPCs: first NPC is a guide (question: null), others have questions\n'
-    + '- Questions MUST have exactly 3 choices with "correct" as a 0-based index\n'
-    + '- All coordinates between -4 and 24. Ground is y=0. Build structures starting at y=1.\n'
-    + '- Place NPCs at y = highest_block + 1 so they float above structures\n'
-    + '- ALWAYS include a ground/floor structure first (y1=0, y2=0)\n'
-    + '- Make dimensions appropriate for grade {GRADE} (grades 3-4: single digits, 5-6: double digits, 7+: fractions/composites)\n'
-    + '- Return ONLY valid JSON, no markdown fences, no explanation.\n';
+
+  // ── Rich lesson generation helpers (pure except the injected AI request) ──
+  // A build goal checks an explicitly selected student creation, never a whole
+  // lesson or an inferred design intention. Unknown metrics cannot be scored.
+  function normalizeGeometryBuildGoal(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    var metrics = ['blockCount','occupiedVolume','footprintArea','width','depth','height'];
+    var allowed = ['metric','comparator','target','unitCubesOnly'];
+    if (Object.keys(value).some(function(k) { return allowed.indexOf(k) < 0; }) || metrics.indexOf(value.metric) < 0 || ['eq','gte','lte'].indexOf(value.comparator) < 0) return null;
+    var target = value.target;
+    if (typeof target !== 'number' || !Number.isFinite(target) || target <= 0 || target > 1500) return null;
+    var step = value.metric === 'occupiedVolume' ? .25 : value.metric === 'height' ? .5 : 1;
+    if (Math.abs(target / step - Math.round(target / step)) > 1e-8) return null;
+    if (value.unitCubesOnly !== undefined && typeof value.unitCubesOnly !== 'boolean') return null;
+    if (value.unitCubesOnly === true && value.comparator === 'eq' && Math.round(target) !== target) return null;
+    return {metric:value.metric, comparator:value.comparator, target:target, unitCubesOnly:value.unitCubesOnly === true};
+  }
+  var GEOMETRY_LESSON_DEPTHS = [
+    { value: 1, id: 'quick', label: 'Quick', minutes: '10–15 min', activities: 2, budget: 450, calls: 2, repairs: 1, detail: 'Two connected activities and a small building challenge.' },
+    { value: 2, id: 'guided', label: 'Guided', minutes: '25–35 min', activities: 4, budget: 700, calls: 3, repairs: 2, detail: 'Four activities with worked examples, hints, and a final design task.' },
+    { value: 3, id: 'expedition', label: 'Expedition', minutes: '45–60 min', activities: 5, budget: 900, calls: 4, repairs: 2, detail: 'Five connected districts with scaffolded challenges, revision, and a showcase project.' }
+  ];
+
+  function geometryLessonDepth(value) {
+    var index = Math.round(Number(value));
+    return GEOMETRY_LESSON_DEPTHS[index >= 1 && index <= 3 ? index - 1 : 1];
+  }
+
+  function geometryGenerationBrief(options, profile) {
+    return 'Design an original, connected Geometry World lesson for grade ' + options.grade + '. Topic: ' + options.topic + '.\n'
+      + 'Depth: ' + profile.label + '; estimated student time ' + profile.minutes + '; exactly ' + profile.activities + ' linked activities. '
+      + 'Depth changes the learning journey, not merely the number of questions. Teach, let the student construct or revise, measure, explain, and apply. '
+      + 'Use a coherent setting, a recognizable arrival landmark, distinct activity landmarks, a walkable route, and an ending that uses earlier learning. '
+      + 'Optional landscapeTheme selects background scenery: use meadow by default; choose coastal only when the teacher topic or approved setting explicitly calls for a seaside, harbor, ocean, or coastal world. Only meadow and coastal are supported. This choice must not change the teaching geometry, activity goals, or authored block budget. '
+      + 'Vary the structures: frames, terraces, open rooms, small bridges, patterned gardens, layered exhibits, or composite silhouettes. '
+      + 'Use compact architecture, color-coded paths, sightlines and open building plots; avoid a row of unrelated solid boxes. '
+      + 'The entire world shares one continuous ground plane. No teleport-only scenes, scripted gates, automatic design grading, or unsupported mechanics. '
+      + 'Ground bounds may expand within x/z -48..48; y is 0. All authored fills use integer coordinates, y 0..24, and at most ' + profile.budget + ' non-ground blocks total (inclusive fill volumes; ground does not count). '
+      + 'Reserve open plots and at least 600 blocks of runtime capacity for student work. All measures refer to actually authored blocks. '
+      + 'The world supports whole unit cubes; do not claim fractional cube dimensions. Fractions may use groups, ratios, colors or whole-block partitions. '
+      + 'Each activity needs a measurable goal, a hands-on construction/revision task, success criteria the learner can check, a useful hint, and a reflection. '
+      + 'Where a student construction task has one explicit numeric target, include optional buildGoal:{metric:"occupiedVolume",comparator:"eq",target:24,unitCubesOnly:true} in both the plan and final activity. Omit buildGoal for open-ended tasks or measurements of protected teaching examples. '
+      + 'Supported metrics: blockCount (pieces), occupiedVolume (cubic units), footprintArea (union of occupied X/Z squares), width (X), depth (Z), height (Y). Supported comparators: eq, gte, lte. target is a positive JSON number, never an expression or inferred answer; only occupiedVolume may use quarter-unit targets and height half-unit targets. Set unitCubesOnly:true when the task explicitly requires full cubes. No other goal fields are supported. '
+      + 'Checks use only explicitly selected student geometry and report this one numeric fact. They cannot grade beauty, connectivity, location, interior air volume, room layout, a specific silhouette, material choice, perimeter, or explanations. Keep these as written self-review criteria. State the numeric target plainly in the challenge and preserve it unchanged in every generation and review pass. '
+      + 'From the second activity onward, explicitly reuse one earlier measurement, explanation, or student design decision. Offer a choice between a supported continuation and a stretch redesign; both must remain accessible along the walkable route. '
+      + 'Give each stop a visible purpose in the setting: repair a bridge design, plan a garden bed, furnish a market shelter, or extend a lookout. Describe the change through editable student construction, never claim scripted unlocks or automatic gates. '
+      + 'Activity markers turn green and gold when the learner records a self-review or meets an explicit numeric check. Explain this as recorded progress, not automatic grading of the whole design. '
+      + 'The final activity should reuse earlier ideas in a design the student can showcase or send to Print Lab.\n';
+  }
+
+  function geometryPlanIssues(plan, profile) {
+    var issues = [];
+    if (!plan || typeof plan !== 'object' || Array.isArray(plan)) return ['Return one plan object.'];
+    if (typeof plan.title !== 'string' || !plan.title.trim()) issues.push('Add a meaningful title.');
+    if (!Array.isArray(plan.activities) || plan.activities.length !== profile.activities) return issues.concat('Plan exactly ' + profile.activities + ' activities.');
+    var ids = {};
+    plan.activities.forEach(function(a, i) {
+      if (!a || typeof a !== 'object') { issues.push('Activity ' + (i + 1) + ' must be an object.'); return; }
+      ['id', 'title', 'challenge', 'hint', 'successCriteria', 'reflection'].forEach(function(k) {
+        if (typeof a[k] !== 'string' || !a[k].trim()) issues.push('Activity ' + (i + 1) + ' needs ' + k + '.');
+      });
+      if (a.buildGoal != null && !normalizeGeometryBuildGoal(a.buildGoal)) issues.push('Activity ' + (i + 1) + ' has an unsupported buildGoal. Use a supported metric, comparator, positive numeric target, and optional boolean unitCubesOnly.');
+      if (ids[a.id]) issues.push('Activity IDs must be unique.');
+      ids[a.id] = true;
+      if (!Number.isFinite(a.estimatedMinutes) || a.estimatedMinutes <= 0) issues.push('Each activity needs a positive estimatedMinutes number.');
+    });
+    return issues;
+  }
+
+  function geometryGeneratedLessonIssues(lesson, profile, plan) {
+    var issues = [];
+    if (!lesson || typeof lesson !== 'object' || Array.isArray(lesson)) return ['Return one complete lesson object.'];
+    if (Object.prototype.hasOwnProperty.call(lesson, 'landscapeTheme') && lesson.landscapeTheme !== 'meadow' && lesson.landscapeTheme !== 'coastal') issues.push('landscapeTheme must be meadow or coastal when provided. Use meadow unless a coastal setting is intended.');
+    function text(value) { return typeof value === 'string' && value.trim().length > 0; }
+    function integer(value) { return Number.isFinite(value) && Math.round(value) === value; }
+    function point(value) { return Array.isArray(value) && value.length === 3 && value.every(Number.isFinite); }
+    var blocks = ['stone','grass','wood','diamond','gold','sand','glass','brick','ice','water','lava','torch'];
+    var g = lesson.ground;
+    var groundValid = g && ['xMin','xMax','zMin','zMax','y'].every(function(k) { return integer(g[k]); }) && g.y === 0
+      && g.xMin >= -48 && g.xMax <= 48 && g.zMin >= -48 && g.zMax <= 48 && g.xMin <= g.xMax && g.zMin <= g.zMax && blocks.indexOf(g.type) >= 0;
+    if (!groundValid) issues.push('Ground must be a valid rectangle at y=0, within -48..48, with a supported material.');
+    function onGround(pos) { return groundValid && point(pos) && pos[0] >= g.xMin && pos[0] <= g.xMax && pos[2] >= g.zMin && pos[2] <= g.zMax && pos[1] >= 1 && pos[1] <= 24; }
+    if (!text(lesson.title) || !text(lesson.description)) issues.push('Include title and student-facing description.');
+    if (!Array.isArray(lesson.objectives) || lesson.objectives.length < profile.activities || !lesson.objectives.every(text)) issues.push('Include a clear objective for each activity.');
+    if (!onGround(lesson.spawnPoint)) issues.push('Place the spawn point above the ground inside its bounds.');
+    var structures = Array.isArray(lesson.structures) ? lesson.structures : [];
+    if (structures.length < profile.activities || structures.length > 180) issues.push('Include ' + profile.activities + '..180 compact fill structures.');
+    var byId = {}, cost = 0, goodStructures = [];
+    structures.forEach(function(s, i) {
+      if (!s || !text(s.id) || byId[s.id]) { issues.push('Every structure needs a unique id (structure ' + (i + 1) + ').'); return; }
+      byId[s.id] = s;
+      var valid = s.type === 'fill' && ['x1','x2','y1','y2','z1','z2'].every(function(k) { return integer(s[k]); })
+        && s.x1 <= s.x2 && s.y1 <= s.y2 && s.z1 <= s.z2 && s.x1 >= -48 && s.x2 <= 48 && s.z1 >= -48 && s.z2 <= 48
+        && s.y1 >= 0 && s.y2 <= 24 && blocks.indexOf(s.block) >= 0;
+      if (!valid) { issues.push('Fix integer bounds/material for structure ' + s.id + '.'); return; }
+      if (groundValid && (s.x1 < g.xMin || s.x2 > g.xMax || s.z1 < g.zMin || s.z2 > g.zMax)) issues.push('Structure ' + s.id + ' extends beyond the ground.');
+      var groundOverlay = s.measurementLayer === 'ground' && s.y1 === 0 && s.y2 === 0;
+      if (s.measurementLayer === 'ground' && !groundOverlay) issues.push('Ground overlays must be flat at y=0; fix ' + s.id + '.');
+      if (!groundOverlay) {
+        cost += (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1);
+        var overlap = goodStructures.find(function(other) {
+          return s.x1 <= other.x2 && s.x2 >= other.x1 && s.y1 <= other.y2 && s.y2 >= other.y1 && s.z1 <= other.z2 && s.z2 >= other.z1;
+        });
+        if (overlap) issues.push('Structures ' + s.id + ' and ' + overlap.id + ' overlap. Separate them and update affected measurements; each authored voxel can belong to only one fill.');
+        goodStructures.push(s);
+      }
+    });
+    if (cost > profile.budget) issues.push('Authored structures cost ' + cost + ' blocks; maximum ' + profile.budget + '. Redesign compactly and recalculate affected questions; do not drop learning activities.');
+    function blocked(pos) { return point(pos) && goodStructures.some(function(s) {
+      // Grid cell x occupies [x,x+1], while the camera is a world-space eye
+      // position. Keep body height and a small horizontal clearance free.
+      return pos[0] > s.x1 - 0.3 && pos[0] < s.x2 + 1.3 && pos[2] > s.z1 - 0.3 && pos[2] < s.z2 + 1.3 && pos[1] - 1.6 < s.y2 + 1 && pos[1] > s.y1;
+    }); }
+    if (blocked(lesson.spawnPoint)) issues.push('Spawn is inside a structure. Move it to a clear walking area.');
+    function checkQuestion(q, label) {
+      if (!q || !text(q.text) || !Array.isArray(q.choices) || q.choices.length !== 3 || !q.choices.every(function(c) { return text(c) || Number.isFinite(c); }) || !integer(q.correct) || q.correct < 0 || q.correct > 2) {
+        issues.push(label + ' needs a question with three choices and a valid correct index.'); return;
+      }
+      if (q.measurement) {
+        var m = q.measurement, s = byId[m.structureId], value = null;
+        if (s && s.measurementLayer !== 'ground') {
+          var x = s.x2 - s.x1 + 1, y = s.y2 - s.y1 + 1, z = s.z2 - s.z1 + 1;
+          if (m.quantity === 'volume') value = x * y * z;
+          if (m.quantity === 'footprint-area') value = x * z;
+          if (m.quantity === 'footprint-perimeter') value = 2 * (x + z);
+        }
+        if (!Number.isFinite(value) || m.expected !== value || parseFloat(String(q.choices[q.correct])) !== value) issues.push(label + ' measurement/answer disagrees with the referenced inclusive block dimensions.');
+      }
+      if (q.followUp !== undefined) {
+        if (!Array.isArray(q.followUp) || q.followUp.length > 3) issues.push(label + ' has invalid follow-up questions.');
+        else q.followUp.forEach(function(f, i) { if (f && f.followUp) issues.push('Only one follow-up level is supported.'); else checkQuestion(f, label + ' step ' + (i + 1)); });
+      }
+    }
+    var npcs = Array.isArray(lesson.npcs) ? lesson.npcs : [], npcNames = {};
+    if (npcs.length < profile.activities + 1 || npcs.length > 12) issues.push('Include an arrival guide and one named mentor per activity (maximum 12 NPCs).');
+    npcs.forEach(function(n, i) {
+      if (!n || !text(n.name) || npcNames[n.name]) { issues.push('NPCs need unique names.'); return; }
+      npcNames[n.name] = n;
+      if (!onGround(n.position) || blocked([n.position && n.position[0], (n.position && n.position[1]) + 1, n.position && n.position[2]])) issues.push('Place NPC ' + n.name + ' at a clear accessible ground spot.');
+      if (!text(n.dialogue)) issues.push('NPC ' + n.name + ' needs teaching dialogue.');
+      if (n.question) checkQuestion(n.question, n.name);
+    });
+    var activities = Array.isArray(lesson.activities) ? lesson.activities : [];
+    if (activities.length !== profile.activities) issues.push('Preserve all ' + profile.activities + ' planned activities.');
+    var activityIds = {};
+    activities.forEach(function(a, i) {
+      if (!a || typeof a !== 'object') { issues.push('Invalid activity ' + (i + 1) + '.'); return; }
+      ['id','title','npcName','challenge','hint','successCriteria','reflection'].forEach(function(k) { if (!text(a[k])) issues.push('Activity ' + (i + 1) + ' needs ' + k + '.'); });
+      if (a.buildGoal != null && !normalizeGeometryBuildGoal(a.buildGoal)) issues.push('Activity ' + (i + 1) + ' has an unsupported buildGoal.');
+      var plannedGoal=plan && plan.activities[i] && normalizeGeometryBuildGoal(plan.activities[i].buildGoal);
+      if (plannedGoal && JSON.stringify(plannedGoal)!==JSON.stringify(normalizeGeometryBuildGoal(a.buildGoal))) issues.push('Preserve the planned buildGoal metric, comparator, target, and cube requirement for activity ' + a.id + '.');
+      if (activityIds[a.id]) issues.push('Activity IDs must be unique.');
+      activityIds[a.id] = true;
+      if (plan && plan.activities[i] && a.id !== plan.activities[i].id) issues.push('Preserve the planned activity order and IDs.');
+      if (!Number.isFinite(a.estimatedMinutes) || a.estimatedMinutes <= 0) issues.push('Each activity needs estimatedMinutes.');
+      if (!onGround(a.position) || a.position[1] < 2 || blocked(a.position)) issues.push('Activity ' + a.id + ' needs a safe adjacent viewpoint at eye height (y=3).');
+      if (!Array.isArray(a.structureIds) || !a.structureIds.length || a.structureIds.some(function(id) { return !byId[id] || byId[id].measurementLayer === 'ground'; })) issues.push('Activity ' + a.id + ' must reference its existing non-ground teaching structures by ID.');
+      var mentor = npcNames[a.npcName];
+      if (!mentor || !mentor.question) issues.push('Activity ' + a.id + ' needs its named mentor and a valid check-for-understanding question.');
+      if (profile.value >= 2 && mentor && mentor.question && (!Array.isArray(mentor.question.followUp) || mentor.question.followUp.length < 1)) issues.push('Add scaffolded follow-up questions for ' + a.npcName + '.');
+    });
+    return issues.slice(0, 40);
+  }
+
+  function parseGeometryLessonJson(result) {
+    var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // Handle cases where AI wraps in extra text
+    var start = cleaned.indexOf('{');
+    var end = cleaned.lastIndexOf('}');
+    if (start >= 0 && end > start) cleaned = cleaned.substring(start, end + 1);
+    return JSON.parse(cleaned);
+  }
+
+  async function runGeometryLessonGeneration(options) {
+    var profile = geometryLessonDepth(options.depth), repairs = profile.repairs, calls = 0;
+    var isCurrent = options.isCurrent || function() { return true; };
+    function guard() { if (!isCurrent()) { var error = new Error('Generation canceled'); error.code = 'GW_GENERATION_CANCELLED'; throw error; } }
+    function progress(label) { guard(); if (options.onProgress) options.onProgress({ label: label, call: calls + 1, planned: profile.calls, max: profile.calls + profile.repairs }); }
+    async function request(prompt, label, check) {
+      var nextPrompt = prompt;
+      while (true) {
+        progress(label); calls++;
+        var raw = await options.callGemini(nextPrompt, true);
+        guard();
+        var parsed, problems;
+        try { parsed = parseGeometryLessonJson(raw); problems = check ? check(parsed) : []; }
+        catch (error) { problems = ['Invalid JSON: ' + error.message]; }
+        if (!problems.length) return parsed;
+        if (repairs <= 0) throw new Error('The lesson still needs repair: ' + problems.slice(0, 3).join(' '));
+        repairs--;
+        nextPrompt = prompt + '\nREPAIR REQUIRED. Return the complete corrected JSON. Keep every required activity and mathematical target.\nIssues:\n- ' + problems.join('\n- ')
+          + '\nPrevious response:\n' + (typeof raw === 'string' ? raw : JSON.stringify(raw));
+        label = 'Repairing lesson checks';
+      }
+    }
+    var brief = geometryGenerationBrief(options, profile);
+    var plan = await request(brief + '\nFirst plan the expedition; do not generate blocks yet. Return ONLY JSON: '
+      + '{"title":"...","setting":"...","route":"Walkable route and visual landmarks", "activities":[{"id":"market","title":"...","challenge":"Student builds/revises ...", "hint":"...", "successCriteria":"...", "reflection":"...", "estimatedMinutes":6}]}.'
+      + (options.seedLesson ? '\nRefine this existing lesson to satisfy the teacher request: ' + options.refinement + '\n' + JSON.stringify(options.seedLesson) : ''),
+      'Planning the learning journey', function(value) { return geometryPlanIssues(value, profile); });
+    var worldPrompt = brief + '\nApproved learning plan:\n' + JSON.stringify(plan) + '\n' + AI_WORLD_PROMPT_BASE;
+    var lesson = await request(worldPrompt, 'Building the world and activities', function(value) { return geometryGeneratedLessonIssues(value, profile, plan); });
+    if (profile.value === 3) {
+      lesson = await request(brief + '\n' + AI_FOLLOWUP_PROMPT.replace('{LESSON_JSON}', JSON.stringify(lesson))
+        + '\nPreserve activities, IDs, geometry, correct answers, and measurement metadata. Enrich each mentor with a concise worked example, a misconception hint, and a reflection tied to their building task. '
+        + 'Add one easier entry point and one optional extension within each activity challenge. Return the complete lesson JSON.',
+        'Writing mentor hints and extensions', function(value) { return geometryGeneratedLessonIssues(value, profile, plan); });
+    }
+    if (profile.value >= 2) {
+      lesson = await request(brief + '\n' + AI_REFINE_PROMPT.replace('{LESSON_JSON}', JSON.stringify(lesson)).replace('{REFINEMENT}',
+        'Review the whole journey as a teacher and level designer. Recompute every mathematical answer from inclusive block dimensions. '
+        + 'Check that each task has room to build, mentors are accessible, routes are connected, the arrival and ending are clear, and no topic was lost. '
+        + 'Preserve the planned activities and IDs; repair the entire JSON if needed. Do not replace specific challenges with generic exploration. '
+        + 'Keep every activity safe adjacent viewpoint at eye height y=3 and every referenced structure.\nApproved plan: ' + JSON.stringify(plan)),
+        'Checking mathematics and the complete route', function(value) { return geometryGeneratedLessonIssues(value, profile, plan); });
+    }
+    guard();
+    if (!Object.prototype.hasOwnProperty.call(lesson, 'landscapeTheme')) lesson.landscapeTheme = 'meadow';
+    lesson.depth = profile.id;
+    lesson.estimatedMinutes = profile.minutes;
+    lesson.generation = { depth: profile.id, estimatedMinutes: profile.minutes, calls: calls, schemaVersion: 1 };
+    lesson.activities.forEach(function(a) { a.depth = profile.id; });
+    return lesson;
+  }
+  // ── End rich lesson generation helpers ──
+
+  var AI_WORLD_PROMPT_BASE = 'Return ONLY one complete valid lesson JSON object, no markdown. Schema:\n'
+    + '{"title":"...","description":"What students will do", "landscapeTheme":"meadow", "spawnPoint":[0,3,0], "objectives":["One measurable goal per activity"], '
+    + '"ground":{"xMin":-24,"xMax":24,"zMin":-24,"zMax":24,"y":0,"type":"grass"}, '
+    + '"structures":[{"id":"example","type":"fill","x1":4,"y1":1,"z1":4,"x2":6,"y2":2,"z2":5,"block":"brick"}], '
+    + '"npcs":[{"name":"Arrival guide","position":[0,1,2],"color":8048861,"dialogue":"Welcome and route instructions","question":null}, '
+    + '{"name":"Mentor","position":[2,1,4],"color":2461147,"dialogue":"Explain the model, the student building task, and a useful hint", '
+    + '"question":{"text":"How many unit cubes in the brick prism?","choices":["12","10","6"],"correct":0,"measurement":{"structureId":"example","quantity":"volume","expected":12},'
+    + '"followUp":[{"text":"How many cubes in one layer?","choices":["3","6","12"],"correct":1}]}}], '
+    + '"activities":[{"id":"same-as-plan","title":"...","npcName":"Mentor","position":[0,3,4],"structureIds":["example"],'
+    + '"challenge":"Precise hands-on task", "hint":"Scaffold", "successCriteria":"Learner checks their design using ...", "reflection":"Explain ...", "estimatedMinutes":6}]}\n'
+    + 'Use the approved plan activities in order with unchanged IDs. Include a separate arrival guide and a named mentor/question for every activity. '
+    + 'Each mentor teaches before questioning and explicitly gives the associated building challenge and hint. '
+    + 'Guided and Expedition activities need followUp arrays with 1–3 progressively scaffolded three-choice questions. '
+    + 'All main/follow-up questions have exactly 3 choices and a valid zero-based correct index. '
+    + 'For numeric volume, footprint area, or footprint perimeter questions about one filled prism, include measurement metadata as shown; supported quantities are volume, footprint-area, footprint-perimeter. '
+    + 'Use inclusive dimensions x2-x1+1, y2-y1+1, z2-z1+1. The correct choice starts with the numeric answer. Other questions may omit measurement. '
+    + 'Give each compact fill a unique ID and each activity the IDs of all its teaching structures. Materials: stone, grass, wood, diamond, gold, sand, glass, brick, ice, water, torch. '
+    + 'Ground supplies the floor; do not repeat a full floor in structures. Paths and plot markings may be narrow fills at y=0 with measurementLayer:"ground"; only flat y=0 fills can use this tag, and these do not count against the authored-block budget. All teaching structures start at y=1 or higher. Ground and decorations are not part of measured teaching shapes. '
+    + 'Use separate clear ground spots for the spawn and activity viewpoints (eye height y=3) and for mentors (y=1). Never put them inside or above solid exhibits. '
+    + 'Everything must fit within the ground bounds. Non-ground fills must never overlap, even when they use the same material; a voxel can belong to only one fill. Separate teaching structures so their measurements are unambiguous. Leave walking routes and empty student construction plots. '
+    + 'Do not add unsupported structure types, arbitrary code, invented reward/gate mechanics, or multiple scenes.';
 
   var AI_REFINE_PROMPT = 'You are improving an existing 3D geometry lesson. Here is the current lesson JSON:\n\n'
     + '{LESSON_JSON}\n\n'
     + 'The teacher wants you to: {REFINEMENT}\n\n'
     + 'Return the COMPLETE improved JSON (same structure), not a diff. Fix any issues:\n'
-    + '- Ensure all coordinates are valid (between -4 and 24)\n'
-    + '- Ensure NPCs are positioned above their structures\n'
+    + '- Keep integer x/z coordinates within -48..48 and the ground rectangle, y within 0..24. Preserve every planned activity and referenced structure.\n'
+    + '- Keep NPCs at accessible clear ground spots next to their teaching structures (y=1), with safe adjacent activity viewpoints at eye height y=3.\n'
     + '- Ensure questions have exactly 3 choices\n'
     + '- Add more detail to NPC dialogues (explain concepts, give hints)\n'
     + '- Make structures more interesting and varied\n'
@@ -2813,6 +6308,8 @@
   // ══════════════════════════════════════════════════════════════
   // ── Tool Registration ──
   // ══════════════════════════════════════════════════════════════
+
+  window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal};
 
   window.StemLab.registerTool('geometryWorld', {
     name: 'Geometry World',
@@ -3098,7 +6595,18 @@
       var answeredNpcs = d.answeredNpcs || {};
       var aiPrompt = d.aiPrompt || '';
       var aiGenerating = d.aiGenerating || false;
-      var aiPassCount = d.aiPassCount || 2; // 1=quick, 2=refine, 3=refine+followups
+      var aiLessonDepth = geometryLessonDepth(d.aiLessonDepth || d.aiPassCount || 2).value;
+      var aiDepthProfile = geometryLessonDepth(aiLessonDepth);
+      var aiGenerationRef = React.useRef({ id: 0, running: false, mounted: true });
+      React.useEffect(function() {
+        aiGenerationRef.current.mounted = true;
+        // A saved busy flag must not strand the controls after re-entry.
+        if (d.aiGenerating && !aiGenerationRef.current.running) upd({ aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: '' });
+        return function() { aiGenerationRef.current.mounted = false; aiGenerationRef.current.id++; aiGenerationRef.current.running = false; };
+      }, []);
+
+      // ── End generation lifecycle hooks ──
+
       var aiGradeLevel = d.aiGradeLevel || '4';
       var aiCurrentPass = d.aiCurrentPass || 0;
       var showMyLessons = d.showMyLessons || false;
@@ -3706,6 +7214,7 @@
               if(child.isLineSegments && child.material && child.material.userData.gwSharedBlockEdge) child.visible=profile.tier!=='saver';
             });
           });
+          if (previousTier !== profile.tier && engine._buildBatchPreview && engine._buildBatchPreview.surfaces) engine._buildBatchPreview.surfaces.traverse(function(part){if(part.material)updateSurfaceDetail(part.material);});
           if (engine.composer && container.clientWidth && container.clientHeight) {
             try { if(engine.composer.setPixelRatio)engine.composer.setPixelRatio(engine.renderer.getPixelRatio()); engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {}
           }
@@ -3916,6 +7425,224 @@
               triangle(out, p, r, q, tint); triangle(out, q, r, s, tint);
             }
           }
+          // Lives inside initLandscape and reuses its merged, vertex-coloured mesh helper.
+          // Every surface is decorative: no engine.blocks entries, collision or ray hits.
+          function buildCoastalLandscape(x0, x1, z0, z1, baseY, saver) {
+            var group = new THREE.Group(); group.name = 'gw-coastal-landscape';
+            group.userData.gwLandscape = true; group.userData.gwDecorative = true;
+            var cx = (x0 + x1 + 1) / 2, cz = (z0 + z1 + 1) / 2, seaY = baseY + 0.15;
+            var coast = buffer(), sea = buffer(), foam = buffer(), islands = buffer(), beacons = buffer(), sails = buffer();
+            var blue = color(0x367984), shallow = color(0x579799), foamColor = color(0xa7cfca);
+            var rock = color(0x758477), rockLight = color(0x99a18e), sand = color(0xbab391);
+            function quad(out, a, b, c, d, tint) { triangle(out, a, b, c, tint); triangle(out, a, c, d, tint); }
+            // The sea lies under the lesson slab but above the old green horizon. Its
+            // vertices never enter the block map and the same landscape disposal owns it.
+            quad(sea, [cx-300,seaY,cz-300], [cx-300,seaY,cz+300], [cx+300,seaY,cz+300], [cx+300,seaY,cz-300], blue);
+            var outline = [], perSide = saver ? 10 : 18;
+            for (var side=0;side<4;side++) for(var n=0;n<perSide;n++) {
+              var u=n/perSide, p;
+              if(side===0)p={x:x1+1,z:z0+(z1+1-z0)*u,nx:1,nz:0};
+              if(side===1)p={x:x1+1-(x1+1-x0)*u,z:z1+1,nx:0,nz:1};
+              if(side===2)p={x:x0,z:z1+1-(z1+1-z0)*u,nx:-1,nz:0};
+              if(side===3)p={x:x0+(x1+1-x0)*u,z:z0,nx:0,nz:-1};
+              outline.push(p);
+            }
+            var rings = [0,1.05,2.8,5.5];
+            var ringPoints = rings.map(function(distance,r) { return outline.map(function(p,i) {
+              var variation = r ? Math.sin(i*1.73+r)*0.15+Math.sin(i*.73)*0.1 : 0;
+              var offset = distance * (1+variation);
+              var y = r===0 ? baseY+1.02 : r===1 ? baseY+.61+Math.sin(i*1.2)*.12 : r===2 ? seaY+.025 : seaY+.004;
+              return [p.x+p.nx*offset,y,p.z+p.nz*offset];
+            }); });
+            for(var r=0;r<rings.length-1;r++)for(var i=0;i<outline.length;i++){
+              var j=(i+1)%outline.length;
+              var tint=r===0 ? (i%3 ? rock : rockLight) : r===1 ? sand : shallow;
+              quad(r===2?sea:coast,ringPoints[r][i],ringPoints[r][j],ringPoints[r+1][j],ringPoints[r+1][i],tint);
+            }
+            // Broken pale shore lines and broad quiet glints keep the water readable. They
+            // remain still at every motion preference; no per-frame work or shader clock.
+            for(var i=0;i<outline.length;i++)if(i%3!==1){
+              var a=ringPoints[2][i],b=ringPoints[2][(i+1)%outline.length],p=outline[i];
+              quad(foam,[a[0],seaY+.055,a[2]],[b[0],seaY+.055,b[2]],
+                [b[0]+p.nx*.14,seaY+.055,b[2]+p.nz*.14],[a[0]+p.nx*.14,seaY+.055,a[2]+p.nz*.14],foamColor);
+            }
+            var glints=saver?14:28;
+            for(var g=0;g<glints;g++){
+              var east=g%2===0, gx=east?x1+11+(g*17%47):x0-11-(g*13%43),gz=cz-44+(g*19%88);
+              var width=1.2+(g%4)*.65,depth=.055+(g%3)*.03;
+              quad(foam,[gx-width,seaY+.02,gz-depth],[gx-width,seaY+.02,gz+depth],[gx+width,seaY+.02,gz+depth],[gx+width,seaY+.02,gz-depth],foamColor);
+            }
+            function island(x,z,rx,rz,height,seed) {
+              var count=saver?12:20, rows=[];
+              for(var ring=0;ring<4;ring++){
+                var radius=[1,.79,.46,.025][ring],heightFactor=[0,.23,.72,1][ring],row=[];
+                for(var k=0;k<count;k++){
+                  var angle=k/count*Math.PI*2,crinkle=1+Math.sin(k*2.31+seed)*.13;
+                  row.push([x+Math.cos(angle)*rx*radius*crinkle,seaY+height*heightFactor+(ring?Math.sin(k*1.7+seed)*height*.05:0),z+Math.sin(angle)*rz*radius*crinkle]);
+                }rows.push(row);
+              }
+              for(var r=0;r<3;r++)for(var k=0;k<count;k++){
+                var next=(k+1)%count;
+                quad(islands,rows[r][k],rows[r+1][k],rows[r+1][next],rows[r][next],r===0?color(0x7f958b):r===1?color(0x658878):color(0x8a9c84));
+              }
+              return seaY+height;
+            }
+            island(x0-28,z0-24,15,8,5.6,2);
+            island(cx+2,z0-64,22,9,7.2,4);
+            var beaconX=x1+27,beaconZ=z0+7,beaconY=island(beaconX,beaconZ,8,6,2.6,7);
+            function cylinder(out,x,y,z,radius,height,tint,segments) {
+              var top=[x,y+height,z];
+              for(var k=0;k<segments;k++){
+                var a=k/segments*Math.PI*2,b=(k+1)/segments*Math.PI*2;
+                var p=[x+Math.cos(a)*radius,y,z+Math.sin(a)*radius],q=[x+Math.cos(b)*radius,y,z+Math.sin(b)*radius];
+                var pt=[p[0],y+height,p[2]],qt=[q[0],y+height,q[2]];
+                quad(out,p,pt,qt,q,tint);triangle(out,pt,top,qt,tint);
+              }
+            }
+            // A small offshore beacon is a skyline reference, distinct from the student's
+            // lighthouse activity. Its island is outside every teaching/building cell.
+            var cream=color(0xeee6ce),coral=color(0xa85849),dark=color(0x465c60);
+            for(var band=0;band<5;band++)cylinder(beacons,beaconX,beaconY+band*1.18,beaconZ,.68-band*.025,1.18,band%2?coral:cream,10);
+            cylinder(beacons,beaconX,beaconY+5.9,beaconZ,.92,.22,dark,10);
+            cylinder(beacons,beaconX,beaconY+6.12,beaconZ,.43,.7,color(0xd0bc74),8);
+            crown(beacons,beaconX,beaconY+6.82,beaconZ,.86,.72,coral,0,0);
+            function sailboat(x,z,scale,heading) {
+              var dx=Math.cos(heading),dz=Math.sin(heading),px=-dz,pz=dx;
+              var bow=[x+dx*scale*1.65,seaY+.16,z+dz*scale*1.65],stern=[x-dx*scale,seaY+.16,z-dz*scale];
+              var left=[x+px*scale*.47,seaY+.08,z+pz*scale*.47],right=[x-px*scale*.47,seaY+.08,z-pz*scale*.47];
+              triangle(sails,bow,left,stern,dark);triangle(sails,bow,stern,right,dark);
+              cylinder(sails,x,seaY+.16,z,.035*scale,3.1*scale,dark,5);
+              triangle(sails,[x,seaY+.45,z],[x,seaY+3.15*scale,z],[x+dx*scale*1.8,seaY+.6,z+dz*scale*1.8],cream);
+              triangle(sails,[x,seaY+.5,z],[x-dx*scale*.95,seaY+.75,z-dz*scale*.95],[x,seaY+2.8*scale,z],color(0xd2a070));
+            }
+            sailboat(cx-5,z0-17,.83,.25); if(!saver)sailboat(x1+18,cz+14,.63,1.7);
+            var seaMesh=meshFrom(sea,'gw-coastal-water',false,false);seaMesh.material.roughness=.46;seaMesh.material.metalness=.03;
+            group.add(seaMesh);
+            group.add(meshFrom(coast,'gw-rocky-shore',false,true));
+            var foamMesh=meshFrom(foam,'gw-quiet-water-glints',false,true);foamMesh.material.transparent=true;foamMesh.material.opacity=.34;foamMesh.material.depthWrite=false;
+            group.add(foamMesh);
+            group.add(meshFrom(islands,'gw-distant-coastal-islands',false,true));
+            group.add(meshFrom(beacons,'gw-offshore-beacon',false,true));
+            group.add(meshFrom(sails,'gw-distant-sailboats',false,true));
+            group.children.forEach(function(mesh){mesh.userData.gwDecorative=true;});
+            group.userData.gwLandscapeDetail={theme:'coastal',tier:saver?'saver':'detail',islands:3,beacons:1,sailboats:saver?1:2,shoreSegments:outline.length,glints:glints};
+            return group;
+          }
+
+          // A small architectural foreground gives Free Build a recognizable home.
+          // Every vertex stays beyond the editable floor; these merged meshes never
+          // enter block maps, hit tests, measurements, saves or printer exports.
+          function addBuilderCourtyard(group, x0, x1, z0, z1, floor, saver) {
+            if (!engine._currentLesson || !engine._currentLesson.sandbox || engine._currentLesson.builderGarden === false) return;
+            var stone=buffer(),timber=buffer(),plants=buffer();
+            var limestone=color(0xb9b79a),edge=color(0x8e967d),wood=color(0x77634c),lightWood=color(0xa49068);
+            var leaf=color(0x577c5e),sage=color(0x86a27a),soil=color(0x5e6550),bloom=[color(0xd9bc88),color(0xc5a8aa),color(0xd5ddbd)];
+            var cx=(x0+x1+1)/2,north=z0-3.9,west=x0-3.3,east=x1+4.3;
+            function box(out,x,y,z,w,h,d,tint){
+              var p=[[x,y,z],[x+w,y,z],[x+w,y+h,z],[x,y+h,z],[x,y,z+d],[x+w,y,z+d],[x+w,y+h,z+d],[x,y+h,z+d]];
+              [[0,3,2,1],[4,5,6,7],[0,4,7,3],[1,2,6,5],[3,7,6,2],[0,1,5,4]].forEach(function(f){triangle(out,p[f[0]],p[f[1]],p[f[2]],tint);triangle(out,p[f[0]],p[f[2]],p[f[3]],tint);});
+            }
+            function planter(x,z,w,d,seed){
+              box(stone,x,floor-.10,z,w,.56,d,limestone);
+              box(plants,x+.12,floor+.47,z+.12,w-.24,.04,d-.24,soil);
+              var count=saver?4:8;
+              for(var i=0;i<count;i++){
+                var px=x+.28+(w-.56)*(i+.5)/count,pz=z+d*.5+Math.sin(i*2.3+seed)*Math.max(0,d*.23);
+                crown(plants,px,floor+.5,pz,.21,.38,leaf,i,seed+i);
+                crown(plants,px+.05,floor+.82,pz,.17,.19,bloom[(i+seed)%3],i+.3,seed+i);
+              }
+            }
+            // A shallow planted apron joins the raised plot to the meadow. Its
+            // innermost vertices remain outside the editable rectangle.
+            var apronTop=color(0x6d8d58),apronLow=color(0x496d46),rings=[.06,1.4,3.2,5.7];
+            function apronCorner(index,d){return [[x0-d,z0-d],[x0-d,z1+1+d],[x1+1+d,z1+1+d],[x1+1+d,z0-d]][index];}
+            for(var ring=0;ring<rings.length-1;ring++)for(var side=0;side<4;side++){
+              var next=(side+1)%4,a=apronCorner(side,rings[ring]),b=apronCorner(next,rings[ring]),c=apronCorner(side,rings[ring+1]),d=apronCorner(next,rings[ring+1]);
+              function apronPoint(p,r){var t=r/(rings.length-1),y=(floor-.02)*(1-smooth(t))-.025*smooth(t),tint=apronTop.clone().lerp(apronLow,smooth(t));return [p[0],y,p[1],tint.r,tint.g,tint.b];}
+              triangle(stone,apronPoint(a,ring),apronPoint(c,ring+1),apronPoint(b,ring));triangle(stone,apronPoint(b,ring),apronPoint(c,ring+1),apronPoint(d,ring+1));
+            }
+            // A terrace and slender colonnade frame the far end of the lawn.
+            box(stone,cx-7.3,floor-.25,north-1.5,14.6,.28,2.7,edge);
+            box(stone,cx-7,floor-.02,north-1.25,14,.14,2.25,limestone);
+            for(var post=0;post<4;post++){
+              var px=cx-5.8+post*3.86;
+              box(stone,px-.19,floor+.12,north-.31,.66,.24,.66,edge);
+              box(timber,px,floor+.36,north-.12,.28,3.75,.28,wood);
+            }
+            box(timber,cx-6.3,floor+4,north-.28,12.8,.32,.52,wood);
+            box(timber,cx-6.3,floor+4.34,north-1.15,12.8,.12,.18,lightWood);
+            var slats=saver?8:16;
+            for(var slat=0;slat<slats;slat++)box(timber,cx-6.25+slat*12.5/(slats-1),floor+4.24,north-1.26,.13,.15,2.16,lightWood);
+            // A repeated geometric emblem reads as a destination from across the plot.
+            box(timber,cx-.9,floor+4.45,north-.05,1.8,.15,.2,wood);
+            box(timber,cx-.9,floor+4.45,north-.05,.15,1.5,.2,wood);
+            box(timber,cx+.75,floor+4.45,north-.05,.15,1.5,.2,wood);
+            box(timber,cx-.9,floor+5.8,north-.05,1.8,.15,.2,wood);
+            box(stone,cx-.43,floor+4.85,north+.03,.86,.68,.34,limestone);
+            planter(cx-6.8,north+.28,3.1,.82,0);planter(cx+3.7,north+.28,3.1,.82,1);
+            // Side walks are deliberately broken into short runs and leave corners open.
+            [west,east].forEach(function(x,side){
+              box(stone,x-1.05,floor-.13,z0+.8,2.1,.16,z1-z0-1,limestone);
+              for(var i=0;i<3;i++){
+                var z=z0+2+i*(z1-z0-6)/2;
+                planter(x-.85,z,1.7,1.1,side+i+2);
+                box(timber,x-.74,floor+.18,z+1.8,1.48,.18,.54,wood);
+                box(stone,x-.60,floor-.02,z+1.86,.15,.2,.42,edge);
+                box(stone,x+.45,floor-.02,z+1.86,.15,.2,.42,edge);
+              }
+            });
+            // Limestone inlays and warm entry lanterns make the courtyard legible
+            // from the first camera view. All detail remains outside the build plot.
+            var brass=color(0xd6b571),terracotta=color(0xb57459),ivory=color(0xf4e1b1);
+            for(var seam=0;seam<13;seam++)box(timber,cx-6.5+seam,floor+.125,north-1.2,.025,.012,2.1,lightWood);
+            [west,east].forEach(function(x,side){
+              var entry=z1-1.3;
+              box(stone,x-.38,floor+.03,entry,.76,.25,.76,edge);
+              box(timber,x-.085,floor+.28,entry+.29,.17,2.5,.17,wood);
+              box(timber,x-.29,floor+2.62,entry+.08,.58,.12,.58,brass);
+              box(stone,x-.22,floor+2.74,entry+.15,.44,.48,.44,ivory);
+              box(timber,x-.30,floor+3.22,entry+.07,.60,.10,.60,wood);
+              box(stone,x-.52,floor+.03,z0-1.6,1.04,.5,1.04,terracotta);
+              crown(plants,x,floor+.5,z0-1.08,.62,.75,sage,side*.7,9+side);
+              for(var joint=0;joint<8;joint++)box(timber,x-1.03,floor+.035,z0+1+joint*(z1-z0-2)/8,2.06,.018,.026,lightWood);
+            });
+            // Pennants add a warm accent without textures, motion, or extra draws.
+            for(var flag=0;flag<5;flag++){
+              var fx=cx-4.8+flag*2.4;
+              triangle(timber,[fx,floor+3.92,north+.01],[fx+.375,floor+3.15,north+.01],[fx+.75,floor+3.92,north+.01],flag%2?brass:terracotta);
+            }
+            // Broad, clustered tree crowns frame the courtyard at human scale.
+            // Their trunks and foliage reuse the existing three merged meshes.
+            var orchard=[[x0-8,z0-5],[x1+9,z0-5],[x0-8,z1-3],[x1+9,z1-3]],olive=color(0x67875b),goldLeaf=color(0xadb574);
+            function broadCrown(x,y,z,radius,height,tint,seed){
+              var count=saver?6:9,rows=[.10,.62,1,.82,.06],grid=[];
+              rows.forEach(function(rad,row){var t=row/(rows.length-1),shade=tint.clone().lerp(sage,t*.28);grid.push(Array.from({length:count},function(_,i){var angle=i/count*Math.PI*2+seed*.2,r=radius*rad*(1+Math.sin(i*1.7+seed)*.12);return [x+Math.cos(angle)*r,y+t*height,z+Math.sin(angle)*r,shade.r,shade.g,shade.b];}));});
+              for(var row=0;row<grid.length-1;row++)for(var i=0;i<count;i++){var next=(i+1)%count;triangle(plants,grid[row][i],grid[row+1][i],grid[row][next]);triangle(plants,grid[row][next],grid[row+1][i],grid[row+1][next]);}
+            }
+            orchard.forEach(function(p,index){
+              var tx=p[0],tz=p[1],height=4.1+(index%2)*.6;
+              trunk(timber,tx,-.02,tz,.23,height,wood,index);
+              for(var branch=0;branch<(saver?3:5);branch++){
+                var angle=branch*Math.PI*2/(saver?3:5)+index*.4,bx=tx+Math.cos(angle)*.8,bz=tz+Math.sin(angle)*.8;
+                broadCrown(bx,height-1,bz,1.45,2.2,branch%2?olive:leaf,index+branch);
+              }
+              broadCrown(tx,height+.35,tz,1.4,1.9,index===1?goldLeaf:olive,index+3);
+              // Static contact shade remains present in Battery saver.
+              var shadow=color(0x3f6144);
+              for(var sector=0;sector<12;sector++){var a=sector*Math.PI/6,b=(sector+1)*Math.PI/6;triangle(stone,[tx,-.019,tz],[tx+Math.cos(b)*2.3,-.019,tz+Math.sin(b)*1.6],[tx+Math.cos(a)*2.3,-.019,tz+Math.sin(a)*1.6],shadow);}
+            });
+            // Low greenery ties architecture to the existing distant meadow.
+            for(var shrub=0;shrub<(saver?4:8);shrub++){
+              var side=shrub%2,x=side?east+1.6:west-1.6,z=z0+1+Math.floor(shrub/2)*5.5;
+              crown(plants,x,floor-.08,z,.72,.75,leaf,shrub*.7,shrub);
+              crown(plants,x+.16,floor+.30,z,.52,.53,sage,shrub*.7+.3,shrub+2);
+            }
+            [[stone,'gw-builder-courtyard-stone'],[timber,'gw-builder-courtyard-timber'],[plants,'gw-builder-courtyard-garden']].forEach(function(item){
+              var mesh=meshFrom(item[0],item[1],false,false);mesh.userData.gwBuilderCourtyard=true;mesh.receiveShadow=true;mesh.castShadow=true;group.add(mesh);
+            });
+            group.userData.builderCourtyard={style:'garden-workshop',drawCalls:3,tier:saver?'saver':'detail',plotClear:true};
+          }
+
           engine.disposeLandscape = disposeLandscape;
           engine.refreshLandscape = function(ground) {
             if (engine._destroyed || !engine.scene) return;
@@ -3924,12 +7651,20 @@
             if (x0 > x1) { var sx = x0; x0 = x1; x1 = sx; }
             if (z0 > z1) { var sz = z0; z0 = z1; z1 = sz; }
             var baseY = finite(ground.y, 0) - 0.12, saver = engine._renderProfile && engine._renderProfile.tier === 'saver';
-            var nextKey = [x0, x1, z0, z1, baseY, saver ? 'saver' : 'detail'].join(':');
+            var coastal = !!(engine._currentLesson && engine._currentLesson.landscapeTheme === 'coastal');
+            var nextKey = [x0, x1, z0, z1, baseY, saver ? 'saver' : 'detail', coastal ? 'coastal' : 'meadow', engine._currentLesson && engine._currentLesson.sandbox && engine._currentLesson.builderGarden !== false ? 'courtyard' : 'open'].join(':');
             if (landscapeKey === nextKey && engine._landscape) return;
             var previousVisibility = engine._landscape ? engine._landscape.visible : true;
             var studio = engine._showcase && engine._showcase.studio;
             if (studio) studio.hidden.forEach(function(entry) { if (entry[0] === engine._landscape) previousVisibility = entry[1]; });
             disposeLandscape(); landscapeKey = nextKey;
+            if (coastal) {
+              var coast = buildCoastalLandscape(x0, x1, z0, z1, baseY, saver);
+              addBuilderCourtyard(coast,x0,x1,z0,z1,finite(ground.y,0)+0.78,saver);
+              coast.visible = previousVisibility;
+              if (studio) { studio.hidden.push([coast, previousVisibility]); coast.visible = false; }
+              engine._landscape = coast; engine.scene.add(coast); return;
+            }
             var centerX = (x0 + x1) / 2, centerZ = (z0 + z1) / 2;
             var halfX = (x1 - x0) / 2 + 0.5, halfZ = (z1 - z0) / 2 + 0.5, outline = [], segments = saver ? 8 : 12;
             // Offset the full lesson rectangle, not a fixed-radius circle. The first
@@ -3966,11 +7701,11 @@
                 width = 18;
               } else if (kind === 1) {
                 crest = 91 + Math.sin(t * 3 + 2.1) * 9 + Math.sin(t * 7) * 3;
-                elevation = 7 + peak(t, 0.16, 0.35) * 23 + peak(t, 1.85, 0.39) * 28 + peak(t, 3.55, 0.3) * 22 + peak(t, 5.1, 0.38) * 31 + n * 3;
+                elevation = 5 + peak(t, 0.16, 0.52) * 14 + peak(t, 1.85, 0.58) * 17 + peak(t, 3.55, 0.49) * 13 + peak(t, 5.1, 0.56) * 18 + n * 2;
                 width = 19;
               } else {
                 crest = 113 + Math.sin(t * 3 + 0.7) * 7 + Math.sin(t * 5 + 2) * 4;
-                elevation = 20 + peak(t, 0.9, 0.32) * 29 + peak(t, 2.35, 0.27) * 25 + peak(t, 4.15, 0.33) * 32 + peak(t, 5.65, 0.28) * 23;
+                elevation = 12 + peak(t, 0.9, 0.45) * 20 + peak(t, 2.35, 0.41) * 17 + peak(t, 4.15, 0.49) * 22 + peak(t, 5.65, 0.42) * 16;
                 width = 24;
               }
               var fade = smooth((distance - bands[0]) / 11) * smooth((bands[bands.length - 1] - distance) / 14);
@@ -4044,6 +7779,7 @@
             group.add(meshFrom(trunks, 'gw-distant-tree-trunks', false, false));
             group.add(meshFrom(foliage, 'gw-distant-tree-canopies', false, false));
             group.add(meshFrom(accents, 'gw-natural-accents', false, true));
+            addBuilderCourtyard(group,x0,x1,z0,z1,finite(ground.y,0)+0.78,saver);
             group.userData.gwLandscapeDetail = { tier: saver ? 'saver' : 'detail', trees: treeCount, rocks: rockCount, grassTufts: grassCount };
             group.visible = previousVisibility;
             if (studio) { studio.hidden.push([group, previousVisibility]); group.visible = false; }
@@ -4113,6 +7849,7 @@
           var tex = engine._envRT ? engine._envRT.texture : null;
           var assign = function(m) { if (m && m.userData && m.userData.gwReflective && m.envMap !== tex) { m.envMap = tex; m.needsUpdate = true; } };
           try { Object.keys(engine._matCache || {}).forEach(function(k) { assign(engine._matCache[k]); }); } catch (e) {}
+          if(engine._buildBatchPreview && engine._buildBatchPreview.surfaces)engine._buildBatchPreview.surfaces.traverse(function(part){assign(part.material);});
           try { Object.keys(engine.blocks || {}).forEach(function(k) { var mesh = engine.blocks[k]; if (mesh) (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach(assign); }); } catch (e) {}
         };
         engine.refreshEnvironment();
@@ -4288,6 +8025,7 @@
         engine.getPlacementEligibility = function(x, y, z) {
           var cell = { x:x, y:y, z:z }, code = 'ready', reason = 'Ready to build';
           var lesson = engine._currentLesson || {}, ground = lesson.ground || {};
+          var groundPlacement = !!(engine._placingLessonBlocks && engine._measurementLayer === 'ground' && engine.placeGroundBlock);
           var floor = typeof ground.y === 'number' && isFinite(ground.y) ? ground.y : 0;
           if (![x,y,z].every(function(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v; })) {
             code = 'out_of_bounds'; reason = 'Choose a whole-number grid cell';
@@ -4295,10 +8033,12 @@
             code = 'below_floor'; reason = 'Cannot build below the floor';
           } else if (!engine._placingLessonBlocks && lesson.sandbox && (Math.abs(x) > 64 || Math.abs(z) > 64 || y > 128)) {
             code = 'out_of_bounds'; reason = 'World edge: X and Z must be between -64 and 64, Y at most 128';
-          } else if (engine.blocks[x + ',' + y + ',' + z]) {
+          } else if (engine.blocks[x + ',' + y + ',' + z] && !(groundPlacement && engine.blocks[x + ',' + y + ',' + z].userData.gwGroundProxy)) {
             code = 'occupied'; reason = 'This cell already has a block';
-          } else if ((engine.getBlocksArr ? engine.getBlocksArr().length : Object.keys(engine.blocks).length) >= MAX_BLOCKS) {
-            code = 'block_limit'; reason = 'Block limit reached (' + MAX_BLOCKS + '). Remove a block first';
+          } else if (groundPlacement && !engine.blocks[x + ',' + y + ',' + z] && engine.getGroundBlockCount() >= engine._groundBlockLimit) {
+            code = 'block_limit'; reason = 'Landscape cell limit reached (' + engine._groundBlockLimit + ')';
+          } else if (!groundPlacement && (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : (engine.getBlocksArr ? engine.getBlocksArr().length : Object.keys(engine.blocks).length)) >= MAX_BLOCKS) {
+            code = 'block_limit'; reason = 'Build block limit reached (' + MAX_BLOCKS + '). Remove a block first';
           }
           return { allowed:code === 'ready', code:code, reason:reason, cell:cell };
         };
@@ -4313,8 +8053,10 @@
           fwd.y = 0; if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1); fwd.normalize();
           var lesson = engine._currentLesson || {}, ground = lesson.ground || {};
           var floorTop = (typeof ground.y === 'number' && isFinite(ground.y) ? ground.y : 0) + 1;
-          var target = new THREE.Vector3(cam.position.x + fwd.x * 3, floorTop, cam.position.z + fwd.z * 3);
+          // Aim inside a cell: a ray on a shared voxel edge can hit its side.
+          var target = new THREE.Vector3(Math.floor(cam.position.x + fwd.x * 3) + 0.5, floorTop, Math.floor(cam.position.z + fwd.z * 3) + 0.5);
           cam.lookAt(target);
+          cam.updateMatrixWorld(true); // Publish the new aim before the next render.
           if (engine.euler && engine.euler.setFromQuaternion) engine.euler.setFromQuaternion(cam.quaternion);
           try { if (engine.blockUnderCrosshair && engine.publishPlacementPreview) engine.publishPlacementPreview(engine.placementForHit(engine.blockUnderCrosshair())); } catch (e) {}
           return true;
@@ -4361,7 +8103,7 @@
         // though the key handlers were all wired. Caught by the WebGL e2e, not by any
         // jsdom test — there is no animate loop without a GL context.
         engine.isInputActive = function() {
-          if(engine._showcase || (engine._modalState && engine._modalState.showGeometryHome))return false;
+          if(engine._showcase || engine._previewReviewCamera || (engine._modalState && (engine._modalState.showGeometryHome || engine._modalState.showActivityGuide)))return false;
           if (engine.isLocked || engine._touchActive) return true;
           var wrap = document.getElementById('geoworld-fs-wrap');
           return !!(wrap && document.activeElement === wrap);
@@ -4799,7 +8541,7 @@
         // materials belong to the engine cache and stay live while any block uses
         // them; releasing one block must not dispose a neighbour's material.
         engine._disposeBlockMesh = function(mesh) {
-          if (!mesh) return;
+          if (!mesh || (mesh.userData && mesh.userData.gwGroundProxy)) return;
           mesh.traverse(function(part) {
             if (part.geometry && part.geometry.dispose) part.geometry.dispose();
             var materials = Array.isArray(part.material) ? part.material : [part.material];
@@ -4853,7 +8595,9 @@
         engine.undo = function() {
           if (engine._undoStack.length === 0) return false;
           var a = engine._undoStack[engine._undoStack.length - 1];
-          if (a.action === 'place') {
+          if (a.action === 'batch') {
+            if(!engine._replayBuildBatch || !engine._replayBuildBatch(a,true).ok)return false;
+          } else if (a.action === 'place') {
             // Undo a placement = remove the block (no particles).
             var key = a.x + ',' + a.y + ',' + a.z;
             var mesh = engine.blocks[key];
@@ -4878,7 +8622,9 @@
         engine.redo = function() {
           if (engine._redoStack.length === 0) return false;
           var a = engine._redoStack[engine._redoStack.length - 1];
-          if (a.action === 'place') {
+          if (a.action === 'batch') {
+            if(!engine._replayBuildBatch || !engine._replayBuildBatch(a,false).ok)return false;
+          } else if (a.action === 'place') {
             var replayed;
             engine._replayingHistory = true;
             try { replayed = engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation); }
@@ -4912,7 +8658,7 @@
           return !!(m && !_aoSeeThrough[m.userData && m.userData.blockType]);
         }
         engine.refreshBlockAO = function(mesh) {
-          if (!mesh || !mesh.geometry || !mesh.userData || !mesh.userData.gridPos) return;
+          if (!mesh || !mesh.geometry || !mesh.userData || !mesh.userData.gridPos || mesh.userData.gwGroundProxy) return;
           var type = mesh.userData.blockType;
           if (type === 'lava' || type === 'torch' || _aoSeeThrough[type]) return;
           var geo = mesh.geometry, pos = geo.getAttribute('position'), nrm = geo.getAttribute('normal');
@@ -4945,12 +8691,148 @@
           Object.keys(engine.blocks).forEach(function(k) { engine.refreshBlockAO(engine.blocks[k]); });
         };
 
+        // Inject inside initEngine before the Block operations section. Ground cells keep
+        // canonical Mesh identities for collision, selection and recovery, while only
+        // instanced chunks enter the scene. Textures remain owned by the engine cache.
+        function installGeometryGround(engine, THREE, getMaterial, groundTint) {
+          var SIDE = 16, MAX_GROUND = 16384;
+          var chunks = {}, geometries = {}, terrainCount = 0, countSource = null, buildCount = 0;
+          var zero = new THREE.Matrix4().makeScale(0, 0, 0), matrix = new THREE.Matrix4();
+          engine._groundChunks = [];
+          engine._groundBlockLimit = MAX_GROUND;
+          function isGround(mesh) { return !!(mesh && mesh.userData && mesh.userData._measurementLayer === 'ground'); }
+          engine.getConstructionBlockCount = function() {
+            var list = engine.getBlocksArr ? engine.getBlocksArr() : Object.values(engine.blocks || {});
+            if (list !== countSource) { countSource = list; buildCount = list.reduce(function(n, mesh) { return n + (isGround(mesh) ? 0 : 1); }, 0); }
+            return buildCount;
+          };
+          engine.getGroundBlockCount = function() { return terrainCount; };
+          engine.getRaycastTargets = function() {
+            var list = engine.getBlocksArr ? engine.getBlocksArr() : Object.values(engine.blocks || {});
+            if (engine._groundRaySource !== list || engine._groundRayRevision !== engine._groundRevision) {
+              engine._groundRaySource = list; engine._groundRayRevision = engine._groundRevision;
+              engine._groundRayTargets = list.filter(function(mesh) { return !(mesh.userData && mesh.userData.gwGroundProxy); }).concat(engine._groundChunks);
+            }
+            return engine._groundRayTargets;
+          };
+          function dirty() { engine._blocksDirty = true; countSource = null; engine._groundRevision = (engine._groundRevision || 0) + 1; }
+          function geometry(type) {
+            var id = type === 'grass' ? 'grass' : 'cube';
+            if (geometries[id]) return geometries[id];
+            var geo = new THREE.BoxGeometry(1, 1, 1), uv = geo.getAttribute('uv');
+            // Cached block materials use vertex colors; neutral base preserves instance tint.
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(geo.getAttribute('position').count * 3).fill(1), 3));
+            if (id === 'grass' && uv && uv.count === 24) {
+              for (var i = 0; i < 24; i++) uv.setY(i, (i >= 8 && i < 12) ? 0.5 + uv.getY(i) * 0.5 : uv.getY(i) * 0.5);
+              uv.needsUpdate = true;
+            }
+            geometries[id] = geo; return geo;
+          }
+          function interval(ray, min, max, near, far) {
+            var lo = Math.max(0, near || 0), hi = far === undefined ? Infinity : far;
+            for (var a = 0; a < 3; a++) {
+              var axis = ['x','y','z'][a], p = ray.origin[axis], d = ray.direction[axis];
+              if (Math.abs(d) < 1e-12) { if (p < min[axis] || p > max[axis]) return null; continue; }
+              var t0 = (min[axis] - p) / d, t1 = (max[axis] - p) / d;
+              lo = Math.max(lo, Math.min(t0, t1)); hi = Math.min(hi, Math.max(t0, t1));
+              if (hi < lo) return null;
+            }
+            return [lo, hi];
+          }
+          function makeChunk(x, y, z, type) {
+            var ox = Math.floor(x / SIDE) * SIDE, oz = Math.floor(z / SIDE) * SIDE;
+            var key = ox + ',' + y + ',' + oz + ':' + type;
+            if (chunks[key]) return chunks[key];
+            var mat = getMaterial(type === 'grass' ? 'grass_cube' : type);
+            var chunk = new THREE.InstancedMesh(geometry(type), mat, SIDE * SIDE);
+            // r128 sizes a lazy color buffer from count; allocate before count becomes zero.
+            chunk.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(SIDE * SIDE * 3).fill(1), 3);
+            chunk.name = 'gw-ground-' + key;
+            chunk.userData.gwGroundChunk = true; chunk.userData._measurementLayer = 'ground';
+            chunk.castShadow = false; chunk.receiveShadow = true;
+            // r128 does not compute an aggregate InstancedMesh bound. The raycast has its
+            // own slab test; disabling render culling prevents distant chunk disappearances.
+            chunk.frustumCulled = false;
+            var cells = [], min = new THREE.Vector3(ox, y, oz), max = new THREE.Vector3(ox + SIDE, y + 1, oz + SIDE);
+            for (var i = 0; i < SIDE * SIDE; i++) chunk.setMatrixAt(i, zero);
+            chunk.count = 0;
+            chunk.raycast = function(raycaster, hits) {
+              if (!chunk.visible) return;
+              var range = interval(raycaster.ray, min, max, raycaster.near, raycaster.far);
+              if (!range) return;
+              // Walk only X/Z cells crossed while the ray is inside this one-unit-high
+              // slab. This avoids testing every instance in every landscape chunk.
+              var ray = raycaster.ray, t = range[0], end = range[1], tested = {};
+              for (var step = 0; step < SIDE * 3 + 4 && t <= end + 1e-7; step++) {
+                var probe = Math.min(end, t + 1e-7), px = ray.origin.x + ray.direction.x * probe, pz = ray.origin.z + ray.direction.z * probe;
+                var gx = Math.max(ox, Math.min(ox + SIDE - 1, Math.floor(px))), gz = Math.max(oz, Math.min(oz + SIDE - 1, Math.floor(pz)));
+                var index = (gx - ox) * SIDE + gz - oz, proxy = cells[index];
+                if (proxy && !tested[index] && proxy.visible !== false && engine.blocks[gx + ',' + y + ',' + gz] === proxy) {
+                  tested[index] = true;
+                  // Mesh.raycast supplies canonical proxy identity, face normal and exact
+                  // point/distance, which every existing interaction already understands.
+                  THREE.Mesh.prototype.raycast.call(proxy, raycaster, hits);
+                }
+                var tx = Math.abs(ray.direction.x) < 1e-12 ? Infinity : ((ray.direction.x > 0 ? gx + 1 : gx) - ray.origin.x) / ray.direction.x;
+                var tz = Math.abs(ray.direction.z) < 1e-12 ? Infinity : ((ray.direction.z > 0 ? gz + 1 : gz) - ray.origin.z) / ray.direction.z;
+                var next = Math.min(tx > t + 1e-8 ? tx : Infinity, tz > t + 1e-8 ? tz : Infinity);
+                if (!isFinite(next) || next > end + 1e-7) break;
+                t = next;
+              }
+            };
+            var record = { mesh: chunk, cells: cells, ox: ox, oz: oz, y: y, type: type };
+            chunks[key] = record; engine._groundChunks.push(chunk); engine.scene.add(chunk); dirty(); return record;
+          }
+          engine.placeGroundBlock = function(x, y, z, type) {
+            var key = x + ',' + y + ',' + z, old = engine.blocks[key];
+            if (old && !(old.userData && old.userData.gwGroundProxy)) return null;
+            if (!old && terrainCount >= MAX_GROUND) return null;
+            if (old && old.userData.blockType === type) return old;
+            if (old) engine.removeGroundBlock(old);
+            var record = makeChunk(x, y, z, type), chunk = record.mesh, index = (x - record.ox) * SIDE + z - record.oz;
+            var proxy = new THREE.Mesh(chunk.geometry, chunk.material);
+            proxy.position.set(x + 0.5, y + 0.5, z + 0.5); proxy.updateMatrixWorld(true);
+            proxy.matrixAutoUpdate = false;
+            proxy.userData = { blockType: type, gridPos: {x:x,y:y,z:z}, shape: 'cube', volume: 1, rotation: 0,
+              _lessonBlock: true, _measurementLayer: 'ground', gwGroundProxy: true, _groundRecord: record, _groundInstance: index };
+            matrix.makeTranslation(x + 0.5, y + 0.5, z + 0.5); chunk.setMatrixAt(index, matrix);
+            var tint = ((x + z) & 1) ? 0.92 : 1;
+            if (type === 'grass') tint *= groundTint(x, z);
+            else if (/^(stone|wood|brick|sand)$/.test(type)) tint *= groundTint(x + type.length * 31, z - y * 17);
+            chunk.setColorAt(index, new THREE.Color(tint, tint, tint));
+            chunk.count = Math.max(chunk.count, index + 1);
+            chunk.instanceMatrix.needsUpdate = true; if (chunk.instanceColor) chunk.instanceColor.needsUpdate = true;
+            record.cells[index] = proxy; engine.blocks[key] = proxy; terrainCount++; dirty(); return proxy;
+          };
+          engine.removeGroundBlock = function(proxy) {
+            var data = proxy && proxy.userData, record = data && data._groundRecord;
+            if (!record || record.cells[data._groundInstance] !== proxy) return false;
+            record.mesh.setMatrixAt(data._groundInstance, zero); record.mesh.instanceMatrix.needsUpdate = true;
+            record.cells[data._groundInstance] = null;
+            var p = data.gridPos, key = p.x + ',' + p.y + ',' + p.z;
+            if (engine.blocks[key] === proxy) delete engine.blocks[key];
+            terrainCount--; dirty(); return true;
+          };
+          engine.disposeGround = function() {
+            engine._groundChunks.forEach(function(chunk) {
+              if (chunk.parent) chunk.parent.remove(chunk);
+              chunk.material.dispose(); if (typeof chunk.dispose === 'function') chunk.dispose();
+            });
+            Object.keys(geometries).forEach(function(key) { geometries[key].dispose(); });
+            chunks = {}; geometries = {}; terrainCount = 0; engine._groundChunks = [];
+            engine._groundRayTargets = []; engine._groundRaySource = null; dirty();
+          };
+        }
+
+        installGeometryGround(engine, THREE, getBlockMaterial, geometryWorldGroundTint);
+
         // Block operations
         engine.placeBlock = function(x, y, z, type, shape, rotation) {
           var eligibility = engine.getPlacementEligibility(x, y, z);
           if (!eligibility.allowed) return null;
           var key = x + ',' + y + ',' + z;
           var shapeId = shape || 'cube';
+          if (engine._placingLessonBlocks && engine._measurementLayer === 'ground' && shapeId === 'cube' && engine.placeGroundBlock) return engine.placeGroundBlock(x, y, z, type);
           var rot = rotation || 0; // 0-3 = 0°, 90°, 180°, 270°
           var geo = createShapeGeometry(shapeId);
           var grassCube = type === 'grass' && shapeId === 'cube';
@@ -5010,6 +8892,11 @@
         engine.removeBlock = function(x, y, z, forceRemove) {
           var key = x + ',' + y + ',' + z;
           var mesh = engine.blocks[key];
+          if (mesh && mesh.userData && mesh.userData.gwGroundProxy) {
+            if (forceRemove && engine.removeGroundBlock) { engine.removeGroundBlock(mesh); engine.refreshAONeighbourhood(x, y, z); }
+            else if (window._alloHaptic) window._alloHaptic('bump');
+            return;
+          }
           if (mesh) {
             // Lesson blocks (ground + structures) are indestructible unless force-removed (reset)
             if (mesh.userData._lessonBlock && !forceRemove) {
@@ -5041,6 +8928,265 @@
             pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape, rotation: removedRotation });
           }
         };
+
+        // Atomic student construction: drawing and selection edits share one transaction.
+        function installGeometryBuildBatch() {
+          function key(b) { return b.x + ',' + b.y + ',' + b.z; }
+          function copySelection(value) { return value && Array.isArray(value.blocks) ? Object.assign({blocks:value.blocks.map(function(b){return {x:b.x,y:b.y,z:b.z};})},value.exact?{exact:true}:{}) : null; }
+          function failure(code, reason) { return {ok:false,code:code,reason:reason}; }
+          function isCell(b) { return b && [b.x,b.y,b.z].every(function(v){return typeof v==='number' && isFinite(v) && Math.floor(v)===v;}); }
+          function describe(mesh) { var d=mesh.userData,p=d.gridPos;return {x:p.x,y:p.y,z:p.z,type:d.blockType,shape:d.shape || 'cube',rotation:d.rotation || 0}; }
+          engine.previewBuildBatch = function(additions, removals, options) {
+            if(engine._destroyed || engine._placingLessonBlocks)return failure('unavailable','Building is unavailable right now.');
+            if(!Array.isArray(additions) || !Array.isArray(removals) || additions.length>MAX_BLOCKS || removals.length>MAX_BLOCKS)return failure('block_limit','Keep each operation within '+MAX_BLOCKS+' blocks.');
+            if(!additions.length && !removals.length)return failure('empty','Choose at least one block.');
+            var removeMap={},addMap={},removed=[],added=[],lesson=engine._currentLesson || {},ground=lesson.ground || {};
+            var floor=typeof ground.y==='number' && isFinite(ground.y) ? ground.y : 0;
+            for(var i=0;i<removals.length;i++) {
+              var r=removals[i];if(!isCell(r))return failure('out_of_bounds','Choose whole-number grid cells.');
+              var rk=key(r),mesh=engine.blocks[rk],d=mesh && mesh.userData;
+              if(removeMap[rk])return failure('duplicate','The operation includes a cell twice.');
+              if(!d || d._lessonBlock || d.gwGroundProxy || (d._measurementLayer && d._measurementLayer!=='student'))return failure('protected','Only your own blocks can be edited.');
+              removeMap[rk]=true;removed.push(describe(mesh));
+            }
+            for(var j=0;j<additions.length;j++) {
+              var b=additions[j];if(!isCell(b))return failure('out_of_bounds','Choose whole-number grid cells.');
+              if(b.y<floor)return failure('below_floor','Cannot build below the floor.');
+              if(lesson.sandbox && (Math.abs(b.x)>64 || Math.abs(b.z)>64 || b.y>128))return failure('out_of_bounds','World edge: X and Z must be between -64 and 64, Y at most 128.');
+              var shape=b.shape===undefined ? 'cube':b.shape,rotation=b.rotation===undefined ? 0:b.rotation;
+              if(!BLOCK_TYPES.some(function(t){return t.id===b.type;}))return failure('material','Choose a material from the palette.');
+              if(!BLOCK_SHAPES.some(function(s){return s.id===shape;}))return failure('shape','Choose a shape from the palette.');
+              if(typeof rotation!=='number' || Math.floor(rotation)!==rotation || rotation<0 || rotation>3)return failure('rotation','Rotation must be a quarter turn from 0 to 3.');
+              var bk=key(b);if(addMap[bk])return failure('duplicate','The operation includes a cell twice.');
+              if(engine.blocks[bk] && !removeMap[bk])return failure('occupied','A block is in the way. Adjust the preview before building.');
+              addMap[bk]=true;added.push({x:b.x,y:b.y,z:b.z,type:b.type,shape:shape,rotation:rotation});
+            }
+            var current=engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).filter(function(k){return !(engine.blocks[k].userData || {}).gwGroundProxy;}).length;
+            if(current-removed.length+added.length>MAX_BLOCKS)return failure('block_limit','This would exceed the '+MAX_BLOCKS+' construction block limit.');
+            return {ok:true,code:'ready',reason:'Ready to build',additions:added,removals:removed,count:added.length,label:String(options && options.label || 'Build operation').slice(0,80)};
+          };
+          function detach(mesh) {
+            engine.scene.remove(mesh);var d=mesh.userData || {};
+            if(d._torchLight)engine.scene.remove(d._torchLight);
+            if(d._torchGlow)engine.scene.remove(d._torchGlow);
+          }
+          function attach(mesh) {
+            engine.scene.add(mesh);var d=mesh.userData || {};
+            if(d._torchLight)engine.scene.add(d._torchLight);
+            if(d._torchGlow)engine.scene.add(d._torchGlow);
+          }
+          function dispose(mesh) {
+            var d=mesh.userData || {};
+            if(d._torchLight && d._torchLight.dispose)d._torchLight.dispose();
+            if(d._torchGlow && d._torchGlow.material)d._torchGlow.material.dispose();
+            engine._disposeBlockMesh(mesh);
+          }
+          function apply(additions,removals,options,replay) {
+            options=options || {};var plan=engine.previewBuildBatch(additions,removals,options);if(!plan.ok)return plan;
+            var oldMeshes={},created=[],wasReplay=engine._replayingHistory,wasBatch=engine._batchSuppressEvents;
+            var beforeSelection=copySelection(Object.prototype.hasOwnProperty.call(options,'beforeSelection') ? options.beforeSelection:engine._builderSelection);
+            var sceneBefore=engine.scene.children.slice();
+            engine._replayingHistory=true;engine._batchSuppressEvents=true;
+            try {
+              plan.removals.forEach(function(b){var k=key(b),mesh=engine.blocks[k];oldMeshes[k]=mesh;detach(mesh);delete engine.blocks[k];});
+              engine._blocksDirty=true;
+              plan.additions.forEach(function(b){
+                var mesh=engine.placeBlock(b.x,b.y,b.z,b.type,b.shape,b.rotation);
+                if(!mesh || engine.blocks[key(b)]!==mesh)throw Error('A cell could not be created.');
+                created.push(mesh);
+              });
+            } catch(error) {
+              // Original meshes remain alive until every destination succeeds.
+              plan.additions.forEach(function(b){var k=key(b),mesh=engine.blocks[k];if(mesh && mesh!==oldMeshes[k]){detach(mesh);dispose(mesh);delete engine.blocks[k];}});
+              engine.scene.children.slice().forEach(function(mesh){if(sceneBefore.indexOf(mesh)<0){engine.scene.remove(mesh);if(created.indexOf(mesh)<0){if(mesh.geometry || (mesh.userData && mesh.userData.gridPos))engine._disposeBlockMesh(mesh);else if(mesh.material && mesh.material.dispose)mesh.material.dispose();if(mesh.dispose)mesh.dispose();}}});
+              Object.keys(oldMeshes).forEach(function(k){engine.blocks[k]=oldMeshes[k];attach(oldMeshes[k]);});
+              engine._blocksDirty=true;
+              plan.additions.concat(plan.removals).forEach(function(b){engine.refreshAONeighbourhood(b.x,b.y,b.z);});
+              return failure('creation_failed','Nothing changed. The operation could not be completed; try a smaller preview.');
+            } finally {engine._replayingHistory=wasReplay;engine._batchSuppressEvents=wasBatch;}
+            Object.keys(oldMeshes).forEach(function(k){dispose(oldMeshes[k]);});
+            engine._blocksDirty=true;
+            plan.removals.forEach(function(b){engine.refreshAONeighbourhood(b.x,b.y,b.z);});
+            engine.blocksPlaced=Math.max(0,(engine.blocksPlaced || 0)+plan.additions.length-plan.removals.length);
+            if(Object.prototype.hasOwnProperty.call(options,'afterSelection'))engine._builderSelection=copySelection(options.afterSelection);
+            if(!replay) {
+              pushUndo({action:'batch',label:plan.label,additions:plan.additions,removals:plan.removals,beforeSelection:beforeSelection,afterSelection:copySelection(engine._builderSelection)});
+              if(engine.logEvent){plan.removals.forEach(function(b){engine.logEvent('block_remove',{x:b.x,y:b.y,z:b.z,batch:plan.label});});plan.additions.forEach(function(b){engine.logEvent('block_place',Object.assign({batch:plan.label},b));});engine.logEvent('build_batch',{label:plan.label,added:plan.additions.length,removed:plan.removals.length});}
+            }
+            upd('blocksPlaced',engine.blocksPlaced);upd('measureResult',null);publishHistoryChange();
+            return plan;
+          }
+          engine.commitBuildBatch=function(additions,removals,options){return apply(additions,removals,options,false);};
+          engine._replayBuildBatch=function(action,undo){
+            var expected=undo?action.additions:action.removals;
+            for(var i=0;i<expected.length;i++){var b=expected[i],mesh=engine.blocks[key(b)],d=mesh && mesh.userData;if(!d || d.blockType!==b.type || (d.shape || 'cube')!==b.shape || (d.rotation || 0)!==b.rotation)return failure('changed','The original blocks changed. This operation cannot be replayed.');}
+            return apply(undo?action.removals:action.additions,undo?action.additions:action.removals,{label:action.label,afterSelection:undo?action.beforeSelection:action.afterSelection},true);
+          };
+        }
+        installGeometryBuildBatch();
+        // End atomic student construction.
+
+        // Bounded drawing previews use the same cells and transaction as final placement.
+        function installGeometryDrawing() {
+          var modes=['single','line','floor','wall'];
+          engine._drawMode='single';engine._drawHeight=3;
+          engine.buildDrawingCells=function(mode,start,end,height,recipe) {
+            if(['line','floor','wall'].indexOf(mode)<0 || !start || !end)return {ok:false,code:'no_target',reason:'Choose a start and end point.'};
+            if(![start.x,start.y,start.z,end.x,end.y,end.z].every(function(v){return typeof v==='number' && isFinite(v) && Math.floor(v)===v;}))return {ok:false,code:'out_of_bounds',reason:'Choose whole-number grid cells.'};
+            var lo={x:start.x,y:start.y,z:start.z},hi={x:end.x,y:end.y,z:end.z};
+            if(mode==='floor'){lo.y=hi.y=start.y;}
+            if(mode==='line') {
+              var axis=['x','y','z'].sort(function(a,b){return Math.abs(end[b]-start[b])-Math.abs(end[a]-start[a]);})[0];
+              ['x','y','z'].forEach(function(a){if(a!==axis)hi[a]=lo[a];});
+            }
+            if(mode==='wall') {
+              if(typeof height!=='number' || height<1 || height>32 || Math.floor(height)!==height)return {ok:false,code:'height',reason:'Choose a wall height from 1 to 32 blocks.'};
+              var axis=Math.abs(end.x-start.x)>=Math.abs(end.z-start.z)?'x':'z';
+              hi[axis==='x'?'z':'x']=lo[axis==='x'?'z':'x'];lo.y=start.y;hi.y=start.y+height-1;
+            }
+            var min={},max={};['x','y','z'].forEach(function(a){min[a]=Math.min(lo[a],hi[a]);max[a]=Math.max(lo[a],hi[a]);});
+            var L=max.x-min.x+1,W=max.z-min.z+1,H=max.y-min.y+1,count=L*W*H;
+            if(count>MAX_BLOCKS)return {ok:false,code:'block_limit',reason:'Preview is '+count+' blocks; shorten it to '+MAX_BLOCKS+' or fewer.',count:count,dimensions:{L:L,W:W,H:H}};
+            var ps=recipe || engine._placeState || {},type=BLOCK_TYPES[ps.selectedBlock] || BLOCK_TYPES[0],shape=BLOCK_SHAPES[ps.selectedShape] || BLOCK_SHAPES[0],blocks=[];
+            for(var x=min.x;x<=max.x;x++)for(var y=min.y;y<=max.y;y++)for(var z=min.z;z<=max.z;z++)blocks.push({x:x,y:y,z:z,type:type.id,shape:shape.id,rotation:ps.blockRotation || 0});
+            return {ok:true,additions:blocks,count:count,dimensions:{L:L,W:W,H:H}};
+          };
+          engine.clearBuildBatchPreview=function(owner) {
+            var state=engine._buildBatchPreview;if(!state || (owner && state.owner!==owner))return;
+            engine.scene.remove(state.group);state.group.traverse(function(part){if(part.geometry)part.geometry.dispose();if(part.material)part.material.dispose();});engine._buildBatchPreview=null;
+          };
+          engine.showBuildBatchPreview=function(plan,owner) {
+            var list=plan && plan.additions;if(!Array.isArray(list) || !list.length || list.length>MAX_BLOCKS){engine.clearBuildBatchPreview(owner);return false;}
+            var signature=(plan.ok?'ready':'blocked')+'|'+list.map(function(b){return [b.x,b.y,b.z,b.type,b.shape,b.rotation].join(',');}).join(';'),existing=engine._buildBatchPreview;
+            if(existing && existing.owner===owner && existing.signature===signature){existing.group.visible=true;return true;}
+            engine.clearBuildBatchPreview();
+            var group=new THREE.Group(),material=new THREE.LineBasicMaterial({color:plan.ok?0xb9edd0:0xffa48e,transparent:true,opacity:.82,depthWrite:false,depthTest:!!plan.ok});
+            group.userData.gwDecorative=true;group.userData.gwBuildPreview=true;group.raycast=function(){};
+            // One line draw call for the whole operation, including mixed stamp shapes.
+            var cache={},positions=[];
+            list.forEach(function(b){
+              var shape=BLOCK_SHAPES.some(function(s){return s.id===b.shape;})?b.shape:'cube';
+              if(!cache[shape]){var shapeGeo=createShapeGeometry(shape),edgeGeo=new THREE.EdgesGeometry(shapeGeo);cache[shape]=Array.from(edgeGeo.getAttribute('position').array);shapeGeo.dispose();edgeGeo.dispose();}
+              var values=cache[shape],angle=shape==='cube'?0:(b.rotation || 0)*Math.PI/2,c=Math.cos(angle),s=Math.sin(angle),oy=shape==='halfB'?.25:shape==='halfA'||shape==='quarter'?0:.5;
+              for(var i=0;i<values.length;i+=3)positions.push(values[i]*c+values[i+2]*s+b.x+.5,values[i+1]+b.y+oy,-values[i]*s+values[i+2]*c+b.z+.5);
+            });
+            var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+            var mesh=new THREE.LineSegments(geometry,material);mesh.renderOrder=999;mesh.raycast=function(){};group.add(mesh);
+            engine.scene.add(group);engine._buildBatchPreview={owner:owner,signature:signature,group:group,material:material,ready:!!plan.ok,blocks:list.map(function(b){return Object.assign({},b);})};return true;
+          };
+          // Material surfaces are allocated only for an explicit Review in world.
+          // Ordinary drawing remains one line draw call. Preview meshes never enter
+          // engine.blocks, collision checks, measurements, saves, or print exports.
+          engine.setBuildPreviewSurface=function(visible,owner) {
+            var state=engine._buildBatchPreview;
+            if(!state || (owner && owner!==state.owner))return false;
+            if(!visible || !state.ready){if(state.surfaces)state.surfaces.visible=false;state.material.opacity=.82;return false;}
+            if(!state.surfaces){
+              var surfaces=new THREE.Group(),buckets=Object.create(null),cache=Object.create(null);
+              surfaces.name='gw-preview-materials';surfaces.userData.gwDecorative=true;
+              state.blocks.forEach(function(b){
+                var shape=BLOCK_SHAPES.some(function(s){return s.id===b.shape;})?b.shape:'cube';
+                if(!cache[shape]){var base=createShapeGeometry(shape),geo=base.index?base.toNonIndexed():base;cache[shape]={position:Array.from(geo.attributes.position.array),normal:Array.from(geo.attributes.normal.array),uv:Array.from(geo.attributes.uv.array)};if(geo!==base)geo.dispose();base.dispose();}
+                var type=BLOCK_TYPES.some(function(t){return t.id===b.type;})?b.type:'stone',bucket=buckets[type] || (buckets[type]={position:[],normal:[],uv:[]}),data=cache[shape],angle=shape==='cube'?0:(b.rotation || 0)*Math.PI/2,c=Math.cos(angle),s=Math.sin(angle),oy=shape==='halfB'?.25:shape==='halfA'||shape==='quarter'?0:.5;
+                for(var i=0;i<data.position.length;i+=3){var p=data.position,n=data.normal;bucket.position.push(p[i]*c+p[i+2]*s+b.x+.5,p[i+1]+b.y+oy,-p[i]*s+p[i+2]*c+b.z+.5);bucket.normal.push(n[i]*c+n[i+2]*s,n[i+1],-n[i]*s+n[i+2]*c);}
+                for(var j=0;j<data.uv.length;j++)bucket.uv.push(data.uv[j]);
+              });
+              Object.keys(buckets).forEach(function(type){
+                var data=buckets[type],geo=new THREE.BufferGeometry();['position','normal','uv'].forEach(function(name){geo.setAttribute(name,new THREE.Float32BufferAttribute(data[name],name==='uv'?2:3));});
+                var mat=getBlockMaterial(type);mat.transparent=true;mat.opacity=Math.min(mat.opacity,.86);mat.depthWrite=false;mat.polygonOffset=true;mat.polygonOffsetFactor=-1;mat.polygonOffsetUnits=-1;
+                var mesh=new THREE.Mesh(geo,mat);mesh.name='gw-preview-'+type;mesh.userData.gwDecorative=true;mesh.raycast=function(){};mesh.renderOrder=998;mesh.receiveShadow=true;surfaces.add(mesh);
+              });
+              state.surfaces=surfaces;state.group.add(surfaces);
+            }
+            state.surfaces.visible=true;state.material.opacity=.36;return true;
+          };
+          engine.isDrawingAllowed=function() {
+            var ms=engine._modalState || {};
+            return !!(engine._currentLesson && engine._currentLesson.sandbox && !engine._destroyed && engine._worldActive!==false && !engine._showcase && !Object.keys(ms).some(function(k){return k!=='hudPanel' && !!ms[k];}));
+          };
+          function publish(plan) {
+            var dims=plan && plan.dimensions,info={mode:engine._drawMode,started:!!engine._drawStart,pinned:!!engine._drawPinned,ok:!!(plan && plan.ok),count:plan && plan.count || 0,dimensions:dims || null,reason:plan && plan.reason || 'Aim at a block face and set the start point.'};
+            if(dims && plan.ok)info.reason=dims.L+' × '+dims.W+' × '+dims.H+' blocks · '+plan.count+' cells';
+            var signature=JSON.stringify(info);if(signature!==engine._drawInfoSignature){engine._drawInfoSignature=signature;upd('drawPreview',info);}
+            engine._drawPlan=plan;
+          }
+          engine.cancelDrawing=function(silent) {
+            engine._drawStart=null;engine._drawEnd=null;engine._drawPinned=false;engine._drawPointerId=null;engine._drawCache=null;
+            engine.clearBuildBatchPreview('drawing');publish(null);if(!silent)announceToSR('Drawing cancelled. No blocks changed.');
+          };
+          engine.setDrawMode=function(mode) {
+            if(modes.indexOf(mode)<0 || !engine.isDrawingAllowed())return false;
+            engine.cancelDrawing(true);engine._drawMode=mode;
+            if(mode!=='single' && engine.releaseInput)engine.releaseInput();
+            upd('drawMode',mode);publish(null);return true;
+          };
+          engine.setDrawHeight=function(height) {
+            if(typeof height!=='number' || !isFinite(height) || height<1 || height>32 || Math.floor(height)!==height)return false;
+            engine._drawHeight=height;upd('drawWallHeight',height);if(engine._drawStart && engine._drawEnd)engine.previewDrawing(engine._drawEnd);return true;
+          };
+          engine.previewDrawing=function(end) {
+            if(!engine._drawStart || !end)return null;
+            engine._drawEnd={x:end.x,y:end.y,z:end.z};
+            // A stationary aim should not allocate and validate 1,500 cells on
+            // every animation frame. Revalidate when geometry, recipe or history changes.
+            var ps=engine._placeState || {},top=engine._undoStack && engine._undoStack[engine._undoStack.length-1];
+            var cacheKey=[engine._drawMode,engine._drawStart.x,engine._drawStart.y,engine._drawStart.z,end.x,end.y,end.z,engine._drawHeight,ps.selectedBlock,ps.selectedShape,ps.blockRotation,engine._historyRevision || 0,engine.blocksPlaced || 0].join('|');
+            var cached=engine._drawCache;
+            if(cached && cached.key===cacheKey && cached.top===top && (!cached.plan.additions || !cached.plan.additions.length || (engine._buildBatchPreview && engine._buildBatchPreview.owner==='drawing'))){publish(cached.plan);return cached.plan;}
+            var shape=engine.buildDrawingCells(engine._drawMode,engine._drawStart,end,engine._drawHeight),plan=shape;
+            if(shape.ok){plan=Object.assign({},engine.previewBuildBatch(shape.additions,[],{label:'Draw '+engine._drawMode}),{additions:shape.additions,count:shape.count,dimensions:shape.dimensions});}
+            engine.showBuildBatchPreview(plan,'drawing');engine._drawCache={key:cacheKey,top:top,plan:plan};publish(plan);return plan;
+          };
+          engine.beginDrawing=function(cell) {
+            if(!engine.isDrawingAllowed() || engine._drawMode==='single' || !cell)return false;
+            engine._drawStart={x:cell.x,y:cell.y,z:cell.z};engine._drawPinned=false;engine.previewDrawing(cell);return true;
+          };
+          engine.commitDrawing=function() {
+            if(!engine.isDrawingAllowed() || !engine._drawStart || !engine._drawEnd)return false;
+            var shape=engine.buildDrawingCells(engine._drawMode,engine._drawStart,engine._drawEnd,engine._drawHeight);
+            if(!shape.ok){publish(shape);return false;}
+            var result=engine.commitBuildBatch(shape.additions,[],{label:'Draw '+engine._drawMode});
+            if(!result.ok){engine._drawCache=null;engine.previewDrawing(engine._drawEnd);announceToSR(result.reason);return false;}
+            var message='Built '+result.count+' blocks. Undo reverses this whole '+engine._drawMode+'.';
+            engine.cancelDrawing(true);upd('actionFeedback',message);announceToSR(message);return true;
+          };
+          // A fitted creation can sit well beyond walking reach. Keep its drawing
+          // ray separate so single blocks, measurements and NPCs retain their range.
+          engine.getDrawingReach=function() {
+            var focus=engine._creationFocus;
+            var fitted=focus && !focus.manual && (!focus.lesson || focus.lesson===engine._currentLesson);
+            var preset=['front','side','top'].indexOf(engine._viewPreset)>=0;
+            return engine._drawMode!=='single' && (fitted || preset) ? 160 : 8;
+          };
+          engine.drawingHitAt=function(ndc) {
+            if(!engine.isDrawingAllowed() || !engine.camera)return null;
+            var ray=engine._drawingRaycaster || (engine._drawingRaycaster=new THREE.Raycaster());
+            ray.far=engine.getDrawingReach();
+            engine.camera.updateMatrixWorld(true);
+            ray.setFromCamera(ndc || new THREE.Vector2(0,0),engine.camera);
+            var hits=ray.intersectObjects(engine.getRaycastTargets ? engine.getRaycastTargets():engine.getBlocksArr());
+            return hits.length ? hits[0]:null;
+          };
+          engine.drawAtCrosshair=function() {
+            if(!engine.isDrawingAllowed())return false;
+            if(engine._drawPinned)return engine.commitDrawing();
+            var hit=engine.drawingHitAt(),cell=engine.placementCellForHit(hit);
+            if(!cell){announceToSR('Aim at nearby ground or a block face to choose a drawing point.');return false;}
+            if(!engine._drawStart)return engine.beginDrawing(cell);
+            engine.previewDrawing(cell);return engine.commitDrawing();
+          };
+          engine.updateDrawingPreview=function() {
+            if(!engine.isDrawingAllowed()){engine.cancelDrawing(true);return;}
+            if(engine._drawStart && !engine._drawPinned && engine._drawPointerId==null && engine.isInputActive()){
+              var hit=engine.drawingHitAt(),cell=engine.placementCellForHit(hit);
+              if(cell)engine.previewDrawing(cell);
+            }
+          };
+        }
+        installGeometryDrawing();
+        // End bounded drawing previews.
+
+
 
         // Break particle system — small cubes scatter on block break
         engine._particles = [];
@@ -5088,13 +9234,18 @@
         engine.fillBlocks = function(x1, y1, z1, x2, y2, z2, type) {
           // Counted incrementally: Object.keys().length inside the triple loop would
           // make a large fill quadratic.
-          var count = Object.keys(engine.blocks).length;
+          var groundFill = !!(engine._placingLessonBlocks && engine._measurementLayer === 'ground' && engine.placeGroundBlock);
+          var count = groundFill ? engine.getGroundBlockCount() : engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length;
+          var limit = groundFill ? engine._groundBlockLimit : MAX_BLOCKS;
           for (var x = Math.min(x1,x2); x <= Math.max(x1,x2); x++) {
             for (var y = Math.min(y1,y2); y <= Math.max(y1,y2); y++) {
               for (var z = Math.min(z1,z2); z <= Math.max(z1,z2); z++) {
-                if (count >= MAX_BLOCKS) { engine._fillTruncated = true; return; }
                 var k = x + ',' + y + ',' + z;
-                if (engine.blocks[k]) continue;
+                if (engine.blocks[k]) {
+                  if (groundFill && engine.blocks[k].userData.gwGroundProxy) engine.placeGroundBlock(x, y, z, type);
+                  continue;
+                }
+                if (count >= limit) { engine._fillTruncated = true; return; }
                 engine.placeBlock(x, y, z, type);
                 if (engine.blocks[k]) count++;
               }
@@ -5109,6 +9260,7 @@
           if (engine.publishPlacementPreview) engine.publishPlacementPreview(null);
           if (engine.clearLayerGhosts) engine.clearLayerGhosts();
           if (engine.disposeLandscape) engine.disposeLandscape();
+          if (engine.disposeGround) engine.disposeGround();
           Object.keys(engine.blocks).forEach(function(k) {
             var m = engine.blocks[k]; engine.scene.remove(m); engine._disposeBlockMesh(m);
           });
@@ -5194,58 +9346,33 @@
           eyeR.position.set(0.1, 0.04, 0.30);
           head.add(eyeR);
 
-          // Name label — cleaner with rounded background
-          // Drawn at 2x so the name stays crisp when the student walks up to it.
-          var canvas2 = document.createElement('canvas'); canvas2.width = 512; canvas2.height = 128;
-          var cx = canvas2.getContext('2d');
-          cx.clearRect(0, 0, 512, 128);
-          cx.fillStyle = 'rgba(15,23,42,0.82)';
-          if (cx.roundRect) { cx.beginPath(); cx.roundRect(16, 8, 480, 112, 24); cx.fill(); } else { cx.fillRect(16, 8, 480, 112); }
-          cx.strokeStyle = 'rgba(255,255,255,0.22)'; cx.lineWidth = 3;
-          if (cx.roundRect) { cx.beginPath(); cx.roundRect(16, 8, 480, 112, 24); cx.stroke(); }
-          cx.fillStyle = '#f1f5f9'; cx.font = 'bold 44px sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(data.name, 256, 66);
+          // Crisp name and location hierarchy; all guide textures share one palette.
+          var canvas2 = document.createElement('canvas'); canvas2.width = 640; canvas2.height = 160;
           var labelTex = new THREE.CanvasTexture(canvas2);
           if (typeof THREE.sRGBEncoding !== 'undefined') labelTex.encoding = THREE.sRGBEncoding;
           var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false }));
-          sprite.scale.set(2.2, 0.55, 1);
-          sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.1, data.position[2] + 0.5);
+          sprite.scale.set(2.5, 0.625, 1);
+          sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.45, data.position[2] + 0.5);
           engine.scene.add(sprite);
 
-          // "Press E" interaction prompt (hidden until player is near — managed in animate loop)
-          // Drawn at 2x and tagged sRGB: at 128 px the prompt was soft at any
-          // distance and, untagged, its violet read as lilac.
-          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 256; promptCanvas.height = 96;
-          var pcx = promptCanvas.getContext('2d');
-          pcx.clearRect(0, 0, 256, 96);
-          pcx.fillStyle = 'rgba(109,40,217,0.92)';
-          if (pcx.roundRect) { pcx.beginPath(); pcx.roundRect(8, 8, 240, 80, 16); pcx.fill(); } else { pcx.fillRect(8, 8, 240, 80); }
-          if (pcx.roundRect) { pcx.strokeStyle = 'rgba(255,255,255,0.35)'; pcx.lineWidth = 3; pcx.beginPath(); pcx.roundRect(8, 8, 240, 80, 16); pcx.stroke(); }
-          pcx.fillStyle = '#fff'; pcx.font = 'bold 34px sans-serif'; pcx.textAlign = 'center'; pcx.textBaseline = 'middle'; pcx.fillText('Press E', 128, 50);
+          // A keyboard keycap makes the interaction explicit at close range.
+          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 320; promptCanvas.height = 96;
           var promptTex = new THREE.CanvasTexture(promptCanvas);
           if (typeof THREE.sRGBEncoding !== 'undefined') promptTex.encoding = THREE.sRGBEncoding;
           var promptSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: promptTex, transparent: true, depthTest: false, opacity: 0 }));
-          promptSprite.scale.set(1.2, 0.45, 1);
-          promptSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.5, data.position[2] + 0.5);
+          promptSprite.scale.set(1.35, 0.405, 1);
+          promptSprite.position.set(data.position[0] + 0.5, data.position[1] + 3.05, data.position[2] + 0.5);
           engine.scene.add(promptSprite);
 
           // Floating question mark indicator (for NPCs with questions)
           var qMarkSprite = null;
           if (data.question) {
             var qCanvas = document.createElement('canvas'); qCanvas.width = 128; qCanvas.height = 128;
-            var qcx = qCanvas.getContext('2d');
-            // Glowing circle background, drawn at 2x so the mark stays sharp up close
-            var grd = qcx.createRadialGradient(64, 64, 16, 64, 64, 56);
-            grd.addColorStop(0, 'rgba(251,191,36,0.95)'); grd.addColorStop(0.55, 'rgba(251,191,36,0.55)'); grd.addColorStop(1, 'rgba(251,191,36,0)');
-            qcx.fillStyle = grd; qcx.fillRect(0, 0, 128, 128);
-            // Question mark, outlined so it holds against a bright sky
-            qcx.font = 'bold 72px sans-serif'; qcx.textAlign = 'center'; qcx.textBaseline = 'middle';
-            qcx.lineWidth = 6; qcx.strokeStyle = 'rgba(120,53,15,0.8)'; qcx.strokeText('?', 64, 68);
-            qcx.fillStyle = '#fff'; qcx.fillText('?', 64, 68);
             var qTex = new THREE.CanvasTexture(qCanvas);
             if (typeof THREE.sRGBEncoding !== 'undefined') qTex.encoding = THREE.sRGBEncoding;
             qMarkSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: qTex, transparent: true, depthTest: false }));
-            qMarkSprite.scale.set(0.6, 0.6, 1);
-            qMarkSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.7, data.position[2] + 0.5);
+            qMarkSprite.scale.set(0.42, 0.42, 1);
+            qMarkSprite.position.set(data.position[0] + 0.5, data.position[1] + 3.05, data.position[2] + 0.5);
             engine.scene.add(qMarkSprite);
           }
 
@@ -5270,13 +9397,21 @@
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
           engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR,
             _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, data: data });
+          geometryRefreshGuideSprites(engine, engine.npcs[engine.npcs.length - 1], engine.npcs.length - 1, geometryGuideContrast(engine));
         };
 
         engine.loadLesson = function(lesson) {
+          if(engine._previewReviewCamera)engine._previewReviewCamera.dispose(false);
+          if(engine.flushWorkshopDraft)engine.flushWorkshopDraft();
+          engine._workshopProjectId=null;engine._workshopProjectVersion=null;engine._workshopSavedSignature=null;
           if(engine.endShowcase)engine.endShowcase();
+          if(engine.cancelDrawing)engine.cancelDrawing(true);
+          if(engine.clearBuildBatchPreview)engine.clearBuildBatchPreview();
+          engine._drawMode='single';upd('drawMode','single');
           engine._builderSelection = null;
           if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length });
-          engine._currentLesson = lesson; // remember for returnToSpawn
+          engine._currentLesson = lesson;
+          engine._activityWaypoint = null; // remember for returnToSpawn
           if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
           engine._viewPresetAnim = null;
           engine._viewPresetReturn = null;
@@ -5306,6 +9441,7 @@
           }
           engine._measurementLayer = 'lesson';
           if (lesson.structures) lesson.structures.forEach(function(s) {
+            engine._measurementLayer = lesson.ground && s.y1 === lesson.ground.y && s.y1 === s.y2 ? 'ground' : 'lesson';
             if (s.type === 'fill') engine.fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
           });
           engine._placingLessonBlocks = false;
@@ -5316,12 +9452,24 @@
             addToast('⚠️ This world is larger than the ' + MAX_BLOCKS + '-block limit — part of it was not built. Measurements may not match the lesson.', 'error');
           }
           if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
-          // Smooth camera entry — start high above spawn, swoop down
+          // Free Build is immediately interactive. Its arrival must not depend
+          // on the lesson fly-in, which pauses when keyboard input takes focus.
           if (lesson.spawnPoint) {
             var sp = lesson.spawnPoint;
-            engine.camera.position.set(sp[0], sp[1] + 15, sp[2] - 8);
-            engine.camera.lookAt(sp[0], sp[1], sp[2]);
-            engine._entryAnim = { targetX: sp[0], targetY: sp[1], targetZ: sp[2], progress: 0 };
+            if (lesson.sandbox) {
+              var entryGround = lesson.ground || {};
+              var entryFloor = typeof entryGround.y === 'number' && isFinite(entryGround.y) ? entryGround.y : 0;
+              engine._entryAnim = null;
+              engine.camera.position.set(sp[0], Math.max(sp[1], entryFloor + 2.6), sp[2]);
+              engine.camera.lookAt(Math.floor(sp[0]) + 0.5, entryFloor + 1, Math.floor(sp[2] - 3) + 0.5);
+              engine.camera.updateMatrixWorld(true); // The first input can precede the next render.
+              if (engine.euler) engine.euler.setFromQuaternion(engine.camera.quaternion);
+              if (engine.velocity) engine.velocity.set(0, 0, 0);
+            } else {
+              engine.camera.position.set(sp[0], sp[1] + 15, sp[2] - 8);
+              engine.camera.lookAt(sp[0], sp[1], sp[2]);
+              engine._entryAnim = { targetX: sp[0], targetY: sp[1], targetZ: sp[2], progress: 0 };
+            }
           }
           // Reset undo stacks on lesson load
           engine._undoStack = [];
@@ -5348,7 +9496,7 @@
 
         // Measure all face-connected blocks in the same logical layer, even when
         // students use multiple materials to color-code one geometric structure.
-        engine.measureStructure = function(startX, startY, startZ, retainedBlocks) {
+        engine.measureStructure = function(startX, startY, startZ, retainedBlocks, exactSelection) {
           var seedMesh = engine.blocks[startX + ',' + startY + ',' + startZ];
           if (!seedMesh || !seedMesh.userData) return null;
           var seedData = seedMesh.userData;
@@ -5368,7 +9516,7 @@
             shapeCounts[shp] = (shapeCounts[shp] || 0) + 1;
             var material = mesh.userData.blockType || 'unknown';
             materialCounts[material] = (materialCounts[material] || 0) + 1;
-            [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(function(dir) {
+            if(!exactSelection) [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(function(dir) {
               var nk = (pos.x+dir[0])+','+(pos.y+dir[1])+','+(pos.z+dir[2]);
               if (!visited[nk]) queue.push({ x: pos.x+dir[0], y: pos.y+dir[1], z: pos.z+dir[2] });
             });
@@ -5646,6 +9794,7 @@
           engine._intersectionObserver.observe(container);
         }
         canvas.addEventListener('click', _cvH.click = function(ev) {
+          if(engine._previewReviewCamera || (engine._drawMode && engine._drawMode!=='single'))return;
           // Touch has its own movement and look handlers. A released action can
           // retarget its synthetic click here after a control is unmounted.
           if (ev && (ev.pointerType === 'touch' || (ev.sourceCapabilities && ev.sourceCapabilities.firesTouchEvents))) return;
@@ -5690,7 +9839,8 @@
               answered: !!answered[i]
             };
           });
-          announceToSR(summarizeNearbyNpcs(entries, 4));
+          var trackedText=summarizeActivityWaypoint(entries,engine._activityWaypoint);
+          if(trackedText)announceToSR(trackedText);else announceToSR(summarizeNearbyNpcs(entries, 4));
         }
         document.addEventListener('mousemove', _docH.mousemove = function(ev) {
           if (engine._showcase || document.pointerLockElement !== canvas) return;
@@ -5704,6 +9854,7 @@
         document.addEventListener('keydown', _docH.keydown = function(ev) {
           if(engine._modalState && engine._modalState.showGeometryHome){if(ev.code==='Escape' && engine.closeGeometryHome){ev.preventDefault();engine.closeGeometryHome();}return;}
           if(engine._showcase){if(ev.code==='Escape' && engine.endShowcase){ev.preventDefault();engine.endShowcase();}return;}
+          if(engine._previewReviewCamera && ev.code!=='Escape')return;
           // Let Esc pass through even in inputs (students expect it to close overlays/blur inputs).
           // But every other shortcut should be ignored when typing in a form field — otherwise
           // typing "house" into the AI prompt triggers H-teleport, S-movement, E-talk, etc.
@@ -5714,6 +9865,7 @@
           )) return;
           switch (ev.code) {
             case 'Escape':
+              if(engine._drawStart && engine.isDrawingAllowed && engine.isDrawingAllowed()){ev.preventDefault();engine.cancelDrawing();break;}
               // Shift+Esc: close every overlay at once. Unconditional dispatch so it works
               // regardless of closure staleness (keydown handler was attached once).
               if (ev.shiftKey) {
@@ -6082,7 +10234,7 @@
               }
               break;
             case 'KeyZ':
-              if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); }
+              if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); if(ev.shiftKey){engine.redo();if(addToast)addToast('\u21AA\uFE0F Redo','info');}else{engine.undo();if(addToast)addToast('\u21A9\uFE0F Undo','info');} }
               break;
             case 'KeyY':
               if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.redo(); if (addToast) addToast('\u21AA\uFE0F Redo', 'info'); }
@@ -6116,14 +10268,14 @@
           var THREE = window.THREE;
           if (!THREE || !engine.raycaster || !engine.camera) return null;
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
+          var hits = engine.raycaster.intersectObjects(engine.getRaycastTargets ? engine.getRaycastTargets() : engine.getBlocksArr());
           return hits.length > 0 ? hits[0] : null;
         };
 
         function canMatchAimedBlock() {
           if(engine._destroyed || engine._runtimeFailed || engine._showcase || engine._worldActive===false)return false;
           var modal=engine._modalState || {};
-          return !['showGeometryHome','showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
+          return !['showGeometryHome','showActivityGuide','showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
         }
         // Copy canonical choices only. Matching never creates a block or changes
         // the retained selection, camera, construction geometry or history.
@@ -6131,7 +10283,7 @@
           var THREE=window.THREE;
           if(!canMatchAimedBlock() || !THREE || !engine.raycaster || !engine.camera)return false;
           engine.raycaster.setFromCamera(new THREE.Vector2(0,0),engine.camera);
-          var targets=engine.getBlocksArr().concat((engine.npcs || []).map(function(npc){return npc.body;}).filter(Boolean));
+          var targets=(engine.getRaycastTargets ? engine.getRaycastTargets() : engine.getBlocksArr()).concat((engine.npcs || []).map(function(npc){return npc.body;}).filter(Boolean));
           var hits=engine.raycaster.intersectObjects(targets),mesh=hits.length?hits[0].object:null;
           var data=mesh && mesh.userData,gp=data && data.gridPos;
           if(!data || data.isNPC || !gp){
@@ -6229,10 +10381,11 @@
         // keyboard-only student could walk, look and measure but never BUILD -- the
         // central activity of a block-based volume tool. X and B call this directly.
         engine.interactAtCrosshair = function(action) {
+          if(action==='place' && engine._drawMode && engine._drawMode!=='single')return engine.drawAtCrosshair();
           var THREE = window.THREE;
           if (!THREE || !engine.raycaster || !engine.camera) return;
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-          var allMeshes = engine.getBlocksArr().concat(engine.npcs.map(function(n) { return n.body; }));
+          var allMeshes = (engine.getRaycastTargets ? engine.getRaycastTargets() : engine.getBlocksArr()).concat(engine.npcs.map(function(n) { return n.body; }));
           var hits = engine.raycaster.intersectObjects(allMeshes);
           if (hits.length > 0) {
             var hit = hits[0];
@@ -6320,6 +10473,45 @@
           }
           return null;
         };
+
+        function drawingPointerCell(ev,extend) {
+          var rect=canvas.getBoundingClientRect();
+          if(!rect.width || !rect.height)return null;
+          var ndc=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);
+          if(!extend)return engine.placementCellForHit(engine.drawingHitAt(ndc));
+          var ray=new THREE.Raycaster();ray.far=160;
+          engine.camera.updateMatrixWorld(true);ray.setFromCamera(ndc,engine.camera);
+          if(extend && engine._drawStart) {
+            var point=new THREE.Vector3(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),-(engine._drawStart.y+.01));
+            if(ray.ray.intersectPlane(plane,point) && point.distanceTo(engine.camera.position)<=160)return {x:Math.floor(point.x),y:engine._drawStart.y,z:Math.floor(point.z)};
+            return null;
+          }
+          var hits=ray.intersectObjects(engine.getRaycastTargets ? engine.getRaycastTargets():engine.getBlocksArr());
+          return hits.length?engine.placementCellForHit(hits[0]):null;
+        }
+        canvas.addEventListener('pointerdown',_cvH.pointerdown=function(ev){
+          // Touch retains the familiar look joystick; its Place action provides
+          // the same accessible two-point workflow. Mouse/pen can drag on canvas.
+          if(ev.pointerType==='touch' || ev.button!==0 || engine.isLocked || engine._drawMode==='single' || !engine.isDrawingAllowed())return;
+          var cell=drawingPointerCell(ev,false);if(!cell)return;
+          ev.preventDefault();engine.beginDrawing(cell);engine._drawPointerId=ev.pointerId;
+          if(canvas.setPointerCapture)canvas.setPointerCapture(ev.pointerId);
+        });
+        canvas.addEventListener('pointermove',_cvH.pointermove=function(ev){
+          if(engine._drawPointerId!==ev.pointerId || engine._drawMode==='single')return;
+          if(!engine.isDrawingAllowed()){engine.cancelDrawing(true);return;}
+          ev.preventDefault();var cell=drawingPointerCell(ev,true);if(cell)engine.previewDrawing(cell);
+        });
+        canvas.addEventListener('pointerup',_cvH.pointerup=function(ev){
+          if(engine._drawPointerId!==ev.pointerId)return;
+          ev.preventDefault();engine._drawPointerId=null;engine._drawPinned=true;
+          if(canvas.hasPointerCapture && canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);
+          if(engine._drawEnd)engine.previewDrawing(engine._drawEnd);
+          if(canvas.parentElement && canvas.parentElement.focus)canvas.parentElement.focus({preventScroll:true});
+          announceToSR('Preview ready. Press B or choose Place to build, or Escape to cancel.');
+        });
+        canvas.addEventListener('pointercancel',_cvH.pointercancel=function(ev){if(engine._drawPointerId===ev.pointerId)engine.cancelDrawing(true);});
+
 
         canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
           if (!engine.isLocked) return;
@@ -6505,7 +10697,9 @@
           } catch (e2) {
             currentTarget = currentPosition.clone().add(new THREE.Vector3(0, 0, -10));
           }
-          var focus = focusOverride || getGuidedTourFocus(engine._currentLesson);
+          var builderCamera=window.StemLab && window.StemLab.geometryWorldBuilderPure;
+          var selectedFocus=engine._currentLesson.sandbox && builderCamera && builderCamera.selectedCreationPresetFocus ? builderCamera.selectedCreationPresetFocus(engine) : null;
+          var focus = focusOverride || selectedFocus || getGuidedTourFocus(engine._currentLesson);
           var fromPosition = currentPosition;
           var fromTarget = currentTarget;
           var toPosition;
@@ -6521,6 +10715,8 @@
             toPosition = new THREE.Vector3(presetPosition.x, presetPosition.y, presetPosition.z);
             toTarget = new THREE.Vector3(focus.x, focus.y, focus.z);
           }
+          var lightingCamera=engine.camera.clone();lightingCamera.position.copy(toPosition);lightingCamera.lookAt(toTarget);
+          engine._viewPresetLighting=selected==='free'?null:{lesson:engine._currentLesson,position:toPosition.clone(),quaternion:lightingCamera.quaternion.clone(),target:toTarget.clone()};
           engine._viewPreset = selected;
           engine._viewPresetAnim = { preset: selected, elapsed: 0, duration: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0.01 : 0.55, fromPosition: fromPosition, fromTarget: fromTarget, toPosition: toPosition, toTarget: toTarget };
           setViewPreset(selected);
@@ -6737,6 +10933,12 @@
         engine._crosshairTarget = 'none'; // 'none' | 'block' | 'npc' | 'npc_question'
         function updateGhostPreview() {
           var THREE = window.THREE;
+          if(engine._drawMode && engine._drawMode!=='single') {
+            if(engine._ghostMesh)engine._ghostMesh.visible=false;
+            if(engine._highlightMesh)engine._highlightMesh.visible=false;
+            if(engine._hoverGlowMesh)engine._hoverGlowMesh.visible=false;
+            engine.updateDrawingPreview();return;
+          }
           if (engine._showcase || !engine.isInputActive() || !THREE) {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
@@ -6757,7 +10959,7 @@
           } else {
             engine._crosshairTarget = 'none';
           }
-          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
+          var hits = engine.raycaster.intersectObjects(engine.getRaycastTargets ? engine.getRaycastTargets() : engine.getBlocksArr());
           if (hits.length > 0) engine._crosshairTarget = engine._crosshairTarget === 'none' ? 'block' : engine._crosshairTarget;
           // Track targeted block grid position so the HUD and SR-announcer can read it.
           if (hits.length > 0 && hits[0].object.userData.gridPos) {
@@ -6822,10 +11024,13 @@
             engine._highlightMesh.visible=true;engine._hoverGlowMesh.visible=true;
             var isProtected=hoverTarget.userData._lessonBlock;
             var pulseT=engine.clock.getElapsedTime(),stillHover=engine._rmHover || engine._ambientMotionEnabled===false;
-            engine._highlightMesh.material.color.setHex(isProtected?0xff4444:0xffffff);
-            engine._highlightMesh.material.opacity=isProtected?0.3:stillHover?0.4:0.4+Math.sin(pulseT*6)*0.2;
-            engine._hoverGlowMesh.material.color.setHex(isProtected?0xff4444:0xffffff);
-            engine._hoverGlowMesh.material.opacity=(isProtected?0.08:stillHover?0.1:0.09+Math.sin(pulseT*6)*0.05)*(engine._dimLines && engine._dimLines.length>0?0.35:1);
+            // A protected floor is a useful building surface, not a placement
+            // error. Keep its hover warm and steady; coral is reserved for the
+            // invalid destination shown by the placement ghost below.
+            engine._highlightMesh.material.color.setHex(isProtected?0xe6cf9e:0xf3eee0);
+            engine._highlightMesh.material.opacity=isProtected?0.48:stillHover?0.44:0.44+Math.sin(pulseT*2.5)*0.08;
+            engine._hoverGlowMesh.material.color.setHex(isProtected?0xe6cf9e:0xf3eee0);
+            engine._hoverGlowMesh.material.opacity=(isProtected?0.055:stillHover?0.08:0.08+Math.sin(pulseT*2.5)*0.025)*(engine._dimLines && engine._dimLines.length>0?0.35:1);
           } else {
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
             if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
@@ -6842,6 +11047,8 @@
             var _ps = engine._placeState || { selectedShape: 0, blockRotation: 0 };
             var curShapeId = BLOCK_SHAPES[_ps.selectedShape] ? BLOCK_SHAPES[_ps.selectedShape].id : 'cube';
             var curRot = _ps.blockRotation || 0;
+            var curType = BLOCK_TYPES[_ps.selectedBlock] || BLOCK_TYPES[0];
+            var curTypeColor = curType && typeof curType.color === 'number' ? curType.color : 0x808080;
             // Recreate ghost if shape or rotation changed
             if (!engine._ghostMesh || engine._ghostShapeId !== curShapeId || engine._ghostRot !== curRot) {
               if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); disposeGhost(engine._ghostMesh); }
@@ -6876,7 +11083,13 @@
             engine._ghostMesh.visible = true;
             engine._ghostMesh.userData.placementAllowed = preview.allowed;
             engine._ghostMesh.userData.placementReason = preview.reason;
-            engine._ghostMesh.material.color.setHex(preview.allowed ? 0x9dddb5 : 0xf16c58);
+            // The fill previews the selected material color; the outline alone
+            // carries readiness. Change color in place so cycling the palette
+            // never allocates meshes, textures, or geometries.
+            engine._ghostMesh.material.color.setHex(preview.allowed ? curTypeColor : 0xf16c58);
+            // Catalog values are sRGB; the renderer shades in linear color space.
+            if (preview.allowed) engine._ghostMesh.material.color.convertSRGBToLinear();
+            engine._ghostMesh.userData.placementMaterial = curType ? curType.id : 'stone';
             if (engine._ghostEdges) {
               engine._ghostEdges.material.color.setHex(preview.allowed ? 0xd6f4df : 0xffbc9e);
               engine._ghostEdges.material.depthTest = preview.allowed;
@@ -7264,8 +11477,10 @@
           updateGhostPreview();
 
           // Animate NPCs — bob, rotate, face player when close
+          var guideContrast = geometryGuideContrast(engine);
           var t = engine.clock.getElapsedTime();
           engine.npcs.forEach(function(npc, i) {
+            if (engine._showcase) return; // Preserve Studio-hidden NPC sprites and avoid late allocations.
             var THREE = window.THREE, ambientMotion = engine._ambientMotionEnabled !== false;
             if (!THREE) return;
             var baseY = npc.data.position[1] + 0.75;
@@ -7315,7 +11530,7 @@
               (npc._eyeParts || []).forEach(function(eye) { eye.scale.y = 1; });
               (npc._arms || []).forEach(function(arm) { arm.rotation.x = 0; arm.rotation.z = (arm.userData.armSide || 1) * 0.22; });
             }
-            if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.1 + bobY; }
+            if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.45 + bobY; }
             if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
             if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }
             // Face toward player when within 6 blocks
@@ -7344,7 +11559,7 @@
               // engine._answeredRef is refreshed every React render; the closure copy is
               // frozen at initEngine time now that the engine outlives re-renders.
               var isNpcAnswered = (engine._answeredRef || answeredNpcs)[i];
-              if (isNpcAnswered) {
+              if (isNpcAnswered || (engine.camera && dist < 3.5)) {
                 // Hide question mark when answered (fade out)
                 if (!ambientMotion) { npc.qMark.material.opacity = 0; npc.qMark.visible = false; }
                 else if (npc.qMark.material.opacity > 0.01) {
@@ -7355,9 +11570,9 @@
               } else {
                 npc.qMark.material.opacity = 1;
                 npc.qMark.visible = true;
-                npc.qMark.position.y = npc.data.position[1] + 2.7 + (ambientMotion ? Math.sin(t * 3 + i * 1.5) * 0.15 : 0);
+                npc.qMark.position.y = npc.data.position[1] + 3.05 + (ambientMotion ? Math.sin(t * 2 + i * 1.5) * 0.045 : 0);
                 // Subtle scale pulse
-                var qScale = 0.55 + (ambientMotion ? Math.sin(t * 4 + i) * 0.08 : 0);
+                var qScale = 0.42 + (ambientMotion ? Math.sin(t * 2 + i) * 0.015 : 0);
                 npc.qMark.scale.set(qScale, qScale, 1);
               }
             }
@@ -7413,36 +11628,30 @@
               // Speech bubble preview — show first ~30 chars of dialogue when medium-close
               if (!npc._speechBubble && npc.data.dialogue) {
                 var sbCanvas = document.createElement('canvas'); sbCanvas.width = 512; sbCanvas.height = 128;
-                var sbx = sbCanvas.getContext('2d');
-                sbx.clearRect(0, 0, 512, 128);
-                sbx.fillStyle = 'rgba(15,23,42,0.86)';
-                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(8, 8, 496, 112, 20); sbx.fill(); } else { sbx.fillRect(8, 8, 496, 112); }
-                sbx.strokeStyle = 'rgba(255,255,255,0.18)'; sbx.lineWidth = 3;
-                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(8, 8, 496, 112, 20); sbx.stroke(); }
-                sbx.fillStyle = '#e2e8f0'; sbx.font = '28px sans-serif'; sbx.textAlign = 'center'; sbx.textBaseline = 'middle';
-                var preview = npc.data.dialogue.length > 35 ? npc.data.dialogue.slice(0, 33) + '...' : npc.data.dialogue;
-                sbx.fillText(preview, 256, 66);
                 var sbTex = new THREE.CanvasTexture(sbCanvas);
                 if (typeof THREE.sRGBEncoding !== 'undefined') sbTex.encoding = THREE.sRGBEncoding;
                 npc._speechBubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: sbTex, transparent: true, depthTest: false, opacity: 0 }));
                 npc._speechBubble.scale.set(2.5, 0.6, 1);
-                npc._speechBubble.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 3.0, npc.data.position[2] + 0.5);
+                npc._speechBubble.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 3.6, npc.data.position[2] + 0.5);
                 engine.scene.add(npc._speechBubble);
               }
               if (npc._speechBubble) {
                 // Show when medium distance (3-6 blocks), hide when too close (dialog takes over) or too far
-                var sbTarget = (dist2 > 3 && dist2 < 6) ? 0.7 : 0;
+                var previewBearing = geometryGuideBearing(geometryGuideCameraBasis(engine.camera), -dx2, -dz2);
+                var sbTarget = (dist2 > 3.5 && dist2 < 6 && Math.abs(previewBearing) < Math.PI / 7) ? 0.95 : 0;
                 npc._speechBubble.material.opacity += (sbTarget - npc._speechBubble.material.opacity) * (ambientMotion ? Math.min(1, dt * 5) : 1);
-                npc._speechBubble.position.y = npc.data.position[1] + 3.0 + (ambientMotion ? Math.sin(t * 1.5 + i * 0.8) * 0.04 : 0);
+                npc._speechBubble.position.y = npc.data.position[1] + 3.6 + (ambientMotion ? Math.sin(t * 1.5 + i * 0.8) * 0.025 : 0);
               }
               // "Press E" prompt — fade in when close, bob above head
               if (npc.prompt) {
                 var promptTarget = dist2 < 3.5 ? 0.9 : 0;
                 npc.prompt.material.opacity += (promptTarget - npc.prompt.material.opacity) * (ambientMotion ? Math.min(1, dt * 6) : 1);
-                npc.prompt.position.y = npc.data.position[1] + 2.5 + (ambientMotion ? Math.sin(t * 2.5 + i * 0.7) * 0.06 : 0);
+                npc.prompt.position.y = npc.data.position[1] + 3.05 + (ambientMotion ? Math.sin(t * 2.5 + i * 0.7) * 0.025 : 0);
               }
             }
           });
+
+          engine.npcs.forEach(function(npc, index) { geometryRefreshGuideSprites(engine, npc, index, guideContrast); });
 
           // ── NPC proximity chime (soft ping when near unanswered NPC, every 3s) ──
           if (!engine._npcProxTimer) engine._npcProxTimer = 0;
@@ -7741,10 +11950,12 @@
             // shadows crawl and shimmer as the player walks.
             var scam = engine.sun.shadow.camera;
             var texel = (scam.right - scam.left) / (engine.sun.shadow.mapSize.x || 2048);
-            var stx = Math.round(engine.camera.position.x / texel) * texel;
-            var stz = Math.round(engine.camera.position.z / texel) * texel;
-            if (engine._sunTarget) { engine._sunTarget.position.set(stx, 0, stz); engine._sunTarget.updateMatrixWorld(); }
-            engine.sun.position.set(stx + sdir.x * sd, sdir.y * sd, stz + sdir.z * sd);
+            var shadowAnchor=geometryWorldShadowAnchor(engine);
+            var stx = Math.round(shadowAnchor.x / texel) * texel;
+            var sty = Math.round(shadowAnchor.y / texel) * texel;
+            var stz = Math.round(shadowAnchor.z / texel) * texel;
+            if (engine._sunTarget) { engine._sunTarget.position.set(stx, sty, stz); engine._sunTarget.updateMatrixWorld(); }
+            engine.sun.position.set(stx + sdir.x * sd, sty + sdir.y * sd, stz + sdir.z * sd);
             if(engine._skyDome)engine._skyDome.material.uniforms.sunDir.value.set(sdir.x,sdir.y,sdir.z);
             var sunI = engine.sun.intensity;
             // Both discs hang in the sky at the sun's own bearing: the sun where the
@@ -7854,7 +12065,7 @@
           // the moment any lesson loaded, and the MTSS report and research CSV
           // counted scenery as student work. Only the student's own placement is
           // an event; loadLesson raises _placingLessonBlocks around its fills.
-          if (!had && engine.blocks[key] && !engine._placingLessonBlocks) {
+          if (!had && engine.blocks[key] && !engine._placingLessonBlocks && !engine._batchSuppressEvents) {
             engine.logEvent('block_place', { x: x, y: y, z: z, type: type, shape: shape || 'cube', rotation: rotation || 0 });
           }
           return placed;
@@ -8239,7 +12450,11 @@
           engine._layerFocus = null;
           engine._layerExplorerBlocks = null;
           engine._layerExplorerMinY = null;
+          if(engine.flushWorkshopDraft)engine.flushWorkshopDraft();
+          if(engine._previewReviewCamera)engine._previewReviewCamera.dispose(false);
           engine._destroyed = true;
+          if(engine.cancelDrawing)engine.cancelDrawing(true);
+          if(engine.clearBuildBatchPreview)engine.clearBuildBatchPreview();
           try { if (engine.vr && engine.vr.destroy) engine.vr.destroy(); engine.vr = null; } catch(e){}
           if (engine._rafId) cancelAnimationFrame(engine._rafId); // stop the FPS render loop on teardown
           // Remove every listener registered during initEngine. Without this
@@ -8367,20 +12582,23 @@
       // persisted flag, re-entering the tool shows the home again. The legacy
       // lesson intro is kept only for a builder that genuinely failed to load, and
       // there it keeps its old once-per-toolData gate.
-      var homePresentedRef = React.useRef(false);
+      // Capture explicit returns before the builder effect consumes their marker.
+      // ReturnProject alone is a saved backup, not a request to bypass Home.
+      var homePresentedRef = React.useRef(!!window.__alloGeometryWorldPendingBuild);
+      var homeBuilderReady = !!(window.StemLab && window.StemLab.geometryWorldBuilderPure);
       React.useEffect(function(){
         if(!threeReady || homePresentedRef.current)return;
-        if(window.__alloGeometryWorldPendingBuild || window.__alloGeometryWorldReturnProject)return;
-        if(window.StemLab && window.StemLab.geometryWorldBuilderPure){
+        if(window.__alloGeometryWorldPendingBuild){homePresentedRef.current=true;return;}
+        if(homeBuilderReady){
           homePresentedRef.current=true;
           window.__alloGeometryWorldHomePresented=true;
-          if(showGeometryHome)return;
-          upd({showGeometryHome:true,geometryHomePage:'start',_geometryHomeInitial:!worldActive,_introShownOnce:true,showLessonIntro:false});
+          openGeometryHome();
+          upd('_geometryHomeInitial',!worldActive || (showGeometryHome && !!d._geometryHomeInitial));
         } else if(!worldActive && !showLessonIntro && !d._introShownOnce){
-          homePresentedRef.current=true;
+          // A fallback intro must not consume the enhanced chooser's entry gate.
           upd({showLessonIntro:true,_introShownOnce:true});
         }
-      },[threeReady,worldActive,showLessonIntro,showGeometryHome,d._introShownOnce]);
+      },[threeReady,worldActive,showLessonIntro,showGeometryHome,d._introShownOnce,homeBuilderReady]);
 
       // ── Typewriter effect: auto-advance character position ──
       if (showNpcDialog && npcTypewriterNpc === dialogNpcIdx) {
@@ -8468,14 +12686,7 @@
       }
 
       // ── Helper: parse AI JSON response ──
-      function parseAiJson(result) {
-        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-        // Handle cases where AI wraps in extra text
-        var start = cleaned.indexOf('{');
-        var end = cleaned.lastIndexOf('}');
-        if (start >= 0 && end > start) cleaned = cleaned.substring(start, end + 1);
-        return JSON.parse(cleaned);
-      }
+      function parseAiJson(result) { return parseGeometryLessonJson(result); }
 
       // ── Helper: save lesson to localStorage library ──
       function saveToMyLessons(lesson) {
@@ -8535,53 +12746,48 @@
         upd(lessonState);
       }
 
-      var generateWorld = function() {
-        if (!callGemini || !aiPrompt.trim()) return;
-        var passes = aiPassCount;
-        var grade = aiGradeLevel;
-        upd({ aiGenerating: true, aiCurrentPass: 1 });
+      function cancelWorldGeneration() {
+        aiGenerationRef.current.id++;
+        aiGenerationRef.current.running = false;
+        upd({ aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Generation canceled. Your current world is unchanged.' });
+      }
 
-        // Pass 1: Generate base lesson
-        var p1Prompt = AI_WORLD_PROMPT_BASE.replace(/\{TOPIC\}/g, aiPrompt.trim()).replace(/\{GRADE\}/g, grade);
-        callGemini(p1Prompt, true).then(function(r1) {
-          var lesson;
-          try { lesson = parseAiJson(r1); } catch(e) {
-            if (addToast) addToast('Pass 1 failed: ' + e.message, 'error');
-            upd({ aiGenerating: false, aiCurrentPass: 0 }); return;
+      function beginWorldGeneration(seedLesson, refinement) {
+        var state = aiGenerationRef.current;
+        if (!callGemini || state.running || (!seedLesson && !aiPrompt.trim())) return Promise.resolve(null);
+        var requestId = ++state.id;
+        state.running = true;
+        var originalEngine = window[engineKey];
+        var originalLesson = originalEngine && originalEngine._currentLesson;
+        function current() { return state.mounted && state.id === requestId; }
+        function sameWorld() { return window[engineKey] === originalEngine && (!originalEngine || originalEngine._currentLesson === originalLesson); }
+        upd({ aiGenerating: true, aiCurrentPass: 0, aiGenerationStatus: 'Planning the learning journey' });
+        return runGeometryLessonGeneration({
+          topic: seedLesson ? seedLesson.title : aiPrompt.trim(), grade: aiGradeLevel, depth: aiLessonDepth,
+          seedLesson: seedLesson, refinement: refinement, callGemini: callGemini, isCurrent: function() { return current() && sameWorld(); },
+          onProgress: function(progress) { upd({ aiCurrentPass: progress.call, aiGenerationStatus: progress.label }); }
+        }).then(function(lesson) {
+          if (!current()) return null;
+          if (window[engineKey] !== originalEngine || (originalEngine && originalEngine._currentLesson !== originalLesson)) {
+            upd({ aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Generation stopped because you changed worlds. Generate again in this world.' });
+            return null;
           }
-
-          if (passes <= 1) {
-            // Single pass — load directly
-            finishGeneration(lesson);
-            return;
+          finishGeneration(lesson);
+          return lesson;
+        }).catch(function(error) {
+          if (!current()) return null;
+          if (error.code === 'GW_GENERATION_CANCELLED') {
+            upd({ aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Generation stopped because you changed worlds. Generate again in this world.' });
+            return null;
           }
+          var message = error.message || 'Unknown error';
+          upd({ aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Could not finish this lesson. ' + message });
+          if (addToast) addToast('AI generation failed: ' + message + ' Your current world was kept.', 'error');
+          return null;
+        }).then(function(result) { if (current()) state.running = false; return result; });
+      }
 
-          // Pass 2: Refine (improve structures, fix issues, enrich dialogues)
-          upd('aiCurrentPass', 2);
-          var p2Prompt = AI_REFINE_PROMPT
-            .replace('{LESSON_JSON}', JSON.stringify(lesson, null, 2))
-            .replace('{REFINEMENT}', 'Improve and polish the lesson: make structures more visually interesting, ensure NPC dialogues explain concepts clearly before asking questions, add descriptive objectives, and verify all coordinates are valid.');
-          callGemini(p2Prompt, true).then(function(r2) {
-            try { lesson = parseAiJson(r2); } catch(e) { /* keep pass 1 result */ }
-
-            if (passes <= 2) {
-              finishGeneration(lesson);
-              return;
-            }
-
-            // Pass 3: Add scaffolded follow-up questions
-            upd('aiCurrentPass', 3);
-            var p3Prompt = AI_FOLLOWUP_PROMPT.replace('{LESSON_JSON}', JSON.stringify(lesson, null, 2));
-            callGemini(p3Prompt, true).then(function(r3) {
-              try { lesson = parseAiJson(r3); } catch(e) { /* keep pass 2 result */ }
-              finishGeneration(lesson);
-            }).catch(function() { finishGeneration(lesson); });
-          }).catch(function() { finishGeneration(lesson); });
-        }).catch(function(e) {
-          if (addToast) addToast('AI generation failed: ' + (e.message || 'unknown error'), 'error');
-          upd({ aiGenerating: false, aiCurrentPass: 0 });
-        });
-      };
+      var generateWorld = function() { return beginWorldGeneration(null, ''); };
 
       // ── Validate & sanitize AI-generated lesson JSON ──
       function validateLesson(lesson) {
@@ -8598,39 +12804,30 @@
         var validBlocks = ['stone','grass','wood','diamond','gold','sand','glass','brick','ice','water','lava','torch'];
         lesson.structures = lesson.structures.filter(function(s) {
           if (!s || s.type !== 'fill') return false;
-          s.x1 = Math.max(-4, Math.min(30, Math.round(s.x1 || 0)));
-          s.y1 = Math.max(0, Math.min(20, Math.round(s.y1 || 0)));
-          s.z1 = Math.max(-4, Math.min(30, Math.round(s.z1 || 0)));
-          s.x2 = Math.max(s.x1, Math.min(30, Math.round(s.x2 || s.x1)));
-          s.y2 = Math.max(s.y1, Math.min(20, Math.round(s.y2 || s.y1)));
-          s.z2 = Math.max(s.z1, Math.min(30, Math.round(s.z2 || s.z1)));
+          s.x1 = Math.max(-48, Math.min(48, Math.round(s.x1 || 0)));
+          s.y1 = Math.max(0, Math.min(24, Math.round(s.y1 || 0)));
+          s.z1 = Math.max(-48, Math.min(48, Math.round(s.z1 || 0)));
+          s.x2 = Math.max(s.x1, Math.min(48, Math.round(s.x2 || s.x1)));
+          s.y2 = Math.max(s.y1, Math.min(24, Math.round(s.y2 || s.y1)));
+          s.z2 = Math.max(s.z1, Math.min(48, Math.round(s.z2 || s.z1)));
           if (validBlocks.indexOf(s.block) < 0) s.block = 'stone';
           return true;
         });
-        // Budget the total block count. The coordinate clamps above still allow one
-        // structure of 35 x 21 x 35, and nothing bounded how many structures a model
-        // could emit — the engine caps it now, but truncating mid-build leaves a
-        // half-drawn world the NPC questions then ask about. Drop whole structures
-        // that don't fit instead, largest-cost-last, so what remains is complete.
-        var groundCost = (function () {
-          var g = lesson.ground;
-          return (Math.abs(g.xMax - g.xMin) + 1) * (Math.abs(g.zMax - g.zMin) + 1);
-        })();
-        var budget = MAX_BLOCKS - Math.min(groundCost, MAX_BLOCKS);
-        var dropped = 0;
-        lesson.structures = lesson.structures.filter(function (s) {
-          var cost = (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1);
-          if (cost > budget) { dropped++; return false; }
-          budget -= cost;
-          return true;
-        });
-        if (dropped && addToast) {
-          addToast('⚠️ Dropped ' + dropped + ' structure(s) that exceeded the ' + MAX_BLOCKS + '-block limit', 'info');
-        }
+        // Ground is terrain, not part of the interactive authored-block budget.
+        // Reject the whole lesson rather than remove a structure still referenced by
+        // a question. The staged generator repairs this before reaching the loader.
+        var authoredCost = lesson.structures.reduce(function(total, s) {
+          if (s.measurementLayer === 'ground') {
+            if (s.y1 !== 0 || s.y2 !== 0) throw new Error('Ground overlays must be flat at y=0.');
+            return total;
+          }
+          return total + (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1);
+        }, 0);
+        if (authoredCost > 900) throw new Error('Lesson uses ' + authoredCost + ' authored blocks; the limit is 900 so students have room to build. Reduce structure dimensions and update related questions.');
         // Validate NPCs
         lesson.npcs = lesson.npcs.filter(function(n) {
           if (!n || !n.name) return false;
-          n.position = Array.isArray(n.position) && n.position.length >= 3 ? n.position.map(function(v) { return Math.max(-4, Math.min(30, Math.round(v || 0))); }) : [5, 2, 5];
+          n.position = Array.isArray(n.position) && n.position.length >= 3 ? n.position.map(function(v) { return Math.max(-48, Math.min(48, Math.round(v || 0))); }) : [5, 2, 5];
           n.color = typeof n.color === 'number' ? n.color : 8048861;
           n.dialogue = n.dialogue || 'Hello!';
           // Optional speech fields. Absent or 'follow-current' means inherit the
@@ -8674,7 +12871,7 @@
         if (eng && lesson && lesson.structures.length > 0) {
           eng.loadLesson(lesson);
           saveToMyLessons(lesson);
-          upd({ lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, activeLesson: 'ai_generated' });
+          upd({ lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Lesson ready. Saved to My Lessons.', activeLesson: 'ai_generated' });
           if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (lesson.title || 'New World') + ' (' + lesson.npcs.length + ' NPCs, ' + lesson.structures.length + ' structures, saved to My Lessons)', 'success');
           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'AI lesson generated');
         } else {
@@ -8685,21 +12882,8 @@
 
       // ── Refine existing lesson with AI ──
       var refineLesson = function() {
-        if (!callGemini || !aiRefinePrompt.trim() || !lastGeneratedLesson) return;
-        upd('aiGenerating', true);
-        var prompt = AI_REFINE_PROMPT
-          .replace('{LESSON_JSON}', JSON.stringify(lastGeneratedLesson, null, 2))
-          .replace('{REFINEMENT}', aiRefinePrompt.trim());
-        callGemini(prompt, true).then(function(result) {
-          try {
-            var lesson = parseAiJson(result);
-            finishGeneration(lesson);
-            if (addToast) addToast('\u2728 Lesson refined!', 'success');
-          } catch(e) {
-            if (addToast) addToast('Refine failed: ' + e.message, 'error');
-            upd('aiGenerating', false);
-          }
-        }).catch(function() { upd('aiGenerating', false); });
+        if (!aiRefinePrompt.trim() || !lastGeneratedLesson) return;
+        return beginWorldGeneration(lastGeneratedLesson, aiRefinePrompt.trim());
       };
 
       var engine = window[engineKey];
@@ -8823,7 +13007,7 @@
       // Expose current React state to the engine so the compass rAF loop reads live data
       if (engine) {
         engine.openGeometryHome = openGeometryHome;
-        engine.geometryHomeLessons = Object.keys(SAMPLE_LESSONS).map(function(id){var l=SAMPLE_LESSONS[id];return {id:id,title:l.title,description:l.description,objectives:l.objectives || []};}).concat(getMyLessons().map(function(l){return {id:l._id,title:l.title || 'Saved lesson',description:l.description || '',objectives:l.objectives || []};}));
+        engine.geometryHomeLessons = Object.keys(SAMPLE_LESSONS).map(function(id){var l=SAMPLE_LESSONS[id];return {id:id,title:l.title,description:l.description,objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme};}).concat(getMyLessons().map(function(l){return {id:l._id,title:l.title || 'Saved lesson',description:l.description || '',objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme};}));
         engine.startHomeLesson = function(id){
           if(!engine.geometryHomeLessons.some(function(l){return l.id===id;}))return false;
           loadLessonByKey(id);
@@ -8833,12 +13017,13 @@
         engine._answeredRef = answeredNpcs;
         engine._worldActive = worldActive;
         engine._setPointerLocked = setPointerLocked;
+         engine._setViewPreset = setViewPreset;
         // Modal flags bridge: the keydown handler was attached once during initEngine
         // and its closure captured these as first-render primitives. Mirror them onto
         // the engine on every React render so Esc/Shift+Esc always see current state.
         engine._modalState = {
           showNpcDialog: showNpcDialog, showHelp: showHelp, showGrowthNudge: showGrowthNudge,
-          showGameSettings: showGameSettings, showPredictionPanel: showPredictionPanel, objectivesOpen: objectivesOpen, hudPanel: hudPanel,
+          showGameSettings: showGameSettings, showPredictionPanel: showPredictionPanel, objectivesOpen: objectivesOpen, showActivityGuide:!!(objectivesOpen && currentLesson.activities && currentLesson.activities.length), hudPanel: hudPanel,
           showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
           showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
           showGeometryHome: showGeometryHome, showLessonIntro: showLessonIntro, showReflection: showReflection,
@@ -8861,8 +13046,10 @@
         engine._playerNameRef = playerName;
       }
 
+      var hasLessonActivities=!!(currentLesson && Array.isArray(currentLesson.activities) && currentLesson.activities.length);
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
+        { flag: !!(objectivesOpen && currentLesson.activities && currentLesson.activities.length), key:'objectivesOpen',label:'Activity guide',emoji:'◇' },
         { flag: showGeometryHome, key: 'showGeometryHome', label: 'Geometry World home', emoji: '◇' },
         { flag: showGameSettings, key: 'showGameSettings', label: 'Game Settings', emoji: '\u2699\uFE0F' },
         { flag: showNpcDialog,    key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
@@ -8935,7 +13122,7 @@
       return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
-        el('header', { className: 'gw-toolbar', 'aria-label': __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
+        el('header', { className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
           el('div', { className: 'gw-brand-lockup' },
             el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
             el('div', { className: 'gw-brand-copy' },
@@ -8943,11 +13130,11 @@
               el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
             )
           ),
-          el('div', { className: 'gw-status-cluster', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu') },
+          el('div', { className: 'gw-status-cluster', 'aria-label': currentLesson.sandbox ? 'Build status and tools' : __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu') },
             engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: '#cbd5e1' } },
               '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
             ),
-            el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_lesson_progress_of_questions_complete', 'Lesson progress: {value1} of {value2} questions complete'), { value1: score, value2: totalQ }), style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 800 } },
+            totalQ > 0 && el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_lesson_progress_of_questions_complete', 'Lesson progress: {value1} of {value2} questions complete'), { value1: score, value2: totalQ }), style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 800 } },
               (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
             ),
             Object.keys(earnedBadges).length > 0 && el('div', { className: 'gw-badge-strip', role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned', title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ') },
@@ -8961,12 +13148,12 @@
               'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
               onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); announceToSR(next ? 'Volume estimate drawer opened.' : 'Volume estimate drawer closed.'); }
             }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
-            worldActive && el('button', {
+            worldActive && (!currentLesson.sandbox || hasLessonActivities) && el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
-              'aria-label': objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives',
+              'aria-label': hasLessonActivities ? (objectivesOpen?'Close activity guide':'Open activity guide') : (objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives'),
               onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
-            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, 'Objectives')),
+            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, hasLessonActivities?'Activities':'Objectives')),
             el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
@@ -8995,12 +13182,12 @@
             'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
             onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); }
           }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
-          worldActive && el('button', {
+          worldActive && (!currentLesson.sandbox || hasLessonActivities) && el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
-            'aria-label': objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives',
+            'aria-label': hasLessonActivities ? (objectivesOpen?'Close activity guide':'Open activity guide') : (objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives'),
             onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
-          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, 'Objectives')),
+          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, hasLessonActivities?'Activities':'Objectives')),
           el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
@@ -9498,7 +13685,8 @@
               el('option', { value: 'volumeEstimation' }, '\uD83C\uDFAF Volume Estimation'),
               el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder'),
               el('option', { value: 'base10Blocks' }, '\uD83E\uDDF1 Base 10 Place Value'),
-              el('option', { value: 'fluencyMaze' }, '\uD83C\uDFAF Volume Fluency Maze')
+              el('option', { value: 'fluencyMaze' }, '\uD83C\uDFAF Volume Fluency Maze'),
+              el('option', { value: 'geometryHarbor' }, '\u2693 Geometry Harbor Expedition')
             ),
             getMyLessons().length > 0 && el('optgroup', { label: '\uD83E\uDD16 AI-Generated (' + getMyLessons().length + ')' },
               getMyLessons().slice(0, 5).map(function(ml) {
@@ -9604,7 +13792,7 @@
               var eng = window[engineKey];
               if (!eng) return;
               var blockKeys = Object.keys(eng.blocks).filter(function(k) {
-                var m = eng.blocks[k]; return m && m.userData.gridPos && m.userData.blockType !== 'grass';
+                var m = eng.blocks[k]; return m && m.userData.gridPos && m.userData._measurementLayer !== 'ground' && m.userData.blockType !== 'grass';
               });
               if (blockKeys.length === 0) { if (addToast) addToast('No structures to export (ground blocks are excluded)', 'error'); return; }
 
@@ -9907,29 +14095,28 @@
               el('option', { value: '5' }, 'Gr 5'), el('option', { value: '6' }, 'Gr 6'),
               el('option', { value: '7' }, 'Gr 7'), el('option', { value: '8' }, 'Gr 8')
             ),
-            // Depth (API calls) selector
-            el('select', {
-              'aria-label': __alloT('stem.geometryworld.generation_depth_number_of_ai_passes', 'Generation depth: number of AI passes'), value: String(aiPassCount),
-              onChange: function(ev) { upd('aiPassCount', parseInt(ev.target.value)); },
-              title: __alloT('stem.geometryworld.1_quick_1_call_2_refined_2_calls_3_ful', '1=Quick (1 call), 2=Refined (2 calls), 3=Full scaffolding (3 calls)'),
-              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
-            },
-              el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
+            // Lesson depth changes the student journey and estimated lesson time.
+            el('div', { style: { flexBasis: '100%', padding: '10px 0', display: 'grid', gap: '6px' } },
+              el('label', { htmlFor: 'gw-lesson-depth', style: { fontSize: '12px', fontWeight: 700 } }, 'Lesson depth · ' + aiDepthProfile.label + ' · ' + aiDepthProfile.minutes),
+              el('input', { id: 'gw-lesson-depth', type: 'range', min: 1, max: 3, step: 1, value: aiLessonDepth, disabled: aiGenerating,
+                'aria-label': 'Lesson depth and estimated length', 'aria-valuetext': aiDepthProfile.label + ', ' + aiDepthProfile.minutes + ', ' + aiDepthProfile.activities + ' activities',
+                'aria-describedby': 'gw-lesson-depth-help', onChange: function(ev) { upd('aiLessonDepth', Number(ev.target.value)); },
+                style: { width: '100%', minHeight: '44px', accentColor: '#a78bfa', margin: 0 } }),
+              el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                el('span', null, 'Quick'), el('span', null, 'Guided'), el('span', null, 'Expedition')),
+              el('p', { id: 'gw-lesson-depth-help', style: { margin: 0, fontSize: '11px', lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                aiDepthProfile.detail + ' Longer lessons take more time to generate. Time estimates are for students; generation includes planning and checks.')
             ),
-            // Generate button (shows pass progress with descriptive labels)
-            (function() {
-              var passLabels = ['', 'Drafting', 'Refining', 'Adding hints'];
-              var buttonLabel = aiGenerating
-                ? '\u23F3 ' + (passLabels[aiCurrentPass] || 'Working') + '... ' + aiCurrentPass + '/' + aiPassCount
-                : '\u2728 Generate';
-              return el('button', {
-                onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
-                title: aiGenerating
-                  ? 'Pass ' + aiCurrentPass + ' of ' + aiPassCount + ': ' + (aiCurrentPass === 1 ? 'generating initial lesson JSON' : aiCurrentPass === 2 ? 'improving structures + dialogue' : 'adding scaffolded follow-up questions')
-                  : 'Generate an AI lesson from your prompt',
-                style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '120px' }
-              }, buttonLabel);
-            })(),
+            el('button', {
+              onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
+              title: 'Plan and generate a connected lesson with ' + aiDepthProfile.activities + ' activities',
+              style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minHeight: '44px' }
+            }, aiGenerating ? 'Creating lesson…' : 'Generate ' + aiDepthProfile.label.toLowerCase() + ' lesson'),
+            aiGenerating && el('button', { type: 'button', onClick: cancelWorldGeneration,
+              title: 'Keep your current world. A request already sent may finish, but its result will not be applied.',
+              style: { minHeight: '44px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #64748b', color: 'var(--allo-stem-text, #e2e8f0)', background: 'var(--allo-stem-panel, #1e293b)', cursor: 'pointer' }
+            }, 'Cancel generation'),
+            d.aiGenerationStatus && el('p', { role: 'status', 'aria-live': 'polite', style: { flexBasis: '100%', fontSize: '11px', margin: '2px 0 6px', lineHeight: 1.5 } }, d.aiGenerationStatus),
             // Surprise Me (grade-aware topics)
             el('button', {
               onClick: function() {
@@ -10056,84 +14243,15 @@
                 requestAnimationFrame(render);
                 return;
               }
-              ctx.clearRect(0, 0, W, H);
-              // Background pill
-              ctx.fillStyle = 'rgba(15,23,42,0.82)';
-              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0, 0, W, H, 16); ctx.fill(); }
-              else ctx.fillRect(0, 0, W, H);
-              ctx.strokeStyle = 'rgba(124,58,237,0.3)'; ctx.lineWidth = 1;
-              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0.5, 0.5, W - 1, H - 1, 16); ctx.stroke(); }
-              // Read camera yaw from quaternion (YXZ order gives yaw directly)
-              var euler = new window.THREE.Euler().setFromQuaternion(engine.camera.quaternion, 'YXZ');
-              var camYaw = euler.y;
-              var halfFov = Math.PI; // show full 180° ahead and behind (180° = ±π/2)
-              var answered = engine._answeredRef || {};
-              // Draw center forward tick
-              ctx.fillStyle = '#fbbf24';
-              ctx.beginPath();
-              ctx.moveTo(W / 2, 5); ctx.lineTo(W / 2 - 4, 11); ctx.lineTo(W / 2 + 4, 11);
-              ctx.closePath(); ctx.fill();
-              // North tick. Without it the strip is blank whenever every character is
-              // behind you, which is exactly when a lost player looks at it. World
-              // north is -Z, the same convention the pips below use.
-              var relNorth = -camYaw;
-              while (relNorth > Math.PI) relNorth -= 2 * Math.PI;
-              while (relNorth < -Math.PI) relNorth += 2 * Math.PI;
-              if (Math.abs(relNorth) <= halfFov / 2) {
-                var northX = W / 2 + (relNorth / (halfFov / 2)) * (W / 2 - 12);
-                ctx.strokeStyle = 'rgba(226,232,240,0.75)'; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.moveTo(northX, 6); ctx.lineTo(northX, 12); ctx.stroke();
-                ctx.fillStyle = 'rgba(226,232,240,0.9)'; ctx.font = 'bold 8px system-ui';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-                ctx.fillText('N', northX, 12);
-              }
-              // Draw pips for each NPC
-              engine.npcs.forEach(function(npc, i) {
-                if (!npc || !npc.body) return;
-                var dx = npc.body.position.x - engine.camera.position.x;
-                var dz = npc.body.position.z - engine.camera.position.z;
-                var dist = Math.sqrt(dx * dx + dz * dz);
-                // World-frame angle: atan2(-dx, -dz) gives 0 when NPC is directly ahead (−Z forward)
-                var worldAngle = Math.atan2(dx, -dz);
-                var relAngle = worldAngle - camYaw;
-                while (relAngle > Math.PI) relAngle -= 2 * Math.PI;
-                while (relAngle < -Math.PI) relAngle += 2 * Math.PI;
-                // Only show pips within ±90° field of compass
-                if (Math.abs(relAngle) > halfFov / 2) {
-                  // Off-compass: draw a small edge arrow
-                  var edgeX = relAngle > 0 ? W - 10 : 10;
-                  ctx.fillStyle = answered[i] ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.6)';
-                  ctx.beginPath();
-                  if (relAngle > 0) { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX - 6, 12); ctx.lineTo(edgeX - 6, 20); }
-                  else { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX + 6, 12); ctx.lineTo(edgeX + 6, 20); }
-                  ctx.closePath(); ctx.fill();
-                  return;
-                }
-                var pipX = W / 2 + (relAngle / (halfFov / 2)) * (W / 2 - 12);
-                var isAnswered = !!answered[i];
-                // Pip — circle for answered (done, closed), square for unanswered (open task)
-                // Shape + color + glyph = triple-coded for color-blind accessibility
-                ctx.fillStyle = isAnswered ? '#22c55e' : '#ef4444';
-                if (isAnswered) {
-                  ctx.beginPath(); ctx.arc(pipX, 18, 6, 0, 6.28); ctx.fill();
-                } else {
-                  ctx.fillRect(pipX - 6, 12, 12, 12); // square = "task open"
-                }
-                // Inner glyph (third visual channel)
-                ctx.fillStyle = '#fff'; ctx.font = 'bold 9px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(isAnswered ? '✓' : '?', pipX, 18);
-                // Distance dot size hints (closer = bigger) — subtle
-                if (dist < 8) {
-                  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5;
-                  ctx.beginPath(); ctx.arc(pipX, 18, 8, 0, 6.28); ctx.stroke();
-                }
-              });
+              var trackedGuide = geometryPaintGuideCompass(ctx, W, H, engine, geometryGuideContrast(engine));
+              if (trackedGuide) cv.setAttribute('data-tracked-npc', trackedGuide);
+              else cv.removeAttribute('data-tracked-npc');
               requestAnimationFrame(render);
             }
             requestAnimationFrame(render);
           },
           style: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 5, pointerEvents: 'none', borderRadius: '16px' },
-          role: 'img', 'aria-label': __alloT('stem.geometryworld.npc_compass_strip_showing_relative_dir', 'NPC compass strip showing relative direction to each NPC from camera facing')
+          className: 'gw-guide-compass', role: 'img', 'aria-label': __alloT('stem.geometryworld.npc_compass_strip_showing_relative_dir', 'NPC compass strip showing relative direction to each NPC from camera facing')
         })
         ,
 
@@ -10201,7 +14319,7 @@
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, 'Scroll'), 'Cycle blocks',
             el('span', { style: { color: '#c4b5fd', fontWeight: 700 } }, '1-9,0'), 'Select block',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Z'), 'Undo',
-            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y'), 'Redo',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y / Ctrl+Shift+Z'), 'Redo',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '2\u00d7Space'), 'Toggle fly (or F key)',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
@@ -10211,7 +14329,7 @@
             el('span', { style: { color: '#34d399', fontWeight: 600 } }, 'N'), 'Net unfolding (surface area)',
             el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'C'), 'Toggle coord SR announcements',
             el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
-            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'L'), 'Say where characters are',
+            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'L'), 'Directions to tracked or nearby guides',
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
           ),
@@ -10428,7 +14546,7 @@
           )
         ),
         // Objectives panel (left side) — glass style with progress bar
-        objectivesOpen && el('section', { id: 'gw-objective-panel', className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
+        objectivesOpen && !hasLessonActivities && el('section', { id: 'gw-objective-panel', className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
           el('div', { className: 'gw-objective-header' },
             el('h2', { id: 'gw-objective-title', className: 'gw-objective-title' }, '\uD83D\uDCCB Objectives'),
             totalQ > 0 && el('div', { className: 'gw-objective-count' }, score + '/' + totalQ)
@@ -10773,7 +14891,7 @@
             type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action'), 'data-gw-utility':'redo',
             style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.redo) engine.redo(); },
-            title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
+            title: 'Redo (Ctrl+Y or Ctrl+Shift+Z) — ' + engine._redoStack.length + ' actions'
           }, renderWorkspaceAction(el,'redo','Redo',engine._redoStack.length)),
           // Home (return to spawn)
           worldActive && el('button', {
@@ -10904,10 +15022,16 @@
         engine && engine._inLava && el('div', { className: 'gw-environment-tint gw-environment-tint--lava' },
           el('div', { className: 'gw-environment-warning', role: 'alert', 'aria-live': 'assertive', 'aria-atomic': 'true' }, '\uD83D\uDD25 In lava \u2014 move to safety')
         ),
-        worldActive && !d.showcaseActive && openModals.length === 0 && d.placementHint && el('div', {
+        el('div',{className:'gw-feedback-stack'},
+        worldActive && !d.showcaseActive && openModals.length === 0 && (!d.drawMode || d.drawMode==='single') && d.placementHint && el('div', {
           className:'gw-placement-hint','data-allowed':d.placementHint.allowed ? 'true':'false',
+          'data-placement-state':d.placementHint.code === 'no_target' ? 'aim' : d.placementHint.allowed ? 'ready' : 'blocked',
           'data-placement-code':d.placementHint.code,role:'status','aria-live':'polite','aria-atomic':'true'
-        },el('span',{className:'gw-placement-hint-mark','aria-hidden':'true'},d.placementHint.allowed ? '\u2713':'!'),el('span',null,d.placementHint.reason),
+        },el('span',{className:'gw-placement-hint-mark','aria-hidden':'true'},d.placementHint.code === 'no_target'
+          ? el('svg',{viewBox:'0 0 20 20',width:14,height:14,fill:'none',stroke:'currentColor',strokeWidth:1.5,focusable:'false'},el('path',{d:'M10 2v4m0 8v4M2 10h4m8 0h4'}),el('circle',{cx:10,cy:10,r:4}))
+          : d.placementHint.allowed ? '\u2713':'!'),
+          el('span',{className:'gw-placement-text'},d.placementHint.code === 'no_target' ? 'Look down at the nearby ground or a block face.' : d.placementHint.reason),
+          d.placementHint.allowed && el('span',{className:'gw-placement-shortcut'},isMobile && touchMode ? 'Tap Place' : el(React.Fragment,null,el('kbd',null,'B'),' to place')),
           d.placementHint.aim && el('button',{type:'button',className:'gw-placement-aim gw-focusable','aria-label':__alloT('stem.geometryworld.aim_at_build_area','Aim at the build area'),onClick:function(){var eng=window[engineKey];if(eng && eng.aimAtBuildArea)eng.aimAtBuildArea();focusWorldSurface();}},__alloT('stem.geometryworld.aim_at_build_area_short','Aim at build area'))),
         // ── Action feedback toast (center-bottom, fades in/out) ──
         actionFeedback && el('div', { className: 'gw-action-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
@@ -10917,7 +15041,8 @@
             padding: '7px 14px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'normal',
             width: 'max-content', maxWidth: isMobile ? 'calc(100vw - 168px)' : 'min(680px, calc(100vw - 40px))', textAlign: 'center', lineHeight: 1.35, overflowWrap: 'anywhere',
             boxShadow: '0 8px 24px rgba(2,6,23,0.35)', animation: 'fadeIn 0.2s ease-out' }
-        }, actionFeedback),
+        }, actionFeedback)
+        ),
         // ── Measurement history panel (bottom-left, above position HUD) ──
         hudPanel === 'history' && measureHistory.length > 0 && el('section', { id: 'gw-history-panel', className: 'gw-history-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_history', 'Measurement history') },
           el('div', { className: 'gw-history-title gw-hud-panel-heading' }, el('span', null, '\uD83D\uDCCF MEASUREMENTS \u00b7 ' + completedMeasurements.length + '/' + measureHistory.length + ' COMPLETE'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_measurement_history', 'Hide measurement history'), onClick: function() { closeHudPanel('Measurements'); } }, '\u00D7')),
@@ -11033,7 +15158,7 @@
           ),
           sceneOverview.npcs.length > 0 && el('section', { 'aria-labelledby': 'gw-scene-guides-title', style: { marginTop: 12 } },
             el('h4', { id: 'gw-scene-guides-title', style: { margin: '0 0 6px', color: '#99f6e4', fontSize: 10, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Guides · ' + sceneOverview.npcs.length),
-            el('ul', { style: { display: 'grid', gap: 4, margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, sceneOverview.npcs.map(function(npc) { return el('li', { key: npc.index }, npc.name + ' — ' + npc.prompt); }))
+            el('ul', { style: { display: 'grid', gap: 4, margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, sceneOverview.npcs.map(function(npc) { return el('li', { key: npc.index }, npc.name + ' — ' + npc.prompt + (engine._activityWaypoint && engine._activityWaypoint.npcName===npc.name?' · Tracked activity':'')); }))
           ),
           sceneOverview.camera && el('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 12, paddingTop: 8, borderTop: '1px solid rgba(153,246,228,0.18)', color: '#a7f3d0', fontFamily: 'monospace', fontSize: 9 } }, 'Camera X' + sceneOverview.camera.x + ' Y' + sceneOverview.camera.y + ' Z' + sceneOverview.camera.z + (sceneOverview.target ? ' · Target ' + sceneOverview.target.type + ' X' + sceneOverview.target.x + ' Y' + sceneOverview.target.y + ' Z' + sceneOverview.target.z : ''))
         ),        // ── Guided explore tour overlay ──
@@ -11064,9 +15189,9 @@
             ),
             el('div', { id: 'gw-tutorial-instruction', className: 'gw-tutorial-instruction' },
               tutorialStep === 0 ? (isMobile ? '\uD83D\uDC46 Swipe right side to look. Drag left side to move.' : '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.') :
-              tutorialStep === 1 ? (isMobile ? '\uD83D\uDC64 Walk near a purple character and tap the \uD83D\uDDE3\uFE0F button.' : '\uD83D\uDC64 Walk up to a purple character and press E to talk.') :
-              tutorialStep === 2 ? (isMobile ? '\uD83D\uDCCF Point at the blue blocks and tap the \uD83D\uDCCF button.' : '\uD83D\uDCCF Point at the blue blocks and press M to measure.') :
-              (isMobile ? '\uD83E\uDDF1 Point at a block and tap the \uD83E\uDDF1 button to place!' : '\uD83E\uDDF1 Right-click on any block face to place a new block!')
+              tutorialStep === 1 ? (isMobile ? '\uD83D\uDC64 Move close to a guide, then tap Talk.' : '\uD83D\uDC64 Move close to a guide and press E to talk. Escape frees your cursor.') :
+              tutorialStep === 2 ? (isMobile ? '\uD83D\uDCCF Aim at a teaching model and tap Measure.' : '\uD83D\uDCCF Aim at a teaching model and press M to measure.') :
+              (isMobile ? '\uD83E\uDDF1 Aim at nearby ground or a block face, then tap Place.' : '\uD83E\uDDF1 Aim at nearby ground or a block face, then press B or right-click to place.')
             ),
             // Semantic step progress
             el('div', { className: 'gw-tutorial-progress', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_tutorial_progress', 'Tutorial progress'), 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': tutorialStep + 1 },
@@ -11104,26 +15229,6 @@
         }, pointerLocked
           ? [el('kbd', { key: 'k', className: 'gw-key-badge', 'aria-hidden': 'true' }, 'Esc'), el('span', { key: 't' }, __alloT('stem.geometryworld.hint_free_cursor', 'Free cursor'))]
           : [el('span', { key: 't' }, __alloT('stem.geometryworld.hint_click_to_look', 'Click the world to look'))]),
-        // Crosshair — interactive (changes color based on target)
-        (function() {
-          var ct = engine ? (engine._crosshairTarget || 'none') : 'none';
-          var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)';
-          // One-pixel white arms at half alpha disappear over bright grass, which is
-          // most of this world. A dark ring around each arm reads on any background,
-          // bright or dark, which a soft drop shadow alone does not.
-          var chRing = '0 0 0 1px rgba(2,6,23,0.6)';
-          var chGlow = (ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)') + ', ' + chRing;
-          var chSize = ct === 'npc_question' ? '5px' : ct === 'npc' ? '4px' : '3px';
-          return el('div', { className: 'gw-crosshair', 'data-target': ct, 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
-            el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: chSize, height: chSize, borderRadius: '50%', background: chColor, boxShadow: chGlow, transition: 'all 0.15s ease' } }),
-            el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
-            el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
-            el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
-            el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
-            // Target label hint
-            ct === 'npc_question' && el('div', { className: 'gw-target-hint', style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, isMobile ? 'Tap Talk' : 'Press E')
-          );
-        })(),
         // ── Lesson Intro Screen ──
         showLessonIntro && el('div', {
           role: 'dialog', className: 'gw-dialog gw-dialog--intro', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_introduction', 'Lesson introduction'), 'aria-labelledby': 'gw-intro-title', 'aria-describedby': 'gw-intro-description', tabIndex: -1, ref: gwDialogRef,
@@ -11275,13 +15380,13 @@
           })()
         ),
         // ── Block count warning ──
-        engine && Object.keys(engine.blocks).length > MAX_BLOCKS * 0.8 && el('div', {
+        engine && (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) > MAX_BLOCKS * 0.8 && el('div', {
           style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
-            background: Object.keys(engine.blocks).length >= MAX_BLOCKS ? 'rgba(239,68,68,0.9)' : 'rgba(251,191,36,0.85)',
+            background: (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) >= MAX_BLOCKS ? 'rgba(239,68,68,0.9)' : 'rgba(251,191,36,0.85)',
             borderRadius: '8px', padding: '4px 14px', fontSize: '11px', color: '#fff', fontWeight: 700 }
-        }, Object.keys(engine.blocks).length >= MAX_BLOCKS
+        }, (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) >= MAX_BLOCKS
           ? '\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + ') \u2014 remove some blocks for performance'
-          : '\u26A0\uFE0F ' + Object.keys(engine.blocks).length + '/' + MAX_BLOCKS + ' blocks \u2014 approaching limit'),
+          : '\u26A0\uFE0F ' + (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) + '/' + MAX_BLOCKS + ' blocks \u2014 approaching limit'),
         // NPC Dialog overlay
         showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {
           var npc = engine.npcs[dialogNpcIdx];
@@ -11898,7 +16003,7 @@
               // passes keystrokes through to the tool instead of the reader's
               // browse mode, which is exactly what the movement keys need.
               role: 'application',
-              'aria-label': (currentLesson.title || 'Geometry World') + ' — interactive 3D world. ' + score + ' of ' + totalQ + ' questions answered.',
+              'aria-label': (currentLesson.title || 'Geometry World') + ' — interactive 3D world. ' + (totalQ > 0 ? score + ' of ' + totalQ + ' questions answered.' : currentLesson.sandbox ? 'Build, select, and explore your creation.' : 'Explore this world.'),
               'aria-describedby': 'geoworld-instructions',
               tabIndex: 0,
               // minHeight/minWidth 0: a flex item defaults to min-height:auto, which
@@ -11908,13 +16013,35 @@
               className: 'gw-viewport',
               style: { flex: 1, position: 'relative', minHeight: 0, minWidth: 0, overflow: 'hidden', background: 'linear-gradient(180deg,#0f172a,#020617)' }
             },
+              // Center the visible aim mark in the renderer viewport so it agrees
+              // with camera rays at NDC (0, 0), regardless of toolbar height.
+              // Crosshair — interactive (changes color based on target)
+              (function() {
+                var ct = engine ? (engine._crosshairTarget || 'none') : 'none';
+                var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)';
+                // One-pixel white arms at half alpha disappear over bright grass, which is
+                // most of this world. A dark ring around each arm reads on any background,
+                // bright or dark, which a soft drop shadow alone does not.
+                var chRing = '0 0 0 1px rgba(2,6,23,0.6)';
+                var chGlow = (ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)') + ', ' + chRing;
+                var chSize = ct === 'npc_question' ? '5px' : ct === 'npc' ? '4px' : '3px';
+                return el('div', { className: 'gw-crosshair', 'data-target': ct, 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
+                  el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: chSize, height: chSize, borderRadius: '50%', background: chColor, boxShadow: chGlow, transition: 'all 0.15s ease' } }),
+                  el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+                  el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+                  el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+                  el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+                  // Target label hint
+                  ct === 'npc_question' && el('div', { className: 'gw-target-hint', style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, isMobile ? 'Tap Talk' : 'Press E')
+                );
+              })(),
               // Keyboard contract, announced on focus. Previously the only hint was
               // "Click to enter" in the label — mouse-only guidance on a surface
               // that is fully keyboard-drivable.
               el('div', {
                 id: 'geoworld-instructions',
                 style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' }
-              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L says where the characters are and who still has a question, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
+              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
               isMobile && el('button', {
                 type: 'button',
                 className: 'gw-viewport-control gw-viewport-control--touch gw-focusable',

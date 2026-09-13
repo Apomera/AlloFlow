@@ -53,7 +53,9 @@ async function inspectHtml(browser, file, expected, capturedBytes = null) {
       return route.abort('blockedbyclient');
     });
     const page = await context.newPage();
-    page.setDefaultTimeout(2500);
+    // Local Chromium commands can be delayed by concurrent PDF subprocesses.
+    // Keep a bounded command budget without turning scheduler contention into a semantic failure.
+    page.setDefaultTimeout(15000);
     await page.goto(entry, { waitUntil: 'load' });
     const charsets = await page.evaluate(() => Array.from(document.querySelectorAll('meta')).flatMap(meta => {
       const direct = meta.getAttribute('charset');

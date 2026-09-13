@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "plate_tectonics_grade6",
+    "key": "ridge",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Layered paper and mineral-pencil landscapes. An oblique underwater landscape of a long mid-ocean mountain ridge with a central rift valley, blue water above and basalt rocks. No explosive volcano, no molten ocean. Focus on ridge topography. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-ridge.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-2956404a-1200-44b1-88f7-a2ad0ade073b.png",
+    "alt": "An underwater mountain ridge has a long central rift between rough basalt walls.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "plate_tectonics_grade6",
+    "key": "mountains",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Layered paper and mineral-pencil landscapes. A wide high continental collision mountain range inspired by the Himalayas, folded rocky peaks with sparse snow and layered foothills. No volcano cones or erupting lava. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-mountains.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-acfc4be6-31d2-44fb-b5aa-08ba9394bf16.png",
+    "alt": "Layered foothills rise to a rugged range of snow-tipped mountain peaks.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "plate_tectonics_grade6",
+    "key": "rift",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Layered paper and mineral-pencil landscapes. An elevated view of a long continental rift valley, with steep fault escarpments on either side and a broad lowered central valley, small lakes and grassland. Focus on landforms, no arrows. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-rift.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-61eb775d-d261-406e-aea0-373093e2a708.png",
+    "alt": "Steep escarpments border a broad lowered valley with grassland and lakes.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "plate_tectonics_grade6",
+    "key": "fossil",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Layered paper and mineral-pencil landscapes. A single fern frond fossil impression preserved in a flat tan sedimentary rock slab. Clear branching leaflets pressed into stone. A teaching specimen, not a living fern. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-fossil.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-eea85104-3f92-48b5-8b23-a3ec06a7ace9.png",
+    "alt": "A branching fern-frond impression is preserved in a tan rock slab.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "plate_tectonics_grade6",
+    "key": "magma",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Layered paper and mineral-pencil landscapes. A conceptual geological cutaway of a volcano, a small orange magma reservoir BELOW the rocky ground connected by a narrow conduit toward the summit. Surrounding rock is solid brown. No eruption, no labels. Clearly a schematic cutaway, no planetwide molten mantle. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-magma.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-dbd65d2e-6da2-47a3-b87d-ddba6d9c7bb4.png",
+    "alt": "A volcano cutaway shows an orange underground reservoir and narrow conduit surrounded by solid rock.",
+    "reviewedAt": "2026-09-12"
+  }
+]

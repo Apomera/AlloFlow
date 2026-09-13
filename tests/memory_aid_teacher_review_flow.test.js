@@ -463,10 +463,11 @@ describe('generation and export contracts', () => {
 
   it('builds visuals through the module prompt with a pool of 2, skipping student-authored cards, and hook facts as a plain-text search call', () => {
     expect(branch).toContain("memoryAidRules.visualPrompt(card, visualStyleText, card.visualPrompt)");
-    expect(branch).toContain("cards.filter(card => card.mode !== 'student-authored')");
+    expect(branch).toContain("card.mode === 'student-authored' ? 'student'");
+    expect(branch).toContain("cards.filter(card => card.visualStatus === 'queued')");
     expect(branch).toContain('const VISUAL_POOL = 2;');
     expect(branch).toContain('hookResult = await callGemini(hookPrompt, false, true, null, hookQuery);');
-    expect(branch).toContain("memoryAidIncludeVisuals !== false");
+    expect(branch).toContain("visualSetting !== false");
     expect(branch).toContain("memoryAidIncludeHookFacts === true");
     expect(dispatcher).toContain('memoryAidReasoningRequired, memoryAidCount, memoryAidIncludeVisuals, memoryAidIncludeHookFacts,');
   });

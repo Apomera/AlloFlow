@@ -1749,13 +1749,13 @@ function buildAlloCommands(ctx, opts = {}) {
       c.handleToggleShowSocraticChat();
       return t("cmd.toggle_socratic_done", "Socratic chat toggled.");
     } },
-    { id: "zen_on", icon: "\u{1F9D8}", roles: "all", when: (c) => !c.zenActive, label: t("cmd.zen_on", "Enter zen mode"), aliases: ["zen", "zen mode", "quiet mode", "minimal"], hint: t("cmd.zen_on_hint", "Hide everything but the content"), run: (c) => {
+    { id: "zen_on", icon: "\u{1F9D8}", roles: "all", when: (c) => !c.zenActive, label: t("cmd.zen_on", "Enter focus view"), aliases: ["focus view", "enter focus view", "zen", "zen mode", "quiet mode", "minimal"], hint: t("cmd.zen_on_hint", "Hide the header and sidebar"), run: (c) => {
       c.zenOn();
-      return t("cmd.zen_on_done", "Zen mode on \u2014 press Ctrl+K and run \u201Cexit zen\u201D to come back.");
+      return t("cmd.zen_on_done", "Focus view is on. Choose Exit focus view or press Esc to return.");
     } },
-    { id: "zen_off", icon: "\u{1F519}", roles: "all", when: (c) => !!c.zenActive, label: t("cmd.zen_off", "Exit zen mode"), aliases: ["exit zen", "leave zen", "show interface"], hint: t("cmd.zen_off_hint", "Bring the interface back"), run: (c) => {
+    { id: "zen_off", icon: "\u{1F519}", roles: "all", when: (c) => !!c.zenActive, label: t("cmd.zen_off", "Exit focus view"), aliases: ["exit focus view", "leave focus view", "exit zen", "leave zen", "show interface"], hint: t("cmd.zen_off_hint", "Bring back the header and sidebar"), run: (c) => {
       c.zenOff();
-      return t("cmd.zen_off_done", "Zen mode off.");
+      return t("cmd.zen_off_done", "Focus view is off.");
     } },
     // ── Display & motion + report-a-problem (added 2026-06-13: palette parity) ──
     { id: "switch_theme", icon: "\u{1F3A8}", roles: "all", label: t("cmd.switch_theme", "Switch the theme (light / dark / high contrast)"), aliases: ["theme", "dark mode", "light mode", "high contrast", "contrast mode", "night mode"], hint: t("cmd.switch_theme_hint", "Cycle light \u2192 dark \u2192 high contrast"), run: (c) => {

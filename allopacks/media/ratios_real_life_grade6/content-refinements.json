@@ -1,0 +1,260 @@
+[
+  {
+    "resourceId": "rt-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nStores count on you not doing this math. The bigger box is not always the better deal, and today you learn the one move that settles it in about four seconds.\n\n1. Read **The Four-Second Trick**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Ratio Moves** chart open — it lists every move you need.\n4. Work the **Practice Problems**. Do the unit rate FIRST every time.\n5. Sort the cards in **Same Ratio or Not?**\n6. Take the quiz — question 5 is the one stores are counting on.\n7. Lock the ideas in with **Remember the Four-Second Trick** — study the example aid, then make one your own.\n8. Finish with **Decision: The Snack Stand Order** — use what you learned on a real problem, and mark every guess as a guess.\n\nHomework challenge: find two sizes of the same product at home and figure out which is actually the better buy. Bring the numbers. 🛒\n\nPicture panels: Compare amounts; Equivalent ratios; Unit prices; Scale and units. Text-free pictures have editable captions and image descriptions. Graph captions give axis ranges and grid steps; add editable labels before independent graph reading. Models use stated assumptions and limited domains. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nCompare unit prices using the stated quantities. Take the time you need and explain what each unit means.\n\n1. Read **Compare by the Unit**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Ratio Moves** chart open — it lists every move you need.\n4. Work the **Practice Problems**. Do the unit rate FIRST every time.\n5. Sort the cards in **Same Ratio or Not?**\n6. Take the quiz — question 5 compares two unit prices.\n7. Lock the ideas in with **Remember Unit Rates** — study the example aid, then make one your own.\n8. Finish with **Decision: The Snack Stand Order** — use what you learned on a real problem, and mark every guess as a guess.\n\nHomework challenge: find two sizes of the same product at home and figure out which is actually the better buy. Bring the numbers. 🛒\n\nPicture panels: Compare amounts; Equivalent ratios; Unit prices; Scale and units. Text-free pictures have editable captions and image descriptions. Graph captions give axis ranges and grid steps; add editable labels before independent graph reading. Models use stated assumptions and limited domains. Educator review is pending."
+  },
+  {
+    "resourceId": "rt-reading",
+    "path": "title",
+    "from": "The Four-Second Trick",
+    "to": "Compare by the Unit"
+  },
+  {
+    "resourceId": "rt-reading",
+    "path": "data",
+    "from": "## The Four-Second Trick\n\nTwo boxes of cereal sit on the shelf. The 12-ounce box costs $3.60. The 18-ounce box costs $5.76. Which one is the better deal?\n\nMost people grab the big one because bigger usually means cheaper per ounce. Most people are guessing. You are about to stop guessing.\n\nA **ratio** compares two amounts. Here it is dollars to ounces. Ratios can be written as 12 to 18, as 12:18, or as the fraction 12/18 — three notations for the same relationship.\n\nThe move that makes ratios useful is turning them into a **unit rate**: how much for exactly ONE of something. Divide the price by the number of ounces.\n\nBox A: $3.60 ÷ 12 = **$0.30 per ounce**.\nBox B: $5.76 ÷ 18 = **$0.32 per ounce**.\n\nThe smaller box is the better deal. The store is counting on you not checking. This happens constantly in real stores — bulk sizes are usually cheaper per unit, but not always, and \"usually\" is exactly the assumption that costs you money.\n\nUnit rates are everywhere once you look. Miles per hour is a unit rate: distance for one hour. Words per minute. Points per game. Price per ounce. Each one answers the same question — how much per ONE — and that is what makes different-sized things comparable.\n\nRatios also stay true when you scale them. A pancake recipe using 2 cups of flour to 3 cups of milk has a 2:3 ratio. Doubling to 4 cups and 6 cups keeps the ratio identical, and the pancakes taste the same. These are **equivalent ratios**, and they are why recipes work for four people or forty.\n\nMaps run on the same idea. A scale of 1 inch : 50 miles means every inch on paper stands for 50 real miles. Measure 3.5 inches between two towns and you know the distance is 175 miles without driving it.\n\nHere is the thing worth remembering: ratio reasoning is not really a math topic. It is a habit — the habit of asking *per what?* When someone tells you a number, ask what it is being compared to. That question is most of the work.",
+    "to": "## Compare by the Unit\n\nTwo cereal boxes have these invented lesson prices: 12 ounces for $3.60 and 18 ounces for $5.76. Which has the lower price per ounce?\n\nA **ratio** compares amounts in a stated order. For the smaller box, the price-to-mass ratio is $3.60 to 12 ounces. Separately, comparing the two package masses gives 12:18. Always name what each number represents.\n\nA **unit rate** describes how much for one unit. Divide price by mass: $3.60 ÷ 12 = $0.30 per ounce. For the larger box, $5.76 ÷ 18 = $0.32 per ounce. The smaller box costs less per ounce in this example.\n\nA lower unit price helps compare equivalent products, but the best purchase also depends on the amount needed, budget, quality and waste. Package size alone does not answer the question. These examples do not tell us a retailer's intentions.\n\nRates include miles per hour, words per minute and points per game. Total distance divided by total time gives average speed over that interval, not necessarily speed at every moment. Keep the order and units consistent. A comparison of two lengths in the same units can also give a unitless ratio because the units cancel.\n\n**Equivalent ratios** preserve the relationship when both parts are multiplied or divided by the same nonzero factor. For positive quantities here, use positive factors. A hypothetical recipe has flour to milk in the volume ratio 2:3. Scaling both amounts by two gives 4:6. This preserves that ingredient ratio; it does not guarantee identical cooking results or give a complete recipe.\n\nA ratio such as 2:3 is part-to-part. The first part is two fifths of the total of those parts, not two thirds. A fraction can describe a number or quotient as well as part of a whole. Two measured ingredient volumes also need not add to the same final mixed volume.\n\nA map scale of 1 inch to 50 miles converts lengths. A 3.5-inch segment represents 175 miles. A straight segment measures straight-line separation, not automatically driving distance; road distance follows a route.\n\nAsk: which amounts, in what order, per which unit, and under what assumptions?"
+  },
+  {
+    "resourceId": "rt-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "This is the move that compares anything",
+    "to": "Compare equivalent products in the same units"
+  },
+  {
+    "resourceId": "rt-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "Multiply or divide BOTH parts",
+    "to": "Multiply or divide BOTH parts by the same nonzero factor"
+  },
+  {
+    "resourceId": "rt-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "If units disappear, you made an error",
+    "to": "Track units; matching units can cancel legitimately"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "title",
+    "from": "Remember the Four-Second Trick",
+    "to": "Remember Unit Rates"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.title",
+    "from": "Remember the Four-Second Trick",
+    "to": "Remember Unit Rates"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.instructions",
+    "from": "Each card locks in a move from The Four-Second Trick. Study the example aid, make it yours, and explain how it leads back to the math.",
+    "to": "Each card locks in a move from Compare by the Unit. Study the example aid, make it yours, and explain how it leads back to the math."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.lessonRef.title",
+    "from": "The Four-Second Trick",
+    "to": "Compare by the Unit"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.0.hookFact.sourceTitle",
+    "from": "The Four-Second Trick (this lesson)",
+    "to": "Compare by the Unit (this lesson)"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.1.target",
+    "from": "The four-second trick: divide to get the unit rate, then compare",
+    "to": "Divide to get unit rates, then compare"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "The smaller box was the better deal; bigger is usually cheaper per unit, but not always.",
+    "to": "The smaller box has the lower price per ounce in this example; package size alone does not decide."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.1.hookFact.text",
+    "from": "The store is counting on you not checking.",
+    "to": "The two unit prices are $0.30 and $0.32 per ounce."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.1.hookFact.sourceTitle",
+    "from": "The Four-Second Trick (this lesson)",
+    "to": "Compare by the Unit (this lesson)"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.target",
+    "from": "Equivalent ratios: multiply or divide BOTH parts, never add",
+    "to": "Scale both parts by the same nonzero factor"
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.essentialFacts.1",
+    "from": "Adding the same number to both parts breaks the ratio: 4:5 is not equivalent to 2:3.",
+    "to": "Adding two to both parts of 2:3 gives 4:5, which is not equivalent. Addition does not generally preserve a ratio."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.aiExample",
+    "from": "Times both sides and it stays the same; add to both and you change the game.",
+    "to": "Scale both parts by one factor. Check the quotient stays the same. Test 2:3 and 4:6, then test 2:3 and 4:5."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.mapping",
+    "from": "One line for the right move, one for the wrong move, so the rhyme carries the rule and the trap together.",
+    "to": "The check explains why scaling works without claiming that adding must change every possible ratio, such as 1:1."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.hookFact.text",
+    "from": "Doubling to 4 cups and 6 cups keeps the ratio identical, and the pancakes taste the same.",
+    "to": "Doubling 2 cups and 3 cups to 4 cups and 6 cups preserves their ratio; cooking results may also depend on other factors."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.hookFact.sourceTitle",
+    "from": "The Four-Second Trick (this lesson)",
+    "to": "Compare by the Unit (this lesson)"
+  },
+  {
+    "resourceId": "rt-math",
+    "path": "data.problems.1.steps.2.explanation",
+    "from": "$0.30 is less than $0.32, so the SMALLER box is the better buy.",
+    "to": "$0.30 is less than $0.32, so the smaller box has the lower price per ounce."
+  },
+  {
+    "resourceId": "rt-math",
+    "path": "data.problems.1.realWorld",
+    "from": "Bulk sizes are usually cheaper per unit — but not always, which is why you check.",
+    "to": "Compare unit prices, then consider needed quantity and waste."
+  },
+  {
+    "resourceId": "rt-math",
+    "path": "data.problems.3.question",
+    "from": "A car travels 150 miles in 3 hours. What is its speed in miles per hour?",
+    "to": "A car travels 150 miles in 3 hours. What is its average speed over the trip?"
+  },
+  {
+    "resourceId": "rt-math",
+    "path": "data.problems.4.realWorld",
+    "from": "Planning a drive using a paper map or a scale bar on a trail sign.",
+    "to": "Converting a map length; driving distance requires measuring the route."
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.0.answer",
+    "from": "Many states require it, precisely because comparing sizes is hard in your head. The tiny number in the corner is doing the four-second trick for you — and it is worth learning to read.",
+    "to": "A unit-price label compares cost per stated unit. Check that the labels use matching units and comparable products. Rules about displaying them vary; this lesson does not rely on a legal requirement."
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.1.answer",
+    "from": "Related but not identical. 2/3 as a fraction means two of three parts of one whole. As a ratio, 2:3 can mean two things compared to three other things — like 2 cups flour to 3 cups milk, which is 5 cups total.",
+    "to": "Fraction notation can represent a quotient. In a part-to-part ratio 2:3, the first part is 2/5 of the combined total, while the quotient of the two parts is 2/3. Name the relationship you mean."
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.2.answer",
+    "from": "Very much. 2:3 flour to milk is a totally different recipe from 3:2 flour to milk. Always say the units out loud with the numbers.",
+    "to": "Yes. Flour to milk at 2:3 differs from 3:2. State the quantities in order and use compatible units."
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.3.answer",
+    "from": "Both are legitimate rates! We usually pick the one that gives a convenient number. Hours per mile would be 0.02 for highway driving, which is harder to picture than 50.",
+    "to": "Both rates are useful. For a trip averaging 50 miles per hour, the reciprocal is 0.02 hours per mile. This describes the interval average, not every instant."
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.4.question",
+    "from": "Are bulk sizes ever a bad deal on purpose?",
+    "to": "Can a larger package cost more per unit?"
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.4.answer",
+    "from": "It happens more than you would expect — sometimes from pricing errors, sometimes because a package is on promotion, sometimes because shoppers assume bigger is cheaper and stop checking.",
+    "to": "A larger package may have a higher or lower unit price. Promotions and pricing choices can change comparisons; the numbers alone do not reveal intent."
+  },
+  {
+    "resourceId": "rt-faq",
+    "path": "data.5.answer",
+    "from": "Nutrition labels, gas mileage, pay rates, currency exchange, medicine doses, mixing paint or fuel, and every single sports statistic. Rate reasoning outlasts almost everything else in the math curriculum.",
+    "to": "Rate reasoning helps with package prices, recipes, travel averages and sports summaries. Always check units, assumptions and the purpose of the comparison."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.fitReason",
+    "from": "The reading's four-second trick is a decision tool. A real order with a budget makes students use unit rates to choose, and to notice when the best unit price is not the best decision.",
+    "to": "The reading's unit-rate method is a decision tool. A real order with a budget makes students use unit rates to choose, and to notice when the best unit price is not the best decision."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.context",
+    "from": "The student council runs a snack stand at games. The supplier's list shows each snack in two or three package sizes with prices. The stand has $60 for this order and about 120 customers per game. Last time, the council bought the biggest boxes of everything and half of one snack went stale.",
+    "to": "Use this invented supplier list: crackers, 10 servings for $4 or 30 servings for $10.50; raisins, 10 servings for $5 or 25 servings for $11.25; pretzels, 12 servings for $3.60 or 36 servings for $9.72. Budget $60. Expected use before each snack goes stale: at most 20 cracker servings, 50 raisin servings and 72 pretzel servings. These demand estimates are assumptions, not observations. Choose whole packages and do not exceed these limits."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Bulk sizes are usually cheaper per unit, but not always; the 12-ounce box at $0.30 per ounce beat the 18-ounce box at $0.32.",
+    "to": "In the cereal example the smaller box is cheaper per ounce; actual purchase decisions also depend on budget and use."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "Equivalent ratios come from multiplying or dividing both parts, not adding.",
+    "to": "Multiply or divide both parts by the same nonzero factor to preserve the ratio."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.openQuestions.0",
+    "from": "How many servings are in each package size?",
+    "to": "What is the unit price per serving of each listed option?"
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.openQuestions.1",
+    "from": "How many of each snack sold at the last three games?",
+    "to": "How would different demand estimates affect the choice?"
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.criteria.2",
+    "from": "At least one decision picks a smaller size on purpose, with the reason",
+    "to": "Explain a smaller-package choice using expected use, even when its unit price is higher"
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.supports.frameChoices.0",
+    "from": "Pick the best unit price for snacks that never go stale",
+    "to": "Choose lower unit prices when expected use supports them"
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.coachHint",
+    "from": "Unit price tells you what is cheapest. Sales history tells you what you will actually use. You need both numbers to decide.",
+    "to": "One feasible order: two small cracker packs, two large raisin packs and two large pretzel packs. It provides 20, 50 and 72 servings and costs $49.94. Explain choices; other orders may be defensible."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Bulk sizes are usually cheaper per unit, but not always, and 'usually' is exactly the assumption that costs you money.",
+    "to": "Unit price compares cost per serving. Expected use and budget help decide which whole packages to buy."
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.lessonRef.title",
+    "from": "The Four-Second Trick",
+    "to": "Compare by the Unit"
+  }
+]

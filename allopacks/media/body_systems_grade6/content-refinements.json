@@ -1,0 +1,248 @@
+[
+  {
+    "resourceId": "bs-reading",
+    "path": "data",
+    "from": "## The Relay Race\n\nRight now your body is running a relay race it never finishes. To keep one muscle cell alive, several systems have to pass materials from one to the next without dropping the baton. Follow a single breath and see how many teammates it takes.\n\nIt begins in the **respiratory system**. You breathe in, and air travels down to your lungs, into tiny sacs called alveoli. Oxygen slips out of those sacs and into your blood. Carbon dioxide, a waste gas, moves the other way, out to be exhaled. The lungs are where the outside air meets the inside of your body.\n\nNow the **circulatory system** takes the baton. Your heart pumps that oxygen-rich blood through a vast network of vessels — arteries carrying it out, veins bringing it back. If you stretched all your blood vessels end to end, they would wrap around the Earth twice. Blood delivers oxygen to every cell and carries waste away.\n\nBut oxygen alone is not food. That comes from the **digestive system**. When you eat, your body breaks food down over a long journey — mouth, stomach, and especially the small intestine, where nutrients pass into the blood. So the circulatory system is now carrying two things to your cells: oxygen from the lungs and nutrients from the gut.\n\nInside the muscle cell, oxygen and nutrients combine to release energy. That is the payoff of the whole relay. The cell can now contract, and you can move.\n\nAnd who told the muscle to move in the first place? The **nervous system**. Your brain sent a signal down nerves faster than you could think about it. The nervous system is the coordinator, sending electrical messages that control nearly everything, often without you noticing.\n\nHolding it all up is the **skeletal system** — 206 bones giving you structure, protecting your organs, and anchoring the muscles of the **muscular system** that actually pull your body into motion.\n\nHere is the lesson underneath all of it. You could memorize each system alone and still miss the point. The point is the handoffs. Breathe during exercise and your respiratory and circulatory systems speed up together, because your muscles are demanding more oxygen and your nervous system noticed. Get scared and your heart races before you decide anything, because your nervous system triggered it. No system is an island. Your body is a system of systems, and staying alive is the sum of a million handoffs happening every minute, most of them without a single thought from you.",
+    "to": "## The Relay Race\n\nKeeping a muscle cell working takes several systems exchanging materials and signals. These systems work continuously and overlap; the relay is a metaphor, not a sequence where one system stops before the next starts.\n\nAir enters the respiratory system and reaches tiny lung air sacs called alveoli. Oxygen diffuses across thin walls into nearby capillary blood. Carbon dioxide moves from blood to air and is exhaled. Breathing moves air; gas exchange moves molecules across the walls.\n\nThe circulatory system carries oxygen from lungs to the left side of the heart, then through arteries toward body tissues. At tissue capillaries, materials pass between blood and cells. Blood returns through veins to the right side of the heart and is pumped to the lungs. Arteries carry blood away from the heart; veins carry it toward the heart. These names describe direction, not oxygen content. Red and blue in diagrams are conventions: all human blood is red.\n\nThe digestive system breaks food into smaller molecules. Most nutrient absorption occurs in the small intestine. Glucose and many other nutrients pass into blood; many dietary fats first enter lymph and later reach blood. Nutrients supply building materials, and some supply energy. The lungs supply oxygen, not food.\n\nInside muscle cells, aerobic cellular respiration uses oxygen to transfer chemical energy from glucose into forms cells can use, including ATP. Carbon dioxide and water are products. Muscles use ATP to contract. Cells also have pathways that supply some ATP without oxygen; this lesson follows the aerobic route.\n\nNervous-system signals help coordinate voluntary movement and automatic responses. Signaling involves electrical activity within neurons and chemical communication at many connections. A quick withdrawal reflex can be coordinated through spinal circuits before conscious awareness; signals also reach the brain. Never test this by touching a hot object.\n\nBones provide support, protect organs and form attachment sites for skeletal muscles. A typical adult has about 206 bones, with variation. Tendons connect skeletal muscles to bones, and muscle contraction pulls on those attachments. Smooth muscle moves materials through organs; cardiac muscle pumps blood.\n\nDuring activity, heart rate and breathing often increase to meet changing demands for oxygen delivery and carbon-dioxide removal. Nerves, hormones and local signals all contribute. Pacemaker cells in the heart initiate its rhythm; the nervous system adjusts it rather than starting every beat. The six systems emphasized here are part of a larger body that also includes systems such as the endocrine, lymphatic and urinary systems."
+  },
+  {
+    "resourceId": "bs-reading",
+    "path": "meta",
+    "from": "6th Grade • Leveled reading • ~420 words",
+    "to": "6th Grade • Systems, transport and coordination"
+  },
+  {
+    "resourceId": "bs-glossary",
+    "path": "data.6.def",
+    "from": "The system of muscles that move the body.",
+    "to": "Muscles that contract to move the body, move materials through organs and pump blood."
+  },
+  {
+    "resourceId": "bs-glossary",
+    "path": "data.7.def",
+    "from": "The gas cells need to release energy from food.",
+    "to": "A gas used in aerobic cellular respiration to help transfer energy from food; not all cellular energy pathways require it."
+  },
+  {
+    "resourceId": "bs-glossary",
+    "path": "data.8.def",
+    "from": "A useful substance from food that cells use for energy and growth.",
+    "to": "A substance needed for body function, growth or repair; some nutrients supply energy, while others do not."
+  },
+  {
+    "resourceId": "bs-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "Both hand their goods to the blood",
+    "to": "Oxygen and many nutrients enter blood; many fats travel through lymph first"
+  },
+  {
+    "resourceId": "bs-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Circulatory: heart pumps blood everywhere",
+    "to": "The heart pumps blood through lung and body circuits"
+  },
+  {
+    "resourceId": "bs-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "Nervous: sends the signals",
+    "to": "Nerves coordinate signals; hormones and local signals also help"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.main",
+    "from": "One muscle cell, kept alive by six systems",
+    "to": "A muscle cell supported by interacting systems"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.1.items.0",
+    "from": "The heart pumps oxygen-rich blood out through arteries",
+    "to": "The heart pumps blood through lung and body circuits; arteries lead away from the heart"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.2.items.1",
+    "from": "Nutrients pass into the blood at the small intestine",
+    "to": "Many nutrients enter blood at the small intestine; many dietary fats enter lymph first"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.3.items.0",
+    "from": "The brain sends electrical signals down nerves",
+    "to": "Nervous pathways use electrical activity and chemical communication"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.3.items.1",
+    "from": "Faster than you can think about it",
+    "to": "Spinal circuits can coordinate rapid withdrawal reflexes"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.3.items.2",
+    "from": "It controls nearly everything, mostly without you noticing",
+    "to": "Nervous, hormonal and local signals work together"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.4.items.0",
+    "from": "206 bones give structure and protect the organs",
+    "to": "A typical adult has about 206 bones, with variation"
+  },
+  {
+    "resourceId": "bs-outline",
+    "path": "data.branches.5.items.0",
+    "from": "Exercise: respiratory and circulatory speed up together, because the nervous system noticed the demand",
+    "to": "During activity, breathing and circulation adjust through several interacting signals"
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.sourceExcerpt",
+    "from": "It begins in the respiratory system: oxygen slips out of the alveoli into your blood. The circulatory system takes the baton: your heart pumps oxygen-rich blood through vessels. Food comes from the digestive system, where nutrients pass into the blood in the small intestine. The nervous system is the coordinator. The skeletal system holds it up and anchors the muscular system.",
+    "to": "Oxygen diffuses from alveoli into blood, which travels through the heart to tissues. Many nutrients enter blood through the small intestine; many fats enter lymph first. Nervous, hormonal and local signals coordinate responses. Muscles pull on skeletal attachments."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Digestive: breaks food into nutrients that pass into the blood.",
+    "to": "Digestion breaks food down; many nutrients enter blood and many fats enter lymph first."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.0.essentialFacts.3",
+    "from": "Nervous: sends electrical signals that control and coordinate the body.",
+    "to": "Nervous signals use electrical activity and chemical communication to help coordinate the body."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.0.essentialFacts.4",
+    "from": "Skeletal: 206 bones give structure and protect organs; Muscular: muscles pull the body into motion.",
+    "to": "A typical adult has about 206 bones; skeletal muscles pull on bones through tendons."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "If you stretched all your blood vessels end to end, they would wrap around the Earth twice.",
+    "to": "Microscopic capillaries form extensive networks where materials pass between blood and tissues."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "The heart pumps oxygen-rich blood out through arteries; veins bring blood back.",
+    "to": "Blood carries oxygen from lungs to the left heart, then through arteries to tissues; veins return blood toward the heart."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "Inside a muscle cell, oxygen and nutrients combine to release energy so the cell can contract.",
+    "to": "Aerobic respiration transfers energy from glucose using oxygen, supplying ATP that supports contraction."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Four batons: Lungs → Blood → Heart pump → Muscle cell. Say it with your hands: breathe in, tap your chest, pump a fist, flex your arm.",
+    "to": "Alveoli → blood → left heart → body capillaries and muscle cells. Oxygen crosses thin walls at the start and end; it does not travel as air bubbles."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.2.essentialFacts.1",
+    "from": "The nervous system notices the demand and triggers the change, often before you think about it.",
+    "to": "Nervous pathways, hormones and local signals help coordinate changing demands; the heart has its own pacemaker."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.2.aiExample",
+    "from": "You sprint for the bus → muscles burn through oxygen → nerves notice → heart pounds faster AND breathing deepens → more oxygen reaches the muscles → you make the bus. Cut any link and the chain fails.",
+    "to": "Activity increases → energy use changes → nervous, hormonal and local signals contribute → breathing and circulation adjust → delivery and waste removal support working muscles."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.2.mapping",
+    "from": "Each arrow is a handoff between two systems. Reading it as a chain shows why breathing and heartbeat change at the same time: one demand, two responses, one coordinator.",
+    "to": "These arrows describe coordinated responses, not a measured order or proof that one signal always comes first."
+  },
+  {
+    "resourceId": "bs-memory",
+    "path": "data.cards.2.scaffoldSteps.1",
+    "from": "Add the system that noticed and the two that responded.",
+    "to": "Add coordinating signals and the two responding systems without claiming a measured order."
+  },
+  {
+    "resourceId": "bs-sort",
+    "path": "data.items.7.content",
+    "from": "Controlling your heartbeat without you thinking",
+    "to": "Adjusting the heart’s pacemaker rate through automatic nerve signals"
+  },
+  {
+    "resourceId": "bs-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "It enters through the respiratory system (lungs), crosses into the blood, then the circulatory system (heart and vessels) carries it to a muscle cell. The nervous system controlled the breathing and heartbeat that moved it, and the muscular system uses the oxygen to move.",
+    "to": "Oxygen enters the respiratory airways, reaches an alveolus, diffuses into capillary blood, travels through pulmonary veins and the left heart, then body arteries and capillaries. It diffuses into muscle cells and is used in aerobic respiration. Coordination is important but is not another place the molecule passes through."
+  },
+  {
+    "resourceId": "bs-faq",
+    "path": "data.0.question",
+    "from": "Are blood vessels really long enough to wrap around Earth? 🌍",
+    "to": "Why are there so many tiny blood vessels?"
+  },
+  {
+    "resourceId": "bs-faq",
+    "path": "data.0.answer",
+    "from": "Stretched end to end, an adult's blood vessels reach roughly 60,000 miles — more than twice around the planet. Most of that length is microscopic capillaries thinner than a hair.",
+    "to": "Branching capillary networks bring blood close to tissues for exchange of oxygen, nutrients and wastes. Total-length estimates vary with body size and assumptions; the exact length is not needed to understand their job."
+  },
+  {
+    "resourceId": "bs-faq",
+    "path": "data.4.answer",
+    "from": "About 206 as an adult. Babies are born with around 300, and many fuse together as they grow — which is why the count goes down, not up.",
+    "to": "A typical adult has about 206 bones, with individual variation. Children have bones and parts that fuse as they grow, so the count depends on age and how parts are counted."
+  },
+  {
+    "resourceId": "bs-faq",
+    "path": "data.5.answer",
+    "from": "A trick question, and a good one. You cannot rank them, because they depend on each other. Remove any one and the whole team fails. That interdependence is the real lesson.",
+    "to": "Systems depend on one another, but people can live with differences in organs and abilities, sometimes with medical support. Studying the connections is more useful than ranking a single system as most important."
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.brief.drivingQuestion",
+    "from": "When a person exercises gently for one minute, how do breathing rate and heart rate each change, and what does the timing of those changes tell us about how the systems hand off to each other?",
+    "to": "How do breathing and heart rates change after one minute of optional gentle activity, and what can those measurements tell us about coordinated responses?"
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "Inside a muscle cell, oxygen and nutrients combine to release energy.",
+    "to": "Aerobic respiration transfers energy from glucose using oxygen; muscle cells use ATP to contract."
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.brief.lockedLessonFacts.4",
+    "from": "The nervous system coordinates the change, often before you notice.",
+    "to": "Nervous, hormonal and local signals coordinate responses; these rate counts do not identify which signal came first."
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.brief.constraints.0",
+    "from": "Gentle exercise only, one minute, anyone may stop at any time",
+    "to": "Teacher-approved gentle activity only; anyone may stop or choose a non-exercise role. Follow individual activity restrictions and stop if uncomfortable."
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.brief.constraints.2",
+    "from": "Measurements in the same 15-second window for everyone",
+    "to": "Use matched measurement windows and record delays; two observers can count pulse and breaths together. Multiply 15-second counts by four to estimate rates per minute."
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.supports.coachPrompts.0",
+    "from": "Which system noticed the demand first, and can your data show that?",
+    "to": "Do these counts show which signal came first, or only changes in the measured rates?"
+  },
+  {
+    "resourceId": "bs-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Breathe during exercise and your respiratory and circulatory systems speed up together, because your muscles are demanding more oxygen and your nervous system noticed.",
+    "to": "Activity changes oxygen delivery and waste-removal demands. Breathing and circulation often adjust together through nervous, hormonal and local signals."
+  }
+]

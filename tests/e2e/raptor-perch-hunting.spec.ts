@@ -34,13 +34,13 @@ test.describe('Perched hunt gameplay',()=>{
     expect(scan.held.raptorPosition).toEqual(scan.resting.raptorPosition);expect(scan.held.stamina).toBeGreaterThanOrEqual(scan.resting.stamina);expect(scan.resting.calories-scan.held.calories).toBeLessThan(1);
     expect(scan.watched.activeTargetIndex).toBeGreaterThanOrEqual(0);expect(scan.watched.targetState).toBe('watch');expect(scan.blocked.targetCanStrike).toBe(false);expect(scan.blocked.missionCatches).toBe(scan.resting.missionCatches);
     expect(scan.paused.raptorPosition).toEqual(scan.blocked.raptorPosition);expect(scan.paused.motionTimeMs).toBe(scan.blocked.motionTimeMs);expect(scan.paused.calories).toBe(scan.blocked.calories);
-    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{(window as any).placePerchPrey(12);(window as any).advancePerch(25);});
+    await page.evaluate(()=>{(window as any).placePerchPrey(12);(window as any).advancePerch(25);});
     if(species==='redTail'||species==='greatHorned')await page.screenshot({clip:(await page.locator('[data-raptor-flight-stage]').boundingBox())!,path:'scratch/raptor-flight-review/perch-hunt-'+species+'.png',timeout:90000});
     const hunt=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
       const w=window as any,step=w.advancePerch;c._rhCommand('environment',{windSpeed:0});c._rhCommand('hold',{key:' ',pressed:true});step(25);const launch=c._rhSnapshot();
       for(let i=0;i<12;i++)step(25);c._rhCommand('hold',{key:' ',pressed:false});
-      w.placePerchPrey(30);c._rhCommand('strike');const distant=c._rhSnapshot();step(450);
-      w.placePerchPrey(-3);c._rhCommand('strike');const behind=c._rhSnapshot();step(450);
+      w.placePerchPrey(30);c._rhCommand('strike');const distant=c._rhSnapshot();for(let i=0;i<9;i++)step(50);
+      w.placePerchPrey(-3);c._rhCommand('strike');const behind=c._rhSnapshot();for(let i=0;i<9;i++)step(50);
       w.placePerchPrey(3);const ready=c._rhSnapshot();c._rhCommand('strike');const caught=c._rhSnapshot();w.placePerchPrey(3);c._rhCommand('strike');const cooldown=c._rhSnapshot();
       return {launch,distant,behind,ready,caught,cooldown};
     });

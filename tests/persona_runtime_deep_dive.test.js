@@ -15,7 +15,7 @@ const artifactSource = fs.readFileSync(path.join(root, 'persona_session_artifact
 
 const personaStateContractFields = [
   'mode', 'options', 'selectedCharacter', 'selectedCharacters', 'chatHistory',
-  'isLoading', 'avatarUrl', 'isImageLoading', 'avatarGenerationFailed',
+  'isLoading', 'turnError', 'avatarUrl', 'isImageLoading', 'avatarGenerationFailed',
   'suggestions', 'isGeneratingSuggestions', 'suggestionsError',
   'panelSuggestions', 'isGeneratingPanelSuggestions', 'panelSuggestionsError',
   'topicSparkCount', 'isGeneratingTopicSpark', 'topicSparkError',

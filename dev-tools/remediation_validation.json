@@ -17,7 +17,23 @@
     "tests/rendered_fidelity_calibration.test.js",
     "tests/rendered_fidelity_resilience.test.js",
     "tests/rendered_fidelity_review.test.js",
-    "tests/source_remediation_contract.test.js"
+    "tests/source_remediation_contract.test.js",
+    "tests/remediation_continuity.test.js",
+    "tests/remediation_autoloop_dependencies.test.js",
+    "tests/remediation_view_lifecycle_regressions.test.js",
+    "tests/remediation_workspace.test.js",
+    "tests/remediation_retry_startup.test.js",
+    "tests/batch_checkpoint_boundary_commit.test.js",
+    "tests/utils_pure_storage.test.js",
+    "tests/remediation_visibility_selector_recovery.test.js",
+    "tests/doc_pipeline_inherited_contrast.test.js",
+    "tests/doc_pipeline_placeholder_audit_payload.test.js",
+    "tests/aifix_chunk_boundary_whitespace.test.js",
+    "tests/doc_pipeline_focus_wrap_browser.test.js",
+    "tests/static_crop_cleanup.test.js",
+    "tests/generated_baseline_language.test.js",
+    "tests/doc_pipeline_title_attributes.test.js",
+    "tests/semantic_list_marker_coverage.test.js"
   ],
   "browser": [
     "tests/e2e/document_dependency_parity.spec.ts",
@@ -33,6 +49,8 @@
     "tests/e2e/rendered_fidelity_evidence.spec.ts",
     "tests/e2e/rendered_fidelity_occurrence_regressions.spec.ts",
     "tests/e2e/rendered_fidelity_profiles.spec.ts",
-    "tests/e2e/rendered_fidelity_recovery.spec.ts"
+    "tests/e2e/rendered_fidelity_recovery.spec.ts",
+    "tests/e2e/remediation_continuity.spec.ts",
+    "tests/e2e/remediation_batch_recovery.spec.ts"
   ]
 }

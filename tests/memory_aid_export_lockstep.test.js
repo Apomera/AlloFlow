@@ -288,14 +288,14 @@ describe('Memory Aid translation namespace', () => {
       const text = host.textContent;
       expect(text).toContain('[memory_aid.preview_worksheet]');
       expect(text).toContain('[memory_aid.practice_idle_title]');
-      expect(text).toContain('[memory_aid.facts_verified]');
+      expect(text).toContain('[memory_aid.facts_ready]');
       expect(text).toContain('[memory_aid.type_analogy_pattern_short]');
       expect(text).toContain('[memory_aid.mode_generated_compact]');
       expect(text).toContain('[memory_aid.visual_review_unreviewed_label]');
       expect(text).toContain('[memory_aid.visual_source_line]');
       expect(text).not.toContain('Try it from memory');
       expect(text).not.toContain('Teacher-verified facts');
-      expect(host.querySelector('[aria-label="[memory_aid.facts_verified]"]')).not.toBeNull();
+      expect(host.querySelector('[aria-label="[memory_aid.facts_ready]"]')).not.toBeNull();
       expect(host.querySelector('[aria-label="[memory_aid.feedback_region_aria]"]')).toBeNull();
       const panel = document.createElement('div');
       document.body.appendChild(panel);
@@ -356,7 +356,7 @@ describe('Memory Aid host wiring and help', () => {
     for (const key of ['tool_memory_aid', 'tool_applied_challenge']) {
       expect(help).toMatch(new RegExp("^\\s*'" + key + "':\\s*\"", 'm'));
     }
-    expect(anti).toContain('data-help-key="tool_memory_aid"');
+    expect(readFileSync(resolve(process.cwd(), 'view_sidebar_panels_source.jsx'), 'utf8')).toContain('data-help-key="tool_memory_aid"');
   });
 
   it('exports a NotebookLM section instead of an empty heading', () => {

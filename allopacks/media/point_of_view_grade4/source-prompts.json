@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "point_of_view_grade4",
+    "key": "puddle",
+    "prompt": "Square text-free children narrative illustration in expressive linocut and colored pencil style. A medium-brown-skinned girl with dark curly hair in a teal raincoat looks down at her new purple shoes splashing into a shallow sidewalk puddle. Behind her a dark-brown-skinned boy with short curly hair and a gold jacket has a small laughing smile. Scene centered on puddle and action, no portraits, no text, no speech bubbles, no numbers. Age about nine. Emotion gentle, no mocking gestures, no exaggerated caricature. Nonphotorealistic flat print texture.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-c695a378-9605-4517-b327-c1a425a765d2.png",
+    "alt": "A girl in a teal coat looks worriedly down at purple shoes splashing in a puddle; a boy in a gold jacket smiles behind her.",
+    "caption": "An outside view shows the shared event: Maya gets wet shoes and Dev laughs behind her. His reason and later worry come from the passage, not from reading his face. Visual viewpoint alone does not determine grammatical person.",
+    "editPrompt": "Edit the first of the two recent illustrations: the exterior scene with a girl stepping into a puddle and a boy behind her. Preserve composition, linocut and colored-pencil style, both characters, clothing, skin tones, setting and puddle. Change only the girl’s facial expression: mouth closed in a small downturned or neutral line, brows mildly raised toward center, looking down at her wet purple shoes with surprised embarrassment. She must NOT smile or look delighted. Preserve the boy’s mild laughing smile behind her. Keep the purple lace-up shoes. No text or additional symbols. Return only the revised exterior scene, not the downward-view image.",
+    "file": "source-puddle.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "point_of_view_grade4",
+    "key": "view",
+    "prompt": "Square text-free children narrative illustration in expressive linocut and colored pencil style. First-person visual view looking down at purple shoes worn by the viewpoint character in a shallow sidewalk puddle, teal raincoat hem visible at bottom edge. Water ripples around shoes. No face and no other people visible. Concrete subjective viewpoint, same simple warm ivory sidewalk and blue puddle palette. No text, symbols, labels, numbers or photorealism.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-930c2b81-7edf-4517-afd6-631ddc738637.png",
+    "alt": "The viewer looks down past a teal coat at purple lace-up sneakers standing in a puddle.",
+    "caption": "Looking down at wet shoes illustrates Maya’s immediate experience. Pair it with her first-person narration in the passage. An image alone cannot establish the words I or my, or tell Dev’s thoughts.",
+    "editPrompt": "Edit the downward-looking first-person puddle illustration among these two recent images. Keep its framing, teal coat hem, sidewalk, puddle ripples, linocut and colored-pencil texture. Change ONLY the footwear to match the other reference scene: purple canvas high-top sneakers with white laces, white toe caps and white rubber soles, worn with dark trousers. These are soaked shoes, not waterproof rain boots. The first-person image must show the wearer looking down at both shoes. No text. Return ONLY the revised first-person downward view.",
+    "file": "source-view.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

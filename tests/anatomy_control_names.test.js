@@ -69,12 +69,12 @@ describe('Anatomy control names', () => {
 
   it.each(ANATOMY_PATHS)('names each Next button for what it advances in %s', (filePath) => {
     const names = (state) => [...render(filePath, state).querySelectorAll('button')]
-      .map((b) => b.getAttribute('aria-label')).filter(Boolean);
+      .map(accessibleName).filter(Boolean);
 
     expect(names({ _activeTab: 'tour' })).toContain('Next tour step');
     expect(names({ _activeTab: 'flashcards' })).toContain('Next flashcard');
     // The fun-fact banner rides along with several modes and must not claim the plain name.
-    expect(names({ _activeTab: 'tour' })).toContain('Show the next fact');
+    expect(names({ _activeTab: 'tour' })).toContain('Next idea');
     for (const mode of ['tour', 'flashcards', 'explore']) {
       expect(names({ _activeTab: mode }), mode).not.toContain('Next');
     }

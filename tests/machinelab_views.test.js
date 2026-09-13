@@ -440,6 +440,119 @@ it('explains the screw thread and compression bands at the press station',()=>{
 it('explains the marked wheel and striped drum at the wheel-and-axle station',()=>{
   const html=renderTool('machineLab',state({bench:'windlass'}));
   expect(html).toContain('The marked grip and striped drum turn together');
-  expect(html).toContain('Rotate to a side view to follow the drum');
+  expect(html).toContain('Choose Drum to follow the barrel and lifting rope');
   expect(renderTool('machineLab',state({bench:'screw'}))).not.toContain('The marked grip and striped drum');
+});
+
+
+describe('Machine Lab: motion detective exploration',()=>{
+  for(const band of BANDS)for(const bench of ['lever','pulley','windlass','ramp','wedge','screw'])it('offers an ungraded visual clue at '+bench+' '+band,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench,bandOverride:band})),'text/html');
+    const card=doc.querySelector('.ml-shop-discovery');expect(card).not.toBeNull();
+    expect(card.getAttribute('aria-labelledby')).toBe('ml-discovery-title');
+    expect(card.querySelector('h3').textContent).toBe('Motion detective');
+    expect(card.querySelector('[data-ml-discovery-question]').textContent.endsWith('?')).toBe(true);
+    expect(card.querySelector('button').type).toBe('button');expect(card.querySelector('button').textContent).toBe('Inspect the clue');
+    expect(card.querySelector('button').title).toContain('hide the room');
+    expect(card.querySelector('details').open).toBe(false);
+    expect(card.querySelector('summary').textContent).toBe('Reveal explanation');
+    expect(card.querySelector('[data-ml-discovery-answer]').textContent.length).toBeGreaterThan(50);
+  });
+  for(const [effort,load,answer] of [[2,1,'effort end travels farther'],[1,2,'load end travels farther'],[2,2,'arms are equal']])it('adapts the lever explanation for '+effort+'/'+load,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench:'lever',leverEffortArm:effort,leverLoadArm:load})),'text/html');
+    expect(doc.querySelector('[data-ml-discovery-answer]').textContent).toContain(answer);
+  });
+  for(const [height,answer] of [[1,'path along the slope is longer'],[4,'ramp is vertical']])it('adapts the ramp explanation at height '+height,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench:'ramp',rampLength:4,rampHeight:height})),'text/html');
+    expect(doc.querySelector('[data-ml-discovery-answer]').textContent).toContain(answer);
+  });
+});
+
+
+describe('Machine Lab: clue reminder and return navigation',()=>{
+  for(const band of BANDS)for(const bench of ['lever','pulley','windlass','ramp','wedge','screw'])it('keeps the active question beside inspection for '+bench+' '+band,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench,bandOverride:band,shopClueBench:bench,shopMotionProgress:0.5})),'text/html');
+    const reminder=doc.querySelector('.ml-shop-clue-reminder');expect(reminder).not.toBeNull();
+    expect(reminder.getAttribute('aria-label')).toBe('Current observation clue');
+    expect(reminder.querySelector('span').textContent).toBe(doc.querySelector('[data-ml-discovery-question]').textContent);
+    const button=reminder.querySelector('button');expect(button.type).toBe('button');expect(button.textContent).toBe('Return to clue');
+    expect(doc.querySelector('details').open).toBe(false);
+  });
+  for(const active of [undefined,'screw'])it('does not show a reminder before this station is investigated: '+active,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench:'lever',shopClueBench:active})),'text/html');
+    expect(doc.querySelector('.ml-shop-clue-reminder')).toBeNull();
+  });
+});
+
+
+describe('Machine Lab: stroke distance previews',()=>{
+  for(const [effort,load] of [[2,1],[1,2],[2,2],[4,0.2],[0.2,4]])it('preserves the lever distance ratio across poses at '+effort+'/'+load,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench:'lever',leverEffortArm:effort,leverLoadArm:load,shopMotionProgress:0.5})),'text/html');
+    const group=doc.querySelector('[aria-label="Working stroke positions"]');
+    const previews=[...group.querySelectorAll('svg')];expect(previews).toHaveLength(3);
+    expect(group.getAttribute('aria-describedby')).toBe('ml-shop-preview-help');
+    expect(doc.getElementById('ml-shop-preview-help').textContent).toContain('One scale for all three positions');
+    for(const [i,svg] of previews.entries()){
+      expect(svg.getAttribute('aria-hidden')).toBe('true');expect(svg.getAttribute('focusable')).toBe('false');
+      const e=Number(svg.querySelector('[data-ml-preview-marker="effort"]').getAttribute('data-distance'));
+      const l=Number(svg.querySelector('[data-ml-preview-marker="load"]').getAttribute('data-distance'));
+      if(i===0){expect(e).toBe(0);expect(l).toBe(0);}
+      else{expect(e/l).toBeCloseTo(effort/load,8);expect(Math.max(e,l)).toBeCloseTo(i*50,8);}
+    }
+    const buttons=[...group.querySelectorAll('button')];
+    expect(buttons.map(b=>b.textContent)).toEqual(['Start','Halfway','Full stroke']);
+    expect(buttons.map(b=>b.getAttribute('aria-pressed'))).toEqual(['false','true','false']);
+  });
+  for(const bench of ['lever','pulley','windlass','ramp','wedge','screw'])it('offers three bounded distance previews at '+bench,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench})),'text/html');
+    expect(doc.querySelectorAll('[data-ml-stroke-preview]')).toHaveLength(3);
+    for(const marker of doc.querySelectorAll('[data-ml-preview-marker]')){
+      const value=Number(marker.getAttribute('data-distance'));expect(Number.isFinite(value)).toBe(true);expect(value).toBeGreaterThanOrEqual(0);expect(value).toBeLessThanOrEqual(100);
+    }
+  });
+});
+
+
+describe('Machine Lab: starting outline control',()=>{
+  for(const band of BANDS)for(const enabled of [false,true])it('provides a labelled checkbox at '+band+' enabled '+enabled,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band,shopStartOutline:enabled})),'text/html');
+    const label=[...doc.querySelectorAll('.ml-shop-inspector label')].find(l=>l.textContent==='Show starting outline');
+    expect(label).toBeTruthy();const input=label.querySelector('input');expect(input.type).toBe('checkbox');expect(input.checked).toBe(enabled);
+    if(enabled){expect(input.getAttribute('aria-describedby')).toBe('ml-shop-outline-help');expect(doc.getElementById('ml-shop-outline-help').textContent).toContain('load at the start');}
+    else expect(doc.getElementById('ml-shop-outline-help')).toBeNull();
+  });
+});
+
+
+describe('Machine Lab: illustrated station navigation',()=>{
+  for(const bench of ['lever','pulley','windlass','ramp','wedge','screw'])it('links the selected '+bench+' tab to the workshop and exposes progress',()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bench,provenBenches:{lever:true,screw:true}})),'text/html');
+    const tabs=[...doc.querySelectorAll('.ml-bench-tabs [role="tab"]')];expect(tabs).toHaveLength(6);
+    expect(tabs.filter(t=>t.tabIndex===0)).toHaveLength(1);const selected=doc.getElementById('ml-bench-tab-'+bench);
+    expect(selected.getAttribute('aria-selected')).toBe('true');expect(selected.tabIndex).toBe(0);expect(selected.type).toBe('button');
+    expect(selected.getAttribute('aria-controls')).toBe('ml-shop-panel');expect(doc.getElementById('ml-shop-panel').getAttribute('role')).toBe('tabpanel');
+    expect(doc.getElementById('ml-shop-panel').getAttribute('aria-labelledby')).toBe(selected.id);
+    expect(tabs.filter(t=>t.textContent.includes('Proven')).map(t=>t.id)).toEqual(['ml-bench-tab-lever','ml-bench-tab-screw']);
+    for(const tab of tabs.filter(t=>t!==selected)){expect(tab.tabIndex).toBe(-1);expect(tab.getAttribute('aria-selected')).toBe('false');}
+  });
+  for(const band of BANDS)it('provides six decorative schematics with text labels at '+band,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band})),'text/html');
+    const icons=[...doc.querySelectorAll('[data-ml-bench-preview]')];expect(icons.map(i=>i.getAttribute('data-ml-bench-preview'))).toEqual(['lever','pulley','windlass','ramp','wedge','screw']);
+    for(const icon of icons){expect(icon.getAttribute('aria-hidden')).toBe('true');expect(icon.getAttribute('focusable')).toBe('false');expect(icon.closest('button').textContent).toContain('Station');}
+  });
+});
+
+
+describe('Machine Lab: slow playback control',()=>{
+  for(const band of BANDS)for(const running of [false,true])it('shows the slow option at '+band+' running '+running,()=>{
+    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band,shopSlowMotion:true,shopAnimating:running,shopDemoDuration:6600})),'text/html');
+    const label=[...doc.querySelectorAll('label')].find(l=>l.textContent==='Slow motion');expect(label).toBeTruthy();expect(label.title).toContain('three times slower');const input=label.querySelector('input');expect(input.type).toBe('checkbox');expect(input.checked).toBe(true);expect(input.disabled).toBe(true); // No WebGL in this render fixture; live browser checks cover enabled playback.
+    expect(doc.querySelector('.ml-shop-hud').textContent.includes('Watch in slow motion')).toBe(running);
+  });
+});
+
+
+it('labels a motion-off demonstration as still',()=>{
+ const doc=new DOMParser().parseFromString(renderTool('machineLab',state({shopAnimating:true,shopSlowMotion:true,shopDemoDuration:2200,motionPref:'off'})),'text/html');
+ const text=doc.querySelector('.ml-shop-hud').textContent;expect(text).toContain('Still demonstration');expect(text).toContain('Inspect the mechanism');expect(text).not.toContain('Motion active');expect(text).not.toContain('Watch in slow motion');
 });

@@ -91,3 +91,28 @@ it('keeps all nine measurement categories available and reports the current sele
   expect(state().category).toBe('temperature');
   expect(picker.querySelector('summary').textContent).toContain('Temp');
 });
+
+
+describe('math control clarity and preserved interaction', () => {
+  it('names every abacus bead and keeps bead selection working', async () => {
+    const state = await mount('manipulatives', 'base10', '_manipulatives', { mode: 'abacus', abacus: { rods: [0, 0, 0, 0, 0] } });
+    const beads = [...document.querySelectorAll('button[aria-label]')].filter(el => /Lower bead/.test(el.getAttribute('aria-label')));
+    expect(beads).toHaveLength(25);
+    expect(new Set(beads.map(el => el.getAttribute('aria-label'))).size).toBe(25);
+    const name = beads[0].getAttribute('aria-label');
+    await click(beads[0]);
+    expect(state().abacus.rods[4]).toBe(1);
+    expect([...document.querySelectorAll('button')].find(el => el.getAttribute('aria-label') === name).getAttribute('aria-pressed')).toBe('true');
+  });
+  it('keeps conversion field labels visible while help opens without changing the conversion', async () => {
+    const state = await mount('unitconvert', 'unitConvert', 'unitConvert', { category: 'length', fromUnit: 'm', toUnit: 'cm', value: 3 });
+    for (const id of ['unitconvert-value', 'unitconvert-from', 'unitconvert-to']) {
+      const field = document.getElementById(id);
+      expect(field.labels[0].textContent.trim().length).toBeGreaterThan(2);
+      expect(field.labels[0].classList.contains('sr-only')).toBe(false);
+    }
+    const note = document.querySelector('.math-learning-note');
+    expect(note.open).toBe(false); await click(note.querySelector('summary')); expect(note.open).toBe(true);
+    expect(state()).toMatchObject({ fromUnit: 'm', toUnit: 'cm', value: 3 });
+  });
+});

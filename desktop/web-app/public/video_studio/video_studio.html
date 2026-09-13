@@ -39,8 +39,8 @@
   .tabs button[aria-selected="true"] { background: var(--panel2); color: var(--text); border-bottom-color: var(--panel2); }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
   .card h2 { font-size: 13px; margin: 0 0 10px; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.06em; }
-  button.action { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
-  button.action:hover { background: #4f46e5; }
+  button.action { background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  button.action:hover { background: #4338ca; }
   button.action:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
   button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
   button.quiet:hover { border-color: var(--accent); }
@@ -477,7 +477,7 @@
         <button class="quiet" id="demoPreflightCancelBtn" type="button" hidden>Cancel preflight</button>
         <span class="status" id="demoPreflightStatus" role="status" aria-live="polite" aria-atomic="true" style="margin-top:0">Load or draft a plan to run preflight checks.</span>
       </div>
-      <div id="demoPreflightList" class="scene-readiness" aria-label="Demo recording preflight checks" aria-live="polite"></div>
+      <div id="demoPreflightList" class="scene-readiness" role="region" aria-label="Demo recording preflight checks" aria-live="polite"></div>
       <div id="demoPlanList" role="group" aria-label="Demo plan steps"></div>
       <div class="row" style="margin:7px 0" aria-label="Demo narration assistant">
         <label for="demoScriptStyle">Script tone</label>

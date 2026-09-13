@@ -1485,6 +1485,16 @@ const glossaryLanguageKey = (language) => {
     catch (_) { return encodeURIComponent(value.toLowerCase()); }
 };
 
+// Keep definition playback, downloads, and prepared audio on the same text.
+const formatGlossaryDefinitionSpeech = (termValue, definitionValue) => {
+    const term = String(termValue == null ? '' : termValue).replace(/\s+/g, ' ').trim();
+    const definition = String(definitionValue == null ? '' : definitionValue).replace(/\s+/g, ' ').trim();
+    if (!term || !definition) return definition;
+    const prefix = definition.slice(0, term.length).toLocaleLowerCase();
+    if (prefix === term.toLocaleLowerCase() && (definition.length === term.length || /^[\s:：,.!?…;—–-]/.test(definition.slice(term.length)))) return definition;
+    return term + ': ' + definition;
+};
+
 const glossaryEntryPathKey = (entryId) => encodeURIComponent(cleanGlossaryEntryId(entryId));
 
 // Canonical glossary adapter enumeration shared by the host and tests. The
@@ -1513,7 +1523,7 @@ const enumerateGlossaryReadAloudSegments = (resource, options = {}) => {
     entries.forEach((entry) => {
         if (!entry || typeof entry !== 'object') return;
         add(entry, 'term', entry.term != null ? entry.term : entry.word, entry.termLanguage || defaultLanguage, 'term');
-        add(entry, 'definition', entry.def != null ? entry.def : entry.definition, entry.definitionLanguage || defaultLanguage, 'definition');
+        add(entry, 'definition', formatGlossaryDefinitionSpeech(entry.term != null ? entry.term : entry.word, entry.def != null ? entry.def : entry.definition), entry.definitionLanguage || defaultLanguage, 'definition');
         const translations = entry.translations && typeof entry.translations === 'object' && !Array.isArray(entry.translations)
             ? entry.translations
             : {};
@@ -1534,3 +1544,5 @@ window.AlloModules.inspectReadAloudAudioBytes = inspectReadAloudAudioBytes;
 window.AlloModules.createGlossaryEntryId = createGlossaryEntryId;
 window.AlloModules.normalizeGlossaryEntries = normalizeGlossaryEntries;
 window.AlloModules.enumerateGlossaryReadAloudSegments = enumerateGlossaryReadAloudSegments;
+
+window.AlloModules.formatGlossaryDefinitionSpeech = formatGlossaryDefinitionSpeech;

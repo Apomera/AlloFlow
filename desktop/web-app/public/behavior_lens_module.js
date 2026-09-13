@@ -117,8 +117,8 @@
             /* BehaviorLens Mobile Responsive Overrides */
             @media (max-width: 768px) {
                 /* Touch target minimum for all BehaviorLens buttons */
-                [class*="behavior-lens"] button,
-                .fixed.inset-0 button {
+                .bl-root button,
+                .bl-root button {
                     min-height: 44px;
                     min-width: 44px;
                 }
@@ -151,7 +151,7 @@
                     font-size: 1.125rem !important;
                 }
                 /* Select dropdowns: larger tap area */
-                .fixed.inset-0 select {
+                .bl-root select {
                     min-height: 48px;
                     font-size: 16px !important; /* prevents iOS zoom */
                 }
@@ -162,10 +162,10 @@
                     grid-template-columns: 1fr !important;
                 }
                 /* Tighter padding */
-                .fixed.inset-0 .p-6 {
+                .bl-root .p-6 {
                     padding: 1rem !important;
                 }
-                .fixed.inset-0 .p-4 {
+                .bl-root .p-4 {
                     padding: 0.75rem !important;
                 }
             }
@@ -180,7 +180,7 @@
         a11yStyle.textContent = `
             /* WCAG 2.3.3: Reduced motion — disable all animations */
             @media (prefers-reduced-motion: reduce) {
-                .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after {
+                .bl-root *, .bl-root *::before, .bl-root *::after {
                     animation-duration: 0.01ms !important;
                     animation-iteration-count: 1 !important;
                     transition-duration: 0.01ms !important;
@@ -188,36 +188,36 @@
                 }
             }
             /* WCAG 2.4.7: Focus-visible outlines for keyboard navigation */
-            .fixed.inset-0 button:focus-visible,
-            .fixed.inset-0 input:focus-visible,
-            .fixed.inset-0 select:focus-visible,
-            .fixed.inset-0 textarea:focus-visible,
-            .fixed.inset-0 [tabindex]:focus-visible,
-            .fixed.inset-0 [role="button"]:focus-visible {
+            .bl-root button:focus-visible,
+            .bl-root input:focus-visible,
+            .bl-root select:focus-visible,
+            .bl-root textarea:focus-visible,
+            .bl-root [tabindex]:focus-visible,
+            .bl-root [role="button"]:focus-visible {
                 outline: 3px solid #4338ca !important;
                 outline-offset: 3px !important;
                 box-shadow: 0 0 0 2px #ffffff !important;
                 border-radius: 4px;
             }
-            .fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }
+            .bl-root :focus:not(:focus-visible) { outline: none !important; }
             @media (forced-colors: active) {
-                .fixed.inset-0 button:focus-visible,
-                .fixed.inset-0 input:focus-visible,
-                .fixed.inset-0 select:focus-visible,
-                .fixed.inset-0 textarea:focus-visible,
-                .fixed.inset-0 [tabindex]:focus-visible,
-                .fixed.inset-0 [role="button"]:focus-visible {
+                .bl-root button:focus-visible,
+                .bl-root input:focus-visible,
+                .bl-root select:focus-visible,
+                .bl-root textarea:focus-visible,
+                .bl-root [tabindex]:focus-visible,
+                .bl-root [role="button"]:focus-visible {
                     outline-color: CanvasText !important;
                     box-shadow: none !important;
                 }
             }
             /* WCAG 1.4.3: Contrast fixes for low-contrast text classes */
-            .fixed.inset-0 .text-slate-600 { color: #64748b !important; }
-            .fixed.inset-0
-            .fixed.inset-0 .text-slate-600 { color: #475569 !important; }
+            .bl-root .text-slate-600 { color: #64748b !important; }
+            .bl-root
+            .bl-root .text-slate-600 { color: #475569 !important; }
             /* WCAG 1.4.4: Minimum text size (override sub-10px text) */
-            .fixed.inset-0 [class*="text-\\[9px\\]"] { font-size: 10px !important; }
-            .fixed.inset-0 [class*="text-\\[8px\\]"] { font-size: 9px !important; }
+            .bl-root [class*="text-\\[9px\\]"] { font-size: 10px !important; }
+            .bl-root [class*="text-\\[8px\\]"] { font-size: 9px !important; }
             /* Screen reader only utility */
             .bl-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0; }
         `;
@@ -634,12 +634,19 @@
         const [behavior, setBehavior] = useState(entry?.behavior || '');
         const [behaviorId, setBehaviorId] = useState(entry?.behaviorId || '');
         const [consequence, setConsequence] = useState(entry?.consequence || '');
-        const [intensity, setIntensity] = useState(entry?.intensity || 3);
-        const [duration, setDuration] = useState(entry?.duration || '');
+        const [intensity, setIntensity] = useState(entry?.intensity ?? '');
+        const [duration, setDuration] = useState(entry?.duration ?? '');
         const [notes, setNotes] = useState(entry?.notes || '');
         const [setting, setSetting] = useState(entry?.setting || '');
         const [observer, setObserver] = useState(entry?.observer || '');
         const [entrySource, setEntrySource] = useState(entry?.source || 'manual');
+        const initialOccurrenceRef = useRef(entry?.occurredAt || entry?.timestamp || new Date().toISOString());
+        const toOccurrenceInput = (value) => {
+            const date = new Date(value);
+            return Number.isFinite(date.getTime()) ? new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
+        };
+        const [occurredAtInput, setOccurredAtInput] = useState(() => toOccurrenceInput(initialOccurrenceRef.current));
+        const [entryError, setEntryError] = useState('');
         const [customA, setCustomA] = useState('');
         const [customB, setCustomB] = useState('');
         const [customC, setCustomC] = useState('');
@@ -777,18 +784,25 @@ Return ONLY valid JSON:
             const runtime = getBehaviorLensWorkspaceRuntime();
             const now = new Date();
             const behaviorText = behavior === 'Other' ? (customB || 'Other') : behavior;
+            const occurrenceChanged = occurredAtInput !== toOccurrenceInput(initialOccurrenceRef.current);
+            const occurrenceDate = new Date(occurrenceChanged ? occurredAtInput : initialOccurrenceRef.current);
+            if (!occurredAtInput || !Number.isFinite(occurrenceDate.getTime())) {
+                setEntryError('Enter a valid occurrence date and time.');
+                return;
+            }
             const normalized = runtime.normalizeAbcEntry({
+                ...entry,
                 id: entry?.id || uid(),
-                timestamp: entry?.timestamp || now.toISOString(),
-                occurredAt: entry?.occurredAt || entry?.timestamp || now.toISOString(),
-                recordedAt: entry?.recordedAt || now.toISOString(),
-                timezoneOffset: entry?.timezoneOffset ?? now.getTimezoneOffset(),
+                timestamp: occurrenceDate.toISOString(),
+                occurredAt: occurrenceDate.toISOString(),
+                recordedAt: entry?.recordedAt || entry?.timestamp || now.toISOString(),
+                timezoneOffset: occurrenceChanged ? occurrenceDate.getTimezoneOffset() : (entry?.timezoneOffset ?? occurrenceDate.getTimezoneOffset()),
                 antecedent: antecedent === 'Other' ? (customA || 'Other') : antecedent,
                 behavior: behaviorText,
                 behaviorId,
                 consequence: consequence === 'Other' ? (customC || 'Other') : consequence,
-                intensity,
-                duration: duration ? parseInt(duration) : null,
+                intensity: intensity === '' ? null : Number(intensity),
+                duration: duration !== '' ? Number(duration) : null,
                 notes,
                 setting,
                 observer,
@@ -802,13 +816,13 @@ Return ONLY valid JSON:
         };
 
         const renderCategoryPicker = (label, items, value, setValue, customVal, setCustomVal, icon) => {
-            return h('div', { className: 'mb-4' },
-                h('label', { className: 'block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide' },
+            return h('fieldset', { className: 'mb-4' },
+                h('legend', { className: 'block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide' },
                     icon, ' ', t(`behavior_lens.abc.${label}`) || label.charAt(0).toUpperCase() + label.slice(1)
                 ),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                     items.map(item =>
-                        h('button', { "aria-label": "Toggle value",
+                        h('button', { 'aria-label': item, 'aria-pressed': value === item,
                             key: item,
                             type: 'button',
                             onClick: () => setValue(item),
@@ -819,12 +833,12 @@ Return ONLY valid JSON:
                         }, item)
                     )
                 ),
-                value === 'Other' && h('input', {
+                h('input', {
                     type: 'text',
-                    value: customVal,
-                    onChange: (e) => setCustomVal(e.target.value),
+                    value: value === 'Other' ? customVal : value,
+                    onChange: (e) => value === 'Other' ? setCustomVal(e.target.value) : setValue(e.target.value),
                     placeholder: tt('behavior_lens.abc.other_placeholder', 'Describe...'),
-                    'aria-label': 'Describe other category',
+                    'aria-label': label.charAt(0).toUpperCase() + label.slice(1) + ' narrative',
                     className: 'mt-2 w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
                 })
             );
@@ -945,19 +959,27 @@ Return ONLY valid JSON:
                     ),
                     renderCategoryPicker('behavior', ABC_CATEGORIES.behavior, behavior, value => { setBehavior(value); setBehaviorId(''); }, customB, setCustomB, '🔴'),
                     renderCategoryPicker('consequence', ABC_CATEGORIES.consequence, consequence, setConsequence, customC, setCustomC, '➡️'),
-                    // Intensity slider
+                    h('div', { className: 'mb-4' },
+                        h('label', { htmlFor: 'bl-abc-occurred-at', className: 'block text-xs font-bold text-slate-600 mb-1.5' }, 'When did this happen?'),
+                        h('input', { id: 'bl-abc-occurred-at', type: 'datetime-local', value: occurredAtInput,
+                            onChange: event => { setOccurredAtInput(event.target.value); setEntryError(''); },
+                            'aria-describedby': 'bl-abc-occurred-help', 'aria-invalid': entryError ? 'true' : undefined,
+                            className: 'w-full min-h-11 border border-slate-400 rounded-lg px-3 py-2 text-sm' }),
+                        h('p', { id: 'bl-abc-occurred-help', className: 'mt-1 text-xs text-slate-600' }, 'Your local time. Use the incident time when entering an earlier observation.'),
+                        entry?.recordedAt && h('p', { className: 'mt-1 text-xs text-slate-600' }, 'Originally recorded: ' + new Date(entry.recordedAt).toLocaleString()),
+                        entryError && h('p', { role: 'alert', className: 'mt-1 text-sm text-red-700' }, entryError)
+                    ),
+                    // An unrated observation must not silently acquire a midpoint rating.
                     h('div', { className: 'mb-4' },
                         h('label', { className: 'block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide' },
-                            '📊 ', tt('behavior_lens.abc.intensity', 'Intensity'), ' — ', intensity, '/5'
+                            '📊 ', tt('behavior_lens.abc.intensity', 'Intensity')
                         ),
-                        h('input', {
-                            type: 'range',
-                            min: 1, max: 5, step: 1,
+                        h('select', {
                             value: intensity,
-                            onChange: (e) => setIntensity(parseInt(e.target.value)),
+                            onChange: (e) => setIntensity(e.target.value === '' ? '' : Number(e.target.value)),
                             'aria-label': 'Behavior intensity rating 1 to 5',
-                            className: 'w-full accent-indigo-600'
-                        }),
+                            className: 'w-full min-h-11 border border-slate-400 rounded-lg px-3 py-2 bg-white text-sm'
+                        }, h('option', { value: '' }, 'Not rated'), [1, 2, 3, 4, 5].map(value => h('option', { key: value, value }, value + (value === 1 ? ' — Mild' : value === 3 ? ' — Moderate' : value === 5 ? ' — High intensity' : '')))),
                         h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
                             h('span', null, tt('behavior_lens.abc.mild', 'Mild')),
                             h('span', null, tt('behavior_lens.abc.moderate', 'Moderate')),
@@ -1750,22 +1772,108 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
     // ─── LiveObsOverlay ─────────────────────────────────────────────────
     // Fullscreen observation mode with timer and frequency counter
-    const LiveObsOverlay = ({ onClose, studentName, onSaveSession, t, addToast }) => {
-        const [method, setMethod] = useState('frequency');
-        const [timer, setTimer] = useState(0);
+    // Shared overlay lifecycle. Nested confirmation dialogs retain their own trap.
+    const useBehaviorLensModal = (dialogRef, onClose) => {
+        const closeRef = useRef(onClose);
+        closeRef.current = onClose;
+        useEffect(() => {
+            const dialog = dialogRef.current;
+            if (!dialog) return undefined;
+            const opener = document.activeElement;
+            const host = dialog.closest('.bl-root');
+            const siblings = host ? Array.from(host.children).filter(node => node !== dialog && !node.contains(dialog)) : [];
+            const previous = siblings.map(node => ({ node, inert: node.hasAttribute('inert') }));
+            previous.forEach(({ node }) => node.setAttribute('inert', ''));
+            const focusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+                .filter(node => !node.closest('[hidden], [inert], .hidden') && node.getAttribute('aria-hidden') !== 'true' && window.getComputedStyle(node).display !== 'none');
+            const timer = window.setTimeout(() => (focusable()[0] || dialog).focus(), 0);
+            const onKeyDown = event => {
+                const activeDialog = event.target.closest?.('[role="dialog"], [role="alertdialog"]');
+                if (activeDialog && activeDialog !== dialog) return;
+                if (event.key === 'Escape') {
+                    event.preventDefault(); event.stopPropagation(); closeRef.current(); return;
+                }
+                if (event.key !== 'Tab') return;
+                const items = focusable(), first = items[0], last = items[items.length - 1];
+                if (!first) { event.preventDefault(); dialog.focus(); return; }
+                if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog || !dialog.contains(document.activeElement))) {
+                    event.preventDefault(); last.focus();
+                } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+                    event.preventDefault(); first.focus();
+                }
+            };
+            document.addEventListener('keydown', onKeyDown, true);
+            return () => {
+                window.clearTimeout(timer);
+                document.removeEventListener('keydown', onKeyDown, true);
+                previous.forEach(({ node, inert }) => { if (!inert) node.removeAttribute('inert'); });
+                if (opener?.isConnected && typeof opener.focus === 'function') opener.focus();
+            };
+        }, []);
+    };
+    const observationDraftKey = (kind, identity) => 'behaviorLens_observation_draft_v1_' + kind + '_' + encodeURIComponent(identity || 'unselected');
+    const readObservationDraft = (kind, identity) => {
+        if (!identity) return null;
+        try {
+            const value = JSON.parse(sessionStorage.getItem(observationDraftKey(kind, identity)) || 'null');
+            return value && value.version === 1 && Date.now() - value.savedAt < 7 * 86400000 && value.data && typeof value.data === 'object' ? value.data : null;
+        } catch (_) { return null; }
+    };
+    const useObservationRecovery = ({ kind, identity, draft, hasData, onClose, addToast }) => {
+        const latest = useRef({ draft, hasData });
+        latest.current = { draft, hasData };
+        const cleared = useRef(false);
+        const key = observationDraftKey(kind, identity);
+        const writeDraft = useCallback(() => {
+            if (!identity || cleared.current) return true;
+            try {
+                if (latest.current.hasData) sessionStorage.setItem(key, JSON.stringify({ version: 1, savedAt: Date.now(), data: latest.current.draft }));
+                else sessionStorage.removeItem(key);
+                return true;
+            } catch (_) { return false; }
+        }, [identity, key]);
+        useEffect(() => { writeDraft(); }, [draft, hasData, writeDraft]);
+        useEffect(() => {
+            window.addEventListener('pagehide', writeDraft);
+            return () => { window.removeEventListener('pagehide', writeDraft); writeDraft(); };
+        }, [writeDraft]);
+        const clearDraft = () => {
+            cleared.current = true;
+            try { sessionStorage.removeItem(key); } catch (_) {}
+        };
+        const requestClose = async () => {
+            if (!latest.current.hasData) { onClose(); return; }
+            if (!identity || !writeDraft()) {
+                if (addToast) addToast('This browser could not keep the observation draft. Save the session or explicitly discard it before closing.', 'error');
+                return;
+            }
+            if (await askBehaviorLensConfirmation('Keep this unfinished observation as a draft and close? Reopen this tool for the same student in this browser tab to resume. Recording will be paused.', { title: 'Keep observation draft', confirmText: 'Keep draft and close', cancelText: 'Continue recording' })) onClose();
+        };
+        const discardAndClose = async () => {
+            if (!latest.current.hasData || await askBehaviorLensConfirmation('Discard this unfinished observation? Its unsaved measurements cannot be recovered.', { title: 'Discard observation draft', confirmText: 'Discard observation' })) { clearDraft(); onClose(); }
+        };
+        return { clearDraft, requestClose, discardAndClose };
+    };
+
+    const LiveObsOverlay = ({ onClose, studentName, studentDraftId, onSaveSession, t, addToast }) => {
+        const draftIdentity = studentDraftId || studentName;
+        const [recoveredDraft] = useState(() => readObservationDraft('live', draftIdentity));
+        const [method, setMethod] = useState(recoveredDraft?.method || 'frequency');
+        const [timer, setTimer] = useState(recoveredDraft?.timer || 0);
         const [isRunning, setIsRunning] = useState(false);
-        const [frequency, setFrequency] = useState(0);
-        const [intervals, setIntervals] = useState([]);
-        const [intervalLength, setIntervalLength] = useState(15);
+        const [frequency, setFrequency] = useState(recoveredDraft?.frequency || 0);
+        const [intervals, setIntervals] = useState(recoveredDraft?.intervals || []);
+        const [intervalLength, setIntervalLength] = useState(recoveredDraft?.intervalLength || 15);
         const [currentInterval, setCurrentInterval] = useState(null);
         const [durationStart, setDurationStart] = useState(null);
-        const [durations, setDurations] = useState([]);
+        const [durations, setDurations] = useState(recoveredDraft?.durations || []);
         const [latencyStart, setLatencyStart] = useState(null);
-        const [latencyEnd, setLatencyEnd] = useState(null);
-        const [latencyMs, setLatencyMs] = useState(null);
-        const [notes, setNotes] = useState('');
+        const [latencyEnd, setLatencyEnd] = useState(recoveredDraft?.latencyMs != null ? Date.now() : null);
+        const [latencyMs, setLatencyMs] = useState(recoveredDraft?.latencyMs ?? null);
+        const [notes, setNotes] = useState(recoveredDraft?.notes || '');
         const timerRef = useRef(null);
         const intervalTimerRef = useRef(null);
+        const recordingStartRef = useRef(null);
         // Mirror of the in-progress interval so the rollover timer reads the
         // LATEST value (incl. the observer's "occurred" mark) instead of the
         // stale closure it captured at start — which silently saved every
@@ -1776,17 +1884,31 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         // Start/stop timer
         const toggleTimer = useCallback(() => {
             if (isRunning) {
+                const pausedAt = Date.now();
+                if (recordingStartRef.current != null) setTimer(Math.max(0, Math.floor((pausedAt - recordingStartRef.current) / 1000)));
+                recordingStartRef.current = null;
                 setIsRunning(false);
                 if (timerRef.current) clearInterval(timerRef.current);
                 if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
+                const partialInterval = currentIntervalRef.current;
+                if (method === 'interval' && partialInterval) {
+                    setIntervals(previous => [...previous, {
+                        ...partialInterval, end: pausedAt,
+                        durationSeconds: Math.max(0, (pausedAt - partialInterval.start) / 1000),
+                        complete: false
+                    }]);
+                    currentIntervalRef.current = null;
+                    setCurrentInterval(null);
+                }
                 if (method === 'duration' && durationStart) {
-                    const dur = Math.max(0, Math.round((Date.now() - durationStart) / 1000));
+                    const dur = Math.max(0, Math.round((pausedAt - durationStart) / 1000));
                     setDurations(prev => [...prev, dur]);
                     setDurationStart(null);
                 }
             } else {
                 setIsRunning(true);
                 const start = Date.now() - timer * 1000;
+                recordingStartRef.current = start;
                 timerRef.current = setInterval(() => {
                     setTimer(Math.floor((Date.now() - start) / 1000));
                 }, 100);
@@ -1807,7 +1929,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     setLatencyStart(Date.now());
                 }
             }
-        }, [isRunning, timer, method, intervalLength, latencyStart]);
+        }, [isRunning, timer, method, intervalLength, latencyStart, durationStart]);
 
         // Cleanup
         useEffect(() => {
@@ -1819,7 +1941,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
         // Move focus into the dialog on open (WCAG 2.4.3 / 4.1.2).
         const dialogRef = useRef(null);
-        useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
+
 
         const activeDuration = method === 'duration' && durationStart
             ? Math.max(0, Math.round((Date.now() - durationStart) / 1000)) : null;
@@ -1831,6 +1953,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             : method === 'duration' ? durationsToSave.length > 0
                 : method === 'interval' ? intervalsToSave.length > 0
                     : latencyMs !== null;
+
+        const recovery = useObservationRecovery({ kind: 'live', identity: draftIdentity, onClose, addToast,
+            hasData: timer > 0 || frequency > 0 || durationsToSave.length > 0 || intervalsToSave.length > 0 || latencyMs !== null || !!notes,
+            draft: { method, timer, frequency, intervalLength, intervals: intervalsToSave, durations: durationsToSave, latencyMs, notes } });
+        useBehaviorLensModal(dialogRef, recovery.requestClose);
+        useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered observation draft. Recording is paused.', 'info'); }, []);
 
         const handleSave = () => {
             if (!canSave) return;
@@ -1847,16 +1975,17 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             if (method === 'duration') sessionData.data = { durations: durationsToSave, totalDuration: durationsToSave.reduce((s, d) => s + d, 0), episodeCount: durationsToSave.length };
             if (method === 'interval') {
                 const occurredCount = intervalsToSave.filter(i => i.occurred).length;
-                sessionData.data = { intervalLength, intervals: intervalsToSave, totalIntervals: intervalsToSave.length, occurredCount, percentage: intervalsToSave.length ? (occurredCount / intervalsToSave.length) * 100 : 0, complete: !activeInterval };
+                sessionData.data = { intervalLength, intervals: intervalsToSave, totalIntervals: intervalsToSave.length, occurredCount, percentage: intervalsToSave.length ? (occurredCount / intervalsToSave.length) * 100 : 0, complete: intervalsToSave.every(interval => interval.complete === true) };
             }
             if (method === 'latency') sessionData.data = { latencyMs: latencyMs !== null ? latencyMs : 0, latencySeconds: latencyMs !== null ? latencyMs / 1000 : 0 };
             onSaveSession(sessionData);
+            recovery.clearDraft();
             if (addToast) addToast(tt('behavior_lens.obs.saved', 'Observation session saved ?'), 'success');
             onClose();
         };
         return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300' },
             // Top bar
-            h('div', { className: 'flex items-center justify-between px-6 py-4 bg-black/30' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 px-3 sm:px-6 py-3 bg-black/30' },
                 h('div', { className: 'flex items-center gap-3' },
                     h('div', { className: 'w-3 h-3 rounded-full animate-pulse motion-reduce:animate-none', role: 'status', 'aria-label': isRunning ? 'Recording' : 'Paused', style: { background: isRunning ? '#ef4444' : '#64748b' } }),
                     h('h2', { className: 'text-lg font-black' },
@@ -1865,20 +1994,21 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     studentName && h('span', { className: 'text-sm text-slate-300 ms-2' }, `— ${studentName}`)
                 ),
                 h('div', { className: 'flex items-center gap-3' },
+                    h('button', { onClick: recovery.discardAndClose, className: 'min-h-11 px-3 text-xs text-white underline' }, 'Discard draft'),
                     h('button', { onClick: handleSave,
                         disabled: !canSave,
                         className: 'text-xs font-bold px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-40 flex items-center gap-1.5'
                     }, h(Save, { size: 14 }), tt('behavior_lens.obs.save_session', 'Save Session')),
-                    h('button', { "aria-label": "On Close",
-                        onClick: onClose,
+                    h('button', { 'aria-label': 'Close Live Observation',
+                        onClick: recovery.requestClose,
                         className: 'p-2 rounded-full hover:bg-white/10 transition-colors'
                     }, h(X, { size: 20 }))
                 )
             ),
             // Method selector
-            h('div', { className: 'flex items-center justify-center gap-2 py-3 bg-black/20' },
+            h('div', { className: 'flex flex-wrap items-center justify-center gap-2 py-3 bg-black/20' },
                 OBSERVATION_METHODS.map(m =>
-                    h('button', { key: m,
+                    h('button', { key: m, 'aria-pressed': method === m,
                         onClick: () => { if (!isRunning) setMethod(m); },
                         disabled: isRunning,
                         className: `text-xs font-bold px-4 py-2 rounded-full transition-all ${method === m
@@ -1892,7 +2022,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 )
             ),
             // Main content
-            h('div', { className: 'flex-1 flex flex-col items-center justify-center gap-6' },
+            h('div', { className: 'flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-4 py-4' },
                 // Timer display
                 h('div', { className: 'text-center' },
                     h('div', { className: 'text-7xl font-black tabular-nums tracking-tight', style: { fontFamily: 'monospace' } },
@@ -1936,7 +2066,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             ? (tt('behavior_lens.obs.behavior_occurring', '🔴 Behavior occurring...'))
                             : (tt('behavior_lens.obs.tap_when_starts', 'Tap when behavior starts'))
                     ),
-                    h('button', { onClick: () => {
+                    h('button', { 'aria-label': durationStart ? 'End behavior episode' : 'Start behavior episode', onClick: () => {
                             if (durationStart) {
                                 const dur = Math.round((Date.now() - durationStart) / 1000);
                                 setDurations(prev => [...prev, dur]);
@@ -2120,7 +2250,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const maxDay = Math.max(1, ...Object.values(stats.dayMap));
         const maxTrend = Math.max(1, ...stats.trendData.map(d => d.count));
-        const aiAnalysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries), [aiAnalysis, abcEntries]);
+        const aiAnalysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries, targetBehaviors), [aiAnalysis, abcEntries, targetBehaviors]);
 
         const renderStatCard = (icon, label, value, color) =>
             h('div', { className: `bg-${color}-50 border border-${color}-200 rounded-xl p-4 text-center` },
@@ -2424,15 +2554,20 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
     // ─── FrequencyCounter ───────────────────────────────────────────────
     // Fullscreen quick-click counter for rapid behavior tallying
-    const FrequencyCounter = ({ onClose, studentName, onSaveSession, t, addToast }) => {
-        const [counters, setCounters] = useState([{ id: uid(), label: '', count: 0 }]);
+    const FrequencyCounter = ({ onClose, studentName, studentDraftId, onSaveSession, t, addToast }) => {
+        const draftIdentity = studentDraftId || studentName;
+        const [recoveredDraft] = useState(() => readObservationDraft('frequency', draftIdentity));
+        const [counters, setCounters] = useState(recoveredDraft?.counters || [{ id: uid(), label: '', count: 0 }]);
         const [running, setRunning] = useState(false);
-        const [elapsed, setElapsed] = useState(0);
+        const [elapsed, setElapsed] = useState(recoveredDraft?.elapsed || 0);
         const [newLabel, setNewLabel] = useState('');
         const timerRef = useRef(null);
         const startedAtRef = useRef(null);
         const dialogRef = useRef(null);
-        useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
+        const recovery = useObservationRecovery({ kind: 'frequency', identity: draftIdentity, onClose, addToast,
+            hasData: elapsed > 0 || counters.some(counter => counter.count > 0 || counter.label), draft: { counters, elapsed } });
+        useBehaviorLensModal(dialogRef, recovery.requestClose);
+        useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered frequency draft. Recording is paused.', 'info'); }, []);
 
         const counterColors = ['#818cf8', '#f472b6', '#34d399', '#fbbf24', '#f97316', '#a78bfa'];
 
@@ -2490,8 +2625,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         };
 
         const handleSave = () => {
-            if (totalCount === 0) return;
             const saveElapsed = startedAtRef.current !== null ? Math.floor((Date.now() - startedAtRef.current) / 1000) : elapsed;
+            if (saveElapsed <= 0 && totalCount === 0) {
+                if (addToast) addToast('Record observation time before saving a zero-event session.', 'info');
+                return;
+            }
             const saveRate = saveElapsed > 0 ? (totalCount / (saveElapsed / 60)).toFixed(1) : '0.0';
             onSaveSession({
                 id: uid(),
@@ -2509,13 +2647,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 }
             });
             if (addToast) addToast(tt('behavior_lens.freq.saved', 'Session saved ✅'), 'success');
+            recovery.clearDraft();
             onClose();
         };
 
-        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.freq.title', 'Frequency Counter')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center justify-center text-white' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.freq.title', 'Frequency Counter')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center overflow-y-auto py-4 text-white' },
             // Top bar
-            h('div', { className: 'absolute top-0 left-0 right-0 flex items-center justify-between p-4' },
-                h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full hover:bg-white/10 transition-colors' },
+            h('div', { className: 'w-full shrink-0 flex flex-wrap gap-2 items-center justify-between p-3 mb-4' },
+                h('button', { onClick: recovery.requestClose, 'aria-label': 'Close Frequency Counter', className: 'p-2 rounded-full hover:bg-white/10 transition-colors' },
                     h(X, { size: 24 })
                 ),
                 h('div', { className: 'text-center' },
@@ -2524,6 +2663,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         counters.length > 1 ? `${counters.length} behaviors tracked` : 'Frequency Counter'
                     )
                 ),
+                h('button', { onClick: recovery.discardAndClose, className: 'min-h-11 px-3 text-xs text-white underline' }, 'Discard draft'),
                 h('button', { onClick: handleSave,
                     className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 transition-colors'
                 }, tt('behavior_lens.freq.save', 'Save'))
@@ -2553,7 +2693,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                 onChange: (e) => setCounters(prev => prev.map(c => c.id === counter.id ? { ...c, label: e.target.value } : c)),
                                 placeholder: tt('behavior_lens.ph.behavior', 'Behavior...'),
                                 'aria-label': 'Behavior counter label',
-                                className: 'flex-1 bg-transparent text-white text-xs text-center border-b border-white/20 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400 outline-none py-0.5'
+                                className: 'min-w-0 w-full flex-1 bg-transparent text-white text-xs text-center border-b border-white/20 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400 outline-none py-0.5'
                             }),
                             counters.length > 1 && h('button', { "aria-label": "Remove Counter",
                                 onClick: () => removeCounter(counter.id),
@@ -2619,7 +2759,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 }, '↺ Reset')
             ),
             // Timer
-            h('div', { className: 'absolute bottom-8 text-center' },
+            h('div', { className: 'mt-6 pb-4 text-center' },
                 h('div', { className: 'text-3xl font-black tabular-nums text-slate-200' }, fmtDuration(elapsed)),
                 h('div', { className: 'text-xs text-slate-400 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
             )
@@ -2628,17 +2768,22 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
     // ─── IntervalGrid ───────────────────────────────────────────────────
     // Visual interval recording with partial/whole/momentary modes
-    const IntervalGrid = ({ onClose, studentName, onSaveSession, t, addToast }) => {
-        const [mode, setMode] = useState('partial');
-        const [intervalSec, setIntervalSec] = useState(15);
-        const [totalIntervals, setTotalIntervals] = useState(20);
+    const IntervalGrid = ({ onClose, studentName, studentDraftId, onSaveSession, t, addToast }) => {
+        const draftIdentity = studentDraftId || studentName;
+        const [recoveredDraft] = useState(() => readObservationDraft('interval', draftIdentity));
+        const [mode, setMode] = useState(recoveredDraft?.mode || 'partial');
+        const [intervalSec, setIntervalSec] = useState(recoveredDraft?.intervalSec || 15);
+        const [totalIntervals, setTotalIntervals] = useState(recoveredDraft?.totalIntervals || 20);
         const [running, setRunning] = useState(false);
-        const [currentInterval, setCurrentInterval] = useState(0);
-        const [grid, setGrid] = useState([]);
-        const [elapsed, setElapsed] = useState(0);
+        const [currentInterval, setCurrentInterval] = useState(recoveredDraft?.currentInterval || 0);
+        const [grid, setGrid] = useState(recoveredDraft?.grid || []);
+        const [elapsed, setElapsed] = useState(recoveredDraft?.elapsed || 0);
         const timerRef = useRef(null);
         const dialogRef = useRef(null);
-        useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
+        const recovery = useObservationRecovery({ kind: 'interval', identity: draftIdentity, onClose, addToast,
+            hasData: elapsed > 0 || grid.length > 0, draft: { mode, intervalSec, totalIntervals, currentInterval, grid, elapsed } });
+        useBehaviorLensModal(dialogRef, recovery.requestClose);
+        useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered interval draft. Recording is paused.', 'info'); }, []);
 
         useEffect(() => {
             if (running && currentInterval < totalIntervals) {
@@ -2684,6 +2829,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: parseFloat(pct) }
             });
             if (addToast) addToast(tt('behavior_lens.interval.saved', 'Interval session saved ✅'), 'success');
+            recovery.clearDraft();
             onClose();
         };
 
@@ -2697,12 +2843,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Top bar
             h('div', { className: 'p-4 flex items-center justify-between border-b border-slate-700' },
                 h('div', { className: 'flex items-center gap-3' },
-                    h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full text-slate-300 hover:bg-white/10' }, h(X, { size: 20 })),
+                    h('button', { onClick: recovery.requestClose, 'aria-label': 'Close', className: 'p-2 rounded-full text-slate-300 hover:bg-white/10' }, h(X, { size: 20 })),
                     h('div', null,
                         h('h3', { className: 'text-white font-black text-lg', 'data-help-key': 'bl_interval_recording' }, tt('behavior_lens.interval.title', 'Interval Recording')),
                         h('p', { className: 'text-xs text-slate-300' }, `${studentName || ''} — ${modeLabels[mode].label}`)
                     )
                 ),
+                h('button', { onClick: recovery.discardAndClose, className: 'min-h-11 px-3 text-xs text-white underline' }, 'Discard draft'),
                 h('button', { onClick: handleSave, disabled: completedCount === 0, className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 disabled:opacity-40 transition-all' },
                     tt('behavior_lens.interval.save', 'Save Session'))
             ),
@@ -2710,7 +2857,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             !running && completedCount === 0 && h('div', { className: 'p-6 space-y-4' },
                 h('div', { className: 'flex gap-3' },
                     Object.entries(modeLabels).map(([key, { label }]) =>
-                        h('button', { "aria-label": "Toggle mode",
+                        h('button', { 'aria-label': modeLabels[m], 'aria-pressed': mode === m,
                             key,
                             onClick: () => setMode(key),
                             className: `flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ${mode === key ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-300 hover:bg-white/20'}`
@@ -2748,7 +2895,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 // Progress bar
                 h('div', { className: 'mb-4 flex items-center gap-3' },
                     h('div', { className: 'flex-1 bg-slate-700 rounded-full h-3 overflow-hidden' },
-                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((completedCount / totalIntervals) * 100), className: 'h-full bg-indigo-500 transition-all', style: { width: `${(completedCount / totalIntervals) * 100}%` } })
+                        h('div', { role: 'progressbar', 'aria-label': 'Completed observation intervals', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((completedCount / totalIntervals) * 100), className: 'h-full bg-indigo-500 transition-all', style: { width: `${(completedCount / totalIntervals) * 100}%` } })
                     ),
                     h('span', { className: 'text-sm font-bold text-white tabular-nums' }, `${completedCount}/${totalIntervals}`),
                     h('span', { className: 'text-lg font-black text-indigo-400 tabular-nums' }, `${pct}%`)
@@ -4935,6 +5082,8 @@ Recommend reinforcers and return ONLY valid JSON:
     // ─── ChoiceBoard ────────────────────────────────────────────────────
     // Fullscreen student-facing visual choice overlay
     const ChoiceBoard = ({ onClose, studentName, t, addToast, callGemini }) => {
+        const dialogRef = useRef(null);
+        useBehaviorLensModal(dialogRef, onClose);
         const [choices, setChoices] = useState([
             { label: (tt('behavior_lens.raw.take_a_break', 'Take a break')), emoji: '🧘' },
             { label: (tt('behavior_lens.raw.ask_for_help', 'Ask for help')), emoji: '🙋' },
@@ -5033,7 +5182,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
         };
 
         if (editing) {
-            return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Edit choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-center p-8' },
+            return h('div', { ref: dialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Edit choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-center p-8' },
                 h('div', { className: 'bg-white rounded-2xl p-6 w-full max-w-md space-y-4 max-h-[85vh] overflow-y-auto' },
                     h('h3', { className: 'text-sm font-black text-slate-800' }, '✏️ Edit Choices'),
                     choices.map((c, i) =>
@@ -5077,7 +5226,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
 
         // First-Then mode
         if (mode === 'firstThen') {
-            return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'First-Then board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
+            return h('div', { ref: dialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'First-Then board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
                 h('div', { className: 'flex flex-wrap items-center gap-2 p-4 shrink-0' },
                     h('div', { className: 'flex gap-2' },
                         h('button', { "aria-label": 'Show choice board', onClick: () => setMode('choice'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '🔲 Choices'),
@@ -5123,7 +5272,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
             );
         }
 
-        return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
+        return h('div', { ref: dialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
             // Toolbar
             h('div', { className: 'flex flex-wrap items-center gap-2 p-4 shrink-0' },
                 h('div', { className: 'flex gap-2' },
@@ -9513,7 +9662,7 @@ Rules:
                 }, tt('behavior_lens.fba.open_tool', '→ Open Tool')),
                 h('div', { className: 'flex-1' },
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
-                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round(progress), className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
+                        h('div', { role: 'progressbar', 'aria-label': 'Observation workflow progress', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round(progress), className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
                     ),
                     h('div', { className: 'text-[11px] text-white/50 mt-1 text-end' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
                 )
@@ -9834,7 +9983,7 @@ Rules:
                         h('span', null, `${nextLevel.icon} ${nextLevel.name} (${nextLevel.minXP} XP)`)
                     ),
                     h('div', { className: 'w-full bg-white/20 rounded-full h-3 overflow-hidden' },
-                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round(progressToNext), className: 'h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-500', style: { width: `${progressToNext}%` } })
+                        h('div', { role: 'progressbar', 'aria-label': 'Progress to next skill level', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round(progressToNext), className: 'h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-500', style: { width: `${progressToNext}%` } })
                     )
                 ),
                 // Stats row
@@ -10489,7 +10638,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             setChecking(true);
             try {
                 const sample = runtime.selectStratifiedEntries(abcEntries, 20);
-                const provenance = runtime.createAnalysisProvenance(abcEntries, sample);
+                const provenance = runtime.createAnalysisProvenance(abcEntries, sample, undefined, targetBehaviors);
                 const entriesStr = sample.entries.map((entry, index) => {
                     const behavior = runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label;
                     return 'Entry ' + (index + 1) + ': Date="' + (entry.localDate || 'unknown') + '" A="' + (entry.antecedent || '') + '" B="' + behavior + '" C="' + (entry.consequence || '') + '" Setting="' + (entry.setting || 'not specified') + '" Intensity=' + (runtime.normalizeIntensity(entry.intensity) == null ? 'not rated' : entry.intensity) + ' Duration="' + (entry.duration == null ? 'not recorded' : entry.duration) + '"';
@@ -10597,13 +10746,13 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             () => runtime.calculateIncidentRate(
                 filteredEntries,
                 observationSessions || [],
-                behaviorFilter === 'all' ? {} : { behaviorId: behaviorFilter }
+                behaviorFilter === 'all' ? {} : { behaviorId: behaviorFilter, targetBehaviors }
             ),
-            [filteredEntries, observationSessions, behaviorFilter]
+            [filteredEntries, observationSessions, behaviorFilter, targetBehaviors]
         );
         const phases = useMemo(
-            () => runtime.summarizePhases(filteredEntries, observationSessions || []),
-            [filteredEntries, observationSessions]
+            () => runtime.summarizePhases(filteredEntries, observationSessions || [], behaviorFilter === 'all' ? {} : { behaviorId: behaviorFilter, targetBehaviors }),
+            [filteredEntries, observationSessions, behaviorFilter, targetBehaviors]
         );
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const timeLabels = [
@@ -11399,7 +11548,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                     answeredCount === questions.length && h('span', { className: 'text-xs font-bold text-green-600' }, '✅ Complete')
                 ),
                 h('div', { className: 'w-full bg-slate-100 rounded-full h-2' },
-                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((answeredCount / questions.length) * 100), className: 'bg-gradient-to-r from-teal-400 to-emerald-500 h-2 rounded-full transition-all duration-500', style: { width: `${(answeredCount / questions.length) * 100}%` } })
+                    h('div', { role: 'progressbar', 'aria-label': 'Cultural reflection questions completed', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((answeredCount / questions.length) * 100), className: 'bg-gradient-to-r from-teal-400 to-emerald-500 h-2 rounded-full transition-all duration-500', style: { width: `${(answeredCount / questions.length) * 100}%` } })
                 )
             ),
             // Questions
@@ -13301,7 +13450,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                     topPrefs.length > 0 && h('span', { className: 'text-xs font-bold text-green-600' }, `${topPrefs.length} favorites found`)
                 ),
                 h('div', { className: 'w-full bg-slate-100 rounded-full h-2' },
-                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((totalRated / totalItems) * 100), className: 'bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500', style: { width: `${(totalRated / totalItems) * 100}%` } })
+                    h('div', { role: 'progressbar', 'aria-label': 'Reinforcer items rated', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((totalRated / totalItems) * 100), className: 'bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500', style: { width: `${(totalRated / totalItems) * 100}%` } })
                 )
             ),
             // Top preferences summary
@@ -16380,7 +16529,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
     // ─── SessionDataTracker ─────────────────────────────────────────────
     // Standalone session-based behavioral data collection
     const SessionDataTracker = ({ abcEntries, t, addToast, onSaveSession }) => {
-        const [targets, setTargets] = useState([{ id: 'b1', name: '', type: 'frequency', count: 0, durations: [] }]);
+        const [targets, setTargets] = useState([{ id: uid(), name: '', type: 'frequency', count: 0, durations: [] }]);
         const [sessionActive, setSessionActive] = useState(false);
         const [sessionStart, setSessionStart] = useState(null);
         const [elapsed, setElapsed] = useState(0);
@@ -16435,7 +16584,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
         const addTarget = () => {
             if (targets.length >= 5) { if (addToast) addToast(tt('behavior_lens.toast.max_5_target_behaviors', 'Max 5 target behaviors'), 'warning'); return; }
-            setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: '', type: 'frequency', count: 0, durations: [], intervals: [] }]);
+            setTargets(prev => [...prev, { id: uid(), name: '', type: 'frequency', count: 0, durations: [], intervals: [] }]);
         };
 
         const removeTarget = (id) => setTargets(prev => prev.filter(t => t.id !== id));
@@ -16449,16 +16598,28 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setSessionActive(true);
             setSessionStart(Date.now());
             setElapsed(0);
+            setDurationTimers({});
             setTargets(prev => prev.map(t => ({ ...t, count: 0, total: 0, durations: [], intervals: [] })));
         };
 
         const endSession = () => {
-            const duration = elapsed;
+            const endedAt = Date.now();
+            const duration = sessionStart == null ? elapsed : Math.max(0, Math.floor((endedAt - sessionStart) / 1000));
+            const completedTargets = targets.filter(target => target.name.trim()).map(target => {
+                const startedAt = durationTimers[target.id];
+                return startedAt == null ? target : {
+                    ...target,
+                    count: target.count + 1,
+                    durations: [...(target.durations || []), Math.max(0, (endedAt - startedAt) / 1000)]
+                };
+            });
             const sessionData = {
-                id: Date.now().toString(36),
-                date: new Date().toISOString(),
+                id: uid(),
+                date: new Date(sessionStart == null ? endedAt : sessionStart).toISOString(),
+                endedAt: new Date(endedAt).toISOString(),
                 durationSec: duration,
-                targets: targets.map(t => ({
+                targets: completedTargets.map(t => ({
+                    id: t.id,
                     name: t.name,
                     type: t.type,
                     count: t.count,
@@ -16470,11 +16631,15 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             };
             setSessionHistory(prev => [sessionData, ...prev]);
             if (onSaveSession) onSaveSession(sessionData);
+            setTargets(completedTargets);
+            setDurationTimers({});
+            setElapsed(duration);
             setSessionActive(false);
-            if (addToast) addToast(t('behavior_lens.toast.session_saved_ns_n_total_responses', { duration, responses: targets.reduce((a, t) => a + t.count, 0) }) || `Session saved! ${duration}s, ${targets.reduce((a, t) => a + t.count, 0)} total responses`, 'success');
+            const responses = completedTargets.reduce((sum, target) => sum + target.count, 0);
+            if (addToast) addToast(t('behavior_lens.toast.session_saved_ns_n_total_responses', { duration, responses }) || `Session saved! ${duration}s, ${responses} total responses`, 'success');
         };
 
-        const recordCount = (id) => updateTarget(id, 'count', targets.find(t => t.id === id).count + 1);
+        const recordCount = (id) => setTargets(previous => previous.map(target => target.id === id ? { ...target, count: target.count + 1 } : target));
         const recordPercentage = (id, correct) => {
             setTargets(prev => prev.map(target => target.id === id ? {
                 ...target,
@@ -16551,7 +16716,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 onClick: () => {
                                     const empty = targets.find(t => !t.name.trim());
                                     if (empty) updateTarget(empty.id, 'name', b);
-                                    else if (targets.length < 5) setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: b, type: 'frequency', count: 0, durations: [], intervals: [] }]);
+                                    else if (targets.length < 5) setTargets(prev => [...prev, { id: uid(), name: b, type: 'frequency', count: 0, durations: [], intervals: [] }]);
                                 },
                                 className: 'text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium hover:bg-emerald-100'
                             }, b)
@@ -16681,7 +16846,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const [jabaMode, setJabaMode] = useState(false); // B&W Publication Mode
         const [selectedBehavior, setSelectedBehavior] = useState(0);
         const [graphTitle, setGraphTitle] = useState('');
-        const [yAxisLabel, setYAxisLabel] = useState('Frequency');
+        const [yAxisLabel, setYAxisLabel] = useState('');
         const [xAxisLabel, setXAxisLabel] = useState('Sessions');
 
         // ── Manual Data Entry State ──
@@ -16716,25 +16881,66 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             return Array.from(names);
         }, [sessionHistory]);
 
-        // Build data series for selected behavior (auto mode)
-        const autoDataSeries = useMemo(() => {
+        // History is stored newest first. Give every persisted observation a stable
+        // identity, then assign display positions in chronological order.
+        const chronologicalSessions = useMemo(() => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            return (sessionHistory || []).map((session, index) => ({
+                ...session,
+                sessionId: session.id || session.observationSessionId || 'legacy-' + runtime.stableHash(session),
+                originalIndex: index
+            })).sort((left, right) => {
+                const leftTime = Date.parse(left.occurredAt || left.timestamp || left.date) || 0;
+                const rightTime = Date.parse(right.occurredAt || right.timestamp || right.date) || 0;
+                return leftTime - rightTime || right.originalIndex - left.originalIndex;
+            }).map((session, index) => ({ ...session, sessionNumber: index + 1 }));
+        }, [sessionHistory]);
+        const [measurementFilter, setMeasurementFilter] = useState('');
+        const [phaseAnchorState, setPhaseAnchorState] = useDurableToolState('abaGraphPhaseAnchors', {});
+        const phaseSignature = JSON.stringify((phases || []).map(phase => [phase.label, phase.condition, phase.startSession]));
+        const resolvedPhases = useMemo(() => (phases || []).map((phase, index) => {
+            const savedAnchor = phaseAnchorState.signature === phaseSignature && phaseAnchorState.ids && phaseAnchorState.ids[index];
+            const anchored = savedAnchor && chronologicalSessions.find(session => session.sessionId === savedAnchor);
+            return { ...phase, startSession: anchored ? anchored.sessionNumber : phase.startSession };
+        }), [phases, phaseAnchorState, phaseSignature, chronologicalSessions]);
+        useEffect(() => {
+            if (!phases || !phases.length || !chronologicalSessions.length) return;
+            const previousIds = phaseAnchorState.signature === phaseSignature ? phaseAnchorState.ids || [] : [];
+            const ids = phases.map((phase, index) => previousIds[index] || chronologicalSessions.find(session => session.sessionNumber === phase.startSession)?.sessionId || null);
+            if (phaseAnchorState.signature !== phaseSignature || JSON.stringify(ids) !== JSON.stringify(previousIds)) {
+                setPhaseAnchorState({ signature: phaseSignature, ids });
+            }
+        }, [phases, chronologicalSessions, phaseSignature, phaseAnchorState, setPhaseAnchorState]);
+
+        const autoMeasurements = useMemo(() => {
             if (!behaviorNames[selectedBehavior]) return [];
             const bName = behaviorNames[selectedBehavior];
-            return (sessionHistory || []).map((s, i) => {
-                const target = (s.targets || []).find(t => t.name === bName);
+            return chronologicalSessions.map(s => {
+                const target = (s.targets || []).find(target => target.name === bName);
                 let value = null;
+                let measurement = 'frequency';
                 if (target) {
-                    value = target.type === 'rate' ? target.rate : target.type === 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count;
+                    measurement = target.type || 'frequency';
+                    if (measurement === 'rate') value = target.rate;
+                    else if (measurement === 'duration') value = (target.durations || []).reduce((sum, seconds) => sum + seconds, 0);
+                    else if (measurement === 'percentage') value = target.total > 0 ? target.count / target.total * 100 : null;
+                    else if (measurement === 'interval') value = target.intervals?.length ? target.intervals.filter(Boolean).length / target.intervals.length * 100 : null;
+                    else value = target.count;
                 } else if (s.behavior === bName) {
-                    // Flat bridged observation record — plot the raw count,
-                    // falling back to rate/percentage when no count is present.
-                    value = s.count != null ? s.count : (s.rate != null ? s.rate : null);
+                    measurement = s.measurementType || (s.source === 'observation-interval' ? 'interval' : s.source === 'observation-latency' ? 'latency' : s.source === 'observation-duration' ? 'duration' : 'frequency');
+                    value = s.value != null ? s.value : (measurement === 'interval' || measurement === 'percentage' || measurement === 'rate' ? s.rate : s.count != null ? s.count : s.rate);
                 }
-                return { session: i + 1, date: s.date, value };
-            }).filter(d => d.value !== null);
-        }, [sessionHistory, behaviorNames, selectedBehavior]);
+                const unit = measurement === 'duration' || measurement === 'latency' ? 'seconds' : measurement === 'interval' || measurement === 'percentage' ? '%' : measurement === 'rate' ? 'per minute' : 'count';
+                return { session: s.sessionNumber, sessionId: s.sessionId, date: s.date, value: value == null ? null : Number(value), measurement, unit };
+            }).filter(point => point.value !== null && Number.isFinite(point.value));
+        }, [chronologicalSessions, behaviorNames, selectedBehavior]);
+        const measurementLabels = { frequency: 'Frequency (count)', rate: 'Rate (per minute)', duration: 'Total duration (seconds)', latency: 'Latency (seconds)', percentage: 'Correct responses (%)', interval: 'Intervals with behavior (%)' };
+        const measurementOptions = [...new Set(autoMeasurements.map(point => point.measurement))];
+        const selectedMeasurement = measurementOptions.includes(measurementFilter) ? measurementFilter : measurementOptions[0];
+        const autoDataSeries = useMemo(() => autoMeasurements.filter(point => point.measurement === selectedMeasurement), [autoMeasurements, selectedMeasurement]);
+        const effectiveYAxisLabel = yAxisLabel || (dataMode === 'auto' ? measurementLabels[selectedMeasurement] || 'Value' : 'Value');
 
-        // Active data series: auto or manual
+        // Measurements with different denominators or units are never merged.
         const dataSeries = dataMode === 'manual' ? manualData : autoDataSeries;
 
         // ── Manual Data Helpers ──
@@ -16760,8 +16966,12 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             const parsed = [];
             for (const line of lines) {
                 // Support formats: "5", "Session 1: 5", "1,5", "1\t5"
-                const match = line.match(/(?:session\s*\d*\s*[:=]\s*)?(\d+(?:\.\d+)?)/i);
-                if (match) parsed.push(parseFloat(match[1]));
+                const match = line.match(/^(?:session\s+\d+\s*[:=]\s*|\d+\s*[,\t]\s*)?(\d+(?:\.\d+)?|\.\d+)\s*$/i);
+                if (!match || !Number.isFinite(Number(match[1]))) {
+                    if (addToast) addToast('Check row ' + (parsed.length + 1) + ': use a value, Session 1: value, or session,value.', 'warning');
+                    return;
+                }
+                parsed.push(Number(match[1]));
             }
             if (parsed.length === 0) { if (addToast) addToast(tt('behavior_lens.toast.no_valid_data_found_in_csv', 'No valid data found in CSV'), 'warning'); return; }
             setManualData(parsed.map((v, i) => ({ session: i + 1, value: v, date: new Date().toISOString().slice(0, 10) })));
@@ -16804,8 +17014,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 }
                 return [{ label: (tt('behavior_lens.raw.all_data', 'All Data')), startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
             }
-            return phases.map((p, pi) => {
-                const phaseData = dataSeries.filter(d => d.session >= p.startSession && d.session <= (phases[pi + 1]?.startSession - 1 || Infinity));
+            return resolvedPhases.map((p, pi) => {
+                const phaseData = dataSeries.filter(d => d.session >= p.startSession && d.session <= (resolvedPhases[pi + 1]?.startSession - 1 || Infinity));
                 const values = phaseData.map(d => d.value);
                 const mean = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
                 // Split-middle trend
@@ -16839,7 +17049,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     label: p.label || `Phase ${pi + 1}`,
                     condition: p.condition || 'A',
                     startSession: p.startSession,
-                    endSession: phases[pi + 1]?.startSession - 1 || dataSeries[dataSeries.length - 1]?.session || 0,
+                    endSession: resolvedPhases[pi + 1]?.startSession - 1 || dataSeries[dataSeries.length - 1]?.session || 0,
                     data: phaseData,
                     mean,
                     trendSlope,
@@ -16847,17 +17057,19 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     celeration,
                 };
             });
-        }, [phases, dataSeries]);
+        }, [resolvedPhases, dataSeries]);
 
         // ── Auto-publish graph data for inter-tool flow ──
         useEffect(() => {
-            if (onExportData && dataSeries.length > 0) {
+            if (onExportData) {
                 onExportData({
                     dataSeries,
                     phaseAnalysis,
                     behaviorName: behaviorNames[selectedBehavior] || 'Behavior',
                     graphTitle: graphTitle || 'ABA Graph',
                     dataMode,
+                    unit: dataMode === 'auto' ? autoDataSeries[0]?.unit || null : null,
+                    measurementType: dataMode === 'auto' ? selectedMeasurement || null : null,
                 });
             }
         }, [dataSeries, phaseAnalysis, graphTitle, dataMode, selectedBehavior]);
@@ -17238,7 +17450,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         // Title
                         atTitle && h('text', { x: AT_W / 2, y: 18, textAnchor: 'middle', fontSize: 14, fontWeight: 'bold', fill: '#1e293b' }, atTitle),
                         // Y-axis label
-                        h('text', { x: 15, y: AT_H / 2, textAnchor: 'middle', fontSize: 11, fill: '#64748b', transform: `rotate(-90, 15, ${AT_H / 2})` }, yAxisLabel),
+                        h('text', { x: 15, y: AT_H / 2, textAnchor: 'middle', fontSize: 11, fill: '#64748b', transform: `rotate(-90, 15, ${AT_H / 2})` }, effectiveYAxisLabel),
                         // X-axis label
                         h('text', { x: AT_W / 2, y: AT_H - 5, textAnchor: 'middle', fontSize: 11, fill: '#64748b' }, 'Sessions'),
                         // Y-axis ticks and grid
@@ -17320,6 +17532,12 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 }, `✏️ Manual Entry${manualData.length > 0 ? ` (${manualData.length})` : ''}`)
             ),
 
+            dataMode === 'auto' && measurementOptions.length > 1 && h('label', { className: 'block text-xs font-bold text-slate-700' },
+                'Measurement',
+                h('select', { value: selectedMeasurement, onChange: event => setMeasurementFilter(event.target.value), 'aria-label': 'Graph measurement', className: 'block mt-1 w-full rounded-lg border border-slate-400 p-2 bg-white' },
+                    measurementOptions.map(measurement => h('option', { key: measurement, value: measurement }, measurementLabels[measurement] || measurement))
+                )
+            ),
             // ── Manual Data Entry Panel ──
             dataMode === 'manual' && h('div', { className: 'bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl border border-fuchsia-200 p-4 space-y-3' },
                 h('div', { className: 'flex items-center justify-between' },
@@ -17435,7 +17653,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.yaxis_label', 'Y-Axis Label')),
-                        h('input', { value: yAxisLabel, onChange: e => setYAxisLabel(e.target.value), 'aria-label': tt('behavior_lens.ui.yaxis_label_input', 'Y-axis label'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('input', { value: yAxisLabel, placeholder: effectiveYAxisLabel, onChange: e => setYAxisLabel(e.target.value), 'aria-label': tt('behavior_lens.ui.yaxis_label_input', 'Y-axis label'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.xaxis_label', 'X-Axis Label')),
@@ -17493,7 +17711,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     // Title
                     graphTitle && h('text', { x: W / 2, y: 18, textAnchor: 'middle', fontSize: 14, fontWeight: 'bold', fill: '#1e293b' }, graphTitle),
                     // Y-axis label (rotated)
-                    h('text', { x: 15, y: H / 2, textAnchor: 'middle', fontSize: 11, fill: '#64748b', transform: `rotate(-90, 15, ${H / 2})` }, yAxisLabel),
+                    h('text', { x: 15, y: H / 2, textAnchor: 'middle', fontSize: 11, fill: '#64748b', transform: `rotate(-90, 15, ${H / 2})` }, effectiveYAxisLabel),
                     // X-axis label
                     h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 11, fill: '#64748b' }, xAxisLabel),
                     // Y-axis ticks and grid
@@ -19884,7 +20102,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             { id: 'total', name: 'Total Task', desc: 'Practice all steps each trial with prompting as needed' },
         ];
 
-        const addStep = () => setSteps(prev => [...prev, { id: 's' + (prev.length + 1), desc: '', status: 'not_started', promptLevel: 'FP', notes: '' }]);
+        const addStep = () => setSteps(prev => [...prev, { id: uid(), desc: '', status: 'not_started', promptLevel: 'FP', notes: '' }]);
         const removeStep = (id) => { if (steps.length > 1) setSteps(prev => prev.filter(s => s.id !== id)); };
         const updateStep = (id, field, value) => setSteps(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
 
@@ -21673,7 +21891,7 @@ Keep the language professional but accessible.`;
         const [components, setComponents] = useState([{ id: 'c1', desc: '', implemented: false }]);
         const [sessions, setSessions] = useState([]);
 
-        const addComponent = () => setComponents(prev => [...prev, { id: 'c' + (prev.length + 1), desc: '', implemented: false }]);
+        const addComponent = () => setComponents(prev => [...prev, { id: uid(), desc: '', implemented: false }]);
         const removeComponent = (id) => { if (components.length > 1) setComponents(prev => prev.filter(c => c.id !== id)); };
         const updateComponent = (id, field, value) => setComponents(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
 
@@ -22145,11 +22363,12 @@ Keep the language professional but accessible.`;
 
                 const studentAbc = abcEntries.filter(e => e.student === name);
 
-                const lastEntry = studentAbc.length > 0 ? studentAbc[studentAbc.length - 1] : null;
+                const lastEntry = studentAbc.filter(entry => Number.isFinite(Date.parse(entry.occurredAt || entry.timestamp))).sort((left, right) => Date.parse(right.occurredAt || right.timestamp) - Date.parse(left.occurredAt || left.timestamp))[0] || null;
 
                 const daysSinceEntry = lastEntry ? Math.floor((Date.now() - new Date(lastEntry.timestamp).getTime()) / 86400000) : 999;
 
-                const avgIntensity = studentAbc.length > 0 ? studentAbc.reduce((sum, e) => sum + (e.intensity || 3), 0) / studentAbc.length : 0;
+                const intensitySummary = getBehaviorLensWorkspaceRuntime().summarizeIntensity(studentAbc);
+                const avgIntensity = intensitySummary.mean;
 
                 let status = 'on_track';
 
@@ -22157,7 +22376,7 @@ Keep the language professional but accessible.`;
 
                 else if (daysSinceEntry > 14 || avgIntensity >= 3) status = 'needs_attention';
 
-                return { name, abcCount: studentAbc.length, daysSinceEntry, avgIntensity: avgIntensity.toFixed(1), status };
+                return { name, abcCount: studentAbc.length, daysSinceEntry, avgIntensity: avgIntensity == null ? 'No ratings' : avgIntensity.toFixed(1), intensityN: intensitySummary.ratedCount, status };
 
             });
 
@@ -22412,7 +22631,7 @@ Keep the language professional but accessible.`;
         // Split on separators, then drop empty tokens BEFORE Number() —
         // Number('') is 0, so a trailing comma would otherwise inject a
         // spurious 0 data point and skew every statistic.
-        const parseData = (str) => str.split(/[,\s]+/).map(s => s.trim()).filter(s => s !== '').map(Number).filter(n => !isNaN(n));
+        const parseData = (str) => str.split(/[,\s]+/).map(s => s.trim()).filter(s => s !== '').map(Number).filter(Number.isFinite);
 
         // Auto-fill from graph phase data
         const handleAutoFill = () => {
@@ -22443,8 +22662,14 @@ Keep the language professional but accessible.`;
                 if (addToast) addToast(tt('behavior_lens.toast.need_2_baseline_2_intervention_entries_with_phase_tags', 'Need at least 2 baseline + 2 intervention entries with phase tags'), 'warning');
                 return;
             }
-            const baseVals = baseEntries.map(e => e.intensity || 3);
-            const intVals = intEntries.map(e => e.intensity || 3);
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const byOccurrence = (left, right) => (Date.parse(left.occurredAt || left.timestamp) || 0) - (Date.parse(right.occurredAt || right.timestamp) || 0);
+            const baseVals = baseEntries.slice().sort(byOccurrence).map(entry => runtime.normalizeIntensity(entry.intensity)).filter(value => value != null);
+            const intVals = intEntries.slice().sort(byOccurrence).map(entry => runtime.normalizeIntensity(entry.intensity)).filter(value => value != null);
+            if (baseVals.length < 2 || intVals.length < 2) {
+                if (addToast) addToast('Each phase needs at least 2 rated entries. Missing intensity ratings are excluded.', 'warning');
+                return;
+            }
             setBaselineData(baseVals.join(', '));
             setInterventionData(intVals.join(', '));
             if (addToast) addToast(t('behavior_lens.toast.autofilled_from_phase_tagged_entries') || `Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention intensity values from ABC data`, 'success');
@@ -22947,7 +23172,7 @@ Keep the language professional but accessible.`;
 
 
     // ─── BatchImportPanel ──────────────────────────────────────────────
-    const BatchImportPanel = ({ abcEntries, setAbcEntries, studentRoster, setStudentRoster, setSelectedStudent, addToast, t }) => {
+    const BatchImportPanel = ({ abcEntries, setAbcEntries, onImportStudentProfiles, addToast, t }) => {
         const [importMode, setImportMode] = useState('abc'); // 'abc' | 'students'
         const [parsedRows, setParsedRows] = useState([]);
         const [errors, setErrors] = useState([]);
@@ -22958,33 +23183,38 @@ Keep the language professional but accessible.`;
         const studentHeaders = ['name', 'grade', 'diagnosis', 'accommodations', 'notes'];
 
         const parseCSV = (text) => {
-            const lines = text.split(/\r?\n/).filter(l => l.trim());
-            if (lines.length < 2) return { rows: [], errs: ['File must have a header row and at least one data row.'] };
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, ''));
-            const expectedHeaders = importMode === 'abc' ? abcHeaders : studentHeaders;
-            const missingHeaders = expectedHeaders.filter(h => h !== 'notes' && h !== 'setting' && !headers.includes(h));
-            if (missingHeaders.length > 0) return { rows: [], errs: [`Missing required columns: ${missingHeaders.join(', ')}`] };
-            const rows = []; const errs = [];
-            for (let i = 1; i < lines.length; i++) {
-                const vals = []; let inQuote = false; let cur = '';
-                for (const ch of lines[i]) {
-                    if (ch === '"') { inQuote = !inQuote; }
-                    else if (ch === ',' && !inQuote) { vals.push(cur.trim()); cur = ''; }
-                    else { cur += ch; }
-                }
-                vals.push(cur.trim());
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            let records;
+            try { records = runtime.parseCsvRows(text).filter(row => row.some(value => value.trim())); }
+            catch (error) { return { rows: [], errs: [error.message || 'The CSV file could not be parsed.'] }; }
+            if (records.length < 2) return { rows: [], errs: ['File must have a header row and at least one data row.'] };
+            const headers = records[0].map(value => value.trim().toLowerCase().replace(/[^a-z_]/g, ''));
+            const required = importMode === 'abc' ? ['timestamp', 'antecedent', 'behavior', 'consequence'] : ['name'];
+            const missingHeaders = required.filter(header => !headers.includes(header));
+            if (missingHeaders.length) return { rows: [], errs: ['Missing required columns: ' + missingHeaders.join(', ')] };
+            const rows = [], errs = [];
+            records.slice(1).forEach((values, index) => {
                 const row = {};
-                headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
+                headers.forEach((header, column) => { row[header] = values[column] || ''; });
+                const invalid = message => { errs.push('Row ' + (index + 2) + ': ' + message); row._error = true; };
+                if (values.length !== headers.length) invalid('column count does not match the header');
                 if (importMode === 'abc') {
-                    if (!row.antecedent || !row.behavior || !row.consequence) { errs.push(`Row ${i}: missing A, B, or C`); row._error = true; }
-                    row.intensity = Math.min(5, Math.max(1, parseInt(row.intensity) || 3));
-                    row.timestamp = row.timestamp || new Date().toISOString();
-                    row.id = 'imp_' + Date.now() + '_' + i;
+                    if (!row.antecedent.trim() || !row.behavior.trim() || !row.consequence.trim()) invalid('missing A, B, or C');
+                    const timestamp = runtime.normalizeIsoTimestamp(row.timestamp);
+                    if (!timestamp) invalid('provide a valid observation timestamp');
+                    row.timestamp = timestamp;
+                    const rawIntensity = row.intensity == null ? '' : row.intensity.trim();
+                    row.intensity = runtime.normalizeIntensity(rawIntensity);
+                    if (rawIntensity && row.intensity === null) invalid('intensity must be between 1 and 5, or blank if unknown');
+                    if (row.duration && (!Number.isFinite(Number(row.duration)) || Number(row.duration) < 0 || Number(row.duration) > 86400)) invalid('duration must be between 0 and 86400 seconds');
+                    row.id = 'imp_' + uid();
+                    row.source = 'csv-import';
                 } else {
-                    if (!row.name) { errs.push(`Row ${i}: missing student name`); row._error = true; }
+                    row.name = row.name.trim();
+                    if (!row.name) invalid('missing student name');
                 }
                 rows.push(row);
-            }
+            });
             return { rows, errs };
         };
 
@@ -23003,22 +23233,22 @@ Keep the language professional but accessible.`;
         };
 
         const handleImport = () => {
-            const validRows = parsedRows.filter(r => !r._error);
-            if (validRows.length === 0) return;
-            if (importMode === 'abc') {
-                const newEntries = validRows.map(r => ({ id: r.id, timestamp: r.timestamp, antecedent: r.antecedent, behavior: r.behavior, consequence: r.consequence, intensity: r.intensity, duration: r.duration ? parseInt(r.duration) : null, notes: r.notes || '', setting: r.setting || '' }));
-                setAbcEntries(prev => [...prev, ...newEntries]);
-            } else {
-                validRows.forEach(r => {
-                    setStudentRoster(prev => {
-                        if (prev.find(s => s.name === r.name)) return prev;
-                        return [...prev, { name: r.name, lastAccessed: new Date().toISOString(), grade: r.grade, diagnosis: r.diagnosis, accommodations: r.accommodations, notes: r.notes }];
-                    });
-                });
-                if (validRows[0]) setSelectedStudent(validRows[0].name);
+            const validRows = parsedRows.filter(row => !row._error);
+            if (!validRows.length) return;
+            try {
+                if (importMode === 'abc') {
+                    const runtime = getBehaviorLensWorkspaceRuntime();
+                    const newEntries = runtime.normalizeAbcEntries(validRows).items;
+                    setAbcEntries(previous => [...previous, ...newEntries]);
+                } else {
+                    if (typeof onImportStudentProfiles !== 'function') throw new Error('Student profile import is unavailable.');
+                    onImportStudentProfiles(validRows);
+                }
+                setImported(true);
+                if (addToast) addToast('Imported ' + validRows.length + ' ' + (importMode === 'abc' ? 'ABC entries' : 'student profiles') + '.', 'success');
+            } catch (error) {
+                if (addToast) addToast('Import could not be completed: ' + error.message, 'error');
             }
-            setImported(true);
-            if (addToast) addToast(t('behavior_lens.toast.imported_n_n') || `Imported ${validRows.length} ${importMode === 'abc' ? 'ABC entries' : 'students'}!`, 'success');
         };
 
         const downloadTemplate = () => {
@@ -23094,8 +23324,8 @@ Keep the language professional but accessible.`;
     // ─── ProgressMonitorDashboard ──────────────────────────────────────
     const ProgressMonitorDashboard = ({ abcEntries, observationSessions, sessionHistory, t, addToast }) => {
         const [targetBehavior, setTargetBehavior] = useState('');
-        const [goalCount, setGoalCount] = useState(0);
-        const [goalDate, setGoalDate] = useState('');
+        const [goalCount, setGoalCount] = useDurableToolState('progressMonitorGoalCount', '');
+        const [goalDate, setGoalDate] = useDurableToolState('progressMonitorGoalDate', '');
         const [phases, setPhases] = useState([{ label: (tt('behavior_lens.raw.baseline', 'Baseline')), startDate: '', color: '#6366f1' }]);
         const [showPhaseEditor, setShowPhaseEditor] = useState(false);
 
@@ -23109,13 +23339,12 @@ Keep the language professional but accessible.`;
         // Daily frequency data
         const dailyData = useMemo(() => {
             const filtered = targetBehavior ? abcEntries.filter(e => e.behavior === targetBehavior) : abcEntries;
-            const byDay = {};
-            filtered.forEach(e => {
-                const d = new Date(e.timestamp).toISOString().split('T')[0];
-                byDay[d] = (byDay[d] || 0) + 1;
-            });
-            return Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count }));
+            return getBehaviorLensWorkspaceRuntime().groupByLocalDay(filtered).map(day => ({ date: day.date, count: day.count }));
         }, [abcEntries, targetBehavior]);
+
+        const hasGoal = goalCount !== '' && goalCount != null && Number.isFinite(Number(goalCount)) && Number(goalCount) >= 0;
+        const dayNumber = value => { const parts = String(value).split('-').map(Number); return Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000; };
+        const validGoalDate = goalDate && getBehaviorLensWorkspaceRuntime().parseLocalDateBoundary(goalDate, false) ? goalDate : null;
 
         // Linear regression for trend line.
         // Minimum 5 datapoints — a spurious "increasing trend" from a single
@@ -23124,7 +23353,7 @@ Keep the language professional but accessible.`;
         const trendLine = useMemo(() => {
             if (dailyData.length < 5) return null;
             const n = dailyData.length;
-            const xs = dailyData.map((_, i) => i);
+            const xs = dailyData.map(day => dayNumber(day.date) - dayNumber(dailyData[0].date));
             const ys = dailyData.map(d => d.count);
             const sumX = xs.reduce((a, b) => a + b, 0);
             const sumY = ys.reduce((a, b) => a + b, 0);
@@ -23132,7 +23361,7 @@ Keep the language professional but accessible.`;
             const sumX2 = xs.reduce((a, x) => a + x * x, 0);
             const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
             const intercept = (sumY - slope * sumX) / n;
-            return { slope, intercept, startY: intercept, endY: slope * (n - 1) + intercept };
+            return { slope, intercept, startY: intercept, endY: slope * xs[n - 1] + intercept };
         }, [dailyData]);
 
         // SVG chart dimensions
@@ -23146,7 +23375,13 @@ Keep the language professional but accessible.`;
             );
             const maxCount = Math.max(...dailyData.map(d => d.count), goalCount || 1, 1);
             const chartW = W - PAD * 2, chartH = H - PAD * 2;
-            const xScale = (i) => PAD + (i / Math.max(dailyData.length - 1, 1)) * chartW;
+            const firstDay = dayNumber(dailyData[0].date);
+            const lastDay = dayNumber(dailyData[dailyData.length - 1].date);
+            const goalDay = validGoalDate ? dayNumber(validGoalDate) : lastDay;
+            const chartEnd = Math.max(lastDay, hasGoal ? goalDay : lastDay, firstDay + 1);
+            const chartStart = Math.min(firstDay, hasGoal ? goalDay : firstDay);
+            const dateX = day => PAD + (day - chartStart) / (chartEnd - chartStart) * chartW;
+            const xScale = index => dateX(dayNumber(dailyData[index].date));
             const yScale = (v) => PAD + chartH - (v / maxCount) * chartH;
 
             // Data points polyline
@@ -23169,8 +23404,8 @@ Keep the language professional but accessible.`;
                     );
                 }).filter(Boolean),
                 // Aim line (dashed)
-                goalCount > 0 && dailyData.length > 0 && h('line', { x1: xScale(0), y1: yScale(dailyData[0].count), x2: xScale(dailyData.length - 1), y2: yScale(goalCount), stroke: '#22c55e', strokeWidth: 2, strokeDasharray: '8,4' }),
-                goalCount > 0 && h('text', { x: W - PAD + 4, y: yScale(goalCount) + 4, fill: '#22c55e', fontSize: 10, fontWeight: 'bold' }, '🎯 Goal'),
+                hasGoal && dailyData.length > 0 && h('line', { x1: xScale(0), y1: yScale(dailyData[0].count), x2: dateX(goalDay), y2: yScale(Number(goalCount)), stroke: '#22c55e', strokeWidth: 2, strokeDasharray: '8,4' }),
+                hasGoal && h('text', { x: Math.min(W - 75, dateX(goalDay) + 4), y: yScale(Number(goalCount)) - 8, fill: '#22c55e', fontSize: 10, fontWeight: 'bold' }, validGoalDate ? 'Goal ' + validGoalDate.slice(5) : 'Goal'),
                 // Trend line
                 trendLine && h('line', { x1: xScale(0), y1: yScale(trendLine.startY), x2: xScale(dailyData.length - 1), y2: yScale(trendLine.endY), stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '4,4' }),
                 // Data line
@@ -23203,7 +23438,7 @@ Keep the language professional but accessible.`;
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎯 Goal (count/day)'),
-                        h('input', { type: 'number', min: 0, value: goalCount, onChange: e => setGoalCount(parseInt(e.target.value) || 0), 'aria-label': 'Goal count per day', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
+                        h('input', { type: 'number', min: 0, value: goalCount, onChange: e => setGoalCount(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0)), 'aria-label': 'Goal count per day', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '📅 Goal Date'),
@@ -23227,10 +23462,11 @@ Keep the language professional but accessible.`;
             ),
             // Chart
             renderChart(),
+            h('p', { className: 'text-xs text-slate-600' }, 'Counts reflect logged ABC entries. Days without entries are not assumed to be observed zero-event days.'),
             // Legend
             h('div', { className: 'flex flex-wrap gap-4 text-[11px] text-slate-600 justify-center' },
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-indigo-500 inline-block' }), ' Data'),
-                goalCount > 0 && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-green-500 inline-block', style: { borderTop: '2px dashed #22c55e' } }), ' Aim Line'),
+                hasGoal && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-green-500 inline-block', style: { borderTop: '2px dashed #22c55e' } }), ' Aim Line'),
                 trendLine && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-amber-500 inline-block', style: { borderTop: '2px dashed #f59e0b' } }), ' Trend'),
                 ...phases.map((p, i) => h('span', { key: i, className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 inline-block', style: { borderTop: `2px dashed ${p.color}` } }), ` ${p.label}`))
             ),
@@ -23648,7 +23884,7 @@ Keep the language professional but accessible.`;
                 phases: runtime.summarizePhases(entries, filtered.sessions), quality: runtime.inspectAbcData(entries, targetBehaviors || [], filtered.sessions)
             };
         }, [filtered, targetBehaviors]);
-        const aiAnalysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries), [aiAnalysis, abcEntries]);        const generateRecs = async () => {
+        const aiAnalysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries, targetBehaviors), [aiAnalysis, abcEntries, targetBehaviors]);        const generateRecs = async () => {
             if (!callGemini || analytics.totalEntries === 0) return;
             setRecsLoading(true);
             try {
@@ -24626,7 +24862,7 @@ IMPORTANT rules for expert keys:
                     h('h4', { className: 'text-2xl font-black text-slate-800 mb-8 text-center' }, currentQ.title),
                     h('div', { className: 'space-y-4' },
                         currentQ.options.map(opt =>
-                            h('button', { "aria-label": "Select",
+                            h('button', { 'aria-label': opt.label,
                                 key: opt.id,
                                 onClick: () => handleSelect(opt),
                                 className: 'w-full flex items-center p-5 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-start group shadow-sm hover:shadow-md'
@@ -25352,6 +25588,12 @@ IMPORTANT rules for expert keys:
         limits: BL_ALLOSHEET_LIMITS,
         buildEnvelope: buildBehaviorLensAlloSheetEnvelope
     });
+    const behaviorLensToolPrerequisite = (toolId, selectedStudent, entryCount) => {
+        const independentTools = ['wizard', 'record', 'export', 'abaguide', 'glossary', 'fbaworkflow', 'sandbox', 'pdpath', 'abaquiz', 'functionquiz', 'casestudy', 'skilltracker', 'practicum', 'mipractice', 'deescalate', 'abagraph', 'scdmanager', 'effectsize'];
+        if (!selectedStudent && !independentTools.includes(toolId)) return 'Choose a student before opening this tool.';
+        if (toolId === 'analysis' && entryCount < 3) return 'Add at least 3 ABC observations before running AI analysis.';
+        return '';
+    };
     const BehaviorLensApp = ({
         onClose,
         callGemini,
@@ -25525,7 +25767,7 @@ IMPORTANT rules for expert keys:
         }, [_cloudUserId, _cloudAppId]);
 
         const _performCloudSave = useCallback(async (studentId, data, options = {}) => {
-            if (isCanvasEnv || !firestore || !_cloudUserId || !studentId) return false;
+            if (isCanvasEnv || !firestore || !_cloudUserId || !studentId || (data && data.isPracticeMode === true)) return false;
             if (!_fb.doc || !_fb.runTransaction) {
                 warnLog('CloudSync: Firestore transactions unavailable; refusing a non-atomic workspace write');
                 _setSyncStatus('offline');
@@ -25807,6 +26049,8 @@ IMPORTANT rules for expert keys:
         const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
         const [isPracticeMode, setIsPracticeMode] = useState(false);
         const [practiceScenarioName, setPracticeScenarioName] = useState('');
+        const [practiceReturnStudent, setPracticeReturnStudent] = useState('');
+        const PRACTICE_WORKSPACE_ID = 'behavior-lens-practice';
         const [favorites, setFavorites] = useState([]);
         const [sessionNotes, setSessionNotes] = useState([]);
         const [teamNotes, setTeamNotes] = useState([]);
@@ -25890,6 +26134,9 @@ IMPORTANT rules for expert keys:
             setObservationSessions([]);
             setAiAnalysis(null);
             setAnalyzing(false);
+            setIsPracticeMode(false);
+            setPracticeScenarioName('');
+            setPracticeReturnStudent('');
             setSessionNotes([]);
             setTeamNotes([]);
             setTargetBehaviors([]);
@@ -25922,6 +26169,9 @@ IMPORTANT rules for expert keys:
             const workspace = getBehaviorLensWorkspaceRuntime().normalizeWorkspace(data);
             setAbcEntries(workspace.abcEntries);
             setObservationSessions(workspace.observationSessions);
+            setIsPracticeMode(data && data.isPracticeMode === true);
+            setPracticeScenarioName(data && data.isPracticeMode === true ? String(data.practiceScenarioName || 'Practice Scenario') : '');
+            setPracticeReturnStudent(data && data.isPracticeMode === true ? String(data.practiceReturnStudent || '') : '');
             setSessionNotes(workspace.sessionNotes);
             setTeamNotes(workspace.teamNotes);
             setTargetBehaviors(workspace.targetBehaviors);
@@ -25950,10 +26200,10 @@ IMPORTANT rules for expert keys:
 
         // Persist roster to localStorage + cloud write-through
         useEffect(() => {
-            try { localStorage.setItem('bl_student_roster', JSON.stringify(studentRoster.slice(0, 20))); } catch {}
+            try { localStorage.setItem('bl_student_roster', JSON.stringify(studentRoster)); } catch {}
             // Cloud write-through for roster
             if (cloudSync.userId && !isCanvasEnv) {
-                cloudSync.saveToCloud('__roster__', { roster: studentRoster.slice(0, 20) }).catch(() => {});
+                cloudSync.saveToCloud('__roster__', { roster: studentRoster }).catch(() => {});
             }
         }, [studentRoster]);
 
@@ -25968,7 +26218,7 @@ IMPORTANT rules for expert keys:
                         ? { ...r, id: r.id || uid(), lastAccessed: new Date().toISOString() }
                         : r);
                 }
-                return [{ id: uid(), name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev].slice(0, 20);
+                return [{ id: uid(), name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev];
             });
         }, [selectedStudent]);
 
@@ -25983,6 +26233,11 @@ IMPORTANT rules for expert keys:
             const r = studentRoster.find(r => r.name === selectedStudent);
             return (r && r.id) ? r.id : null;
         }, [selectedStudent, studentRoster]);
+        const workspaceSelectionRef = useRef(null);
+        const workspaceSelectionIdentity = activeStudentId || 'name:' + selectedStudent;
+        if (!workspaceSelectionRef.current || workspaceSelectionRef.current.identity !== workspaceSelectionIdentity) {
+            workspaceSelectionRef.current = { identity: workspaceSelectionIdentity };
+        }
 
         // Build a storage key for the active student. Prefer the immutable
         // id (survives codename changes). Slugify the codename as a
@@ -26036,6 +26291,7 @@ IMPORTANT rules for expert keys:
                 userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
                 workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
                 aiAnalysis: aiAnalysis || null,
+                isPracticeMode, practiceScenarioName, practiceReturnStudent,
                 targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
                 dismissedAlerts: Array.from(dismissedAlerts),
                 visitedPanels: Array.from(visitedPanels),
@@ -26050,7 +26306,7 @@ IMPORTANT rules for expert keys:
         }, [selectedStudent, abcEntries, observationSessions, favorites, sessionNotes, teamNotes,
             studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
-            aiAnalysis, targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
+            aiAnalysis, isPracticeMode, practiceScenarioName, practiceReturnStudent, targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
             dismissedAlerts, visitedPanels, buildWorkspaceSummary]);
 
         // Switch to a different student from the comparison workspaces
@@ -26155,28 +26411,143 @@ IMPORTANT rules for expert keys:
             }
         }, [selectedStudent, studentNickname, fireBotTip]);
 
-        // Practice sandbox data loader
-        const handleLoadScenario = (scenarioData) => {
+        // Resolve the durable destination before changing the active student.
+        // Imports and practice never pass through a temporary name-based workspace.
+        const stageStudentWorkspace = (incoming) => {
             const runtime = getBehaviorLensWorkspaceRuntime();
-            const scenarioBehaviors = runtime.normalizeTargetBehaviors([], scenarioData.entries || []);
-            setTargetBehaviors(scenarioBehaviors);
-            setAbcEntries(runtime.normalizeAbcEntries(scenarioData.entries || [], { targetBehaviors: scenarioBehaviors }).items);
-            if (!scenarioData.append) {
-                // Full load — reset analysis and observations
-                setObservationSessions(scenarioData.observations || []);
-                setAiAnalysis(null);
-                setPracticeScenarioName(scenarioData.name || 'Practice Scenario');
+            const simulated = incoming.isPracticeMode === true;
+            const requestedName = String(incoming.student || selectedStudent || 'Imported student').trim();
+            let rosterEntry = simulated
+                ? studentRoster.find(item => item.id === PRACTICE_WORKSPACE_ID)
+                : studentRoster.find(item => item.name === requestedName && item.id !== PRACTICE_WORKSPACE_ID);
+            if (!rosterEntry) {
+                let name = simulated ? 'Practice workspace' : requestedName;
+                if (simulated) {
+                    let suffix = 2;
+                    while (studentRoster.some(item => item.name === name)) name = 'Practice workspace ' + suffix++;
+                }
+                const importedId = typeof incoming.studentId === 'string' && /^[A-Za-z0-9_-]{1,120}$/.test(incoming.studentId)
+                    && incoming.studentId !== PRACTICE_WORKSPACE_ID && !studentRoster.some(item => item.id === incoming.studentId)
+                    ? incoming.studentId : uid();
+                rosterEntry = { id: simulated ? PRACTICE_WORKSPACE_ID : importedId, name, lastAccessed: new Date().toISOString() };
             }
-            setIsPracticeMode(true);
-            setActivePanel('hub');
+            const roster = studentRoster.some(item => item.id === rosterEntry.id)
+                ? studentRoster.map(item => item.id === rosterEntry.id ? { ...rosterEntry, lastAccessed: new Date().toISOString(), isPracticeMode: simulated } : item)
+                : [...studentRoster, { ...rosterEntry, isPracticeMode: simulated }];
+            const workspaceKey = 'behaviorLens_workspace_' + rosterEntry.id;
+            const previousRaw = localStorage.getItem(workspaceKey);
+            const previous = previousRaw ? JSON.parse(previousRaw) : null;
+            const workspace = {
+                ...incoming, student: rosterEntry.name, studentId: rosterEntry.id,
+                isPracticeMode: simulated,
+                practiceScenarioName: simulated ? String(incoming.practiceScenarioName || 'Practice Scenario') : '',
+                practiceReturnStudent: simulated ? String(incoming.practiceReturnStudent || '') : '',
+                savedAt: new Date().toISOString(),
+                snapshotId: localTabIdRef.current + ':' + (++workspaceSnapshotSequenceRef.current).toString(36),
+                revision: _cloudRevisionsRef.current[rosterEntry.id] ?? runtime.workspaceRevision(previous)
+            };
+            const flushed = localWorkspaceSaveSchedulerRef.current.flush({ reason: 'workspace-selection' });
+            if (!flushed.ok) throw new Error('The current workspace could not be saved. Export a backup before changing workspaces.');
+            const result = runtime.persistLocalWorkspace({
+                storage: localStorage, workspaceKey,
+                dirtyKey: 'behaviorLens_workspace_dirty_' + rosterEntry.id,
+                workspace, suppressDirtyMark: !!isCanvasEnv || simulated
+            });
+            localStorage.setItem('bl_student_roster', JSON.stringify(roster));
+            _reportWorkspaceCapacity(result.capacity);
+            _clearLocalPersistenceError();
+            setStudentRoster(roster);
+            if (rosterEntry.id === activeStudentId) {
+                applyStudentWorkspace(workspace);
+            } else {
+                pendingWorkspaceRef.current = { student: rosterEntry.name, studentId: rosterEntry.id, data: workspace };
+                setSelectedStudent(rosterEntry.name);
+            }
+            return workspace;
+        };
+
+        const handleImportStudentProfiles = (rows) => {
+            const runtime = getBehaviorLensWorkspaceRuntime();
+            const flushed = localWorkspaceSaveSchedulerRef.current.flush({ reason: 'profile-import' });
+            if (!flushed.ok) throw new Error('Save or export the current workspace before importing profiles.');
+            const roster = studentRoster.slice();
+            const imported = [];
+            rows.forEach(row => {
+                let student = roster.find(item => item.name === row.name && item.id !== PRACTICE_WORKSPACE_ID);
+                if (!student) { student = { id: uid(), name: row.name, lastAccessed: new Date().toISOString() }; roster.push(student); }
+                const key = 'behaviorLens_workspace_' + student.id;
+                const raw = localStorage.getItem(key);
+                const previous = raw ? JSON.parse(raw) : {};
+                const workspace = {
+                    ...previous, version: runtime.WORKSPACE_VERSION, student: student.name, studentId: student.id,
+                    isPracticeMode: false, savedAt: new Date().toISOString(),
+                    snapshotId: localTabIdRef.current + ':' + (++workspaceSnapshotSequenceRef.current).toString(36),
+                    revision: _cloudRevisionsRef.current[student.id] ?? runtime.workspaceRevision(previous),
+                    abcEntries: previous.abcEntries || [], observationSessions: previous.observationSessions || [],
+                    studentProfile: {
+                        ...runtime.emptyStudentProfile(), ...previous.studentProfile,
+                        grade: row.grade || '', diagnosis: row.diagnosis || '',
+                        accommodations: row.accommodations || '',
+                        notes: [row.grade ? 'Grade: ' + row.grade : '', row.diagnosis ? 'Diagnosis: ' + row.diagnosis : '', row.notes || ''].filter(Boolean).join('\n')
+                    }
+                };
+                const result = runtime.persistLocalWorkspace({ storage: localStorage, workspaceKey: key,
+                    dirtyKey: 'behaviorLens_workspace_dirty_' + student.id, workspace, suppressDirtyMark: !!isCanvasEnv });
+                _reportWorkspaceCapacity(result.capacity);
+                imported.push(workspace);
+            });
+            localStorage.setItem('bl_student_roster', JSON.stringify(roster));
+            setStudentRoster(roster);
+            const first = imported[0];
+            if (first) {
+                if (first.studentId === activeStudentId) applyStudentWorkspace(first);
+                else {
+                    pendingWorkspaceRef.current = { student: first.student, studentId: first.studentId, data: first };
+                    setSelectedStudent(first.student);
+                }
+            }
+            imported.forEach(workspace => {
+                if (cloudSync.userId && !isCanvasEnv) cloudSync.saveToCloud(workspace.studentId, workspace).catch(() => {});
+            });
+        };
+
+        // Practice has a reserved, local-only workspace. Real student data remains intact.
+        const handleLoadScenario = (scenarioData) => {
+            try {
+                const runtime = getBehaviorLensWorkspaceRuntime();
+                const scenarioBehaviors = runtime.normalizeTargetBehaviors([], scenarioData.entries || []);
+                const practice = {
+                    ...(isPracticeMode && scenarioData.append ? buildWorkspaceSnapshot() : {}),
+                    student: 'Practice workspace',
+                    isPracticeMode: true,
+                    practiceScenarioName: scenarioData.name || practiceScenarioName || 'Practice Scenario',
+                    practiceReturnStudent: isPracticeMode ? practiceReturnStudent : selectedStudent,
+                    targetBehaviors: scenarioBehaviors,
+                    abcEntries: runtime.normalizeAbcEntries(scenarioData.entries || [], { targetBehaviors: scenarioBehaviors }).items,
+                    observationSessions: scenarioData.append && isPracticeMode ? observationSessions : (scenarioData.observations || []),
+                    aiAnalysis: null
+                };
+                stageStudentWorkspace(practice);
+                setActivePanel('hub');
+            } catch (error) {
+                _reportLocalPersistenceError(error);
+                if (addToast) addToast('Practice could not be opened: ' + error.message, 'error');
+            }
         };
         const handleClearPractice = () => {
-            setAbcEntries([]);
-            setObservationSessions([]);
-            setAiAnalysis(null);
-            setIsPracticeMode(false);
-            setPracticeScenarioName('');
-            if (addToast) addToast(tt('behavior_lens.toast.practice_data_cleared', 'Practice data cleared'), 'info');
+            if (!isPracticeMode) return;
+            const returnStudent = studentRoster.find(item => item.id !== PRACTICE_WORKSPACE_ID && item.name === practiceReturnStudent)
+                || studentRoster.find(item => item.id !== PRACTICE_WORKSPACE_ID);
+            try {
+                localWorkspaceSaveSchedulerRef.current.cancel(PRACTICE_WORKSPACE_ID);
+                localStorage.removeItem('behaviorLens_workspace_' + PRACTICE_WORKSPACE_ID);
+                localStorage.removeItem('behaviorLens_workspace_dirty_' + PRACTICE_WORKSPACE_ID);
+                setStudentRoster(previous => previous.filter(item => item.id !== PRACTICE_WORKSPACE_ID));
+                setComparisonWorkspaces(previous => previous.filter(item => item._fullData?.studentId !== PRACTICE_WORKSPACE_ID && item._fullData?.isPracticeMode !== true));
+                resetStudentScopedState();
+                setSelectedStudent(returnStudent ? returnStudent.name : '');
+                if (addToast) addToast('Practice data cleared. Your student workspace is unchanged.', 'info');
+            } catch (error) { _reportLocalPersistenceError(error); }
         };
 
         // ── JSON Workspace Save/Load ──
@@ -26203,7 +26574,7 @@ IMPORTANT rules for expert keys:
                 summary: 'Downloaded a complete Behavior Lens workspace backup.'
             }));
             // Cloud write-through on manual save
-            if (cloudSync.userId && !isCanvasEnv && selectedStudent) {
+            if (cloudSync.userId && !isCanvasEnv && selectedStudent && !isPracticeMode) {
                 cloudSync.saveToCloud(activeStudentId || selectedStudent, workspace).then(ok => {
                     if (ok && addToast) addToast(tt('behavior_lens.toast.also_synced_to_cloud', '☁️ Also synced to cloud!'), 'success');
                 }).catch(() => {});
@@ -26227,12 +26598,7 @@ IMPORTANT rules for expert keys:
                     const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
                     const validWorkspace = data && validation.ok;
                     if (!validWorkspace) throw new Error(validation.error || 'Invalid BehaviorLens workspace shape');
-                    if (data.student && data.student !== selectedStudent) {
-                        pendingWorkspaceRef.current = { student: data.student, data };
-                        setSelectedStudent(data.student);
-                    } else {
-                        applyStudentWorkspace(data);
-                    }
+                    stageStudentWorkspace(data);
                     if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes', {
                         entries: Array.isArray(data.abcEntries) ? data.abcEntries.length : 0,
                         notes: Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0
@@ -26327,6 +26693,13 @@ IMPORTANT rules for expert keys:
 
         // Track visited panels for recommendations
         const openPanel = (panelId) => {
+            const prerequisite = behaviorLensToolPrerequisite(panelId, selectedStudent, abcEntries.length);
+            if (prerequisite) {
+                setActivePanel('hub');
+                if (addToast) addToast(prerequisite, 'info');
+                requestAnimationFrame(() => behaviorLensDialogRef.current?.querySelector('[aria-label="Choose a student"], [aria-label="Pick codename adjective"]')?.focus());
+                return;
+            }
             recordWorkflowDiagnostic('panel-open', { toolId: panelId, outcome: 'opened' });
             // AI analysis is a command that renders in the hub, not a separate panel.
             if (panelId === 'analysis') {
@@ -26344,7 +26717,7 @@ IMPORTANT rules for expert keys:
             // Accessibility: announce panel change for screen readers
             blAnnounceToSR('Opened ' + panelId.replace(/([A-Z])/g, ' $1').trim() + ' panel');
             requestAnimationFrame(() => {
-                const heading = document.querySelector('h2, h3');
+                const heading = behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content] h2, [data-bl-panel-content] h3') || behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content]');
                 if (heading) { if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1'); heading.focus(); }
             });
         };
@@ -26377,13 +26750,44 @@ IMPORTANT rules for expert keys:
         // consent is off, we surface a toast pointing the user at the
         // header toggle (instead of silently failing) and return null —
         // call sites already tolerate a null return as "AI unavailable."
+        // Every request belongs to the data and student that produced its prompt.
+        // A switch away and back still advances generation, preventing late reuse.
+        const aiInputFingerprint = useMemo(() => getBehaviorLensWorkspaceRuntime().stableHash([
+            getBehaviorLensWorkspaceRuntime().dataFingerprint(abcEntries, targetBehaviors),
+            observationSessions, studentProfile, sessionNotes, teamNotes, sessionHistory, aiAnalysis
+        ]), [abcEntries, targetBehaviors, observationSessions, studentProfile, sessionNotes, teamNotes, sessionHistory, aiAnalysis]);
+        const aiContextKey = (activeStudentId || selectedStudent || '') + '|' + aiConsent + '|' + aiInputFingerprint;
+        const aiRequestContextRef = useRef({ key: aiContextKey, generation: 0, mounted: true, requests: {} });
+        if (aiRequestContextRef.current.key !== aiContextKey) {
+            aiRequestContextRef.current.key = aiContextKey;
+            aiRequestContextRef.current.generation += 1;
+        }
+        useEffect(() => {
+            setSummaryLoading(false);
+            setAnalyzing(false);
+        }, [aiContextKey]);
+        useEffect(() => {
+            aiRequestContextRef.current.mounted = true;
+            return () => { aiRequestContextRef.current.mounted = false; aiRequestContextRef.current.generation += 1; };
+        }, []);
+        const beginStudentAiRequest = (kind) => {
+            const state = aiRequestContextRef.current;
+            state.requests[kind] = (state.requests[kind] || 0) + 1;
+            return { kind, request: state.requests[kind], generation: state.generation };
+        };
+        const isStudentAiRequestCurrent = (token) => {
+            const state = aiRequestContextRef.current;
+            return state.mounted && state.generation === token.generation && state.requests[token.kind] === token.request;
+        };
         const callGeminiGuarded = useCallback(async (prompt, jsonMode) => {
             if (!callGemini) return null;
             if (!aiConsent) {
                 if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
                 return null;
             }
-            return callGemini(prompt, jsonMode);
+            const generation = aiRequestContextRef.current.generation;
+            const result = await callGemini(prompt, jsonMode);
+            return aiRequestContextRef.current.mounted && aiRequestContextRef.current.generation === generation ? result : null;
         }, [callGemini, aiConsent, addToast, t]);
 
         // ── Vision/media consent gate ──
@@ -26398,7 +26802,9 @@ IMPORTANT rules for expert keys:
                 if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
                 return null;
             }
-            return callGeminiVision(prompt, base64, mime);
+            const generation = aiRequestContextRef.current.generation;
+            const result = await callGeminiVision(prompt, base64, mime);
+            return aiRequestContextRef.current.mounted && aiRequestContextRef.current.generation === generation ? result : null;
         }, [callGeminiVision, aiConsent, addToast, t]);
 
         // ── Contextual AI wrapper — auto-injects student profile + notes ──
@@ -26466,14 +26872,15 @@ IMPORTANT rules for expert keys:
         // ── Full Student Summary ──
         const handleFullSummary = async () => {
             if (!callGemini) return;
+            const request = beginStudentAiRequest('summary');
             if (fullSummary) { setFullSummary(''); return; }
             setSummaryLoading(true);
             try {
-                const abcStr = abcEntries.slice(-10).map(e =>
-                    `${new Date(e.timestamp).toLocaleDateString()}: B=${e.behavior}, A=${e.antecedent}, C=${e.consequence}, I=${e.intensity}/5`
+                const abcStr = getBehaviorLensWorkspaceRuntime().selectStratifiedEntries(abcEntries, 10).entries.map(e =>
+                    `${new Date(e.timestamp).toLocaleDateString()}: B=${e.behavior}, A=${e.antecedent}, C=${e.consequence}, I=${e.intensity == null ? 'not rated' : e.intensity + '/5'}`
                 ).join('\n');
                 const obsStr = (observationSessions || []).slice(-5).map(s =>
-                    `Method: ${s.method}, Duration: ${s.timer}s, Frequency: ${s.frequency}`
+                    `Method: ${s.method}, Observation duration: ${s.duration == null ? 'not recorded' : s.duration + 's'}, Measurements: ${JSON.stringify(s.data || {})}`
                 ).join('\n');
                 const prompt = `You are a special education specialist writing a comprehensive student behavioral profile.
 ${RESTORATIVE_PREAMBLE}
@@ -26497,17 +26904,18 @@ Write a unified student behavioral profile that synthesizes all available data. 
 
 Use professional language. Refer to "the student" (not the codename).`;
                 const result = await callGeminiGuarded(prompt, true);
-                if (result == null) { setSummaryLoading(false); return; }
+                if (result == null || !isStudentAiRequestCurrent(request)) return;
                 setFullSummary(result);
                 if (addToast) addToast(tt('behavior_lens.toast.student_summary_generated', 'Student summary generated ✨'), 'success');
             } catch (err) {
+                if (!isStudentAiRequestCurrent(request)) return;
                 warnLog('Full summary failed:', err);
                 if (addToast) addToast(tt('behavior_lens.toast.summary_generation_failed', 'Summary generation failed'), 'error');
-            } finally { setSummaryLoading(false); }
+            } finally { if (isStudentAiRequestCurrent(request)) setSummaryLoading(false); }
         };
 
         // Parent-friendly tool IDs (shown when isParentMode is true)
-        const parentTools = ['overview', 'token', 'traffic', 'choice', 'homelog', 'abaguide', 'homenote', 'pocket', 'snapshot', 'selfcheck'];
+        const parentTools = ['overview', 'token', 'traffic', 'choice', 'homelog', 'abaguide', 'homenote', 'pocket', 'snapshot', 'selfcheck', 'familyvoice', 'commlog', 'selfregulation'];
 
         // Two-dropdown codename system (adjective + animal)
         const adjectives = useMemo(() => t('codenames.adjectives', { returnObjects: true }) || [], [t]);
@@ -26562,14 +26970,15 @@ Use professional language. Refer to "the student" (not the codename).`;
             userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
             workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
             aiAnalysis, fullSummary, favorites,
+            isPracticeMode, practiceScenarioName, practiceReturnStudent,
             targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
             dismissedAlerts: Array.from(dismissedAlerts),
             visitedPanels: Array.from(visitedPanels)
         }), [selectedStudent, activeStudentId, abcEntries, observationSessions, sessionNotes, teamNotes,
             studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
-            aiAnalysis, fullSummary, favorites, targetBehaviors, toolState, deletedAbcEntries,
-            auditLog, workflowDiagnostics, dismissedAlerts, visitedPanels]);
+            aiAnalysis, fullSummary, favorites, isPracticeMode, practiceScenarioName, practiceReturnStudent,
+            targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics, dismissedAlerts, visitedPanels]);
         const cloudLoadAttempted = useRef({});
         const abcHydratedRef = useRef(false);
         const hydrationRef = useRef(null);
@@ -26613,8 +27022,10 @@ Use professional language. Refer to "the student" (not the codename).`;
             _reportLocalPersistenceError(storageError);
         };
         const handleUseCloudCopy = useCallback(async () => {
-            if (!selectedStudent || !cloudSync.userId) return;
-            const remote = await cloudSync.loadFromCloud(activeStudentId || selectedStudent);
+            if (!selectedStudent || !cloudSync.userId || isPracticeMode) return;
+            const selection = workspaceSelectionRef.current;
+            const remote = await cloudSync.loadFromCloud(activeStudentId || selectedStudent, { reconcile: true });
+            if (workspaceSelectionRef.current !== selection) return;
             if (!remote) {
                 if (addToast) addToast('The cloud copy could not be loaded. Your local copy is still available.', 'warning');
                 return;
@@ -26624,7 +27035,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             setCloudConflict(null);
             if (blAnnounceToSR) blAnnounceToSR('Loaded the newer cloud copy');
             if (addToast) addToast('Loaded the newer cloud copy.', 'success');
-        }, [selectedStudent, activeStudentId, cloudSync, applyStudentWorkspace, addToast, blAnnounceToSR]);
+        }, [selectedStudent, activeStudentId, isPracticeMode, cloudSync, applyStudentWorkspace, addToast, blAnnounceToSR]);
 
         const handleKeepLocalCopy = useCallback(() => {
             if (!selectedStudent || !cloudSync.userId) return;
@@ -26717,7 +27128,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 abcHydratedRef.current = true;
                 return undefined;
             }
-            const identity = activeStudentId || 'name:' + selectedStudent;
+            if (!activeStudentId) { abcHydratedRef.current = false; return undefined; }
+            const identity = activeStudentId;
             if (localWorkspaceSaveSchedulerRef.current.hasPending()) {
                 localWorkspaceSaveSchedulerRef.current.flush({ reason: 'before-hydration' });
             }
@@ -26731,10 +27143,12 @@ Use professional language. Refer to "the student" (not the codename).`;
                 latestLocalSnapshotRef.current = null;
                 setPendingLocalSync(false);
             }
-            const pendingWorkspace = pendingWorkspaceRef.current && pendingWorkspaceRef.current.student === selectedStudent
+            const pendingWorkspace = pendingWorkspaceRef.current && pendingWorkspaceRef.current.student === selectedStudent && pendingWorkspaceRef.current.studentId === activeStudentId
                 ? pendingWorkspaceRef.current.data : null;
             if (pendingWorkspace) {
                 pendingWorkspaceRef.current = null;
+                suppressNextWorkspacePersistRef.current = true;
+                latestLocalSnapshotRef.current = pendingWorkspace;
                 applyStudentWorkspace(pendingWorkspace);
                 abcHydratedRef.current = true;
                 hydrationCleanIdentityRef.current = identity;
@@ -26742,7 +27156,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
 
             const loadKey = activeStudentId || selectedStudent;
-            const shouldLoadCloud = !!(cloudSync.userId && !isCanvasEnv && !cloudLoadAttempted.current[loadKey]);
+            const shouldLoadCloud = !!(cloudSync.userId && !isCanvasEnv && activeStudentId !== PRACTICE_WORKSPACE_ID && !cloudLoadAttempted.current[loadKey]);
             if (shouldLoadCloud) cloudLoadAttempted.current[loadKey] = true;
             const workspaceKey = studentKey('behaviorLens_workspace_');
             const dirtyKey = studentKey('behaviorLens_workspace_dirty_');
@@ -26903,7 +27317,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
             const suppressDirtyMark = suppressNextDirtyMarkRef.current;
             suppressNextDirtyMarkRef.current = false;
-            const localOnly = !!isCanvasEnv;
+            const localOnly = !!isCanvasEnv || isPracticeMode || activeStudentId === PRACTICE_WORKSPACE_ID;
             const effectiveSuppressDirtyMark = suppressDirtyMark || localOnly;
             localWorkspaceSaveSchedulerRef.current.schedule({
                 identity: saveKey,
@@ -26914,7 +27328,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 localOnly
             });
             setPendingLocalSync(!effectiveSuppressDirtyMark && !localOnly);
-            if (cloudSync.userId && !isCanvasEnv && !suppressDirtyMark) {
+            if (cloudSync.userId && !localOnly && !suppressDirtyMark) {
                 if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
                 cloudSaveTimer.current = setTimeout(() => {
                     cloudSync.saveToCloud(saveKey, snapshot).catch(() => {});
@@ -26958,8 +27372,9 @@ Use professional language. Refer to "the student" (not the codename).`;
         // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
         useEffect(function() {
             function _alloEscHandler(e) {
-                if (e.key === 'Escape' && (showLiveObs || showFreqCounter || showIntervalGrid || showChoiceBoard || showWelcome || showRosterDropdown || showExportMenu)) {
-                    setShowLiveObs(false); setShowFreqCounter(false); setShowIntervalGrid(false); setShowChoiceBoard(false); setShowWelcome(false); setShowRosterDropdown(false); setShowExportMenu(false);
+                if (e.defaultPrevented) return;
+                if (e.key === 'Escape' && (showWelcome || showRosterDropdown || showExportMenu)) {
+                    setShowWelcome(false); setShowRosterDropdown(false); setShowExportMenu(false);
                     alloRestoreFocus();
                 }
             }
@@ -26975,11 +27390,12 @@ Use professional language. Refer to "the student" (not the codename).`;
                 return;
             }
             const runtime = getBehaviorLensWorkspaceRuntime();
+            const request = beginStudentAiRequest('analysis');
             const startedAt = Date.now();
             setAnalyzing(true);
             try {
                 const sample = runtime.selectStratifiedEntries(abcEntries, 24);
-                const provenance = runtime.createAnalysisProvenance(abcEntries, sample);
+                const provenance = runtime.createAnalysisProvenance(abcEntries, sample, undefined, targetBehaviors);
                 const dataStr = sample.entries.map((entry, index) => {
                     const behavior = runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label;
                     const intensity = runtime.normalizeIntensity(entry.intensity);
@@ -27005,7 +27421,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                     '  "notes": "sampling, missing-data, and alternative-explanation caveats"',
                     '}'
                 ].join('\n');
-                const result = await callGemini(prompt, true);
+                const result = await callGeminiGuarded(prompt, true);
+                if (result == null || !isStudentAiRequestCurrent(request)) return;
                 const cleaned = result.replace(/\x60\x60\x60json\n?/g, '').replace(/\x60\x60\x60\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -27027,10 +27444,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                 recordWorkflowDiagnostic('ai-analysis', { toolId: 'analysis', durationMs: Date.now() - startedAt, outcome: 'completed' });
                 if (addToast) addToast(tt('behavior_lens.abc.analysis_complete', 'Analysis complete'), 'success');
             } catch (error) {
+                if (!isStudentAiRequestCurrent(request)) return;
                 warnLog('AI Analysis failed:', error);
                 recordWorkflowDiagnostic('ai-analysis', { toolId: 'analysis', durationMs: Date.now() - startedAt, outcome: 'failed' });
                 if (addToast) addToast(tt('behavior_lens.abc.analysis_failed', 'Analysis failed - try again'), 'error');
-            } finally { setAnalyzing(false); }
+            } finally { if (isStudentAiRequestCurrent(request)) setAnalyzing(false); }
         };
 
         const handleSaveObsSession = (sessionData) => {
@@ -27039,15 +27457,17 @@ Use professional language. Refer to "the student" (not the codename).`;
             // Enables ABA Graph Engine, Cumulative Record, Effect Size Calculator
             // to automatically include data from frequency, interval, and duration recordings
             const d = sessionData.data || sessionData;
-            const dateStr = sessionData.timestamp ? new Date(sessionData.timestamp).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            const dateStr = getBehaviorLensWorkspaceRuntime().normalizeIsoTimestamp(sessionData.occurredAt || sessionData.timestamp) || new Date().toISOString();
+            const observationSessionId = sessionData.id || uid();
             const durStr = sessionData.duration ? `${sessionData.duration}s` : '';
 
             // Frequency counter: create per-counter entries with actual behavior labels
             if (sessionData.method === 'frequency' && Array.isArray(d.counters) && d.counters.length > 0) {
                 const entries = d.counters
-                    .filter(c => c.count > 0)
-                    .map(c => ({
+                    .map((c, index) => ({
+                        id: observationSessionId + ':' + (c.id || index), observationSessionId,
                         date: dateStr,
+                        measurementType: 'frequency', value: Number(c.count) || 0, unit: 'count',
                         behavior: c.label && c.label !== 'Unlabeled' ? c.label : 'Frequency Count',
                         count: c.count,
                         rate: c.rate ?? 0,
@@ -27065,8 +27485,10 @@ Use professional language. Refer to "the student" (not the codename).`;
             if (sessionData.method === 'interval') {
                 const modeLabel = d.mode ? `${d.mode.charAt(0).toUpperCase() + d.mode.slice(1)} Interval` : 'Interval';
                 setSessionHistory(prev => [{
+                    id: observationSessionId, observationSessionId,
                     date: dateStr,
-                    behavior: modeLabel,
+                    behavior: sessionData.behavior || modeLabel,
+                    measurementType: 'interval', value: d.percentage == null ? null : Number(d.percentage), unit: '%',
                     count: d.occurredCount ?? 0,
                     rate: d.percentage != null ? parseFloat(Number(d.percentage).toFixed(2)) : 0,
                     phase: 'Observation',
@@ -27081,7 +27503,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             if (sessionData.method === 'duration') {
                 const totalDuration = Number(d.totalDuration ?? 0);
                 setSessionHistory(prev => [{
-                    date: dateStr, behavior: sessionData.behavior || 'Duration',
+                    id: observationSessionId, observationSessionId, date: dateStr, behavior: sessionData.behavior || 'Duration',
                     count: totalDuration, rate: 0, value: totalDuration, unit: 'seconds',
                     measurementType: 'duration', phase: 'Observation', duration: durStr,
                     source: 'observation-duration'
@@ -27091,7 +27513,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             if (sessionData.method === 'latency') {
                 const latencySeconds = Number(d.latencySeconds ?? (Number(d.latencyMs || 0) / 1000));
                 setSessionHistory(prev => [{
-                    date: dateStr, behavior: sessionData.behavior || 'Latency',
+                    id: observationSessionId, observationSessionId, date: dateStr, behavior: sessionData.behavior || 'Latency',
                     count: latencySeconds, rate: latencySeconds, value: latencySeconds, unit: 'seconds',
                     measurementType: 'latency', phase: 'Observation', duration: durStr,
                     source: 'observation-latency'
@@ -27103,7 +27525,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             const rate = d.rate ?? d.percentage ?? null;
             if (count !== null || rate !== null) {
                 setSessionHistory(prev => [{
-                    date: dateStr,
+                    id: observationSessionId, observationSessionId, date: dateStr,
                     behavior: sessionData.behavior || sessionData.method || 'Observation',
                     count: count ?? 0,
                     rate: rate !== null ? parseFloat(Number(rate).toFixed(2)) : 0,
@@ -28356,11 +28778,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                             h('div', { className: 'mt-4 pt-4 border-t border-indigo-100' },
                                 h('div', { className: 'flex items-center gap-1.5 mb-2' },
                                     h('span', { className: 'text-[11px]' }, '⚙️'),
-                                    h('span', { className: 'text-[11px] font-black text-indigo-400 uppercase tracking-wider' }, 'Sandbox Config')
+                                    h('span', { className: 'text-[11px] font-black text-indigo-700 uppercase tracking-wider' }, 'Sandbox Config')
                                 ),
                                 h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
                                     h('div', null,
-                                        h('label', { className: 'text-[11px] font-bold text-indigo-400 block mb-0.5' }, '📅 Period'),
+                                        h('label', { className: 'text-[11px] font-bold text-indigo-700 block mb-0.5' }, '📅 Period'),
                                         h('select', {
                                             value: sandboxDays,
                                             onChange: e => setSandboxDays(parseInt(e.target.value)),
@@ -28369,7 +28791,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                         }, sandboxDayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
                                     ),
                                     h('div', null,
-                                        h('label', { className: 'text-[11px] font-bold text-indigo-400 block mb-0.5' }, '📝 Entries'),
+                                        h('label', { className: 'text-[11px] font-bold text-indigo-700 block mb-0.5' }, '📝 Entries'),
                                         h('select', {
                                             value: sandboxEntries,
                                             onChange: e => setSandboxEntries(parseInt(e.target.value)),
@@ -28538,6 +28960,12 @@ Use professional language. Refer to "the student" (not the codename).`;
                     ];
 
                     const handleToolOpen = (toolId) => {
+                        const prerequisite = behaviorLensToolPrerequisite(toolId, selectedStudent, abcEntries.length);
+                        if (prerequisite) {
+                            if (addToast) addToast(prerequisite, 'info');
+                            behaviorLensDialogRef.current?.querySelector('[aria-label="Choose a student"], [aria-label="Pick codename adjective"]')?.focus();
+                            return;
+                        }
                         // Remember the launching control so Escape/close can
                         // return focus to it (WCAG 2.4.3).
                         if (['observation', 'frequency', 'interval', 'choice'].includes(toolId)) alloSaveFocus();
@@ -28583,13 +29011,12 @@ Use professional language. Refer to "the student" (not the codename).`;
                     const renderCard = (tool) => {
                         const cc = colorClasses[tool.color];
                         const isFav = favorites.includes(tool.id);
-                        const canOpenWithoutStudent = ['analysis', 'export', 'record', 'abaguide', 'glossary', 'fbaworkflow', 'sandbox'].includes(tool.id);
-                        const isDisabled = Boolean(tool.disabled || (!selectedStudent && !canOpenWithoutStudent));
+                        const prerequisite = behaviorLensToolPrerequisite(tool.id, selectedStudent, abcEntries.length);
+                        const isDisabled = Boolean(tool.disabled || prerequisite);
                         const titleId = `bl-tool-${tool.id}-title`;
                         const descriptionId = `bl-tool-${tool.id}-description`;
                         return h('article', {
                             key: tool.id,
-                            role: 'group',
                             'aria-labelledby': titleId,
                             'aria-describedby': descriptionId,
                             className: `relative text-start p-5 rounded-xl border-2 transition-all ${cc.border} bg-white shadow-sm ${isDisabled ? 'opacity-60' : cc.hover + ' hover:shadow-md'}`
@@ -28603,7 +29030,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 title: isFav ? 'Remove from favorites' : 'Add to favorites'
                             }, h('span', { 'aria-hidden': 'true' }, isFav ? '★' : '☆')),
                             h('div', { 'aria-hidden': 'true', className: `w-12 h-12 rounded-xl ${cc.icon} flex items-center justify-center text-2xl mb-3` }, tool.icon),
-                            h('h4', { id: titleId, className: 'text-sm font-black text-slate-800 mb-1 pe-8' }, DualLabel(tool.title)),
+                            h('h3', { id: titleId, className: 'text-sm font-black text-slate-800 mb-1 pe-8' }, DualLabel(tool.title)),
                             h('p', { id: descriptionId, className: 'text-xs text-slate-600 leading-relaxed' }, autoTip(tool.desc)),
                             tool.badge && h('div', { className: `mt-3 inline-block text-[11px] font-bold px-2 py-0.5 rounded-full ${cc.bg} text-slate-600` }, tool.badge),
                             h('button', {
@@ -28612,13 +29039,24 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 onClick: () => handleToolOpen(tool.id),
                                 'aria-describedby': descriptionId,
                                 className: `mt-4 w-full min-h-11 px-3 py-2 rounded-lg border-2 text-xs font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ${isDisabled ? 'border-slate-300 bg-slate-100 text-slate-600 cursor-not-allowed' : cc.border + ' ' + cc.bg + ' text-slate-800 hover:bg-white'}`
-                            }, isDisabled ? 'Unavailable until required data is selected' : `Open ${tool.title}`)
+                            }, isDisabled ? (prerequisite || 'Add observations to use this tool') : `Open ${tool.title}`)
                         );
                     };
 
                     const dismissWelcome = () => { setShowWelcome(false); try { localStorage.setItem('bl_onboarded', 'true'); } catch {} };
 
                     return h('div', { className: 'space-y-4' },
+                        h('nav', { 'aria-label': 'BehaviorLens getting started', className: 'rounded-xl border border-indigo-200 bg-white p-4' },
+                            h('h3', { className: 'text-sm font-black text-indigo-900 mb-2' }, isParentMode ? 'Support your child, one step at a time' : 'Start with one observation'),
+                            h('p', { className: 'text-xs text-slate-600 mb-3' }, selectedStudent ? 'Working with ' + selectedStudent + '. Choose the next step below.' : 'Choose a student above, then capture and review an observation.'),
+                            h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
+                                [
+                                    { id: isParentMode ? 'homelog' : 'abc', label: isParentMode ? '1. Add a home observation' : '1. Capture an ABC observation' },
+                                    { id: isParentMode ? 'choice' : 'opdef', label: isParentMode ? '2. Offer a coping choice' : '2. Define the behavior clearly' },
+                                    { id: 'overview', label: '3. Review the observations' }
+                                ].map(step => h('button', { key: step.id, type: 'button', onClick: () => handleToolOpen(step.id), className: 'min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-start text-xs font-bold text-indigo-900' }, step.label))
+                            )
+                        ),
                         // ── First-Visit Welcome Banner ──
                         showWelcome && h('div', { className: 'relative bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 rounded-2xl p-6 shadow-xl text-white overflow-hidden' },
                             // Decorative background circles
@@ -28645,7 +29083,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
                                     }, h('span', { className: 'text-lg' }, '👩‍🏫'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.teacher', 'Teacher')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.start_with_abc_data', 'Start with ABC Data')))),
                                     h('button', { "aria-label": "Start as Parent — open Home Behavior Log",
-                                        onClick: () => { dismissWelcome(); handleToolOpen('homelog'); },
+                                        onClick: () => { setIsParentMode(true); dismissWelcome(); handleToolOpen('homelog'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
                                     }, h('span', { className: 'text-lg' }, '👪'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.parent', 'Parent')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.home_behavior_log', 'Home Behavior Log')))),
                                     h('button', { "aria-label": "Start as BCBA or Specialist — open ABA Graph Engine",
@@ -28716,7 +29154,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 onClick: () => setActiveCat(null),
                                 className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${!activeCat ? 'bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`
                             }, 'All'),
-                            categories.map(cat => h('button', { "aria-label": "Toggle active cat",
+                            categories.map(cat => h('button', { 'aria-label': cat.label, 'aria-pressed': activeCat === cat.key,
                                 key: 'chip-' + cat.key,
                                 onClick: () => setActiveCat(activeCat === cat.key ? null : cat.key),
                                 className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${activeCat === cat.key ? 'bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`
@@ -28724,7 +29162,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         ),
 
                         // ── Quick Launch Bar (BCBA-priority tools) ──
-                        h('div', { className: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 rounded-xl p-4 shadow-lg' },
+                        !isParentMode && h('div', { className: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 rounded-xl p-4 shadow-lg' },
                             h('div', { className: 'flex items-center justify-between mb-3' },
                                 h('div', { className: 'flex items-center gap-2' },
                                     h('span', { className: 'text-white text-lg' }, '⚡'),
@@ -28753,15 +29191,18 @@ Use professional language. Refer to "the student" (not the codename).`;
                         h('div', { className: 'flex flex-wrap items-center gap-2' },
                             h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse motion-reduce:animate-none' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
-                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
+                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.download_backup', 'Download backup')),
                             h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
                             h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, 'aria-label': 'Load BehaviorLens workspace JSON file', className: 'hidden' }),
-                            lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last saved: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
+                            lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last backup: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
                         ),
 
+                        h('p', { role: 'status', className: 'text-xs text-slate-600' }, localPersistenceError
+                            ? 'Browser save needs attention. Download a backup to keep a file copy.'
+                            : 'Changes save automatically in this browser. Download a backup to keep a file copy.'),
                         // ── Favorites Bar ──
                         favTools.length > 0 && h('div', { className: 'bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200 p-3' },
                             h('div', { className: 'text-[11px] font-black text-yellow-600 uppercase tracking-wider mb-2' }, '⭐ ', tt('behavior_lens.hub.favorites', 'Favorites')),
@@ -28810,7 +29251,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         ),
 
                         // ── Next Step Recommender ──
-                        selectedStudent && h(NextStepRecommender, {
+                        selectedStudent && !isParentMode && h(NextStepRecommender, {
                             abcEntries, aiAnalysis, observationSessions, sessionHistory,
                             selectedStudent, t,
                             onOpenTool: (toolId) => handleToolOpen(toolId)
@@ -28832,7 +29273,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         ),
 
                         // ── Smart Recommendations ──
-                        recs.length > 0 && h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3' },
+                        !isParentMode && recs.length > 0 && h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3' },
                             h('div', { className: 'text-[11px] font-black text-emerald-600 uppercase tracking-wider mb-2' }, '💡 ', tt('behavior_lens.hub.recommended_next', 'Recommended Next Steps')),
                             h('div', { className: 'flex flex-wrap gap-2' },
                                 recs.slice(0, 3).map((r, i) => h('button', { "aria-label": 'Open ' + r.label,
@@ -28859,7 +29300,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                     if (catTools.length === 0) return null;
                                     const isOpen = !collapsedCategories[cat.key];
                                     return h('div', { key: cat.key, className: 'rounded-xl border border-slate-400 bg-white shadow-sm overflow-hidden' },
-                                        h('button', { "aria-label": "Toggle Cat",
+                                        h('button', { 'aria-label': cat.label, 'aria-expanded': isOpen, 'aria-controls': 'bl-category-' + cat.key,
                                             onClick: () => toggleCat(cat.key),
                                             className: 'w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-start'
                                         },
@@ -28870,7 +29311,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                             ),
                                             h('span', { className: 'text-slate-600 text-sm transition-transform ' + (isOpen ? 'rotate-180' : '') }, '▾')
                                         ),
-                                        isOpen && h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 p-3' },
+                                        isOpen && h('div', { id: 'bl-category-' + cat.key, className: 'grid grid-cols-1 md:grid-cols-3 gap-3 p-3' },
                                             catTools.map(renderCard)
                                         )
                                     );
@@ -28881,14 +29322,14 @@ Use professional language. Refer to "the student" (not the codename).`;
                         h('div', { className: 'flex flex-wrap items-center gap-2 pt-2' },
                             h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse motion-reduce:animate-none' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
-                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
+                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.download_backup', 'Download backup')),
                             h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
                             h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, 'aria-label': 'Load BehaviorLens workspace JSON file', className: 'hidden' }),
                             h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, 'aria-label': 'Load BehaviorLens workspaces for comparison', className: 'hidden' }),
-                            lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last saved: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
+                            lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last backup: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
                         )
                     );
                 })(),
@@ -28994,7 +29435,7 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         // ─── Main Render ──────────────────────────────────────────────
         return h(BehaviorLensToolStateContext.Provider, { value: durableToolStateContextValue }, h('div', {
-            className: 'fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300',
+            className: 'bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300',
             ref: behaviorLensDialogRef,
             role: 'dialog',
             'aria-modal': 'true',
@@ -29006,9 +29447,9 @@ Use professional language. Refer to "the student" (not the codename).`;
             h('div', { id: 'behavior-lens-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bl-sr-only' }, _blAnnouncement),
             // Top bar
             h('div', { className: 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10' },
-                h('div', { className: 'px-6 py-4 flex items-center justify-between' },
+                h('div', { className: 'bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2' },
                     h('div', { className: 'flex items-center gap-3' },
-                        activePanel !== 'hub' && h('button', { "aria-label": "Toggle active panel",
+                        activePanel !== 'hub' && h('button', { 'aria-label': 'Back to BehaviorLens tools',
                             onClick: () => setActivePanel('hub'),
                             className: 'p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 me-1 transition-colors'
                         }, h(ArrowLeft, { size: 18 })),
@@ -29080,7 +29521,9 @@ Use professional language. Refer to "the student" (not the codename).`;
                             )
                         )
                     ),
-                    h('div', { className: 'flex items-center gap-2' },
+                    h('button', { ref: behaviorLensCloseRef, 'aria-label': 'Close BehaviorLens', onClick: onClose,
+                        className: 'shrink-0 ms-auto min-w-11 min-h-11 p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors' }, h(X, { size: 24, 'aria-hidden': 'true' })),
+                    h('div', { className: 'w-full flex flex-wrap items-center gap-2' },
                         // Data Quality Badge
                         selectedStudent && abcEntries.length > 0 && h(DataQualityBadge, { abcEntries, t }),
                         workspaceCapacityWarning && h('div', {
@@ -29147,7 +29590,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 : (tt('behavior_lens.ai.toggle_title_off', 'AI OFF — no student data leaves this browser. Click to enable.'))
                         }, aiConsent ? '🤖 AI: ON' : '🤖 AI: OFF'),
                         // Parent Mode toggle
-                        activePanel === 'hub' && h('button', { "aria-label": "Toggle is parent mode",
+                        activePanel === 'hub' && h('button', { 'aria-label': 'Family Mode', 'aria-pressed': isParentMode,
                             onClick: () => setIsParentMode(p => !p),
                             className: `px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isParentMode
                                 ? 'bg-blue-700 text-white border-blue-500 shadow-md'
@@ -29155,7 +29598,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         }, isParentMode ? '👨‍👩‍👧 ' + (tt('behavior_lens.family_mode', 'Family Mode')) : '👨‍👩‍👧 ' + (tt('behavior_lens.family', 'Family'))),
                         // Per-tool export button (all non-hub panels)
                         activePanel !== 'hub' && h('div', { className: 'relative' },
-                            h('button', { "aria-label": "Toggle show export menu",
+                            h('button', { 'aria-label': 'Export this tool', 'aria-expanded': showExportMenu,
                                 onClick: () => setShowExportMenu(v => !v),
                                 className: 'p-2 rounded-full text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors',
                                 title: (t('behavior_lens.raw.export_this_tool') || "Export this tool's data")
@@ -29183,13 +29626,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                     className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
                                 }, '🖼️ Export as PNG')
                             )
-                        ),
-                        h('button', {
-                            ref: behaviorLensCloseRef,
-                            'aria-label': 'Close BehaviorLens',
-                            onClick: onClose,
-                            className: 'p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors'
-                        }, h(X, { size: 24, 'aria-hidden': 'true' }))
+                        )
                     )
                 )
             ),
@@ -29228,7 +29665,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 h('button', { type: 'button', onClick: handleSaveWorkspace, className: 'mt-3 min-h-[44px] rounded-lg bg-red-700 px-3 py-2 text-xs font-bold text-white hover:bg-red-800' }, 'Export workspace now')
             ),
             // Content area
-            h('div', { className: 'flex-1 overflow-y-auto p-6' },
+            h('div', { 'data-bl-panel-content': true, tabIndex: -1, className: 'flex-1 min-h-0 overflow-y-auto p-3 sm:p-6' },
                 activePanel === 'hub' && renderHub(),
                 activePanel === 'abc' && h(ABCDataPanel, {
                     entries: abcEntries,
@@ -29771,8 +30208,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'condprob' && h(ConditionalProbability, { abcEntries, t, addToast }),
                 activePanel === 'treatintegrity' && h(TreatmentIntegrityTracker, { t, addToast }),
                 activePanel === 'batchimport' && h(BatchImportPanel, {
-                    abcEntries, setAbcEntries, studentRoster, setStudentRoster,
-                    setSelectedStudent: switchToStudent, addToast, t
+                    abcEntries, setAbcEntries, onImportStudentProfiles: handleImportStudentProfiles,
+                    addToast, t
                 }),
                 activePanel === 'progressmonitor' && h(ProgressMonitorDashboard, {
                     abcEntries, observationSessions, sessionHistory, t, addToast
@@ -30476,7 +30913,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 ...interventionChain.flatMap((step, i) => {
                                     const isCurrent = i === chainIdx;
                                     const isDone = i < chainIdx;
-                                    const btn = h('button', { "aria-label": "Open Panel",
+                                    const btn = h('button', { 'aria-label': 'Open ' + step.label, 'aria-current': isCurrent ? 'step' : undefined,
                                         key: step.id,
                                         onClick: () => openPanel(step.id),
                                         className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
@@ -30490,7 +30927,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                         : [btn];
                                 })
                             ),
-                            chainIdx < chainIds.length - 1 && h('button', { "aria-label": "Open Panel",
+                            chainIdx < chainIds.length - 1 && h('button', { 'aria-label': 'Next: ' + interventionChain[chainIdx + 1].label,
                                 onClick: () => openPanel(chainIds[chainIdx + 1]),
                                 className: 'mt-2 w-full py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg text-xs font-bold shadow hover:shadow-lg transition-all flex items-center justify-center gap-2'
                             }, `Next: ${interventionChain[chainIdx + 1].icon} ${interventionChain[chainIdx + 1].label} →`)
@@ -30501,7 +30938,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '📎 Related Tools')
                             ),
                             h('div', { className: 'flex flex-wrap gap-2' },
-                                related.map(rt => h('button', { "aria-label": "Open Panel",
+                                related.map(rt => h('button', { 'aria-label': 'Open ' + rt.label,
                                     key: rt.id,
                                     onClick: () => openPanel(rt.id),
                                     className: 'flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-400 rounded-lg text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all'
@@ -30515,6 +30952,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             showLiveObs && h(LiveObsOverlay, {
                 onClose: () => setShowLiveObs(false),
                 studentName: selectedStudent,
+                studentDraftId: activeStudentId || selectedStudent,
                 onSaveSession: handleSaveObsSession,
                 t,
                 addToast
@@ -30523,6 +30961,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             showFreqCounter && h(FrequencyCounter, {
                 onClose: () => setShowFreqCounter(false),
                 studentName: selectedStudent,
+                studentDraftId: activeStudentId || selectedStudent,
                 onSaveSession: handleSaveObsSession,
                 t,
                 addToast
@@ -30531,6 +30970,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             showIntervalGrid && h(IntervalGrid, {
                 onClose: () => setShowIntervalGrid(false),
                 studentName: selectedStudent,
+                studentDraftId: activeStudentId || selectedStudent,
                 onSaveSession: handleSaveObsSession,
                 t,
                 addToast

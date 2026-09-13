@@ -668,7 +668,9 @@ window.StemLab = window.StemLab || {
               });
             }
 
-            return h('div', { style: { maxWidth: '100%', overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': t('stem.numberline.scroll_ticks', 'Number line: scroll horizontally to read every tick') }, h('svg', {
+            return h('div', { style: { maxWidth: '100%', overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': t('stem.numberline.scroll_ticks', 'Number line: scroll horizontally to read every tick') },
+              h('p', { className: 'text-sm text-slate-600 mb-2 sm:hidden', style: { position: 'sticky', left: 0 } }, t('stem.numberline.scroll_hint', 'Scroll sideways to see the full number line.')),
+              h('svg', {
               width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full',
               style: { minWidth: 600, cursor: (challenge && challenge.type === 'place') ? 'crosshair' : 'default' },
               role: 'img',
@@ -758,20 +760,22 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
                 renderNumberLine(range, null, null)
               ),
-              // Add marker
-              h('div', { className: 'flex flex-col sm:flex-row gap-2 sm:items-center' },
+              // Add marker: labels stay visible after a value is entered.
+              h('div', { className: 'flex flex-col sm:flex-row flex-wrap gap-2 sm:items-end' },
+                h('label', { htmlFor: 'nlMarkerVal', className: 'text-sm font-bold' }, t('stem.numberline.marker_value', 'Marker value'),
                 h('input', {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
                   placeholder: t('stem.numberline.value', 'Value'),
                   'aria-label': t('stem.numberline.marker_value', 'Marker value'),
-                  className: 'w-full sm:w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
-                }),
+                  className: 'block mt-1 w-full sm:w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
+                })),
+                h('label', { htmlFor: 'nlMarkerLabel', className: 'flex-1 text-sm font-bold' }, t('stem.numberline.label_optional', 'Label (optional)'),
                 h('input', {
                   type: 'text', id: 'nlMarkerLabel', placeholder: t('stem.numberline.label_optional', 'Label (optional)'),
                   'aria-label': t('stem.numberline.marker_label', 'Marker label'),
-                  className: 'flex-1 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
-                }),
-                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': t('stem.numberline.marker_color', 'Marker color'), className: 'w-8 h-8 rounded cursor-pointer' }),
+                  className: 'block mt-1 w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
+                })),
+                h('label', { htmlFor: 'nlMarkerColor', className: 'text-sm font-bold' }, t('stem.numberline.marker_color', 'Marker color'), h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': t('stem.numberline.marker_color', 'Marker color'), className: 'block mt-1 w-12 h-11 rounded cursor-pointer' })),
                 h('button', { 'aria-label': t('stem.numberline.add', '+ Add'),
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
@@ -2169,6 +2173,7 @@ window.StemLab = window.StemLab || {
                 magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') }
               };
               var meta = TAB_META[tab] || TAB_META.explore;
+              var startInstructions = {"explore":"Set the minimum and maximum, then enter a marker value and choose Add.","challenges":"Choose a challenge, enter your answer or place a marker, then check your work.","skipcount":"Choose a starting number and a step size, then use the playback controls to follow the jumps.","fracdec":"Enter a fraction or decimal to see where it belongs on the line.","magCompare":"Change the two fractions and compare their positions. Record what you notice."};
               return h('div', { role: 'tabpanel', id: 'numberline-panel-' + tab,
                 'aria-labelledby': 'numberline-tab-' + tab, tabIndex: 0,
                 style: {
@@ -2184,7 +2189,10 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.numberline.start_' + tab, startInstructions[tab] || startInstructions.explore)),
+              h('details', { className: 'math-learning-note' },
+                h('summary', null, t('stem.numberline.about_model', 'About this activity')),
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
                 )
               );
             })(),

@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "scarcity_choice_grade7",
+    "key": "room",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. A single empty multipurpose community room with one clear central floor area, stackable chairs along one wall, a folded table and a sunlit window. Handmade miniature assembled from layered cardboard and colored paper, visibly crafted, not photorealistic. No clocks, labels or people. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "A crafted-paper community room has one open floor area with folded furniture along the wall.",
+    "caption": "The fictional booking task offers one room for one hour. Four groups want that same slot; the activity’s stated constraint makes a choice necessary.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-b21a6591-5017-477e-bea2-5ece23ffd059.png",
+    "file": "source-room.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  },
+  {
+    "slug": "scarcity_choice_grade7",
+    "key": "band",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. A varied group of musical instruments ready for a youth rehearsal: a hand drum, acoustic guitar, saxophone on a stand, keyboard on a low stand and a violin in an open case. No performers. Handmade miniature cardboard and colored paper sculpture, warm understated colors, cream background, clearly separated instruments, no text, no musical notation. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "Crafted-paper instruments include a drum, guitar, saxophone, keyboard and violin.",
+    "caption": "Band rehearsal is one of four competing uses of the community room. Rank its expected benefits and future costs alongside the other feasible uses.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-470a2e4d-11ab-4a46-b07c-ac59afd9977b.png",
+    "file": "source-band.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  }
+]

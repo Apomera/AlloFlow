@@ -20,7 +20,7 @@ describe('Anatomy Lab progression and quiz logic', () => {
 
   it('excludes every valid system from System ID distractors', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("var validSys = sysKeys.filter(function(k)");
+    expect(source).toContain("var validSys = quizQ.systemMemberships;");
     expect(source).toContain("validSys.indexOf(k) === -1");
     expect(source).toContain("+ quizAnswerLabel");
   });
@@ -53,8 +53,9 @@ describe('Anatomy Lab clinical-case integrity', () => {
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("clinicalCaseIds.indexOf(d._activeCaseId) !== -1 ? d._activeCaseId : null");
-    expect(source).toContain("activeCaseId === cs.id");
-    expect(source).toContain('Review explanation');
+    const restored = renderAnatomy({ system: 'circulatory', complexity: 3, _showClinical: true, _activeCaseId: 'case_3', _activeCaseFeedback: 'reveal' });
+    expect(restored).toContain('The sinoatrial (SA) node');
+    expect(restored).toContain('Mark explanation reviewed');
   });
 });
 
@@ -99,11 +100,11 @@ describe('Anatomy Lab interaction performance', () => {
 
   it('wraps quiz diagram feedback and presents an unambiguous score', () => {
     const html = renderAnatomy({ system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 25, quizScore: 7 });
-    expect(html).toContain('Score 7 - Question 7/19');
+    expect(html).toContain('Continuous practice · 7 correct / 7 answered · Question 26');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('quizPool[quizRoundIdx % quizPool.length]');
-    expect(source).toContain('_quizAttempts: quizAttempts + 1');
+    expect(source).toContain('var quizQ2 = quizQ;');
+    expect(source).toContain('_quizAttempts:attempts+1');
     expect(source).not.toContain("upd('_quizAttempts', (d._quizAttempts || 0) + 1)");
   });
 
@@ -168,7 +169,7 @@ describe('Anatomy Lab render scheduling', () => {
   });
 });
 describe('Anatomy Lab quiz balance and tracking', () => {
-  it('alternates True/False claims across successive True/False rounds', () => {
+  it('keeps True/False claims independent of fixed round parity', () => {
     const firstRound = renderAnatomy({ system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 1 });
     const secondRound = renderAnatomy({ system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 5 });
     // True/False now pairs the named structure with a function statement (its own, or another
@@ -179,12 +180,13 @@ describe('Anatomy Lab quiz balance and tracking', () => {
     expect(secondRound).not.toContain('belongs to the');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('Math.floor(quizRoundIdx / quizTypeCount) % 2');
+    expect(source).not.toContain('Math.floor(quizRoundIdx / quizTypeCount) % 2');
+    expect(source).toContain('binaryTrue: quizBinaryTruth(index,seed)');
     expect(source).toContain('tfClaimStructure = _tfWrong[quizRoundIdx % _tfWrong.length]');
   });
 
   it('masks the structure name inside quiz stems and clips them on a sentence boundary', () => {
-    const heart = renderAnatomy({ system: 'circulatory', complexity: 3, quizMode: true, quizIdx: 3, _structureConfidence: {} });
+    const heart = renderAnatomy({ system: 'circulatory', complexity: 1, quizMode: true, quizIdx: 3, _structureConfidence: {} });
     // Harness profile is '5th Grade': young learners get the friendly prompt and the learner text.
     expect(heart).toContain('Which structure is this?');
     // Clinical Challenge stems no longer contain the answer word.
@@ -195,7 +197,7 @@ describe('Anatomy Lab quiz balance and tracking', () => {
     expect(source).toContain('function clipAtSentence(text, maxLength)');
     expect(source).toContain("quizStemText(quizQ, 'fn', 160)");
     expect(source).not.toContain("quizQ.fn.substring(0, 120)");
-    expect(source).toContain('updMulti(Object.assign(quizPatch, confidenceEvidencePatch(quizQ.id, correct)));');
+    expect(source).toContain('confidenceEvidencePatch(quizQ.id,correct,state)');
     expect(source).not.toContain("tfTrue = ((d.quizIdx || 0) % 2) === 0");
   });
 
@@ -249,7 +251,7 @@ describe('Anatomy Lab saved-state recovery', () => {
 
   it('resets quiz attempts atomically and clears ended Spotter rounds', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, _quizQuestion: quizQuestionSnapshot(0, rankedQuizPool) })");
+    expect(source).toContain("quizIdx:0,quizScore:0,quizFeedback:null,_quizAttempts:0,_quizSeed:seed");
     expect(source).toContain("_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0");
   });
 
@@ -258,16 +260,17 @@ describe('Anatomy Lab saved-state recovery', () => {
     expect(tour).toContain('aria-label="Guided tour progress"');
 
     const pathway = renderAnatomy({ _activeTab: 'pathways', _activePathway: 'path_blood' });
-    expect(pathway).toContain('aria-label="Path of Blood pathway progress"');
+    expect(pathway).toContain('aria-label="Path of Blood: Pathway progress"');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("className: 'space-y-2', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(source).toContain("'data-anatomy-spotter-feedback':true");
+    expect(source).toContain("announceToSR((correct?t('stem.anatomy.spot_ref_correct'");
   });
 });
 describe('Anatomy Lab quiz transition integrity', () => {
   it('limits questions to structures visible in the selected orientation', () => {
     const html = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3, quizMode: true, quizIdx: 0 });
-    expect(html).toContain('Question 1/19');
+    expect(html).toContain('Question 1');
     expect(html).toContain('Questions match the anterior diagram.');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
@@ -276,7 +279,7 @@ describe('Anatomy Lab quiz transition integrity', () => {
 
   it('normalizes invalid restored quiz rounds to the first question', () => {
     const html = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3, quizMode: true, quizIdx: -7 });
-    expect(html).toContain('Question 1/19');
+    expect(html).toContain('Question 1');
     expect(html).not.toContain('Question 0/');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
@@ -330,7 +333,7 @@ describe('Anatomy Lab navigation recovery', () => {
   it('uses one navigation helper and atomic guided-tour transitions', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("activateAnatomyTab('connections')");
-    expect(source).toContain('var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex };');
+    expect(source).toContain('var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex, _tourSystem: tourActive ? tourSystemId : sysKey };');
     expect(source).toContain('changeTab(structureFocusPatch(tabTourStep.structureId, tourPatch));');
     // Completion also clears the end-of-tour recap state.
     expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null })");
@@ -361,19 +364,21 @@ describe('Anatomy Lab assessment-state resilience', () => {
       _spotterTarget: 'skull',
       _spotterFeedback: 'skull',
       _spotterStartTime: 1,
-      _spotterElapsed: '1.25',
-      _spotterBestTime: '2.5',
+      _spotterElapsed: 1.25,
+      _spotterTimed: true,
+      _spotterRoundTimed: true,
+      _spotterTimedBestTime: 2.5,
       _spotterOpts: [{ id: 'skull' }, { id: 'ribs' }, { id: 'femur' }, { id: 'humerus' }]
     });
     expect(html).toContain('4/4');
-    expect(html).toContain('Best: 2.5s');
-    expect(html).toContain('Correct! (1.3s)');
+    expect(html).toContain('Best timed response: 2.5 s');
+    expect(html).toContain('Response time: 1.3 s');
   });
 
   it('consolidates each Spotter answer into one state update', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('var spotterUpdate = { _spotterFeedback: opt.id, _spotterElapsed: elapsed, _spotterTotal: spotterTotal + 1 };');
-    expect(source).toContain('updMulti(Object.assign(spotterUpdate, confidenceEvidencePatch(spotterTarget, isRightAnswer)));');
+    expect(source).toContain('var patch={_spotterFeedback:optionId,_spotterElapsed:elapsed,_spotterTotal:total+1};');
+    expect(source).toContain('Object.assign(patch,confidenceEvidencePatch(spotterTarget,correct,current))');
     expect(source).not.toContain("upd('_spotterElapsed', elapsed)");
   });
 
@@ -490,7 +495,7 @@ describe('Anatomy Lab progress-state integrity', () => {
     expect(source).toContain('safeFlagMap(d._pathwaysCompleted, pathwayIds)');
     expect(source).toContain('safeFlagMap(d._mnemonicsViewed, mnemonicIds)');
     expect(source).toContain('Array.isArray(d.completedChallenges)');
-    expect(source).toContain('Array.isArray(d.vocabLookedUp)');
+    expect(source).toContain('normalizeVocabulary(d.vocabLookedUp)');
   });
 
   it('applies connection and clinical-case interactions atomically', () => {
@@ -524,7 +529,7 @@ describe('Anatomy Lab layer and quiz-state resilience', () => {
     expect(inactive).not.toContain('Anatomy Quiz');
 
     const active = renderAnatomy({ complexity: 3, quizMode: true, quizScore: 'bad', quizFeedback: { chosen: 'forged', correct: true } });
-    expect(active).toContain('Score 0 - Question 1/19');
+    expect(active).toContain('Continuous practice · 0 correct / 0 answered · Question 1');
     expect(active).not.toContain('aria-label="Next Question"');
   });
 
@@ -543,8 +548,8 @@ describe('Anatomy Lab layer and quiz-state resilience', () => {
     expect(source).toContain('countStoredTrueFlags(d.visibleLayers, ANATOMY_LAYER_IDS.slice(1))');
     expect(source).toContain('updMulti({ visibleLayers: newLayers, _layersToggled: newLayersToggled, _xrayMode: false })');
     expect(source).toContain('function applyAnatomySearchResult(result)');
-    expect(source).toContain('var quizPatch = {');
-    expect(source).toContain('_totalCorrect = totalCorrect + 1');
+    expect(source).toContain('if(!sameQuizQuestion(state)' );
+    expect(source).toContain('patch._totalCorrect=safeNonNegativeNumber(state._totalCorrect,0,true)+1');
     expect(source).not.toContain('(d._searchFinds || 0) + 1');
     expect(source).not.toContain('(d.quizScore || 0) + 1');
   });
@@ -563,7 +568,7 @@ describe('Anatomy Lab guided diagram synchronization', () => {
   it('does not offer pathway recovery when the diagram already matches the step', () => {
     const html = renderAnatomy({
       _activeTab: 'pathways', system: 'circulatory', view: 'anterior',
-      _activePathway: 'path_blood', _pathwayStep: 0, selectedStructure: 'sup_vena'
+      _activePathway: 'path_blood', _pathwayStep: 0, selectedStructure: 'heart'
     });
     expect(html).toContain('Diagram: Circulatory - Anterior');
     expect(html).not.toContain('Focus diagram');
@@ -590,8 +595,8 @@ describe('Anatomy Lab guided diagram synchronization', () => {
     expect(source).not.toContain("'nervous', 'digestive', 'respiratory'");
     expect(source).toContain('function findStructureContext(structureId, preferredSystemId)');
     expect(source).toContain('function structureFocusPatch(structureId, extraPatch)');
-    expect(source).toContain("updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0 }))");
-    expect(source).toContain("updMulti(structureFocusPatch(tourSteps[next].structureId, { _tourStepIdx: next }))");
+    expect(source).toContain("updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0, _pathwayRecap: null }))");
+    expect(source).toContain("updMulti(structureFocusPatch(tourSteps[next].structureId, { _tourStepIdx: next, _tourSystem: tourSystemId }))");
     expect(source).not.toContain("upd('_pathwayStep', next); upd('selectedStructure'");
     expect(source).not.toContain("upd('_flashcardIdx', ni); upd('_flashcardFlipped'");
   });
@@ -632,7 +637,8 @@ describe('Anatomy Lab comparison-pair integrity', () => {
     expect(source).toContain('updMulti(selectionPatch(closest.id))');
     expect(source).toContain('updMulti(selectionPatch(navList[nextIdx].id))');
     expect(source).toContain('resultPatch = structureFocusPatch(result.structure.id');
-    expect(source).toContain('updMulti(selectionPatch(st.id))');
+    expect(source).toContain('openBrowserStructure(st.id)');
+    expect(source).toContain('selectionPatch(structureId,');
     expect(source).toContain('return comparisonTrackingPatch(structureId, patch, context.systemId);');
   });
 });
@@ -729,7 +735,8 @@ describe('Anatomy Lab connection disclosure semantics', () => {
     expect(source).toContain('function systemSelectionPatch(systemId)');
     expect(source).toContain('function showAnatomySystem(systemId, contextLabel)');
     expect(source).toContain('onClick: function() { showAnatomySystem(key); }');
-    expect(source).toContain('onClick: function() { showAnatomySystem(connectionSystemId, conn.title); }');
+    expect(source).toContain('showConnectionDiagram(id,conn.title)');
+    expect(source).toContain('showAnatomySystem(systemId,title)');
     expect(source).toContain(
       "announceToSR(__alloFill(__alloT('stem.anatomy.sr_showing_diagram_for', 'Showing {value1} diagram for {value2}.'), " +
       "{ value1: SYSTEMS[systemId].name, value2: contextLabel })"
@@ -749,7 +756,7 @@ describe('Anatomy Lab adaptive study support', () => {
     expect(html).not.toContain('forged');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("safeEnumMap(d._structureConfidence, knownStructureIds, CONFIDENCE_LEVELS)");
+    expect(source).toContain("anatomySharedRatings(d, knownStructureIds, Date.now())");
     expect(source).toContain("var CONFIDENCE_LEVELS = ['practice', 'learning', 'mastered'];");
   });
 
@@ -1599,7 +1606,7 @@ describe('Anatomy Systems in Motion', () => {
     });
     expect(html).toContain('data-systems-motion-answer="correct"');
     expect(html).toContain('1/4 checkpoints solved');
-    expect(html).toContain('Correct — Cross-bridge cycling pulls actin past myosin');
+    expect(html).toContain('Correct — Myosin cross-bridges generate pulling force on actin');
     expect(html).toContain('Next system');
     expect(html).toContain('data-complete="true"');
   });
@@ -1676,7 +1683,7 @@ describe('Anatomy Systems in Motion', () => {
     expect(html).toContain('Trigger');
     expect(html).toContain('Acetylcholine starts a muscle-fiber action potential.');
     expect(html).toContain('Calcium exposes actin sites so myosin cross-bridges cycle.');
-    expect(html).toContain('Sarcomeres shorten and tendon tension rises.');
+    expect(html).toContain('Cross-bridge forces create tension; during the shortening phase of the climb, sarcomeres shorten.');
     expect(html).toContain('Show deeper physiology');
     expect(html).not.toContain('data-systems-motion-advanced="muscle-force"');
   });
@@ -1755,7 +1762,7 @@ describe('Anatomy Systems in Motion', () => {
   it('synchronizes the selected disruption point with the matching Clinical Lens', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('function toggleSystemsMotionPerturbation()');
-    expect(source).toContain('_regionalAtlasClinical: systemsMotionPerturbation && motionStep.id === requestedScenario.perturbation.affectedStepId');
+    expect(source).toContain('_regionalAtlasClinical: systemsMotionPerturbation && requestedScenarioId === systemsMotionScenarioId && motionStep.id === requestedScenario.perturbation.affectedStepId');
     expect(source).toContain("'data-disruption-point': stepItem.id === systemsMotionScenario.perturbation.affectedStepId ? 'true' : 'false'");
     expect(source).toContain('.anatomy-motion-node[data-disruption-point="true"]');
     expect(source).toContain('.anatomy-motion-impact{display:grid');
@@ -1815,7 +1822,7 @@ describe('Anatomy Systems in Motion', () => {
     expect(complete).toContain('Typical physiology');
     expect(complete).toContain('Pulmonary edema');
     expect(complete).toContain('Integrated takeaway:');
-    expect(complete).toContain('aria-label="Review Generate force: Sarcomeres shorten and tendon tension rises."');
+    expect(complete).toContain('aria-label="Review Generate force: Cross-bridge forces create tension; during the shortening phase of the climb, sarcomeres shorten."');
     expect(complete).toContain('Hide synthesis');
   });
 
@@ -1927,18 +1934,18 @@ describe('Anatomy Systems in Motion', () => {
   it('builds an accessible structure-centered relationship map', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     const html = renderAnatomy({
-      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'skull'
+      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'femur'
     });
     expect(source).toContain('function openRelationshipConnection(connection)');
     expect(source).toContain('nextConnectionsViewed[connection.id] = true');
-    expect(html).toContain('data-anatomy-relationship-map="skull"');
+    expect(html).toContain('data-anatomy-relationship-map="femur"');
     expect(html).toContain('role="figure"');
-    expect(html).toContain('aria-labelledby="anatomy-relationship-map-skull"');
+    expect(html).toContain('aria-labelledby="anatomy-relationship-map-femur"');
     expect(html).toContain('data-relationship-connection="conn_3"');
     expect(html).toContain('data-relationship-connection="conn_10"');
     expect(html).toContain('Lever System for Movement');
     expect(html).toContain('Open Muscular system diagram from Lever System for Movement');
-    expect(html).toContain('System-context links can involve this structure directly or through the larger skeletal system.');
+    expect(html).toContain('These links connect the selected structure with an authored body-system process.');
   });
 
   it('does not render a relationship map without a selected structure', () => {
@@ -1953,7 +1960,7 @@ describe('Anatomy Systems in Motion', () => {
       _structureConfidence: { skull: 'mastered', ribs: 'practice', biceps: 'learning', quads: 'practice' }
     });
     expect(html).toContain('data-anatomy-mastery-map="true"');
-    expect(html).toContain('Whole-body mastery map');
+    expect(html).toContain('Whole-body study progress');
     expect(html).toContain('data-mastery-priority="muscular"');
     expect(html).toContain('Muscular — 2 structures ready for review');
     expect(html).toContain('data-mastery-system="skeletal"');
@@ -1969,7 +1976,7 @@ describe('Anatomy Systems in Motion', () => {
     const html = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3 });
     expect(html).toContain('aria-controls="anatomy-mastery-map"');
     expect(html).toContain('aria-expanded="false"');
-    expect(html).toContain('Mastery map');
+    expect(html).toContain('Study progress');
     expect(html).not.toContain('data-anatomy-mastery-map="true"');
   });
 

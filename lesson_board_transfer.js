@@ -1,6 +1,7 @@
+import { prepareSupport, hasSupport, SUPPORT_MAX_CHARS } from './lesson_board_support.js';
 import { prepareBoard } from './lesson_board_engine.js';
 export const BOARD_FILE_FORMAT = 'alloflow-lesson-board';
-export const MAX_BOARD_FILE_BYTES = 200000;
+export const MAX_BOARD_FILE_BYTES = 1300000;
 const MAX_BOARD_FILE_CHARS = 60000;
 const normalize = value => value.normalize('NFC').replace(/\s+/g, ' ').trim();
 
@@ -8,17 +9,19 @@ export function prepareBoardFile(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.format !== BOARD_FILE_FORMAT || raw.version !== 1) throw Error('board-file-format');
   if (typeof raw.source !== 'string' || raw.source.trim().length < 40 || raw.source.length > 12000 || typeof raw.language !== 'string' || !raw.language.trim() || raw.language.length > 80) throw Error('board-file-context');
   let board; try { board = prepareBoard(raw.board, raw.source); } catch (_) { throw Error('board-file-invalid'); }
+  const support=raw.support===undefined?null:prepareSupport(raw.support,board);
   // Transport only the validated lesson and game specification, never live data.
-  return { format: BOARD_FILE_FORMAT, version: 1, source: raw.source, language: raw.language.trim(), board };
+  return { format: BOARD_FILE_FORMAT, version: 1, source: raw.source, language: raw.language.trim(), board, ...(hasSupport(support)?{support}:{}) };
 }
 export function parseBoardFile(text) {
-  if (typeof text !== 'string' || text.length > MAX_BOARD_FILE_CHARS) throw Error('board-file-size');
+  if (typeof text !== 'string' || text.length > SUPPORT_MAX_CHARS + MAX_BOARD_FILE_CHARS) throw Error('board-file-size');
   let raw; try { raw = JSON.parse(text.replace(/^\uFEFF/, '')); } catch (_) { throw Error('board-file-format'); }
+  if (!raw.support && text.length > MAX_BOARD_FILE_CHARS) throw Error('board-file-size');
   return prepareBoardFile(raw);
 }
-export function exportBoardFile(board, source, language) {
-  const result = JSON.stringify(prepareBoardFile({ format: BOARD_FILE_FORMAT, version: 1, board, source, language }));
-  if (result.length > MAX_BOARD_FILE_CHARS) throw Error('board-file-size');
+export function exportBoardFile(board, source, language, support) {
+  const result = JSON.stringify(prepareBoardFile({ format: BOARD_FILE_FORMAT, version: 1, board, source, language, support }));
+  if (result.length > (hasSupport(support) ? SUPPORT_MAX_CHARS + MAX_BOARD_FILE_CHARS : MAX_BOARD_FILE_CHARS)) throw Error('board-file-size');
   return result;
 }
 export function boardFileCompatibility(pack, source, language) {
@@ -33,8 +36,8 @@ export async function readBoardFile(file) {
   const text = typeof file.text === 'function' ? file.text() : new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(Error('board-file-read')); reader.readAsText(file); });
   return text.then(parseBoardFile);
 }
-export function downloadBoardFile(board, source, language) {
-  const text = exportBoardFile(board, source, language), blob = new Blob([text], { type: 'application/json' }), url = URL.createObjectURL(blob), link = document.createElement('a');
+export function downloadBoardFile(board, source, language, support) {
+  const text = exportBoardFile(board, source, language, support), blob = new Blob([text], { type: 'application/json' }), url = URL.createObjectURL(blob), link = document.createElement('a');
   link.href = url; link.download = boardFileName(board.title);
   try { document.body.appendChild(link); link.click(); } finally { link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 }

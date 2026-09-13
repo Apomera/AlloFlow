@@ -5,8 +5,8 @@ const THREE=createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function body(name){const start=source.indexOf('function '+name+'(');let end=source.indexOf('{',start),depth=1;while(depth){end++;if(source[end]==='{')depth++;if(source[end]==='}')depth--;}return source.slice(start,end+1);}
 function fixture(primaryFingers){const profile={primaryFingers,sweep:-0.18,tipWidth:0.68};return Function('THREE','silhouetteProfile',`var wingSpan=2.8,wingDepth=0.72,graphicsQuality='low',isOspreyWing=false,wingMorphMeshes=[],wingColor=0x75533b;
-${['sampleRaptorWingSurface','createTaperedWing','createTaperedPrimaryGeometry','createWingMarkGeometry','createLayeredWingFeathers','foldedRaptorWingPoint','addRaptorWingRestPose'].map(body).join('\n')}
-return {point:foldedRaptorWingPoint,wing:createTaperedWing,primary:createTaperedPrimaryGeometry,mark:createWingMarkGeometry,vanes:createLayeredWingFeathers,add:addRaptorWingRestPose};`)(THREE,profile);}
+${['sampleRaptorWingSurface','createTaperedWing','createTaperedPrimaryGeometry','createLayeredWingFeathers','foldedRaptorWingPoint','addRaptorWingRestPose'].map(body).join('\n')}
+return {point:foldedRaptorWingPoint,wing:createTaperedWing,primary:createTaperedPrimaryGeometry,vanes:createLayeredWingFeathers,add:addRaptorWingRestPose};`)(THREE,profile);}
 describe('Coordinated resting wing surfaces',()=>{
   for(const fingers of [0,4])it('keeps folded surfaces mirrored, finite, and outside the body for '+fingers+' primaries',()=>{
     const f=fixture(fingers);
@@ -17,10 +17,10 @@ describe('Coordinated resting wing surfaces',()=>{
       if(Math.abs(right.z)<0.55)expect((right.x**2+right.y**2)/0.245**2+right.z**2/0.63**2).toBeGreaterThan(1);
     }
   });
-  it('preserves open vertices and makes aligned morphs for wing surfaces, marks, and offset quill pivots',()=>{
+  it('preserves open vertices and makes aligned morphs for wing surfaces, vanes, and offset quill pivots',()=>{
     const f=fixture(4);
-    for(const side of [-1,1])for(const kind of ['wing','mark','primary','vanes']){
-      const geometry=kind==='vanes'?f.vanes(side,10):kind==='wing'?f.wing(side):kind==='mark'?f.mark(side,0.18,0.58,0.65,0.045):f.primary(side,2,4);
+    for(const side of [-1,1])for(const kind of ['wing','primary','vanes']){
+      const geometry=kind==='vanes'?f.vanes(side,10):kind==='wing'?f.wing(side):f.primary(side,2,4);
       const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial());
       if(kind==='primary'){const p=geometry.attributes.position,root=new THREE.Vector3((p.getX(0)+p.getX(1))/2,(p.getY(0)+p.getY(1))/2,(p.getZ(0)+p.getZ(1))/2);geometry.translate(-root.x,-root.y,-root.z);mesh.position.copy(root);}
       const before=Array.from(geometry.attributes.position.array);f.add(mesh,side);expect(Array.from(geometry.attributes.position.array)).toEqual(before);

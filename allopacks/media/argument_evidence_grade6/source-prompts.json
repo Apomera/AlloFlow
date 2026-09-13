@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "argument_evidence_grade6",
+    "key": "library",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. A quiet small school library interior, book shelves, a round reading table and several chairs, with afternoon light through windows. No people. Screenprinted paper collage with layered geometric shapes and warm teal and ochre ink. All book spines completely blank, no signage. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "A paper-collage library has book shelves, a round table and empty reading chairs in afternoon light.",
+    "caption": "The fictional library proposal asks for later opening hours. A picture establishes the setting; attendance records, costs and a clear explanation are needed to evaluate the proposal.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-59e4eb9f-3db4-4237-8181-c54d753973bd.png",
+    "file": "source-library.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  },
+  {
+    "slug": "argument_evidence_grade6",
+    "key": "cooking",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. A simple school cooking-club workbench: mixing bowl, wooden spoon, cutting board, whole tomato and cucumber, a small pot and folded apron. No knives, flames or people. Screenprinted paper collage, clear grouped objects, warm teal and ochre ink, cream background. No packaging or text. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "A collage workbench holds a bowl, spoon, vegetables, pot and folded apron.",
+    "caption": "These objects introduce a fictional cooking-club proposal. An appealing activity picture is not evidence that a school should fund it; examine the proposal’s reasons and sources.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-b3900529-27a3-43e2-aabb-b95da0a474c5.png",
+    "file": "source-cooking.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  }
+]

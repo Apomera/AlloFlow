@@ -41,12 +41,15 @@
         var normalizedObservations = normalizeObservationSessions(source.observationSessions, { targetBehaviors: normalizedBehaviors });
         return {
             version: WORKSPACE_VERSION,
+            isPracticeMode: source.isPracticeMode === true,
+            practiceScenarioName: boundedText(source.practiceScenarioName, 240),
+            practiceReturnStudent: boundedText(source.practiceReturnStudent, 240),
             abcEntries: normalizedAbc.items,
             observationSessions: normalizedObservations.items,
-            sessionNotes: Array.isArray(source.sessionNotes) ? source.sessionNotes.slice(0, 500) : [],
-            teamNotes: Array.isArray(source.teamNotes) ? source.teamNotes.slice(0, 500) : [],
+            sessionNotes: Array.isArray(source.sessionNotes) ? source.sessionNotes.slice() : [],
+            teamNotes: Array.isArray(source.teamNotes) ? source.teamNotes.slice() : [],
             studentProfile: Object.assign(emptyStudentProfile(), sanitizeJsonObject(profile, 64 * 1024)),
-            sessionHistory: Array.isArray(source.sessionHistory) ? source.sessionHistory.slice(0, 1000) : [],
+            sessionHistory: Array.isArray(source.sessionHistory) ? source.sessionHistory.slice() : [],
             designPhases: Array.isArray(source.designPhases) ? source.designPhases.slice(0, 100) : [],
             activityRegistry: sanitizeJsonObject(source.activityRegistry, 256 * 1024),
             activeDesign: sanitizeJsonValue(source.activeDesign, { maxBytes: 64 * 1024 }),
@@ -248,6 +251,7 @@
     }
 
     function normalizeTimezoneOffset(value) {
+        if (value == null || (typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '') return null;
         var numeric = Number(value);
         return Number.isFinite(numeric) && numeric >= -840 && numeric <= 840 ? Math.round(numeric) : null;
     }
@@ -409,7 +413,7 @@
                 occurredAt: occurredAt,
                 recordedAt: normalizeIsoTimestamp(value.recordedAt) || occurredAt,
                 timezoneOffset: timezoneOffset,
-                localDate: occurredAt ? localDayKey(occurredAt, timezoneOffset) : null,
+                localDate: occurredAt ? (timezoneOffset == null && parseLocalDateBoundary(value.localDate) ? value.localDate : localDayKey(occurredAt, timezoneOffset)) : null,
                 antecedent: antecedent,
                 antecedentId: boundedText(value.antecedentId, 120) || (antecedent ? 'antecedent-' + stableHash(normalizeToken(antecedent)) : null),
                 behavior: behaviorText,
@@ -436,7 +440,7 @@
         var items = [];
         var issueCounts = Object.create(null);
         var dropped = 0;
-        (Array.isArray(values) ? values : []).slice(0, WORKSPACE_ARRAY_LIMITS.abcEntries).forEach(function (value, index) {
+        (Array.isArray(values) ? values : []).forEach(function (value, index) {
             var result = normalizeAbcEntry(value, Object.assign({}, options || {}, { index: index }));
             if (!result.ok || !result.entry) { dropped += 1; return; }
             result.issues.forEach(function (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; });
@@ -465,11 +469,11 @@
                 occurredAt: occurredAt,
                 recordedAt: normalizeIsoTimestamp(value.recordedAt) || occurredAt,
                 timezoneOffset: timezoneOffset,
-                localDate: occurredAt ? localDayKey(occurredAt, timezoneOffset) : null,
+                localDate: occurredAt ? (timezoneOffset == null && parseLocalDateBoundary(value.localDate) ? value.localDate : localDayKey(occurredAt, timezoneOffset)) : null,
                 method: boundedText(value.method, 80).toLowerCase() || 'unknown',
                 duration: duration,
                 behavior: boundedText(value.behavior || value.targetBehavior, 4000),
-                behaviorId: behavior.id,
+                behaviorId: (value.behaviorId || boundedText(value.behavior || value.targetBehavior, 4000)) ? behavior.id : null,
                 phase: boundedText(value.phase, 120) || null,
                 observer: boundedText(value.observer, 240),
                 source: boundedText(value.source, 80).toLowerCase() || 'unknown',
@@ -483,7 +487,7 @@
         var items = [];
         var issueCounts = Object.create(null);
         var dropped = 0;
-        (Array.isArray(values) ? values : []).slice(0, WORKSPACE_ARRAY_LIMITS.observationSessions).forEach(function (value, index) {
+        (Array.isArray(values) ? values : []).forEach(function (value, index) {
             var result = normalizeObservationSession(value, Object.assign({}, options || {}, { index: index }));
             if (!result.ok || !result.session) { dropped += 1; return; }
             result.issues.forEach(function (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; });
@@ -615,13 +619,29 @@
         });
     }
 
+    function matchesObservationScope(item, options) {
+        if (!item) return false;
+        if (Object.prototype.hasOwnProperty.call(options, 'phase')) {
+            var expected = boundedText(options.phase, 120) || 'Unassigned';
+            if ((boundedText(item.phase, 120) || 'Unassigned') !== expected) return false;
+        }
+        if (options.behaviorId) {
+            var counters = item.data && item.data.counters;
+            if (Array.isArray(counters) && counters.length) {
+                if (!counters.some(function (counter) {
+                    return counter.behaviorId === options.behaviorId || resolveCanonicalBehavior({ behavior: counter.label }, options.targetBehaviors).id === options.behaviorId;
+                })) return false;
+            } else if (item.behaviorId && item.behaviorId !== options.behaviorId) return false;
+        }
+        return true;
+    }
+
     function summarizeExposure(observationSessions, options) {
         options = options || {};
         var seconds = 0;
         var sessionCount = 0;
         (Array.isArray(observationSessions) ? observationSessions : []).forEach(function (session) {
-            if (options.phase && session && session.phase !== options.phase) return;
-            if (options.behaviorId && session && session.behaviorId && session.behaviorId !== options.behaviorId) return;
+            if (!matchesObservationScope(session, options)) return;
             var duration = normalizeDurationSeconds(session && session.duration);
             if (duration == null || duration <= 0) return;
             seconds += duration;
@@ -633,7 +653,7 @@
     function calculateIncidentRate(entries, observationSessions, options) {
         options = options || {};
         var incidents = (Array.isArray(entries) ? entries : []).filter(function (entry) {
-            if (options.phase && entry && entry.phase !== options.phase) return false;
+            if (!matchesObservationScope(entry, options)) return false;
             if (options.behaviorId && entry && entry.behaviorId !== options.behaviorId) return false;
             return true;
         }).length;
@@ -646,15 +666,22 @@
         };
     }
 
-    function summarizePhases(entries, observationSessions) {
+    function summarizePhases(entries, observationSessions, options) {
+        options = options || {};
         var phases = Object.create(null);
         (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+            if (!matchesObservationScope(entry, options)) return;
             var phase = boundedText(entry && entry.phase, 120) || 'Unassigned';
             if (!phases[phase]) phases[phase] = [];
             phases[phase].push(entry);
         });
+        (Array.isArray(observationSessions) ? observationSessions : []).forEach(function (session) {
+            if (!matchesObservationScope(session, options)) return;
+            var phase = boundedText(session && session.phase, 120) || 'Unassigned';
+            if (!phases[phase]) phases[phase] = [];
+        });
         return Object.keys(phases).map(function (phase) {
-            var rate = calculateIncidentRate(phases[phase], observationSessions, { phase: phase === 'Unassigned' ? null : phase });
+            var rate = calculateIncidentRate(phases[phase], observationSessions, Object.assign({}, options, { phase: phase }));
             return { phase: phase, count: phases[phase].length, intensity: summarizeIntensity(phases[phase]), rate: rate };
         }).sort(function (left, right) { return right.count - left.count; });
     }
@@ -670,7 +697,7 @@
             issueCounts: issueCounts,
             missingIntensityCount: issueCounts['missing-intensity'] || 0,
             invalidTimestampCount: issueCounts['invalid-timestamp'] || 0,
-            incompleteAbcCount: Math.max(issueCounts['missing-antecedent'] || 0, issueCounts['missing-behavior'] || 0, issueCounts['missing-consequence'] || 0),
+            incompleteAbcCount: normalized.items.filter(function (entry) { return !entry.antecedent || !entry.behavior || !entry.consequence; }).length,
             undefinedBehaviorCount: undefinedBehaviors.length,
             undefinedBehaviors: undefinedBehaviors.slice(0, 20).map(function (group) { return { id: group.id, label: group.label, count: group.count }; }),
             exposure: exposure,
@@ -678,11 +705,11 @@
         };
     }
 
-    function dataFingerprint(entries) {
+    function dataFingerprint(entries, targetBehaviors) {
         var relevant = (Array.isArray(entries) ? entries : []).map(function (entry) {
-            return [entry && entry.id, entry && (entry.occurredAt || entry.timestamp), entry && entry.antecedentId, entry && entry.behaviorId, entry && entry.consequenceId, entry && normalizeIntensity(entry.intensity), entry && entry.phase];
+            return [entry && entry.id, entry && (entry.occurredAt || entry.timestamp), entry && entry.antecedentId, entry && entry.behaviorId, entry && entry.consequenceId, entry && normalizeIntensity(entry.intensity), entry && entry.phase, entry && entry.antecedent, entry && entry.behavior, entry && entry.consequence, entry && entry.setting, entry && entry.notes, entry && entry.duration, entry && entry.timezoneOffset, entry && entry.localDate, entry && entry.observationSessionId];
         }).sort(function (left, right) { return String(left[0] || '').localeCompare(String(right[0] || '')); });
-        return 'bl-data-' + stableHash(relevant);
+        return 'bl-data-' + stableHash([relevant, normalizeTargetBehaviors(targetBehaviors || [], []).sort(function (left, right) { return left.id.localeCompare(right.id); })]);
     }
 
     function selectStratifiedEntries(entries, maximum) {
@@ -704,13 +731,13 @@
         return { entries: selected, strategy: 'stratified-across-date-range', totalCount: sorted.length, sampleCount: selected.length };
     }
 
-    function createAnalysisProvenance(entries, sample, now) {
+    function createAnalysisProvenance(entries, sample, now, targetBehaviors) {
         var values = Array.isArray(entries) ? entries : [];
         var timestamps = values.map(function (entry) { return normalizeIsoTimestamp(entry && (entry.occurredAt || entry.timestamp)); }).filter(Boolean).sort();
         var selected = sample && Array.isArray(sample.entries) ? sample : selectStratifiedEntries(values, 20);
         return {
             generatedAt: normalizeIsoTimestamp(now) || new Date().toISOString(),
-            sourceFingerprint: dataFingerprint(values),
+            sourceFingerprint: dataFingerprint(values, targetBehaviors),
             totalEntries: values.length,
             sampleCount: selected.sampleCount,
             sampleStrategy: selected.strategy,
@@ -720,8 +747,8 @@
         };
     }
 
-    function isAnalysisStale(analysis, entries) {
-        return !!(analysis && analysis.provenance && analysis.provenance.sourceFingerprint && analysis.provenance.sourceFingerprint !== dataFingerprint(entries));
+    function isAnalysisStale(analysis, entries, targetBehaviors) {
+        return !!(analysis && analysis.provenance && analysis.provenance.sourceFingerprint && analysis.provenance.sourceFingerprint !== dataFingerprint(entries, targetBehaviors));
     }
 
     function createAuditEvent(action, options) {
@@ -941,6 +968,37 @@
         };
     }
 
+    // Parse complete records before splitting rows so quoted notes round-trip.
+    function parseCsvRows(text) {
+        text = String(text || '').replace(/^\uFEFF/, '');
+        var rows = [], row = [], field = '', quoted = false, closed = false;
+        for (var index = 0; index < text.length; index += 1) {
+            var char = text[index];
+            if (quoted) {
+                if (char === '"' && text[index + 1] === '"') { field += '"'; index += 1; }
+                else if (char === '"') { quoted = false; closed = true; }
+                else field += char;
+            } else if (char === ',' || char === '\n' || char === '\r') {
+                row.push(field); field = ''; closed = false;
+                if (char !== ',') {
+                    if (char === '\r' && text[index + 1] === '\n') index += 1;
+                    if (row.some(function (value) { return value.trim() !== ''; })) rows.push(row);
+                    row = [];
+                }
+            } else if (char === '"') {
+                if (field.trim() || closed) throw new Error('Unexpected quote in CSV field.');
+                field = ''; quoted = true;
+            } else {
+                if (closed && char.trim()) throw new Error('Unexpected text after a quoted CSV field.');
+                if (!closed) field += char;
+            }
+        }
+        if (quoted) throw new Error('A quoted CSV field is not closed.');
+        row.push(field);
+        if (row.some(function (value) { return value.trim() !== ''; })) rows.push(row);
+        return rows;
+    }
+
     function validateWorkspaceImport(data, options) {
         options = options || {};
         var maxBytes = Number(options.maxBytes) || MAX_WORKSPACE_IMPORT_BYTES;
@@ -963,7 +1021,9 @@
             if (!Array.isArray(data[field])) {
                 errors.push(field + ' must be an array.');
             } else if (data[field].length > WORKSPACE_ARRAY_LIMITS[field]) {
-                errors.push(field + ' exceeds the limit of ' + WORKSPACE_ARRAY_LIMITS[field] + ' items.');
+                if (['abcEntries', 'observationSessions', 'sessionHistory', 'sessionNotes', 'teamNotes'].includes(field)) {
+                    warnings.push(field + ' contains ' + data[field].length + ' records. All records will be retained; export regular backups for this large workspace.');
+                } else errors.push(field + ' exceeds the limit of ' + WORKSPACE_ARRAY_LIMITS[field] + ' items.');
             }
         });
         ['studentProfile', 'activityRegistry', 'workflowSubSteps'].forEach(function (field) {
@@ -1323,6 +1383,7 @@
         createWorkspacePersistenceScheduler: createWorkspacePersistenceScheduler,
         createLocalWorkspaceWritePlan: createLocalWorkspaceWritePlan,
         assessLocalStorageWrite: assessLocalStorageWrite,
+        parseCsvRows: parseCsvRows,
         validateWorkspaceImport: validateWorkspaceImport,
         validateSharedWorkspaceImport: validateSharedWorkspaceImport,
         persistLocalWorkspace: persistLocalWorkspace,

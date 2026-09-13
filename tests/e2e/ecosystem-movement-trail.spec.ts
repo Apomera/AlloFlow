@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+import {GlHarness} from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_ecosystem.js',toolId:'ecosystem',width:1100,height:900,appStyles:true});
+test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
+test('3D trail follows the selected animal and branch, rewinds, and respects still inspection',async({page})=>{
+  await page.setViewportSize({width:1140,height:1050});await harness.mount(page,{ecosystem:{tab:'foodweb',tutorialDismissed:true}},undefined,{expectCanvas:false});
+  await page.evaluate(()=>{document.body.className='theme-default';document.getElementById('wrap')!.style.cssText='width:100%;height:auto;display:block;padding:16px;background:white';});
+  await page.getByRole('button',{name:'Insect food shortage',exact:true}).click();await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  const meadow=page.locator('[data-efw-meadow]'),canvas=meadow.locator('canvas'),timeline=meadow.getByLabel('Meadow timeline',{exact:true}),toggle=meadow.getByRole('button',{name:'Recent movement trail',exact:true});
+  await meadow.getByRole('button',{name:/Red foxes\s/}).click();await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).click();await timeline.fill('64');await expect(canvas).toHaveAttribute('data-movement-trail','false');
+  await toggle.focus();await toggle.press('Enter');await expect(toggle).toHaveAttribute('aria-pressed','true');await expect(canvas).toHaveAttribute('data-movement-trail','true');await expect(canvas).toHaveAttribute('data-trail-range','34:64');await expect(canvas).toHaveAttribute('data-trail-color-capacity','30:8');
+  const firstEnd=await canvas.getAttribute('data-trail-end'),saved=await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb.run));
+  await meadow.locator('.efw-meadow-stage').screenshot({path:'reports/ecosystem-movement-trail/fox-trail.jpg',type:'jpeg',quality:90});
+  await timeline.fill('90');await timeline.fill('64');await expect(canvas).toHaveAttribute('data-trail-end',firstEnd!);
+  await meadow.getByLabel('Representative animal',{exact:true}).selectOption('1');await expect(canvas).not.toHaveAttribute('data-trail-end',firstEnd!);
+  await meadow.getByRole('button',{name:'Isolate specimen',exact:true}).click();await expect(canvas).toHaveAttribute('data-movement-trail','true');
+  await meadow.getByRole('button',{name:/Barn owls\s/}).click();await timeline.fill('120');
+  const expected=await page.evaluate(()=>{const w=window as any,a=w.StemLab.ecosystemFoodWeb,c=w.__toolData.ecosystem.foodWeb.run.config;return a.trail(a.behaviorTimeline(c,a.compare(c).experiment),'owls',0,120).at(-1);});await expect(canvas).toHaveAttribute('data-trail-end',JSON.stringify(expected));expect(expected.altitude).toBeGreaterThan(0.5);
+  await meadow.locator('.efw-meadow-stage').screenshot({path:'reports/ecosystem-movement-trail/owl-trail.jpg',type:'jpeg',quality:90});
+  await page.setViewportSize({width:390,height:844});await meadow.locator('.efw-meadow-stage').screenshot({path:'reports/ecosystem-movement-trail/mobile-trail.jpg',type:'jpeg',quality:90});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.emulateMedia({reducedMotion:'reduce'});await expect(canvas).toHaveAttribute('data-movement-trail','false');await expect(meadow.locator('[data-efw-trail-caption]')).toContainText('reduced motion');await page.emulateMedia({reducedMotion:'no-preference'});await expect(canvas).toHaveAttribute('data-movement-trail','true');
+  await timeline.fill('0');await expect(canvas).toHaveAttribute('data-movement-trail','false');await timeline.fill('120');await meadow.getByRole('button',{name:'Habitat view',exact:true}).click();await expect(canvas).toHaveAttribute('data-movement-trail','false');await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).click();await expect(canvas).toHaveAttribute('data-movement-trail','true');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb.run))).toBe(saved);
+  await meadow.getByRole('button',{name:/Red foxes\s/}).click();await page.getByLabel('Disturbance',{exact:true}).selectOption('remove');await page.getByLabel('Affected group',{exact:true}).selectOption('foxes');await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();await expect(canvas).toHaveAttribute('data-trail-samples','0');await meadow.getByLabel('Meadow scene data',{exact:true}).selectOption('baseline');await expect(canvas).toHaveAttribute('data-movement-trail','true');await toggle.click();await expect(canvas).toHaveAttribute('data-trail-samples','0');expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

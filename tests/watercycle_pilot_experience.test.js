@@ -108,7 +108,8 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("var cloudImmersion = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');");
     expect(source).toContain('var fogFarGoal = cloudImmersion ? 145 : 2300;');
     expect(source).toContain('freeDrops.material.size = waterView ? 1.45 : 3.1;');
-    expect(source).toContain('shoreFoam.children.forEach(function(line, foamIndex)');
+    expect(source).toContain('shoreFoam.children.forEach(function(foamMesh) { updateSunlightSurface(foamMesh); });');
+    expect(source).toContain('shader.uniforms.pilotCoastTime = pilotWaterUniforms.rippleTime;');
     expect(source).toContain('var snowPhase = motionReduced');
   });
 
@@ -162,7 +163,9 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('var coastalShelf = new THREE.Mesh');
     expect(source).toContain('var wetSand = new THREE.Mesh');
     expect(source).toContain('var COAST_OUTLINE = [');
-    expect(source).toContain('new THREE.ShapeGeometry(outlineShape(COAST_OUTLINE, 1.12, 1.16), 12)');
+    expect(source).toContain("coastShelfGeometry.setAttribute('coastalFade'");
+    expect(source).toContain('cacheSunlightSurface(coastalShelf);');
+    expect(source).toContain('updateSunlightSurface(coastalShelf);');
     expect(source).toContain("new THREE.CatmullRomCurve3(outlineVectors, true, 'centripetal', 0.42)");
     expect(source).toContain('function sculptedLandGeometry(points, bottomY, topY, scaleX, scaleZ)');
     expect(source).toContain('var landGeometry = new THREE.ExtrudeGeometry');
@@ -191,7 +194,8 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source.indexOf('var ridgeBackdrop = new THREE.Mesh(')).toBeLessThan(frameIndex);
     expect(source).toContain("canvasEl.dataset.landformRendering = 'continuous-heightfield-watershed';");
     expect(source).toContain('function paintWatershedRidge(isDesert, isWinter)');
-    expect(source).toContain('var snowLineVariation = 0.46 + (ridgeLightFactor - 0.5) * 0.11;');
+    expect(source).toContain('ridgeSnowCover *= smoothstep(0.25, 0.78, vRidgeUp) * ridgeWinterSnow;');
+    expect(source).toContain('ridgeWinterSnow.value = isWinter ? 1 : 0;');
     expect(source).toContain("canvasEl.dataset.ridgeBiome = isWinter ? 'snowline-storage'");
 
     expect(source).toContain('var TREE_COUNT = 68;');

@@ -1,7 +1,7 @@
 /* Shared response boundary for Memory Aid and Applied Challenge. */
 (function () {
   'use strict';
-  const memoryFields = ['studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview'];
+  const memoryFields = ['studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview'];
   const appliedFields = ['workspace', 'evidenceLedger', 'criteriaCheck', 'validationCycles', 'stressTest', 'feedback', 'coachHint'];
   const noteFields = ['title', 'author', 'pageRange', 'cues', 'notes', 'summary', 'question', 'hypothesis', 'materials', 'procedure', 'data', 'analysis', 'conclusion', 'favoriteLine', 'thinkings', 'connection', 'entries', 'blanks', 'notesExtra', 'pairs', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'];
   const anchorFields = ['studentAnswers', 'feedback', 'prevFeedbackScore'];
@@ -66,14 +66,14 @@
   const pick = (value, keys) => Object.fromEntries(keys.filter(key => Object.prototype.hasOwnProperty.call(value || {}, key)).map(key => [key, value[key]]));
   // Bound and allowlist text trees. Media, private practice, teacher source,
   // and unknown future fields must never enter a response submission.
-  const allowed = new Set(('id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
+  const allowed = new Set(('coverage version workspaceFields evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
   function textTree(value, depth = 0) {
     if (depth > 8) return null;
     if (typeof value === 'string') return value.slice(0, 12000);
     if (typeof value === 'boolean' || typeof value === 'number' || value === null) return value;
     if (Array.isArray(value)) return value.slice(0, 24).map(item => textTree(item, depth + 1));
     if (!value || typeof value !== 'object') return null;
-    return Object.fromEntries(Object.entries(value).filter(([key]) => allowed.has(key) || /^(criterion|constraint)-\d+$/.test(key)).map(([key, item]) => [key, textTree(item, depth + 1)]));
+    return Object.fromEntries(Object.entries(value).filter(([key]) => allowed.has(key) || /^(criterion|constraint)-[a-zA-Z0-9_-]{1,80}$/.test(key)).map(([key, item]) => [key, textTree(item, depth + 1)]));
   }
   function memoryCards(data) {
     const normalize = window.AlloModules?.MemoryAid?._testing?.normalizeMemoryAidCards;
@@ -189,7 +189,7 @@
         else if (typeof value!=='string') throw new Error('Invalid note text');
       }
     } else {
-      if (!record(raw.workspace) || Object.values(raw.workspace).some(value => typeof value !== 'string')) throw new Error('Invalid challenge workspace');
+      if (!record(raw.workspace) || Object.entries(raw.workspace).some(([key, value]) => key === 'questionAccepted' ? typeof value !== 'boolean' : typeof value !== 'string')) throw new Error('Invalid challenge workspace');
       if (['evidenceLedger', 'validationCycles'].some(key => key in raw && (!Array.isArray(raw[key]) || raw[key].some(value => !record(value))))) throw new Error('Invalid response rows');
       if ('criteriaCheck' in raw && (!record(raw.criteriaCheck) || Object.values(raw.criteriaCheck).some(value => !record(value)))) throw new Error('Invalid self-checks');
       if ('coachHint' in raw && typeof raw.coachHint !== 'string') throw new Error('Invalid coach hint');

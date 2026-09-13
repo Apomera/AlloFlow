@@ -89,17 +89,48 @@
     });
     return hits;
   }
-  const join = values => values.map(value => typeof value === 'number' ? String(value) : string(value, MATERIAL_LIMIT + 1)).filter(Boolean).join('\n');
+  // Preserve complete teacher content for change detection; only prompt snapshots are truncated.
+  const fullText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : value && typeof value === 'object' ? string(value.en || value.text || value.title || value.label, Infinity) : '';
+  const join = values => values.map(value => string(fullText(value), Infinity)).filter(Boolean).join('\n');
   const ALLOWED_TYPES = new Set(['analysis', 'source', 'simplified', 'glossary', 'quiz', 'math', 'sentence-frames', 'anchor-chart', 'note-taking', 'timeline', 'concept-sort', 'image', 'outline']);
   function teacherMaterialText(resource) {
     if (!resource || !ALLOWED_TYPES.has(resource.type) || resource.isStudentWork || resource.studentId || resource.submissionId || resource.config?.isStudentWork) return '';
     const data = resource.data;
     // A caller may supply an already-projected material. Only accepted types can use it.
-    if (typeof resource.text === 'string') return string(resource.text, MATERIAL_LIMIT + 1);
-    if (['source', 'simplified'].includes(resource.type)) return typeof data === 'string' ? string(data, MATERIAL_LIMIT + 1) : join([data?.text, data?.content, data?.originalText]);
+    if (typeof resource.text === 'string') return string(resource.text, Infinity);
+    if (['source', 'simplified'].includes(resource.type)) return typeof data === 'string' ? string(data, Infinity) : join([data?.text, data?.content, data?.originalText]);
     if (resource.type === 'analysis') return join([data?.originalText, data?.rawEnglishText]);
     if (resource.type === 'glossary') return array(data).map(row => join([row?.term, row?.def, row?.definition, row?.example])).filter(Boolean).join('\n\n');
-    if (resource.type === 'quiz') return array(data?.questions).map(row => join([row?.question, ...array(row?.options).map(option => typeof option === 'string' ? option : option?.text), row?.answer, row?.correctAnswer, row?.explanation])).filter(Boolean).join('\n\n');
+    if (resource.type === 'quiz') return array(data?.questions).map(row => {
+      if (!row || typeof row !== 'object') return '';
+      const lines = [row.question || row.contextSentence || row.prompt];
+      const add = (label, value) => { const content = join(Array.isArray(value) ? value : [value]); if (content) lines.push(label + ': ' + content); };
+      add('Options', row.options);
+      add('Answer', row.answer ?? row.correctAnswer);
+      add('Correct selections', row.correctAnswers);
+      add('Expected fill', row.expectedFill);
+      add('Also accept', row.acceptableAlternatives);
+      add('Expected answer', row.expectedAnswer);
+      add('Success criteria', row.rubric);
+      add('Items in canonical order', row.items);
+      add('Presented order (zero-based item indices)', row.presentedOrder);
+      add('Ordering principle', row.orderingPrinciple);
+      add('Principle options', row.principleOptions);
+      add('Displayed pairs', array(row.pairs).map(pair => join([pair?.left, pair?.right])));
+      add('Incorrect pair (zero-based index)', row.wrongPairIndex);
+      add('Correct partner for the incorrect pair', row.correctPartnerForWrong);
+      add('Candidate partners', row.candidatePartners);
+      add('Answer options', row.answerOptions);
+      add('Evidence question', row.evidencePrompt);
+      add('Evidence options', row.evidenceOptions);
+      add('Correct evidence', row.correctEvidence);
+      add('Expected value', row.correctValue);
+      add('Tolerance', row.tolerance);
+      add('Units', row.unit);
+      add('Acceptable units', row.acceptableUnits);
+      add('Explanation', row.explanation);
+      return join(lines);
+    }).filter(Boolean).join('\n\n');
     if (resource.type === 'math') {
       const problems = Array.isArray(data?.problems) ? data.problems : Array.isArray(data?.questions) ? data.questions : Array.isArray(data) ? data : data?.problem != null || data?.question != null ? [data] : [];
       return problems.map(row => join([row?.question, row?.problem, row?.equation, row?.expression, row?.answer ?? row?.correct_answer, row?.explanation, row?.realWorld, ...array(typeof row?.steps === 'string' ? [row.steps] : row?.steps).map(step => typeof step === 'string' ? step : join([step?.text, step?.explanation, step?.latex, step?.expression]))])).filter(Boolean).join('\n\n');
@@ -107,20 +138,21 @@
     if (resource.type === 'anchor-chart') return join([data?.title, ...array(data?.sections).map(section => join([section?.label, ...array(section?.bullets).map(bullet => typeof bullet === 'string' ? bullet : bullet?.text)]))]);
     if (resource.type === 'note-taking') return join([data?.title, ...array(data?.cues).map(row => typeof row === 'string' ? row : row?.text), ...array(data?.blanks).map(row => join([row?.before, row?.answer, row?.after]))]);
     if (resource.type === 'sentence-frames') return join([data?.title, data?.text, data?.frame, data?.paragraph, ...array(data?.items || data?.frames || data?.starters).map(row => typeof row === 'string' ? row : join([row?.text, row?.prompt]))]);
-    if (resource.type === 'timeline') return array(Array.isArray(data) ? data : data?.events).map(row => join([row?.title, row?.date, row?.description, row?.text])).join('\n\n');
+    if (resource.type === 'timeline') return array(Array.isArray(data) ? data : data?.items || data?.events).map(row => join([row?.title, row?.date, row?.event, row?.description, row?.text])).join('\n\n');
     if (resource.type === 'concept-sort') return join([...array(data?.categories).map(row => row?.label), ...array(data?.items).map(row => join([row?.content, row?.text, row?.label, row?.explanation, array(data?.categories).find(category => category?.id != null && category.id === row?.categoryId)?.label]))]);
     if (resource.type === 'image') return join([data?.prompt, data?.altText, data?.caption]);
-    if (resource.type === 'outline') return typeof data === 'string' ? string(data, MATERIAL_LIMIT + 1) : join([data?.title, data?.text, data?.main, ...array(data?.branches).map(branch => join([branch?.title, ...array(branch?.items).map(item => typeof item === 'string' ? item : item?.text)])), ...array(data?.sections).map(section => join([section?.heading, section?.text, ...array(section?.points).filter(point => typeof point === 'string')]))]);
+    if (resource.type === 'outline') return typeof data === 'string' ? string(data, Infinity) : join([data?.title, data?.text, data?.main, ...array(data?.branches).map(branch => join([branch?.title, ...array(branch?.items).map(item => typeof item === 'string' ? item : item?.text)])), ...array(data?.sections).map(section => join([section?.heading, section?.text, ...array(section?.points).filter(point => typeof point === 'string')]))]);
     return '';
   }
-  const stringList = (value, count, limit) => (typeof value === 'string' ? [value] : array(value)).map(text).map(item => string(item, limit)).filter(Boolean).slice(0, count);
-  function planProjection(plan) {
+  function planProjection(plan, bounded = true) {
     const data = plan?.data || {};
+    const field = (value, limit) => string(fullText(value), bounded ? limit : Infinity);
+    const list = (value, count, limit) => (typeof value === 'string' ? [value] : array(value)).map(item => field(item, limit)).filter(Boolean).slice(0, bounded ? count : Infinity);
     return {
-      id: string(plan?.id, 160), title: string(text(plan?.title), 500),
-      objectives: stringList(data.objectives, 20, 1500), essentialQuestion: string(text(data.essentialQuestion), 3000),
-      hook: string(text(data.hook), 4000), directInstruction: string(text(data.directInstruction), 12000), guidedPractice: string(text(data.guidedPractice), 8000),
-      independentPractice: string(text(data.independentPractice), 8000), closure: string(text(data.closure), 4000), materialsNeeded: stringList(data.materialsNeeded, 20, 300),
+      id: string(plan?.id, 160), title: field(plan?.title, 500),
+      objectives: list(data.objectives, 20, 1500), essentialQuestion: field(data.essentialQuestion, 3000),
+      hook: field(data.hook, 4000), directInstruction: field(data.directInstruction, 12000), guidedPractice: field(data.guidedPractice, 8000),
+      independentPractice: field(data.independentPractice, 8000), closure: field(data.closure, 4000), materialsNeeded: list(data.materialsNeeded, 20, 300),
     };
   }
   function planSubjectText(plan) {
@@ -178,8 +210,11 @@
       planId: string(plan?.id, 160), planType: string(plan?.type, 80),
       settings: normalizeSettings(settings),
       plan: planProjection(plan),
-      materials: [], trace: { materialCharacterLimit: MATERIAL_LIMIT, truncatedMaterialIds: [], omittedMaterialIds: [], duplicateMaterialIds: [], materialTitles: [] },
+      materials: [], trace: { materialCharacterLimit: MATERIAL_LIMIT, materialCount: array(materials).length, truncatedPlanFields: [], truncatedMaterialIds: [], omittedMaterialIds: [], duplicateMaterialIds: [], materialTitles: [] },
     };
+    const fullPlan = planProjection(plan, false);
+    projection.trace.truncatedPlanFields = Object.keys(fullPlan).filter(key => JSON.stringify(fullPlan[key]) !== JSON.stringify(projection.plan[key]));
+    const materialFingerprints = [];
     let remaining = MATERIAL_LIMIT;
     const seen = new Set();
     array(materials).slice(0, 100).forEach(resource => {
@@ -188,6 +223,7 @@
       if (seen.has(id)) { projection.trace.duplicateMaterialIds.push(id); return; }
       seen.add(id);
       const materialText = teacherMaterialText(resource);
+      materialFingerprints.push({ id, fingerprint: fingerprint({ type: resource.type, text: materialText }) });
       if (materialText) projection.trace.materialTitles.push({ id, title: string(text(resource.title || resource.data?.title), 500) || resource.type });
       if (!materialText || remaining <= 0) { projection.trace.omittedMaterialIds.push(id); return; }
       const bounded = materialText.slice(0, remaining);
@@ -195,9 +231,18 @@
       projection.materials.push({ id, type: resource.type, title: string(text(resource.title || resource.data?.title), 500) || resource.type, text: bounded });
       remaining -= bounded.length;
     });
-    projection.planFingerprint = fingerprint(projection.plan);
-    projection.fingerprint = fingerprint({ schemaVersion: projection.schemaVersion, planId: projection.planId, settings: projection.settings, plan: projection.plan, materials: projection.materials });
+    projection.planFingerprint = fingerprint(fullPlan);
+    projection.fingerprint = fingerprint({ schemaVersion: projection.schemaVersion, planId: projection.planId, settings: projection.settings, plan: projection.plan, planFingerprint: projection.planFingerprint, materials: projection.materials, materialFingerprints });
     return freeze(projection);
+  }
+  function getInputWarnings(snapshot) {
+    const warnings = [];
+    const materialName = id => array(snapshot?.trace?.materialTitles).find(item => item?.id === id)?.title || array(snapshot?.materials).find(item => item?.id === id)?.title || id;
+    const planLabels = { title: 'Title', objectives: 'Learning objectives', essentialQuestion: 'Essential question', materialsNeeded: 'Materials needed', ...PHASE_LABELS };
+    if (array(snapshot?.trace?.truncatedPlanFields).length) warnings.push('Only portions of these saved plan fields were used: ' + snapshot.trace.truncatedPlanFields.map(key => planLabels[key] || key).join('; ') + '. Review the complete plan before teaching.');
+    if (array(snapshot?.trace?.truncatedMaterialIds).length) warnings.push('Only portions of these selected materials were used: ' + snapshot.trace.truncatedMaterialIds.map(materialName).join('; ') + '. Review the full materials before teaching.');
+    if (array(snapshot?.trace?.omittedMaterialIds).length) warnings.push('These selected materials were not included in the script input because they had no supported teaching text or exceeded the input limit: ' + snapshot.trace.omittedMaterialIds.map(materialName).join('; ') + '.');
+    return warnings;
   }
   function validateInputs(snapshot) {
     const errors = [], settings = snapshot?.settings || {}, rules = SCOPES[settings.scope];
@@ -210,6 +255,7 @@
     if (!string(settings.goal)) errors.push('Enter the learning goal for this script.');
     if (!array(snapshot?.materials).some(material => string(material?.text))) errors.push('Select at least one teaching material with actual content.');
     if (array(snapshot?.trace?.duplicateMaterialIds).length) errors.push('Selected material IDs are ambiguous. Select unique saved resources.');
+    if (snapshot?.trace?.materialCount > 100) errors.push('Select no more than 100 teaching materials for one script.');
     return { ok: errors.length === 0, errors };
   }
   function safeUrl(value) {
@@ -251,6 +297,7 @@
       'Write in the requested language, for the stated grade or age group, goal, prior knowledge, and exact duration. Ground explanations in the actual selected material details and in the saved plan text; reference at least one selected material through resourceIds on the step that uses it. Do not invent resource content, facts, dates, formulas, or standard wording that the materials do not support.',
       'Use ' + rules.minSteps + '–' + rules.maxSteps + ' sequential timed steps. Each minutes value must be a positive integer (at most ' + rules.maxStepMinutes + ') and their sum must equal durationMinutes exactly. teacherSays must contain full proposed speakable wording for the explanation, model, worked example, questions and transition, not a one-sentence summary or an instruction to explain something. Include learner actions, think time and wait time so the stated duration includes participation, not uninterrupted teacher talk. Include a check question, a POSSIBLE learner response (never a prediction of what a child will say), an ifStruggling branch that names a LIKELY misconception or difficulty as a possibility and how to respond, and an ifReady extension.',
       'The teacher wording is newly generated wording. Research recommendations are supporting instructional choices, not a researched script or a guarantee of effectiveness. Each supplied source states its own scope; content-specific evidence and general-practice evidence must not be presented as a validation of this exact lesson, grade, or standard. Do not copy long wording from a source. Use recommendationIds only for supplied recommendations directly relevant to that step; omit references when unsupported. For unavailable/disabled research, recommendationIds must be empty. Keep all citations in reference arrays; do not place URLs or citation markers in teaching fields.',
+      'Spoken-content contract: teacherSays and checkQuestion contain only exact words addressed to students. Put silent delivery cues, wait time, gestures and teacher actions in studentDoes or the conditional guidance, never in spoken fields. Do not repeat checkQuestion inside teacherSays. Conditional guidance is teacher-only, not automatic speech.',
       'Return ONLY JSON: {"title":"...","scope":"' + settings.scope + '","durationMinutes":' + settings.durationMinutes + ',"steps":[{"id":"step-1","phase":"directInstruction","minutes":3,"title":"...","teacherSays":"Full proposed teacher wording...","studentDoes":"...","checkQuestion":"...","possibleResponse":"One possible response...","ifStruggling":"Likely difficulty and response...","ifReady":"...","resourceIds":["actual selected material ID"],"recommendationIds":["actual supplied recommendation ID"]}]}',
     ].join('\n\n');
   }
@@ -277,6 +324,7 @@
       step.phase = PHASES.includes(phase) ? phase : '';
       STEP_FIELDS.forEach(field => {
         step[field] = string(raw?.[field], 16000);
+        if (string(raw?.[field], Infinity).length > 16000) errors.push('Step ' + (index + 1) + ' ' + field + ' exceeds the 16,000-character limit. Shorten it before saving.');
         if (step[field].length < (field === 'title' ? 2 : field === 'teacherSays' ? 60 : 12)) errors.push('Step ' + (index + 1) + ' needs substantive ' + field + '.');
         if (/https?:\/\/|javascript:|data:text\/html|\]\s*\(|\[(?:\d+|S\d+|R\d+|REC[-_\w]*|source[-_\w]+|recommendation[-_\w]+)\]/i.test(step[field])) errors.push('Keep citations in validated reference arrays, not teaching text.');
       });
@@ -311,10 +359,7 @@
     if (!normalized.steps.some(step => step.resourceIds.length)) errors.push('At least one teaching step must use an actual selected material.');
     if (research.status === 'retrieved' && !normalized.steps.some(step => step.recommendationIds.length)) errors.push('A researched script must connect at least one teaching step to a retrieved recommendation.');
     if (errors.length) return { ok: false, errors: [...new Set(errors)], version: null };
-    const inputWarnings = [];
-    const materialName = id => array(snapshot.trace?.materialTitles).find(item => item.id === id)?.title || snapshot.materials.find(item => item.id === id)?.title || id;
-    if (array(snapshot.trace?.truncatedMaterialIds).length) inputWarnings.push('Only portions of these selected materials were used: ' + snapshot.trace.truncatedMaterialIds.map(materialName).join('; ') + '. Review the full materials before teaching.');
-    if (array(snapshot.trace?.omittedMaterialIds).length) inputWarnings.push('These selected materials were not included in the script input because they had no supported teaching text or exceeded the input limit: ' + snapshot.trace.omittedMaterialIds.map(materialName).join('; ') + '.');
+    const inputWarnings = getInputWarnings(snapshot);
     if (snapshot.settings.scope === 'lesson') inputWarnings.push('This is a whole-lesson script drafted from the saved plan. Check pacing, transitions and content accuracy for your class before teaching.');
     else inputWarnings.push('This script covers one ' + snapshot.settings.durationMinutes + '-minute teaching segment, not the whole lesson.');
     if (research.status === 'retrieved' && research.sources.every(source => source.evidenceKind === 'general-practice')) inputWarnings.push('The retrieved evidence is general instructional guidance, not content-specific research for this topic.');
@@ -379,9 +424,47 @@
     array(version.warnings).forEach(warning => lines.push('Note: ' + warning));
     return lines.filter(line => line !== '').join('\n');
   }
+  // Only these two fields are intended for student-facing speech. Legacy bracketed
+  // delivery cues are omitted; mathematical bracket expressions remain intact.
+  function spokenSegments(version) {
+    const clean = value => text(value).replace(/\[(?:pause|wait|allow|give students|teacher|gesture|point|show|display|write on|model silently)[^\]]*\]/gi, '').replace(/[ \t]+/g, ' ').trim();
+    const comparable = value => value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    return array(version?.steps).flatMap((step, index) => {
+      if (!step || typeof step !== 'object') return [];
+      const wording = clean(step.teacherSays), question = clean(step.checkQuestion);
+      const base = { stepIndex: index, stepId: String(step.id || index), title: text(step.title) };
+      return [['teacherSays', wording], ['checkQuestion', question && !(' ' + comparable(wording) + ' ').includes(' ' + comparable(question) + ' ') ? question : '']]
+        .filter(([, spokenText]) => spokenText).map(([field, spokenText]) => ({ ...base, field, spokenText, id: index + ':' + field }));
+    });
+  }
+  function spokenText(version) {
+    return spokenSegments(version).map(segment => segment.spokenText).join('\n\n');
+  }
+  function createAudioController(deps) {
+    const version = deps.getVersion();
+    const store = deps.store;
+    const adapter = {
+      id: 'alloflow.lesson-script.read-aloud', version: 1,
+      enumerate: resource => spokenSegments(resource), spokenText: segment => segment.spokenText,
+      fields: segment => ({ segmentId: segment.id, storageKey: {
+        identityVersion: 4, adapterId: 'alloflow.lesson-script.read-aloud', adapterVersion: 1,
+        scopeId: String(version.id), segmentId: segment.id, spokenText: segment.spokenText
+      } })
+    };
+    let persisted = store.serialize();
+    const controller = deps.createService({
+      getResource: deps.getVersion, getStoreModule: () => { deps.getVersion(); return store; },
+      getSynthesisProfile: deps.getProfile, synthesize: deps.synthesize, encode: deps.encode,
+      persist: async event => {
+        try { await deps.persist(event); persisted = event.payload; }
+        catch (error) { store.clear(); if (persisted) store.hydrate(persisted); throw error; }
+      }
+    }).forResource({ resourceId: String(deps.planId), resourceType: 'lesson-script', adapter, persistencePolicy: 'resource' });
+    return { ...controller, dispose: () => store.clear() };
+  }
   const api = {
     SCHEMA_VERSION, LEGACY_SCHEMA_VERSION, SCOPES: clone(SCOPES), PHASES: PHASES.slice(), SUBJECTS: SUBJECTS.slice(), SUBJECT_LABELS: { ...SUBJECT_LABELS }, GRADES: GRADES.slice(),
-    normalizeGrade, gradeBand, detectContext, captureInputs, validateInputs, buildScriptPrompt, normalizeScript, toPlainText, appendVersion, updateVersion, scopeLabel,
+    spokenSegments, spokenText, createAudioController, normalizeGrade, gradeBand, detectContext, captureInputs, getInputWarnings, hasTeachingMaterialText: resource => Boolean(teacherMaterialText(resource)), validateInputs, buildScriptPrompt, normalizeScript, toPlainText, appendVersion, updateVersion, scopeLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.LessonTeachingScript = api; window.AlloModules.LessonTeachingScriptModule = true; }

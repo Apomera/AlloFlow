@@ -1,0 +1,938 @@
+[
+  {
+    "resourceId": "ns-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nMost people can define natural selection and still explain it wrongly. This unit spends as much time on the wrong version as the right one, because the wrong version is the one that survives.\n\n1. Read **Nothing Is Trying**. Mark every sentence that says what selection does *not* do.\n2. Learn the words in **Selection Vocabulary**, then win the **Matching** game and the **Memory** game.\n3. Work through **The Four Conditions** to see why the argument holds together.\n4. Study the **Right Version, Wrong Version** chart.\n5. Sort the cards in **How It Works or How It Doesn't?** — several are close.\n6. Fill in **Selection Notes** as you read.\n7. Take **Selection Check**.\n8. Lock it in with **Remember the Four Conditions**.\n9. Read **Questions People Ask About Evolution**.\n10. Finish with **Investigation: Track the Trait**.\n\nBring one example of an organism that seems perfectly built for where it lives. 🧬\n\nPicture panels: Variation and inheritance; Population change and fitness; Habitat context; Mutation and resistance. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nMost people can define natural selection and still explain it wrongly. This unit spends as much time on the wrong version as the right one, because the wrong version is the one that survives.\n\n1. Read **How Populations Change**. Mark every sentence that says what selection does *not* do.\n2. Learn the words in **Selection Vocabulary**, then win the **Matching** game and the **Memory** game.\n3. Work through **The Selection Model** to see why the argument holds together.\n4. Study the **Right Version, Wrong Version** chart.\n5. Sort the cards in **How It Works or How It Doesn't?** — several are close.\n6. Fill in **Selection Notes** as you read.\n7. Take **Selection Check**.\n8. Lock it in with **Remember the Selection Model**.\n9. Read **Questions People Ask About Evolution**.\n10. Finish with **Investigation: Track the Trait**.\n\nBring one example of an organism that seems perfectly built for where it lives. 🧬\n\nPicture panels: Variation and inheritance; Population change and fitness; Habitat context; Mutation and resistance. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending."
+  },
+  {
+    "resourceId": "ns-reading",
+    "path": "title",
+    "from": "Nothing Is Trying",
+    "to": "How Populations Change"
+  },
+  {
+    "resourceId": "ns-reading",
+    "path": "data",
+    "from": "## Nothing Is Trying\n\nHere is a sentence you have probably heard: animals adapt to their environment. It sounds right. It is also the most common way of getting natural selection exactly backwards.\n\nAn individual does not adapt. **Populations** change across generations, and no individual in them changes at all.\n\n### Four conditions, and that is the whole thing\n\nNatural selection follows from four facts. If all four hold, it happens. There is nothing else to it.\n\n**One: variation exists.** In any population, individuals differ. Some beetles are darker, some lighter. Some bacteria happen to carry a gene that a particular drug cannot disable. Crucially, **this variation is already there before the environment changes.** It was not requested and it was not produced on demand.\n\n**Two: some of that variation is heritable.** Traits carried in genes get passed to offspring. Traits you acquire during your life do not. A weightlifter's children are not born strong, and a mouse that loses its tail has ordinary tailed pups.\n\n**Three: more offspring are produced than can survive.** Food, space and safety run out. Not everyone makes it.\n\n**Four: survival is not random with respect to those traits.** Some variants do better in this particular environment, so they leave more offspring.\n\nRun those four for many generations and the **frequency** of a trait in the population shifts. That shift is the whole phenomenon.\n\n### Why the wrong version is so appealing\n\nThe wrong version says an organism notices a problem and develops a solution. It is appealing because it is how *we* solve problems, and because the results genuinely look designed.\n\nBut nothing is trying. A **mutation** does not arrive because it would be useful. Mutations happen regardless, and most are neutral or harmful. Occasionally one turns out to help in the environment that happens to exist, and that one spreads — not because it was needed, but because its carriers left more offspring.\n\nBacteria make this concrete. Give a large population of bacteria an antibiotic and a few usually survive. Those few were not toughened by the drug. They already carried a variant that the drug could not disable, before it was ever applied. The antibiotic did not create resistance; it removed everything else. The next generation descends from the survivors, so more of it is resistant. Do that repeatedly and resistance becomes common.\n\nThis is also why antibiotics are worth using carefully rather than routinely, and why resistance is a serious medical problem rather than a textbook curiosity.\n\n### Fit to what, exactly\n\n**Fitness** in biology does not mean strong or fast. It means leaving more surviving offspring in this environment. A trait that helps in one place can be useless in another and harmful in a third.\n\nSo selection has no direction and no destination. Change the environment and the favoured trait can reverse within a few generations. Nothing is being perfected, because there is nothing to be perfect for.\n\nWhat is left is simpler and stranger than the story people tell. Variation that already existed, filtered by conditions that happen to prevail, repeated until the population looks built for a world that merely selected it.",
+    "to": "## How Populations Change\n\nBeetles in the same habitat can differ in color. If color differences are inherited and influence reproductive success, the proportions of variants can change across generations. That is an example of evolution by natural selection.\n\nIndividuals really do grow, learn and acclimate during their lives. Those changes are not, by themselves, evidence that a population has evolved. The key is to explain inherited differences and their transmission across generations, not to claim that organisms never change.\n\n### Follow the mechanism\n\n**Variation:** individuals differ. A useful variant can already be present when conditions change. New mutations or incoming individuals can also introduce variants later. Mutations are not directed toward providing the change an organism needs.\n\n**Inheritance:** some variation has a genetic basis and can be passed on. Many traits involve several genes and environmental influences. Muscles built through training are not automatically copied into a child's inherited DNA. Inheritance is not the same as passing along every lifetime experience.\n\n**Environmental context:** food, predators, mates and other conditions influence outcomes. Producing more offspring than can survive is common, but literal overcrowding is not required for natural selection. Differences in mating success or fertility can matter too.\n\n**Differential reproduction:** variants can differ in their contribution to later generations. Survival matters when it affects reproduction. Biological **fitness** concerns relative reproductive contribution in a particular environment, not strength, health, complexity or personal worth.\n\nA heritable variant that improves reproductive success can become more common. This is a tendency, not a promise that every helpful mutation spreads or that every generation follows a smooth trend. Chance also matters. **Genetic drift** changes frequencies through chance and can occur in any population, with stronger effects in small populations.\n\n### Read the pictures as models\n\nOur eight-beetle rows show invented counts: two, four and then six dark beetles. They illustrate a changing **frequency**, not measured field results or the same beetles changing color. The moth pictures show that visibility depends on background; a picture alone cannot establish selection. We would also need evidence about inheritance and reproductive outcomes.\n\nThe resistance panel uses an explicitly simplified bacterial model. Assume two bacteria already have inherited resistance to a particular antibiotic, survive exposure and reproduce. Their descendants can make resistant bacteria more common. Real resistance can also arise through new mutations or gene transfer between microbes. Surviving exposure alone does not establish resistance or prove when it arose; temporary tolerance and exposure conditions can also matter. This is a counter model, with no culturing or antibiotic use.\n\n### No planned destination\n\nA **mutation** is a DNA sequence change. Its effects can be harmful, neutral or beneficial depending on context. Need does not specify a useful mutation, and a population can fail to acquire a helpful variant.\n\nSelection can favor change in a particular direction, or maintain traits, but has no foresight or goal of perfection. A feature can help in one setting and hinder in another. **Adaptations** reflect past selection, with tradeoffs and limits.\n\nWhen explaining a change, ask: what varied, what was inherited, how did reproductive success differ, and what happened to frequencies? Then ask what other mechanisms or uncertainties could explain the evidence."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.3.def",
+    "from": "A change in a gene, which may be harmful, helpful or neither.",
+    "to": "A change in a DNA sequence; its effect can be harmful, neutral or beneficial depending on context."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.5.def",
+    "from": "How many surviving offspring an individual leaves in its environment.",
+    "to": "Relative reproductive contribution to later generations in a particular environment."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.6.def",
+    "from": "The unequal survival and reproduction of different variants.",
+    "to": "Differences in survival and reproduction associated with traits; heritable differences can drive evolution."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.7.def",
+    "from": "Gained during a lifetime, and therefore not inherited.",
+    "to": "Developed during a lifetime, such as a learned skill; not automatically copied into inherited DNA."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.9.def",
+    "from": "A variant's ability to survive something that kills the others.",
+    "to": "For antibiotics, a microbe ability to grow despite a drug that would inhibit susceptible microbes."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.10.def",
+    "from": "The conditions an organism lives in, which decide what helps.",
+    "to": "The surroundings and conditions that influence survival and reproduction."
+  },
+  {
+    "resourceId": "ns-glossary",
+    "path": "data.11.def",
+    "from": "A heritable trait that became common because it helped in that environment.",
+    "to": "An inherited feature shaped by natural selection because it aided reproductive success in a past environment."
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "title",
+    "from": "The Four Conditions",
+    "to": "The Selection Model"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.main",
+    "from": "Four facts are enough; nothing needs to intend anything",
+    "to": "Variation, inheritance, context and reproductive outcomes explain selection"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.0.title",
+    "from": "One: variation already exists",
+    "to": "Variation"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.0.items.0",
+    "from": "Individuals in a population differ from each other",
+    "to": "Individuals in a population differ"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.0.items.1",
+    "from": "The variation is present before the environment changes",
+    "to": "Variants can predate a change or arise or arrive later"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.0.items.2",
+    "from": "It is not produced on demand and not requested",
+    "to": "Mutation is not directed toward meeting a need"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.1.title",
+    "from": "Two: some variation is heritable",
+    "to": "Inheritance"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.1.items.0",
+    "from": "Traits carried in genes pass to offspring",
+    "to": "Genes contribute to heritable differences"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.1.items.1",
+    "from": "Traits acquired during a lifetime do not",
+    "to": "Training effects are not automatically encoded for offspring"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.1.items.2",
+    "from": "A weightlifter's children are not born strong",
+    "to": "Many traits involve both genes and environment"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.2.title",
+    "from": "Three: more offspring than can survive",
+    "to": "Environmental context"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.2.items.0",
+    "from": "Food, space and safety run out",
+    "to": "Resources, predators and mates influence outcomes"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.2.items.1",
+    "from": "Not everyone reproduces",
+    "to": "Survival matters when it affects reproductive contribution"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.2.items.2",
+    "from": "This is what makes the filter possible",
+    "to": "Overproduction is common; literal crowding is not required"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.3.title",
+    "from": "Four: survival is not random with respect to the trait",
+    "to": "Reproductive outcomes"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.3.items.0",
+    "from": "Some variants do better in this particular environment",
+    "to": "Fitness is relative reproductive contribution here"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.3.items.1",
+    "from": "They leave more offspring than the others",
+    "to": "Heritable variants can differ in reproductive success"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.3.items.2",
+    "from": "That is the entire mechanism",
+    "to": "Chance can affect outcomes, especially in small samples"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.4.title",
+    "from": "The consequence, and only this",
+    "to": "Population evidence"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.4.items.0",
+    "from": "Trait frequency in the population shifts across generations",
+    "to": "Measure inherited variant frequencies across generations"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.4.items.1",
+    "from": "No individual changes at any point",
+    "to": "Individuals can grow, learn and acclimate during life"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.4.items.2",
+    "from": "The population changes; its members do not",
+    "to": "Such lifetime change alone does not establish evolution"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.5.title",
+    "from": "What it therefore cannot do",
+    "to": "Limits"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.5.items.0",
+    "from": "It cannot produce a mutation because one would be useful",
+    "to": "Mutation does not supply a requested solution"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.5.items.1",
+    "from": "It cannot pass on a trait acquired during a life",
+    "to": "Selection does not foresee a goal of perfection"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.5.items.2",
+    "from": "It cannot aim at a goal or perfect anything",
+    "to": "Drift, mutation and gene flow also affect evolution"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.6.title",
+    "from": "Fitness is local, not general",
+    "to": "Fitness depends on context"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.6.items.0",
+    "from": "Fitness means surviving offspring in this environment",
+    "to": "Fitness is reproductive contribution, not personal worth"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.6.items.1",
+    "from": "Not strength, not speed, not complexity",
+    "to": "Strength or speed is useful only in relation to outcomes"
+  },
+  {
+    "resourceId": "ns-outline",
+    "path": "data.branches.6.items.2",
+    "from": "Change the environment and the favoured trait can reverse",
+    "to": "Different conditions can favor different variants"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.0.label",
+    "from": "WRONG: THE ORGANISM ACTS",
+    "to": "A COMMON MISTAKE"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "It notices a problem",
+    "to": "Need is said to create a requested inherited trait"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.0.bullets.1",
+    "from": "It develops what it needs",
+    "to": "Growth or learning alone is called evolution"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "It passes on what it built",
+    "to": "Lifetime experience is assumed to be copied to offspring"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.1.label",
+    "from": "RIGHT: THE POPULATION SHIFTS",
+    "to": "SELECTION MODEL"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Variation is already present",
+    "to": "Heritable variation is available"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.1.bullets.1",
+    "from": "Conditions favour some variants",
+    "to": "Variants differ in reproductive success here"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "Their share grows over generations",
+    "to": "Frequencies can change across generations"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.2.label",
+    "from": "THE TEST QUESTION",
+    "to": "CHECK THE EVIDENCE"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "Did an individual change?",
+    "to": "What varied and what was inherited?"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "If yes, it is the wrong version",
+    "to": "How did reproductive success differ?"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.2.bullets.2",
+    "from": "Only proportions change",
+    "to": "Could drift or other factors explain the pattern?"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.3.label",
+    "from": "WHAT FITNESS IS NOT",
+    "to": "FITNESS IN CONTEXT"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Not strongest",
+    "to": "Not necessarily strongest"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "Not fastest",
+    "to": "Not necessarily fastest"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "Not most complex",
+    "to": "Not most complex or most valuable"
+  },
+  {
+    "resourceId": "ns-anchor",
+    "path": "data.sections.3.bullets.3",
+    "from": "Only: more surviving offspring here",
+    "to": "Relative contribution to later generations here"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "title",
+    "from": "Remember the Four Conditions",
+    "to": "Remember the Selection Model"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.title",
+    "from": "Remember the Four Conditions",
+    "to": "Remember the Selection Model"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.sourceExcerpt",
+    "from": "The antibiotic did not create resistance; it removed everything else. The next generation descends from the survivors, so more of it is resistant.",
+    "to": "Inherited variation and differences in reproductive contribution can change frequencies across generations. Individuals also grow and learn; these lifetime changes alone are not population evolution."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.lessonRef.title",
+    "from": "Nothing Is Trying",
+    "to": "How Populations Change"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.target",
+    "from": "The four conditions, in the order they have to hold",
+    "to": "Four questions for a selection explanation"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Variation exists, and it is already there beforehand.",
+    "to": "What variation is available? New variants can also arise or arrive later."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "Some of that variation is heritable.",
+    "to": "Which differences are heritable?"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "More offspring are produced than can survive.",
+    "to": "What environmental conditions affect outcomes?"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.essentialFacts.3",
+    "from": "Survival is not random with respect to those traits.",
+    "to": "How do variants differ in reproductive contribution?"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Four beats: DIFFER, INHERIT, CROWD, FILTER. They differ. Some differences are inherited. There are too many of them. The environment filters. Say it in that order, because each beat is useless without the one before it.",
+    "to": "VARY, INHERIT, CONTEXT, REPRODUCE. Identify a difference, show inheritance, describe conditions, and compare reproductive outcomes. Then measure frequencies and consider chance."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Four single words in a fixed order, and the order carries an argument: inheritance is pointless without variation, and filtering is pointless without crowding.",
+    "to": "These are connected questions, not a compulsory chronological sequence or a claim that overcrowding must occur."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "Differ: ____. Inherit: ____. Crowd: ____. Filter: ____.",
+    "to": "Variation: ____. Inheritance: ____. Context: ____. Reproduction: ____."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "If all four hold, it happens. There is nothing else to it.",
+    "to": "A reproductive advantage can favor a heritable variant, but chance and other mechanisms also affect its frequency."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.0.hookFact.sourceTitle",
+    "from": "Nothing Is Trying (this lesson)",
+    "to": "How Populations Change (this lesson)"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.target",
+    "from": "One question catches almost every wrong explanation",
+    "to": "Separate lifetime change from population evidence"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.essentialFacts.0",
+    "from": "Individuals do not change; populations do.",
+    "to": "Individuals grow, learn and acclimate; these changes alone do not establish evolution."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "Only the proportions of variants shift.",
+    "to": "Measure heritable variant frequencies across generations."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "If your explanation has an individual changing, it is the wrong version.",
+    "to": "Selection models need reproduction, not only removal of existing individuals."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Picture a jar of red and blue marbles. Selection never repaints a marble. It only removes marbles, and the jar afterwards is a different mix of exactly the same marbles. If your explanation repaints anything, it is wrong.",
+    "to": "Use two colors of counters for inherited variants. Apply a survival rule, then add offspring counters according to the stated inheritance model. Count each new generation. Counters do not show growth, genes or every detail of reproduction."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.mapping",
+    "from": "Repainting is a vivid, specific thing to watch for, and it is precisely the move the wrong version makes. Removal versus repainting is the entire distinction in one image.",
+    "to": "Colors stand for inherited variants, and adding offspring makes the generations explicit. Real organisms also change during life; the counter model leaves that out."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.scaffoldStarter",
+    "from": "In my explanation, did anything get repainted? ____. Instead, what changed was ____.",
+    "to": "The inherited variants are ____. Their reproductive outcomes differ because ____. The next generation has ____ of ____ counters of each type."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.scaffoldSteps.1",
+    "from": "Underline every verb attached to a single organism.",
+    "to": "Mark the evidence for inheritance and reproductive differences."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.scaffoldSteps.2",
+    "from": "Ask whether any of them repaints a marble.",
+    "to": "Separate individual lifetime changes from population measurements."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.coachPrompts.0",
+    "from": "Point at the individual in your sentence. Did it change?",
+    "to": "Where is reproduction represented, and what does the model omit?"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.studentPrompt",
+    "from": "Make your own image for removal rather than repainting.",
+    "to": "Build a picture that includes inheritance, reproduction and changing frequencies."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.reasoningPrompt",
+    "from": "Why does the repainting version feel so much more natural to say?",
+    "to": "Why is removing counters alone an incomplete model of change across generations?"
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.hookFact.text",
+    "from": "An individual does not adapt. Populations change across generations, and no individual in them changes at all.",
+    "to": "Population evolution is not the same as an individual growing, learning or acclimating."
+  },
+  {
+    "resourceId": "ns-memory",
+    "path": "data.cards.1.hookFact.sourceTitle",
+    "from": "Nothing Is Trying (this lesson)",
+    "to": "How Populations Change (this lesson)"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.categories.0.label",
+    "from": "HOW IT WORKS — accurate",
+    "to": "ACCURATE"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.categories.1.label",
+    "from": "HOW IT DOESN'T — a common misconception",
+    "to": "MISCONCEPTION"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.0.content",
+    "from": "The variation was already in the population before the environment changed",
+    "to": "In this example, inherited variation existed before the habitat changed"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.1.content",
+    "from": "Individuals carrying a helpful heritable trait leave more surviving offspring",
+    "to": "A heritable trait can increase reproductive success in particular conditions"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.2.content",
+    "from": "The share of the population carrying the trait grows over generations",
+    "to": "Selection can increase the proportion carrying an advantageous inherited trait"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.3.content",
+    "from": "Only traits passed on through genes can be selected",
+    "to": "Heritable differences and unequal reproductive success can cause evolutionary change"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.4.content",
+    "from": "A trait that helps in one environment can be useless in another",
+    "to": "A trait helpful in one environment can be harmful in another"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.5.content",
+    "from": "Most mutations are neutral or harmful rather than helpful",
+    "to": "Mutation is not directed toward producing what an organism needs"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.6.content",
+    "from": "An individual animal changes its own body to suit its surroundings",
+    "to": "An individual deliberately creates an inherited trait because it needs it"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.7.content",
+    "from": "A species develops a new trait because it needs one",
+    "to": "A species is guaranteed to develop any trait it needs"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.8.content",
+    "from": "A giraffe that stretches for high leaves passes a longer neck to its calves",
+    "to": "Stretching automatically gives a giraffe offspring an inherited longer neck"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.9.content",
+    "from": "Natural selection gradually makes a species more perfect",
+    "to": "Natural selection always makes a species more perfect"
+  },
+  {
+    "resourceId": "ns-sort",
+    "path": "data.items.11.content",
+    "from": "An antibiotic toughens up the bacteria that live through it",
+    "to": "Survival after antibiotic exposure proves the drug deliberately created inherited resistance"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.0.text",
+    "from": "Why is \"animals adapt\" backwards?",
+    "to": "How do lifetime change and population evolution differ?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.1.text",
+    "from": "Condition 1 — variation. When does it arise?",
+    "to": "When can variants be present, arise or arrive?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.2.text",
+    "from": "Condition 2 — heritable vs acquired",
+    "to": "What evidence supports inheritance?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.3.text",
+    "from": "Condition 3 — why does crowding matter?",
+    "to": "Which environmental conditions affect outcomes?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.4.text",
+    "from": "Condition 4 — what does non-random mean here?",
+    "to": "What connects the trait to reproductive contribution?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.5.text",
+    "from": "What actually changes across generations?",
+    "to": "What frequencies change across generations?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.6.text",
+    "from": "Antibiotics — what did the drug NOT do?",
+    "to": "What can survival after antibiotic exposure establish?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.7.text",
+    "from": "Fitness — define it without the words strong or fast",
+    "to": "Define fitness without strength or personal worth"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.8.text",
+    "from": "Why has selection no direction?",
+    "to": "How can selection have a direction without foresight?"
+  },
+  {
+    "resourceId": "ns-notes",
+    "path": "data.cues.9.text",
+    "from": "The test question for my own writing",
+    "to": "What alternative explanation should I check?"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.0.question",
+    "from": "What actually changes when a population undergoes natural selection?",
+    "to": "Which observation describes population evolution that natural selection could help explain?"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.0.options.0",
+    "from": "The proportion of individuals carrying a trait changes",
+    "to": "The proportion carrying a heritable trait changes across generations"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.0.correctAnswer",
+    "from": "The proportion of individuals carrying a trait changes",
+    "to": "The proportion carrying a heritable trait changes across generations"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.1.question",
+    "from": "When does the variation that selection acts on arise?",
+    "to": "Which statement about variation available to selection is accurate?"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.1.options.1",
+    "from": "It is already present before the environment changes",
+    "to": "Variants may already exist or arise or arrive later, without being directed by need"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.1.correctAnswer",
+    "from": "It is already present before the environment changes",
+    "to": "Variants may already exist or arise or arrive later, without being directed by need"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.2.options.2",
+    "from": "Nothing from that training, because it is an acquired trait",
+    "to": "Training does not automatically rewrite inherited DNA to copy the acquired muscles"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.2.correctAnswer",
+    "from": "Nothing from that training, because it is an acquired trait",
+    "to": "Training does not automatically rewrite inherited DNA to copy the acquired muscles"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.3.options.3",
+    "from": "Those bacteria already carried a variant the drug could not disable",
+    "to": "Survival alone does not establish inherited resistance or when it arose"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.3.correctAnswer",
+    "from": "Those bacteria already carried a variant the drug could not disable",
+    "to": "Survival alone does not establish inherited resistance or when it arose"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.3.conceptLabel",
+    "from": "variation comes first",
+    "to": "limits of resistance evidence"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.5.question",
+    "from": "Why does natural selection have no direction or destination?",
+    "to": "Why does natural selection have no planned destination?"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.5.conceptLabel",
+    "from": "no direction",
+    "to": "no foresight"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.6.question",
+    "from": "Most mutations are best described as which of the following?",
+    "to": "Which statement about mutation is accurate?"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.6.options.2",
+    "from": "Neutral or harmful, with helpful ones being uncommon",
+    "to": "A DNA change can be harmful, neutral or beneficial depending on context"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.6.correctAnswer",
+    "from": "Neutral or harmful, with helpful ones being uncommon",
+    "to": "A DNA change can be harmful, neutral or beneficial depending on context"
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.7.expectedAnswer",
+    "from": "Darker and lighter moths were both already present in the population. Against sooty trees the darker ones were harder for predators to see, so they survived and reproduced more often. Over generations the proportion of dark moths in the population increased. No moth changed colour, and none of it happened so that anything could hide.",
+    "to": "In this model, dark and pale variants have a heritable basis. Darker moths may be less visible on dark bark and leave more offspring. Their frequency can then rise across generations. This requires evidence of inheritance and reproductive differences; a picture alone is insufficient. It does not mean individuals changed color because they needed camouflage."
+  },
+  {
+    "resourceId": "ns-quiz",
+    "path": "data.questions.8.expectedAnswer",
+    "from": "Need does not produce variation. Mutations happen regardless of whether they would be useful, and most are neutral or harmful. A trait spreads only if it happens to already exist and happens to help its carriers leave more offspring in the environment that happens to prevail. The usefulness follows from the spread rather than causing it.",
+    "to": "Need does not direct mutation toward a requested solution. New variants may arise or arrive, and heritable variants that increase reproductive success can be favored by selection. That reproductive advantage can help cause their spread; chance also matters, and even useful variants are not guaranteed to spread."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.0.question",
+    "from": "If most mutations are harmful, how does anything ever improve? 🧬",
+    "to": "Do helpful mutations always spread?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.0.answer",
+    "from": "Because harmful ones are removed and the rare helpful one spreads. Populations are large and generations are many, so even a very uncommon helpful variant gets its chance. The filter does the work, not the mutation rate.",
+    "to": "No. A mutation effect depends on context, and chance can eliminate even a helpful variant. Selection can favor a reproductive advantage, but does not guarantee its spread."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.1.question",
+    "from": "Does natural selection explain everything about how species change?",
+    "to": "Does selection explain every evolutionary change?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.1.answer",
+    "from": "No, and biologists are clear about that. Random genetic drift changes small populations by chance alone, and some traits are carried along simply because they sit near a useful gene. Selection is the main mechanism behind traits that look well-suited, not the only thing happening.",
+    "to": "No. Mutation, gene flow and genetic drift also affect populations. Drift is change through chance; it occurs in populations of any size and often has stronger effects in smaller ones."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.2.question",
+    "from": "Are humans still evolving? 🌍",
+    "to": "Are humans still evolving?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.2.answer",
+    "from": "Yes. Lactose tolerance in adults spread in populations with a long history of dairy farming, and it is a well-studied recent example. Evolution does not stop; it just happens on a timescale longer than a lifetime.",
+    "to": "Yes. One example is the history of lactase persistence, the ability to continue producing the milk-sugar-digesting enzyme in adulthood. Evolution concerns populations across generations, and its pace varies."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.3.question",
+    "from": "Is the phrase survival of the fittest wrong? 🤔",
+    "to": "What can survival of the fittest leave out?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.3.answer",
+    "from": "It is not wrong so much as badly worded for modern ears. Fittest meant best-fitting to the conditions, not strongest. Because the everyday meaning of fit has drifted, most biologists avoid the phrase entirely.",
+    "to": "Survival alone is incomplete. Biological fitness concerns reproductive contribution relative to others in a particular setting. It is not a measure of strength, morality or human value."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.4.question",
+    "from": "Why do some organisms look so perfectly designed? 🐦",
+    "to": "Does adaptation mean perfect design?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.4.answer",
+    "from": "Because you are seeing the survivors of an enormous filter, and not the countless variants that failed. Looked at closely, organisms are full of awkward compromises, which is what you would expect from something assembled by filtering rather than planning.",
+    "to": "No. Natural selection acts on available variation under current conditions, with constraints and tradeoffs. A feature shaped by past conditions may be less helpful after conditions change."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.5.question",
+    "from": "Can a trait become common without being useful at all?",
+    "to": "Can a neutral variant become common?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.5.answer",
+    "from": "It can. In a small population, chance alone can make a neutral trait common, which is genetic drift. Usefulness makes spreading much more likely, but it is not the only route.",
+    "to": "Yes. Genetic drift can change frequencies by chance. This does not require the variant to improve reproductive success."
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.6.question",
+    "from": "Why does antibiotic resistance matter so much? 💊",
+    "to": "How does antibiotic resistance fit this lesson?"
+  },
+  {
+    "resourceId": "ns-faq",
+    "path": "data.6.answer",
+    "from": "Because we are running the experiment constantly and at scale. Every use of an antibiotic removes susceptible bacteria and leaves resistant ones to reproduce. That is why doctors avoid prescribing them when they will not help, and why you should follow the instructions you were actually given rather than a rule of thumb you half remember.",
+    "to": "Inherited resistance can give microbes an advantage under antibiotic exposure. Resistance also develops through mutations and gene transfer. A survivor is not automatically proven resistant; interpreting a real case requires evidence beyond this classroom model."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.fitReason",
+    "from": "The frequency shift is the whole phenomenon and students almost never see one happen. Running it by hand makes the population the thing that changes, and the language audit at the end is where most students discover they have written the wrong version without noticing.",
+    "to": "Counter generations connect inherited variants, reproductive outcomes and measured frequencies. Model limitations prevent a simple color model from being mistaken for complete biology."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.context",
+    "from": "You will have a bag of counters in two colours standing for two variants of one heritable trait, plus a rule your teacher gives you for which colour survives in this environment. You may change the environment rule partway through if you say when you did it.",
+    "to": "Use 40 counters or digital tokens in two colors, initially 20 of each. Color represents a heritable variant in a simplified asexual population. The teacher supplies a survival rule that favors one color without deliberately selecting individual counters. After survivors are counted, make 40 offspring by repeatedly sampling one survivor at random with replacement and adding an offspring of that color to a new group. The new group replaces the parents. State that real inheritance can be more complex. No microbes or antibiotics are used."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "Variation is already present before the environment changes.",
+    "to": "Variation is present at the start of this model; real populations can gain new variants later."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Only heritable traits can be selected; acquired traits cannot.",
+    "to": "Inherited differences can support evolution when reproductive outcomes differ."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "More offspring are produced than can survive.",
+    "to": "This model fixes the offspring total at 40; overcrowding is not a universal requirement."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "The frequency of a trait in the population shifts, while no individual changes.",
+    "to": "Track proportions across generations; individuals also change during life in ways this model omits."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.criteria.3",
+    "from": "A written explanation with no sentence in which an individual changes",
+    "to": "An explanation identifies inheritance, survival, reproduction and frequency; it does not invoke a requested mutation"
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.constraints.0",
+    "from": "The environment rule must be fixed in advance and stated, and any change to it recorded",
+    "to": "State the teacher-supplied survival rule before starting; record any later rule change"
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.brief.constraints.3",
+    "from": "You may not write that an organism adapts, tries, wants or needs anything",
+    "to": "Use counters only. Do not imply that need directs useful mutations or that organisms never grow or learn."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "Their first write-up said the population adapted to the new conditions. Running the language audit, they underlined adapted and found it was doing the work of a whole explanation. They rewrote it as a statement about which counters were removed each round and what that did to the proportions, and the sentence got longer and much better.",
+    "to": "They explained both the survival rule and how they sampled offspring to make the next generation. They reported counts, proportions and any rounds against the trend, and compared the results with a repeat run."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "The banned words are not a style rule. Each of them hides the mechanism, and being forced around them makes a student state the mechanism out loud.",
+    "to": "Naming the mechanism and reporting variation across runs is more informative than using or banning a single word such as adapted."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.supports.coachPrompts.1",
+    "from": "Is there a sentence where a single organism changes? Rewrite it.",
+    "to": "Where have you shown inheritance and reproductive differences?"
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.supports.coachPrompts.2",
+    "from": "Did any counter change colour at any point? What does that tell you?",
+    "to": "What does keeping counter colors fixed represent, and what real lifetime changes does it omit?"
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.coachHint",
+    "from": "Six generations, a graph, and an explanation with no organism trying anything.",
+    "to": "Record six generations with counts and proportions. Include offspring formation, uncertainty and one limitation of the model."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "An individual does not adapt. Populations change across generations, and no individual in them changes at all.",
+    "to": "Heritable variants can differ in reproductive contribution. Follow frequencies across generations and distinguish this from growth, learning or acclimation."
+  },
+  {
+    "resourceId": "ns-challenge",
+    "path": "data.lessonRef.title",
+    "from": "Nothing Is Trying",
+    "to": "How Populations Change"
+  }
+]

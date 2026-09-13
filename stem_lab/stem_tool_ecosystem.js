@@ -632,7 +632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     });
     return [header.join(',')].concat(rows).join('\r\n');
   }
-  window.StemLab.ecosystemFoodWeb = { species: ECO_WEB_SPECIES, links: ECO_WEB_LINKS, normalize: ecoWebConfig, run: ecoWebRun, compare: ecoWebCompare, csv: ecoWebCSV, format: ecoWebFormat, insights: ecoWebInsights, capture: ecoWebCapture, notebook: ecoWebNotebook, notebookText: ecoWebNotebookText, meadowPose: ecoMeadowPose };
+  window.StemLab.ecosystemFoodWeb = { species: ECO_WEB_SPECIES, links: ECO_WEB_LINKS, normalize: ecoWebConfig, run: ecoWebRun, compare: ecoWebCompare, csv: ecoWebCSV, format: ecoWebFormat, insights: ecoWebInsights, capture: ecoWebCapture, notebook: ecoWebNotebook, notebookText: ecoWebNotebookText, meadowPose: ecoMeadowPose, behavior:ecoMeadowBehavior, behaviorTimeline:ecoMeadowBehaviorTimeline, segmentPose:ecoMeadowSegmentPose, behaviorMoments:ecoMeadowBehaviorMoments, explainBehavior:ecoMeadowExplainBehavior, trail:ecoMeadowTrail, interaction:ecoMeadowInteraction };
 
   // Optional presentation of the food-web samples; this renderer never evolves biomass.
   // Presentation-only poses. They never modify biomass, feeding, or habitat cover.
@@ -660,25 +660,289 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       forage: (1-moving)*(0.65+0.35*Math.sin(time*0.65+phase)), phase: phase };
   }
 
+  // Representative behavior is a deterministic presentation layer. It reads
+  // sampled biomass but never changes food-web values or implies a capture.
+  function ecoMeadowBehavior(id, phase, sense) {
+    var threat=sense.threatDistance,prey=sense.preyDistance,food=sense.food;
+    if(id==='rabbits'||id==='voles') {
+      if(threat<1.8||(sense.alarm>0.7&&threat<3))return {state:'Retreating',speed:id==='rabbits'?1.15:0.90,mode:'away',forage:0};
+      if(threat<3.1||sense.alarm>0.4)return {state:'Alert',speed:0,mode:'watch',forage:0};
+      if(phase>9)return {state:'Resting',speed:0,mode:'roam',forage:0};
+      if(phase>4&&food)return {state:id==='rabbits'?'Grazing':'Foraging',speed:0,mode:'roam',forage:0.8};
+      return {state:food?'Exploring':'Searching for food',speed:id==='rabbits'?0.30:0.24,mode:'roam',forage:0};
+    }
+    if(id==='foxes') {
+      if(phase>9.5)return {state:'Resting',speed:0,mode:'roam',forage:0};
+      if(prey<1.7&&phase>=5.5&&phase<6.4)return {state:'Pouncing',speed:0.72,mode:'toward',forage:0};
+      if(prey<4.5&&phase<2.4)return {state:'Listening',speed:0,mode:'toward',forage:0};
+      if(prey<3.4)return {state:'Stalking',speed:0.20,mode:'toward',forage:0.25};
+      if(prey<6)return {state:'Tracking prey',speed:0.42,mode:'toward',forage:0};
+      return {state:'Searching',speed:0.32,mode:'roam',forage:0};
+    }
+    if(id==='owls')return {state:prey<3?'Quartering over prey':phase<4?'Slow wingbeats':'Gliding',speed:0.48,mode:prey<3?'toward':'roam',forage:0};
+    if(id==='bluetits') {
+      if(threat<1.9)return {state:'Moving away',speed:0.7,mode:'away',forage:0};
+      if(phase>9)return {state:'Preening',speed:0,mode:'roam',forage:0.3};
+      if(prey<0.65&&phase>3)return {state:'Pecking',speed:0,mode:'toward',forage:1};
+      return {state:food?'Hopping between feeding spots':'Searching for insects',speed:phase%3<1.1?0.42:0,mode:prey<3?'toward':'roam',forage:0};
+    }
+    if(id==='caterpillars')return {state:phase>5?(food?'Feeding':'Resting'):'Crawling',speed:phase>5?0:0.055,mode:'roam',forage:phase>5&&food?1:0};
+    return {state:'Growing',speed:0,mode:'roam',forage:0};
+  }
+
+  // A leap finishes once airborne, even if its prey disappears from the next
+  // biomass sample. Preparation can be cancelled; recovery prevents repeated
+  // takeoffs. These durations are animation parameters, not measured ecology.
+  function ecoMeadowHunt(old, desired, preyDistance, active) {
+    var stage=old.huntStage||'',age=old.huntAge||0,cooldown=Math.max(0,(old.huntCooldown||0)-1);
+    if(!active)return {action:desired,stage:'',age:0,cooldown:0,pounce:0};
+    if(stage==='prepare') {
+      if(preyDistance>2.5){stage='';cooldown=12;}
+      else if(age>=3){stage='airborne';age=0;}
+      else age++;
+    }else if(stage==='airborne') {
+      if(age>=9){stage='recover';age=0;cooldown=18;}else age++;
+    }else if(stage==='recover') {
+      if(age>=5){stage='';age=0;}else age++;
+    }
+    if(!stage&&desired.state==='Pouncing'&&cooldown===0){stage='prepare';age=0;}
+    var action=desired;
+    if(stage==='prepare')action={state:'Preparing to pounce',speed:0,mode:'toward',forage:0.2};
+    else if(stage==='airborne')action={state:'Pouncing',speed:0.72,mode:'leap',forage:0};
+    else if(stage==='recover')action={state:'Recovering',speed:0,mode:'roam',forage:0};
+    else if(desired.state==='Pouncing')action={state:preyDistance<3.4?'Stalking':'Searching',speed:0.2,mode:preyDistance<3.4?'toward':'roam',forage:0.25};
+    return {action:action,stage:stage,age:age,cooldown:cooldown,pounce:stage==='airborne'?Math.sin(age/9*Math.PI):0};
+  }
+
+  // Local deformation follows distance travelled; it does not move the animal
+  // or feed back into the population model. Anatomy is a generic teaching form.
+  function ecoMeadowSegmentPose(pose,index) {
+    var wave=Math.sin(pose.distance*70-index*0.65+pose.phase),motion=pose.crawl||0;
+    return {x:wave*0.007*motion,y:Math.max(0,wave)*0.008*motion,
+      pitch:Math.cos(pose.distance*70-index*0.65+pose.phase)*0.028*motion-(index===13?0.14:index===12?0.04:0)*pose.forage,
+      stretch:1+wave*0.035*motion};
+  }
+
+  function ecoMeadowBehaviorTimeline(rawConfig, rows) {
+    var config=ecoWebConfig(rawConfig),animals=ECO_WEB_SPECIES.filter(function(sp){return sp.id!=='plants';});
+    rows=rows&&rows.length?rows:[{values:config.initial}];
+    var frames=[],previous={};
+    animals.forEach(function(sp){previous[sp.id]=Array.from({length:16},function(_,i){return Object.assign(ecoMeadowPose(sp.id,i,0,false),{distance:0,alarm:0,active:false});});});
+    function count(sp,values){return config.enabled[sp.id]&&values[sp.id]>0?Math.min(16,Math.max(1,Math.ceil(values[sp.id]/sp.initial*7))):0;}
+    function nearest(origin,ids,counts){
+      var best=null;
+      ids.forEach(function(id){for(var i=0;i<(counts[id]||0);i++){
+        var candidate=previous[id][i],distance=Math.hypot(candidate.x-origin.x,candidate.z-origin.z);
+        if(!best||distance<best.distance)best={id:id,index:i,x:candidate.x,z:candidate.z,distance:distance};
+      }});return best;
+    }
+    function blend(current,target,limit){return current+Math.max(-limit,Math.min(limit,target-current));}
+    function turn(current,target,limit){var delta=Math.atan2(Math.sin(target-current),Math.cos(target-current));return current+Math.max(-limit,Math.min(limit,delta));}
+    // Ground objects have conservative envelopes. The avoidance is a local
+    // steering aid, not a full habitat navigation or shelter-occupancy model.
+    var obstacles=[[-7,1,0.9],[5,4,0.9],[-4,4.8,0.9],[-0.8,4.9,1.15],[-7.5,5.8,1.15],[7,4.6,1.15],[-8,-2,1.15]];
+    rows.forEach(function(row,step){
+      var values=row.values,counts={},frame={},time=step/10;
+      animals.forEach(function(sp){counts[sp.id]=count(sp,values);});
+      animals.forEach(function(sp){frame[sp.id]=previous[sp.id].map(function(old,i){
+        var base=ecoMeadowPose(sp.id,i,time,false),active=i<counts[sp.id],phase=(time+base.phase)%12;
+        var preyIds=ECO_WEB_LINKS.filter(function(link){return link.consumer===sp.id&&link.food!=='plants';}).map(function(link){return link.food;});
+        var threatIds=ECO_WEB_LINKS.filter(function(link){return link.food===sp.id;}).map(function(link){return link.consumer;});
+        // Blue tits also notice nearby foxes; this alarm cue adds no diet link.
+        if(sp.id==='bluetits')threatIds=['foxes'];
+        var prey=nearest(old,preyIds,counts),threat=nearest(old,threatIds,counts);
+        var food=ECO_WEB_LINKS.some(function(link){return link.consumer===sp.id&&config.enabled[link.food]&&values[link.food]>0;});
+        var alarm=threat&&threat.distance<2.6?1:old.alarm*0.86;
+        var sense={threatDistance:threat?threat.distance:Infinity,preyDistance:prey?prey.distance:Infinity,food:food,alarm:alarm};
+        var action=ecoMeadowBehavior(sp.id,phase,sense),x=old.x,z=old.z,yaw=old.yaw,moving=0,travel=old.distance;
+        if(!active){action={state:'Not present',speed:0,mode:'roam',forage:0};alarm=0;}
+        var hunt=sp.id==='foxes'?ecoMeadowHunt(old,action,sense.preyDistance,active):{action:action,stage:'',age:0,cooldown:0,pounce:0};
+        action=hunt.action;
+        if(step>0&&active){
+          var dx=base.x+Math.cos(time*0.22+base.phase)*0.55-x,dz=base.z+Math.sin(time*0.22+base.phase)*0.42-z;
+          if(action.mode==='toward'&&prey){dx=prey.x-x;dz=prey.z-z;}
+          if((action.mode==='away'||action.mode==='watch')&&threat){dx=(action.mode==='away'?1:-1)*(x-threat.x);dz=(action.mode==='away'?1:-1)*(z-threat.z);}
+          var desired=Math.atan2(-dz,dx),speed=action.speed;
+          if(action.mode==='leap'){
+            // Preserve takeoff heading: an airborne fox cannot home in on prey.
+            var leapDistance=speed*0.1;x+=Math.cos(yaw)*leapDistance;z-=Math.sin(yaw)*leapDistance;travel+=leapDistance;moving=speed;
+          }else if(speed>0){
+            var length=Math.hypot(dx,dz)||1;dx/=length;dz/=length;
+            // Same-group spacing reduces synchronized piles while preserving
+            // independent paths and predator/prey interactions.
+            previous[sp.id].forEach(function(other,j){if(j===i||j>=counts[sp.id])return;var ox=x-other.x,oz=z-other.z,d=Math.hypot(ox,oz);if(d>0&&d<0.7){dx+=ox/d*(0.7-d)*1.5;dz+=oz/d*(0.7-d)*1.5;}});
+            if(sp.id!=='owls')obstacles.forEach(function(o){var ox=x-o[0],oz=z-o[1],d=Math.hypot(ox,oz);if(d>0&&d<o[2]+0.45){dx+=ox/d*(o[2]+0.45-d)*3;dz+=oz/d*(o[2]+0.45-d)*3;}});
+            var boundary=x*x/81+z*z/42.25;if(boundary>0.78){dx-=x/9*(boundary-0.78)*6;dz-=z/6.5*(boundary-0.78)*6;}
+            desired=Math.atan2(-dz,dx);
+            yaw=turn(yaw,desired,action.mode==='away'?0.30:0.17);
+            var alignment=Math.max(0.15,Math.cos(desired-yaw)),distance=speed*0.1*alignment;
+            x+=Math.cos(yaw)*distance;z-=Math.sin(yaw)*distance;travel+=distance;moving=distance/0.1;
+          }else if((action.mode==='toward'&&prey)||(action.mode==='watch'&&threat))yaw=turn(yaw,desired,0.16);
+        }
+        var pounce=hunt.pounce;
+        var feeding=['Grazing','Foraging','Pecking','Feeding'].indexOf(action.state)>=0;
+        var forageTarget=action.forage*(feeding?0.65+0.35*Math.pow(Math.sin(time*5+base.phase),2):1);
+        var forage=blend(old.forage||0,active?forageTarget:0,0.18);
+        var rest=blend(old.rest||0,active&&action.state==='Resting'?1:0,0.14);
+        var crouch=blend(old.crouch||0,hunt.stage==='prepare'||hunt.stage==='recover'?1:0,0.25);
+        var headTarget=action.state==='Alert'||action.state==='Listening'||sp.id==='owls'?Math.sin(time*0.75+base.phase)*0.20:action.state==='Preening'?0.6:0;
+        var headTurn=blend(old.headTurn||0,headTarget,0.09);
+        var crawl=sp.id==='caterpillars'?blend(old.crawl||0,active?Math.min(1,moving/0.055):0,0.18):0;
+        var yawChange=Math.atan2(Math.sin(yaw-old.yaw),Math.cos(yaw-old.yaw));
+        var bank=sp.id==='owls'?blend(old.bank||0,active?Math.max(-0.25,Math.min(0.25,-yawChange*1.8)):0,0.045):0;
+        var wingFlap=sp.id==='owls'?blend(old.wingFlap==null?0.12:old.wingFlap,active&&phase<4?1:0.12,0.12):0;
+        var gait=step===0?0:Math.sin(travel*(sp.id==='caterpillars'?70:28)+base.phase)*Math.min(1,moving/(sp.id==='foxes'?0.35:0.25));
+        return {x:x,z:z,yaw:yaw,altitude:sp.id==='owls'?base.altitude:sp.id==='caterpillars'?0.004:0.025+0.32*Math.max(0,pounce),phase:base.phase,
+          gait:gait,moving:moving,forage:forage,rest:rest,crouch:crouch,headTurn:headTurn,active:active,state:action.state,alarm:alarm,distance:travel,
+          huntStage:hunt.stage,huntAge:hunt.age,huntCooldown:hunt.cooldown,
+          pounce:pounce,crawl:crawl,bank:bank,wingFlap:wingFlap,scan:Math.sin(time*0.75+base.phase)*0.20,
+          // Record the inputs used for this decision, before movement. Reusing
+          // them avoids explaining an action with a different, later neighbour.
+          foodAvailable:food,threatDistance:threat?threat.distance:null,preyDistance:prey?prey.distance:null,
+          threatIndex:threat?threat.index:null,preyIndex:prey?prey.index:null,
+          threat:threat?threat.id:null,prey:prey?prey.id:null};
+      });});
+      frames.push(frame);previous=frame;
+    });
+    return frames;
+  }
+
+
+  // Group adjacent sampled states, preserving exact boundaries and absences.
+  // This is an index into existing animation frames, not another simulation.
+  // A bounded history of this displayed representative, never a projected route.
+  function ecoMeadowTrail(frames,id,index,step) {
+    if(!Array.isArray(frames)||!Number.isInteger(step)||step<0||step>=frames.length)return [];
+    var points=[];
+    for(var i=step;i>=Math.max(0,step-30);i--){
+      var pose=frames[i]&&frames[i][id]&&frames[i][id][index];
+      if(!pose||!pose.active||![pose.x,pose.z,pose.altitude].every(Number.isFinite))break;
+      points.push({step:i,x:pose.x,z:pose.z,altitude:pose.altitude});
+    }
+    return points.reverse();
+  }
+
+  function ecoMeadowBehaviorMoments(frames,id,index) {
+    var moments=[];
+    (frames||[]).forEach(function(frame,step){
+      var pose=frame[id]&&frame[id][index];if(!pose)return;
+      var last=moments[moments.length-1];
+      if(last&&last.end===step-1&&last.state===pose.state&&last.active===pose.active)last.end=step;
+      else moments.push({start:step,end:step,state:pose.state,active:pose.active});
+    });
+    return moments;
+  }
+
+  function ecoMeadowExplainBehavior(id,pose) {
+    if(!pose)return {text:'No sampled behavior is available.',cue:null};
+    if(!pose.active||pose.state==='Not present')return {text:'This representative is absent at the selected sample.',cue:null};
+    function cue(kind){
+      var species=ECO_WEB_SPECIES.find(function(sp){return sp.id===pose[kind];}),index=pose[kind+'Index'];
+      return species&&Number.isInteger(index)&&index>=0&&index<16?{id:species.id,index:index,name:species.name}:null;
+    }
+    var text='',target=null;
+    switch(pose.state){
+      case 'Retreating': case 'Moving away':
+        text='A nearby predator representative triggered movement away.';target=cue('threat');break;
+      case 'Alert':
+        if(pose.threatDistance!=null&&pose.threatDistance<3.1){text='A predator representative is within this representative’s alert range.';target=cue('threat');}
+        else text='The alarm response is fading after a recent threat, so feeding has not resumed yet.';break;
+      case 'Grazing': case 'Foraging':
+        text='Plant food is available, and no nearby threat is interrupting this feeding pause.';break;
+      case 'Searching for food': case 'Searching for insects':
+        text='No enabled food group currently has positive biomass, so this movement represents a search for food.';break;
+      case 'Exploring':text='This is a movement phase between pauses; no nearby threat is interrupting it.';break;
+      case 'Resting':text=id==='caterpillars'&&pose.foodAvailable===false?'Plant food is unavailable, so the caterpillar pauses instead of feeding.':'This pause is part of the representative’s simulated activity cycle.';break;
+      case 'Listening':text='Nearby prey representatives supplied the cue for a listening pause.';target=cue('prey');break;
+      case 'Stalking':text='Nearby prey representatives supplied the cue for a slow approach.';target=cue('prey');break;
+      case 'Tracking prey':text='A prey representative is within tracking range, so the fox turns toward it.';target=cue('prey');break;
+      case 'Searching':text='No prey representative is close enough to trigger tracking in this phase.';break;
+      case 'Preparing to pounce':text='Nearby prey prompted preparation. The fox can still abandon the attempt before takeoff.';target=cue('prey');break;
+      case 'Pouncing':text='The fox is committed to its takeoff direction until landing, even if prey disappears. This does not confirm a capture.';break;
+      case 'Recovering':text='A short landing recovery prevents an immediate repeated takeoff.';break;
+      case 'Quartering over prey':text='Nearby prey representatives steer the owl’s search flight.';target=cue('prey');break;
+      case 'Slow wingbeats':text='This is the flapping phase of the flight cycle; no close prey is steering this moment.';break;
+      case 'Gliding':text='This is the gliding phase of the flight cycle; no close prey is steering this moment.';break;
+      case 'Pecking':text='A nearby caterpillar representative supplied the feeding cue.';target=cue('prey');break;
+      case 'Preening':text='This grooming pause is part of the bird’s simulated activity cycle.';break;
+      case 'Hopping between feeding spots':text='The bird alternates short hops and pauses while insect food remains available.';break;
+      case 'Crawling':text='This is an active movement phase between feeding or resting pauses.';break;
+      case 'Feeding':text='Plant food is available, so the caterpillar is in a feeding pause.';break;
+      default:text='This action belongs to the representative animation at the selected sample.';
+    }
+    return {text:text,cue:target};
+  }
+
+  function ecoMeadowInteraction(frame,id,index) {
+    var selected=frame&&frame[id]&&frame[id][index],cue=ecoMeadowExplainBehavior(id,selected).cue;
+    if(!cue)return null;
+    var other=frame[cue.id]&&frame[cue.id][cue.index];
+    if(!other||!other.active||![selected.x,selected.z,selected.altitude,other.x,other.z,other.altitude].every(Number.isFinite))return null;
+    return {id:cue.id,index:cue.index,name:cue.name,selected:selected,other:other};
+  }
+
   function EcoMeadow3D(props) {
     var React = props.React, h = React.createElement;
     var host = React.useRef(null), engine = React.useRef(null), latest = React.useRef(props);
     latest.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
+    var trackingState=React.useState('steady'),cameraTracking=trackingState[0],setCameraTracking=trackingState[1];
     var orbitState = React.useState(0.65), orbit = orbitState[0], setOrbit = orbitState[1];
     var zoomState = React.useState(19), zoom = zoomState[0], setZoom = zoomState[1];
     var lightingState = React.useState('daylight'), lighting = lightingState[0], setLighting = lightingState[1];
     var markersState = React.useState(false), markers = markersState[0], setMarkers = markersState[1];
     var cameraModeState = React.useState('habitat'), cameraMode = cameraModeState[0], setCameraMode = cameraModeState[1];
+    var interactionState=React.useState(false),showInteraction=interactionState[0],setShowInteraction=interactionState[1];
+    var trailState=React.useState(false),showTrail=trailState[0],setShowTrail=trailState[1];
+    var isolateState=React.useState(false),isolate=isolateState[0],setIsolate=isolateState[1];
+    var representativeState=React.useState({id:props.focus,index:0}),representative=representativeState[0],setRepresentative=representativeState[1];
     var branchState = React.useState('experiment'), branch = branchState[0], setBranch = branchState[1];
     var playingState = React.useState(false), playing = playingState[0], setPlayingState = playingState[1];
     var playingNow = React.useRef(false);
-    function setPlaying(value) { playingNow.current=value; setPlayingState(value); }
+    var playbackEpoch=React.useRef(0),replaySession=React.useRef(null);
+    var replayState=React.useState(null),replay=replayState[0],setReplay=replayState[1];
+    function setPlaying(value) {
+      playingNow.current=value;playbackEpoch.current++;
+      if(!value){replaySession.current=null;setReplay(null);}
+      setPlayingState(value);
+    }
     var reducedState = React.useState(function() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
     var reduced = reducedState[0], setReduced = reducedState[1];
     var view = React.useRef({});
-    view.current = { orbit: orbit, zoom: zoom, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting };
+    view.current = { orbit: orbit, zoom: zoom, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting, isolate:isolate, showTrail:showTrail, showInteraction:showInteraction, cameraTracking:cameraTracking };
     var sample = props.result ? props.result[branch][props.cursor].values : props.config.initial;
+    var focusedSpecies=ECO_WEB_SPECIES.find(function(sp){return sp.id===props.focus;});
+    var representativeCount=props.focus!=='plants'&&props.config.enabled[props.focus]&&sample[props.focus]>0?Math.min(16,Math.max(1,Math.ceil(sample[props.focus]/focusedSpecies.initial*7))):0;
+    var representativeIndex=representative.id===props.focus?Math.min(representative.index,Math.max(0,representativeCount-1)):0;
+    view.current.representativeIndex=representativeIndex;
+    var behaviorRuns=React.useMemo(function(){
+      if(!props.result){var initial=ecoMeadowBehaviorTimeline(props.config);return {baseline:initial,experiment:initial};}
+      return {baseline:ecoMeadowBehaviorTimeline(props.config,props.result.baseline),experiment:ecoMeadowBehaviorTimeline(props.config,props.result.experiment)};
+    },[props.result,JSON.stringify(props.config)]);
+    var behaviorRef=React.useRef(behaviorRuns);behaviorRef.current=behaviorRuns;
+    var behaviorFrame=behaviorRuns[branch][reduced?0:props.result?props.cursor:0];
+    var inspectedBehavior=behaviorFrame[props.focus]&&behaviorFrame[props.focus][representativeIndex];
+    var behaviorLabel=!props.config.enabled[props.focus]||sample[props.focus]===0?'Not present':reduced&&props.focus!=='plants'?'Starting pose':inspectedBehavior?inspectedBehavior.state:'Growing';
+    var behaviorMoments=React.useMemo(function(){return ecoMeadowBehaviorMoments(behaviorRuns[branch],props.focus,representativeIndex).filter(function(moment){return moment.active||representativeIndex===0;});},[behaviorRuns,branch,props.focus,representativeIndex]);
+    var momentIndex=behaviorMoments.findIndex(function(moment){return props.cursor>=moment.start&&props.cursor<=moment.end;});
+    var currentMoment=behaviorMoments[momentIndex];
+    var sampledFrame=behaviorRuns[branch][props.result?props.cursor:0];
+    var sampledBehavior=sampledFrame[props.focus]&&sampledFrame[props.focus][representativeIndex];
+    var behaviorExplanation=ecoMeadowExplainBehavior(props.focus,sampledBehavior);
+    var interaction=ecoMeadowInteraction(sampledFrame,props.focus,representativeIndex);
+    var trailPoints=showTrail&&cameraMode==='detail'&&props.result&&!reduced?ecoMeadowTrail(behaviorRuns[branch],props.focus,representativeIndex,props.cursor):[];
+    function inspectBehaviorCue(){var cue=behaviorExplanation.cue;if(!cue)return;setShowInteraction(false);setPlaying(false);setRepresentative({id:cue.id,index:cue.index});props.onFocus(cue.id);}
+    function goToBehaviorMoment(index){var moment=behaviorMoments[index];if(!moment)return;setRepresentative({id:props.focus,index:representativeIndex});setPlaying(false);props.onCursor(moment.start);}
+    function replayBehavior(){
+      if(!currentMoment||!currentMoment.active||!props.result||reduced||status!=='ready')return;
+      setPlaying(false);setRepresentative({id:props.focus,index:representativeIndex});props.onCursor(currentMoment.start);
+      var info={start:currentMoment.start,end:currentMoment.end,state:currentMoment.state,status:currentMoment.start===currentMoment.end?'complete':'playing'};
+      setReplay(info);
+      if(info.status==='complete')return;
+      replaySession.current={start:info.start,end:info.end,state:info.state,cursor:info.start,result:props.result,branch:branch,id:props.focus,index:representativeIndex,inspectionVersion:props.inspectionVersion};
+      setPlaying(true);
+    }
+    function pauseBehaviorReplay(){var info=replay;setPlaying(false);if(info)setReplay(Object.assign({},info,{status:'paused'}));}
     var soilSample=props.config.soil.enabled?(props.result?props.result[branch][props.cursor].soil:props.config.soil):null;
     React.useEffect(function(){if(!props.config.soil.enabled&&cameraMode==='soil')setCameraMode('habitat');},[props.config.soil.enabled,cameraMode]);
     React.useEffect(function() {
@@ -690,18 +954,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     }, []);
     React.useEffect(function() {
       if (!playing || !props.result || reduced || status !== 'ready') return;
+      var epoch=playbackEpoch.current;
       var timer = setInterval(function() {
-        // Pause takes effect in the event handler, before effect cleanup runs.
-        if (!playingNow.current) return;
+        // Ignore callbacks queued before a pause, replacement replay or restart.
+        if (!playingNow.current||epoch!==playbackEpoch.current) return;
         var p = latest.current;
         if (document.hidden) { setPlaying(false); return; }
-        var next = Math.min(240, p.cursor + 1);
+        var clip=replaySession.current,v=view.current;
+        if(clip&&(p.result!==clip.result||p.focus!==clip.id||v.branch!==clip.branch||v.representativeIndex!==clip.index||v.cameraMode!=='detail'||p.inspectionVersion!==clip.inspectionVersion)) {setPlaying(false);return;}
+        var next=Math.min(clip?clip.end:240,(clip?clip.cursor:p.cursor)+1);
+        if(clip)clip.cursor=next;
         p.onCursor(next);
-        if (next === 240) setPlaying(false);
+        if(clip&&next===clip.end){setPlaying(false);setReplay({start:clip.start,end:clip.end,state:clip.state,status:'complete'});}
+        else if(next===240)setPlaying(false);
       }, 100);
       return function() { clearInterval(timer); };
-    }, [playing, !!props.result, reduced, status]);
+    }, [playing, !!props.result, reduced, status, replay]);
     React.useEffect(function() { setPlaying(false); }, [props.result, props.inspectionVersion]);
+    React.useEffect(function(){if(replaySession.current)setPlaying(false);else setReplay(null);},[branch,props.focus,representativeIndex,cameraMode]);
     React.useEffect(function() {
       var cancelled = false, renderer, scene, camera, observer, shadowLight, meshes = [], groups = {};
       var geometries = [], materials = [], textures = [], materialMap = {}, timeout;
@@ -736,10 +1006,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var rim = new T.DirectionalLight(0xc1dfed, 0.45); rim.position.set(6, 8, -12); scene.add(rim);
           function geometry(g) { geometries.push(g); return g; }
           var sphere = geometry(new T.IcosahedronGeometry(1, 2));
-          var bladeGeometry=geometry(new T.BufferGeometry());
-          bladeGeometry.setAttribute('position',new T.Float32BufferAttribute([0,-1,0,-0.7,-0.05,0,0.7,-0.05,0,-0.4,0.6,0.05,0.4,0.6,0.05,0,1,0.12,0,0,0.24,0,0.65,0.22],3));
-          bladeGeometry.setIndex([0,1,6,0,6,2,1,3,7,1,7,6,6,7,4,6,4,2,3,5,7,7,5,4]);bladeGeometry.computeVertexNormals();
+          var bladeGeometry=geometry(new T.BufferGeometry()),bladePositions=[],bladeUV=[],bladeIndices=[];
+          for(var leafSection=0;leafSection<=10;leafSection++){
+            var t=leafSection/10,width=Math.pow(Math.sin(Math.PI*t),0.85)*0.66,bend=0.7*t*t;
+            [-1,0,1].forEach(function(side){bladePositions.push(side*width,t*2-1,bend+(side===0?Math.sin(Math.PI*t)*0.13:0));bladeUV.push((side+1)/2,t);});
+            if(leafSection<10)for(var half=0;half<2;half++){var at=leafSection*3+half;bladeIndices.push(at,at+3,at+1,at+1,at+3,at+4);}
+          }bladeGeometry.setAttribute('position',new T.Float32BufferAttribute(bladePositions,3));bladeGeometry.setAttribute('uv',new T.Float32BufferAttribute(bladeUV,2));bladeGeometry.setIndex(bladeIndices);bladeGeometry.computeVertexNormals();
+          var plantCanvas=document.createElement('canvas');plantCanvas.width=64;plantCanvas.height=128;var plantContext=plantCanvas.getContext('2d');
+          var leafGradient=plantContext.createLinearGradient(0,0,0,128);leafGradient.addColorStop(0,'#aeb59b');leafGradient.addColorStop(0.5,'#e5e9d4');leafGradient.addColorStop(1,'#ccd8b4');plantContext.fillStyle=leafGradient;plantContext.fillRect(0,0,64,128);
+          plantContext.strokeStyle='rgba(105,125,79,0.40)';plantContext.lineWidth=0.7;
+          for(var vein=0;vein<10;vein++)[-1,1].forEach(function(side){plantContext.beginPath();plantContext.moveTo(32,vein*12+6);plantContext.quadraticCurveTo(32+side*12,vein*12+12,32+side*29,vein*12+25);plantContext.stroke();});
+          plantContext.strokeStyle='#f0efd3';plantContext.lineWidth=1.2;plantContext.beginPath();plantContext.moveTo(32,0);plantContext.lineTo(32,128);plantContext.stroke();
+          var plantTexture=new T.CanvasTexture(plantCanvas);plantTexture.encoding=T.sRGBEncoding;textures.push(plantTexture);
+          var insectGeometry=geometry(new T.SphereGeometry(1,18,12)),insectCanvas=document.createElement('canvas');insectCanvas.width=128;insectCanvas.height=64;var insectContext=insectCanvas.getContext('2d');insectContext.fillStyle='#e4e7ce';insectContext.fillRect(0,0,128,64);
+          for(var pore=0;pore<320;pore++){insectContext.fillStyle=pore%3?'rgba(111,131,68,0.18)':'rgba(255,250,215,0.4)';insectContext.beginPath();insectContext.arc((pore*43.27)%128,(pore*17.61)%64,0.35+pore%3*0.14,0,Math.PI*2);insectContext.fill();}
+          var insectTexture=new T.CanvasTexture(insectCanvas);insectTexture.encoding=T.sRGBEncoding;textures.push(insectTexture);
           var cone = geometry(new T.ConeGeometry(1, 1, 5));
+          // Folded ears have a broad base, slim tip and raised center ridge.
+          var foxEarGeometry=geometry(new T.BufferGeometry());
+          foxEarGeometry.setAttribute('position',new T.Float32BufferAttribute([-0.85,0,-0.1,0.82,0,-0.1,0.57,0.45,-0.02,0.15,1,0,-0.45,0.55,-0.02,0.02,0.36,0.28],3));
+          foxEarGeometry.setIndex([5,0,1,5,1,2,5,2,3,5,3,4,5,4,0,0,4,3,0,3,2,0,2,1]);foxEarGeometry.computeVertexNormals();
+          var muzzleGeometry=geometry(new T.SphereGeometry(1,20,12)),muzzlePositions=muzzleGeometry.getAttribute('position');
+          for(var mv=0;mv<muzzlePositions.count;mv++){var mx=muzzlePositions.getX(mv),taper=0.80-0.28*mx;muzzlePositions.setXYZ(mv,mx,muzzlePositions.getY(mv)*taper,muzzlePositions.getZ(mv)*taper);}muzzleGeometry.computeVertexNormals();
+          var whiskerMaterial=new T.LineBasicMaterial({color:0xc4bda9,transparent:true,opacity:0.62});materials.push(whiskerMaterial);
           var cylinder = geometry(new T.CylinderGeometry(1, 1, 1, 48));
           var box = geometry(new T.BoxGeometry(1, 1, 1));
           // Small procedural surface maps are shared across all representatives.
@@ -754,7 +1043,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ctx.strokeStyle='rgba('+v+','+v+','+v+','+(feathers?0.65:0.5)+')';ctx.lineWidth=feathers?0.7:0.45;
               ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(feathers?3:1.5),y+2+noise()*(feathers?2:7));ctx.stroke();
             }
-            if(feathers){for(var band=0;band<7;band++){ctx.fillStyle='rgba(70,61,49,0.3)';ctx.fillRect(0,band*20+4,256,2);}}
+            if(feathers){
+              for(var band=0;band<7;band++){ctx.fillStyle='rgba(70,61,49,0.23)';ctx.fillRect(0,band*20+4,256,2);}
+              ctx.strokeStyle='rgba(102,91,69,0.25)';ctx.lineWidth=0.65;
+              for(var barb=0;barb<42;barb++){var by=barb*3;ctx.beginPath();ctx.moveTo(7,by-8);ctx.lineTo(128,by+4);ctx.lineTo(249,by-8);ctx.stroke();}
+              ctx.strokeStyle='rgba(246,240,220,0.8)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(128,0);ctx.lineTo(128,128);ctx.stroke();
+            }
             var texture=new T.CanvasTexture(canvas);texture.encoding=T.sRGBEncoding;
             texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());textures.push(texture);return texture;
           }
@@ -767,11 +1061,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             if(section<8){var b=section*2;featherIndices.push(b,b+2,b+1,b+1,b+2,b+3);}
           }
           var featherGeometry=geometry(new T.BufferGeometry());featherGeometry.setAttribute('position',new T.Float32BufferAttribute(featherPositions,3));featherGeometry.setAttribute('uv',new T.Float32BufferAttribute(featherUV,2));featherGeometry.setIndex(featherIndices);featherGeometry.computeVertexNormals();
+          // A single gently convex facial disc gives the owl its continuous
+          // outline rather than two disconnected cheek ovals.
+          var owlFaceGeometry=geometry(new T.BufferGeometry()),faceOutline=[[0,0.105],[0.05,0.16],[0.105,0.167],[0.151,0.12],[0.167,0.052],[0.145,-0.018],[0.09,-0.103],[0,-0.175],[-0.09,-0.103],[-0.145,-0.018],[-0.167,0.052],[-0.151,0.12],[-0.105,0.167],[-0.05,0.16]],faceVertices=[0.045,0,0],faceIndices=[];
+          faceOutline.forEach(function(p){faceVertices.push(0,p[1],p[0]);});
+          for(var fi=0;fi<faceOutline.length;fi++)faceIndices.push(0,fi+1,(fi+1)%faceOutline.length+1);
+          owlFaceGeometry.setAttribute('position',new T.Float32BufferAttribute(faceVertices,3));owlFaceGeometry.setIndex(faceIndices);owlFaceGeometry.computeVertexNormals();
           function mesh(parent, geo, color, x, y, z, sx, sy, sz, id) {
-            var key = color + ':' + (id || 'habitat');
+            var key = color + ':' + (id || 'habitat') + (geo===featherGeometry?':feather':geo===bladeGeometry?':leaf':':solid');
             if (!materialMap[key]) {
               var coat=id && id!=='plants' && ['#25272d','#faf9ed','#292b27','#242d29','#252b2b','#735447','#c89389','#b7954f','#fff3d9'].indexOf(color)<0;
-              var map=coat?(geo===featherGeometry?featherTexture:furTexture):null;
+              var map=geo===bladeGeometry?plantTexture:coat?(geo===featherGeometry?featherTexture:id==='caterpillars'?insectTexture:furTexture):null;
               materialMap[key] = new T.MeshStandardMaterial({color:new T.Color(color).convertSRGBToLinear(),map:map,roughness:coat?1:0.8,flatShading:false,side:geo===featherGeometry?T.DoubleSide:T.FrontSide});
               materials.push(materialMap[key]);
             }
@@ -871,7 +1171,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var barkTexture=new T.CanvasTexture(barkCanvas);barkTexture.encoding=T.sRGBEncoding;barkTexture.wrapT=T.RepeatWrapping;barkTexture.repeat.y=3;textures.push(barkTexture);
           var barkMaterial=new T.MeshStandardMaterial({color:0xffffff,map:barkTexture,bumpMap:barkTexture,bumpScale:0.025,roughness:1});materials.push(barkMaterial);
           var leafMaterial=new T.MeshStandardMaterial({color:0xffffff,map:leafTexture,alphaTest:0.42,side:T.DoubleSide,roughness:1});materials.push(leafMaterial);
-          var trunks=new T.InstancedMesh(trunkGeometry,barkMaterial,treeSites.length);
+          // Flared bases transition into tapered upper trunks. The landscape
+          // remains scenery, with the same tree sites and instance counts.
+          var treeTrunkGeometry=geometry(new T.LatheGeometry([[1.28,-0.5],[1.04,-0.46],[0.88,-0.35],[0.73,-0.05],[0.57,0.25],[0.34,0.5]].map(function(p){return new T.Vector2(p[0],p[1]);}),12));
+          var trunks=new T.InstancedMesh(treeTrunkGeometry,barkMaterial,treeSites.length);
           var branches=new T.InstancedMesh(trunkGeometry,barkMaterial,treeSites.length*3);
           var foliage=new T.InstancedMesh(foliageGeometry,leafMaterial,treeSites.length*30);
           scene.add(trunks,branches,foliage);
@@ -879,19 +1182,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           treeSites.forEach(function(p,i) {
             var gy=groundHeight(p.x,p.z), trunkWidth=0.17+p.height*0.019;
             transform.position.set(p.x,gy+p.height*0.4,p.z);transform.rotation.set(0,0,0);transform.scale.set(trunkWidth,p.height*0.8,trunkWidth);transform.updateMatrix();trunks.setMatrixAt(i,transform.matrix);
+            // Crown proportions vary deterministically without moving trees or
+            // changing the seeded placement of the surrounding understory.
+            var crownType=i%3,crownX=crownType===0?1.12:crownType===1?0.76:0.96,crownZ=crownType===0?0.88:crownType===1?0.80:1.08;
+            var crownHeight=crownType===1?1.52:crownType===2?0.94:1.08;
+            var crownShiftX=Math.cos(i*1.7)*p.width*0.16,crownShiftZ=Math.sin(i*1.7)*p.width*0.13;
             for(var b=0;b<3;b++) {
-              var ba=b*Math.PI*2/3+i;
-              transform.position.set(p.x+Math.cos(ba)*0.55,gy+p.height*0.61,p.z+Math.sin(ba)*0.55);
-              transform.rotation.set(Math.cos(ba)*0.5,0,Math.sin(ba)*0.5);transform.scale.set(trunkWidth*0.45,p.height*0.38,trunkWidth*0.45);transform.updateMatrix();branches.setMatrixAt(i*3+b,transform.matrix);
+              var ba=b*Math.PI*2/3+i,start=new T.Vector3(p.x,gy+p.height*(0.43+b*0.045),p.z);
+              var end=new T.Vector3(p.x+crownShiftX+Math.cos(ba)*p.width*crownX*0.68,gy+p.height*(0.78+b*0.025),p.z+crownShiftZ+Math.sin(ba)*p.width*crownZ*0.68);
+              var direction=new T.Vector3().subVectors(end,start);
+              transform.position.copy(start).add(end).multiplyScalar(0.5);transform.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.clone().normalize());
+              transform.scale.set(trunkWidth*0.32,direction.length(),trunkWidth*0.32);transform.updateMatrix();branches.setMatrixAt(i*3+b,transform.matrix);
             }
+
             for(var leaf=0;leaf<30;leaf++) {
-              var la=leaf*2.39996+i, lr=Math.sqrt(forestRandom())*p.width;
-              var ly=(forestRandom()-0.5)*p.width*1.15;
-              transform.position.set(p.x+Math.cos(la)*lr,gy+p.height*0.84+ly,p.z+Math.sin(la)*lr);
+              var la=leaf*2.39996+i,lr=Math.sqrt(forestRandom())*p.width;
+              var ly=(forestRandom()-0.5)*p.width*crownHeight;
+              // Rounded volume narrows at the crown's top and bottom. A small
+              // asymmetric offset avoids identical cylindrical silhouettes.
+              var profile=Math.sqrt(Math.max(0.18,1-Math.pow(ly/(p.width*crownHeight*0.56),2)));
+              transform.position.set(p.x+crownShiftX+Math.cos(la)*lr*crownX*profile,gy+p.height*0.81+ly,p.z+crownShiftZ+Math.sin(la)*lr*crownZ*profile);
               transform.rotation.set(forestRandom()*0.8,la,forestRandom()*0.5);
               var clump=0.48+forestRandom()*0.55;
               transform.scale.set(clump*1.2,clump*0.72,clump);transform.updateMatrix();foliage.setMatrixAt(leafIndex,transform.matrix);
-              var leafColor=new T.Color('#294737').lerp(new T.Color('#78905a'),forestRandom()*0.85).convertSRGBToLinear();foliage.setColorAt(leafIndex,leafColor);leafIndex++;
+              var leafColor=new T.Color(['#334a32','#354f3a','#414d31'][crownType]).lerp(new T.Color(['#87955d','#799268','#92945c'][crownType]),forestRandom()*0.72).convertSRGBToLinear();foliage.setColorAt(leafIndex,leafColor);leafIndex++;
             }
             if (Math.abs(p.x)<20 && Math.abs(p.z)<20) shadow(scene,p.x+0.3,gy+0.03,p.z+0.3,p.width*1.3,p.width);
           });
@@ -1006,14 +1320,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           renderer.domElement.setAttribute('data-forest-trees',String(treeSites.length));
           renderer.domElement.setAttribute('data-landscape-span','100 x 86 scene units');
 
-          [[-7,1],[5,4],[-4,4.8]].forEach(function(p, i) {
-            var y = groundHeight(p[0],p[1]); shadow(scene,p[0]+0.1,y+0.02,p[1]+0.1,0.8,0.55);
-            mesh(scene, sphere, ['#959b87','#a5aa97','#818d7b'][i],p[0],y+0.23,p[1],0.64,0.4,0.46);
-            mesh(scene, sphere, '#788371',p[0]+0.55,y+0.1,p[1]+0.18,0.26,0.18,0.22);
+          // Weathered stone silhouettes and mottled lichen are scenery. Keep
+          // their footprints fixed so inspection paths remain unobstructed.
+          var stoneMaterial=new T.MeshStandardMaterial({vertexColors:true,map:groundTexture,bumpMap:groundTexture,bumpScale:0.009,roughness:1});materials.push(stoneMaterial);
+          function weatheredStone(seed){
+            var rockGeometry=geometry(new T.IcosahedronGeometry(1,3)),positions=rockGeometry.getAttribute('position'),colors=[];
+            for(var rv=0;rv<positions.count;rv++){
+              var rx=positions.getX(rv),ry=positions.getY(rv),rz=positions.getZ(rv);
+              var weather=0.92+0.08*Math.sin(rx*7+seed)*Math.cos(rz*6-ry*3)+0.045*Math.sin(ry*11+rx*5);
+              positions.setXYZ(rv,rx*weather,Math.max(-0.68,ry*weather),rz*weather*(0.94+0.05*Math.sin(rx*4+seed)));
+              var mineral=0.5+0.5*Math.sin(rx*24+rz*17+seed)*Math.cos(ry*31-rz*8);
+              var color=new T.Color('#74766b').lerp(new T.Color('#b4b2a0'),mineral*0.65);
+              var lichen=Math.sin(rx*11+seed)*Math.cos(rz*13-ry*7)+Math.sin(ry*17+rx*6)*0.35;
+              if(ry>0.05&&lichen>0.40)color.lerp(new T.Color('#a6ad77'),Math.min(0.65,(lichen-0.4)*0.75));
+              if(ry<-0.2)color.multiplyScalar(0.83);color.convertSRGBToLinear();colors.push(color.r,color.g,color.b);
+            }rockGeometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));rockGeometry.computeVertexNormals();return rockGeometry;
+          }
+          [[-7,1],[5,4],[-4,4.8]].forEach(function(p,i){
+            var y=groundHeight(p[0],p[1]);shadow(scene,p[0]+0.1,y+0.02,p[1]+0.1,0.8,0.55);
+            var shape=weatheredStone(i*2.71),rock=new T.Mesh(shape,stoneMaterial);rock.position.set(p[0],y+0.21,p[1]);rock.scale.set(0.64,0.4,0.46);rock.rotation.y=i*1.3;rock.castShadow=true;rock.receiveShadow=true;scene.add(rock);
+            var chip=new T.Mesh(shape,stoneMaterial);chip.position.set(p[0]+0.55,y+0.09,p[1]+0.18);chip.scale.set(0.26,0.18,0.22);chip.rotation.y=1.7+i;chip.castShadow=true;chip.receiveShadow=true;scene.add(chip);
           });
           // Fallen wood provides a readable foreground scale cue.
           var log = new T.Group(); log.position.set(-0.8,groundHeight(-0.8,4.9)+0.22,4.9); log.rotation.z=Math.PI/2; log.rotation.y=0.2; scene.add(log);
-          var mainLog=mesh(log,cylinder,'#694a32',0,0,0,0.24,1.65,0.24);mainLog.material=barkMaterial;
+          var logGeometry=geometry(new T.CylinderGeometry(1,1,1,48,10)),logPositions=logGeometry.getAttribute('position'),logColors=[];
+          for(var lv=0;lv<logPositions.count;lv++){
+            var lx=logPositions.getX(lv),ly=logPositions.getY(lv),lz=logPositions.getZ(lv),angle=Math.atan2(lz,lx);
+            var ridge=1+0.018*Math.sin(angle*13+ly*2)+0.012*Math.cos(angle*21-ly*4);
+            logPositions.setXYZ(lv,lx*ridge,ly,lz*ridge);
+            var tint=new T.Color('#f1e5d1');
+            // Local +X faces upward after the fallen log's rotation.
+            var moss=Math.sin(ly*21+angle*3)*Math.cos(angle*9-ly*7);
+            if(lx>0.45&&moss>0.05)tint.lerp(new T.Color('#789153'),Math.min(0.67,(moss-0.05)*0.85));
+            tint.convertSRGBToLinear();logColors.push(tint.r,tint.g,tint.b);
+          }logGeometry.setAttribute('color',new T.Float32BufferAttribute(logColors,3));logGeometry.computeVertexNormals();
+          var logMaterial=new T.MeshStandardMaterial({map:barkTexture,bumpMap:barkTexture,bumpScale:0.018,vertexColors:true,roughness:1});materials.push(logMaterial);
+          var mainLog=new T.Mesh(logGeometry,logMaterial);mainLog.scale.set(0.24,1.65,0.24);mainLog.castShadow=true;mainLog.receiveShadow=true;log.add(mainLog);
+          var stubGeometry=geometry(new T.CylinderGeometry(0.045,0.075,0.25,10));
+          [-0.36,0.30].forEach(function(y,i){
+            var from=new T.Vector3(0.12,y,i?0.11:-0.10),to=new T.Vector3(0.34,y+0.06,i?0.17:-0.17),axis=new T.Vector3().subVectors(to,from);
+            var stub=new T.Mesh(stubGeometry,barkMaterial);stub.position.copy(from).add(to).multiplyScalar(0.5);stub.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),axis.normalize());stub.castShadow=true;stub.receiveShadow=true;log.add(stub);
+          });
           var endCanvas=document.createElement('canvas');endCanvas.width=endCanvas.height=128;
           var endContext=endCanvas.getContext('2d');endContext.fillStyle='#bda077';endContext.fillRect(0,0,128,128);
           for(var growthRing=1;growthRing<16;growthRing++){
@@ -1052,7 +1399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ECO_WEB_SPECIES.forEach(function(sp) {
             var list = [], max = sp.id === 'plants' ? 56 : 16;
             for (var i = 0; i < max; i++) {
-              var animal = new T.Group(); scene.add(animal);
+              var animal = new T.Group();animal.userData.ecoRepresentative=true;scene.add(animal);
               var a = i * 2.39996, radius = sp.id === 'plants' ? Math.sqrt((i + 0.5) / max) * 6.6 : 0.7 + (i % 4) * 0.5;
               var initialPose = ecoMeadowPose(sp.id,i,0,true);
               var x = sp.id === 'plants' ? Math.cos(a)*radius : initialPose.x, z = sp.id === 'plants' ? Math.sin(a)*radius*0.75 : initialPose.z;
@@ -1062,44 +1409,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var markerEdge=new T.Mesh(selectionEdgeGeometry,selectionEdgeMaterial);markerEdge.position.z=-0.002;markerEdge.renderOrder=1;ringMarker.renderOrder=2;ringMarker.add(markerEdge);
               animal.userData.shadow=shadow(animal,0,0.015,0,sp.id === 'foxes' ? 0.65 : 0.38,sp.id === 'plants' ? 0.18 : 0.3);
               if (sp.id === 'plants') {
-                [-1,0,1].forEach(function(side) {
-                  var blade=mesh(animal,bladeGeometry,['#5f8c3e','#99b963','#426a36'][(i+side+3)%3],side*0.11,0.25+0.06*(i%3),0,0.065,0.34,0.12,sp.id);blade.material.side=T.DoubleSide;blade.rotation.z=-side*0.38;
-                });
+                for(var leaf=0;leaf<5;leaf++){
+                  var leafAngle=leaf*2.39996+i*0.37,height=0.22+(leaf%3)*0.042;
+                  var blade=mesh(animal,bladeGeometry,['#698642','#8da15a','#56743c'][(i+leaf)%3],Math.cos(leafAngle)*0.038,height,Math.sin(leafAngle)*0.038,0.085,height,0.24,sp.id);blade.material.side=T.DoubleSide;blade.rotation.y=leafAngle;blade.rotation.x=0.16+(leaf%3)*0.07;
+                }
                 if(i%4===0){
-                  mesh(animal,cylinder,'#577443',0.07,0.42,0,0.025,0.75,0.025,sp.id);
-                  for(var petal=0;petal<5;petal++){var pa=petal*Math.PI*2/5;mesh(animal,sphere,i%8===0?'#f2d779':'#c0b1d8',0.07+Math.cos(pa)*0.09,0.8,Math.sin(pa)*0.09,0.09,0.035,0.06,sp.id);}
+                  mesh(animal,cylinder,'#577443',0.07,0.42,0,0.012,0.75,0.012,sp.id);
+                  for(var petal=0;petal<8;petal++){var pa=petal*Math.PI/4,flowerPetal=mesh(animal,sphere,i%8===0?'#f2d779':'#c0b1d8',0.07+Math.cos(pa)*0.069,0.796+(petal%2)*0.008,Math.sin(pa)*0.069,0.078,0.019,0.034,sp.id);flowerPetal.rotation.y=-pa;flowerPetal.rotation.z=0.10;}
                   mesh(animal,sphere,'#d79d38',0.07,0.82,0,0.045,0.04,0.045,sp.id);
                 }
               } else if(sp.id==='caterpillars') {
-                for(var segment=0;segment<8;segment++){
-                  var sx=(segment-3.5)*0.095;
-                  mesh(animal,sphere,segment===7?'#6d853c':segment%2?'#819d47':'#96ae58',sx,0.105,0,0.075,0.078,0.075,sp.id);
-                  [-1,1].forEach(function(side){mesh(animal,sphere,'#c3bd75',sx,0.036,side*0.055,0.02,0.028,0.025,sp.id);});
+                animal.userData.segments=[];
+                // Head, three thoracic segments, ten abdominal segments.
+                // Three true-leg pairs and five proleg pairs depict one common
+                // caterpillar form; proleg counts vary across caterpillar groups.
+                for(var segment=0;segment<14;segment++){
+                  var sx=(segment-6.5)*0.058,taper=0.78+Math.sin((segment+1)/15*Math.PI)*0.22;
+                  var segmentRoot=new T.Group();segmentRoot.position.set(sx,0.102,0);segmentRoot.userData.homeX=sx;animal.add(segmentRoot);animal.userData.segments.push(segmentRoot);
+                  mesh(segmentRoot,insectGeometry,segment===13?'#738747':segment%2?'#819b50':'#8fa658',0,0,0,segment===13?0.044:0.042,0.064*taper,0.058*taper,sp.id);
+                  if(segment<13)mesh(segmentRoot,insectGeometry,'#b9c17b',0,0.062*taper,0,0.034,0.005,0.010,sp.id);
+                  if((segment>=2&&segment<=9)||segment===12)[-1,1].forEach(function(side){mesh(segmentRoot,insectGeometry,'#63753e',0,0,side*0.058*taper,0.006,0.008,0.003,sp.id);});
+                  if(segment>=10&&segment<=12)[-1,1].forEach(function(side){
+                    var trueLeg=mesh(segmentRoot,cylinder,'#877a49',0.006,-0.057,side*0.04,0.008,0.045,0.008,sp.id);trueLeg.rotation.z=-0.24;
+                    mesh(segmentRoot,sphere,'#76663b',0.015,-0.080,side*0.04,0.013,0.010,0.009,sp.id);
+                  });
+                  if([0,4,5,6,7].indexOf(segment)>=0)[-1,1].forEach(function(side){mesh(segmentRoot,sphere,'#c3bd75',0,-0.066,side*0.048,0.017,0.027,0.022,sp.id);});
+                  if(segment===13)[-1,1].forEach(function(side){mesh(segmentRoot,sphere,'#252b2b',0.026,0.012,side*0.035,0.005,0.006,0.004,sp.id);});
                 }
-                [-1,1].forEach(function(side){mesh(animal,sphere,'#252b2b',0.37,0.126,side*0.043,0.012,0.012,0.01,sp.id);});
               } else if(sp.id==='bluetits') {
                 mesh(animal,sphere,'#81925a',-0.03,0.25,0,0.24,0.17,0.145,sp.id);
                 mesh(animal,sphere,'#dac96c',0.085,0.215,0,0.16,0.145,0.13,sp.id);
                 mesh(animal,sphere,'#3c728f',0.17,0.395,0,0.145,0.13,0.125,sp.id);
                 [-1,1].forEach(function(side){
                   mesh(animal,sphere,'#e5e3cd',0.205,0.365,side*0.078,0.11,0.077,0.06,sp.id);
-                  mesh(animal,sphere,'#252b2b',0.267,0.4,side*0.104,0.018,0.019,0.013,sp.id);
+                  var eyeStripe=mesh(animal,sphere,'#293e43',0.22,0.397,side*0.118,0.091,0.014,0.012,sp.id);eyeStripe.rotation.z=0.09;
+                  mesh(animal,sphere,'#252b2b',0.267,0.4,side*0.124,0.013,0.014,0.01,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.272,0.406,side*0.13,0.0035,0.0035,0.003,sp.id);
                   var wing=mesh(animal,sphere,'#507e96',-0.075,0.265,side*0.127,0.21,0.092,0.038,sp.id);wing.rotation.z=0.18;
+                  var featherBasis=new T.Matrix4().makeBasis(new T.Vector3(0.215*side,-0.977*side,0),new T.Vector3(0,0,side),new T.Vector3(-0.977,-0.215,0));
+                  for(var flight=0;flight<6;flight++){
+                    var folded=mesh(animal,featherGeometry,flight%2?'#47768f':'#648ba0',0.035-flight*0.012,0.307-flight*0.018,side*(0.169+Math.sin(flight/5*Math.PI)*0.017),0.24,1,0.22+flight*0.011,sp.id);folded.quaternion.setFromRotationMatrix(featherBasis);
+                  }
+                  var wingBar=mesh(animal,sphere,'#d7ded0',-0.075,0.282,side*0.203,0.012,0.063,0.006,sp.id);wingBar.rotation.z=-0.23;
                   mesh(animal,cylinder,'#6b6050',0.035,0.072,side*0.066,0.012,0.115,0.012,sp.id);
-                  mesh(animal,sphere,'#6b6050',0.07,0.022,side*0.066,0.067,0.016,0.018,sp.id);
+                  for(var toe=0;toe<3;toe++){var digit=mesh(animal,sphere,'#6b6050',0.071,0.016,side*0.066+(toe-1)*0.017,0.045,0.009,0.006,sp.id);digit.rotation.y=(toe-1)*0.19;}
                 });
                 mesh(animal,sphere,'#414f51',0.32,0.361,0,0.067,0.025,0.026,sp.id);
-                var tail=mesh(animal,sphere,'#46768b',-0.31,0.21,0,0.19,0.027,0.073,sp.id);tail.rotation.z=0.16;
+                for(var tailFeather=0;tailFeather<5;tailFeather++){
+                  var tail=mesh(animal,featherGeometry,tailFeather%2?'#46768b':'#608399',-0.21,0.22,(tailFeather-2)*0.019,0.22,1,0.27-Math.abs(tailFeather-2)*0.009,sp.id);tail.rotation.y=-Math.PI/2+(tailFeather-2)*0.035;tail.rotation.z=0.12;
+                }
               } else if (sp.id === 'owls') {
                 // A horizontal flight silhouette with broad, swept wings.
                 mesh(animal,sphere,'#b39365',-0.07,0.4,0,0.36,0.2,0.2,sp.id);
                 mesh(animal,sphere,'#eee3c6',0.08,0.34,0,0.25,0.14,0.185,sp.id);
                 mesh(animal,sphere,'#a17e53',0.26,0.5,0,0.21,0.205,0.2,sp.id);
+                mesh(animal,owlFaceGeometry,'#997b59',0.425,0.515,0,0.95,1.07,1.07,sp.id);
+                mesh(animal,owlFaceGeometry,'#fff3d9',0.437,0.515,0,1,0.96,0.96,sp.id);
                 animal.userData.wings=[];
                 [-1,1].forEach(function(side){
-                  mesh(animal,sphere,'#fff3d9',0.408,0.52,side*0.075,0.065,0.145,0.114,sp.id);
-                  mesh(animal,sphere,'#25272d',0.459,0.55,side*0.087,0.021,0.031,0.024,sp.id);
-                  mesh(animal,sphere,'#faf9ed',0.477,0.562,side*0.09,0.006,0.007,0.008,sp.id);
+                  mesh(animal,sphere,'#25272d',0.477,0.55,side*0.077,0.015,0.028,0.02,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.49,0.56,side*0.078,0.004,0.005,0.005,sp.id);
                   var joint=new T.Group();joint.position.set(-0.02,0.42,side*0.14);joint.userData.side=side;animal.add(joint);animal.userData.wings.push(joint);
                   mesh(joint,sphere,'#a38b69',-0.08,0,side*0.27,0.31,0.045,0.43,sp.id);
                   for(var feather=0;feather<8;feather++){
@@ -1116,14 +1485,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 mesh(animal,sphere,'#c66d35',-0.03,0.49,0,0.5,0.27,0.23,sp.id);
                 mesh(animal,sphere,'#efe0bd',0.29,0.45,0,0.17,0.25,0.2,sp.id);
                 mesh(animal,sphere,'#c47d45',0.38,0.70,0,0.235,0.185,0.175,sp.id);
-                mesh(animal,sphere,'#d5ba91',0.59,0.63,0,0.235,0.085,0.10,sp.id);
+                mesh(animal,muzzleGeometry,'#d5ba91',0.60,0.635,0,0.20,0.075,0.105,sp.id);
                 mesh(animal,sphere,'#efe0bd',0.59,0.594,0,0.19,0.044,0.085,sp.id);
-                mesh(animal,sphere,'#252b2b',0.805,0.65,0,0.055,0.045,0.06,sp.id);
+                mesh(animal,sphere,'#252b2b',0.795,0.647,0,0.043,0.032,0.046,sp.id);
                 [-1,1].forEach(function(side){
-                  mesh(animal,cone,'#78422b',0.31,0.905,side*0.13,0.10,0.235,0.085,sp.id);
-                  mesh(animal,cone,'#d89a70',0.347,0.91,side*0.13,0.058,0.145,0.05,sp.id);
-                  mesh(animal,sphere,'#292b27',0.49,0.741,side*0.145,0.028,0.027,0.019,sp.id);
-                  [-0.33,0.29].forEach(function(lx){var leg=new T.Group();leg.position.set(lx,0.4,side*0.16);leg.userData.phase=(lx<0?1:-1)*side;animal.add(leg);mesh(leg,cylinder,'#493c30',0,-0.18,0,0.065,0.42,0.065,sp.id);mesh(leg,sphere,'#3e382d',0.04,-0.345,0,0.12,0.06,0.08,sp.id);animal.userData.legs=animal.userData.legs||[];animal.userData.legs.push(leg);});
+                  var ear=mesh(animal,foxEarGeometry,'#784b36',0.31,0.79,side*0.13,0.105,0.25,0.16,sp.id);ear.rotation.y=Math.PI/2;ear.rotation.x=side*0.12;
+                  var innerEar=mesh(animal,foxEarGeometry,'#bc9279',0.326,0.814,side*0.13,0.066,0.185,0.07,sp.id);innerEar.rotation.copy(ear.rotation);
+                  mesh(animal,sphere,'#8f633e',0.49,0.741,side*0.145,0.036,0.031,0.02,sp.id);
+                  mesh(animal,sphere,'#292b27',0.499,0.742,side*0.159,0.015,0.021,0.011,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.505,0.753,side*0.164,0.005,0.005,0.004,sp.id);
+                  [-0.33,0.29].forEach(function(lx){var leg=new T.Group();leg.position.set(lx,0.4,side*0.16);leg.userData.phase=(lx<0?1:-1)*side;animal.add(leg);var upper=mesh(leg,sphere,'#a85e35',lx<0?-0.018:0.007,-0.045,0,lx<0?0.105:0.076,0.20,0.072,sp.id);upper.rotation.z=lx<0?-0.18:0.08;
+                    var shin=mesh(leg,sphere,'#493c30',0.018,-0.225,0,0.044,0.14,0.048,sp.id);shin.rotation.z=-0.10;
+                    mesh(leg,sphere,'#3e382d',0.056,-0.345,0,0.09,0.048,0.064,sp.id);animal.userData.legs=animal.userData.legs||[];animal.userData.legs.push(leg);});
                 });
                 var foxTail=mesh(animal,sphere,'#bd622f',-0.67,0.36,0.02,0.52,0.17,0.19,sp.id);foxTail.rotation.z=0.32;
                 var foxTip=mesh(animal,sphere,'#f4e6c9',-1.02,0.25,0.02,0.21,0.13,0.14,sp.id);foxTip.rotation.z=0.32;
@@ -1135,7 +1508,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 [-1,1].forEach(function(side){
                   var ear=mesh(animal,sphere,fur,0.23,rabbit?0.81:0.62,side*0.13,rabbit?0.075:0.09,rabbit?0.29:0.09,0.065,sp.id);ear.rotation.z=rabbit?-0.15:0;
                   var inner=mesh(animal,sphere,'#c89389',0.267,rabbit?0.83:0.62,side*0.13,0.045,rabbit?0.2:0.045,0.045,sp.id);inner.rotation.z=rabbit?-0.15:0;
-                  mesh(animal,sphere,'#242d29',0.377,0.47,side*0.139,0.026,0.029,0.022,sp.id);
+                  mesh(animal,sphere,'#242d29',0.377,0.47,side*0.139,0.023,0.027,0.02,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.385,0.481,side*0.153,0.006,0.006,0.004,sp.id);
+                  mesh(animal,muzzleGeometry,rabbit?'#d3c8b2':'#a4937c',0.393,0.386,side*0.046,0.073,0.056,0.068,sp.id);
                   var hind=mesh(animal,sphere,fur,-0.17,0.11,side*0.18,rabbit?0.2:0.12,0.12,0.1,sp.id);
                   var fore=mesh(animal,sphere,fur,0.22,0.065,side*0.12,0.14,0.055,0.07,sp.id);
                   [hind,fore].forEach(function(paw,index){
@@ -1147,6 +1522,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 mesh(animal,sphere,'#735447',0.46,0.39,0,0.029,0.025,0.033,sp.id);
                 mesh(animal,sphere,rabbit?'#eee8d5':fur,-0.39,0.24,0,rabbit?0.11:0.19,rabbit?0.11:0.045,0.07,sp.id);
               }
+              if(sp.id==='bluetits'||sp.id==='owls'){
+                var birdHead=new T.Group();birdHead.position.set(sp.id==='owls'?0.25:0.15,sp.id==='owls'?0.48:0.35,0);
+                animal.children.slice().forEach(function(part){if(part.isMesh&&part.userData.species===sp.id&&part.position.x>(sp.id==='owls'?0.20:0.10)&&part.position.y>0.32){part.position.sub(birdHead.position);birdHead.add(part);}});animal.add(birdHead);animal.userData.head=birdHead;
+              }
               if(sp.id==='foxes') {
                 var tailJoint=new T.Group();tailJoint.position.set(-0.38,0.4,0);animal.add(tailJoint);
                 [foxTail,foxTip].forEach(function(part){part.position.sub(tailJoint.position);tailJoint.add(part);});animal.userData.tail=tailJoint;
@@ -1154,6 +1533,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if(sp.id !== 'plants' && sp.id !== 'owls' && sp.id !== 'bluetits' && sp.id !== 'caterpillars') {
                 var head=new T.Group();head.position.set(0.24,sp.id==='foxes'?0.58:0.4,0);
                 animal.children.slice().forEach(function(part){if(part.isMesh && part.userData.species===sp.id && part.position.x>0.18 && part.position.y>0.34){part.position.sub(head.position);head.add(part);}});animal.add(head);animal.userData.head=head;
+                // Whiskers belong to the articulated head, so they follow each
+                // forage pose. They are visual detail, not extra pick targets.
+                var whiskerPoints=[],isFox=sp.id==='foxes',noseX=isFox?0.69:0.426,noseY=isFox?0.616:0.391;
+                [-1,1].forEach(function(side){for(var whisker=0;whisker<3;whisker++){
+                  var root=new T.Vector3(noseX,noseY+(whisker-1)*0.013,side*(isFox?0.051:0.043)).sub(head.position);
+                  var middle=root.clone().add(new T.Vector3(-0.055,(whisker-1)*0.016,side*0.085));
+                  var tip=middle.clone().add(new T.Vector3(-0.067,(whisker-1)*0.015,side*(isFox?0.085:0.065)));
+                  [root,middle,middle,tip].forEach(function(point){whiskerPoints.push(point.x,point.y,point.z);});
+                }});
+                var whiskerGeometry=geometry(new T.BufferGeometry());whiskerGeometry.setAttribute('position',new T.Float32BufferAttribute(whiskerPoints,3));head.add(new T.LineSegments(whiskerGeometry,whiskerMaterial));
               }
               if(sp.id!=='plants') {
                 var body=new T.Group(),size=(sp.id==='caterpillars'?0.65:sp.id==='bluetits'?0.8:sp.id==='voles'?0.57:sp.id==='rabbits'?0.86:1)*(0.94+(i%5)*0.028);
@@ -1262,9 +1651,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var threadMaterial=new T.LineBasicMaterial({color:0xc8b48f,transparent:true,opacity:0.42});materials.push(threadMaterial);
           var soilThreads=new T.LineSegments(threadGeometry,threadMaterial);soilPatch.add(soilThreads);
 
+          var inspectionScenery=scene.children.filter(function(object){return !object.isLight&&!object.userData.ecoRepresentative&&[terrain,trunks,branches,foliage,roots].indexOf(object)<0;});
+          // Fixed instanced buffers are reused on every scrub and replay frame.
+          var trailMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:0.7,emissive:0x51400b,emissiveIntensity:0.45});materials.push(trailMaterial);
+          var trailSegments=new T.InstancedMesh(geometry(new T.CylinderGeometry(1,1,1,8)),trailMaterial,30);
+          var trailBeads=new T.InstancedMesh(geometry(new T.SphereGeometry(1,8,6)),trailMaterial,8);
+          // Allocate full color capacity before draw changes the visible counts.
+          // r128 otherwise allocates setColorAt's buffer from the current count.
+          trailSegments.instanceColor=new T.InstancedBufferAttribute(new Float32Array(30*3),3);
+          trailBeads.instanceColor=new T.InstancedBufferAttribute(new Float32Array(8*3),3);
+          trailSegments.frustumCulled=false;trailBeads.frustumCulled=false;
+          var trailGroup=new T.Group();trailGroup.add(trailSegments,trailBeads);scene.add(trailGroup);
+          var trailDummy=new T.Object3D(),trailUp=new T.Vector3(0,1,0),trailA=new T.Vector3(),trailB=new T.Vector3(),trailDirection=new T.Vector3(),trailColor=new T.Color();
           function draw() {
             if (cancelled || !renderer) return;
             var p = latest.current, v = view.current;
+            inspectionScenery.forEach(function(object){object.visible=true;});
+            var behaviorFrame=behaviorRef.current[v.branch][v.reduced?0:p.result?p.cursor:0];
             var values = p.result ? p.result[v.branch][p.cursor].values : p.config.initial;
             // Lighting is a viewing preference, not model time or weather.
             var light = {
@@ -1296,42 +1699,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Increase distance on narrow screens so the clearing remains visible.
             var soilView=v.cameraMode==='soil'&&!!currentSoil;
             var detail = v.cameraMode === 'detail' && p.focus !== 'plants';
-            var focusPose=ecoMeadowPose(p.focus,0,time,v.reduced);
+            var focusPose=behaviorFrame[p.focus]?behaviorFrame[p.focus][v.representativeIndex]:ecoMeadowPose(p.focus,0,time,v.reduced);
+            var pair=detail&&v.showInteraction&&!v.reduced?ecoMeadowInteraction(behaviorFrame,p.focus,v.representativeIndex):null;
+            var startingFrame=behaviorRef.current[v.branch][0];
+            var startingPose=startingFrame[p.focus]&&startingFrame[p.focus][v.representativeIndex];
+            // A stable world bearing reveals turns rather than orbiting with them.
+            // Ground-animal leaps also remain visible against a fixed-height view.
+            var steady=detail&&(v.cameraTracking==='steady'||v.showInteraction);
+            var cameraAltitude=steady&&p.focus!=='owls'&&startingPose?startingPose.altitude:focusPose.altitude;
+            var isolating=v.isolate&&detail;
             var target = soilView?[soilX,soilZ]:detail ? [focusPose.x,focusPose.z] : [0,0];
             var wide = v.cameraMode === 'forest';
-            var targetY = soilView?groundHeight(soilX,soilZ)+0.15:detail ? groundHeight(focusPose.x,focusPose.z)+focusPose.altitude+(p.focus==='caterpillars'?0.08:p.focus==='bluetits'?0.22:p.focus==='voles'?0.2:0.42) : 0.8;
+            var targetY = soilView?groundHeight(soilX,soilZ)+0.15:detail ? groundHeight(focusPose.x,focusPose.z)+cameraAltitude+(p.focus==='caterpillars'?0.08:p.focus==='bluetits'?0.22:p.focus==='voles'?0.2:0.42) : 0.8;
             var distance = v.zoom * (soilView?0.20:detail ? (p.focus==='caterpillars'?0.09:p.focus==='bluetits'?0.13:p.focus==='voles'?0.13:0.20) : wide ? 1.6 : 1) * Math.max(1, (detail ? 0.9 : 1.2) / camera.aspect);
-            var cameraAngle=detail?v.orbit+Math.PI/2+focusPose.yaw:v.orbit;
+            var cameraAngle=detail?(v.showInteraction?v.orbit:v.orbit+Math.PI/2+(steady&&startingPose?startingPose.yaw:focusPose.yaw)):v.orbit;
+            function bodyCenter(id,pose){return groundHeight(pose.x,pose.z)+pose.altitude+(id==='caterpillars'?0.08:id==='bluetits'||id==='voles'?0.2:0.42);}
+            if(pair){
+              var selectedY=bodyCenter(p.focus,focusPose),otherY=bodyCenter(pair.id,pair.other);
+              target=[(focusPose.x+pair.other.x)/2,(focusPose.z+pair.other.z)/2];targetY=(selectedY+otherY)/2;
+              var radius=Math.hypot(focusPose.x-pair.other.x,selectedY-otherY,focusPose.z-pair.other.z)/2+0.95;
+              var verticalHalf=camera.fov*Math.PI/360,horizontalHalf=Math.atan(Math.tan(verticalHalf)*camera.aspect);
+              distance=Math.max(distance,radius/Math.sin(Math.min(verticalHalf,horizontalHalf))*1.2*Math.max(1,v.zoom/19));
+              cameraAngle=v.orbit;
+            }
             camera.position.set(target[0] + Math.sin(cameraAngle) * distance, targetY + distance * (soilView?0.75:detail ? 0.42 : wide ? 0.78 : 0.40), target[1] + Math.cos(cameraAngle) * distance);
             camera.lookAt(target[0], targetY, target[1]); camera.updateProjectionMatrix();
             scene.fog.density=light.fog*(wide?0.014:0.019)/Math.max(1,1/camera.aspect);
+            renderer.domElement.setAttribute('data-interaction-view',String(!!pair));
+            renderer.domElement.setAttribute('data-interaction-cue',pair?pair.id+':'+pair.index:'');
+            camera.updateMatrixWorld(true);
+            renderer.domElement.setAttribute('data-interaction-projection',pair?JSON.stringify([new T.Vector3(focusPose.x,bodyCenter(p.focus,focusPose),focusPose.z).project(camera).toArray(),new T.Vector3(pair.other.x,bodyCenter(pair.id,pair.other),pair.other.z).project(camera).toArray()]):'');
+            renderer.domElement.setAttribute('data-camera-tracking',detail?(steady?'steady':'heading'):'overview');
+            renderer.domElement.setAttribute('data-camera-bearing',String(cameraAngle));
+            renderer.domElement.setAttribute('data-camera-target',JSON.stringify([target[0],targetY,target[1]]));
             renderer.domElement.setAttribute('data-camera-mode', v.cameraMode);
             renderer.domElement.setAttribute('data-selected-species', p.focus);
             renderer.domElement.setAttribute('data-selection-markers',String(v.markers));
             renderer.domElement.setAttribute('data-representative-position',focusPose.x.toFixed(4)+','+focusPose.z.toFixed(4));
+            renderer.domElement.setAttribute('data-behavior',!p.config.enabled[p.focus]||values[p.focus]===0?'Not present':v.reduced&&p.focus!=='plants'?'Starting pose':focusPose.state||'Growing');
+            renderer.domElement.setAttribute('data-isolated-specimen',String(isolating));
+            renderer.domElement.setAttribute('data-hunt-stage',focusPose.huntStage||'none');
+            renderer.domElement.setAttribute('data-representative-index',String(v.representativeIndex));
+            renderer.domElement.setAttribute('data-owl-bank',p.focus==='owls'?focusPose.bank.toFixed(5):'0');
+            renderer.domElement.setAttribute('data-wing-amplitude',p.focus==='owls'?focusPose.wingFlap.toFixed(5):'0');
+            renderer.domElement.setAttribute('data-caterpillar-segments',p.focus==='caterpillars'?'14':'0');
+            renderer.domElement.setAttribute('data-caterpillar-articulation',p.focus==='caterpillars'?JSON.stringify(Array.from({length:14},function(_,index){return ecoMeadowSegmentPose(focusPose,index);})):'' );
+            if(isolating)inspectionScenery.forEach(function(object){object.visible=false;});
+            var path=v.showTrail&&detail&&!v.reduced&&p.result?ecoMeadowTrail(behaviorRef.current[v.branch],p.focus,v.representativeIndex,p.cursor):[];
+            trailGroup.visible=path.length>1;trailSegments.count=0;trailBeads.count=0;
+            var trailRadius=p.focus==='caterpillars'?0.004:p.focus==='bluetits'||p.focus==='voles'?0.009:0.018;
+            function trailPosition(point,target){return target.set(point.x,groundHeight(point.x,point.z)+point.altitude+trailRadius*2,point.z);}
+            path.forEach(function(point,index){
+              trailPosition(point,trailB);
+              var brightness=index/Math.max(1,path.length-1);
+              trailColor.setRGB(0.45+0.55*brightness,0.25+0.63*brightness,0.035+0.30*brightness);
+              if(index>0){
+                trailPosition(path[index-1],trailA);trailDirection.subVectors(trailB,trailA);var length=trailDirection.length();
+                if(length>0.00001){trailDummy.position.copy(trailA).add(trailB).multiplyScalar(0.5);trailDummy.quaternion.setFromUnitVectors(trailUp,trailDirection.normalize());trailDummy.scale.set(trailRadius,length,trailRadius);trailDummy.updateMatrix();trailSegments.setMatrixAt(trailSegments.count,trailDummy.matrix);trailSegments.setColorAt(trailSegments.count++,trailColor);}
+              }
+              if(index%5===0||index===path.length-1){trailDummy.position.copy(trailB);trailDummy.quaternion.identity();trailDummy.scale.setScalar(trailRadius*(index===path.length-1?2.5:1.7));trailDummy.updateMatrix();trailBeads.setMatrixAt(trailBeads.count,trailDummy.matrix);trailBeads.setColorAt(trailBeads.count++,index===path.length-1?trailColor.setRGB(1,0.97,0.77):trailColor);}
+            });
+            trailSegments.instanceMatrix.needsUpdate=true;trailBeads.instanceMatrix.needsUpdate=true;
+            if(trailSegments.instanceColor)trailSegments.instanceColor.needsUpdate=true;if(trailBeads.instanceColor)trailBeads.instanceColor.needsUpdate=true;
+            renderer.domElement.setAttribute('data-movement-trail',String(trailGroup.visible));
+            renderer.domElement.setAttribute('data-trail-samples',String(path.length));
+            renderer.domElement.setAttribute('data-trail-color-capacity',trailSegments.instanceColor.count+':'+trailBeads.instanceColor.count);
+            renderer.domElement.setAttribute('data-trail-range',path.length?path[0].step+':'+path[path.length-1].step:'');
+            renderer.domElement.setAttribute('data-trail-end',path.length?JSON.stringify(path[path.length-1]):'');
             ECO_WEB_SPECIES.forEach(function(sp) {
               var value = values[sp.id], max = groups[sp.id].length;
               var count = p.config.enabled[sp.id] && value > 0 ? Math.min(max, Math.max(1, Math.ceil(value / sp.initial * (sp.id === 'plants' ? 40 : 7)))) : 0;
               groups[sp.id].forEach(function(g, i) {
-                g.visible = i < count;
-                var home=g.userData.home, pose=ecoMeadowPose(sp.id,i,time,v.reduced);
+                g.visible = i < count && !!(!isolating||(sp.id===p.focus&&i===v.representativeIndex)||(pair&&sp.id===pair.id&&i===pair.index));
+                var home=g.userData.home, pose=sp.id==='plants'?ecoMeadowPose(sp.id,i,time,v.reduced):behaviorFrame[sp.id][i];
                 var px=sp.id==='plants'?home[0]:pose.x,pz=sp.id==='plants'?home[1]:pose.z,altitude=sp.id==='plants'?0.025:pose.altitude;
                 g.position.set(px,groundHeight(px,pz)+altitude,pz);
-                g.userData.marker.visible=v.markers && sp.id===p.focus;
-                g.userData.marker.position.y=-altitude+0.035;g.userData.shadow.position.y=-altitude+0.02;
-                if(g.userData.head) g.userData.head.rotation.z=-(sp.id==='foxes'?0.15:0.3)*pose.forage;
-                if(g.userData.legs)g.userData.legs.forEach(function(leg){leg.rotation.z=pose.gait*leg.userData.phase*0.18;});
+                g.userData.marker.visible=(v.markers&&sp.id===p.focus)||!!(pair&&((sp.id===p.focus&&i===v.representativeIndex)||(sp.id===pair.id&&i===pair.index)));
+                g.userData.marker.position.y=-altitude+0.035;g.userData.shadow.position.y=-altitude+(sp.id==='caterpillars'?0.004:0.02);
+                if(g.userData.head){
+                  g.userData.head.rotation.z=-(sp.id==='foxes'?0.15:sp.id==='bluetits'?0.45:0.3)*pose.forage-(pose.pounce||0)*0.24-(pose.rest||0)*0.12;
+                  g.userData.head.rotation.y=pose.headTurn||0;
+                }
+                if(g.userData.legs)g.userData.legs.forEach(function(leg){leg.rotation.z=pose.gait*leg.userData.phase*0.18*(1-(pose.pounce||0))+(pose.pounce||0)*(leg.position.x>0?0.95:-0.75);leg.scale.y=1-0.12*Math.max(pose.crouch||0,(pose.rest||0)*0.65);});
                 if(g.userData.paws)g.userData.paws.forEach(function(paw){paw.rotation.z=pose.gait*paw.userData.phase*0.18;});
                 if(g.userData.body && sp.id==='bluetits')g.userData.body.position.y=Math.abs(pose.gait)*0.06;
-                if(g.userData.body && sp.id==='rabbits')g.userData.body.position.y=Math.abs(pose.gait)*0.045;
+                if(g.userData.body && sp.id==='rabbits')g.userData.body.position.y=Math.abs(pose.gait)*(pose.state==='Retreating'?0.10:0.045);
+                if(g.userData.body&&sp.id==='foxes'){g.userData.body.rotation.z=-(pose.pounce||0)*0.12;g.userData.body.position.y=-0.045*Math.max(pose.crouch||0,(pose.rest||0)*0.65);}
                 if(g.userData.tail)g.userData.tail.rotation.y=v.reduced?0:Math.sin(time*1.1+pose.phase)*0.12;
-                if(g.userData.body && sp.id==='owls')g.userData.body.rotation.x=v.reduced?0:Math.sin(time*0.32+pose.phase)*0.10;
-                if(g.userData.wings)g.userData.wings.forEach(function(wing){wing.rotation.x=wing.userData.side*(v.reduced?0.08:Math.sin(time*3.8+pose.phase)*0.3);});
+                if(g.userData.body && sp.id==='owls')g.userData.body.rotation.x=pose.bank||0;
+                if(g.userData.segments)g.userData.segments.forEach(function(joint,index){var local=ecoMeadowSegmentPose(pose,index),size=g.userData.body.scale.x,localX=joint.userData.homeX+local.x;var surface=groundHeight(px+Math.cos(pose.yaw)*localX*size,pz-Math.sin(pose.yaw)*localX*size);joint.position.set(localX,0.102+local.y+(surface-(g.position.y-altitude))/size,0);joint.rotation.z=local.pitch;joint.scale.x=local.stretch;});
+                if(g.userData.wings)g.userData.wings.forEach(function(wing){wing.rotation.x=wing.userData.side*(v.reduced?0.08:Math.sin(time*3.8+pose.phase)*0.3*(pose.wingFlap==null?1:pose.wingFlap));});
                 g.rotation.y=sp.id==='plants'?g.userData.phase:pose.yaw;
               });
               Object.keys(materialMap).forEach(function(key) { if (key.split(':')[1] === sp.id) materialMap[key].emissive.set(sp.id === p.focus ? '#101b16' : '#000000'); });
               renderer.domElement.setAttribute('data-biomass-' + sp.id, String(value));
               renderer.domElement.setAttribute('data-glyphs-' + sp.id, String(count));
+              renderer.domElement.setAttribute('data-visible-glyphs-'+sp.id,String(groups[sp.id].filter(function(g){return g.visible;}).length));
             });
             renderer.domElement.setAttribute('data-wildlife-detail','textured-coats,layered-feathers,relative-sizes');
             renderer.domElement.setAttribute('data-step', String(p.result ? p.cursor : 0));
@@ -1371,34 +1834,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); }
       };
     }, []);
-    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting]);
+    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting, isolate, representativeIndex, showTrail, showInteraction, cameraTracking]);
     return h('section', { className: 'efw-card efw-stack', 'data-efw-meadow': 'true', 'aria-label': '3D meadow habitat' },
       h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, '3D woodland clearing'), h('strong', { 'data-efw-scene-time': 'true' }, props.result ? (branch === 'baseline' ? 'Baseline' : 'Experiment') + ' · time ' + (props.cursor / 10).toFixed(1) : 'Starting community')),
       h('p', null, 'Explore a meadow clearing within a larger woodland. Select an organism for a close-up, or use Forest overview to see the surrounding landscape.'),
       h('p', { 'data-efw-scene-cover': 'true' }, h('strong', null, 'Refuge cover: ' + (props.result ? props.result[branch][props.cursor].cover : props.config.cover) + '%'), ' · Leafy thickets represent shelter; upright flowering tufts represent food plants.'),
       h('div', { ref: host, className: 'efw-meadow-stage', style: { display: status === 'unavailable' ? 'none' : 'block' } },
-        h('div', { className: 'efw-meadow-overlay', 'data-efw-selection-label': 'true' }, h('span', null, cameraMode==='soil'&&soilSample?'FOREST-FLOOR STUDY':cameraMode === 'detail' ? 'GROUP INSPECTION' : cameraMode === 'forest' ? 'WOODLAND LANDSCAPE' : 'WOODLAND CLEARING'), h('strong', null, cameraMode==='soil'&&soilSample?'Fungi, bacteria & fallen material':(ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0]).name), h('span', null, cameraMode==='soil'&&soilSample?'Decomposers '+ecoWebFormat(soilSample.decomposers)+' · organic matter '+ecoWebFormat(soilSample.detritus)+' · nutrients '+ecoWebFormat(soilSample.nutrients):props.config.enabled[props.focus] ? ecoWebFormat(sample[props.focus]) + ' biomass index' + (sample[props.focus] === 0 ? ' · none present at this time' : markers ? ' · yellow rings mark selection' : ' · representative animals shown') : 'Not included in this community'))),
+        h('div', { className: 'efw-meadow-overlay', 'data-efw-selection-label': 'true' }, h('span', null, cameraMode==='soil'&&soilSample?'FOREST-FLOOR STUDY':cameraMode === 'detail' ? (showInteraction&&interaction&&!reduced?'INTERACTION STUDY':'GROUP INSPECTION') : cameraMode === 'forest' ? 'WOODLAND LANDSCAPE' : 'WOODLAND CLEARING'), h('strong', null, cameraMode==='soil'&&soilSample?'Fungi, bacteria & fallen material':(ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0]).name), h('span', null, cameraMode==='soil'&&soilSample?'Decomposers '+ecoWebFormat(soilSample.decomposers)+' · organic matter '+ecoWebFormat(soilSample.detritus)+' · nutrients '+ecoWebFormat(soilSample.nutrients):props.config.enabled[props.focus] ? ecoWebFormat(sample[props.focus]) + ' biomass index' + (sample[props.focus] === 0 ? ' · none present at this time' : markers ? ' · yellow rings mark selection' : ' · representative animals shown') : 'Not included in this community'),cameraMode==='detail'&&showInteraction&&interaction&&!reduced&&h('span',{'data-efw-interaction-overlay':'true'},'With '+interaction.name+' · representative '+(interaction.index+1)),cameraMode==='detail'&&props.focus!=='plants'&&h('span',{'data-efw-action-overlay':'true'},behaviorLabel+(behaviorLabel==='Not present'?'':' · representative '+(representativeIndex+1)+' of '+representativeCount)))),
+      cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-behavior':'true'},h('strong',null,behaviorLabel), ' · '+(behaviorLabel==='Not present'?'No representative is present at this time. ':isolate?(showInteraction&&interaction&&!reduced?'Selected animal and its behavior cue shown; surroundings simplified. ':'Representative '+(representativeIndex+1)+' of '+representativeCount+' shown; surroundings simplified. '):'Following representative '+(representativeIndex+1)+' of '+representativeCount+' at the selected time. ')+(reduced?'Motion is frozen at the starting pose.':'')),
+      cameraMode==='detail'&&props.focus!=='plants'&&h('small',{'data-efw-camera-tracking-help':'true'},showInteraction?'Interaction framing keeps a steady viewing direction, including moments without a current cue.':cameraTracking==='steady'?'Steady observation follows position without orbiting as the animal turns. Ground-animal leaps rise within the view; owl flight stays centered.':'Follow heading turns the camera with the animal and follows its height. Use Steady observation to judge changes in direction and ground-animal leaps.'),
+      showInteraction&&cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-interaction-caption':'true'},reduced?'Interaction framing is hidden while reduced motion freezes the starting poses.':!interaction?'No current predator or prey cue to frame. Following the selected representative.':h(React.Fragment,null,h('strong',null,focusedSpecies.name+' · representative '+(representativeIndex+1)), ' and '+interaction.name+' · representative '+(interaction.index+1)+'. Rings identify the pair. '+(isolate?'Isolation keeps these two animals visible. ':'')+'Positions show the selected sample; the behavior decision used the preceding positions. This view does not indicate a capture.')),
+      showTrail&&cameraMode==='detail'&&props.focus!=='plants'&&h('small',{'data-efw-trail-caption':'true'},reduced?'Recent path is hidden while reduced motion freezes the animal at its starting pose.':!props.result?'Run a comparison to trace this representative’s recent movement.':trailPoints.length<2?'Recent path needs two consecutive samples with this representative present.':'Recent path · time '+(trailPoints[0].step/10).toFixed(1)+' to '+(props.cursor/10).toFixed(1)+'. Gold beads follow the past 3 time units at most; the pale endpoint marks the selected position. Height follows the animal’s sampled flight or leap. This is an illustrative path, not measured field tracking.'),
+      cameraMode==='detail'&&props.focus!=='plants'&&h('div',{className:'efw-result efw-stack','data-efw-behavior-moments':'true',role:'group','aria-label':'Behavior moments'},
+        h('strong',null,'Behavior moments'),
+        !props.result?h('p',null,'Run a food-web comparison to jump between this representative’s actions.'):currentMoment&&h(React.Fragment,null,
+          h('small',null,focusedSpecies.name+' · representative '+(representativeIndex+1)+' · '+(branch==='baseline'?'Baseline':'Experiment')),
+          h('p',{'data-efw-moment-state':'true'},h('strong',null,currentMoment.state),' · sampled from time '+(currentMoment.start/10).toFixed(1)+' to '+(currentMoment.end/10).toFixed(1)),
+          h('details',{'data-efw-action-reason':'true'},h('summary',null,'Why this action?'),
+            h('p',{'data-efw-action-explanation':'true'},behaviorExplanation.text),
+            (behaviorExplanation.cue||showInteraction)&&h('button',{type:'button','aria-pressed':showInteraction,onClick:function(){setShowInteraction(!showInteraction);}},'Show behavior interaction'),
+            behaviorExplanation.cue&&h('button',{type:'button',onClick:inspectBehaviorCue},'Inspect cue: '+behaviorExplanation.cue.name),
+            h('small',{style:{display:'block',marginTop:8}},'Decision cues explain the representative animation at the selected time.')),
+          h('div',{className:'efw-row'},
+            h('button',{type:'button',className:'efw-moment-nav',disabled:momentIndex<=0,onClick:function(){goToBehaviorMoment(momentIndex-1);}},'Previous behavior'),
+            h('label',{style:{flex:'1 1 200px',minWidth:0}},'Jump to behavior',h('select',{'aria-label':'Jump to behavior',value:momentIndex,style:{width:'100%',minWidth:0,maxWidth:'100%'},onChange:function(e){goToBehaviorMoment(Number(e.target.value));}},behaviorMoments.map(function(moment,index){return h('option',{key:moment.start,value:index},(moment.start/10).toFixed(1)+' · '+moment.state);}))),
+            h('button',{type:'button',className:'efw-moment-nav',disabled:momentIndex>=behaviorMoments.length-1,onClick:function(){goToBehaviorMoment(momentIndex+1);}},'Next behavior')),
+          h('div',{className:'efw-row'},
+            h('button',{type:'button',className:'efw-moment-nav',disabled:reduced||status!=='ready'||!currentMoment.active,onClick:replay&&replay.status==='playing'?pauseBehaviorReplay:replayBehavior},replay&&replay.status==='playing'?'Pause behavior replay':'Replay this behavior'),
+            h('small',{'data-efw-replay-help':'true'},reduced?'Replay is off with reduced motion. Use behavior jumps to inspect still samples.':status!=='ready'?'Replay needs a working 3D view. Behavior jumps remain available.':!currentMoment.active?'No representative is present during this moment.':'Plays this behavior once, then pauses at its last sample.')),
+          replay&&h('small',{role:'status','aria-live':'polite','data-efw-replay-status':'true'},replay.status==='complete'?'Replay finished at time '+(replay.end/10).toFixed(1)+'.':replay.status==='paused'?'Replay paused at time '+(props.cursor/10).toFixed(1)+'.':'Replaying '+replay.state+' from time '+(replay.start/10).toFixed(1)+' to '+(replay.end/10).toFixed(1)+'.'),
+          h('small',{'data-efw-moment-help':'true'},reduced?'Action text follows the selected time; the 3D pose stays frozen.':'Jumping to a behavior pauses playback at its first sampled moment.'),
+          h('small',null,'These are simulated representative actions. Explore another representative for a different sequence.'))),
       status === 'loading' && h('p', { role: 'status' }, 'Loading the 3D meadow…'),
       status === 'unavailable' && h('div', { role: 'status', className: 'efw-result' }, '3D is unavailable on this device. The food-web diagram, species values, and comparison remain available below.'),
       status === 'ready' && h('div', { className: 'efw-row' },
         h('label', null, 'Lighting', h('select', { 'aria-label':'Woodland lighting', value:lighting, onChange:function(e){setLighting(e.target.value);} }, h('option',{value:'daylight'},'Daylight'),h('option',{value:'golden'},'Golden hour'),h('option',{value:'overcast'},'Overcast'))),
+        cameraMode==='detail'&&props.focus!=='plants'&&h('label',null,'Representative animal',h('select',{'aria-label':'Representative animal',value:representativeIndex,disabled:representativeCount<2,onChange:function(e){setRepresentative({id:props.focus,index:Number(e.target.value)});}},Array.from({length:Math.max(1,representativeCount)},function(_,index){return h('option',{key:index,value:index},representativeCount?'Representative '+(index+1)+' of '+representativeCount:'None present');}))),
+        cameraMode==='detail'&&props.focus!=='plants'&&h('label',null,'Camera tracking',h('select',{'aria-label':'Animal camera tracking',value:cameraTracking,disabled:showInteraction,onChange:function(e){setCameraTracking(e.target.value);}},h('option',{value:'steady'},'Steady observation'),h('option',{value:'heading'},'Follow animal heading'))),
         h('button', { type: 'button', 'aria-pressed': cameraMode === 'habitat', onClick: function() { setCameraMode('habitat'); } }, 'Habitat view'),
         soilSample&&h('button',{type:'button','aria-pressed':cameraMode==='soil',onClick:function(){setCameraMode('soil');}},'Inspect forest floor'),
         h('button', { type: 'button', 'aria-pressed': cameraMode === 'forest', onClick: function() { setCameraMode('forest'); } }, 'Forest overview'),
         h('button', { type:'button', 'aria-pressed':markers, onClick:function(){setMarkers(!markers);} }, 'Selection markers'),
         h('button', { type: 'button', 'aria-pressed': cameraMode === 'detail', onClick: function() { setCameraMode('detail'); } }, 'Inspect selected group'),
+        cameraMode==='detail'&&props.focus!=='plants'&&h('button',{type:'button','aria-pressed':isolate,onClick:function(){setIsolate(!isolate);}},'Isolate specimen'),
+        cameraMode==='detail'&&props.focus!=='plants'&&h('button',{type:'button','aria-pressed':showTrail,onClick:function(){setShowTrail(!showTrail);}},'Recent movement trail'),
         h('button', { type: 'button', onClick: function() { setOrbit(orbit - Math.PI / 6); } }, 'Rotate left'),
         h('button', { type: 'button', onClick: function() { setOrbit(orbit + Math.PI / 6); } }, 'Rotate right'),
-        h('button', { type: 'button', onClick: function() { setOrbit(0.65); setZoom(19); setCameraMode('habitat'); } }, 'Reset camera'),
+        h('button', { type: 'button', onClick: function() { setOrbit(0.65); setZoom(19); setCameraMode('habitat');setIsolate(false);setShowTrail(false);setShowInteraction(false);setCameraTracking('steady');setRepresentative({id:props.focus,index:0}); } }, 'Reset camera'),
         h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 15, max: 30, value: zoom, 'aria-label': 'Meadow camera distance', onChange: function(e) { setZoom(Number(e.target.value)); } }))),
       h('div', { className: 'efw-meadow-species', role: 'group', 'aria-label': 'Meadow species selection' }, ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||props.config.enabled[sp.id];}).map(function(sp) { return h('button', { type: 'button', key: sp.id, 'aria-pressed': props.focus === sp.id, onClick: function() { props.onFocus(sp.id); } }, sp.icon + ' ' + sp.name, h('strong', { style: { display: 'block' } }, props.config.enabled[sp.id] ? ecoWebFormat(sample[sp.id]) + ' biomass' : 'Not included')); })),
       props.result && h('div', { className: 'efw-row' },
         h('label', null, 'Scene data', h('select', { 'aria-label': 'Meadow scene data', value: branch, onChange: function(e) { setBranch(e.target.value); } }, h('option', { value: 'experiment' }, 'Experiment'), h('option', { value: 'baseline' }, 'Baseline'))),
-        !reduced && status === 'ready' && h('button', { type: 'button', onClick: function() { if (!playing && props.cursor === 240) props.onCursor(0); setPlaying(!playing); } }, playing ? 'Pause meadow timeline' : 'Play meadow timeline'),
+        !reduced && status === 'ready' && h('button', { type: 'button', onClick: function() { replaySession.current=null;setReplay(null);if (!playing && props.cursor === 240) props.onCursor(0); setPlaying(!playing); } }, playing ? 'Pause meadow timeline' : 'Play meadow timeline'),
         h('label', { style: { flex: '1 1 240px' } }, 'Inspect time: ' + (props.cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: props.cursor, 'aria-label': 'Meadow timeline', onChange: function(e) { setPlaying(false); props.onCursor(Number(e.target.value)); } }))),
+      h('details',{'data-efw-behavior-guide':'true'},h('summary',null,'About animal behavior'),
+        h('p',null,'Foxes alternate searching, listening, stalking, resting and short pounce attempts. A pounce includes preparation, a committed leap and recovery. A fox can abandon preparation if nearby prey disappears; once airborne it completes the landing. Rabbits and voles pause to feed or scan and retreat when a displayed predator approaches. Blue tits hop, peck and preen; caterpillars alternate crawling and feeding with articulated body segments; owls bank into their turns and ease between slow wingbeats and gliding while quartering over nearby prey.'),
+        h('p',null,'These are deterministic representative animations driven by nearby displayed organisms and food availability. Feeding dips and head turns ease between poses. Rewinding restores the same behavior. Use Representative animal to follow different displayed animals. Behavior moments jumps between that representative’s sampled actions in the selected comparison branch; it pauses playback and keeps the population charts at the same selected time. Replay this behavior plays only the selected action and stops at its last sample; a single-sample action is shown as a still. Scrubbing, changing the selected animal or branch, leaving inspection, and reduced motion stop an active replay. Why this action? explains the recorded inputs behind the sampled action. Inspect cue follows the displayed predator or prey used in that decision without changing time. Decisions use positions from the preceding pose sample and the current sample’s available groups. These capped symbols are not individual population counts. Show behavior interaction frames the selected animal together with the predator or prey behind its current cue, at their selected-time positions. In this view, isolation retains both animals. Otherwise, Isolate specimen hides other representatives and nearby scenery only for inspection; it does not remove predators from the behavior calculation.'),
+        h('p',null,'A pounce does not show a confirmed capture. The biomass model controls feeding and population changes separately. The motion layer uses illustrative distances and time units, local spacing and approximate obstacle avoidance. It does not model individual hunger, learning, reproduction, day/night activity, burrows or full habitat navigation. Reduced motion freezes poses at the starting scene while the numeric samples still change.'),
+        h('p',null,'The caterpillar shows a generic form with three pairs of true legs and five pairs of prolegs; some caterpillars have fewer prolegs. Its crawling wave is illustrative, not a measured gait. Anatomy reference: ',h('a',{href:'https://ipm.ucanr.edu/home-and-landscape/distinguishing-caterpillar-like-larvae/',target:'_blank',rel:'noopener noreferrer'},'UC IPM: caterpillar legs'),'.'),
+        h('p',null,'Behavior references: ',h('a',{href:'https://www.nps.gov/bith/learn/nature/red-fox.htm',target:'_blank',rel:'noopener noreferrer'},'NPS: fox hearing and hunting'),'; ',h('a',{href:'https://www.allaboutbirds.org/guide/American_Barn_Owl/lifehistory',target:'_blank',rel:'noopener noreferrer'},'Cornell Lab: barn owl flight and hunting'),'.')),
       soilSample&&h('p',{'data-efw-soil-scene-caption':'true'},'Forest-floor study: leaf litter represents organic matter; mushrooms and pale fungal threads symbolize the combined fungi-and-bacteria biomass. These are capped visual indicators, not mushroom counts or a map of real soil microbes. Use Inspect forest floor to find the patch.'),
       reduced && h('small', null, 'Reduced motion is on. Use the timeline to inspect still scenes.'),
-      h('small', null, 'Organism symbols show approximate, capped abundance—not individual animal counts. A tiny positive biomass keeps one symbol; zero has none. Read the values for exact comparisons. Lighting changes appearance only; it does not set model time or weather. The cover percentage reduces predator access to herbivores in the model. Ground cover, ferns, surrounding trees and fungi outside the soil study patch are scenery for this meadow food-web model. Close-up mode follows one representative animal; its walking pauses, flight, and feeding poses are illustrative. Animal sizes are adjusted for visibility and are not a measurement scale. Thicket positions, animal movement, trees, and rocks are illustrative; individual animals do not navigate or hide in specific patches.'));
+      h('small', null, 'Organism symbols show approximate, capped abundance—not individual animal counts. A tiny positive biomass keeps one symbol; zero has none. Read the values for exact comparisons. Lighting changes appearance only; it does not set model time or weather. The cover percentage reduces predator access to herbivores in the model. Ground cover, ferns, surrounding trees and fungi outside the soil study patch are scenery for this meadow food-web model. Close-up mode follows one representative animal. Steady observation holds its viewing direction and reveals ground-animal leaps; Follow animal heading rotates with the animal. Use Isolate specimen for an unobstructed view; full community values remain available. Behavior states are illustrative; see About animal behavior. Animal sizes are adjusted for visibility and are not a measurement scale. Thicket positions, trees and rocks are illustrative. Motion uses local steering around a few props; animals do not occupy burrows or specific refuge patches.'));
   }
 
 
@@ -1660,7 +2157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         .theme-contrast .efw{--fw-bg:#000;--fw-panel:#000;--fw-ink:#fff;--fw-muted:#fff;--fw-line:#fff;--fw-tint:#172b3a;--fw-accent:#ffff00}
         .efw h3{font-size:19px;font-weight:800;margin:0}.efw h4{font-size:16px;font-weight:750;margin:0}.efw p{margin:5px 0}.efw small{font-size:12px;color:var(--fw-muted)}
         .efw button,.efw select,.efw input[type=number],.efw textarea{border:1px solid var(--fw-line);border-radius:8px;color:var(--fw-ink);background:var(--fw-panel);padding:8px 10px;font:inherit;min-height:42px;max-width:100%}
-        .efw button{cursor:pointer;font-weight:650}.efw button:disabled{cursor:default}.efw .efw-primary{background:#155e75;color:#fff;border-color:#155e75}.efw :is(button,input,select,textarea):focus-visible{outline:3px solid var(--fw-accent);outline-offset:3px}
+        .efw button{cursor:pointer;font-weight:650}.efw button:disabled{cursor:default}.efw .efw-moment-nav:disabled{opacity:.55;border-style:dashed}.efw .efw-primary{background:#155e75;color:#fff;border-color:#155e75}.efw :is(button,input,select,textarea):focus-visible{outline:3px solid var(--fw-accent);outline-offset:3px}
         .efw-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}.efw-card{background:var(--fw-panel);border:1px solid var(--fw-line);border-radius:12px;padding:16px;min-width:0}.efw-stack{display:grid;gap:12px}.efw-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.efw-row>*{min-width:0}.efw-species{display:grid;grid-template-columns:minmax(0,1fr) 86px;gap:8px;align-items:center}.efw label{display:block;font-weight:600}.efw input[type=checkbox]{width:18px;height:18px;vertical-align:middle;margin-right:8px;accent-color:#155e75}.efw input[type=range]{width:100%;accent-color:#155e75;min-height:28px}.efw textarea{width:100%;min-height:80px}.efw textarea::placeholder{color:var(--fw-muted);opacity:1}.efw .efw-node:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.efw select{width:100%}
         .efw-soil-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}.efw-soil-pool{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0;display:grid;gap:10px}.efw-soil-pool h5{font-size:17px;margin:0}.efw-soil-pool p{font-size:13px;margin:0}.efw-soil-values{display:grid;gap:7px;font-variant-numeric:tabular-nums}.efw-soil-values>span{display:flex;justify-content:space-between;gap:12px}.efw-soil-values strong{font-size:20px}.efw-soil-loop{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.efw-soil-loop li{background:#142f2b;color:#ecfdf5;border:1px solid #5c9284;border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px;font-size:14px}.efw-soil-loop span{color:#a7f3d0;font-size:11px;font-weight:700}.efw-soil-setup{display:grid;gap:12px;min-width:0;padding:12px;border:1px solid var(--fw-line);border-radius:8px}.efw-soil-setup legend{font-weight:700;padding:0 5px}
         .efw-notebook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}.efw-note{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0}.efw-note-prose{white-space:pre-wrap;overflow-wrap:anywhere}.efw-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}.efw .efw-overview-group{display:grid;gap:8px;min-width:0;text-align:left;font-weight:400;padding:10px}.efw .efw-overview-group[aria-pressed=true]{border:2px solid var(--fw-accent);box-shadow:0 0 0 1px var(--fw-accent)}.efw-overview-name{font-weight:750}.efw-overview-plot{width:100%;display:block;background:#0f172a;border-radius:8px}.efw-overview-values{display:grid;gap:3px;font-size:12px;font-variant-numeric:tabular-nums}.efw-overview-values>span{display:flex;justify-content:space-between;gap:8px}.efw-overview-delta{border-top:1px solid var(--fw-line);padding-top:6px;font-size:13px;font-weight:700}.efw-overview-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--fw-muted)}.efw-meadow-stage{position:relative;height:510px;min-width:0;background:radial-gradient(ellipse at 45% 25%,#426575 0%,#203b4a 48%,#122538 100%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-meadow-overlay{position:absolute;z-index:1;top:14px;left:14px;max-width:calc(100% - 28px);display:grid;gap:3px;padding:10px 14px;background:#102331;color:#f8fafc;border:1px solid #7895a1;border-radius:9px;pointer-events:none;font-size:12px;line-height:1.4}.efw-meadow-overlay strong{font-size:17px}.efw-meadow-overlay>span:first-child{font-size:10px;letter-spacing:1.5px;color:#c3d9e1}.efw-meadow-stage canvas{width:100%;height:100%;display:block;cursor:pointer}.efw-meadow-species{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.efw-meadow-species button[aria-pressed=true]{outline:3px solid var(--fw-accent);outline-offset:1px}.efw-network{position:relative;height:382px;background:radial-gradient(ellipse at 50% 100%,#164e3c,#0f172a 75%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-network>svg{position:absolute;inset:0;width:100%;height:100%}.efw button.efw-node{position:absolute;transform:translate(-50%,-50%);width:142px;min-height:86px;background:#172b3a;color:#f8fafc;border:2px solid #94a3b8;display:grid;gap:0;padding:5px;font-size:13px;line-height:1.3;text-align:center}.efw button.efw-node[aria-pressed=true]{border-color:#fff;box-shadow:0 0 0 3px #67e8f9}.efw-node strong{font-size:18px;font-variant-numeric:tabular-nums}.efw-node small{color:#cbd5e1;font-size:11px}.efw-network-caption{color:var(--fw-muted);font-size:12px}.efw-chart{width:100%;display:block;background:#0f172a;border-radius:10px}.efw-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px}.efw-legend span:before{content:'';display:inline-block;width:24px;border-top:3px solid var(--fw-accent);vertical-align:middle;margin-right:6px}.efw-legend span:first-child:before{border-top-style:dashed;border-color:var(--fw-muted)}

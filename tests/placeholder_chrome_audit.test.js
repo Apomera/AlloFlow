@@ -17,8 +17,10 @@ const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf
 const s = src.indexOf('var _PLACEHOLDER_HANDLER_SIG =');
 const e = src.indexOf('\n// Sanitize an AI-parsed', s);
 if (s === -1 || e === -1) throw new Error('extraction markers for placeholder helpers missing');
+const controlStart = src.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
+const controlEnd = src.indexOf('function _alloSanitizeRemediationHtml', controlStart);
 const { _repairLeakedImagePlaceholders, _stripChromeForAudit } =
-  new Function(src.slice(s, e) + '\n; return { _repairLeakedImagePlaceholders, _stripChromeForAudit };')();
+  new Function(src.slice(controlStart, controlEnd) + src.slice(s, e) + '\n; return { _repairLeakedImagePlaceholders, _stripChromeForAudit };')();
 
 const wrap = (b) => `<!DOCTYPE html><html lang="en"><body><main>${b}</main></body></html>`;
 const parse = (h) => new DOMParser().parseFromString(h, 'text/html');

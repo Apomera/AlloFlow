@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "theme_development_grade8",
+    "key": "key",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. An old brass house key on a worn wooden kitchen table next to a plain closed moving box; through a nearby window an ordinary small-town street is softly suggested. No people. Quiet editorial drypoint etching with muted indigo and ochre watercolor washes, contemplative, strong legible shapes. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "A brass house key rests on a wooden table beside a closed moving box.",
+    "caption": "In the invented practice story, a returning character still carries an old key. Its meaning depends on its repeated use and the character’s choices; a key is not automatically a symbol of belonging.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-2e828f86-1e97-4ab4-8f04-d2d21c479634.png",
+    "file": "source-key.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  },
+  {
+    "slug": "theme_development_grade8",
+    "key": "door",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. An open house doorway seen from inside, an old small suitcase resting on the threshold and a warmly lit path continuing outside. No people. Editorial drypoint etching with muted indigo and ochre watercolor washes. Ambiguous but inviting, simple legible composition. No text. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "A suitcase rests at an open doorway, with a path visible outside.",
+    "caption": "A threshold can support discussion of leaving or returning. It does not prove a theme by itself; connect the story’s beginning, choices and ending.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-e28718e3-ded3-44a8-8d02-984b1f6adfc4.png",
+    "file": "source-door.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  }
+]

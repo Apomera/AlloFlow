@@ -146,7 +146,7 @@ describe('archive UI wiring (source pins)', () => {
     expect((viewSource.match(/className="fixed inset-0 z-\[80\]/g) || []).length).toBe(2);
     expect(viewSource).not.toContain('className="absolute inset-0 z-[80]');
     // The header toolbar overflowed the modal edge before it learned to wrap.
-    expect(viewSource).toContain('className="flex flex-wrap items-center justify-end gap-2 min-w-0"');
+    expect(viewSource).toContain('className="w-full xl:w-auto xl:flex-1 flex flex-wrap items-center justify-start xl:justify-end gap-2 min-w-0"');
   });
 
   it('archive rows surface language and the question-craft tally when present', () => {

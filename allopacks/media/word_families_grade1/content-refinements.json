@@ -1,0 +1,188 @@
+[
+  {
+    "resourceId": "wf-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nIf you can read the word cat, you can already read six more words. You just do not know it yet.\n\n1. Read **Learn One, Read Many** with a grown-up or a partner.\n2. Learn the words in **Sound Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **Families to Know** chart.\n4. Sort the cards in **Same Family or Not?**\n5. Take **Word Check** — say every word out loud.\n6. Lock it in with **Remember the Swap**.\n7. Read **Word Questions Kids Ask**.\n8. Finish with **Design: A Family Flip Book**.\n\nYour job this week: find two words that rhyme in a book, and say them to somebody. 🔤\n\nPicture panels: Read the words; Starts and endings; More word families; Blends and patterns. Pictures support the lesson text and do not replace decoding or evidence from narration. Key lesson word-part examples have native editable labels; other schematic marks illustrate organization. Read sort statements in their supplied context. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nKnowing cat can help you learn related words. Keep practicing the letter sounds and blend through each new word.\n\n1. Read **Learn One, Read Many** with a grown-up or a partner.\n2. Learn the words in **Sound Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **Families to Know** chart.\n4. Sort the cards in **Same Family or Not?**\n5. Take **Word Check** — practice reading each word with appropriate support.\n6. Lock it in with **Remember the Swap**.\n7. Read **Word Questions Kids Ask**.\n8. Finish with **Design: A Family Flip Book**.\n\nYour job this week: find two words that rhyme in a book, and say them to somebody. 🔤\n\nPicture panels: Read the words; Starts and endings; More word families; Blends and patterns. Pictures support the lesson text and do not replace decoding or evidence from narration. Key lesson word-part examples have native editable labels; other schematic marks illustrate organization. Read sort statements in their supplied context. Educator review is pending.\n\nRead the printed words before using their pictures as meaning checks. Speech, AAC, writing and supported pointing can be used as appropriate; ask for phonological-access supports. Key blank-tile lesson examples include editable letter labels. Check and adapt those labels before independent decoding practice."
+  },
+  {
+    "resourceId": "wf-reading",
+    "path": "data",
+    "from": "## Learn One, Read Many\n\nSay this **word**: cat.\n\nNow keep the ending and swap the front. Hat. Bat. Mat. Sat. Rat. Pat.\n\nYou just read six new words. You did not learn six new words. You learned one **chunk**, and then you swapped the **start**.\n\nThat is a word **family**. All the words end with the same **letters** and the same **sound**.\n\nHere is another one. Hop. Mop. Top. Pop. Same ending, new front each time.\n\nSome fronts have two letters that you say fast together. That is a **blend**. Stop. Chop. Shop. Those are in the same family too.\n\nWhen words end the same way, they **rhyme**. So a family is a group of words that rhyme.\n\nEvery family has a **vowel** in it. The vowels are a, e, i, o and u. The vowel sits in the middle and gives the chunk its sound.\n\nWord families are a **pattern**. Once you spot the pattern, reading gets faster, because you stop sounding out every letter.\n\nBut here is something true and a bit annoying. Not every word that rhymes looks the same. Say some and hum. They rhyme. They do not match at all. English does that sometimes.\n\nSo use your eyes and your ears. Look for the chunk. Then listen to check.",
+    "to": "## Learn One, Read Many\n\nRead this **word** with support: cat. Match each letter to its sound and blend. Now try hat, bat, mat, sat, rat and pat.\n\nThe ending **chunk** at stays the same. The **start** changes. These words belong to a spelling **family**: they share ending **letters** and ending **sounds**.\n\nTry hop, mop, top and pop. Their shared ending is op.\n\nIn stop, st is a consonant **blend**: you hear /s/ and /t/. In flat, you hear /f/ and /l/. In shop and chop, sh and ch are different: each pair spells one consonant sound. That pair is called a digraph. Shop, chop and stop share the op ending.\n\nWords **rhyme** when their ending sounds match from the vowel onward, as in cat and hat. The **vowel** letters a, e, i, o and u can spell vowel sounds; y sometimes does too. In cat, a is in the middle, but vowel letters are not always in the middle of a written word.\n\nA spelling **pattern** is useful, but check the whole word. Some and hum rhyme in the pronunciation used here even though their endings are spelled differently. Pronunciation can vary across accents.\n\nLook at the letters, use the sound patterns you have learned and blend. Pictures help explain meanings; they do not replace reading the word. Your teacher can provide spoken models or other communication supports."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.0.def",
+    "from": "Letters put together to mean something.",
+    "to": "A unit of language with meaning, which can be spoken, signed or written."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.1.def",
+    "from": "One of the signs we use to write.",
+    "to": "A written symbol used in an alphabet."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.2.def",
+    "from": "What you hear when you say a letter.",
+    "to": "Here, a speech sound in a spoken word; a letter or letter group can represent it."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.3.def",
+    "from": "A part of a word you say all at once.",
+    "to": "Here, the vowel and following sounds and letters at the end of a short word."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.4.def",
+    "from": "The bit at the front of a word.",
+    "to": "The beginning part of a word, before the ending chunk in this lesson."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.5.def",
+    "from": "A group of words that end the same way.",
+    "to": "Here, words with the same written ending and matching ending sounds."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.6.def",
+    "from": "Words that end with the same sound.",
+    "to": "Matching ending sounds from the vowel onward, as in cat and hat."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.7.def",
+    "from": "One of these five: a, e, i, o, u.",
+    "to": "A vowel sound, or a letter that represents one; a, e, i, o, u and sometimes y."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.8.def",
+    "from": "Two letters said fast together, like st.",
+    "to": "Two or more consonant sounds together, each still heard, as in st in stop."
+  },
+  {
+    "resourceId": "wf-glossary",
+    "path": "data.9.def",
+    "from": "Something that happens again and again.",
+    "to": "A repeated arrangement, such as a shared spelling ending."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Now keep the ending and swap the front. You learned one chunk, and then you swapped the start. Say some and hum. They rhyme. They do not match at all.",
+    "to": "The ending chunk at stays the same. The start changes. Some and hum rhyme in the pronunciation used here even though their endings are spelled differently."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Words in a family end with the same letters.",
+    "to": "In these spelling families, words share ending letters and ending sounds."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Learning one chunk lets you read many words.",
+    "to": "A familiar ending helps when you blend the sounds in a new word."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.0.studentPrompt",
+    "from": "Show me a swap with your own hands.",
+    "to": "Show a swap with cards, pointing, gestures or your preferred support."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "You just read six new words. You did not learn six new words.",
+    "to": "The shared ending can help you read new words."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Point to your eyes, then to your ears. Eyes first: does the end look the same? Ears second: does the end sound the same? Two checks, in that order.",
+    "to": "Compare the written endings and the modeled sounds. Ask for a spoken model or another phonological support that suits your access needs. Check whether the ending letters and sounds match."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.1.mapping",
+    "from": "Pointing at your eyes and then your ears puts the two checks in order and reminds you that one is not enough on its own.",
+    "to": "Spelling and sound are related but not identical. Use accessible supports for both checks."
+  },
+  {
+    "resourceId": "wf-memory",
+    "path": "data.cards.1.hookFact.text",
+    "from": "Say some and hum. They rhyme. They do not match at all.",
+    "to": "Say some and hum. They rhyme. Their endings have different spellings."
+  },
+  {
+    "resourceId": "wf-quiz",
+    "path": "meta",
+    "from": "5 picks + 2 tell-me • say every word out loud",
+    "to": "5 picks + 2 tell-me • practice reading each word with appropriate support"
+  },
+  {
+    "resourceId": "wf-faq",
+    "path": "data.0.answer",
+    "from": "English came from lots of languages. The spellings came along too. So a few words look odd. You learn those by heart.",
+    "to": "English spelling reflects sound patterns and word history. Learn the parts that follow a pattern and pay special attention to an unexpected part. Ask for help with unfamiliar words."
+  },
+  {
+    "resourceId": "wf-faq",
+    "path": "data.1.answer",
+    "from": "Lots. But a few dozen cover most short words. Learn those and a whole shelf of books opens up.",
+    "to": "There are many useful spelling families. Learn a few at a time alongside letter-sound patterns and practice reading whole words."
+  },
+  {
+    "resourceId": "wf-faq",
+    "path": "data.3.answer",
+    "from": "Say both words slowly, one after the other. Then say just the ends. It gets easier with practice.",
+    "to": "Ask your teacher for a clear model and support suited to how you communicate. You can compare written endings with guidance; hearing and speaking tasks may need adaptations."
+  },
+  {
+    "resourceId": "wf-faq",
+    "path": "data.5.answer",
+    "from": "They can. In shop, the s and h make one sound together. In chop, the c and h do the same.",
+    "to": "Yes. Sh in shop and ch in chop each spell one consonant sound; these are digraphs. St in stop is a blend because /s/ and /t/ are both heard."
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "Words in a family end with the same letters.",
+    "to": "In these spelling families, words share ending letters and ending sounds."
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "Some fronts are blends, like st or ch.",
+    "to": "Some starts are blends, like st or fl; ch and sh are digraphs, with two letters spelling one sound."
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.brief.criteria.3",
+    "from": "Your partner can read every page out loud",
+    "to": "Your partner can demonstrate reading each page with appropriate communication support"
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A student picked the ending og and kept making words that were not real.",
+    "to": "A student chose op and checked both the spelling and meaning of each new word."
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "He tried every letter in order and said each one out loud to his partner. They kept dog, log, fog, jog and hog, and put the rest aside.",
+    "to": "She chose op, tried different starts and checked meanings with her partner and teacher. They kept hop, mop, top, pop and stop. Stop includes the blend st. They set aside unrecognized combinations until they could check whether they were words."
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "Saying each one out loud to somebody caught the made-up ones fast.",
+    "to": "The example meets the five-word and blend requirements. Not recognizing a word does not prove it is made up; check with a teacher or suitable dictionary."
+  }
+]

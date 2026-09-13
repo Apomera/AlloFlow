@@ -84,7 +84,8 @@ describe('history keeps rendered corner shading current', () => {
       const helperEnd = source.indexOf('  window.StemLab.GeometryWorldVertexAo', helperStart);
       const vertexAo = new Function(source.slice(helperStart, helperEnd) + '\nreturn geometryWorldVertexAo;')();
       const aoStart = source.indexOf('        var _aoSeeThrough');
-      const aoEnd = source.indexOf('        // Block operations', aoStart);
+      // End at the AO refresh function, not a later unrelated installer.
+      const aoEnd = source.indexOf('\n        };', source.indexOf('        engine.refreshAllAO = function()', aoStart)) + '\n        };'.length;
       const historyStart = source.indexOf('        var MAX_UNDO = 200;');
       const historyEnd = source.indexOf('        // ── Ambient occlusion', historyStart);
       new Function('engine', 'THREE', 'geometryWorldVertexAo', 'upd',

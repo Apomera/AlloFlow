@@ -78,7 +78,7 @@ describe('Anatomy myth or fact', () => {
     expect(box.textContent).toMatch(/Many people think: .The heart sits on the left side of the chest\./);
     expect(box.textContent).toMatch(/Actually: The heart sits almost in the middle/);
 
-    const young = render(filePath, { _activeTab: 'explore', selectedStructure: 'heart' });
+    const young = render(filePath, { _activeTab: 'explore', selectedStructure: 'heart', complexity: 1 });
     expect(young.querySelector('[data-anatomy-myth-buster="heart"]').textContent).toMatch(/Your heart is almost in the middle of your chest/);
 
     const none = render(filePath, { _activeTab: 'explore', selectedStructure: 'aorta' }, OLDER);

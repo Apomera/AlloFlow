@@ -1,0 +1,272 @@
+[
+  {
+    "id": "stx-term-1",
+    "kind": "term",
+    "file": "stx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open blank book contains three connected story boxes.",
+    "altHash": "img-cb7-32bb0716"
+  },
+  {
+    "id": "stx-term-2",
+    "kind": "term",
+    "file": "stx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right; the first box is gold.",
+    "altHash": "img-4uv-01c40af9"
+  },
+  {
+    "id": "stx-term-3",
+    "kind": "term",
+    "file": "stx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right; the middle box is gold.",
+    "altHash": "img-4wn-aac03a3b"
+  },
+  {
+    "id": "stx-term-4",
+    "kind": "term",
+    "file": "stx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right; the last box is gold.",
+    "altHash": "img-4vn-8d0cee93"
+  },
+  {
+    "id": "stx-term-5",
+    "kind": "term",
+    "file": "stx-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A golden puppy sits inside a home doorway beside a teal pet bed.",
+    "altHash": "img-pzv-52bd9f02"
+  },
+  {
+    "id": "stx-term-6",
+    "kind": "term",
+    "file": "stx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small house stands under a bright sun.",
+    "altHash": "img-9oz-09b1d4f1"
+  },
+  {
+    "id": "stx-term-7",
+    "kind": "term",
+    "file": "stx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A purple shoe has bite-shaped gaps along its upper edge.",
+    "altHash": "img-8xb-2db88b90"
+  },
+  {
+    "id": "stx-term-8",
+    "kind": "term",
+    "file": "stx-term-8.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A golden puppy chews a teal rope toy while purple shoes rest on a shelf.",
+    "altHash": "img-ljj-0342fc32"
+  },
+  {
+    "id": "stx-term-9",
+    "kind": "term",
+    "file": "stx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right.",
+    "altHash": "img-4wf-74f7516b"
+  },
+  {
+    "id": "stx-term-10",
+    "kind": "term",
+    "file": "stx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right.",
+    "altHash": "img-4wf-74f7516b"
+  },
+  {
+    "id": "stx-anchor-1",
+    "kind": "anchor",
+    "file": "stx-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A golden puppy sits inside a home doorway beside a teal pet bed.",
+    "altHash": "img-jqf-8c178649"
+  },
+  {
+    "id": "stx-anchor-2",
+    "kind": "anchor",
+    "file": "stx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A purple shoe has bite-shaped gaps along its upper edge.",
+    "altHash": "img-8xb-2db88b90"
+  },
+  {
+    "id": "stx-anchor-3",
+    "kind": "anchor",
+    "file": "stx-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A golden puppy chews a teal rope toy while purple shoes rest on a shelf.",
+    "altHash": "img-g2z-2b1457da"
+  },
+  {
+    "id": "stx-anchor-4",
+    "kind": "anchor",
+    "file": "stx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right.",
+    "altHash": "img-4wf-74f7516b"
+  },
+  {
+    "id": "stx-sort-1",
+    "kind": "sort",
+    "file": "stx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bicycle stands with both wheels aligned.",
+    "altHash": "img-n3b-72661499"
+  },
+  {
+    "id": "stx-sort-2",
+    "kind": "sort",
+    "file": "stx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bicycle stands on a driveway under the sun.",
+    "altHash": "img-ncj-7f377f81"
+  },
+  {
+    "id": "stx-sort-3",
+    "kind": "sort",
+    "file": "stx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Curved red motion marks sit beside a bicycle’s front wheel.",
+    "altHash": "img-q2z-f13cd696"
+  },
+  {
+    "id": "stx-sort-4",
+    "kind": "sort",
+    "file": "stx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A downward arrow points toward the bicycle’s front wheel.",
+    "altHash": "img-onj-d8f609cc"
+  },
+  {
+    "id": "stx-sort-5",
+    "kind": "sort",
+    "file": "stx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Curved red motion marks sit beside a bicycle’s front wheel.",
+    "altHash": "img-q2z-f13cd696"
+  },
+  {
+    "id": "stx-sort-6",
+    "kind": "sort",
+    "file": "stx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A blue open-ended wrench lies diagonally on an ivory background.",
+    "altHash": "img-csn-f57e1fee"
+  },
+  {
+    "id": "stx-sort-7",
+    "kind": "sort",
+    "file": "stx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bicycle stands beside a curving park path and a tree.",
+    "altHash": "img-o1n-20071597"
+  },
+  {
+    "id": "stx-sort-8",
+    "kind": "sort",
+    "file": "stx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A wrench lies inside a rectangular storage tray.",
+    "altHash": "img-8gf-4baac07f"
+  },
+  {
+    "id": "stx-lesson-1",
+    "kind": "lesson",
+    "file": "stx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A golden puppy sits inside a home doorway beside a teal pet bed.",
+    "altHash": "img-227b-000d8148"
+  },
+  {
+    "id": "stx-lesson-2",
+    "kind": "lesson",
+    "file": "stx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small house stands under a bright sun.",
+    "altHash": "img-9oz-09b1d4f1"
+  },
+  {
+    "id": "stx-lesson-3",
+    "kind": "lesson",
+    "file": "stx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A purple shoe has bite-shaped gaps along its upper edge.",
+    "altHash": "img-8xb-2db88b90"
+  },
+  {
+    "id": "stx-lesson-4",
+    "kind": "lesson",
+    "file": "stx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right; the middle box is gold.",
+    "altHash": "img-4wn-aac03a3b"
+  },
+  {
+    "id": "stx-lesson-5",
+    "kind": "lesson",
+    "file": "stx-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A golden puppy chews a teal rope toy while purple shoes rest on a shelf.",
+    "altHash": "img-1lj3-b8b033f7"
+  },
+  {
+    "id": "stx-lesson-6",
+    "kind": "lesson",
+    "file": "stx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right; the last box is gold.",
+    "altHash": "img-4vn-8d0cee93"
+  },
+  {
+    "id": "stx-lesson-7",
+    "kind": "lesson",
+    "file": "stx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes run left to right.",
+    "altHash": "img-4wf-74f7516b"
+  },
+  {
+    "id": "stx-lesson-8",
+    "kind": "lesson",
+    "file": "stx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bicycle stands with both wheels aligned.",
+    "altHash": "img-n3b-72661499"
+  }
+]

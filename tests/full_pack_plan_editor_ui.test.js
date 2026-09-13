@@ -38,9 +38,10 @@ describe('Full Pack educator plan editor host wiring', () => {
     expect(fullPackRun).toContain('disabled={rows.length <= 1}');
   });
 
-  it('turns the post-plan arrow into a clear motion-safe next-step cue', () => {
+  it('keeps the next step clear without a pulsing attention cue', () => {
     expect(fullPackRun).toContain('data-testid="full-pack-next-step-arrow"');
-    expect(fullPackRun).toContain("fullPackRun?.status === 'ready' ? 'bg-indigo-100 p-1 ring-4 ring-indigo-300/60 shadow-[0_0_18px_rgba(79,70,229,0.8)] motion-safe:animate-pulse' : ''");
+    expect(fullPackRun).not.toContain('animate-pulse');
+    expect(fullPackRun).toContain("fullPackRun?.status === 'ready' ? 'bg-indigo-100 p-1' : ''");
     expect(fullPackRun).toContain("fullPackRun?.status === 'ready' ? 'text-indigo-800 drop-shadow-sm' : 'text-indigo-300 group-hover:text-indigo-600'");
     expect(fullPackRun).toContain("t('fullpack.action_generate_pack_aria') || 'Generate full pack from the reviewed plan'");
   });

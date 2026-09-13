@@ -564,3 +564,47 @@ describe('Persona inquiry and matched lesson passages', () => {
     expect(api.normalize({ quote, excerptFingerprint: matched.excerptFingerprint, url: 'https://invented.invalid' })).toEqual({ quote, excerptFingerprint: matched.excerptFingerprint });
   });
 });
+
+
+it('routes approved panel choices through the shared submit entry point', async () => {
+  const charA = { name: 'A', role: 'Leader', rapport: 20, quests: [] };
+  const charB = { name: 'B', role: 'Writer', rapport: 20, quests: [] };
+  const options = Array.from({ length: 6 }, (_, i) => ({ text: 'Compare evidence ' + i, tier: 'neutral' }));
+  const gemini = vi.fn().mockResolvedValueOnce(JSON.stringify({
+    dialogue: [{ speaker: 'A', text: 'First perspective.' }, { speaker: 'B', text: 'Second perspective.' }],
+    updates: { charA: { rapportChange: 0 }, charB: { rapportChange: 0 }, harmony: { scoreChange: 0 } }
+  })).mockResolvedValue('[]');
+  const harness = createHarness({
+    personaState: { mode: 'panel', selectedCharacter: null, selectedCharacters: [charA, charB], chatHistory: [{ role: 'model', speakerName: 'A', text: 'Hello' }], suggestions: [], panelSuggestions: options, isLoading: false, harmonyScore: 20, earnedBadges: [] },
+    resource: { id: 'panel-shared-submit', type: 'persona', data: [charA, charB] },
+    callGemini: gemini, callGeminiImageEdit: vi.fn(), isPersonaFreeResponse: false
+  });
+  await harness.api.handlePersonaChatSubmit('Unlisted question', true);
+  expect(gemini).not.toHaveBeenCalled();
+  await harness.api.handlePersonaChatSubmit(options[0].text, true);
+  expect(gemini).toHaveBeenCalled();
+  expect(harness.state.chatHistory.filter(message => message.role === 'user').map(message => message.text)).toEqual([options[0].text]);
+  expect(harness.state.chatHistory.at(-1).text).toBe('Second perspective.');
+  expect(harness.state.isLoading).toBe(false);
+});
+
+
+describe.each(['single', 'panel'])('Persona %s reply recovery', mode => {
+  it('keeps a failed reply recoverable and clears the error after an explicit resend', async () => {
+    const a = { name: 'Ada', role: 'Mathematician', rapport: 20, quests: [] };
+    const b = { name: 'Grace', role: 'Computer scientist', rapport: 20, quests: [] };
+    const reply = mode === 'panel' ? { dialogue: [{ speaker: 'Ada', text: 'First perspective' }, { speaker: 'Grace', text: 'Second perspective' }], updates: { charA: { rapportChange: 0 }, charB: { rapportChange: 0 }, harmony: { scoreChange: 0 } } } : { response: 'A useful answer', rapportChange: 0 };
+    const provider = vi.fn().mockRejectedValueOnce(new Error('Network interrupted')).mockResolvedValueOnce(JSON.stringify(reply)).mockResolvedValue('[]');
+    const h = createHarness({ personaState: { mode, selectedCharacter: a, selectedCharacters: mode === 'panel' ? [a,b] : [], chatHistory: [{ role: 'model', text: 'Hello', speakerName: 'Ada' }], suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 20, earnedBadges: [] }, resource: { id: 'recovery-' + mode, type: 'persona', data: [a,b] }, callGemini: provider, callGeminiImageEdit: vi.fn(), isPersonaFreeResponse: true });
+    const send = () => mode === 'panel' ? h.api.handlePanelChatSubmit('My question') : h.api.handlePersonaChatSubmit('My question');
+    await send();
+    expect(h.state.turnError).toBe(true);
+    expect(h.state.isLoading).toBe(false);
+    expect(h.state.chatHistory.filter(m => m.role === 'user')).toHaveLength(0);
+    await send();
+    expect(h.state.turnError).toBeFalsy();
+    expect(h.state.chatHistory.filter(m => m.role === 'user')).toHaveLength(1);
+    h.api.resetPersonaInterviewState();
+    expect(h.state.turnError).toBeFalsy();
+  });
+});

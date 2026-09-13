@@ -83,12 +83,12 @@ const button = name => [...el.querySelectorAll('button')].find(node => node.text
 const click = async node => { expect(node).toBeTruthy(); await act(async () => node.click()); };
 describe('Teacher room connection review', () => {
   it('shows all objects once in a collapsed flow review without an additional AI call', async () => {
-    const provider = vi.fn(base.callGemini); await render({ callGemini: provider }); await click(button('Generate connected room'));
+    const provider = vi.fn(base.callGemini); await render({ callGemini: provider }); await click(button('Generate escape room'));
     expect(el.querySelector('[data-room-flow]').open).toBe(false); expect(el.querySelector('[data-room-flow] summary').textContent).toContain('2 independent puzzle paths');
     expect(el.querySelectorAll('[data-flow-object]')).toHaveLength(7); expect(provider).toHaveBeenCalledTimes(1); expect(write).not.toHaveBeenCalled();
   });
   it('opens and focuses the exact object editor from a path', async () => {
-    await render(); await click(button('Generate connected room')); await click(el.querySelector('[data-flow-object="device"]')); await act(async () => new Promise(resolve => setTimeout(resolve, 5)));
+    await render(); await click(button('Generate escape room')); await click(el.querySelector('[data-flow-object="device"]')); await act(async () => new Promise(resolve => setTimeout(resolve, 5)));
     const details = el.querySelector('[data-edit-object="device"]'); expect(details.open).toBe(true); expect(document.activeElement).toBe(details.querySelector('textarea'));
     await click(button('Back to room connections')); expect(document.activeElement).toBe(el.querySelector('[data-room-flow] summary')); expect(el.querySelector('[data-room-flow]').open).toBe(true);
   });
@@ -98,7 +98,7 @@ describe('Teacher room connection review', () => {
     await click(button('Play solo')); expect(el.querySelector('[data-room-flow]')).toBeNull(); expect(el.querySelector('[data-submit-object="lens"]')).toBeTruthy();
   });
   it('keeps the current room after new generation fails its flow repair', async () => {
-    await render(); await click(button('Generate connected room')); const before = el.querySelector('[data-room-flow]').textContent;
+    await render(); await click(button('Generate escape room')); const before = el.querySelector('[data-room-flow]').textContent;
     const provider = vi.fn().mockResolvedValue(JSON.stringify(serialRoom())); await render({ callGemini: provider }); await click(button('Generate another room'));
     expect(el.querySelector('[data-room-flow]').textContent).toBe(before); expect(button('Play solo').disabled).toBe(false); expect(provider).toHaveBeenCalledTimes(2); expect(el.textContent).toContain('could not be validated');
   });

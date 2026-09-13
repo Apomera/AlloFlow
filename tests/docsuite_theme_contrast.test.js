@@ -130,6 +130,14 @@ describe('dark mode: state variants are remapped too', () => {
   const css = gen.generateCss(process.cwd());
   const variants = gen.allVariantTokens(process.cwd());
 
+  it('maps enabled hover only while a control is enabled and hovered', () => {
+    expect(variants.supported).toContain('enabled:hover:bg-indigo-50');
+    expect(variants.unsupported).not.toContain('enabled:hover:bg-indigo-50');
+    for (const theme of ['dark', 'contrast']) {
+      expect(css).toContain('.theme-' + theme + ' .allo-docsuite [class~="enabled:hover:bg-indigo-50"]:enabled:hover');
+    }
+  });
+
   it('found a real variant inventory', () => {
     expect(variants.supported.length).toBeGreaterThan(400);
     expect(variants.supported).toContain('hover:bg-slate-50');

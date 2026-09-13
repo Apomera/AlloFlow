@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "main_idea_grade4",
+    "key": "orchard",
+    "prompt": "Square text-free educational woodcut and watercolor scene: flowering apple orchard with several plain rectangular wooden managed beehive boxes nearby. Focus on blossoming branches and hive boxes, pastoral daylight, no humans, no text, no logos. Stylized printmaking texture, not a photograph. Scene supplies context for bees pollinating food crops, no giant bees.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-94387ab8-3d1a-4418-877a-800e3b38b0d7.png",
+    "alt": "Flowering orchard trees stand beside wooden beehive boxes, with bees near the blossoms.",
+    "caption": "Managed hives near flowering crops illustrate a pollination context. The reading explains why bees matter to food production. This is an imagined orchard, not evidence about a particular farm or yield.",
+    "file": "source-orchard.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "main_idea_grade4",
+    "key": "produce",
+    "prompt": "Square text-free educational woodcut and watercolor still life of apples, blueberries in a shallow bowl, and almonds in split shells, arranged clearly on an ivory background. Rich but restrained red blue brown palette, visible printmaking texture. No people, letters, labels, numbers or photorealism. Illustrative food-crop examples; no proportions or quantities encoded.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-7fdcd346-325f-46db-ad55-3f2d9818fb91.png",
+    "alt": "Apples, a bowl of blueberries and almonds in opened shells form a still life.",
+    "caption": "Apples, blueberries and almonds are examples of crops that benefit from bee pollination. The selection illustrates the main idea, not a fraction of everyone’s diet.",
+    "file": "source-produce.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

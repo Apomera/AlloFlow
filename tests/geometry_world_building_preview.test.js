@@ -99,7 +99,7 @@ describe('shape-accurate hover using actual core placement and preview handlers'
     let reference;
     for(const time of [0,.15,1,4]){e.clock.getElapsedTime=()=>time;e.updateGhostPreview();const opacity=[e._highlightMesh.material.opacity,e._hoverGlowMesh.material.opacity];if(reference)expect(opacity).toEqual(reference);reference=opacity;}
     e._dimLines=[{}];e.updateGhostPreview();expect(e._hoverGlowMesh.material.opacity).toBeCloseTo(reference[1]*.35);
-    f.target.userData._lessonBlock=true;e.updateGhostPreview();expect(e._highlightMesh.material.color.getHex()).toBe(0xff4444);expect(e._hoverGlowMesh.material.color.getHex()).toBe(0xff4444);
+    f.target.userData._lessonBlock=true;e.updateGhostPreview();expect(e._highlightMesh.material.color.getHex()).toBe(0xe6cf9e);expect(e._hoverGlowMesh.material.color.getHex()).toBe(0xe6cf9e);
     const protectedOpacity=[e._highlightMesh.material.opacity,e._hoverGlowMesh.material.opacity];e.clock.getElapsedTime=()=>19;e.updateGhostPreview();expect([e._highlightMesh.material.opacity,e._hoverGlowMesh.material.opacity]).toEqual(protectedOpacity);
   });
 

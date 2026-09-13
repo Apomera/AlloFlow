@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createRequire } from 'node:module';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -62,6 +62,24 @@ function fakeResult(autoContinue) {
     activeContentScanVerified: true,
     activeContentDetected: false,
     stats: { apiCalls: 7, visionCalls: 1, retries: 0 },
+  };
+}
+
+function fakeEngine() {
+  return {
+    engine: 'fixture engine', driver: { sha256: 'd'.repeat(64) }, engineAggregateSha256: 'e'.repeat(64),
+    provider: { family: 'fixture transport', primaryModel: 'fixture-model', fallbackModel: 'fixture-model',
+      endpoint: 'http://127.0.0.1:9876/v1beta/models', providerClass: 'scripted', liveSettingsEligible: false,
+      sampling: 'provider-default', temperatureControlled: false, seedControlled: false,
+      fallbackEnabled: false, actualModelTraceComplete: false },
+    runtime: { node: process.version, platform: process.platform, arch: process.arch, playwright: 'fixture' },
+  };
+}
+
+function executionOptions(plan, driver, extra = {}) {
+  return {
+    execute: true, confirm: plan.studyId, maxRuns: 1, driver,
+    env: { GEMINI_API_KEY: 'explicit-test-key' }, engineMetadata: () => fakeEngine(), ...extra,
   };
 }
 
@@ -331,4 +349,111 @@ describe('refinement study runner', () => {
     expect(incomplete.artifacts.finalArtifactEvidenceBound).toBe(false);
     expect(incomplete.outcome.status).toBe('incomplete');
   });
+
+  it.each(['build', 'primary-model', 'fallback-model', 'endpoint', 'sampling', 'runtime', 'missing-identity'])(
+    'refuses checkpoint resume after %s drift without overwriting the old attempt', async (drift) => {
+      const dir = tempDir();
+      const plan = Runner.buildStudyPlan(configFor(dir, { conditions: ['gated-loop'] }));
+      const run = plan.runs[0];
+      const checkpoint = { schema: 1, stage: 'primary', marker: 'bound attempt' };
+      const first = await Runner.executeStudyPlan(plan, executionOptions(plan, { remediate: async (options) => {
+        await options.onCheckpoint(checkpoint);
+        throw new Error('fixture interruption');
+      } }));
+      expect(first.summary.failed).toBe(1);
+      const recordPath = join(run.outputDir, 'study-record.json');
+      const checkpointPath = join(run.outputDir, 'checkpoint.json');
+      const beforeRecord = readFileSync(recordPath, 'utf8');
+      const beforeCheckpoint = readFileSync(checkpointPath, 'utf8');
+      expect(JSON.parse(beforeCheckpoint).engineIdentitySha256).toMatch(/^[a-f0-9]{64}$/);
+      const changed = fakeEngine();
+      if (drift === 'build') changed.engineAggregateSha256 = 'f'.repeat(64);
+      if (drift === 'primary-model') changed.provider.primaryModel = 'different-model';
+      if (drift === 'fallback-model') changed.provider.fallbackModel = 'different-fallback';
+      if (drift === 'endpoint') changed.provider.endpoint = 'http://127.0.0.1:9877/v1beta/models';
+      if (drift === 'sampling') changed.provider.sampling = 'different-sampling';
+      if (drift === 'runtime') changed.runtime.playwright = 'different-runtime';
+      if (drift === 'missing-identity') delete changed.provider;
+      let resumedCalls = 0;
+      await expect(Runner.executeStudyPlan(plan, executionOptions(plan, {
+        remediate: async () => { resumedCalls++; return fakeResult(true); },
+      }, { resume: true, engineMetadata: () => changed }))).rejects.toThrow(/identity.*(?:changed|incomplete)/);
+      expect(resumedCalls).toBe(0);
+      expect(readFileSync(recordPath, 'utf8')).toBe(beforeRecord);
+      expect(readFileSync(checkpointPath, 'utf8')).toBe(beforeCheckpoint);
+    },
+  );
+
+  it('resumes the matching checkpoint and rejects a mismatched checkpoint identity before running', async () => {
+    const dir = tempDir();
+    const plan = Runner.buildStudyPlan(configFor(dir, { conditions: ['gated-loop'] }));
+    const run = plan.runs[0];
+    const snapshot = { schema: 1, stage: 'round', marker: 'continue this attempt' };
+    await Runner.executeStudyPlan(plan, executionOptions(plan, { remediate: async (options) => {
+      await options.onCheckpoint(snapshot); throw new Error('fixture interruption');
+    } }));
+    const checkpointPath = join(run.outputDir, 'checkpoint.json');
+    const original = readFileSync(checkpointPath, 'utf8');
+    writeFileSync(checkpointPath, JSON.stringify({ ...JSON.parse(original), engineIdentitySha256: '0'.repeat(64) }));
+    let calls = 0;
+    const driver = { remediate: async (options) => { calls++; expect(options.resumeCheckpoint).toEqual(snapshot); return fakeResult(true); } };
+    await expect(Runner.executeStudyPlan(plan, executionOptions(plan, driver, { resume: true }))).rejects.toThrow(/identity changed/);
+    expect(calls).toBe(0);
+    writeFileSync(checkpointPath, original);
+    const recovered = await Runner.executeStudyPlan(plan, executionOptions(plan, driver, { resume: true }));
+    expect(recovered.summary.complete).toBe(1);
+    expect(calls).toBe(1);
+    expect(JSON.parse(readFileSync(join(run.outputDir, 'study-record.json'), 'utf8')).resume).toMatchObject({ attempt: 2, usedCheckpoint: true });
+  });
+
+  it('repairs interrupted reviewer-packet finalization from immutable artifacts without calling the model', async () => {
+    const dir = tempDir();
+    const plan = Runner.buildStudyPlan(configFor(dir, { conditions: ['gated-loop'] }));
+    const run = plan.runs[0];
+    const reviewRoot = join(plan.outputRoot, plan.studyId, 'reviewer-packets', run.blindId);
+    mkdirSync(join(plan.outputRoot, plan.studyId, 'reviewer-packets'), { recursive: true });
+    writeFileSync(reviewRoot, 'fixture blocks reviewer directory creation');
+    let calls = 0;
+    const driver = { remediate: async () => { calls++; return fakeResult(true); } };
+    const first = await Runner.executeStudyPlan(plan, executionOptions(plan, driver));
+    expect(first.summary.failed).toBe(1);
+    const immutableNames = ['result.json', 'verification-evidence.json', 'output.html'];
+    const before = Object.fromEntries(immutableNames.map((name) => [name, readFileSync(join(run.outputDir, name), 'utf8')]));
+    const recordPath = join(run.outputDir, 'study-record.json');
+    // Simulate an abrupt exit before the final mutable record flush as well.
+    const interrupted = JSON.parse(readFileSync(recordPath, 'utf8'));
+    interrupted.status = 'running'; interrupted.artifacts.outputs = [];
+    writeFileSync(recordPath, JSON.stringify(interrupted));
+    unlinkSync(reviewRoot);
+    const second = await Runner.executeStudyPlan(plan, executionOptions(plan, driver, { resume: true }));
+    expect(second.summary['skipped-complete']).toBe(1);
+    expect(calls).toBe(1);
+    for (const name of immutableNames) expect(readFileSync(join(run.outputDir, name), 'utf8')).toBe(before[name]);
+    expect(readFileSync(join(reviewRoot, 'candidate.html'), 'utf8')).toBe(before['output.html']);
+    expect(Runner.sha256File(join(reviewRoot, 'source.pdf'))).toBe(run.source.sha256);
+    expect(JSON.parse(readFileSync(join(reviewRoot, 'expert-annotation.template.json'), 'utf8')).reviewerCount).toBeNull();
+    const repaired = JSON.parse(readFileSync(recordPath, 'utf8'));
+    expect(repaired.status).toBe('complete'); expect(repaired.error).toBeNull();
+    expect(repaired.artifacts.outputs).toHaveLength(1);
+  });
+
+  it.each(['output.html', 'verification-evidence.json', 'candidate.html'])(
+    'does not repair over changed immutable %s bytes', async (name) => {
+      const dir = tempDir();
+      const plan = Runner.buildStudyPlan(configFor(dir, { conditions: ['gated-loop'] }));
+      const run = plan.runs[0];
+      let calls = 0;
+      const driver = { remediate: async () => { calls++; return fakeResult(true); } };
+      await Runner.executeStudyPlan(plan, executionOptions(plan, driver));
+      const target = name === 'candidate.html'
+        ? join(plan.outputRoot, plan.studyId, 'reviewer-packets', run.blindId, name)
+        : join(run.outputDir, name);
+      writeFileSync(target, 'modified immutable artifact');
+      await expect(Runner.executeStudyPlan(plan, executionOptions(plan, driver, { resume: true })))
+        .rejects.toThrow(/immutable|Immutable/);
+      expect(calls).toBe(1);
+      expect(readFileSync(target, 'utf8')).toBe('modified immutable artifact');
+    },
+  );
+
 });

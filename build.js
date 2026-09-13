@@ -1310,6 +1310,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ConceptQuestSoloModule',
+        filename: 'concept_quest_solo_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ConceptQuestTeacherModule',
         filename: 'concept_quest_teacher_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1599,6 +1604,8 @@ const COMPANION_ASSET_DIRS = [
     'life_skills_safety',
     'life_skills_repair',
     'life_skills_kitchen',
+    'stem_lab/kitchen_studio',
+    'vendor/three-r128',
     'life_skills_laundry',
     'life_skills_transit',
     'apps_script/educator_evaluation_share',

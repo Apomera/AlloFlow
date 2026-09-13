@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "cell_structure_grade7",
+    "key": "cork",
+    "prompt": "Square educational image for a middle-school AlloPack. Ink-and-watercolor microscopy studies. A close magnified view of a thin slice of cork, a honeycomb of irregular polygonal EMPTY plant-cell compartments bounded by brown walls. No green chloroplasts, no nuclei, no living tissue filling. Historical microscopy teaching illustration, not a photograph or a claim of exact magnification. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-cork.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-4c08966a-e74c-403e-9284-5d7a939327aa.png",
+    "alt": "Brown polygonal walls surround empty pale compartments in an illustrated cork section.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "cell_structure_grade7",
+    "key": "microscope",
+    "prompt": "Square educational image for a middle-school AlloPack. Ink-and-watercolor microscopy studies. A complete compound light microscope in clear side-three-quarter view: eyepiece at top, tube, rotating objectives pointing down toward a horizontal stage, one slide on stage, curved arm, focus knobs and broad stable base with built-in illuminator. No additional fantasy parts or numeric markings. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-microscope.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-17e47602-c249-4b9f-af97-de143d7a3744.png",
+    "alt": "A compound microscope has an eyepiece, rotating objectives, a slide on its stage, focus knobs and a light in its base.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "cell_structure_grade7",
+    "key": "onion",
+    "prompt": "Square educational image for a middle-school AlloPack. Ink-and-watercolor microscopy studies. An artistic light-microscope view of onion bulb epidermis: a single layer of orderly elongated pale rectangular plant cells, thin clear walls and occasional small purple stained nuclei close to an edge. NO green chloroplasts. White and pale lavender with fine ink lines, no multiple overlapping layers. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-onion.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-61e2fda1-a709-47d0-b130-ad00f57f37b2.png",
+    "alt": "Elongated pale rectangular cells have thin purple walls and small purple nuclei near their edges, without green chloroplasts.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "cell_structure_grade7",
+    "key": "leafcells",
+    "prompt": "Square educational image for a middle-school AlloPack. Ink-and-watercolor microscopy studies. An artistic light-microscope view of a green aquatic leaf: neighboring rectangular plant cells outlined by clear walls, many SMALL green chloroplasts mainly around cell peripheries, pale open-looking interiors. No giant green nucleus. No other labeled organelles. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-leafcells.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-dbac9fb4-5e39-4fca-888d-e0b799635ba8.png",
+    "alt": "Rectangular leaf cells contain many small green chloroplasts around pale central regions.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "cell_structure_grade7",
+    "key": "wilting",
+    "prompt": "Square educational image for a middle-school AlloPack. Ink-and-watercolor microscopy studies. Two small potted bean seedlings side by side, same pot size and plant size. Left has upright green leaves, right has visibly drooping green leaves from reduced water supply. No cracks, no dead brown leaves. A qualitative comparison, no arrows, no faces. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-wilting.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3ac9c27e-04a1-43f6-80d2-87ed021c8647.png",
+    "alt": "Two similarly sized potted seedlings stand side by side; the left leaves are upright and the right leaves droop.",
+    "reviewedAt": "2026-09-12"
+  }
+]

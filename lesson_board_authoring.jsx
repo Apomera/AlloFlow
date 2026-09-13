@@ -6,7 +6,7 @@ export function BoardAuthoring({ board, source, disabled, onChange, t }) {
   const errors = validateBoard(board, source);
   const edit = (id, patch) => onChange({ ...board, locations: board.locations.map(node => node.id === id ? { ...node, ...patch } : node) });
   const controlEdit = (node, index, patch) => edit(node.id, { controls: node.controls.map((control, i) => i === index ? { ...control, ...patch } : control) });
-  const textField = (label, value, limit, onChange, data = {}) => <label>{label}<textarea {...data} value={value} maxLength={limit} disabled={disabled} onChange={event => onChange(event.target.value)}/></label>;
+  const textField = (label, value, limit, onChange, data = {}) => <label key={data.key}>{label}<textarea {...data} value={value} maxLength={limit} disabled={disabled} onChange={event => onChange(event.target.value)}/></label>;
   return <details data-board-editor><summary>{tr(t, 'edit_board', 'Review and edit the board')}</summary>
     <p>{tr(t, 'editor_help', 'Review every option, solution, hint and source excerpt. Edits apply to this board before play; saved copies stay unchanged until you save again.')}</p>
     {errors.length > 0 && <div className="lb-notice" role="status" data-board-validation><strong>{tr(t, 'editor_fix', 'Fix these items before saving or playing:')}</strong><ul>{errors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}

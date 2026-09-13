@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "context_clues_grade3",
+    "key": "path",
+    "prompt": "Square text-free educational scene in layered cut-paper landscape style. A visibly narrow woodland footpath passes between dense ferns and bushes. Two simple pairs of small boot prints lie one behind another along the narrow path, not beside each other. Focus on the thin passage and vegetation. No people, letters, numbers, signs or photorealism. Muted greens, warm sand, ivory margin.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-9ddd3433-ef4d-47fc-9543-70deead729e0.png",
+    "alt": "A narrow woodland path runs between ferns, with boot prints along its center.",
+    "caption": "In the sentence, single file suggests that narrow means not wide. The path illustrates that possible meaning; the footprints do not measure its width or the number of walkers.",
+    "file": "source-path.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "context_clues_grade3",
+    "key": "citrus",
+    "prompt": "Square text-free educational still life in layered cut-paper and pastel style: a yellow lemon, green lime and orange orange arranged separately with one cut citrus half showing segmented flesh. All clearly recognizable, clean ivory background, ample separation. No labels, letters, numbers, people or photorealism. Illustrates examples of citrus, not exact proportions.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-894e5880-aaf6-4cb8-88d4-634ecb3a7a72.png",
+    "alt": "A lemon, lime and orange sit separately beside a cut orange half.",
+    "caption": "Citrus is a category that includes lemons, limes and oranges. The listed examples supply a clue; the picture is not a definition of every citrus fruit.",
+    "file": "source-citrus.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

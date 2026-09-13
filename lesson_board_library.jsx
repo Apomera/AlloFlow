@@ -11,13 +11,13 @@ const fileError = (error, t) => ({
   'board-file-read': tr(t, 'file_read', 'The file could not be read. Choose it again.'),
 }[error?.message] || tr(t, 'file_failed', 'The board file could not be opened or downloaded. The current board is unchanged.'));
 
-export function BoardDownload({ board, source, language, disabled, t }) {
+export function BoardDownload({ board, support, source, language, disabled, t }) {
   const [error, setError] = useState('');
   useEffect(() => setError(''), [board, source, language]);
-  return <><button type="button" data-export-board disabled={disabled || !board} onClick={() => { try { downloadBoardFile(board, source, language); setError(''); } catch (error) { setError(fileError(error, t)); } }}>{tr(t, 'export_board', 'Download board file')}</button>{error && <p role="alert">{error}</p>}</>;
+  return <><button type="button" data-export-board disabled={disabled || !board} onClick={() => { try { downloadBoardFile(board, source, language, support); setError(''); } catch (error) { setError(fileError(error, t)); } }}>{tr(t, 'export_board', 'Download board file')}</button>{error && <p role="alert">{error}</p>}</>;
 }
 
-export function BoardTransfer({ board, source, language, disabled, onImport, t }) {
+export function BoardTransfer({ board, support, source, language, disabled, onImport, t }) {
   const [pack, setPack] = useState(null), [error, setError] = useState(''), [reading, setReading] = useState(false), serial = useRef(0), mounted = useRef(true), review = useRef(null), group = useRef(null), input = useRef(null);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; serial.current++; }; }, []);
   useEffect(() => { serial.current++; setPack(null); setError(''); setReading(false); if (input.current) input.current.value = ''; }, [source, language]);
@@ -31,8 +31,8 @@ export function BoardTransfer({ board, source, language, disabled, onImport, t }
   useBoardEscape(group, () => { if (!disabled) cancel(); }, !!pack);
   const compatible = pack && boardFileCompatibility(pack, source, language);
   return <details data-board-transfer><summary>{tr(t, 'board_files', 'Board files and backups')}</summary>
-    <p>{tr(t, 'file_contents', 'A board file includes its lesson source, activities, solutions and hints. It does not include learner identities, responses or live-session progress.')}</p>
-    <BoardDownload board={board} source={source} language={language} disabled={disabled} t={t}/>
+    <p>{tr(t, 'file_contents_with_support', 'A board file includes its lesson source, activities, solutions, hints, and any attached vocabulary and pictures. It does not include learner identities, responses or live-session progress.')}</p>
+    <BoardDownload support={support} board={board} source={source} language={language} disabled={disabled} t={t}/>
     <label>{tr(t, 'import_board', 'Choose a board file')}<input ref={input} data-import-board type="file" accept=".alloboard.json,application/json" disabled={disabled} onChange={event => choose(event.target.files?.[0])}/></label>
     {reading && <p role="status">{tr(t, 'reading_file', 'Checking the board file…')}</p>}{error && <p role="alert">{error}</p>}
     {pack && <section ref={group} className="lb-notice" data-board-file-review aria-label={tr(t, 'file_review', 'Review imported board')}>

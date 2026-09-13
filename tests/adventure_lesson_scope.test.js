@@ -114,7 +114,11 @@ describe('the host only offers a save that belongs to this lesson', () => {
   it('passes the lesson-scoped flag to all three adventure surfaces', () => {
     // student panel, sidebar AdventurePanel, full AdventureView
     const passes = anti.match(/hasSavedAdventure[:=]\s*\{?hasSavedAdventureForLesson/g) || [];
-    expect(passes.length).toBe(3);
+    // GeneratorActions now forwards the sidebar flag from its extracted module.
+    const sidebar = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
+    expect(passes.length).toBe(2);
+    expect(sidebar.match(/hasSavedAdventure:\s*hasSavedAdventureForLesson/g)).toHaveLength(1);
+    expect(anti).toContain('hasSavedAdventureForLesson, hasSourceOrAnalysis');
     // and nothing still forwards the raw flag
     expect(anti).not.toContain('hasSavedAdventure={hasSavedAdventure}');
   });

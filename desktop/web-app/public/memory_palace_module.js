@@ -2157,11 +2157,12 @@
     function applyRelief(ref, routeNo, color, img, depth) {
       if (!ref || !ref.canvasMesh || !img || !depth) return false;
       try {
+        ref.imageRequest = (ref.imageRequest || 0) + 1;
         var ctex = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined,
-          function () { try { ref.mat.map = makeCardTexture(THREE, routeNo, color); ref.mat.needsUpdate = true; } catch (e2) {} });
+          function () { try { if (state.disposed || ref.mat !== m2) return; ctex.dispose(); ref.mat.map = makeCardTexture(THREE, routeNo, color); ref.mat.displacementMap = null; dtex.dispose(); ref.mat.displacementScale = 0; ref.mat.displacementBias = 0; ref.mat.needsUpdate = true; ref.hasImage = false; ref.empty = !_sculptedIds[ref.locus.id]; } catch (e2) {} });
         if (THREE.sRGBEncoding) ctex.encoding = THREE.sRGBEncoding;
         ctex.anisotropy = _textureAnisotropy;
-        var dtex = texLoader.load(depth, undefined, undefined, function () {}); dtex.anisotropy = _textureAnisotropy;   // decode-fail → flat (bias 0 ≙ no displacement data)
+        var dtex = texLoader.load(depth, undefined, undefined, function () { if (!state.disposed && ref.mat === m2) { m2.displacementMap = null; m2.displacementScale = 0; m2.displacementBias = 0; m2.needsUpdate = true; } dtex.dispose(); }); dtex.anisotropy = _textureAnisotropy;   // decode-fail → flat (bias 0 ≙ no displacement data)
         var m2 = new THREE.MeshStandardMaterial({
           map: ctex, displacementMap: dtex,
           displacementScale: RELIEF_DEPTH, displacementBias: -RELIEF_DEPTH * 0.2,
@@ -2174,7 +2175,7 @@
         ref.canvasMesh.material = m2;
         ref.mat = m2;
         if (oldG && oldG.dispose) { try { oldG.dispose(); } catch (e) {} }
-        if (oldM) { try { if (oldM.map && oldM.map.dispose && oldM.map !== ctex) oldM.map.dispose(); oldM.dispose(); } catch (e) {} }
+        if (oldM) { try { if (oldM.map && oldM.map.dispose && oldM.map !== ctex) oldM.map.dispose(); if (oldM.displacementMap && oldM.displacementMap.dispose) oldM.displacementMap.dispose(); oldM.dispose(); } catch (e) {} }
         return true;
       } catch (e) { return false; }
     }
@@ -2314,7 +2315,7 @@
         // onError callback, NOT a synchronous throw — so fall back to the numbered card
         // there too, or a bad image would render as a blank frame.
         try {
-          var tx = texLoader.load(img, undefined, undefined, function () { try { mat.map = makeCardTexture(THREE, routeNo, color); mat.needsUpdate = true; } catch (e2) {} });
+          var tx = texLoader.load(img, undefined, undefined, function () { try { if (state.disposed || mat.map !== tx) return; tx.dispose(); mat.map = makeCardTexture(THREE, routeNo, color); mat.needsUpdate = true; } catch (e2) {} });
           if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding; tx.anisotropy = _textureAnisotropy; mat.map = tx;
         } catch (e) { mat.map = makeCardTexture(THREE, routeNo, color); }
       } else {
@@ -2874,14 +2875,14 @@
         var unit = SCULPT_UNIT * Math.max(0.25, Math.min(5, (typeof recipe.scale === 'number' && !isNaN(recipe.scale)) ? recipe.scale : 1));
         var loadItem = recipe.tint ? Object.assign({}, item, { tint: recipe.tint }) : item;
         GLB.loadModel(THREE, loadItem, { unit: unit }).then(function (fig) {
-          if (!fig) return;
+          if (!fig) { if (_sculptSeq[l.id] === token) delete _sculptedIds[l.id]; return; }
           if (state.disposed || _sculptSeq[l.id] !== token || !_sculptedIds[l.id] || _sculptRefs[l.id]) { _disposeObj(fig); return; }
           try {
             if (typeof recipe.rotY === 'number' && !isNaN(recipe.rotY)) fig.rotation.y += recipe.rotY * Math.PI / 180;
             _placeFig(l, fig);
             if (palace.route[curIdx] === l.id) stopTargets(curIdx);
           } catch (e) {}
-        }).catch(function () { delete _sculptedIds[l.id]; });   // failed load frees the claim for a retry
+        }).catch(function () { if (_sculptSeq[l.id] === token) delete _sculptedIds[l.id]; });   // failed load frees the claim for a retry
         return;
       }
       if (!P3D) return;
@@ -2905,34 +2906,46 @@
         if (o.material && o.material.dispose) { try { o.material.dispose(); } catch (e) {} }
       } catch (e) {}
     }
-    if (P3D && objects) {
+    if (objects) {
       palace.loci.forEach(function (l) { if (objects[l.id]) placeSculpture(l, objects[l.id]); });
     }
     // ── Live one-by-one reveal API (called as furnish/sculpt generate each item,
     //    so results appear as they finish instead of all-at-once after a remount) ──
     state.setLocusImage = function (id, img) {
       var ref = frameRefs[id];
-      if (!ref || !ref.mat || !img) return;
+      if (state.disposed || !ref || !ref.mat || !img) return;
+      var token = (ref.imageRequest = (ref.imageRequest || 0) + 1);
+      // Retain the current artwork until decoding succeeds. Late loads cannot
+      // resurrect cleared artwork or replace a newer image/relief.
       try {
-        var oldMap = ref.mat.map;
-        var tx = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined, function () {});
+        var tx = texLoader.load(img, function (loaded) {
+          if (state.disposed || ref.imageRequest !== token) { loaded.dispose(); return; }
+          var oldMap = ref.mat.map;
+          ref.mat.map = loaded; ref.mat.needsUpdate = true;
+          ref.hasImage = true; ref.busy = false; ref.empty = false;
+          if (ref.mat.displacementMap) {
+            try { ref.mat.displacementMap.dispose(); } catch (eD) {}
+            ref.mat.displacementMap = null;
+          }
+          ref.mat.displacementScale = 0; ref.mat.displacementBias = 0;
+          if (oldMap && oldMap !== loaded && oldMap.dispose) oldMap.dispose();
+          if (palace.route[curIdx] === id) stopTargets(curIdx);
+        }, undefined, function () {
+          if (tx && tx.dispose) tx.dispose();
+          if (state.disposed || ref.imageRequest !== token) return;
+          if (ref.busy) state.setLocusBusy(id, false);
+          live.textContent = _tr(t, 'memory_palace.image_load_failed', 'The new image could not be displayed. The previous frame was kept; try another image.');
+        });
         if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding;
-        ref.mat.map = tx; ref.mat.needsUpdate = true; ref.hasImage = true; ref.busy = false; ref.empty = false;
-        // A flat image replacing a relief must also drop the old depth map, or the
-        // new picture renders warped over the previous subject's displacement bumps.
-        if (ref.mat.displacementMap) {
-          try { ref.mat.displacementMap.dispose(); } catch (eD) {}
-          ref.mat.displacementMap = null; ref.mat.needsUpdate = true;
-        }
-        if (oldMap && oldMap.dispose && oldMap !== tx) { try { oldMap.dispose(); } catch (e) {} }   // free the placeholder card
-        if (palace.route[curIdx] === id) stopTargets(curIdx);
-      } catch (e) {}
+        tx.anisotropy = _textureAnisotropy;
+      } catch (e) { state.setLocusBusy(id, false); }
     };
     // Clear a single locus back to its numbered card + no sculpture (the Decorate
     // panel's "remove art here"). Frame texture, relief displacement, and any
     // pedestal figure are all disposed in place — no remount needed.
     state.clearLocus = function (id) {
       var ref = frameRefs[id];
+      if (ref) ref.imageRequest = (ref.imageRequest || 0) + 1;
       if (ref && ref.mat) {
         try {
           var old = ref.mat.map;
@@ -3383,7 +3396,7 @@
     function _notifyEmptyApproach() {
       if (recall || state.xrActive || typeof opts.onEmptyLocusApproach !== 'function') return;
       var keep = _nearEmptyId && frameRefs[_nearEmptyId];
-      if (keep && keep.empty && _emptyDistanceSq(keep) <= 290 * 290) return;
+      if (keep && keep.empty && (freeMode || palace.route[curIdx] === keep.locus.id) && _emptyDistanceSq(keep) <= 290 * 290) return;
       if (_nearEmptyId) {
         var leaving = frameRefs[_nearEmptyId];
         var leaveReason = leaving && !leaving.empty ? 'filled' : 'departed';
@@ -3394,7 +3407,7 @@
       var best = null, bestD = 210 * 210;
       Object.keys(frameRefs).forEach(function (id) {
         var ref = frameRefs[id];
-        if (!ref.empty) return;
+        if (!ref.empty || (!freeMode && palace.route[curIdx] !== id)) return;
         var d = _emptyDistanceSq(ref);
         if (d <= bestD) { best = ref; bestD = d; }
       });

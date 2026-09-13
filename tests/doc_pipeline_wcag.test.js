@@ -134,30 +134,14 @@ function injectTextSpacingCss(html) {
   return { html: html.replace('<head>', '<head>\n' + textSpacingCSS), fixCount: 1 };
 }
 
-// ── Mirror: focus-visible restoration (sanitizeStyleForWCAG step 5 ~L6562+) ──
-// Two-part fix: (a) inject :focus-visible defaults, (b) strip outline:none
-// from inline styles on interactive elements only.
-function applyFocusVisibleFix(html) {
-  if (!html) return { html, fixCount: 0 };
-  let result = html;
-  let fixCount = 0;
-  if (result.includes('<head>') && !result.includes('/* a11y-focus-visible */')) {
-    const focusVisibleCSS = '<style>/* a11y-focus-visible */\n' +
-      'a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid #2563eb;outline-offset:2px;box-shadow:0 0 0 4px rgba(37,99,235,0.18)}\n' +
-      '</style>';
-    result = result.replace('<head>', '<head>\n' + focusVisibleCSS);
-    fixCount++;
-  }
-  result = result.replace(/(<(?:a|button|input|textarea|select)\b[^>]*\sstyle=")([^"]*)"/gi, (match, prefix, styleContent) => {
-    const cleaned = styleContent.replace(/\boutline\s*:\s*(?:none|0|initial)\s*;?/gi, '');
-    if (cleaned !== styleContent) {
-      fixCount++;
-      return prefix + cleaned.replace(/;{2,}/g, ';').replace(/^\s*;/, '').replace(/;\s*$/, '') + '"';
-    }
-    return match;
-  });
-  return { html: result, fixCount };
-}
+// Source-backed focus restoration: exercise the actual sanitizer slice so defaults cannot drift.
+const _FOCUS_SOURCE = fs.readFileSync(path.resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const _FOCUS_START = _FOCUS_SOURCE.indexOf('    // 5. Focus-visible restoration');
+const _FOCUS_END = _FOCUS_SOURCE.indexOf('    // 6. prefers-reduced-motion gating', _FOCUS_START);
+if (_FOCUS_START < 0 || _FOCUS_END < 0) throw new Error('Missing production focus sanitizer slice');
+const applyFocusVisibleFix = new Function('html',
+  'if (!html) return { html, fixCount: 0 }; let totalFixes = 0;\n' +
+  _FOCUS_SOURCE.slice(_FOCUS_START, _FOCUS_END) + '\nreturn { html, fixCount: totalFixes };');
 
 // ── Mirror: prefers-reduced-motion gating (sanitizeStyleForWCAG step 6 ~L6592+) ──
 function injectReducedMotionCss(html) {
@@ -454,7 +438,9 @@ describe('focus-visible restoration (sanitizeStyleForWCAG step 5, WCAG 2.4.7)', 
     expect(result.fixCount).toBeGreaterThanOrEqual(1);
     expect(result.html).toContain('/* a11y-focus-visible */');
     expect(result.html).toContain(':focus-visible');
-    expect(result.html).toContain('outline:2px solid #2563eb');
+    expect(result.html).toContain('outline:2px solid #ffffff');
+    expect(result.html).toContain('box-shadow:0 0 0 4px #000000');
+    expect(result.html).toContain('outline-color:CanvasText');
   });
   it('strips outline:none from inline styles on interactive elements', () => {
     const result = applyFocusVisibleFix('<body><button style="outline:none;color:red">Click</button></body>');

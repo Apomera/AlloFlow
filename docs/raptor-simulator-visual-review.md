@@ -404,3 +404,394 @@ Environmental lighting now uses the same target-relative sun placement as shadow
 The new `tests/e2e/raptor-lighting-continuity.spec.ts` failed on the original code and passes on the fix in balanced, high, and low quality. It advances the simulation at 16 ms intervals through both refreshed and cached shadows, verifies continuous light direction, confirms shadow matrices remain cached between refreshes, and checks stable lighting/targets during pause. The maximum direction change is now 0.000196, approximately 0.011 degrees, matching the gradual day cycle. No browser errors occurred. This validation uses software WebGL with optional bloom disabled; it does not establish physical-device frame rates or exclude unrelated GPU-specific flicker.
 
 The existing high-quality terrain-shadow browser scenario also passes after the fix, covering visible mapped shadows, landing, pause, reduced motion, and takeoff. The rendered ground-shadow capture (`scratch/raptor-flight-review/terrain-shadow-high.png`) was visually inspected. Four browser scenarios pass in total. Changes remain local; no deployment was performed.
+
+## Input reliability and paused-scene presentation (2026-09-12)
+
+Reproduced two interaction failures in the production simulator through the local WebGL harness. Releasing A canceled a still-held Left Arrow because both controls wrote the same action boolean. Resizing a paused flight also cleared the canvas without repainting it, since pause correctly stops the animation loop. The new browser checks failed on both original behaviors before the fixes.
+
+Flight holds now retain their input source: each physical keyboard key and each on-screen action contributes independently. Releasing one source preserves another source holding that action. Blur, pause, and control-preset changes clear all sources together. This changes input bookkeeping only; steering damping and flight physics are unchanged.
+
+The renderer now has a shared scene-render function and a guarded, one-time paused repaint. Pausing clears the speed effect on screen; resizing redraws the scene at the new aspect ratio; a reduced-motion preference change redraws the updated meshes and refreshes their shadows. These repaints do not run physics, move prey, advance simulation time, or restart the animation loop.
+
+Both new browser scenarios pass. They cover equivalent keyboard bindings, combined keyboard/on-screen holds, final release, blur, pause/resume, preset switching, a populated framebuffer after paused resize, correct camera aspect, reduced-motion repaint, and a frozen simulation clock/raptor position with no continuing render loop. Syntax and patch-format checks pass, and the canonical and desktop simulator files remain byte-identical. Browser testing uses software WebGL with optional bloom disabled; hardware-specific behavior and bloom are not covered by this pass.
+
+All six follow-up browser scenarios also pass: steady chase framing through uneven frames, landing/folded rest/takeoff, reduced-motion camera controls, and sunlight continuity across low/balanced/high graphics. Eight browser scenarios pass in total for this pass. The earlier terrain-lighting flicker correction remains intact. These are targeted regression checks, not a claim that the full tool is bug-free. Changes remain local and have not been deployed.
+
+## Long-feather surface refinement (2026-09-12)
+
+Added a dedicated procedural texture for individual flight and tail feathers. The previous long feathers sampled/repeated the small body-contour atlas, producing a tiled pattern across their vanes. The new shared 256-by-512 texture follows each feather from root to tip, with a centered tapered shaft, diagonal barbs, soft edge shading, and subdued lengthwise variation. The body and supporting wing coverts retain their existing contour texture. Species material colors and the owl tail-band shader are preserved.
+
+Secondary-vane and tail UVs now map one feather across each complete surface. Primary feathers use the same texture without tiling. Bump depth is reduced on these long feathers to keep the finish restrained. The existing mip filtering and bounded anisotropy remain in use. This adds one shared texture and no new meshes or draw calls.
+
+Outer primary outlines now use nine paired stations (18 vertices per feather), replacing the five-station outline. The width profile rounds into a narrower tip while preserving quill roots, span, bilateral symmetry, and the existing pivot/fold animation. Twenty-three focused geometry checks pass across the targeted runs, covering wing surfaces, feather flex, folded morphs, tail closure, primary symmetry, and the existing environment geometry checks.
+
+Both extended browser scenarios pass: red-tailed hawk in high quality and great horned owl in low quality/narrow layout. They verify the shared non-tiling feather material, the hawk's 18-vertex primaries, preserved owl tail-band compilation, folded wing/tail/foot coordination, takeoff, strike-foot poses, pause, reduced motion, stable geometry buffers, draw-call bounds, and no browser errors. The visual probe handles the owl model's unslotted wing separately from the hawk's primary meshes.
+
+Final hawk flight and owl flight/rest close-ups were visually inspected: `scratch/raptor-flight-review/vane-flight-redTail.png`, `vane-flight-greatHorned.png`, and `vane-rest-greatHorned.png`; the matching hawk rest image is also saved. These captures use production models in a test-only lighting scene. The finish remains a stylized procedural interpretation. Browser validation uses software WebGL with optional bloom disabled; physical-device performance and shimmer are not measured. The canonical and desktop files remain identical, syntax/patch-format checks pass, and no deployment was performed.
+
+## Softer wing surfaces without overlay strips (2026-09-12)
+
+Removed the four generic transparent wing-mark strips and their unused geometry/material code. These strips crossed the raised vanes and appeared as broken rectangular bands in both flying and resting close-ups. The remaining wing surfaces are opaque and use the same existing folded morphs; actual head field marks, species colors, and tail-band shading are retained.
+
+Reduced the central vane ridge from 0.012 to 0.006 scene units, softened the long-feather texture's edge shading, and replaced the repeating three-feather tint pattern with modest deterministic variation. Gentle root-to-tip vertex shading is attached directly to each feather, so the shading follows folding without separate overlay geometry. Four meshes and their associated draw submissions are removed per bird. Flight physics, input handling, camera behavior, and lighting cadence are unchanged.
+
+Nine focused wing/fold geometry checks pass, including mirrored surfaces, finite normals, nondegenerate transitions, quill pivots, and feather follow-through. Both extended browser scenarios pass: high-quality red-tailed hawk and low-quality great horned owl in a narrow layout. They check opaque wing layers, the reduced mesh count, shared feather textures, tail-band compilation, folding, takeoff, strike-foot motion, pause, reduced motion, static geometry buffers, and no browser errors.
+
+The final hawk flight and owl resting close-ups were visually inspected: `scratch/raptor-flight-review/soft-wing-flight-redTail.png` and `soft-wing-rest-greatHorned.png`. Matching flight/rest captures for both species are saved. The models remain stylized procedural birds; these test-only lighting scenes use production geometry. Software WebGL testing disables optional bloom and does not measure physical-device performance. Both simulator copies are byte-identical, syntax and patch-format checks pass, and changes remain local without deployment.
+
+## Eye seating and owl facial-feather detail (2026-09-12)
+
+Added a single batched eye-surround mesh under the existing head rig. Its two softly shaded rims leave the iris openings clear, rise slightly beside the iris, and settle back toward the head/cheek surface. The non-owl upper rim is a little broader; this is a static artistic treatment rather than a new blinking or facial-expression behavior. The rims use existing head colors and a muted inner shade. Eye positions, iris and pupil geometry, bill shape, head tracking, and species selection are unchanged.
+
+Owl cheek discs now have radial UVs and a shared procedural facial-feather texture, with fine curved strokes and a subdued rim. The texture follows each existing curved cheek instead of adding more surface layers. Its small bump depth and mip filtering keep the detail restrained. The existing cheek vertex colors remain in place. The pass adds one mesh per bird and one small texture for owls.
+
+Thirteen focused checks pass for facial geometry, unobstructed eye openings, outward-facing rims, finite surface data, body/head contours, and gaze damping/selection. Source syntax and patch-format checks pass; canonical and desktop simulator copies remain byte-identical.
+
+Rendered review led to a flatter rim profile: the middle ring now blends toward the seated outer surface instead of standing above the iris edge. The nine affected facial/gaze checks passed again after that adjustment; the four unchanged body/head checks had already passed. Both final browser scenarios pass for the high-quality eagle and low-quality owl, covering attached face parts, textured owl discs, gaze tracking/recentering, pause, reduced motion, dive transitions, draw-call bounds, and no browser errors.
+
+Both final close-ups were visually inspected: `scratch/raptor-flight-review/soft-face-baldEagle.png` and `soft-face-greatHorned.png`. The eye rims are less raised than the initial version, and radial feather detail is visible across the owl's cheeks. The captures use production models in a test-only lighting scene. The models remain stylized procedural birds. Browser tests use software WebGL with optional bloom disabled; physical-device frame rates and shimmer remain unmeasured. Changes remain local and have not been deployed.
+
+## Representative body field marks (2026-09-12)
+
+Added body markings for the red-tailed hawk and great horned owl, based on Cornell's identification references. The [Red-tailed Hawk identification guide](https://www.allaboutbirds.org/guide/Red-tailed_Hawk/id) describes an adult eastern bird as pale underneath with a darker belly band, while noting regional and morph variation. The [Great Horned Owl guide](https://www.allaboutbirds.org/guide/Great_Horned_Owl/id) describes a white throat patch and considerable regional color variation. These details are representative artistic interpretations for the existing models, not a claim that all individuals share one plumage.
+
+The red-tail receives a band of elongated dark streaks across its underside, with a soft transition toward the pale upper breast. The owl receives a softly bounded pale patch on the forward underside. Both are shaded directly in the existing continuous body material using body coordinates. Geometry, head/wing/tail colors, and flight behavior are unchanged. The streak edges use screen-space derivative smoothing; no extra meshes, draw calls, or textures are added. Other species retain their existing body materials.
+
+Both browser scenarios pass for the high-quality red-tailed hawk and low-quality great horned owl in a narrow layout. They verify the intended body shader compiles for each species, preserve the existing wing/face/tail material checks, and cover perching, folded poses, takeoff, strike-foot movement, pause, reduced motion, static geometry buffers, draw-call bounds, and no browser errors.
+
+The final hawk underside and owl underside/resting views were visually inspected: `scratch/raptor-flight-review/body-marks-underside-redTail.png`, `body-marks-underside-greatHorned.png`, and `body-marks-rest-greatHorned.png`. The hawk band is visible against the pale breast; the owl throat patch is subtler, especially in the resting view beneath its head. Matching flight/rest captures for both species are saved. These captures use production geometry in test-only lighting scenes. Browser checks use software WebGL with optional bloom disabled; physical-device shader cost and shimmer have not been measured. Source syntax and patch-format checks pass, both simulator files remain identical, and changes remain local without deployment.
+
+## Continuous torso feather flow (2026-09-12)
+
+Reoriented the body's sphere parameterization before applying its existing contour shape, placing texture poles at the neck and tail ends instead of the back and belly. This removes the pinwheel/stretching visible in the prior underside views while retaining the same contour formula, vertex counts, and species color blending. The torso now uses a separate clone of the existing feather atlas with whole-number 2-by-2 repeats, keeping the wrap aligned at its seam. Head and crown texture settings remain unchanged. Reduced body bump depth from 0.0035 to 0.0018 for a softer surface.
+
+Eleven focused geometry checks pass across the targeted runs: six body/head/mapping checks and five folded-wing checks. New coverage verifies UV poles stay at the body's longitudinal ends, the visible breast stays away from those poles, UVs remain finite, and rendered vertices have normalized normals. The normal check excludes the unused duplicated pole vertices in Three.js's indexed sphere geometry.
+
+Both extended browser scenarios pass for high-quality red-tailed hawk and low-quality great horned owl in a narrow layout. They verify the torso texture's name/repeat settings, compiled species markings, existing wing/tail/face details, folded poses, takeoff, pause, reduced motion, static geometry buffers, and no browser errors. Final underside renders were visually inspected: `scratch/raptor-flight-review/torso-flow-underside-redTail.png` and `torso-flow-underside-greatHorned.png`. The owl's prior belly pinwheel is gone, and the hawk's streaked band remains visible. Matching flight/rest images are also saved.
+
+Both simulator copies remain byte-identical; syntax and patch-format checks pass. This adds a torso texture clone but no meshes or draw calls. The models remain stylized procedural birds. Browser validation uses software WebGL with optional bloom disabled; physical-device performance is not measured. Changes remain local and have not been deployed.
+
+## Gameplay feedback and control clarity (2026-09-12)
+
+Reviewed the flight controls, live instruments, and free-flight practice loop. Trail completion previously disappeared after six simulated seconds and gave no direct next action. Results now remain available until the player retries, returns to hunting, or starts perched practice. The panel shows a score out of ten, each ring's outcome, the best score for the current flight, and completed-attempt count. Coaching distinguishes missed rings, passes outside the center, and an all-centered run. Retry builds a new route from the current bird position; it does not reset the flight. Deliberate result actions return keyboard focus to the canvas.
+
+The flight can continue behind the result. Retrying is disabled while paused or grounded, and starting a trail while grounded explains that the bird must take off. On narrow screens, completed results sit below the main telemetry strip while smaller heading, attitude, target, and mission overlays clear out of the panel's space. Those overlays return when the result closes or another trail starts. Scenic view retains its compact result placement.
+
+Live instrument status now receives the simulator's actual flight state, including perched, landed, stunned, and paused states. Grounded birds show "Launch first" in the strike instrument. Target labels now include prey spotted from a perch, catches, and missed strikes. Strike hints use the selected key binding instead of always naming F. Accessible shortcuts for flight, pause, camera, zoom, assist, and sound follow the selected preset or custom mappings; display arrow glyphs remain separate from accessibility key names, and unbound controls no longer advertise a fallback shortcut.
+
+Validation includes three focused physics checks covering frame-rate-independent steering, swept ring crossings (including misses and reverse approaches), and route bounds/terrain clearance. Three browser scenarios passed across targeted runs: smooth controls/pause/shadow budgeting; actual trail completion, persistent results, keyboard retry/dismissal, and best-score retention across an imperfect second attempt; and Simple/Custom control remapping with perched/pause/takeoff instrument transitions. The frozen-animation test harness needed an explicit result-visibility wait before the second keyboard interaction. Browser checks use software WebGL with optional bloom disabled; these checks do not establish physical-device frame rates or a complete application-wide bug audit.
+
+Visual review of the first normal-overlay capture exposed a narrow-screen collision, which prompted the layout adjustment above. Final captures are `scratch/raptor-flight-review/trail-result-narrow.png` and `trail-result-instruments-narrow.png`. Both simulator copies remain identical. Changes remain local and have not been deployed.
+
+## Paused camera controls and clearer pause actions (2026-09-12)
+
+Fixed a mismatch where camera and acuity-zoom buttons changed their labels during pause but left the rendered view unchanged until flight resumed. The live camera/FOV calculations now live in shared helpers. Paused view changes apply the selected camera framing or FOV immediately and redraw once; they do not run the simulation loop. Camera-relative sky/celestial positions follow the changed viewpoint, and switching camera mode resets the terrain-floor smoothing history for the new location. Zoom alone retains the current camera position.
+
+Replaced the static pause message with a compact panel containing Resume flight, Camera, and Zoom controls. It keeps the frozen scene visible, uses an opaque card for readable text, supports keyboard activation, reflects custom shortcuts, and returns focus to the canvas when resuming. An unbound pause key falls back to the Resume button instruction. Main movement and strike buttons are disabled while paused. The pause panel's handlers are removed during simulator cleanup.
+
+Validation: three input/pause scenarios and three live-flight continuity scenarios cover equivalent-key releases, resize during pause, reduced motion, immediate camera/zoom redraws, unchanged bird/prey positions, unchanged energy and simulation time, absence of a background frame chain, custom/unbound pause shortcuts, keyboard resume, perching, camera ground clearance, steady chase framing, landing, and takeoff. The new paused-view scenario also checks the disabled movement/strike controls and narrow-layout fit. Final capture: `scratch/raptor-flight-review/paused-view-controls-narrow.png`.
+
+The camera refactor preserves the existing live interpolation rates. Browser validation uses software WebGL with optional bloom disabled; physical-device performance has not been measured. Syntax and whitespace checks pass, and the canonical and desktop sources remain byte-identical. Changes are local and have not been deployed.
+
+## Strike coaching, simulation-time recovery, and reliable restart (2026-09-12)
+
+Added a persistent Last strike panel beneath the flight controls. It records the latest catch or miss, the catch's energy reward or miss reason, and an actionable next-approach tip. It remains readable after the brief in-scene effect ends, uses text as well as color to distinguish outcomes, and clears when a new simulator instance starts. Positioning it after the controls avoids shifting those controls when the first result appears. The narrow result capture was visually reviewed: `scratch/raptor-flight-review/last-strike-coaching-narrow.png`.
+
+Fixed delayed catch actions that could finish during pause. Strike recovery, the delayed catch call, and replacement prey now use the simulation clock instead of native real-time timers. Strike input and the button's ready state share the same recovery gate. Catch/miss animation age and transient flight notices also use simulation time, preserving their remaining duration on resume. The action queue is cleared during cleanup and skips work when empty. The strike reach and approach requirements are unchanged.
+
+The restart regression exposed a separate renderer lifecycle bug: cleanup explicitly loses the old WebGL context, but restart reused its canvas. The flight canvas now has a key based on species, mission, restart revision, and graphics quality, so a new renderer receives a fresh canvas. Tests check that the old canvas disconnects and clears its snapshot hook, the restarted hunt has no pending actions or stale strike result, and a subsequent graphics-quality change initializes successfully.
+
+Browser coverage includes a real-time wait after pausing immediately after a catch, exact simulated recovery and respawn boundaries, rapid-repeat rejection, persistent miss coaching, restart, graphics changes, and perched scanning/launching/striking for red-tailed hawk, great horned owl, peregrine, and kestrel. Existing perch tests now advance nine 50 ms frames for their 450 ms recovery interval; a single long fake frame was clamped to 50 ms of simulation time. A frozen-animation harness locator timeout was resolved by advancing the known test fixture directly; the captured simulator itself remained healthy.
+
+Syntax and whitespace checks pass, and both simulator copies remain byte-identical. Validation uses software WebGL with optional bloom disabled; physical-device performance and the entire activity collection were not audited in this pass. Changes remain local and have not been deployed.
+
+All six browser scenarios passed on the final run, including fresh-canvas restart and graphics-quality reinitialization.
+
+
+## Directional hunting guidance (2026-09-12)
+
+Refined target alignment so guidance follows the bird's heading and current pitch. Lateral approaches now ask for a left or right turn, rather than an unrelated upward/downward correction. Off-axis distant prey prompts alignment before closing range; stoop advice waits until turning is no longer the dominant correction. Strike reach and catch eligibility are unchanged.
+
+The active correction highlights the matching mapped control in Guided mode. A small neutral zone and 20% axis-switch buffer keep diagonal advice stable. Near-target miss coaching uses the same correction. The cue stays in the existing compact HUD; no additional overlay was added.
+
+Validation:
+- Six unit checks passed for caption bounds and steering geometry, including wrapped headings, relative pitch, vertical/coincident targets, and diagonal stability.
+- The focused existing strike-feedback regression passed after updating outdated coaching signatures and the previously added grounded-talon guard. The other 164 tests in that file were excluded from this focused run.
+- Four Chromium browser checks passed: real prey in all four directions, matching control highlights, a narrow-screen lateral miss, catch recovery and replacement prey across pause, and restart/quality-change lifecycle behavior. The two direction checks passed again after improving the screenshot fixture to redraw after canvas resize.
+- Visually inspected `scratch/raptor-flight-review/directional-guidance-narrow.png` with a rendered scene at a 420px host width.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies remain byte-identical.
+
+Changes are local. These checks do not constitute an app-wide test pass or hardware performance benchmark.
+
+## Recurring Free Hunt guidance and panel polish (2026-09-12)
+
+Free Hunt now follows each attempt through Scan, Align, Strike, and Reset. The earlier panel treated the first catch as a permanent transition to Explore and could still show Scan during lateral alignment. The current step now follows live target state, including closing range, a controlled descent, strike recovery, misses, and assist-off exploration. Catch and miss feedback leads back into the next approach. Grounded and stunned states give takeoff/recovery guidance.
+
+The panel uses a compact flight catch count, a prominent current-step heading, sentence-case coaching, and larger route labels. Its border and current-step accent distinguish normal guidance, an available strike, and reset without adding animation. Free Hunt's action heading is exposed to assistive technology, with the current route step still marked using aria-current. The catch count uses the flight's accumulated catches rather than the streak counter that resets after a hard landing.
+
+Validation:
+- Four Chromium browser checks passed: two repeated catches and a fresh restart; missed approach, pause, resumed approach, assist-off exploration, and Scenic mode; target-caption bounds and obstacle clearance at 1100px and 420px widths.
+- Visually inspected the rendered 420px-host screenshot at `scratch/raptor-flight-review/free-hunt-cycle-narrow.png`. The panel fits without horizontal overflow and occupies less than 35% of stage height.
+- JavaScript syntax and scoped whitespace checks passed. Canonical and packaged desktop copies are byte-identical.
+
+Changes remain local. No app-wide suite or hardware performance benchmark was run for this pass.
+
+## Strike-range clarity and consistent target feedback (2026-09-12)
+
+Close-range target distances now display tenths of a metre, rounded upward within 10 m. A target just beyond the normal 5 m or diving 7 m strike reach therefore cannot round down to that limit. Mid-range distances use whole metres; distances beyond 50 m retain coarse five-metre estimates with an explicit approximation marker.
+
+The target caption, close-approach hint, and telemetry range now share the same acquisition sample and formatting. Telemetry text changes only when the formatted value changes, and its former extra target-acquisition query was removed. Assist-off and missing-target states display Off and None respectively.
+
+Offscreen labels describe the prey's screen bearing, including diagonal positions, rather than issuing steering commands that can conflict with the bird-relative cue while the chase camera follows a turn. Onscreen captions now distinguish recovery, controlled descent, and the next approach; a reachable target correctly shows strike readiness once recovery ends.
+
+Validation:
+- Five unit checks passed for close-range boundary precision, monotonic displayed range, approximate distant estimates, and caption bounds.
+- Six Chromium checks passed for consistent range across HUD surfaces, strike recovery across pause and subsequent catching, all four diagonal offscreen labels, repeated hunt cycles and restart, and caption obstacle clearance at 1100px and 420px widths.
+- Visually inspected the rendered narrow-screen artifact at `scratch/raptor-flight-review/target-bearing-labels-narrow.png`.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Validation was targeted; no app-wide suite or hardware performance benchmark was run.
+
+## Paused target projection and caption clearance (2026-09-12)
+
+Fixed stale prey-marker positions when changing camera, zoom, or viewport size during pause. A browser regression first reproduced the discrepancy between the stored marker coordinates and the actual camera projection. Live flight and paused redraws now share one marker-projection function, which refreshes the camera matrices without advancing physics, prey movement, simulation time, or strike recovery.
+
+Paused redraws also discard a cached target if it was caught immediately before pausing, preventing a ghost marker. Onscreen prey captions use the lower-control boundary to avoid overlapping Scenic view, Flight trail, or Perched practice controls. Offscreen markers retain their existing clearance rules; this distinction was verified after the broader layout test caught an overlap during refinement.
+
+Validation:
+- Three existing input/pause browser checks passed, including aliased held keys, reduced-motion resize redraws, paused camera/zoom changes, and keyboard resume.
+- The final five affected browser checks passed: paused camera and zoom projection, paused resize and lower-control clearance, immediate catch-and-pause cleanup, and offscreen caption bounds/obstacle clearance at 1100px and 420px widths.
+- Projection checks compare against independently projected real prey positions. They verify frozen prey and raptor positions, simulation clock, energy, wing pose, and recovery, with exactly one redraw per paused camera/zoom action and no continuing animation loop.
+- Visually inspected `scratch/raptor-flight-review/paused-target-projection-narrow.png` after correcting control clearance.
+- JavaScript syntax and scoped whitespace checks passed. Canonical and packaged desktop sources remain byte-identical.
+
+Changes are local. No app-wide test suite or hardware performance benchmark was run.
+
+## Immediate target-assist presentation (2026-09-12)
+
+Fixed a paused-control inconsistency: Target assist could switch off while the prey marker and scene highlights stayed visible until the next simulation frame. A browser test reproduced the visible stale marker after the button changed to its off state.
+
+Live flight and explicit assist changes now share one target-feedback update. Toggling assist immediately updates the marker, range, guidance, guide line, halo, and prey highlights. Paused toggles repaint once without advancing flight time, prey movement, energy, wing motion, or strike recovery. The control-driven refresh does not record tutorial progress. Assist-off guidance takes priority over transient strike feedback, and Scenic view/flight-trail visibility rules remain enforced when assistance is restored.
+
+Validation:
+- Ten distinct Chromium checks passed across the targeted run and corrected-fixture rerun: three immediate-assist/display-mode checks, two recurring-hunt checks, three paused-marker checks, and two range/marker checks.
+- Nine unit checks passed for steering geometry, range precision, and caption placement.
+- Repaired two older test assumptions found during the review: the steering helper extraction boundary now tolerates adjacent declarations/comments, and the controlled range-test prey is restored ahead of the bird before pause so its production AI step does not invalidate the recovery fixture. The behavioral assertions were retained.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Validation is targeted, not an app-wide suite or a hardware performance benchmark.
+
+## Paused Scenic-view switching (2026-09-12)
+
+Fixed Scenic view changing the HTML overlays without redrawing the paused 3D scene. The Scenic button now sends the selected view to the simulator immediately as well as updating the saved UI state. Target guidance and scene visibility refresh together, with one paused redraw per switch.
+
+Flight-trail and airflow eligibility are retained separately from the Scenic visibility setting. Switching back restores effects that were active without rebuilding their geometry or advancing animation. The shared visibility update also respects reduced motion, assist-off state, and flight practice. Paused redraws consistently apply these rules after camera or viewport changes.
+
+Validation:
+- First reproduced the missing redraw with a browser test using an active flight trail.
+- Ten Chromium browser checks passed: repeated paused Scenic switches with frozen geometry and simulation state, reduced-motion/assist-off restoration, immediate assist changes, practice-mode visibility, input aliases, paused camera and resize behavior, and target-caption clearance at 1100px and 420px widths.
+- The Scenic checks verify one redraw per switch, unchanged flight-trail and airflow geometry versions, fixed bird/prey positions and energy, frozen recovery, and no continuing animation frames during pause.
+- Visually inspected `scratch/raptor-flight-review/paused-scenic-clean.png`.
+- JavaScript syntax and scoped whitespace checks passed. Canonical and packaged desktop source copies remain byte-identical.
+
+Changes remain local. Validation was targeted; no app-wide suite or hardware performance benchmark was run.
+
+## Animated wingtip trails and effect visibility (2026-09-12)
+
+Refined the existing wingtip trail effect so it follows the rendered wings instead of fixed body-space points. Broad-wing species use the outer primary feather tip, including its quill pivot, flex, and resting morph. Pointed-wing species use the tapered wing surface tip. The wing hierarchy is updated before sampling world-space anchors, fixing a second one-frame transform mismatch detected during testing.
+
+Trail ends now fade to transparent using a static per-vertex fade attribute. A smooth speed ramp replaces abrupt opacity at the activation threshold. The effect retains the existing two-line geometry and quality-dependent point counts. Wingtip trails now participate in the shared Scenic/reduced-motion visibility rules, including paused view switches.
+
+Validation:
+- First reproduced a roughly 0.69 scene-unit attachment gap in the previous fixed-point implementation. An intermediate test caught a remaining stale-transform gap; refreshing the hierarchy resolved it.
+- Two wingtip browser checks passed for red-tailed hawk at low quality and peregrine at high quality. They sample both tips across 100 banking frames, compare trail roots against independently transformed wing vertices, verify fade endpoints and shader compilation, and check Scenic switching, unchanged paused geometry, reduced motion, and perching.
+- The two existing paused Scenic-view regression checks passed during this pass.
+- Visually inspected `scratch/raptor-flight-review/wingtip-trails-attached-redTail.png`.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+These remain illustrative flight effects; no new biological or weather-dependent condensation model was introduced. Changes remain local. Validation was targeted rather than an app-wide test suite or hardware performance benchmark.
+
+## Desktop HUD spacing and control clearance (2026-09-12)
+
+Moved the desktop mission-progress panel into the upper-right HUD area. It previously occupied the same lower-right area as Flight trail and Perched practice, causing both buttons to cover the progress text. The bottom corners now remain available for controls, and the central flight view has less competing content. Existing narrow-screen positioning remains in place.
+
+Validation:
+- Reproduced the original overlap against both practice buttons before changing the CSS.
+- Four Chromium checks passed: Free Hunt and Feed the Chicks panels at host widths 1100, 880, 760, and 420px; target-caption clearance at 1100 and 420px. The new layout checks verify viewport bounds, horizontal overflow, separation from controls/telemetry/altitude gauge, and Free Hunt visibility when switching practice and Scenic modes.
+- Visually inspected `scratch/raptor-flight-review/hud-clearance-open-1100.png` and `scratch/raptor-flight-review/hud-clearance-feedChicks-420.png`.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies remain byte-identical.
+
+Changes remain local. This was a targeted layout regression pass, not an app-wide test suite.
+
+## Provisioning mission guidance and completion refresh (2026-09-12)
+
+Feed the Chicks now follows the live Scan / Align / Strike / Reset hunt cycle. The old route stayed on Scan during an approach, skipped Chase after a catch, and implied separate delivery/refueling actions. The calorie meter remains the overall mission goal, while the current-action heading and coaching follow target alignment, range, strike readiness, misses, and recovery. Catch feedback states that credit is automatic and shows the remaining calories. Turning assist off gives a manual-scanning heading.
+
+The mission uses the clearer hunt-panel typography, teal background, and state accents already used in Free Hunt. The current-action text is available to screen readers. Desktop and phone layouts were visually inspected.
+
+A gameplay regression also exposed a completion bug: finishMission paused the animation loop before the HUD could refresh, leaving a successful run showing 68% in the deterministic scenario. Mission completion now refreshes the HUD before pausing, so the outcome, route, and 100% meter agree immediately.
+
+Validation:
+- Reproduced the old guidance and the stale completion meter before their fixes.
+- Two new Chromium checks passed using real scene prey and production catch logic: repeated approaches/catches through the 400 kcal goal; misses, frozen pause, assist changes, and narrow-screen readability.
+- Four existing Chromium checks passed during this pass: recurring Free Hunt behavior, misses/pause/manual exploration, and Free Hunt/Feed the Chicks layout clearance at widths 1100, 880, 760, and 420px.
+- Visually inspected scratch/raptor-flight-review/hud-clearance-feedChicks-1100.png and hud-clearance-feedChicks-420.png.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. Validation was targeted; this was not an app-wide suite or a hardware performance benchmark.
+
+## Mission results layout, keyboard access, and restart (2026-09-12)
+
+Rebuilt the mission-result card with a clear outcome header, a scrollable flight-review area, and a persistent action footer. The success state uses a green accent, with a prominent Fly again button and separate Next mission / Change setup actions. The card stays inside the simulator at narrow widths and compact heights; the review remains keyboard-scrollable and Tab/Shift+Tab wrap within the result dialog.
+
+Fixed two related completion issues. Finished missions cannot be resumed behind the result dialog, and the ordinary pause card is hidden after a mission resolves. Visual review discovered that the pause card previously covered the result heading and debrief even when layout bounds passed.
+
+Validation:
+- Reproduced the original result card extending approximately 190px above a compact flight view.
+- New Chromium regression completes a mission through production catches, checks card/action bounds at 880, 420, and 320px widths in a 460px-high view, verifies the heading is unobscured, scrolls the review, checks keyboard focus wrapping, confirms an attempted resume leaves the finished flight frozen, and uses Fly again to start a fresh moving simulation.
+- Six targeted Chromium checks passed: the new results test, two provisioning mission checks, and three input/pause checks. The results and three pause checks were rerun after correcting the overlapping pause card; all four passed.
+- Visually inspected corrected screenshots scratch/raptor-flight-review/results-320.png and results-880.png.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. This was targeted gameplay and visual validation, not an app-wide test suite or hardware performance benchmark.
+
+## Accurate catch totals and next-mission preview (2026-09-12)
+
+The result debrief and saved flight history now show all catches made during the flight, including those before a crash. A crash still resets the streak used for best-run comparisons; that comparison is now labeled Streak / best. The existing streak field remains intact for record calculations.
+
+Added a compact Up next preview to the persistent results footer. It names the next mission, the species that will actually fly it, and its time limit. The Next mission button exposes the preview as its accessible description. Preview and launch share the same mission-selection helper, including the existing recommended-species switch.
+
+Validation:
+- Reproduced three successful catches appearing as two in the debrief after a real dive, crash, recovery, and relaunch.
+- Three Chromium checks passed: crash-surviving catch totals in both debrief and history while preserving streak comparison; preview-to-launch agreement for Cross the Desert / Red-tailed Hawk; and existing result bounds, keyboard access, frozen completed flight, and Fly again behavior at 880, 420, and 320px widths.
+- The crash test uses production input and physics, with GPU submission skipped only during the long dive/recovery input sequence. It resumes normal rendering afterward.
+- Visually inspected scratch/raptor-flight-review/next-mission-preview-320.png and results-880.png.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies remain byte-identical.
+
+Changes remain local. Validation was targeted rather than an app-wide suite or hardware benchmark.
+
+## Mission-rule consistency and finished-flight instruments (2026-09-12)
+
+Analysis found a Silent Strike instruction mismatch: the mission text said 30m, while the existing failure check used 48m. A shared 48m gameplay constant now drives the introduction, objective, live guidance, and alert check. The text explicitly calls this a mission rule and explains that flapping inside the range ends the mission. Live guidance names the current Pull up key to release. The gameplay radius itself is unchanged; this is not presented as a universal biological hearing distance.
+
+Finished-flight instruments now prioritize Mission complete / Mission ended over the underlying paused state. The run control becomes disabled Flight ended, strike guidance directs players to a new flight, and the target description identifies the frozen snapshot. Ordinary pauses retain an enabled Resume action, explain that flight is frozen, and stop prompting players to strike. The renderer readout says Paused instead of showing a stale frame rate.
+
+Visual review caught a remaining scan-ahead subtitle and clipped hints. The subtitle now reflects pause/outcome state, and instrument details wrap at narrow widths.
+
+Validation:
+- Reproduced misleading strike guidance while paused before the change.
+- Three targeted Chromium checks passed: success/failure instrument and control states; Silent Strike flapping at 49m remaining active, gliding at 47m remaining active, and flapping at 47m ending the mission; existing compact result layout, focus, pause guard, and restart checks.
+- Both mission-clarity tests passed again after the subtitle/wrapping correction and verify no horizontal overflow in narrow instrument hints.
+- Visually inspected final scratch/raptor-flight-review/mission-instruments-failed.png; the earlier success screenshot exposed the clipped-hint issue that was then corrected.
+- JavaScript syntax and scoped whitespace checks passed; canonical and desktop source copies are byte-identical.
+
+Changes remain local. These are focused gameplay and UI checks, not an app-wide test suite or biological validation of the simulation model.
+
+## Evasion survival objective and countdown (2026-09-12)
+
+Fixed Evade the Goshawk ending immediately after the second catch despite its stated four-minute survival requirement. Two catches now satisfy the hunting portion; success still requires reaching the timer deadline with the goshawk at least 30m away. The existing close-range failure remains active throughout the survival period.
+
+The mission panel now shows a minutes:seconds countdown alongside catch progress. Coaching retains the predator distance and explicitly marks catches as secured. A nearby predator takes priority over the completed catch requirement in the route indicator and coaching.
+
+Validation:
+- Seven evaluator boundary checks passed, covering early completion attempts, 239.999s versus the 240s deadline, insufficient catches, the 30m safe boundary, and close-range failure before/at the deadline. The two premature-win cases failed before the fix.
+- Three targeted Chromium checks passed: the new evasion gameplay test plus existing successful/failed mission clarity checks. The evasion fixture makes two production catches, verifies the mission remains active below 100%, checks the countdown freezes while paused and continues after resume, verifies urgent evasion guidance after catches, and brings the real predator inside the failure range.
+- The evasion browser test was rerun successfully after allowing for the HUD sampling interval and rendering a frame after the controlled resize.
+- Visually inspected scratch/raptor-flight-review/evasion-survival-countdown.png at a narrow host width.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Deadline logic was tested at controlled boundaries; this pass did not assess the difficulty of an uninterrupted four-minute evasion flight or run the whole application suite.
+
+## Thermal-only rules and mission control guidance (2026-09-12)
+
+Ride the Thermal declared pull-up flapping forbidden but did not enforce that condition. Pull-up input now ends this mission with a specific explanation before the frame applies powered lift. The altitude-up button is visibly disabled, matching the existing physics restriction; its title directs the learner to rising air. The pull-up button warns that flapping ends the mission.
+
+Thermal mission key guidance now offers turning/circling, glide-angle adjustment, and pause instead of hunting/strike/pull-up prompts. The prompt refreshes on thermal entry/exit. Grounded coaching advises restarting rather than using the forbidden takeoff action. Keyboard altitude-up no longer labels the flight as climbing when its climb effect is blocked.
+
+Validation:
+- Reproduced keyboard pull-up leaving the thermal mission active before the fix.
+- Five distinct Chromium checks passed during this pass: keyboard and button pull-up enforcement without altitude gain, legal glide/turn entry into the real thermal with rising altitude and a circling prompt, and the two existing mission-clarity checks. All three thermal checks passed after the final guidance refresh adjustment.
+- The legal-flight fixture uses production steering/physics and skips GPU submission during its approach loop, then resumes rendering for inspection.
+- Visually inspected scratch/raptor-flight-review/thermal-legal-glide.png.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Remaining refinement identified during visual review: generic prey-target overlays can still compete with soaring guidance in this mission. The mission-specific key guide is corrected; contextual treatment of the remaining targeting overlays is a separate opportunity.
+
+Changes remain local. Validation covers the rule and a valid thermal climb, not a full 500m mission completion or an app-wide test suite.
+
+## Desert crossing outcome correctness and guidance (2026-09-12)
+
+Cross the Desert now consistently enforces its stated airborne/refuel/energy requirements. Landing or crashing ends the crossing, and ground contact is remembered even if takeoff occurs before the next mission evaluation. Depleted energy ends the run at zero. A run that fails an energy check no longer displays the success message. Deadline success is evaluated only after the airborne and energy checks pass, then requires at least one refuel catch.
+
+The objective describes these rules directly. Mission guidance distinguishes finding a refuel catch from staying airborne after refueling. The live timer now uses minutes:seconds, sharing the formatter with the evasion mission.
+
+Validation:
+- Eleven desert logic checks passed: early versus six-minute deadline, positive/zero/negative energy, missing refuel, landing, crash, and remembered prior ground contact. Seven failed before the fix. Seven existing evasion deadline checks also passed.
+- Three Chromium checks passed: desert landing and crash through production controls/physics, plus the existing evasion countdown/pressure check. Desert checks cover a real refuel catch, pause-frozen countdown, continued countdown, grounded failure text/history, hidden ordinary pause overlay, and a clean Fly again restart.
+- The descent sequences skip GPU submission while preserving simulation updates; rendering resumes before inspecting results.
+- Visually inspected scratch/raptor-flight-review/desert-grounded-result.png.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. Controlled deadline tests validate the six-minute outcome rules; this pass does not claim a full natural-play crossing or an app-wide test suite.
+
+## Soaring-specific navigation and uncluttered flight view (2026-09-12)
+
+Ride the Thermal now follows the actual lift column instead of acquiring prey for HUD and camera attention. A cyan navigation banner gives a left/right turn cue with the player's mapped key and approximate horizontal distance to the column; it switches to green circling guidance inside rising air. The heading instrument tracks lift bearing and the telemetry strip reports lift distance/status. Existing thermal-entry/exit recording remains the sole source of those flight events.
+
+The soaring view removes prey beacons, target lines/halos, targeting reticles, aim/range meters, and the irrelevant Strike/Target assist controls. Flight instruments replace hunting readiness with the glide-only rule. The assist shortcut explains the soaring objective without changing the assist setting. Paused redraws, Scenic view, reduced motion, camera/zoom changes, and restart retain the mission-specific presentation. Desktop banner spacing clears the telemetry strip.
+
+Validation:
+- Six distinct Chromium checks passed: four thermal checks covering keyboard/button rule enforcement, a legal production-physics glide into lift, no prey acquisition/camera pull, paused view changes, Scenic/reduced-motion behavior, 420px layout, and restart; two existing target-guidance checks retained hunting behavior at desktop and narrow widths.
+- All four thermal checks passed after the final presentation adjustment. The initial narrow-layout test needed the harness's fixed wrapper resized as well as the viewport; the corrected fixture passed.
+- Visually inspected thermal-legal-glide.png and thermal-guidance-paused-420.png in scratch/raptor-flight-review.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. This addresses the competing prey-overlay refinement noted in the thermal-rule review. Checks cover legal lift entry and presentation, not full 500m completion or an app-wide test suite.
+
+## High Stoop speed readiness and completion clarity (2026-09-12)
+
+High Stoop previously described its speed bar as mission completion, including an accessible announcement of 100% complete before a qualifying catch. Its speed display could also round a sub-threshold speed up to 180 mph, and its route advanced to the final phase from speed alone, even outside a dive.
+
+The active mission now uses a speed-requirement bar with explicit mph values and accessible speed semantics. Speed feedback floors the displayed value so a sub-threshold speed is not presented as qualifying. The mission includes a minutes:seconds countdown, and its objective specifies a successful catch while diving at 180 mph or faster. The existing qualification rule is shared by the outcome check and guidance.
+
+The route ends with Strike and reaches that phase only during a qualifying dive with a ready target and recovered talons. A green mission border and explicit mapped-key prompt mark that window. Earlier guidance distinguishes building dive speed, lining up prey, and recovering talons. A nonqualifying catch still earns its normal credit and now explains why High Stoop remains active. Completed runs restore the completion meter; a new run restores the speed meter.
+
+Validation:
+- Nine focused logic checks passed; eight reproduced the previous misleading readiness behavior before the fix. Checks cover the 180 mph boundary, countdown, speed-only meter, fast gliding, target alignment, strike readiness/recovery, and completed outcome.
+- Three Chromium checks passed: the new High Stoop sequence plus two existing mission-clarity regressions. The new sequence uses real flight controls to accelerate, verifies a nonqualifying catch and speed alone do not complete the mission, then verifies a qualifying catch, frozen pause, completion semantics, restart, and 420px layout.
+- Real prey are repositioned for deterministic acquisition/catch checks; physics continues normally, with GPU submission skipped during the acceleration loop and restored for visual review.
+- Visually inspected scratch/raptor-flight-review/stoop-strike-readiness.png and stoop-guidance-420.png.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source files are byte-identical.
+
+Changes remain local. These checks validate mission feedback and the controlled catch sequence, not a full natural-play difficulty assessment or an app-wide test suite.
+
+## Visible deadlines and compact flight layout (2026-09-12)
+
+Feed the Chicks, Silent Strike, and Ride the Thermal now show a dedicated countdown in the mission panel. These missions previously had time limits without an in-flight remaining-time display. The new row uses the simulation's elapsed time and existing HUD refresh, with no additional interval. Numerals use a fixed-width font. The row uses steady amber/red styling and explicit labels at 30/10 seconds, reports Paused immediately, and preserves the remaining time at the end of a flight. Its accessible timer has live announcements disabled to avoid interrupting the learner every second. Existing inline timers in the other missions remain intact.
+
+Visual review found that the extra row could meet the altitude gauge on a shorter phone viewport. Narrow layouts now omit that redundant vertical gauge while preserving the altitude value in the top instruments. Desktop layouts retain the gauge. The target-marker layout already ignores zero-width hidden gauges.
+
+Validation:
+- Nineteen logic checks passed: ten countdown boundary/state checks and nine existing High Stoop readiness checks.
+- Five distinct Chromium checks passed on the final source: countdown initialization, progression, pause/resume, Scenic visibility, completed/failed flight freeze, fresh restart, and 420px layout across all three missions; plus two existing HUD-clearance checks for Free Hunt and Feed the Chicks.
+- A thermal resize check initially timed out because Playwright's default animation-frame polling shared the fixture's frozen requestAnimationFrame queue. Using explicit time-based polling corrected the fixture; the thermal check passed on rerun.
+- Visually inspected the final mission-clock-feedChicks-420.png and mission-clock-thermalKettle-420.png in scratch/raptor-flight-review.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Validation covers countdown behavior and the tested responsive layouts, not a full natural-play run to every deadline or an app-wide test suite.
+
+## Compact guidance spacing and target clearance (2026-09-12)
+
+Compact flight views now place guidance to the right of the status/wind instruments instead of centering both in the same space. The guidance column reserves the full wind-readout width, wraps text, and clears the mission panel. Misaligned-strike guidance is shorter while keeping the required action explicit. The smallest hunt-cycle route labels now use the intended compact font size without clipping.
+
+Embedded compact flight stages have a 460px minimum height so the mission panel and practice controls remain separate on short windows. Existing fullscreen sizing overrides remain intact. Edge-target placement uses the available vertical gap before falling back to the center, and text changes invalidate cached HUD bounds immediately rather than waiting for ResizeObserver.
+
+Validation:
+- Four Chromium checks passed together on the final source: compact hunting and thermal guidance at 420px and 320px with windy conditions and a deliberately short requested stage; existing target-guidance checks at desktop and phone widths.
+- Compact checks verify cue separation from status, wind, heading, attitude, telemetry, and mission panels; stage bounds; readable route labels; practice-control clearance; real distant and misaligned missed strikes; frozen pause/camera changes; and Scenic visibility.
+- Target checks cover all screen edges/corners, caption bounds, HUD clearance, assist toggles, Scenic/practice display modes, reduced motion, and targets behind the camera.
+- Intermediate checks exposed a phone edge-marker collision and a three-line miss message; both passed after the spacing and wording corrections.
+- Visually inspected the final guidance-lanes-open-420.png and guidance-lanes-thermalKettle-320.png in scratch/raptor-flight-review.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. This pass covers the tested compact HUD and target-guidance interactions, not an app-wide test suite or gameplay performance benchmark.

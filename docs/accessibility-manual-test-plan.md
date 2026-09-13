@@ -63,3 +63,15 @@ For each workflow, verify headings and landmarks, accessible names and instructi
 ## Release decision
 
 Summarize tested scope, unresolved failures, blocked environments, output formats evaluated, and any workflows excluded. Do not state that the product conforms to WCAG 2.2 AA unless the evidence supports every applicable success criterion across the declared scope.
+
+
+## September 12, 2026 automated audit evidence
+
+The [current automated audit](../reports/wcag-audit-2026-09-12/README.md) records the v1.5 working-tree assessment. It includes source heuristics, existing regression suites, sampled Chromium axe/reflow/text-spacing probes, and a scripted AI Backend Settings keyboard check. Enter opened that dialog; 45 Tab steps remained inside it; Escape closed it and restored the trigger.
+
+These results do not complete the manual matrix above. NVDA, VoiceOver, native browser zoom, media accessibility, authentication, complete teacher/student processes and generated-output review still need named testers and retained records. Catalog and source/generator loading placeholders must not be counted as evaluated content. Prioritize the confirmed Video Studio/Quick Start contrast findings, Video Studio ARIA, narrow catalog target spacing, and readiness-dependent Create-tab relationship when scheduling manual retests.
+
+
+### September 12, 2026 remediation follow-up
+
+The [five-finding remediation report](../reports/wcag-audit-2026-09-12/remediation/README.md) records 38 passing targeted regressions and local browser verification. Remaining manual tasks include populated Video Studio preflight announcements, speech-input/AT naming across header layouts and languages, true browser zoom, media accessibility and complete authenticated/live/export workflows. These remain open; automated results do not complete this manual plan.

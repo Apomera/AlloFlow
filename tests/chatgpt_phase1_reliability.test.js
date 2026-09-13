@@ -134,7 +134,7 @@ describe('finding 10 — resumed batches run under their SAVED settings', () => 
     expect(dp).toContain("Resuming with the batch\\'s ORIGINAL settings"); // source escapes the apostrophe
   });
   it('the Resume button passes the persisted settings and tells the teacher', () => {
-    expect(view).toContain('runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null, resumeBatchId: resumableBatch.batchId || null })');
+    expect(view).toContain('runPdfBatchRemediation({ resumeQueue, resumeSettings: savedBatch.settings || null, resumeBatchId: savedBatch.batchId || null })');
     expect(view).toContain("const checkpointBatchId = typeof resumableBatch.batchId === 'string' ? resumableBatch.batchId.trim() : '';");
     expect(view).toContain('discardResumableBatch(checkpointBatchId)');
     expect(view).toContain('Resuming with the batch’s original settings');

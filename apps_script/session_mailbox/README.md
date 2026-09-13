@@ -137,6 +137,47 @@ Hosted packs are capped at ~8 MB and stored as individual download chunks.
 Live messages cap at 90 KB; AlloFlow chunks larger resource pushes
 automatically.
 
+## Images in live sessions
+
+Live packs include supported pictures in image resources, glossary and timeline
+entries, visual panels (including animation frames), and quiz questions/choices.
+The app packages these separately from the small session document and sends them
+through the existing chunked mailbox and WebRTC paths. Hosted live packs retain
+the same pictures for students who join later.
+
+Large embedded PNG, JPEG, WebP and AVIF still pictures are resized for delivery
+when possible, preserving the teacher's original. Animated GIFs are not flattened.
+If an image cannot fit or uses an unsupported source, the teacher gets a warning
+and the student sees that it was omitted. Ordinary resource images share a 5 MiB
+character budget; the hosted pack limit still applies to the complete pack.
+HTTPS images are checked on the student device; a browser-local blob URL cannot
+be transferred to another device.
+
+The Live Dashboard distinguishes **Images: awaiting device**, **Images loading**,
+**Images loaded**, and **Images missing**. These receipts confirm that the images
+loaded on the learner device, not that the learner looked at them. Students can
+choose **Retry images** for failed downloads; teachers can resend and reassign
+the resource with the learner's **Retry images** button. Pictures omitted from the
+pack require the teacher to replace or resize them; an omission alone does not
+show a retry button. Mixed failures explain both actions.
+
+Mailbox **v23+** stores image counts in the participant's independent `imageDelivery`
+receipt, preserving activity progress. Each receipt matches a resource and its
+assignment nonce, so a previous assignment cannot appear loaded for a newer one.
+Only bounded counts, a resource id, status and timestamps cross this channel.
+Older deployments still transfer images and offer local student retry controls;
+the teacher dashboard explains that independent image status needs a script update.
+
+Transfers are acknowledged after successful decoding. Interrupted decoding can
+retry automatically, while **Retry resource** restarts replay and hosted-pack
+recovery without discarding already acknowledged transfers. Incomplete buffers
+expire and automatic attempts are bounded so failures cannot loop indefinitely.
+
+Earlier app builds stripped ordinary images before mailbox transfer. Reload the
+updated teacher and student apps and share the resource again (or use **Share
+full resource pack**). Image transfer fixes require the updated app. For independent
+teacher image status, update the mailbox script to v23 and reconnect/self-test.
+
 ## Two-device smoke test (after deploying or updating the script)
 
 1. Teacher: connect the mailbox, start a live session, scan the QR with a
@@ -184,3 +225,11 @@ Teachers download those JSON files from Drive and import them through
 AlloFlow's **Submission Inbox**. Standard Firebase live sessions continue to
 sync supported live answers and signals, but complete portfolio submissions
 remain file-based rather than being retained permanently in Firebase.
+
+## Lesson board retry compatibility
+
+Lesson boards require mailbox v22 or later. This version checks each response
+against the current retry window, so a delayed response from an earlier attempt
+cannot replace a newer pending response. Existing classroom activity request
+fields remain compatible. After replacing Code.gs, deploy a new Web App version
+using the same URL and reconnect the mailbox in AlloFlow.

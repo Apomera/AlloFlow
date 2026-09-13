@@ -51,7 +51,11 @@ describe('first-wave CDN extraction', () => {
         .update(readFileSync(contract.module))
         .digest('hex')
         .slice(0, 8);
-      expect(host).toContain(`<${contract.component}`);
+      // Full Pack is rendered by the extracted sidebar; its lazy loader remains in the host.
+      const renderSource = contract.key === 'FullPackRunView'
+        ? readFileSync('view_sidebar_panels_source.jsx', 'utf8')
+        : host;
+      expect(renderSource.includes(`<${contract.component}`)).toBe(true);
       expect(host).toContain(`${contract.module}?v=${version}`);
       expect(readFileSync(contract.source, 'utf8')).toContain(`function ${contract.component}(props)`);
     }

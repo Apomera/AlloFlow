@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+test.use({video:'off'});
 
 test.describe('Raptor smooth flight and practice trail', () => {
   test.describe.configure({mode:'serial',timeout:240000});
@@ -78,10 +79,22 @@ test.describe('Raptor smooth flight and practice trail', () => {
     expect(finished.reducedMotion).toBe(true);expect(finished.wingBankFlex).toBe(0);expect(Math.abs(finished.tailLift)).toBeLessThan(0.001);expect(finished.practiceTrailComplete).toBe(true);expect(finished.practiceTrailPassed).toBe(5);expect(finished.practiceTrailScore).toBeGreaterThanOrEqual(5);expect(finished.drawCalls).toBeLessThan(150);
     await expect(page.getByRole('group',{name:'Flight trail progress'})).toContainText('Trail finished');
     await expect(page.locator('.rh-practice-pip[data-state=passed],.rh-practice-pip[data-state=centered]')).toHaveCount(5);
-    await expect(page.locator('.rh-practice-score')).toHaveText(finished.practiceTrailScore+' points');
-    await page.getByRole('button',{name:'Flight trail',exact:true}).click();
+    await expect(page.locator('.rh-practice-score')).toHaveText(finished.practiceTrailScore+' / 10 points');
+    await expect(page.locator('.rh-practice-best')).toHaveText('Best this flight: '+finished.practiceTrailScore+' / 10 · 1 completed');
+    await expect(page.locator('.rh-practice-coach')).not.toBeEmpty();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{for(let i=0;i<145;i++)(window as any).stepPractice(50);c._rhCommand('pause');});
+    await expect(page.getByRole('group',{name:'Flight trail progress'})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Fly trail again',exact:true})).toBeDisabled();
+    await page.setViewportSize({width:420,height:900});await page.addStyleTag({content:'#wrap{width:420px}'});
+    const resultFit=await page.locator('.rh-practice-hud').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.parentElement!.getBoundingClientRect();return {left:r.left-p.left,right:p.right-r.right,overflow:el.scrollWidth-el.clientWidth};});
+    expect(resultFit.left).toBeGreaterThanOrEqual(0);expect(resultFit.right).toBeGreaterThanOrEqual(0);expect(resultFit.overflow).toBeLessThanOrEqual(1);
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('pause'));
+    await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/trail-result-narrow.png',timeout:90000});
+    const beforeRetry=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot());
+    await page.getByRole('button',{name:'Fly trail again',exact:true}).focus();await page.keyboard.press('Enter');
+    await expect(page.locator('[data-raptor-canvas]')).toBeFocused();
     const restarted=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot());
-    expect(restarted.raptorPosition).toEqual(finished.raptorPosition);expect(restarted.practiceTrailIndex).toBe(0);expect(restarted.practiceTrailScore).toBe(0);
+    expect(restarted.raptorPosition).toEqual(beforeRetry.raptorPosition);expect(restarted.practiceTrailBestScore).toBe(finished.practiceTrailScore);expect(restarted.practiceTrailAttempts).toBe(1);expect(restarted.practiceTrailIndex).toBe(0);expect(restarted.practiceTrailScore).toBe(0);
     await expect(page.locator('.rh-practice-pip[aria-current=step]')).toHaveCount(1);
     await expect(page.locator('.rh-practice-pip[data-state=waiting]')).toHaveCount(4);
     await page.setViewportSize({width:420,height:900});await page.addStyleTag({content:'#wrap{width:420px}'});
@@ -90,7 +103,61 @@ test.describe('Raptor smooth flight and practice trail', () => {
     const fit=await page.locator('.rh-practice-hud').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.parentElement!.getBoundingClientRect();return {left:r.left-p.left,right:p.right-r.right,overflow:el.scrollWidth-el.clientWidth};});
     expect(fit.left).toBeGreaterThanOrEqual(0);expect(fit.right).toBeGreaterThanOrEqual(0);expect(fit.overflow).toBeLessThanOrEqual(1);
     await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/flight-trail-narrow.png',timeout:90000});
+    const second=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
+      for(let i=0;i<500 && c._rhSnapshot().practiceTrailActive;i++){
+        const s=c._rhSnapshot(),g=s.practiceNextGate,bearing=Math.atan2(g.x-s.raptorPosition.x,-(g.z-s.raptorPosition.z));
+        const error=Math.atan2(Math.sin(bearing-s.headingRadians),Math.cos(bearing-s.headingRadians));
+        for(const [key,pressed] of [['d',error>0.035],['a',error<-.035],['e',g.y+7-s.raptorPosition.y>0.7],['q',s.raptorPosition.y-g.y-7>0.7]])c._rhCommand('hold',{key,pressed});
+        (window as any).stepPractice(40);
+      }
+      for(const key of ['d','a','e','q'])c._rhCommand('hold',{key,pressed:false});
+      return c._rhSnapshot();
+    });
+
+    expect(second.practiceTrailComplete).toBe(true);expect(second.practiceTrailAttempts).toBe(2);
+    expect(second.practiceTrailBestScore).toBe(Math.max(finished.practiceTrailScore,second.practiceTrailScore));
+    expect(second.practiceTrailScore).toBeLessThan(finished.practiceTrailScore);
+    await expect(page.locator('.rh-practice-result')).toBeVisible();
+    await page.getByRole('button',{name:'Scenic view',exact:true}).click();
+    await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/trail-result-instruments-narrow.png',timeout:90000});
+    await page.getByRole('button',{name:'Return to hunt',exact:true}).focus();await page.keyboard.press('Enter');
+    await expect(page.locator('[data-raptor-canvas]')).toBeFocused();
+    await expect(page.getByRole('group',{name:'Flight trail progress'})).toBeHidden();
+    const dismissed=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot());
+    expect(dismissed.practiceTrailComplete).toBe(false);expect(dismissed.practiceTrailActive).toBe(false);expect(dismissed.raptorPosition).toEqual(second.raptorPosition);
+    expect(errors).toEqual([]);
+  });
+
+  test('keeps instrument states and accessible shortcuts aligned with the selected controls',async({page})=>{
+    const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+    await mount(page,'low');
+    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.evaluate(()=>{for(let i=0;i<5;i++)(window as any).stepPractice(40);});
+    await expect(page.locator('[data-readout-kind=status] .rh-flight-readout-value')).toHaveText('Perched');
+    await expect(page.locator('[data-readout-kind=strike] .rh-flight-readout-value')).toHaveText('Launch first');
     await page.getByRole('button',{name:'Flight trail',exact:true}).click();
-    await expect(page.getByRole('group',{name:'Flight trail progress'})).toBeHidden();expect(errors).toEqual([]);
+    expect(await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().practiceTrailActive)).toBe(false);
+    await page.getByLabel('Open flight view and sound settings',{exact:true}).click();
+    await page.getByLabel('Keyboard control preset',{exact:true}).selectOption('simple');
+    await expect(page.locator('[data-raptor-canvas]')).toHaveAttribute('aria-keyshortcuts',/ArrowLeft ArrowRight/);
+    await expect(page.getByRole('button',{name:'Strike target - keyboard Space',exact:true})).toHaveAttribute('aria-keyshortcuts','Space Enter');
+    await expect(page.locator('[data-readout-kind=strike]')).toContainText('Space key / Strike');
+    await expect(page.getByRole('button',{name:'Hold to dive and accelerate - keyboard ↓',exact:true})).toHaveAttribute('aria-keyshortcuts','ArrowDown');
+    await expect(page.getByRole('button',{name:'Hold to descend',exact:true})).not.toHaveAttribute('aria-keyshortcuts');
+    await page.getByLabel('Keyboard control preset',{exact:true}).selectOption('custom');
+    await page.locator('[data-raptor-rebind-action=view]').click();await page.keyboard.press('b');
+    await expect(page.getByRole('button',{name:'Toggle chase and first-person camera',exact:true})).toHaveAttribute('aria-keyshortcuts','B');
+    await page.locator('[data-raptor-rebind-action=strike]').click();await page.keyboard.press('r');
+    await expect(page.locator('[data-readout-kind=strike]')).toContainText('R key / Strike');
+    await expect(page.getByRole('button',{name:'Strike target - keyboard R',exact:true})).toHaveAttribute('aria-keyshortcuts','R');
+    await page.locator('[data-raptor-rebind-action=pause]').click();await page.keyboard.press('c');
+    await expect(page.getByRole('button',{name:'Pause flight',exact:true})).toHaveAttribute('aria-keyshortcuts','C');
+    await page.getByRole('button',{name:'Pause flight',exact:true}).click();
+    await expect(page.locator('[data-readout-kind=status] .rh-flight-readout-value')).toHaveText('Paused');
+    await page.getByRole('button',{name:'Resume flight',exact:true}).click();
+    await expect(page.locator('[data-readout-kind=status] .rh-flight-readout-value')).toHaveText('Perched');
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('hold',{key:' ',pressed:true});(window as any).stepPractice(40);c._rhCommand('hold',{key:' ',pressed:false});});
+    await expect(page.locator('[data-readout-kind=status] .rh-flight-readout-value')).not.toHaveText('Perched');
+    expect(errors).toEqual([]);
   });
 });

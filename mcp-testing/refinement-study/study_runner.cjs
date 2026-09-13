@@ -607,12 +607,104 @@ function validateExistingRecord(record, item, plan) {
   }
 }
 
+function resumeEngineIdentity(engine) {
+  const build = engine && (engine.engineAggregateSha256 || engine.driver && engine.driver.sha256);
+  const provider = engine && engine.provider;
+  if (!/^[a-f0-9]{64}$/.test(String(build || '')) || !isPlainObject(provider)
+    || ['family', 'primaryModel', 'fallbackModel', 'endpoint'].some((key) => typeof provider[key] !== 'string' || !provider[key])) {
+    throw new Error('Saved/current execution identity is incomplete; refusing to resume this study run');
+  }
+  // Credential availability and git dirty flags are observations, not engine settings.
+  // Bind the transport, model configuration, sampling policy and runtime used by the attempt.
+  return {
+    buildSha256: build,
+    driverSha256: engine.driver && engine.driver.sha256 || null,
+    provider: Object.fromEntries(['family', 'primaryModel', 'fallbackModel', 'endpoint', 'providerClass',
+      'sampling', 'temperatureControlled', 'seedControlled', 'fallbackEnabled', 'actualModelTraceComplete']
+      .map((key) => [key, provider[key] === undefined ? null : provider[key]])),
+    runtime: Object.fromEntries(['node', 'platform', 'arch', 'playwright']
+      .map((key) => [key, engine.runtime && engine.runtime[key] || null])),
+    adapterSha256: engine.adapter && engine.adapter.sha256 || null,
+  };
+}
+
+function finalizeReviewerPacket(item, plan, resultRecord) {
+  // Finalization is replayable from immutable evidence. It never invokes a model and never
+  // replaces an existing candidate, result, or evidence file with different bytes.
+  const evidencePath = path.join(item.outputDir, 'verification-evidence.json');
+  const evidenceBytes = fs.readFileSync(evidencePath);
+  if (sha256Buffer(evidenceBytes) !== resultRecord.artifacts.verificationSha256) {
+    throw new Error('Immutable verification evidence changed; refusing to finalize the reviewer packet');
+  }
+  const evidence = JSON.parse(evidenceBytes.toString('utf8'));
+  const sourceBytes = fs.readFileSync(item.source.path);
+  if (evidence.runId !== item.runId || evidence.blindId !== item.blindId
+    || evidence.sourceSha256 !== item.source.sha256
+    || evidence.finalArtifactSha256 !== resultRecord.artifacts.finalSha256
+    || evidence.verificationSubjectSha256 !== resultRecord.artifacts.verificationSubjectSha256
+    || resultRecord.observationId !== item.blindId
+    || sha256Buffer(sourceBytes) !== item.source.sha256) {
+    throw new Error('Immutable source/output/evidence binding changed; refusing to finalize the reviewer packet');
+  }
+  const outputs = [];
+  const outputBytes = new Map();
+  for (const [name, kind, expected] of [
+    ['output.html', 'accessible-html', evidence.verificationSubjectSha256],
+    ['output.pdf', 'tagged-pdf', evidence.finalArtifactSha256],
+  ]) {
+    const file = path.join(item.outputDir, name);
+    if (fs.existsSync(file)) {
+      const bytes = fs.readFileSync(file);
+      const sha256 = sha256Buffer(bytes);
+      if (sha256 === expected) {
+        outputs.push({ kind, path: name, bytes: bytes.length, sha256 });
+        outputBytes.set(name, bytes);
+      }
+    }
+  }
+  const finalArtifact = outputs.find((entry) => entry.sha256 === resultRecord.artifacts.finalSha256);
+  if (!finalArtifact) throw new Error('Immutable final artifact is missing or changed; refusing to finalize the reviewer packet');
+  const reviewRoot = path.join(plan.outputRoot, plan.studyId, 'reviewer-packets', item.blindId);
+  ensureDirectory(reviewRoot);
+  const blindedArtifactPath = path.join(reviewRoot, 'candidate' + path.extname(finalArtifact.path));
+  writeImmutableBytes(blindedArtifactPath, outputBytes.get(finalArtifact.path));
+  const blindedSourcePath = path.join(reviewRoot, 'source' + item.source.extension);
+  writeImmutableBytes(blindedSourcePath, sourceBytes);
+  writeImmutableJson(path.join(reviewRoot, 'review-manifest.json'), {
+    schema: 'alloflow.blinded-review-packet/v1',
+    blindId: item.blindId,
+    subjectSha256: finalArtifact.sha256,
+    sourceSha256: item.source.sha256,
+    source: path.basename(blindedSourcePath),
+    artifact: path.basename(blindedArtifactPath),
+    expertAnnotation: null,
+  });
+  writeImmutableJson(path.join(reviewRoot, 'expert-annotation.template.json'), {
+    schema: 'alloflow.mcp-refinement-expert-annotation/v1',
+    annotationId: null,
+    annotationProtocolSha256: plan.protocolSha256,
+    annotationJoinKey: item.blindId,
+    subjectSha256: finalArtifact.sha256,
+    blinded: true,
+    reviewerCount: null,
+    baselineAdjudicationSha256: null,
+    baselineMaterialIssueCount: null,
+    criticalSeriousIssuesResolved: null,
+    materialDefectsIntroduced: null,
+    pass: null,
+    adjudicatedAt: null,
+    contentCommitmentSha256: null,
+  });
+  return outputs;
+}
+
 async function executeRun(item, plan, context) {
   const recordPath = path.join(item.outputDir, 'study-record.json');
   const checkpointPath = path.join(item.outputDir, 'checkpoint.json');
   const now = context.now || (() => new Date());
   let prior = null;
   let resumeCheckpoint = null;
+  let resumeCheckpointIdentity = null;
   if (fs.existsSync(recordPath)) {
     prior = readJson(recordPath);
     validateExistingRecord(prior, item, plan);
@@ -624,6 +716,16 @@ async function executeRun(item, plan, context) {
         || immutableResult.document.sourceSha256 !== item.source.sha256
         || immutableResult.protocol.protocolSha256 !== plan.protocolSha256) {
         throw new Error('Immutable result.json does not match this plan; refusing to skip or overwrite it');
+      }
+      const outputs = finalizeReviewerPacket(item, plan, immutableResult);
+      if (prior.status !== immutableResult.outcome.status) {
+        prior.status = immutableResult.outcome.status;
+        prior.error = null;
+        prior.artifacts = Object.assign({}, prior.artifacts, { sourceSha256: item.source.sha256, outputs });
+        prior.timings = Object.assign({}, prior.timings, {
+          finishedAt: immutableResult.capturedAt, totalMs: immutableResult.usage.latencyMs,
+        });
+        atomicWriteJson(recordPath, prior);
       }
       return { status: 'skipped-' + immutableResult.outcome.status, recordPath, resultPath: finalResultPath, runId: item.runId };
     }
@@ -638,6 +740,7 @@ async function executeRun(item, plan, context) {
         throw new Error('Resume checkpoint does not match the source, condition, and exact options');
       }
       resumeCheckpoint = checkpoint.snapshot;
+      resumeCheckpointIdentity = checkpoint.engineIdentitySha256 || null;
     }
   }
 
@@ -658,6 +761,11 @@ async function executeRun(item, plan, context) {
       sha256: item.condition.adapter.sha256,
       metadata: adapterLoaded.metadata,
     });
+  const engineIdentitySha256 = sha256Buffer(stableStringify(resumeEngineIdentity(engine)));
+  if (prior && (sha256Buffer(stableStringify(resumeEngineIdentity(prior.engine))) !== engineIdentitySha256
+    || (resumeCheckpointIdentity && resumeCheckpointIdentity !== engineIdentitySha256))) {
+    throw new Error('Execution engine/provider identity changed; refusing to resume this study run');
+  }
   let record = {
     schema: RECORD_SCHEMA,
     kind: 'alloflow-refinement-study-record',
@@ -715,6 +823,7 @@ async function executeRun(item, plan, context) {
       sourceSha256: item.source.sha256,
       condition: item.condition.id,
       optionsHash: item.optionsHash,
+      engineIdentitySha256,
       writtenAt: now().toISOString(),
       snapshot,
     };
@@ -934,40 +1043,7 @@ async function executeRun(item, plan, context) {
     };
     const resultPath = path.join(item.outputDir, 'result.json');
     writeImmutableJson(resultPath, resultRecord);
-    const reviewRoot = path.join(plan.outputRoot, plan.studyId, 'reviewer-packets', item.blindId);
-    ensureDirectory(reviewRoot);
-    const reviewExtension = path.extname(finalArtifact.path) || '.bin';
-    const blindedArtifactPath = path.join(reviewRoot, 'candidate' + reviewExtension);
-    writeImmutableBytes(blindedArtifactPath, fs.readFileSync(path.join(item.outputDir, finalArtifact.path)));
-    const blindedSourcePath = path.join(reviewRoot, 'source' + item.source.extension);
-    writeImmutableBytes(blindedSourcePath, fs.readFileSync(item.source.path));
-    const reviewManifest = {
-      schema: 'alloflow.blinded-review-packet/v1',
-      blindId: item.blindId,
-      subjectSha256: finalArtifact.sha256,
-      sourceSha256: item.source.sha256,
-      source: path.basename(blindedSourcePath),
-      artifact: path.basename(blindedArtifactPath),
-      expertAnnotation: null,
-    };
-    writeImmutableJson(path.join(reviewRoot, 'review-manifest.json'), reviewManifest);
-    const annotationTemplate = {
-      schema: 'alloflow.mcp-refinement-expert-annotation/v1',
-      annotationId: null,
-      annotationProtocolSha256: plan.protocolSha256,
-      annotationJoinKey: item.blindId,
-      subjectSha256: finalArtifact.sha256,
-      blinded: true,
-      reviewerCount: null,
-      baselineAdjudicationSha256: null,
-      baselineMaterialIssueCount: null,
-      criticalSeriousIssuesResolved: null,
-      materialDefectsIntroduced: null,
-      pass: null,
-      adjudicatedAt: null,
-      contentCommitmentSha256: null,
-    };
-    writeImmutableJson(path.join(reviewRoot, 'expert-annotation.template.json'), annotationTemplate);
+    finalizeReviewerPacket(item, plan, resultRecord);
     atomicWriteJson(recordPath, record);
     return { status: record.status, recordPath, resultPath, runId: item.runId, blindId: item.blindId };
   } catch (error) {

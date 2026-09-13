@@ -22,7 +22,7 @@ function loadMiscHandlers() {
   return new Function('window', miscSource + '\nreturn window.AlloModules.MiscHandlers;')(window);
 }
 
-function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions = [], terminal = false, stateOverrides = {}, updateOverrides = {}, chanceMode = false } = {}) {
+function resolveTurn({ replayUpdater = false, repeatCompletion = false, freeResponse = false, inputMode = 'choice', sceneOptions = [], terminal = false, stateOverrides = {}, updateOverrides = {}, chanceMode = false } = {}) {
   const { handleDiceRollComplete } = loadSessionHandlers();
   let state = {
     currentScene: { text: 'Previous scene', options: ['Continue'] },
@@ -72,6 +72,7 @@ function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions 
     generateAdventureImage,
     generateNarrativeLedger: vi.fn(),
     setAdventureState: (update) => {
+      if (replayUpdater && typeof update === 'function') update(state);
       state = typeof update === 'function' ? update(state) : update;
     },
     setPendingAdventureUpdate: vi.fn(),
@@ -92,6 +93,7 @@ function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions 
   });
 
   handleDiceRollComplete(deps);
+  if (repeatCompletion) handleDiceRollComplete(deps);
   return { state, generateAdventureImage };
 }
 
@@ -409,4 +411,34 @@ describe('Adventure decision receipts', () => {
       expect(receipt.changes.find(c => c.key === 'energy')?.after ?? 70).toBe(energy);
     }
   );
+});
+
+
+describe('Adventure turn completion image ownership', () => {
+  it('dispatches one illustration when React replays a turn updater', () => {
+    vi.useFakeTimers();
+    const { state, generateAdventureImage } = resolveTurn({ replayUpdater: true, sceneOptions: ['Continue'] });
+    vi.runAllTimers();
+    expect(generateAdventureImage).toHaveBeenCalledOnce();
+    expect(state.turnCount).toBe(2);
+    vi.useRealTimers();
+  });
+  it('ignores a repeated completion callback for the same pending result', () => {
+    vi.useFakeTimers();
+    const { state, generateAdventureImage } = resolveTurn({ repeatCompletion: true, sceneOptions: ['Continue'] });
+    vi.runAllTimers();
+    expect(generateAdventureImage).toHaveBeenCalledOnce();
+    expect(state.turnCount).toBe(2);
+    expect(state.history.filter(entry => entry.type === 'feedback')).toHaveLength(1);
+    vi.useRealTimers();
+  });
+  it('does not leave an image spinner on a terminal turn', () => {
+    vi.useFakeTimers();
+    const { state, generateAdventureImage } = resolveTurn({ terminal: true, sceneOptions: [] });
+    vi.runAllTimers();
+    expect(generateAdventureImage).not.toHaveBeenCalled();
+    expect(state.isImageLoading).toBe(false);
+    expect(state.imagePolishStage).toBeNull();
+    vi.useRealTimers();
+  });
 });

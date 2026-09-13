@@ -2338,6 +2338,35 @@ function titrationWeighingReading(raw) {
   var s=titrationWeighingState(raw),gross=s.boat?23456+s.sampleUnits:0;
   return {gross:gross,tare:s.tareUnits,net:gross-s.tareUnits};
 }
+function titrationWeighingTarget(raw, closeup) {
+  var s=titrationWeighingState(raw),zoom=closeup===true,min=zoom?4900:0,max=zoom?5100:20000,span=max-min;
+  return {sampleUnits:s.sampleUnits,targetUnits:5000,lowerUnits:4980,upperUnits:5020,minUnits:min,maxUnits:max,closeup:zoom,
+    deltaUnits:s.sampleUnits-5000,relation:s.sampleUnits<4980?'below':s.sampleUnits>5020?'above':'within',
+    offscale:s.sampleUnits<min?'below':s.sampleUnits>max?'above':null,position:Math.max(0,Math.min(1,(s.sampleUnits-min)/span)),
+    targetPosition:(5000-min)/span,bandStart:(4980-min)/span,bandWidth:40/span,offPan:!s.boat};
+}
+
+
+// Forecast only actions the existing exercise can apply, without changing a record.
+function titrationWeighingAdditions(raw) {
+  var s=titrationWeighingState(raw);
+  return [1000,100,10].map(function(units){
+    var next=titrationWeighingTransition(s,{type:'add',units:units}),allowed=next.sampleUnits!==s.sampleUnits;
+    return {units:units,beforeUnits:s.sampleUnits,afterUnits:allowed?next.sampleUnits:null,allowed:allowed,
+      reason:allowed?null:!s.boat?'boat':!s.tareUnits?'tare':s.closed?'shield':'limit',
+      target:allowed?titrationWeighingTarget(next):null};
+  });
+}
+
+function titrationWeighingBreakdown(raw) {
+  var s=titrationWeighingState(raw),reading=titrationWeighingReading(s),min=-25000,max=45000;
+  function bar(value){var zero=-min/(max-min),point=(value-min)/(max-min);return {value:value,start:Math.min(zero,point),width:Math.abs(point-zero),negative:value<0};}
+  return {gross:bar(reading.gross),deduction:bar(reading.tare?-reading.tare:0),net:bar(reading.net),zero:-min/(max-min),
+    boatMass:s.boat?23456:0,sampleOnPan:s.boat?s.sampleUnits:0,sampleOffPan:s.boat?0:s.sampleUnits,
+    situation:!s.tareUnits?(s.boat?'untared':'empty'):!s.boat?'removed':s.sampleUnits?'sample':'tared',stable:s.closed};
+}
+
+
 // Transfer trials keep a copy of a recorded mass; they never consume the weighing sample.
 function titrationTransferSource(weighing) {
   var w=titrationWeighingState(weighing);
@@ -2377,6 +2406,29 @@ function titrationTransferTransition(raw,action,weighing) {
   return s;
 }
 
+// Removing the same boat from both dry readings leaves their difference unchanged.
+// Wet and unpoured trials have no valid current dry after-reading to compare.
+function titrationTransferDifference(raw, solidOnly) {
+  var s=titrationTransferState(raw),m=titrationTransferMass(s);
+  if(s.sourceUnits===null||s.phase!=='poured')return null;
+  var hide=solidOnly===true,boat=m.dryBefore-m.source,max=50000;
+  function row(boatUnits,solidUnits){return {boatUnits:boatUnits,solidUnits:solidUnits,totalUnits:boatUnits+solidUnits,boatFraction:boatUnits/max,solidFraction:solidUnits/max};}
+  return {solidOnly:hide,boatUnits:boat,maxUnits:max,before:row(hide?0:boat,m.source),after:row(hide?0:boat,m.remaining),delivered:row(0,m.received)};
+}
+
+function titrationTransferInspection(raw, requestedView) {
+  var s=titrationTransferState(raw),m=titrationTransferMass(s),mode=['bench','follow','boat','receiver'].indexOf(requestedView)!==-1?requestedView:'bench';
+  var suggested=s.sourceUnits===null?'bench':s.phase==='ready'||m.remaining>0?'boat':'receiver',view=mode==='follow'?suggested:mode;
+  return {mode:mode,view:view,viewBox:view==='boat'?(s.phase==='ready'?'30 148 192 108':'142 34 180 119'):view==='receiver'?'245 107 166 152':'0 0 460 285',receivedFraction:m.source?m.received/m.source:0,remainingFraction:m.source?m.remaining/m.source:0};
+}
+function titrationTransferInspectionNote(t, raw, view) {
+  var s=titrationTransferState(raw),m=titrationTransferMass(s);
+  if(s.sourceUnits===null)return t('stem.titration.transfer_inspect_empty','Load a recorded sample to inspect how its solid mass moves between the boat and receiver.');
+  if(view==='boat')return s.phase==='ready'?t('stem.titration.transfer_inspect_boat_ready','The boat holds the starting solid. The residue setting takes effect when you pour.'):s.phase==='rinsed'?t('stem.titration.transfer_inspect_boat_wet','The model rinse has moved the remaining solid into the receiver. This boat is wet; its mass cannot be used as a dry after-transfer reading.'):m.remaining>0?t('stem.titration.transfer_inspect_boat_residue','The highlighted grains represent residue still in the boat. Use the dry mass difference or rinse and update the transfer record.'):t('stem.titration.transfer_inspect_boat_empty','No solid remains in the boat at this model setting. The entire sample reached the receiver.');
+  if(view==='receiver')return s.phase==='ready'?t('stem.titration.transfer_inspect_receiver_ready','The receiver is empty. Pour the sample to see the delivered solid.'):s.phase==='rinsed'?t('stem.titration.transfer_inspect_receiver_rinsed','The receiver holds all of the starting solid after the model rinse. The blue liquid is rinse solvent and is excluded from the solid-mass totals.'):t('stem.titration.transfer_inspect_receiver_dry','These grains represent the delivered solid. The mass cards and bar show the measured split; the grain count is schematic.');
+  return t('stem.titration.transfer_inspect_bench_note','Inspect either vessel, or follow the sample automatically. View changes preserve the current trial and its record.');
+}
+
 // Preparation volumes use integer hundredths of a milliliter; sample units remain 0.0001 g.
 function titrationPreparationSource(transfer) {
   var s=titrationTransferState(transfer);
@@ -2410,6 +2462,37 @@ function titrationPreparationTransition(raw,action,transfer) {
 function titrationPreparationResult(raw) {
   var s=titrationPreparationState(raw);
   return s.sourceUnits!==null && s.phase==='mixed'?{massGrams:s.sourceUnits/10000,volumeMl:100,gramsPerLiter:s.sourceUnits/1000}:null;
+}
+
+// Compare independent examples from the saved 100 mL preparation, without consuming it.
+function titrationSolutionComparison(raw, requested) {
+  var prepared=titrationPreparationResult(raw);
+  if(!prepared)return null;
+  var mode=['aliquot','dilute250','dilute500'].indexOf(requested)!==-1?requested:'aliquot';
+  var volume=mode==='aliquot'?25:mode==='dilute250'?250:500;
+  var mass=mode==='aliquot'?prepared.massGrams/4:prepared.massGrams;
+  return {mode:mode,before:{volumeMl:100,massGrams:prepared.massGrams,gramsPerLiter:prepared.gramsPerLiter,tiles:4,symbols:24},after:{volumeMl:volume,massGrams:mass,gramsPerLiter:mass/(volume/1000),tiles:volume/25,symbols:mode==='aliquot'?6:24}};
+}
+
+
+function titrationSolutionPrediction(raw, requested, answers) {
+  var comparison=titrationSolutionComparison(raw,requested);
+  if(!comparison||!answers||['lower','same','higher'].indexOf(answers.mass)===-1||['lower','same','higher'].indexOf(answers.concentration)===-1)return null;
+  // The supported portion preserves concentration; each dilution preserves total solute mass.
+  var expectedMass=comparison.mode==='aliquot'?'lower':'same',expectedConcentration=comparison.mode==='aliquot'?'same':'lower';
+  return {mass:{answer:answers.mass,expected:expectedMass,correct:answers.mass===expectedMass},concentration:{answer:answers.concentration,expected:expectedConcentration,correct:answers.concentration===expectedConcentration}};
+}
+
+
+function titrationPreparationMeniscusOffset(volumeUnits) {
+  var difference=10000-volumeUnits;
+  return difference===0?0:(difference>0?1:-1)*Math.min(difference>0?70:29,4*Math.sqrt(Math.abs(difference)));
+}
+function titrationPreparationAdditionPreview(raw, units) {
+  var s=titrationPreparationState(raw);
+  if(s.phase!=='filling'||s.sourceUnits===null||s.volumeUnits>10000||(units!==5&&units!==100))return null;
+  var afterUnits=s.volumeUnits+units;
+  return {units:units,beforeUnits:s.volumeUnits,afterUnits:afterUnits,differenceUnits:10000-afterUnits,relation:afterUnits<10000?'below':afterUnits===10000?'at':'above'};
 }
 
 function titrationAliquotSource(preparation) {
@@ -2450,6 +2533,23 @@ function titrationAliquotTransition(raw,action,preparation) {
 function titrationAliquotResult(raw) {
   var s=titrationAliquotState(raw);
   return s.phase==='delivered'&&s.recorded?{volumeMl:25,gramsPerLiter:s.sourceUnits/1000,massGrams:s.sourceUnits/40000}:null;
+}
+
+function titrationAliquotInspection(raw, requestedView) {
+  var s=titrationAliquotState(raw),mode=['bench','follow','filler','detail','receiver'].indexOf(requestedView)!==-1?requestedView:'bench';
+  var transfer=['adjusted','delivered','blown'].indexOf(s.phase)!==-1,delivered=s.phase==='delivered'||s.phase==='blown';
+  var suggested=s.sourceUnits===null||s.phase==='ready'?'bench':s.phase==='conditioned'?'filler':s.phase==='filled'||delivered?'detail':'receiver';
+  var view=mode==='follow'?suggested:mode,px=transfer?(s.atWall?363:329):123;
+  return {mode:mode,view:view,px:px,transfer:transfer,delivered:delivered,loaded:s.phase==='filled'||s.phase==='adjusted',top:s.phase==='filled'?67:84.5,
+    viewBox:view==='filler'?(px-65)+' 8 130 175':view==='receiver'?'271 182 119 109':view==='detail'?(delivered?'202 14 202 125':'202 14 202 155'):'0 0 460 320'};
+}
+
+function titrationAliquotInspectionNote(t, state, view) {
+  var s=titrationAliquotState(state);
+  if(view==='filler')return t('stem.titration.inspect_filler_note','The filler stays above the pipette. Use it to draw solution; keep liquid out of the filler and keep the pipette vertical.');
+  if(view==='receiver')return s.phase==='blown'?t('stem.titration.inspect_receiver_blown','Extra liquid has entered the receiver. Its volume is not modeled, so this delivery cannot use the nominal 25 mL result.'):s.phase==='delivered'?t('stem.titration.inspect_receiver_done','The receiver now holds the calibrated delivery. The highlighted tip still contains retained liquid; leave it in this non-blow-out pipette.'):s.atWall?t('stem.titration.inspect_receiver_wall','The highlighted tip is against the receiver wall. Allow gravity drainage and the pipette’s specified wait before withdrawing it along the wall.'):s.phase==='adjusted'?t('stem.titration.inspect_receiver_ready','The meniscus is set. Move the vertical pipette so its tip touches the receiver’s inside wall before draining.'):t('stem.titration.inspect_receiver_empty','The aliquot receiver is still empty. Condition, fill, and set the pipette before moving to this vessel.');
+  if(view==='detail')return s.phase==='blown'?t('stem.titration.inspect_tip_blown','The retained liquid has been forced out. Restart pipetting to obtain a new calibrated delivery.'):s.phase==='delivered'?t('stem.titration.inspect_tip_done','This enlarged tip shows the retained liquid included in the pipette’s delivery calibration. Do not subtract it from 25 mL or force it out.'):s.phase==='adjusted'?t('stem.titration.inspect_mark_set','The lower meniscus meets the calibration mark. Keep the pipette vertical for delivery.'):s.phase==='filled'?s.eyeLevel?t('stem.titration.inspect_mark_level','Your eye is level with the mark. The meniscus is still above it; release excess solution to the waste receiver until the lower meniscus meets the mark.'):t('stem.titration.inspect_mark_above','The meniscus is above the mark and the eye is too high. Align your eye before setting the lower meniscus.'):s.sourceUnits===null?t('stem.titration.inspect_mark_empty','This close-up shows the calibration mark. Load a prepared solution, condition the pipette, and fill it before setting the meniscus.'):s.phase==='conditioned'?t('stem.titration.inspect_mark_conditioned','The pipette is conditioned and ready to fill. Use the filler to draw solution above the calibration mark.'):t('stem.titration.inspect_mark_ready','The solution is loaded. Condition the pipette with it before filling above the calibration mark.');
+  return t('stem.titration.inspect_bench_note','Choose a close-up to inspect the apparatus, or follow the current step automatically. Changing the view keeps your practice record.');
 }
 
 // Progress is derived from each activity's own saved copy; upstream changes do not erase later records.
@@ -2556,9 +2656,87 @@ function TitrationRelatedEquipment(props) {
     h('p',{style:{fontSize:12,color:'#bdd4e2',margin:'0 0 8px'}},t('stem.titration.equip_related','Related equipment')),
     h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},items.map(function(eq){return h('button',{key:eq.id,type:'button',onClick:function(){props.onSelect(eq.id);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,border:'1px solid #678ba0',borderRadius:9,padding:'8px 12px',background:'#153448',color:'#d1fae5',fontSize:12}},eq.name);})));
 }
+function TitrationWeighingBreakdown(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),openState=React.useState(false),open=openState[0],setOpen=openState[1],toggleRef=React.useRef(null),s=titrationWeighingState(props.state),breakdown=titrationWeighingBreakdown(s),reading=titrationWeighingReading(s);
+  function fmt(value){return (value/10000).toFixed(4)+' g';}
+  function close(){setOpen(false);if(toggleRef.current)toggleRef.current.focus();}
+  var note=breakdown.situation==='empty'?t('stem.titration.weigh_explain_empty','The pan is empty and no tare offset is stored. Gross and net are both zero.'):breakdown.situation==='untared'?t('stem.titration.weigh_explain_untared','The empty boat is on the pan. Its mass is included in the display until you tare it.'):breakdown.situation==='removed'?t('stem.titration.weigh_explain_removed','The pan is empty, but the stored tare is still subtracted. This is a negative display offset, not a negative sample mass. Returning the boat restores its load on the pan.'):breakdown.situation==='tared'?t('stem.titration.weigh_explain_tared','The boat still has mass after taring. Subtracting its stored mass makes the net display zero.'):t('stem.titration.weigh_explain_sample','Gross mass includes the boat and its sample. Subtracting the stored boat mass leaves the current sample mass on the net display.');
+  var rows=[['gross',t('stem.titration.weigh_gross','Gross on pan'),'#7dd3fc'],['deduction',t('stem.titration.weigh_explain_deduction','Tare deduction'),'#fde68a'],['net',t('stem.titration.weigh_net','Net display'),breakdown.net.negative?'#fde68a':'#6ee7b7']];
+  return h('section',{'data-weighing-breakdown':true,onKeyDown:function(e){if(open&&e.key==='Escape'){e.stopPropagation();close();}},style:{marginTop:16}},
+    h('button',{type:'button',ref:toggleRef,'aria-expanded':open,'aria-controls':open?id+'-panel':undefined,onClick:function(){setOpen(!open);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'9px 12px',border:'1px solid #8ab5c5',borderRadius:9,background:open?'#c8f1ef':'#174354',color:open?'#123637':'#e5faff',fontSize:12,textAlign:'left'}},t('stem.titration.weigh_explain_toggle','Explain the balance reading')),
+    open&&h('div',{id:id+'-panel','data-weighing-breakdown-panel':breakdown.situation,onKeyDown:function(e){if(e.key==='Escape'){e.stopPropagation();close();}},style:{padding:14,marginTop:10,border:'1px solid #648ea4',borderRadius:12,background:'#0a283a'}},
+      h('h5',{style:{fontSize:16,color:'#ecfaff',margin:'0 0 10px'}},t('stem.titration.weigh_explain_title','Gross minus tare equals net')),
+      h('p',{'data-weighing-breakdown-note':true,style:{fontSize:12,lineHeight:1.6,color:'#d4eaf5',margin:'0 0 14px'}},note),
+      h('figure',{style:{margin:0}},
+        h('figcaption',{style:{fontSize:11,color:'#c3deed',lineHeight:1.6,marginBottom:12}},t('stem.titration.weigh_explain_scale','All bars use the same fixed mass scale. Left of zero is negative; right of zero is positive.')),
+        h('div',{style:{margin:0,display:'grid',gap:14}},rows.map(function(row){var value=breakdown[row[0]];return h('div',{key:row[0],'data-weighing-breakdown-row':row[0]},
+          h('dl',{style:{display:'flex',flexWrap:'wrap',justifyContent:'space-between',gap:'4px 10px',margin:'0 0 7px'}},h('dt',{style:{fontSize:12,color:'#d3e9f3'}},row[1]),h('dd',{'data-weighing-breakdown-value':row[0],style:{margin:0,fontSize:15,fontWeight:700,color:'#f1fbff',fontVariantNumeric:'tabular-nums'}},fmt(value.value))),
+          h('div',{'aria-hidden':true,style:{height:20,position:'relative',border:'1px solid #7496a7',borderRadius:4,background:'#102f42'}},
+            h('span',{'data-weighing-breakdown-bar':row[0],style:{position:'absolute',left:(value.start*100)+'%',width:(value.width*100)+'%',height:'100%',top:0,background:row[0]==='deduction'?'repeating-linear-gradient(135deg,#fde68a 0,#fde68a 5px,#8e793d 5px,#8e793d 7px)':row[2],forcedColorAdjust:'none'}}),
+            h('span',{style:{position:'absolute',left:(breakdown.zero*100)+'%',top:-4,bottom:-4,borderLeft:'2px solid #f0f9ff'}})));})),
+        h('div',{'aria-hidden':true,style:{position:'relative',height:22,marginTop:10,fontSize:11,color:'#c3deed'}},h('span',{style:{position:'absolute',left:0}},'-2.5 g'),h('span',{style:{position:'absolute',left:(breakdown.zero*100)+'%',transform:'translateX(-50%)'}},'0'),h('span',{style:{position:'absolute',right:0}},'4.5 g'))),
+      h('p',{'data-weighing-breakdown-equation':true,style:{padding:12,margin:'10px 0',border:'1px solid #608f89',borderRadius:8,background:'#123b3a',color:'#dcfff3',fontSize:14,fontWeight:700,lineHeight:1.7,fontVariantNumeric:'tabular-nums'}},fmt(reading.gross)+' − '+fmt(reading.tare)+' = '+fmt(reading.net)),
+      h('p',{'data-weighing-breakdown-load':true,style:{fontSize:12,lineHeight:1.6,color:'#cbe3ef',margin:'8px 0'}},t('stem.titration.weigh_explain_load','On-pan mass: boat + sample')+': '+fmt(breakdown.boatMass)+' + '+fmt(breakdown.sampleOnPan)+' = '+fmt(reading.gross)),
+      breakdown.sampleOffPan>0&&h('p',{'data-weighing-breakdown-off-pan':true,style:{fontSize:12,lineHeight:1.6,color:'#fdebb5',margin:'8px 0'}},t('stem.titration.weigh_explain_off_pan','Sample retained in the boat off the pan')+': '+fmt(breakdown.sampleOffPan)),
+      !breakdown.stable&&h('p',{'data-weighing-breakdown-unstable':true,style:{fontSize:12,lineHeight:1.6,color:'#fdebb5',margin:'8px 0'}},t('stem.titration.weigh_explain_open','The shield is open. These model values explain the display; close the shield before recording.')),
+      h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bbd7e7',margin:'10px 0 0'}},t('stem.titration.weigh_explain_current','This breakdown follows the current pan load. A saved mass changes only when you record again or restart the practice.'))));
+}
+
+
+function TitrationWeighingTarget(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),zoomState=React.useState(false),zoom=zoomState[0],setZoom=zoomState[1],s=titrationWeighingState(props.state),guide=titrationWeighingTarget(s,zoom);
+  function fmt(n){return (n/10000).toFixed(4)+' g';}
+  var status=s.sampleUnits===0?t('stem.titration.weigh_empty','No sample added'):guide.relation==='within'?t('stem.titration.weigh_within','Within the practice target band'):guide.relation==='below'?t('stem.titration.weigh_below','Below the practice target band'):t('stem.titration.weigh_above','Above the practice target band');
+  var delta=guide.deltaUnits===0?t('stem.titration.weigh_target_exact','At the 0.5000 g target.'):fmt(Math.abs(guide.deltaUnits))+' '+(guide.deltaUnits<0?t('stem.titration.weigh_target_below','below the target.'):t('stem.titration.weigh_target_above','above the target.'));
+  return h('section',{'data-weighing-target-guide':true,'aria-labelledby':id+'-title',style:{scrollMarginTop:150,margin:'16px 0',padding:12,border:'1px solid #688ba2',borderRadius:12,background:'#102d40'}},
+    h('h5',{id:id+'-title',style:{fontSize:14,color:'#e4f6ff',margin:'0 0 10px'}},t('stem.titration.weigh_target_title','Sample target guide')),
+    h('p',{'data-weighing-target-sample':true,style:{margin:'0 0 6px',fontSize:12,lineHeight:1.6,color:'#d0e6f2'}},(s.boat?t('stem.titration.weigh_sample_in_boat','Sample in boat'):t('stem.titration.weigh_boat_off_pan','Boat off pan'))+': '+fmt(s.sampleUnits)),
+    h('p',{'data-weighing-target-status':guide.relation,style:{margin:'0 0 6px',fontSize:13,fontWeight:700,lineHeight:1.5,color:guide.relation==='within'?'#b8f6da':'#e0edf7'}},status),
+    s.sampleUnits>0&&h('p',{'data-weighing-target-delta':guide.deltaUnits,style:{margin:'0 0 12px',fontSize:12,color:'#d0e8f4',lineHeight:1.5,fontVariantNumeric:'tabular-nums'}},delta),
+    h('button',{type:'button','aria-pressed':zoom,'aria-controls':id+'-figure','aria-describedby':id+'-scale',onClick:function(){setZoom(!zoom);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,scrollMarginTop:150,padding:'8px 11px',margin:'2px 0 12px',border:'1px solid #9cc8cc',borderRadius:9,background:zoom?'#c6f3e4':'#194750',color:zoom?'#163a35':'#e0fbf3',fontSize:12}},t('stem.titration.weigh_target_zoom','Enlarge target band')),
+    h('figure',{id:id+'-figure','data-weighing-target-view':zoom?'closeup':'full',style:{margin:0}},
+      h('figcaption',{id:id+'-scale',style:{fontSize:11,color:'#c1deed',lineHeight:1.5,marginBottom:10}},(zoom?t('stem.titration.weigh_target_close','Close-up around the target'):t('stem.titration.weigh_target_full','Full sample range'))+' · '+fmt(guide.minUnits)+' – '+fmt(guide.maxUnits)),
+      h('div',{'aria-hidden':true,style:{padding:'0 8px'}},
+        h('div',{style:{position:'relative',height:38}},
+          h('div',{style:{position:'absolute',top:11,left:0,right:0,height:16,border:'1px solid #87a9ba',borderRadius:4,background:'#0b2130'}},
+            h('span',{'data-weighing-target-band':true,style:{position:'absolute',left:(guide.bandStart*100)+'%',width:(guide.bandWidth*100)+'%',height:'100%',background:'repeating-linear-gradient(135deg,#a7f3d0 0,#a7f3d0 3px,#438574 3px,#438574 5px)',forcedColorAdjust:'none'}})),
+          h('span',{'data-weighing-target-line':true,style:{position:'absolute',left:(guide.targetPosition*100)+'%',top:3,height:32,borderLeft:'2px solid #d5f5e9'}}),
+          h('svg',{'data-weighing-target-marker':guide.offscale||'inside',viewBox:'0 0 16 18',width:16,height:18,fill:'#fef3c7',stroke:'#102332',strokeWidth:2,strokeLinejoin:'round',focusable:false,style:{position:'absolute',left:(guide.position*100)+'%',top:10,transform:'translateX(-50%)',overflow:'visible',forcedColorAdjust:'none'}},guide.offscale?h('polygon',{points:guide.offscale==='below'?'2,9 14,2 14,16':'2,2 14,9 2,16'}):h('circle',{cx:8,cy:9,r:6}))),
+        h('div',{style:{display:'flex',justifyContent:'space-between',gap:12,color:'#cce4ef',fontSize:11,fontVariantNumeric:'tabular-nums'}},h('span',{'data-weighing-target-min':true},fmt(guide.minUnits)),h('span',{'data-weighing-target-max':true},fmt(guide.maxUnits))))),
+    guide.offscale&&h('p',{'data-weighing-target-offscale':guide.offscale,style:{fontSize:12,lineHeight:1.6,color:'#ffebb2',margin:'12px 0 0'}},guide.offscale==='below'?t('stem.titration.weigh_target_off_low','Sample is below this close-up range. Its arrow sits at the left edge.'):t('stem.titration.weigh_target_off_high','Sample is above this close-up range. Its arrow sits at the right edge.')),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#c4ddea',margin:'12px 0 0'}},t('stem.titration.weigh_target_legend','Shaded band: 0.4980–0.5020 g. The line marks the 0.5000 g target. The circle or arrow marks the sample. This practice band is not measurement uncertainty.')),
+    guide.offPan&&s.sampleUnits>0&&h('p',{'data-weighing-target-off-pan':true,style:{fontSize:12,lineHeight:1.6,color:'#ffebb2',margin:'10px 0 0'}},t('stem.titration.weigh_target_off_pan','This guide follows the sample retained in the boat, even when the boat is off the pan.')));
+}
+
+
+function TitrationWeighingAdditions(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),showState=React.useState(false),show=showState[0],setShow=showState[1],s=titrationWeighingState(props.state),options=titrationWeighingAdditions(s);
+  var fmt=function(n){return (n/10000).toFixed(4)+' g';},blocked=options[0].reason,setup=blocked&&blocked!=='limit';
+  var setupHint=blocked==='boat'?t('stem.titration.weigh_compare_boat','Place or return the boat to compare additions.'):blocked==='tare'?t('stem.titration.weigh_compare_tare','Tare the empty boat before comparing additions.'):t('stem.titration.weigh_compare_shield','Open the draft shield to compare additions.');
+  return h('div',{'data-weighing-additions':true,style:{marginTop:16,scrollMarginTop:150}},
+    h('p',{id:id+'-label',style:{fontSize:12,lineHeight:1.6,color:'#c8dce7',margin:'0 0 8px'}},t('stem.titration.weigh_additions','Spatula additions · use smaller portions near the target')),
+    h('button',{type:'button','aria-pressed':show,'aria-controls':id+'-options','aria-describedby':show?id+'-intro':undefined,onClick:function(){setShow(!show);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{scrollMarginTop:150,minHeight:44,padding:'8px 11px',marginBottom:10,border:'1px solid #9cc8cc',borderRadius:9,background:show?'#c6f3e4':'#194750',color:show?'#163a35':'#e0fbf3',fontSize:12}},t('stem.titration.weigh_compare_toggle','Compare addition outcomes')),
+    show&&h('p',{id:id+'-intro',style:{fontSize:12,lineHeight:1.6,color:'#c6dfed',margin:'0 0 10px'}},t('stem.titration.weigh_compare_intro','Compare the sample mass after one addition. Only the + buttons add material. Predictions use fixed practice portions; real scoops vary.')),
+    show&&setup&&h('p',{id:id+'-setup','data-weighing-addition-setup':blocked,style:{fontSize:12,lineHeight:1.6,color:'#ffebb2',margin:'0 0 10px'}},setupHint),
+    show&&!setup&&h('p',{'data-weighing-addition-current':true,style:{fontSize:12,lineHeight:1.6,color:'#c6dfed',margin:'0 0 10px',fontVariantNumeric:'tabular-nums'}},t('stem.titration.weigh_sample_in_boat','Sample in boat')+': '+fmt(s.sampleUnits)),
+    h('div',{id:id+'-options',role:'group','aria-labelledby':id+'-label','aria-describedby':props.nextId,'data-weighing-addition-view':show?'compare':'compact',style:show&&!setup?{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,130px),1fr))',gap:8}:{display:'flex',flexWrap:'wrap',gap:8}},options.map(function(option){
+      var description=id+'-'+option.units,comparison=show&&!setup,within=option.target&&option.target.relation==='within',exact=option.target&&option.target.deltaUnits===0;
+      var outcome=exact?t('stem.titration.weigh_compare_exact','Reaches the 0.5000 g target.'):within?t('stem.titration.weigh_compare_within','Would land within the target band.'):option.target&&option.target.relation==='below'?t('stem.titration.weigh_compare_below','Would stay below the target band.'):t('stem.titration.weigh_compare_above','Would be above the target band.');
+      return h('div',{key:option.units,'data-weighing-addition-option':option.units,style:comparison?{minWidth:0,padding:10,border:'1px solid '+(within?'#6ca994':'#68879b'),borderRadius:10,background:within?'#123b34':'#112e40'}:{minWidth:0}},
+        h('button',{type:'button',disabled:!option.allowed,'aria-describedby':comparison?description:show&&setup?id+'-setup':props.nextId,onClick:function(){props.onAction({type:'add',units:option.units});},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{scrollMarginTop:150,minHeight:44,width:comparison?'100%':undefined,padding:'9px 12px',border:'1px solid '+(option.allowed?'#87aebf':'#526f83'),borderRadius:8,background:option.allowed?'#193b50':'#152a39',color:option.allowed?'#e1f7ee':'#afc4d3',fontSize:12,cursor:option.allowed?'pointer':'not-allowed',fontVariantNumeric:'tabular-nums'}},'+ '+fmt(option.units)),
+        comparison&&h('div',{id:description,'data-weighing-addition-result':option.allowed?option.afterUnits:'limit',style:{marginTop:10,fontSize:12,lineHeight:1.6,color:within?'#ccf8e4':'#d5e8f2'}},
+          option.allowed?h(React.Fragment,null,
+            h('span',{style:{display:'block',fontSize:11}},t('stem.titration.weigh_compare_after','Sample after this addition')),
+            h('strong',{style:{display:'block',fontSize:19,fontVariantNumeric:'tabular-nums',margin:'3px 0 7px',color:within?'#b7f7d8':'#f0f8ff'}},fmt(option.afterUnits)),
+            h('span',{'data-weighing-addition-outcome':option.target.relation,style:{display:'block'}},outcome)):
+            h('span',null,t('stem.titration.weigh_compare_limit','This portion would exceed the 2.0000 g practice limit.'))));
+    })));
+}
+
+
 function TitrationWeighingPractice(props) {
   var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationWeighingState(props.state),reading=titrationWeighingReading(s);
-  var fmt=function(n){return (n/10000).toFixed(4)+' g';},within=Math.abs(s.sampleUnits-5000)<=20,hasCurrentRecord=s.recordedUnits!==null && s.recordedUnits===s.sampleUnits;
+  var fmt=function(n){return (n/10000).toFixed(4)+' g';},hasCurrentRecord=s.recordedUnits!==null && s.recordedUnits===s.sampleUnits;
   var next=!s.boat?(s.closed?t('stem.titration.weigh_next_open','Open the draft shield to place the boat.'):t('stem.titration.weigh_next_boat','Place the boat on the pan.')):!s.tareUnits?(s.closed?t('stem.titration.weigh_next_tare','Tare the empty boat to exclude its mass.'):t('stem.titration.weigh_next_close_tare','Close the shield before taring the empty boat.')):s.sampleUnits===0?(s.closed?t('stem.titration.weigh_next_open_add','Open the shield to add sample with the spatula.'):t('stem.titration.weigh_next_add','Add a coarse portion, then use smaller additions near the target.')):!s.closed?t('stem.titration.weigh_next_close','Close the shield before recording a mass.'):hasCurrentRecord?t('stem.titration.weigh_next_transfer','Mass recorded. Study how to transfer the sample without losing material.'):t('stem.titration.weigh_next_record','Record the stable sample mass, even if it differs from the target.');
   function button(label,action,disabled,primary){return h('button',{type:'button',disabled:!!disabled,onClick:function(){props.onAction(action);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{scrollMarginTop:150,minHeight:44,padding:'9px 12px',border:'1px solid '+(disabled?'#385366':primary?'#6ee7b7':'#64879c'),borderRadius:9,background:disabled?'#152a39':primary?'#164b42':'#193b50',color:disabled?'#94a8b8':'#e1f7ee',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
   function stat(label,value){return h('div',{style:{flex:'1 1 90px',minWidth:0,padding:10,border:'1px solid #35576c',borderRadius:9}},h('dt',{style:{fontSize:11,color:'#b7d0df'}},label),h('dd',{style:{margin:'4px 0 0',fontSize:15,color:'#e0f2fe',fontVariantNumeric:'tabular-nums'}},fmt(value)));}
@@ -2582,18 +2760,14 @@ function TitrationWeighingPractice(props) {
           button(s.closed?t('stem.titration.weigh_open','Open draft shield'):t('stem.titration.weigh_close','Close draft shield'),{type:'shield'},false,false),
           button(s.boat?t('stem.titration.weigh_remove','Remove boat'):s.sampleUnits?t('stem.titration.weigh_return','Return loaded boat'):t('stem.titration.weigh_place','Place empty boat'),{type:'boat'},s.closed,false),
           button(t('stem.titration.weigh_tare_button','Tare empty boat'),{type:'tare'},!s.closed||!s.boat||s.sampleUnits>0||s.tareUnits>0,true)),
-        h('p',{style:{fontSize:12,color:'#c8dce7',margin:'16px 0 8px'}},t('stem.titration.weigh_additions','Spatula additions · use smaller portions near the target')),
-        h('div',{role:'group','aria-label':t('stem.titration.weigh_additions','Spatula additions · use smaller portions near the target'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},[1000,100,10].map(function(amount){return h(React.Fragment,{key:amount},button('+ '+fmt(amount),{type:'add',units:amount},s.closed||!s.boat||!s.tareUnits||s.sampleUnits+amount>20000,false));})),
-        h('div',{style:{margin:'16px 0',padding:12,border:'1px solid #45677e',borderRadius:10}},
-          h('p',{style:{margin:'0 0 6px',fontSize:11,color:'#bdd4e2'}},(s.boat?t('stem.titration.weigh_sample_in_boat','Sample in boat'):t('stem.titration.weigh_boat_off_pan','Boat off pan'))+': '+fmt(s.sampleUnits)),
-          h('p',{style:{margin:'0 0 8px',fontSize:12,color:'#dcebf3'}},s.sampleUnits===0?t('stem.titration.weigh_empty','No sample added'):within?t('stem.titration.weigh_within','Within the practice target band'):s.sampleUnits<5000?t('stem.titration.weigh_below','Below the practice target band'):t('stem.titration.weigh_above','Above the practice target band')),
-          h('div',{'aria-hidden':true,style:{position:'relative',height:10,borderRadius:6,background:'#304c61',margin:'10px 0'}},h('div',{style:{height:'100%',width:(s.sampleUnits/Math.max(10000,s.sampleUnits)*100)+'%',background:within?'#6ee7b7':'#7dd3fc',borderRadius:6}}),h('span',{style:{position:'absolute',left:(5000/Math.max(10000,s.sampleUnits)*100)+'%',top:-4,height:18,borderLeft:'2px solid #fde68a'}})),
-          h('div',{'aria-hidden':true,style:{display:'flex',justifyContent:'space-between',fontSize:11,color:'#bdd4e2'}},h('span',null,'0.0000 g'),h('span',null,fmt(Math.max(10000,s.sampleUnits))))),
+        h(TitrationWeighingAdditions,{React:React,t:t,state:s,onAction:props.onAction,nextId:id+'-next'}),
+        h(TitrationWeighingTarget,{React:React,t:t,state:s}),
         button(t('stem.titration.weigh_record','Record mass'),{type:'record'},!s.closed||!s.boat||!s.tareUnits||s.sampleUnits===0||hasCurrentRecord,true),
         s.recordedUnits!==null && h('div',{'data-weighing-record':true,style:{marginTop:12,padding:12,background:'#123a36',border:'1px solid #507f6e',borderRadius:10,color:'#d1fae5',fontSize:13,lineHeight:1.6}},
           h('strong',null,t('stem.titration.weigh_recorded','Recorded sample mass')+': '+fmt(s.recordedUnits)),
           h('p',{style:{margin:'5px 0 0',fontSize:12}},hasCurrentRecord?t('stem.titration.weigh_transfer_hint','Next, check how much of this sample reaches the receiver.'):t('stem.titration.weigh_record_stale','Sample changed. Close the shield and record the new mass.')),
           h('button',{type:'button',onClick:function(){props.onSelect('weighing-boat');},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'8px 10px',marginTop:8,border:'1px solid #72ac9c',borderRadius:8,background:'#18483f',color:'#d1fae5',fontSize:12}},t('stem.titration.weigh_transfer','Study sample transfer'))))),
+    h(TitrationWeighingBreakdown,{React:React,t:t,state:s}),
     h('p',{style:{fontSize:11,lineHeight:1.6,color:'#b5cede',margin:'16px 0 0'}},t('stem.titration.weigh_model_note','Practice model: fixed additions, a 2 g sample limit, and immediate stability with the shield closed. Real scoops vary; wait for the instrument stability indicator. Four decimals show display resolution, not guaranteed accuracy.')),
     h('p',{style:{fontSize:11,lineHeight:1.6,color:'#b5cede',margin:'6px 0 0'}},t('stem.titration.weigh_scope','Progress stays while you browse equipment. Restart clears this practice record. This exercise does not change the live titration or its notebook.')));
 }
@@ -2601,36 +2775,86 @@ function TitrationWeighingPractice(props) {
 
 function TitrationTransferIllustration(props) {
   var h=props.React.createElement,s=titrationTransferState(props.state),m=titrationTransferMass(s),id=props.id;
-  var wet=s.phase==='rinsed',poured=s.phase!=='ready';
+  var wet=s.phase==='rinsed',poured=s.phase!=='ready',inspection=titrationTransferInspection(s,props.view),crop=inspection.viewBox.split(' ').map(Number),showBoat=inspection.view!=='receiver',showReceiver=inspection.view!=='boat';
   function grains(units,cx,cy,width,height,key) {
     var count=units?Math.max(1,Math.round(30*units/Math.max(1,m.source))):0;
-    return h('g',{key:key},Array.from({length:count},function(_,i){return h('circle',{key:i,cx:cx+(i*17%width),cy:cy+(i*7%height),r:2.7+(i%3)*0.4,fill:'#fff0a6',stroke:'#ad985d',strokeWidth:0.65});}));
+    return h('g',{key:key,'data-transfer-grains':key},Array.from({length:count},function(_,i){return h('circle',{key:i,cx:cx+(i*17%width),cy:cy+(i*7%height),r:2.7+(i%3)*0.4,fill:'#fff0a6',stroke:'#ad985d',strokeWidth:0.65});}));
   }
-  return h('svg',{viewBox:'0 0 460 285',width:'100%',style:{display:'block',maxHeight:345},'aria-hidden':true,focusable:false,'data-transfer-diagram':s.phase},
-    h('defs',null,h('linearGradient',{id:id+'-glass',x1:'0%',y1:'0%',x2:'100%',y2:'0%'},h('stop',{offset:0,stopColor:'#c4eaff',stopOpacity:0.18}),h('stop',{offset:0.5,stopColor:'#d9f3ff',stopOpacity:0.03}),h('stop',{offset:1,stopColor:'#c4eaff',stopOpacity:0.16}))),
-    h('ellipse',{cx:232,cy:145,rx:204,ry:124,fill:'#112f43'}),
+  return h('svg',{viewBox:inspection.viewBox,width:'100%',style:{display:'block',maxHeight:345},'aria-hidden':true,focusable:false,'data-transfer-diagram':s.phase,'data-transfer-inspection':inspection.view},
+    h('defs',null,h('linearGradient',{id:id+'-glass',x1:'0%',y1:'0%',x2:'100%',y2:'0%'},h('stop',{offset:0,stopColor:'#c4eaff',stopOpacity:0.18}),h('stop',{offset:0.5,stopColor:'#d9f3ff',stopOpacity:0.03}),h('stop',{offset:1,stopColor:'#c4eaff',stopOpacity:0.16})),h('clipPath',{id:id+'-inspection-crop'},h('rect',{x:crop[0],y:crop[1],width:crop[2],height:crop[3]}))),
+    h('g',{clipPath:'url(#'+id+'-inspection-crop)'},h('ellipse',{cx:232,cy:145,rx:204,ry:124,fill:'#112f43'}),
     h('path',{d:'M24 255 H436 M45 264 H415',stroke:'#476a82',strokeWidth:1}),
-    h('ellipse',{cx:327,cy:247,rx:82,ry:9,fill:'#031220'}),
-    h('ellipse',{cx:116,cy:245,rx:86,ry:9,fill:'#031220',opacity:poured?0.35:0.8}),
-    wet&&h('path',{d:'M270 197 Q327 214 386 197 V231 Q327 253 270 231 Z',fill:'#38bdf8',fillOpacity:0.3,stroke:'#7dd3fc',strokeWidth:1.3}),
+    showReceiver&&h('ellipse',{cx:327,cy:247,rx:82,ry:9,fill:'#031220'}),
+    showBoat&&h('ellipse',{cx:116,cy:245,rx:86,ry:9,fill:'#031220',opacity:poured?0.35:0.8}),
+    showReceiver&&h('g',null,wet&&h('path',{d:'M270 197 Q327 214 386 197 V231 Q327 253 270 231 Z',fill:'#38bdf8',fillOpacity:0.3,stroke:'#7dd3fc',strokeWidth:1.3}),
     h('path',{d:'M267 127 V231 Q327 257 389 231 V127',fill:'url(#'+id+'-glass)',stroke:'#b9d8e9',strokeWidth:2.5}),
     h('ellipse',{cx:328,cy:127,rx:61,ry:13,fill:'none',stroke:'#b9d8e9',strokeWidth:2}),
     h('path',{d:'M280 147 V225 M286 145 V181',stroke:'#e1f4ff',strokeWidth:3,opacity:0.5}),
-    grains(m.received,295,222,56,12,'receiver'),
-    h('g',{transform:poured?'translate(113 -106) rotate(24 121 174)':undefined},
+    grains(m.received,295,222,56,12,'receiver')),
+    showBoat&&h('g',{transform:poured?'translate(113 -106) rotate(24 121 174)':undefined},
       h('path',{d:'M43 188 L116 161 L208 188 L191 218 L121 239 L62 218 Z',fill:'#dae8ef',stroke:'#9ebfcf',strokeWidth:2}),
-      h('path',{d:'M66 190 L118 171 L187 190 L176 207 L121 224 L78 207 Z',fill:'#b9d1df',stroke:'#f3fbff',strokeWidth:1.6}),
+      h('path',{d:'M66 190 L118 171 L187 190 L176 207 L121 224 L78 207 Z',fill:wet?'#b5dce5':'#b9d1df',stroke:'#f3fbff',strokeWidth:1.6}),
+      wet&&h('path',{'data-transfer-wet-surface':true,d:'M98 190 Q121 181 147 192 M112 200 Q139 193 160 204',fill:'none',stroke:'#2d8dab',strokeWidth:1.5,strokeOpacity:0.7,strokeLinecap:'round'}),
       grains(m.remaining,96,193,56,15,'boat')),
-    poured&&h('path',{d:'M309 115 Q325 120 327 146 M319 137 L327 146 L332 135',fill:'none',stroke:wet?'#7dd3fc':'#6ee7b7',strokeWidth:3,strokeLinecap:'round'}),
-    wet&&h('g',null,
+    showReceiver&&poured&&h('path',{d:'M309 115 Q325 120 327 146 M319 137 L327 146 L332 135',fill:'none',stroke:wet?'#7dd3fc':'#6ee7b7',strokeWidth:3,strokeLinecap:'round'}),
+    inspection.view==='bench'&&wet&&h('g',null,
       h('path',{d:'M195 38 L215 66 M202 35 L221 63',stroke:'#d8e9f2',strokeWidth:3}),
       h('ellipse',{cx:190,cy:25,rx:9,ry:16,transform:'rotate(-35 190 25)',fill:'#486d84',stroke:'#b9d5e3',strokeWidth:2}),
       h('path',{d:'M220 72 L225 80 M228 85 L233 93',stroke:'#7dd3fc',strokeWidth:3,strokeLinecap:'round'})),
-    poured&&m.remaining>0&&h('circle',{cx:216,cy:88,r:25,fill:'none',stroke:'#fde68a',strokeWidth:2,strokeDasharray:'4 5'}));
+    showBoat&&poured&&m.remaining>0&&h('circle',{cx:216,cy:88,r:25,fill:'none',stroke:'#fde68a',strokeWidth:2,strokeDasharray:'4 5'})));
 }
+function TitrationTransferMassBalance(props) {
+  var h=props.React.createElement,t=props.t,s=titrationTransferState(props.state),m=titrationTransferMass(s),inspection=titrationTransferInspection(s);
+  if(s.sourceUnits===null)return null;
+  var fmt=function(units){return (units/10000).toFixed(4)+' g';};
+  return h('figure',{'data-transfer-mass-balance':true,style:{margin:'12px 0 0',padding:12,border:'1px solid #557b8b',borderRadius:10,background:'#102b3a'}},
+    h('figcaption',{style:{fontSize:12,color:'#e4f1f6',fontWeight:700,marginBottom:10}},t('stem.titration.transfer_inspect_balance','Solid mass balance')),
+    h('div',{'aria-hidden':true,style:{display:'flex',height:22,overflow:'hidden',border:'1px solid #a9c1c9',borderRadius:6,background:'#081c29'}},
+      h('span',{'data-transfer-share':'received',style:{display:'block',forcedColorAdjust:'none',flexShrink:0,width:(inspection.receivedFraction*100)+'%',background:'#6ee7b7'}}),
+      h('span',{'data-transfer-share':'remaining',style:{display:'block',forcedColorAdjust:'none',flexShrink:0,width:(inspection.remainingFraction*100)+'%',background:'repeating-linear-gradient(135deg, #fde68a 0px, #fde68a 5px, #8e793d 5px, #8e793d 7px)'}})),
+    h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px 14px',fontSize:11,color:'#d5e7ef',marginTop:9}},
+      h('span',null,h('span',{'aria-hidden':true,style:{display:'inline-block',forcedColorAdjust:'none',width:12,height:12,background:'#6ee7b7',border:'1px solid #536f79',marginRight:6,verticalAlign:'middle'}}),t('stem.titration.transfer_received','Solid in receiver')),
+      h('span',null,h('span',{'aria-hidden':true,style:{display:'inline-block',forcedColorAdjust:'none',width:12,height:12,background:'repeating-linear-gradient(135deg, #fde68a 0px, #fde68a 3px, #8e793d 3px, #8e793d 5px)',border:'1px solid #536f79',marginRight:6,verticalAlign:'middle'}}),t('stem.titration.transfer_residue','Solid left in boat'))),
+    h('p',{'data-transfer-balance-equation':true,style:{fontSize:13,lineHeight:1.6,color:'#edf8fa',fontVariantNumeric:'tabular-nums',margin:'10px 0 6px'}},fmt(m.source)+' = '+fmt(m.received)+' + '+fmt(m.remaining)),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bdd7e4',margin:0}},t('stem.titration.transfer_inspect_balance_note','Bar widths show the current solid masses. Grain drawings are schematic; rinse liquid is excluded.')));
+}
+
+function TitrationTransferDifference(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),openState=React.useState(false),open=openState[0],setOpen=openState[1],hideState=React.useState(false),hide=hideState[0],setHide=hideState[1],toggleRef=React.useRef(null),difference=titrationTransferDifference(props.state,hide);
+  if(!difference)return null;
+  function fmt(units){return (units/10000).toFixed(4)+' g';}
+  function close(){setOpen(false);if(toggleRef.current)toggleRef.current.focus();}
+  var rows=[['before',hide?t('stem.titration.transfer_starting_mass','Starting solid'):t('stem.titration.transfer_before','Dry boat + sample before')],['after',hide?t('stem.titration.transfer_residue','Solid left in boat'):t('stem.titration.transfer_after','Dry boat + residue after')],['delivered',t('stem.titration.transfer_received','Solid in receiver')]];
+  var boatFill='repeating-linear-gradient(135deg,#bacfdd 0,#bacfdd 4px,#648299 4px,#648299 6px)';
+  function swatch(fill){return h('span',{'aria-hidden':true,style:{display:'inline-block',width:12,height:12,marginRight:6,border:'1px solid #506b7b',verticalAlign:'middle',background:fill,forcedColorAdjust:'none'}});}
+  return h('div',{'data-transfer-cancellation':true,onKeyDown:function(e){if(open&&e.key==='Escape'){e.stopPropagation();close();}},style:{marginTop:12,scrollMarginTop:140}},
+    h('button',{type:'button',ref:toggleRef,'aria-expanded':open,'aria-controls':open?id+'-panel':undefined,onClick:function(){setOpen(!open);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'9px 11px',scrollMarginTop:140,border:'1px solid #93b8c4',borderRadius:9,background:open?'#c8f1ef':'#174354',color:open?'#123637':'#e5faff',fontSize:12,textAlign:'left'}},t('stem.titration.transfer_cancel_toggle','Show how the boat cancels')),
+    open&&h('div',{id:id+'-panel','data-transfer-cancellation-panel':hide?'solid':'gross',style:{marginTop:12,padding:12,border:'1px solid #6d8ca3',borderRadius:11,background:'#0a2435',minWidth:0}},
+      h('button',{type:'button','aria-pressed':hide,'aria-controls':id+'-figure','aria-describedby':id+'-note',onClick:function(){setHide(!hide);},className:'focus-visible:ring-2 focus-visible:ring-emerald-300',style:{minHeight:44,padding:'9px 11px',scrollMarginTop:140,border:'1px solid #9dc2c6',borderRadius:8,background:hide?'#c6f3e4':'#194750',color:hide?'#163a35':'#e0fbf3',fontSize:12,textAlign:'left'}},t('stem.titration.transfer_cancel_hide','Hide the boat contribution')),
+      h('p',{id:id+'-note',style:{fontSize:12,lineHeight:1.6,color:'#d2e6ef',margin:'10px 0'}},t('stem.titration.transfer_cancel_note','Subtract the same empty-boat mass from both readings. Their difference stays the same.')),
+      h('figure',{id:id+'-figure',style:{margin:0}},
+        h('figcaption',{style:{fontSize:13,fontWeight:700,color:'#edf9ff',margin:'0 0 8px'}},t('stem.titration.transfer_cancel_title','Compare the dry readings')),
+        h('p',{'data-transfer-cancellation-scale':true,style:{fontSize:11,lineHeight:1.6,color:'#c5dfed',margin:'0 0 14px'}},t('stem.titration.transfer_cancel_scale','Every bar uses 0.0000–5.0000 g in both views.')),
+        h('div',{style:{display:'grid',gap:14}},rows.map(function(row){var value=difference[row[0]];return h('div',{key:row[0],'data-transfer-cancellation-row':row[0]},
+          h('dl',{style:{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:'4px 10px',margin:'0 0 6px'}},h('dt',{style:{fontSize:12,color:'#d8eaf3'}},row[1]),h('dd',{'data-transfer-cancellation-value':row[0],style:{fontSize:15,fontWeight:700,margin:0,color:'#f0faff',fontVariantNumeric:'tabular-nums'}},fmt(value.totalUnits))),
+          h('div',{'aria-hidden':true,style:{height:22,border:'1px solid #8aaabb',borderRadius:4,background:'#102f42',overflow:'hidden',display:'flex'}},
+            h('span',{'data-transfer-cancellation-boat':row[0],style:{height:'100%',flexShrink:0,width:(value.boatFraction*100)+'%',background:boatFill,forcedColorAdjust:'none'}}),
+            h('span',{'data-transfer-cancellation-solid':row[0],style:{height:'100%',flexShrink:0,width:(value.solidFraction*100)+'%',background:row[0]==='delivered'?'#6ee7b7':'#fde68a',forcedColorAdjust:'none'}})));})),
+        h('div',{'aria-hidden':true,style:{display:'flex',justifyContent:'space-between',gap:12,fontSize:11,color:'#c5dfed',margin:'8px 0 12px'}},h('span',null,'0.0000 g'),h('span',null,'5.0000 g')),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:'7px 12px',fontSize:11,lineHeight:1.6,color:'#d0e4ee'}},
+          !hide&&h('span',null,swatch(boatFill),t('stem.titration.transfer_cancel_boat','Same empty boat')+': '+fmt(difference.boatUnits)),
+          h('span',null,swatch('#fde68a'),t('stem.titration.transfer_cancel_solid','Solid in the boat')),
+          h('span',null,swatch('#6ee7b7'),t('stem.titration.transfer_received','Solid in receiver')))),
+      h('p',{'data-transfer-cancellation-equation':true,style:{display:'flex',flexWrap:'wrap',gap:'4px 6px',padding:10,margin:'12px 0 8px',border:'1px solid #669b8b',borderRadius:8,background:'#123b33',fontSize:14,fontWeight:700,lineHeight:1.6,color:'#d3ffec',fontVariantNumeric:'tabular-nums'}},
+        h('span',{style:{whiteSpace:'nowrap'}},fmt(difference.before.totalUnits)),h('span',null,'−'),h('span',{style:{whiteSpace:'nowrap'}},fmt(difference.after.totalUnits)),h('span',null,'='),h('span',{style:{whiteSpace:'nowrap'}},fmt(difference.delivered.totalUnits))),
+      h('p',{'data-transfer-cancellation-mode':true,style:{fontSize:12,lineHeight:1.6,color:'#d6eaf2',margin:'0 0 8px'}},hide?t('stem.titration.transfer_cancel_removed','The boat contribution is removed from both readings. The delivered solid is unchanged.'):t('stem.titration.transfer_cancel_included','The matching hatched sections show the same boat mass in both dry readings.')),
+      h('p',{style:{fontSize:11,lineHeight:1.6,color:'#c5dce9',margin:0}},t('stem.titration.transfer_cancel_scope','Diagram only: this does not tare the balance or change the transfer.'))));
+}
+
 function TitrationTransferPractice(props) {
   var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationTransferState(props.state),m=titrationTransferMass(s);
   var latest=titrationTransferSource(props.weighing),current=s.recordedPhase===s.phase,saved=s.recordedPhase?titrationTransferMass(s,s.recordedPhase):null;
+  var viewState=React.useState('bench'),inspectionMode=viewState[0],setInspectionMode=viewState[1],inspection=titrationTransferInspection(s,inspectionMode);
   var fmt=function(units){return (units/10000).toFixed(4)+' g';};
   var phaseLabel=s.phase==='ready'?t('stem.titration.transfer_ready','Ready to pour'):s.phase==='poured'?t('stem.titration.transfer_dry','After dry transfer'):t('stem.titration.transfer_wet','After model rinse');
   var next=saved&&current?(s.phase==='poured'&&m.remaining>0?t('stem.titration.transfer_next_dry_recorded','Dry transfer recorded. Continue with this delivered mass, or rinse the residue and record the updated result.'):t('stem.titration.transfer_next_recorded','Transfer recorded. Continue to solution preparation with the delivered mass.')):s.sourceUnits===null?t('stem.titration.transfer_next_load','Load a current recorded mass from the weighing activity to begin.'):s.phase==='ready'?t('stem.titration.transfer_next_pour','Choose a model residue setting, then pour the solid into the receiver.'):s.phase==='poured' && m.remaining>0?t('stem.titration.transfer_next_compare','Compare the dry masses to find how much arrived. Record this result, or rinse the remaining solid into the receiver.'):t('stem.titration.transfer_next_finish','All of the model sample is in the receiver. Record the transfer before continuing to solution preparation.');
@@ -2654,13 +2878,17 @@ function TitrationTransferPractice(props) {
       s.sourceUnits!==null&&h('p',{style:{fontSize:11,lineHeight:1.5,color:latest===s.sourceUnits?'#bcd2df':'#fde68a',margin:'10px 0 0'}},latest===s.sourceUnits?t('stem.titration.transfer_reload_note','Loading a sample starts a new transfer; navigating between guides keeps this trial.'):t('stem.titration.transfer_source_changed','The weighing record has changed or is unavailable. This trial still uses its original sample')+': '+fmt(s.sourceUnits))),
     h('div',{style:{display:'flex',flexWrap:'wrap',gap:20,alignItems:'flex-start'}},
       h('div',{style:{flex:'1.15 1 250px',minWidth:0}},
-        h('figure',{style:{margin:0,border:'1px solid #3f6479',borderRadius:12,background:'#071925',overflow:'hidden'}},
-          h(TitrationTransferIllustration,{React:React,id:id,state:s}),h('figcaption',{style:{padding:'0 12px 12px',fontSize:12,color:'#bae6fd',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.transfer_empty_scene','Load a sample to begin'):phaseLabel)),
+        h('div',{style:{display:'flex',flexWrap:'wrap',alignItems:'center',gap:8,marginBottom:10}},h('label',{htmlFor:id+'-inspection',style:{fontSize:12,fontWeight:700,color:'#d0e8f3'}},t('stem.titration.transfer_inspect_label','Inspect sample transfer')),
+          h('select',{id:id+'-inspection',value:inspectionMode,'aria-controls':id+'-inspection-figure','aria-describedby':id+'-inspection-note',onChange:function(e){setInspectionMode(e.target.value);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{flex:'1 1 160px',maxWidth:'100%',minWidth:0,minHeight:44,padding:'8px 10px',border:'1px solid #7cacc1',borderRadius:9,background:'#12394a',color:'#e0f5ff',fontSize:12}},
+            [['bench',t('stem.titration.transfer_inspect_bench','Whole bench')],['follow',t('stem.titration.transfer_inspect_follow','Follow the sample')],['boat',t('stem.titration.transfer_inspect_boat','Weighing boat')],['receiver',t('stem.titration.transfer_inspect_receiver','Receiver')]].map(function(item){return h('option',{key:item[0],value:item[0]},item[1]);}))),
+        h('figure',{id:id+'-inspection-figure',style:{margin:0,border:'1px solid #3f6479',borderRadius:12,background:'#071925',overflow:'hidden'}},
+          h(TitrationTransferIllustration,{React:React,id:id,state:s,view:inspection.view}),h('figcaption',{style:{padding:'0 12px 12px',fontSize:12,color:'#bae6fd',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.transfer_empty_scene','Load a sample to begin'):phaseLabel)),
+        h('p',{id:id+'-inspection-note','data-transfer-inspection-note':inspection.view,'aria-live':'polite',style:{fontSize:12,lineHeight:1.6,color:'#cce5f2',padding:10,margin:'10px 0',background:'#102e41',borderRadius:8}},titrationTransferInspectionNote(t,s,inspection.view)),
         h('dl',{'aria-live':'polite','aria-atomic':true,style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0 0'}},
           massCard(t('stem.titration.transfer_starting_mass','Starting solid'),m.source,'#456e88','source'),
           massCard(t('stem.titration.transfer_received','Solid in receiver'),m.received,'#599f8b','received'),
           massCard(t('stem.titration.transfer_residue','Solid left in boat'),m.remaining,'#a89457','residue')),
-        h('p',{style:{fontSize:11,color:'#c1d8e7',lineHeight:1.5,margin:'10px 0 0'}},t('stem.titration.transfer_conservation','Starting solid = solid in receiver + solid left in boat. Rinse liquid is not counted as sample mass.'))),
+        h(TitrationTransferMassBalance,{React:React,t:t,state:s})),
       h('div',{style:{flex:'1 1 250px',minWidth:0}},
         h('p',{id:id+'-next','aria-live':'polite',style:{margin:'0 0 16px',padding:12,borderLeft:'3px solid #6ee7b7',borderRadius:6,background:'#12403d',color:'#d1fae5',fontSize:13,lineHeight:1.6}},next),
         h('label',{htmlFor:id+'-residue',style:{display:'block',fontSize:12,color:'#e3eff7',fontWeight:700}},t('stem.titration.transfer_residue_setting','Residue left by a dry pour (model setting)')),
@@ -2676,7 +2904,8 @@ function TitrationTransferPractice(props) {
             h('p',{style:{margin:'0 0 6px',fontSize:12,color:'#cadfea'}},t('stem.titration.transfer_before','Dry boat + sample before')+': '+fmt(m.dryBefore)),
             h('p',{style:{margin:'0 0 10px',fontSize:12,color:'#cadfea'}},t('stem.titration.transfer_after','Dry boat + residue after')+': '+fmt(m.dryAfter)),
             h('strong',{'data-transfer-equation':true,style:{display:'block',fontSize:15,color:'#a7f3d0',lineHeight:1.6,fontVariantNumeric:'tabular-nums'}},(m.dryBefore/10000).toFixed(4)+' − '+(m.dryAfter/10000).toFixed(4)+' = '+fmt(m.received)),
-            h('p',{style:{margin:'8px 0 0',fontSize:11,color:'#bfd5e3',lineHeight:1.5}},t('stem.titration.transfer_difference_note','These are model dry masses. The same boat mass cancels, leaving the mass delivered.'))):
+            h('p',{style:{margin:'8px 0 0',fontSize:11,color:'#bfd5e3',lineHeight:1.5}},t('stem.titration.transfer_difference_note','These are model dry masses. The same boat mass cancels, leaving the mass delivered.')),
+            h(TitrationTransferDifference,{React:React,t:t,state:s})):
             h('p',{style:{margin:0,fontSize:12,lineHeight:1.6,color:'#fde68a'}},t('stem.titration.transfer_wet_warning','The boat is now wet. Do not use its wet mass as the dry after-transfer measurement; rinse liquid would change that reading.'))),
         saved&&h('div',{'data-transfer-record':true,style:{marginTop:14,padding:12,border:'1px solid '+(current?'#518c7b':'#a9914f'),borderRadius:10,background:'#12362f',color:'#d1fae5',fontSize:12,lineHeight:1.6}},
           h('strong',{style:{fontSize:14}},t('stem.titration.transfer_recorded','Recorded delivered mass')+': '+fmt(saved.received)),
@@ -2703,9 +2932,9 @@ function TitrationPreparationSample(props) {
 function TitrationPreparationIllustration(props) {
   var h=props.React.createElement,s=titrationPreparationState(props.state),id=props.id,t=props.t;
   var filled=s.phase==='filling'||s.phase==='mixed',complete=s.phase==='mixed';
-  var difference=10000-s.volumeUnits;
+  var preview=titrationPreparationAdditionPreview(s,props.previewUnits);
   // Deliberately exaggerate near-mark differences in the labeled teaching close-up.
-  var zoomOffset=difference===0?0:(difference>0?1:-1)*Math.min(difference>0?70:29,4*Math.sqrt(Math.abs(difference)));
+  var zoomOffset=titrationPreparationMeniscusOffset(s.volumeUnits);
   var enlarged=props.closeup&&filled,y=filled?145-(s.volumeUnits-9500)*0.12:235,zoomY=filled?114+zoomOffset:230;
   var outline='M126 37 V129 C75 153 65 232 113 245 H183 C231 232 221 153 170 129 V37 Z';
   return h('svg',{viewBox:props.closeup&&filled?'260 38 190 235':'0 0 460 290',width:'100%','aria-hidden':true,focusable:false,'data-preparation-diagram':s.phase,'data-preparation-view':props.closeup&&filled?'meniscus':'flask',style:{display:'block',maxHeight:360}},
@@ -2716,6 +2945,7 @@ function TitrationPreparationIllustration(props) {
     filled&&h('path',{d:'M68 '+(y-7)+' Q148 '+(y+7)+' 230 '+(y-7)+' V252 H68 Z',clipPath:'url(#'+id+'-flask)',fill:'#38bdf8',fillOpacity:0.35,stroke:'#a5eaf7',strokeWidth:2}),
     h('path',{d:outline,fill:'url(#'+id+'-glass)',stroke:'#bbdfef',strokeWidth:2.5}),h('ellipse',{cx:148,cy:37,rx:22,ry:5,fill:'#0d2333',stroke:'#caeafa',strokeWidth:2}),
     h('path',{d:'M136 48 V127 M106 171 Q92 208 110 226',fill:'none',stroke:'#f0f9ff',strokeWidth:4,opacity:0.6,strokeLinecap:'round'}),
+    preview&&h('path',{'data-preparation-preview-flask':true,d:'M68 '+(145-(preview.afterUnits-9500)*0.12-7)+' Q148 '+(145-(preview.afterUnits-9500)*0.12+7)+' 230 '+(145-(preview.afterUnits-9500)*0.12-7),clipPath:'url(#'+id+'-flask)',fill:'none',stroke:preview.relation==='above'?'#fde68a':'#d8b4fe',strokeWidth:2,strokeDasharray:'4 3'}),
     h('path',{d:'M120 85 H176',stroke:'#fda4af',strokeWidth:3}),
     h('text',{x:148,y:207,textAnchor:'middle',fill:'#e0f2fe',fontSize:17,fontWeight:700},'100 mL'),
     complete&&h('g',null,h('path',{d:'M120 22 H176 L167 39 H129 Z',fill:'#d9e9f2',stroke:'#a7c9dc',strokeWidth:2}),h('path',{d:'M68 133 Q38 181 64 219 M53 213 L65 221 L68 206',stroke:'#6ee7b7',strokeWidth:3,fill:'none'})),
@@ -2729,17 +2959,124 @@ function TitrationPreparationIllustration(props) {
       h('text',{x:355,y:64,textAnchor:'middle',fill:'#c9e4f2',fontSize:11},t('stem.titration.preparation_neck','Meniscus close-up')),
       h('path',{d:'M288 76 V222 H350 V76',fill:'url(#'+id+'-glass)',stroke:'#bbdfef',strokeWidth:2}),
       h('path',{d:'M290 '+(zoomY-9)+' Q319 '+(zoomY+9)+' 348 '+(zoomY-9)+' V221 H290 Z',fill:'#38bdf8',fillOpacity:0.4,stroke:'#a5eaf7',strokeWidth:2}),
+      preview&&h('path',{'data-preparation-preview-meniscus':preview.afterUnits,d:'M290 '+(105+titrationPreparationMeniscusOffset(preview.afterUnits))+' Q319 '+(123+titrationPreparationMeniscusOffset(preview.afterUnits))+' 348 '+(105+titrationPreparationMeniscusOffset(preview.afterUnits)),fill:'none',stroke:preview.relation==='above'?'#fde68a':'#d8b4fe',strokeWidth:2.5,strokeDasharray:'5 3'}),
       h('path',{d:'M280 114 H356',stroke:'#fda4af',strokeWidth:2.5}),
       h('path',{d:s.eyeLevel?'M353 114 H381':'M352 103 L381 85',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeWidth:1.5,strokeDasharray:'4 4'}),
       h('g',{'data-preparation-eye':s.eyeLevel?'level':'above',transform:'translate(0 '+(s.eyeLevel?0:-29)+')'},h('path',{d:'M382 114 Q400 94 421 114 Q400 134 382 114 Z',fill:'none',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeWidth:2}),h('circle',{cx:401,cy:114,r:5,fill:s.eyeLevel?'#6ee7b7':'#fde68a'})),
       h('text',{x:355,y:263,textAnchor:'middle',fill:'#c9e4f2',fontSize:11},t('stem.titration.preparation_schematic','Schematic view'))));
 }
+function TitrationPreparationAdditionPreview(props) {
+  var h=props.React.createElement,t=props.t,id=props.React.useId(),preview=titrationPreparationAdditionPreview(props.state,props.units);
+  var above=preview&&preview.relation==='above',amount=preview?Math.abs(preview.differenceUnits)/100:0;
+  return h('div',{'data-preparation-preview':true,id:props.id,onKeyDown:function(e){if(e.key==='Escape'){e.stopPropagation();props.onClose();}},style:{padding:14,border:'1px solid '+(above?'#c8a76a':'#9a83b8'),borderRadius:12,background:'#182b43',margin:'12px 0'}},
+    h('h5',{style:{fontSize:14,color:'#f0e8ff',margin:'0 0 8px'}},t('stem.titration.prep_preview_title','Preview one model addition')),
+    preview&&h('p',{style:{fontSize:12,lineHeight:1.6,color:'#d2e1ef',margin:'0 0 12px'}},t('stem.titration.prep_preview_intro','Choose an addition to see its dashed meniscus. Only Apply changes the flask volume.')),
+    preview&&h('fieldset',{disabled:!preview,style:{padding:0,margin:0,border:0,minWidth:0}},
+      h('legend',{style:{fontSize:12,color:'#d2e1ef',marginBottom:8}},t('stem.titration.prep_preview_portion','Model addition')),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},[100,5].map(function(units){var selected=props.units===units;return h('label',{key:units,style:{display:'flex',alignItems:'center',gap:9,flex:'1 1 110px',minWidth:0,minHeight:44,padding:'8px 10px',border:'1px solid '+(selected?'#d8b4fe':'#6c849e'),borderRadius:9,background:selected?'#42365d':'#142c42',color:'#f3edff',fontSize:13,cursor:preview?'pointer':'default'}},
+        h('input',{type:'radio',name:id+'-portion',value:units,checked:selected,onChange:function(){props.onChoose(units);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{accentColor:'#d8b4fe',width:18,height:18,flexShrink:0}}),(units/100).toFixed(2)+' mL');}))),
+    preview?h('div',{'aria-live':'polite','aria-atomic':true,'data-preparation-preview-result':preview.relation,style:{padding:'14px 0 10px'}},
+      h('p',{style:{fontSize:12,color:'#d4e1ef',margin:'0 0 4px'}},t('stem.titration.prep_preview_after','After this addition')),
+      h('strong',{'data-preparation-preview-volume':true,style:{display:'block',fontSize:23,color:above?'#fde68a':'#e9d5ff',fontVariantNumeric:'tabular-nums'}},(preview.afterUnits/100).toFixed(2)+' mL'),
+      h('p',{style:{fontSize:12,lineHeight:1.6,color:above?'#fde68a':'#d9eafa',margin:'6px 0'}},preview.relation==='at'?t('stem.titration.prep_preview_at','Reaches the mark.'):amount.toFixed(2)+' mL '+(above?t('stem.titration.prep_preview_above','above the mark.'):t('stem.titration.prep_preview_below','below the mark.'))),
+      above&&h('p',{'data-preparation-preview-warning':true,style:{fontSize:12,lineHeight:1.6,color:'#fef3c7',margin:'8px 0 0'}},t('stem.titration.prep_preview_warning','This addition would overshoot. Applying it will require restarting this preparation.'))):
+      h('p',{style:{fontSize:12,color:'#fde68a',lineHeight:1.6,margin:'12px 0'}},t('stem.titration.prep_preview_blocked','The flask is already above the mark. Restart before trying another addition.')),
+    preview&&h('button',{type:'button',ref:props.applyRef,disabled:!preview,onClick:props.onApply,className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',border:'1px solid '+(above?'#d5b571':'#b49bd4'),borderRadius:9,background:above?'#493b1b':'#453460',color:'#fff3da',fontSize:12,cursor:preview?'pointer':'not-allowed'}},t('stem.titration.prep_preview_apply','Apply previewed addition')),
+    h('p',{style:{fontSize:11,lineHeight:1.6,color:'#c4d6e7',margin:'10px 0 0'}},t('stem.titration.prep_preview_note','Model volumes are teaching aids. The close-up exaggerates distance from the mark; real drop sizes vary.')));
+}
+
+function TitrationSolutionVolumeTiles(props) {
+  var h=props.React.createElement,n=props.value.tiles,cols=n===1?1:n===4?2:5,rows=n/cols,w=cols*40,height=rows*30,x=(250-w)/2,y=30;
+  var dotCols=props.value.symbols===6?3:6,dotRows=props.value.symbols/dotCols;
+  return h('svg',{viewBox:'0 0 250 178',width:'100%','aria-hidden':true,focusable:false,'data-solution-tiles':n,style:{display:'block',maxHeight:210}},
+    h('ellipse',{cx:125,cy:y+height+12,rx:w/2+12,ry:6,fill:'#03131f'}),
+    h('path',{d:'M'+x+' '+y+' l10 -9 h'+w+' l-10 9 Z',fill:'#316d85',stroke:'#9ad6e8',strokeWidth:1.2}),
+    h('path',{d:'M'+(x+w)+' '+y+' l10 -9 v'+height+' l-10 9 Z',fill:'#174b65',stroke:'#9ad6e8',strokeWidth:1.2}),
+    h('rect',{x:x,y:y,width:w,height:height,fill:'#143f59',stroke:'#9ad6e8',strokeWidth:1.5}),
+    Array.from({length:cols-1},function(_,i){return h('path',{key:'v'+i,d:'M'+(x+(i+1)*40)+' '+y+' v'+height,stroke:'#76adc4',strokeWidth:0.9,strokeDasharray:'3 3'});}),
+    Array.from({length:rows-1},function(_,i){return h('path',{key:'h'+i,d:'M'+x+' '+(y+(i+1)*30)+' h'+w,stroke:'#76adc4',strokeWidth:0.9,strokeDasharray:'3 3'});}),
+    h('g',{'data-solution-symbols':props.value.symbols},Array.from({length:props.value.symbols},function(_,i){return h('circle',{key:i,cx:x+((i%dotCols)+0.5)*w/dotCols,cy:y+(Math.floor(i/dotCols)+0.5)*height/dotRows,r:2.8,fill:'#fde68a',stroke:'#fff4cc',strokeWidth:0.65});})));
+}
+function TitrationSolutionPrediction(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),answerState=React.useState({mass:'',concentration:''}),answers=answerState[0],setAnswers=answerState[1],checkState=React.useState(null),checked=checkState[0],setChecked=checkState[1];
+  var firstRef=React.useRef(null),feedbackRef=React.useRef(null),pendingFocus=React.useRef(false),ready=titrationSolutionPrediction(props.state,props.mode,answers);
+  React.useEffect(function(){if(!pendingFocus.current)return;pendingFocus.current=false;var target=props.revealed?feedbackRef.current:firstRef.current;if(target)target.focus();},[props.revealed]);
+  var options=[['lower',t('stem.titration.predict_lower','Lower')],['same',t('stem.titration.predict_same','The same')],['higher',t('stem.titration.predict_higher','Higher')]];
+  var questions=[['mass',t('stem.titration.compare_mass','Solute mass')],['concentration',t('stem.titration.preparation_concentration','Mass concentration')]];
+  function answerText(value){for(var i=0;i<options.length;i++)if(options[i][0]===value)return options[i][1];return '';}
+  function reveal(check){if(check&&!ready)return;setChecked(check?ready:null);pendingFocus.current=true;props.onReveal(true);}
+  function retry(){setAnswers({mass:'',concentration:''});setChecked(null);pendingFocus.current=true;props.onReveal(false);}
+  function button(label,action,disabled){return h('button',{type:'button',disabled:disabled,onClick:action,className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',border:'1px solid #94bace',borderRadius:9,background:disabled?'#213a4b':'#214c61',color:disabled?'#afc5d3':'#e8f9ff',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
+  return h('div',{'data-solution-prediction':props.revealed?'revealed':'question',style:{padding:14,marginTop:props.revealed?12:0,border:'1px solid #9294c8',borderRadius:12,background:'#202e4b',color:'#edf2ff'}},
+    props.revealed?h('div',null,
+      h('div',{ref:feedbackRef,tabIndex:-1,className:'focus-visible:ring-2 focus-visible:ring-cyan-200','data-solution-prediction-feedback':checked?'checked':'shown',style:{borderRadius:6}},
+        h('h6',{style:{fontSize:14,margin:'0 0 10px'}},checked?t('stem.titration.predict_feedback','Your prediction and the result'):t('stem.titration.predict_shown','Comparison revealed')),
+        checked?h('dl',{style:{margin:0,display:'grid',gap:12}},questions.map(function(question){var result=checked[question[0]];return h('div',{key:question[0],'data-solution-prediction-outcome':question[0],'data-correct':String(result.correct),style:{padding:10,border:'1px solid '+(result.correct?'#77b2a0':'#c7ad73'),borderRadius:8,background:result.correct?'#1a4540':'#3d3727',color:result.correct?'#d9fff1':'#fff0c8'}},
+          h('dt',{style:{fontSize:12,fontWeight:700}},question[1]+' · '+(result.correct?t('stem.titration.predict_matches','Matches the result'):t('stem.titration.predict_revisit','Revisit this idea'))),
+          h('dd',{style:{margin:'6px 0 0',fontSize:12,lineHeight:1.6}},t('stem.titration.predict_yours','You predicted')+': '+answerText(result.answer)+'. '+t('stem.titration.predict_actual','Result')+': '+answerText(result.expected)+'.'));})):
+          h('p',{style:{fontSize:12,lineHeight:1.6,margin:'0 0 10px'}},t('stem.titration.predict_study','Use the diagrams and calculation to compare solute mass and concentration. You can try a prediction whenever you are ready.'))),
+      h('div',{style:{marginTop:12}},button(t('stem.titration.predict_again','Try this prediction again'),retry,false))):
+      h('div',null,
+        h('h6',{style:{fontSize:15,margin:'0 0 8px'}},t('stem.titration.predict_title','Predict the change')),
+        h('p',{id:id+'-instructions',style:{fontSize:12,lineHeight:1.6,margin:'0 0 14px',color:'#d2dff4'}},t('stem.titration.predict_prompt','Compared with the recorded 100 mL solution, will each quantity be lower, the same, or higher in your selected example? Choose both, then check.')),
+        questions.map(function(question){return h('fieldset',{key:question[0],'data-solution-prediction-question':question[0],'aria-describedby':id+'-instructions',style:{padding:0,margin:'0 0 16px',border:0,minWidth:0}},
+          h('legend',{style:{fontSize:13,fontWeight:700,marginBottom:8}},question[1]),
+          h('div',{style:{display:'flex',flexWrap:'wrap',gap:7}},options.map(function(option,index){var selected=answers[question[0]]===option[0];return h('label',{key:option[0],style:{display:'flex',alignItems:'center',gap:7,minHeight:44,flex:'1 1 90px',minWidth:0,padding:'7px 9px',border:'1px solid '+(selected?'#c3b9f3':'#8c99b1'),borderRadius:8,background:selected?'#4b416d':'#233953',color:'#f1f5ff',fontSize:12,cursor:'pointer'}},h('input',{type:'radio',name:id+'-'+question[0],value:option[0],checked:selected,ref:question[0]==='mass'&&index===0?firstRef:undefined,onChange:function(){setAnswers(function(previous){var next={mass:previous.mass,concentration:previous.concentration};next[question[0]]=option[0];return next;});},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{width:18,height:18,flexShrink:0,accentColor:'#c3b9f3'}}),option[1]);})));}),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},button(t('stem.titration.predict_check','Check prediction'),function(){reveal(true);},!ready),button(t('stem.titration.predict_show','Show comparison'),function(){reveal(false);},false)),
+        h('p',{style:{fontSize:11,lineHeight:1.6,margin:'10px 0 0',color:'#c6d6ee'}},t('stem.titration.predict_optional','Optional practice: you can reveal the comparison without answering. Predictions are not saved or graded.'))));
+}
+
+
+function TitrationSolutionComparison(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId(),openState=React.useState(false),open=openState[0],setOpen=openState[1],modeState=React.useState('aliquot'),mode=modeState[0],setMode=modeState[1],toggleRef=React.useRef(null);
+  var predictionState=React.useState(false),predict=predictionState[0],setPredict=predictionState[1],revealState=React.useState(false),revealed=revealState[0],setRevealed=revealState[1];
+  var comparison=titrationSolutionComparison(props.state,mode),showResult=!predict||revealed;
+  if(!comparison)return null;
+  var aliquot=comparison.mode==='aliquot';
+  function massText(mass){return String(parseFloat(mass.toFixed(6)));}
+  function close(){setOpen(false);setRevealed(false);if(toggleRef.current)toggleRef.current.focus();}
+  function card(value,before){return h('figure',{'data-solution-comparison-card':before?'before':'after',style:{flex:'1 1 230px',minWidth:0,margin:0,padding:14,border:'1px solid '+(before?'#60859d':'#6da899'),borderRadius:12,background:before?'#102c40':'#103c3c'}},
+    h('figcaption',{style:{fontSize:13,fontWeight:700,color:'#e5f7ff',lineHeight:1.5}},before?t('stem.titration.compare_original','Recorded 100 mL solution'):aliquot?t('stem.titration.compare_portion_result','The 25 mL portion'):t('stem.titration.compare_diluted_result','The whole sample after dilution')),
+    h(TitrationSolutionVolumeTiles,{React:React,value:value}),
+    h('dl',{style:{display:'grid',gap:9,margin:0}},[
+      [t('stem.titration.compare_volume','Solution volume'),value.volumeMl.toFixed(2)+' mL','volume'],
+      [t('stem.titration.compare_mass','Solute mass'),massText(value.massGrams)+' g','mass'],
+      [t('stem.titration.preparation_concentration','Mass concentration'),value.gramsPerLiter.toFixed(4)+' g/L','concentration']
+    ].map(function(item){return h('div',{key:item[2],style:{display:'flex',flexWrap:'wrap',justifyContent:'space-between',gap:'4px 12px',borderTop:'1px solid #426d7d',paddingTop:8}},h('dt',{style:{fontSize:12,color:'#c5dfeb'}},item[0]),h('dd',{'data-solution-value':item[2],style:{margin:0,fontWeight:700,fontSize:14,color:'#edfcff',fontVariantNumeric:'tabular-nums'}},item[1]));})));}
+  return h('section',{'data-solution-comparison':true,style:{marginTop:18}},
+    h('button',{type:'button',ref:toggleRef,'aria-expanded':open,'aria-controls':open?id+'-panel':undefined,onClick:function(){setOpen(!open);if(open)setRevealed(false);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'10px 13px',border:'1px solid #93b9ce',borderRadius:10,background:open?'#c9edf5':'#194456',color:open?'#123542':'#e1f6ff',fontSize:13,textAlign:'left'}},t('stem.titration.compare_toggle','Explore volume and concentration')),
+    open&&h('div',{id:id+'-panel','data-solution-comparison-panel':comparison.mode,onKeyDown:function(e){if(e.key==='Escape'){e.stopPropagation();close();}},style:{padding:16,marginTop:10,border:'1px solid #638fa6',borderRadius:14,background:'#0b2638'}},
+      h('h5',{style:{margin:'0 0 8px',fontSize:17,color:'#e9f9ff'}},t('stem.titration.compare_title','Aliquot or dilution: what changes?')),
+      h('p',{style:{fontSize:12,lineHeight:1.6,color:'#c9e3f0',margin:'0 0 14px'}},t('stem.titration.compare_intro','Each example starts from your recorded, mixed 100 mL solution. These comparisons do not use up solution or change your preparation or pipetting records.')),
+      h('button',{type:'button','aria-pressed':predict,onClick:function(){setPredict(!predict);setRevealed(false);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',margin:'0 0 14px',border:'1px solid #b3abd8',borderRadius:9,background:predict?'#ded7fa':'#373656',color:predict?'#27213b':'#f0ebff',fontSize:12}},t('stem.titration.predict_toggle','Predict before revealing')),
+      h('fieldset',{style:{border:0,padding:0,margin:'0 0 16px',minWidth:0}},
+        h('legend',{style:{fontSize:12,fontWeight:700,color:'#d4eaf6',marginBottom:8}},t('stem.titration.compare_choose','Choose an independent example')),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},[
+          ['aliquot',t('stem.titration.compare_aliquot','Take a 25 mL portion')],
+          ['dilute250',t('stem.titration.compare_250','Dilute all to 250 mL')],
+          ['dilute500',t('stem.titration.compare_500','Dilute all to 500 mL')]
+        ].map(function(item){var selected=mode===item[0];return h('label',{key:item[0],style:{display:'flex',alignItems:'center',gap:9,flex:'1 1 180px',minWidth:0,minHeight:44,padding:'8px 10px',border:'1px solid '+(selected?'#9dddc9':'#64849b'),borderRadius:9,background:selected?'#1b534c':'#142f44',color:'#e6f9ff',fontSize:12,cursor:'pointer'}},h('input',{type:'radio',name:id+'-example',value:item[0],checked:selected,onChange:function(){setMode(item[0]);setRevealed(false);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{width:18,height:18,flexShrink:0,accentColor:'#9de6cb'}}),item[1]);}))),
+      h('div',{style:{display:'flex',flexWrap:'wrap',alignItems:'flex-start',gap:12}},card(comparison.before,true),
+        h('div',{style:{flex:'1 1 230px',minWidth:0}},showResult&&card(comparison.after,false),predict&&h(TitrationSolutionPrediction,{React:React,t:t,key:mode,state:props.state,mode:mode,revealed:revealed,onReveal:setRevealed}))),
+      h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bddae9',margin:'10px 0 14px'}},t('stem.titration.compare_diagram_note','Each tile represents 25 mL of solution. Dots compare solute amounts within this example; they are not visible grains or molecule counts. These are abstract volume diagrams, not vessels.')),
+      showResult&&h('div',{'aria-live':predict?undefined:'polite','aria-atomic':true,'data-solution-comparison-explanation':true,style:{padding:13,borderLeft:'3px solid #9de6cb',borderRadius:6,background:'#123c3e',color:'#dcf8ee'}},
+        h('p',{style:{margin:'0 0 8px',fontSize:13,lineHeight:1.6,fontWeight:700}},aliquot?t('stem.titration.compare_aliquot_note','One quarter of the volume carries one quarter of the solute mass. A representative portion of a mixed solution has the same concentration.'):t('stem.titration.compare_dilution_note','The whole sample keeps its solute mass in a larger final solution volume. Its mass concentration decreases.')),
+        h('p',{'data-solution-comparison-equation':true,style:{margin:0,fontSize:13,lineHeight:1.6,fontVariantNumeric:'tabular-nums'}},massText(comparison.after.massGrams)+' g ÷ '+(comparison.after.volumeMl/1000).toFixed(5)+' L = '+comparison.after.gramsPerLiter.toFixed(4)+' g/L')),
+      !aliquot&&h('p',{'data-solution-comparison-method':true,style:{fontSize:12,lineHeight:1.6,color:'#fef3c7',margin:'12px 0 0'}},t('stem.titration.compare_method','The selected volume is the final solution volume, not the amount of solvent to add. In practice, use suitable larger volumetric glassware, transfer quantitatively, make to its mark, and mix. Do not overfill the 100 mL flask.')),
+      h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bddae9',margin:'12px 0 0'}},t('stem.titration.compare_model','Calculated examples assume no loss or reaction and complete mixing. They use mass concentration in g/L, not molarity.'))));
+}
+
+
 function TitrationPreparationPractice(props) {
   var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationPreparationState(props.state),latest=titrationPreparationSource(props.transfer),result=titrationPreparationResult(s);
   var zoomState=React.useState(false),neckOnly=zoomState[0],setNeckOnly=zoomState[1];
+  var previewState=React.useState(false),showPreview=previewState[0],setShowPreview=previewState[1],portionState=React.useState(5),previewUnits=portionState[0],setPreviewUnits=portionState[1];
+  var previewToggleRef=React.useRef(null),guidanceRef=React.useRef(null),actionsRef=React.useRef(null),previewApplyRef=React.useRef(null),preparedResultRef=React.useRef(null),pendingFocus=React.useRef(false);
+  React.useEffect(function(){if(!pendingFocus.current)return;pendingFocus.current=false;var target=s.volumeUnits>10000?guidanceRef.current:actionsRef.current&&actionsRef.current.querySelector('button:not([disabled])');if(!target)target=previewApplyRef.current||preparedResultRef.current;if(target)target.focus();},[s.phase,s.volumeUnits,s.eyeLevel]);
+  function closePreview(){setShowPreview(false);if(previewToggleRef.current)previewToggleRef.current.focus();}
   var filling=s.phase==='filling',over=s.volumeUnits>10000,atMark=s.volumeUnits===10000;
   var next=s.sourceUnits===null?t('stem.titration.preparation_next_load','Use a current transfer record to begin preparing a solution.'):s.phase==='received'?t('stem.titration.preparation_next_dissolve','Dissolve the delivered sample in a suitable portion of solvent before making up the final volume.'):s.phase==='dissolved'?t('stem.titration.preparation_next_transfer','Transfer the solution and all receiver and funnel rinsings into the volumetric flask. Keep below the mark.'):over?t('stem.titration.preparation_next_over','The meniscus is above the mark. Restart this practice preparation; removing mixed solution does not restore the intended concentration.'):result?t('stem.titration.preparation_next_done','Preparation recorded. Use the delivered mass and final solution volume to calculate mass concentration.'):!s.eyeLevel?t('stem.titration.preparation_next_eye','Align your eye with the mark, then bring the bottom of the clear meniscus to it.'):atMark?t('stem.titration.preparation_next_mix','The bottom of the meniscus meets the mark. Stopper securely and mix by repeated inversion.'):t('stem.titration.preparation_next_fill','Add solvent carefully. Switch to the smaller model additions near the mark.');
-  function button(label,type,disabled,units) {return h('button',{type:'button',disabled:!!disabled,onClick:function(){props.onAction({type:type,units:units});},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',borderRadius:9,border:'1px solid '+(disabled?'#466175':'#83b5c7'),background:disabled?'#172e40':'#174858',color:disabled?'#a3b8c7':'#e2f8ff',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
+  function button(label,type,disabled,units) {if(showPreview&&filling&&disabled&&['dissolve','transfer','eye','mix'].indexOf(type)!==-1)return null;return h('button',{type:'button',disabled:!!disabled,onClick:function(){if((showPreview&&(type==='eye'||type==='mix'))||(type==='add'&&s.volumeUnits+units>10000)||(type==='restart'&&s.volumeUnits>10000))pendingFocus.current=true;props.onAction({type:type,units:units});},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',borderRadius:9,border:'1px solid '+(disabled?'#466175':'#83b5c7'),background:disabled?'#172e40':'#174858',color:disabled?'#a3b8c7':'#e2f8ff',fontSize:12,cursor:disabled?'not-allowed':'pointer'}},label);}
   var phaseText=s.phase==='received'?t('stem.titration.preparation_phase_received','1 · Dissolve'):s.phase==='dissolved'?t('stem.titration.preparation_phase_dissolved','2 · Transfer and rinse'):s.phase==='mixed'?t('stem.titration.preparation_phase_mixed','4 · Mixed and recorded'):t('stem.titration.preparation_phase_filling','3 · Make to the mark');
   return h('section',{'data-titration-preparation-practice':true,'aria-labelledby':id+'-title',style:{padding:16,border:'1px solid #628aa0',borderRadius:16,background:'#0a2232'}},
     h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}},h('div',null,h('p',{style:{margin:'0 0 5px',fontSize:11,fontWeight:700,color:'#a5f3fc',letterSpacing:'0.06em'}},t('stem.titration.preparation_badge','MAKE TO VOLUME')),h('h4',{id:id+'-title',style:{margin:0,fontSize:20,color:'#eff9ff'}},t('stem.titration.preparation_title','Prepare a 100 mL solution'))),button(t('stem.titration.preparation_restart','Restart preparation'),'restart',s.sourceUnits===null)),
@@ -2751,30 +3088,35 @@ function TitrationPreparationPractice(props) {
     s.sourceUnits!==null&&h('p',{style:{fontSize:11,lineHeight:1.6,color:s.sourceUnits===latest?'#bed8e8':'#fde68a'}},s.sourceUnits===latest?t('stem.titration.preparation_reload_note','Loading again starts a new preparation. Navigating between equipment keeps this trial.'):t('stem.titration.preparation_source_changed','The transfer record has changed or is unavailable. This preparation still uses its original delivered mass.')),
     h('div',{style:{display:'flex',flexWrap:'wrap',alignItems:'flex-start',gap:18}},
       h('div',{style:{flex:'1.1 1 270px',minWidth:0}},
-        h('figure',{style:{margin:0,border:'1px solid #547b92',borderRadius:12,background:'#071a28',overflow:'hidden'}},h(TitrationPreparationIllustration,{React:React,t:t,state:s,id:id,closeup:neckOnly}),h('figcaption',{style:{fontSize:12,color:'#c9e9fa',padding:'0 12px 12px',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.preparation_empty','Load a delivered sample to begin'):phaseText)),
+        h('figure',{style:{margin:0,border:'1px solid #547b92',borderRadius:12,background:'#071a28',overflow:'hidden'}},h(TitrationPreparationIllustration,{React:React,t:t,state:s,id:id,closeup:neckOnly,previewUnits:showPreview?previewUnits:null}),h('figcaption',{style:{fontSize:12,color:'#c9e9fa',padding:'0 12px 12px',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.preparation_empty','Load a delivered sample to begin'):phaseText)),
         (filling||result)&&h('button',{type:'button','aria-pressed':neckOnly,onClick:function(){setNeckOnly(!neckOnly);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,marginTop:10,padding:'9px 12px',border:'1px solid #83b5c7',borderRadius:9,background:neckOnly?'#c5f5ff':'#174858',color:neckOnly?'#07313d':'#e2f8ff',fontSize:12}},t('stem.titration.preparation_zoom','Enlarge meniscus')),
+        showPreview&&titrationPreparationAdditionPreview(s,previewUnits)&&h('p',{'data-preparation-preview-legend':true,style:{fontSize:12,color:'#e9d5ff',lineHeight:1.6,margin:'10px 0'}},t('stem.titration.prep_preview_legend','Solid meniscus: current level. Dashed meniscus: preview after the addition.')),
         h('dl',{'aria-live':'polite','aria-atomic':true,style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0'}},[
           [t('stem.titration.preparation_sample_mass','Sample mass'),s.sourceUnits===null?'—':(s.sourceUnits/10000).toFixed(4)+' g','mass'],
           [t('stem.titration.preparation_model_volume','Model flask volume'),s.volumeUnits?(s.volumeUnits/100).toFixed(2)+' mL':'—','volume']
         ].map(function(item){return h('div',{key:item[2],style:{flex:'1 1 130px',padding:12,border:'1px solid #52788f',borderRadius:10,background:'#102e41'}},h('dt',{style:{fontSize:11,color:'#c4ddea'}},item[0]),h('dd',{'data-preparation-reading':item[2],style:{margin:'6px 0 0',fontSize:19,color:'#edfaff',fontVariantNumeric:'tabular-nums'}},item[1]));})),
         h('p',{style:{fontSize:11,color:'#bdd8e8',lineHeight:1.6}},t('stem.titration.preparation_volume_note','The close-up exaggerates small differences from the mark. The extra volume readout is a teaching aid; a real flask has one calibration mark, not a graduated scale.'))),
       h('div',{style:{flex:'1 1 250px',minWidth:0}},
-        h('p',{id:id+'-next','aria-live':'polite','data-preparation-next':true,style:{margin:'0 0 14px',padding:12,borderLeft:'3px solid '+(over?'#fde68a':'#67e8f9'),borderRadius:6,background:over?'#403719':'#123b48',color:over?'#fef3c7':'#d4f7ff',fontSize:13,lineHeight:1.6}},next),
-        h('div',{role:'group','aria-label':t('stem.titration.preparation_actions','Solution preparation actions'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},
+        h('p',{id:id+'-next',ref:guidanceRef,tabIndex:-1,className:'focus-visible:ring-2 focus-visible:ring-cyan-200','aria-live':'polite','data-preparation-next':true,style:{margin:'0 0 14px',padding:12,borderLeft:'3px solid '+(over?'#fde68a':'#67e8f9'),borderRadius:6,background:over?'#403719':'#123b48',color:over?'#fef3c7':'#d4f7ff',fontSize:13,lineHeight:1.6}},next),
+        over&&button(t('stem.titration.prep_preview_recover','Start over with this sample'),'restart',false),
+        filling&&h('button',{type:'button',ref:previewToggleRef,'aria-expanded':showPreview,'aria-controls':showPreview?id+'-preview':undefined,onClick:function(){setShowPreview(!showPreview);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{display:'block',minHeight:44,padding:'9px 12px',border:'1px solid #b49bd4',borderRadius:9,background:showPreview?'#e9d5ff':'#3c3154',color:showPreview?'#241638':'#f1e8ff',fontSize:12,margin:'12px 0'}},t('stem.titration.prep_preview_toggle','Preview the next addition')),
+        filling&&showPreview&&h(TitrationPreparationAdditionPreview,{React:React,t:t,state:s,units:previewUnits,id:id+'-preview',applyRef:previewApplyRef,onChoose:setPreviewUnits,onClose:closePreview,onApply:function(){var preview=titrationPreparationAdditionPreview(s,previewUnits);if(!preview)return;if(preview.relation==='above')pendingFocus.current=true;props.onAction({type:'add',units:previewUnits});}}),
+        (!showPreview||!filling||(!over&&(!s.eyeLevel||atMark)))&&h('div',{ref:actionsRef,role:'group','aria-label':t('stem.titration.preparation_actions','Solution preparation actions'),'aria-describedby':id+'-next',style:{display:'flex',flexWrap:'wrap',gap:8}},
           button(t('stem.titration.preparation_dissolve','Dissolve the sample'),'dissolve',s.sourceUnits===null||s.phase!=='received'),
           button(t('stem.titration.preparation_transfer','Transfer solution and rinsings'),'transfer',s.phase!=='dissolved'),
           button(t('stem.titration.preparation_align','Align eye with the mark'),'eye',!filling||s.eyeLevel||over),
-          button(t('stem.titration.preparation_coarse','Add 1.00 mL (model)'),'add',!filling||over,100),
-          button(t('stem.titration.preparation_fine','Add 0.05 mL (model)'),'add',!filling||over,5),
+          !showPreview&&button(t('stem.titration.preparation_coarse','Add 1.00 mL (model)'),'add',!filling||over,100),
+          !showPreview&&button(t('stem.titration.preparation_fine','Add 0.05 mL (model)'),'add',!filling||over,5),
           button(t('stem.titration.preparation_mix','Stopper and mix'),'mix',!filling||!atMark||!s.eyeLevel)),
         filling&&h('p',{'data-preparation-level':true,style:{fontSize:13,color:over?'#fde68a':atMark?'#a7f3d0':'#bae6fd',lineHeight:1.6,margin:'14px 0'}},over?t('stem.titration.preparation_above','Above the mark — preparation needs restarting.'):atMark?t('stem.titration.preparation_at','At the mark — stop adding solvent.'):t('stem.titration.preparation_below','Below the mark — more solvent is needed.')),
-        result&&h('div',{'data-preparation-result':true,style:{padding:14,marginTop:16,border:'1px solid #67a98e',borderRadius:12,background:'#123d32',color:'#d1fae5'}},
+        result&&h('div',{'data-preparation-result':true,ref:preparedResultRef,tabIndex:-1,className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{padding:14,marginTop:16,border:'1px solid #67a98e',borderRadius:12,background:'#123d32',color:'#d1fae5'}},
           h('h5',{style:{margin:'0 0 10px',fontSize:15}},t('stem.titration.preparation_recorded','Prepared solution record')),
           h('p',{style:{fontSize:12,margin:'0 0 6px'}},t('stem.titration.preparation_concentration','Mass concentration')),
           h('strong',{style:{fontSize:25,fontVariantNumeric:'tabular-nums'}},result.gramsPerLiter.toFixed(3)+' g/L'),
           h('p',{style:{fontSize:12,lineHeight:1.6}},result.massGrams.toFixed(4)+' g ÷ 0.10000 L = '+result.gramsPerLiter.toFixed(3)+' g/L'),
           h('p',{style:{fontSize:11,lineHeight:1.6,marginBottom:0}},t('stem.titration.preparation_mass_not_molar','This is mass per solution volume. Molar concentration also requires the solute’s molar mass.')),
           h('button',{type:'button',onClick:function(){props.onSelect('pipette');},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,padding:'9px 12px',marginTop:12,border:'1px solid #8bc5b0',borderRadius:9,background:'#194b3f',color:'#d1fae5',fontSize:12}},t('stem.titration.aliquot_continue','Practice a 25 mL aliquot'))))),
+    result&&h(TitrationSolutionComparison,{React:React,t:t,state:s,key:s.sourceUnits}),
     h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bfd9e8',margin:'16px 0 0'}},t('stem.titration.preparation_model_note','Illustrative model: the sample dissolves completely, transfer with rinsings is complete, and the flask starts at 95.00 mL. Fixed additions, liquid heights, and mixing in one action are simplified. Real drop sizes, solubility, temperature, and mixing requirements depend on the procedure.')),
     h('p',{style:{fontSize:11,lineHeight:1.6,color:'#bfd9e8',margin:'8px 0 0'}},t('stem.titration.preparation_method_note','Follow the reviewed procedure and the flask’s calibration temperature. Make up to the final solution volume, not by adding 100 mL of solvent. These practice results do not change the live titration.')));
 }
@@ -2788,29 +3130,34 @@ function titrationAliquotEquipment(t) {
 }
 function TitrationAliquotIllustration(props) {
   var h=props.React.createElement,t=props.t,s=titrationAliquotState(props.state),id=props.id;
-  var transfer=['adjusted','delivered','blown'].indexOf(s.phase)!==-1,delivered=s.phase==='delivered'||s.phase==='blown',loaded=s.phase==='filled'||s.phase==='adjusted';
-  var px=transfer?(s.atWall?363:329):123,top=s.phase==='filled'?67:84.5,detail=props.closeup;
-  var outline='M'+(px-4)+' 51 V117 C'+(px-28)+' 125 '+(px-28)+' 169 '+(px-4)+' 177 L'+(px-2)+' 242 L'+(px+2)+' 242 L'+(px+4)+' 177 C'+(px+28)+' 169 '+(px+28)+' 125 '+(px+4)+' 117 V51 Z';
-  return h('svg',{viewBox:detail?'202 14 202 125':'0 0 460 320',width:'100%','aria-hidden':true,focusable:false,'data-aliquot-diagram':s.phase,'data-aliquot-view':detail?'detail':'bench',style:{display:'block',maxHeight:375}},
-    h('defs',null,h('linearGradient',{id:id+'-glass',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#c4ebfa',stopOpacity:0.23}),h('stop',{offset:0.5,stopColor:'#d1f4ff',stopOpacity:0.03}),h('stop',{offset:1,stopColor:'#c4ebfa',stopOpacity:0.19})),h('clipPath',{id:id+'-pipette'},h('path',{d:outline}))),
-    !detail&&h('g',null,
+  var inspection=titrationAliquotInspection(s,props.view||(props.closeup?'detail':'bench'));
+  var transfer=inspection.transfer,delivered=inspection.delivered,loaded=inspection.loaded,px=inspection.px,top=inspection.top,detail=inspection.view==='detail',crop=inspection.viewBox.split(' ').map(Number);
+  var outline='M'+(px-4)+' 51 V117 C'+(px-28)+' 125 '+(px-28)+' 169 '+(px-4)+' 177 L'+(px-2)+' 238 L'+px+' 242 L'+(px+2)+' 238 L'+(px+4)+' 177 C'+(px+28)+' 169 '+(px+28)+' 125 '+(px+4)+' 117 V51 Z';
+  return h('svg',{viewBox:inspection.viewBox,width:'100%','aria-hidden':true,focusable:false,'data-aliquot-diagram':s.phase,'data-aliquot-view':detail?'detail':'bench','data-aliquot-inspection':inspection.view,style:{display:'block',maxHeight:375}},
+    h('defs',null,h('linearGradient',{id:id+'-glass',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#c4ebfa',stopOpacity:0.23}),h('stop',{offset:0.5,stopColor:'#d1f4ff',stopOpacity:0.03}),h('stop',{offset:1,stopColor:'#c4ebfa',stopOpacity:0.19})),h('clipPath',{id:id+'-pipette'},h('path',{d:outline})),h('clipPath',{id:id+'-inspection-crop'},h('rect',{x:crop[0],y:crop[1],width:crop[2],height:crop[3]})),h('radialGradient',{id:id+'-filler',cx:'30%',cy:'20%',r:'90%'},h('stop',{offset:0,stopColor:'#52bbaa'}),h('stop',{offset:0.48,stopColor:'#207c73'}),h('stop',{offset:1,stopColor:'#0a393d'}))),
+    !detail&&h('g',{clipPath:'url(#'+id+'-inspection-crop)'},
       h('ellipse',{cx:230,cy:170,rx:215,ry:140,fill:'#102e43'}),h('path',{d:'M24 292 H436',stroke:'#4d7892'}),
       h('ellipse',{cx:123,cy:283,rx:64,ry:8,fill:'#031322'}),h('ellipse',{cx:329,cy:283,rx:61,ry:8,fill:'#031322'}),
       h('path',{d:'M72 212 Q123 225 174 212 V267 Q123 288 72 267 Z',fill:'#38bdf8',fillOpacity:s.sourceUnits?0.3:0}),
+      s.sourceUnits!==null&&h('ellipse',{cx:123,cy:212,rx:51,ry:8,fill:'#68d0f2',fillOpacity:0.16,stroke:'#a5e8fa',strokeOpacity:0.5}),
       h('path',{d:'M68 184 V269 Q123 291 178 269 V184',fill:'url(#'+id+'-glass)',stroke:'#bddff0',strokeWidth:2}),h('ellipse',{cx:123,cy:184,rx:55,ry:11,fill:'none',stroke:'#bddff0',strokeWidth:2}),
       h('path',{d:'M213 238 V272 Q237 283 261 272 V238',fill:'url(#'+id+'-glass)',stroke:'#bddff0',strokeWidth:1.5}),h('ellipse',{cx:237,cy:238,rx:24,ry:5,fill:'none',stroke:'#bddff0',strokeWidth:1.5}),
       s.sourceUnits!==null&&s.phase!=='ready'&&h('path',{d:'M216 260 Q237 268 258 260 V271 Q237 280 216 271 Z',fill:'#38bdf8',fillOpacity:0.3}),
-      h('text',{x:237,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:11},t('stem.titration.aliquot_waste','Rinse waste')),
+      inspection.view==='bench'&&h('text',{x:237,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:11},t('stem.titration.aliquot_waste','Rinse waste')),
       h('path',{d:'M292 201 V265 Q329 283 366 265 V201',fill:'url(#'+id+'-glass)',stroke:'#bddff0',strokeWidth:2}),h('ellipse',{cx:329,cy:201,rx:37,ry:7,fill:'none',stroke:'#bddff0',strokeWidth:2}),
       delivered&&h('path',{d:'M295 246 Q329 256 363 246 V264 Q329 280 295 264 Z',fill:'#38bdf8',fillOpacity:0.4,stroke:'#99def5',strokeWidth:1.5}),
       loaded&&h('path',{d:'M'+(px-35)+' '+top+' Q'+px+' '+(top+7)+' '+(px+35)+' '+top+' V244 H'+(px-35)+' Z',clipPath:'url(#'+id+'-pipette)',fill:'#38bdf8',fillOpacity:0.65}),
-      h('path',{d:outline,fill:'url(#'+id+'-glass)',stroke:'#d3eafa',strokeWidth:2}),h('path',{d:'M'+(px-12)+' 88 H'+(px+12),stroke:'#fda4af',strokeWidth:2.5}),
-      h('path',{d:'M'+(px-12)+' 49 V37 C'+(px-29)+' 11 '+(px+29)+' 11 '+(px+12)+' 37 V49 Z',fill:'#197168',stroke:'#83d6c2',strokeWidth:2}),
-      s.phase==='delivered'&&h('path',{'data-aliquot-retained':true,d:'M'+(px-2)+' 229 Q'+px+' 225 '+(px+2)+' 229 V238 Q'+px+' 242 '+(px-2)+' 238 Z',fill:'#7dd3fc'}),
+      h('path',{d:outline,fill:'url(#'+id+'-glass)',stroke:'#d3eafa',strokeWidth:2}),
+      h('path',{d:'M'+(px-1.5)+' 55 V115 M'+(px-11)+' 128 Q'+(px-24)+' 149 '+(px-10)+' 167',fill:'none',stroke:'#effaff',strokeOpacity:0.65,strokeWidth:1.7,strokeLinecap:'round'}),
+      h('path',{d:'M'+(px-12)+' 88 H'+(px+12),stroke:'#fda4af',strokeWidth:2.5}),
+      h('path',{d:'M'+(px-12)+' 49 V37 C'+(px-29)+' 11 '+(px+29)+' 11 '+(px+12)+' 37 V49 Z',fill:'url(#'+id+'-filler)',stroke:'#83d6c2',strokeWidth:2}),
+      h('path',{d:'M'+(px-11)+' 26 Q'+(px-6)+' 18 '+(px+4)+' 20',fill:'none',stroke:'#c7fff0',strokeOpacity:0.6,strokeWidth:2,strokeLinecap:'round'}),
+      h('path',{d:'M'+(px-10)+' 46 H'+(px+10),stroke:'#092d35',strokeWidth:2}),
+      s.phase==='delivered'&&h('path',{'data-aliquot-retained':true,clipPath:'url(#'+id+'-pipette)',d:'M'+(px-2)+' 229 Q'+px+' 225 '+(px+2)+' 229 V238 Q'+px+' 242 '+(px-2)+' 238 Z',fill:'#7dd3fc'}),
       s.atWall&&h('circle',{cx:px,cy:239,r:13,fill:'none',stroke:s.phase==='blown'?'#fde68a':'#6ee7b7',strokeWidth:1.5,strokeDasharray:'3 4'}),
-      h('text',{x:123,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:12},t('stem.titration.aliquot_working','Working solution')),
-      h('text',{x:329,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:12},t('stem.titration.aliquot_receiver','Aliquot receiver'))),
-    h('g',{transform:!detail&&transfer?'translate(-177 0)':undefined},h('rect',{x:207,y:18,width:190,height:116,rx:12,fill:'#071c2b',stroke:'#6e98af',strokeWidth:1.5}),
+      inspection.view==='bench'&&h('text',{x:123,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:12},t('stem.titration.aliquot_working','Working solution')),
+      inspection.view==='bench'&&h('text',{x:329,y:312,textAnchor:'middle',fill:'#cce9f7',fontSize:12},t('stem.titration.aliquot_receiver','Aliquot receiver'))),
+    (inspection.view==='bench'||detail)&&h('g',{transform:!detail&&transfer?'translate(-177 0)':undefined},h('rect',{x:207,y:18,width:190,height:delivered?116:146,rx:12,fill:'#071c2b',stroke:'#6e98af',strokeWidth:1.5}),
       delivered?h('g',null,
         h('path',{d:'M246 31 V80 L253 111 L260 80 V31',fill:'url(#'+id+'-glass)',stroke:'#c9e8f5',strokeWidth:2}),
         s.phase==='delivered'&&h('path',{d:'M250 89 Q253 85 256 89 L254 107 H252 Z',fill:'#7dd3fc'}),
@@ -2822,11 +3169,11 @@ function TitrationAliquotIllustration(props) {
         h('path',{d:'M225 85 H285',stroke:'#fda4af',strokeWidth:2}),
         h('path',{d:s.eyeLevel?'M286 85 H320':'M286 75 L320 61',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeDasharray:'4 4',strokeWidth:1.5}),
         h('g',{'data-aliquot-eye':s.eyeLevel?'level':'above',transform:'translate(0 '+(s.eyeLevel?0:-24)+')'},h('path',{d:'M322 85 Q340 66 359 85 Q340 104 322 85 Z',fill:'none',stroke:s.eyeLevel?'#6ee7b7':'#fde68a',strokeWidth:2}),h('circle',{cx:340,cy:85,r:4,fill:s.eyeLevel?'#6ee7b7':'#fde68a'})),
-        h('text',{x:303,y:123,textAnchor:'middle',fill:'#cde8f6',fontSize:10},t('stem.titration.aliquot_mark_detail','Set the lower meniscus at the mark')))));
+        h('text',{x:303,y:150,textAnchor:'middle',fill:'#cde8f6',fontSize:10},t('stem.titration.aliquot_mark_detail','Set the lower meniscus at the mark')))));
 }
 function TitrationAliquotPractice(props) {
   var React=props.React,h=React.createElement,t=props.t,id=React.useId(),s=titrationAliquotState(props.state),latest=titrationAliquotSource(props.preparation),r=titrationAliquotResult(s);
-  var zoom=React.useState(false),detail=zoom[0],setDetail=zoom[1],delivered=s.phase==='delivered',blown=s.phase==='blown';
+  var zoom=React.useState('bench'),inspectionMode=zoom[0],setInspectionMode=zoom[1],inspection=titrationAliquotInspection(s,inspectionMode),detail=inspection.view==='detail',delivered=s.phase==='delivered',blown=s.phase==='blown';
   var stepsView=React.useState(false),allSteps=stepsView[0],setAllSteps=stepsView[1],actionsRef=React.useRef(null),resultRef=React.useRef(null),guidanceRef=React.useRef(null),focusNext=React.useRef(false);
   React.useEffect(function(){if(!focusNext.current)return;focusNext.current=false;var target=actionsRef.current&&actionsRef.current.querySelector('button:not([disabled])');if(!target)target=resultRef.current||guidanceRef.current;if(target)target.focus();},[s.phase,s.eyeLevel,s.atWall,s.recorded,allSteps]);
   var next=s.sourceUnits===null?t('stem.titration.aliquot_next_load','Finish and mix a preparation, then load its solution to begin.'):s.phase==='ready'?t('stem.titration.aliquot_next_condition','Condition a clean pipette with a small working portion of the solution. Collect the rinse as waste; do not return it to the stock.'):s.phase==='conditioned'?t('stem.titration.aliquot_next_fill','Use the fitted pipette filler to draw solution above the mark. Keep liquid out of the filler.'):s.phase==='filled'?!s.eyeLevel?t('stem.titration.aliquot_next_eye','Keep the pipette vertical and bring your eye level with its calibration mark.'):t('stem.titration.aliquot_next_adjust','Release excess solution to a suitable waste receiver until the bottom of the meniscus meets the mark.'):s.phase==='adjusted'?!s.atWall?t('stem.titration.aliquot_next_wall','Move to the receiving vessel. Keep the pipette vertical and place its tip against the inside wall.'):t('stem.titration.aliquot_next_drain','Allow gravity drainage and follow the pipette’s specified waiting time before withdrawing the tip along the wall.'):blown?t('stem.titration.aliquot_next_blown','Forcing out the retained liquid adds more than the calibrated delivery. The actual extra volume is not modeled, so the 25 mL result is no longer valid.'):r?t('stem.titration.aliquot_next_recorded','Aliquot recorded. Taking a well-mixed portion changes the amount of solute, while its concentration stays the same.'):t('stem.titration.aliquot_next_record','The calibrated delivery is complete. Leave the retained tip liquid in this non-blow-out pipette and record the aliquot.');
@@ -2841,8 +3188,13 @@ function TitrationAliquotPractice(props) {
     s.sourceUnits!==null&&h('p',{style:{fontSize:11,lineHeight:1.6,color:latest===s.sourceUnits?'#bed8e8':'#fde68a'}},latest===s.sourceUnits?t('stem.titration.aliquot_snapshot_note','This exercise uses a copy of the prepared solution. Loading again starts a new pipetting trial.'):t('stem.titration.aliquot_source_changed','The preparation has changed or is unavailable. This trial keeps its original concentration until you load again.')),
     h('div',{style:{display:'flex',flexWrap:'wrap',gap:18,alignItems:'flex-start'}},
       h('div',{style:{flex:'1.1 1 270px',minWidth:0}},
-        h('figure',{style:{margin:0,border:'1px solid #567e95',borderRadius:12,overflow:'hidden',background:'#071a28'}},h(TitrationAliquotIllustration,{React:React,t:t,state:s,id:id,closeup:detail}),h('figcaption',{style:{fontSize:12,color:'#c6e8f8',padding:'8px 12px 12px',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.aliquot_empty','Load a prepared solution to begin'):phase)),
-        h('button',{type:'button','aria-pressed':detail,onClick:function(){setDetail(!detail);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,marginTop:10,padding:'9px 12px',border:'1px solid #7cacc1',borderRadius:9,background:detail?'#c5f5ff':'#15475a',color:detail?'#07313d':'#e0f5ff',fontSize:12}},t('stem.titration.aliquot_zoom','Enlarge technique detail')),
+        h('div',{style:{display:'flex',flexWrap:'wrap',alignItems:'center',gap:8,marginBottom:10}},
+          h('label',{htmlFor:id+'-inspection',style:{fontSize:12,fontWeight:700,color:'#cfe8f7'}},t('stem.titration.inspect_label','Inspect pipetting apparatus')),
+          h('select',{id:id+'-inspection',value:inspectionMode,'aria-controls':id+'-inspection-figure','aria-describedby':id+'-inspection-note',onChange:function(e){setInspectionMode(e.target.value);},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{flex:'1 1 180px',minWidth:0,maxWidth:'100%',minHeight:44,padding:'8px 10px',border:'1px solid #7cacc1',borderRadius:9,background:'#12394a',color:'#e0f5ff',fontSize:12}},
+            [['bench',t('stem.titration.inspect_bench','Whole bench')],['follow',t('stem.titration.inspect_follow','Follow current step')],['filler',t('stem.titration.inspect_filler','Pipette and filler')],['detail',t('stem.titration.inspect_detail','Meniscus / retained tip')],['receiver',t('stem.titration.inspect_receiver','Receiver and tip')]].map(function(item){return h('option',{key:item[0],value:item[0]},item[1]);}))),
+        h('figure',{id:id+'-inspection-figure',style:{margin:0,border:'1px solid #567e95',borderRadius:12,overflow:'hidden',background:'#071a28'}},h(TitrationAliquotIllustration,{React:React,t:t,state:s,id:id,view:inspection.view}),h('figcaption',{style:{fontSize:12,color:'#c6e8f8',padding:'8px 12px 12px',textAlign:'center'}},s.sourceUnits===null?t('stem.titration.aliquot_empty','Load a prepared solution to begin'):phase)),
+        h('button',{type:'button','aria-pressed':detail,onClick:function(){setInspectionMode(detail?'bench':'detail');},className:'focus-visible:ring-2 focus-visible:ring-cyan-200',style:{minHeight:44,marginTop:10,padding:'9px 12px',border:'1px solid #7cacc1',borderRadius:9,background:detail?'#c5f5ff':'#15475a',color:detail?'#07313d':'#e0f5ff',fontSize:12}},t('stem.titration.aliquot_zoom','Enlarge technique detail')),
+        h('p',{id:id+'-inspection-note','data-aliquot-inspection-note':inspection.view,'aria-live':'polite',style:{fontSize:12,lineHeight:1.6,color:'#cce5f2',margin:'10px 0',padding:10,borderRadius:8,background:'#102e41'}},titrationAliquotInspectionNote(t,s,inspection.view)),
         h('dl',{'aria-live':'polite','aria-atomic':true,style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0'}},[[t('stem.titration.aliquot_working_c','Working concentration'),s.sourceUnits===null?'—':(s.sourceUnits/1000).toFixed(3)+' g/L','concentration'],[t('stem.titration.aliquot_delivered','Calibrated delivery'),blown?t('stem.titration.aliquot_invalid','Invalid'):delivered?'25.00 mL':'—','volume']].map(function(item){return h('div',{key:item[2],style:{flex:'1 1 140px',minWidth:0,padding:12,border:'1px solid #54778f',borderRadius:10,background:'#102e41'}},h('dt',{style:{fontSize:11,color:'#c4ddea'}},item[0]),h('dd',{'data-aliquot-reading':item[2],style:{margin:'6px 0 0',fontSize:19,color:'#ecf9ff',fontVariantNumeric:'tabular-nums'}},item[1]));})),
         (delivered||blown)&&h('p',{style:{fontSize:12,lineHeight:1.6,color:blown?'#fde68a':'#c3e9f5'}},blown?t('stem.titration.aliquot_blown_note','Extra liquid was forced into the receiver. Do not use the nominal 25 mL value for this delivery.'):t('stem.titration.aliquot_retained_note','The retained liquid is already accounted for in this pipette’s delivery calibration. Do not subtract it from 25 mL or force it out.'))),
       h('div',{style:{flex:'1 1 250px',minWidth:0}},h('p',{'aria-live':'polite',id:id+'-next',ref:guidanceRef,tabIndex:-1,className:'focus-visible:ring-2 focus-visible:ring-cyan-200','data-aliquot-next':true,style:{padding:12,margin:'0 0 14px',borderLeft:'3px solid '+(blown?'#fde68a':'#67e8f9'),borderRadius:6,background:blown?'#403719':'#123b48',color:blown?'#fef3c7':'#d4f7ff',fontSize:13,lineHeight:1.6}},next),

@@ -535,7 +535,7 @@ describe('Geometry World single measurement path', () => {
 
   it('uses the cached block array instead of rebuilding it per keypress', () => {
     expect(SOURCE).toContain('engine.blockUnderCrosshair = function() {');
-    expect(SOURCE).toContain('var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());');
+    expect(SOURCE).toContain('var hits = engine.raycaster.intersectObjects(engine.getRaycastTargets ? engine.getRaycastTargets() : engine.getBlocksArr());');
     // Object.values(engine.blocks) rebuilt up to MAX_BLOCKS entries every time.
     expect(SOURCE).not.toContain('engine.raycaster.intersectObjects(Object.values(engine.blocks))');
   });
@@ -786,14 +786,14 @@ describe('Geometry World visual refinement contract', () => {
 
   it('keeps the game bar compact and moves secondary controls into accessible overlays', () => {
     expect(SOURCE).toContain(`className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World')`);
-    expect(SOURCE).toContain(`el('header', { className: 'gw-toolbar', 'aria-label': __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls')`);
+    expect(SOURCE).toContain(`el('header', { className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls')`);
     expect(SOURCE).toContain("className: 'gw-brand-lockup'");
     expect(SOURCE).toContain("el('h2', { id: 'gw-title', className: 'gw-title' }");
-    expect(SOURCE).toContain(`className: 'gw-status-cluster', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu')`);
+    expect(SOURCE).toContain(`className: 'gw-status-cluster', 'aria-label': currentLesson.sandbox ? 'Build status and tools' : __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu')`);
     expect(SOURCE).toContain("'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog'");
     expect(SOURCE).toContain("id: 'gw-settings-dialog', role: 'dialog', 'aria-modal': 'true'");
     expect(SOURCE).toContain("className: 'gw-fullscreen-quickbar'");
-    expect(SOURCE).toContain("objectivesOpen && el('section', { id: 'gw-objective-panel'");
+    expect(SOURCE).toContain("objectivesOpen && !hasLessonActivities && el('section', { id: 'gw-objective-panel'");
     expect(SOURCE).toContain('.gw-toolbar{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:52px;max-height:64px;');
     expect(SOURCE).toContain('#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar{display:none!important}');
     expect(SOURCE).toContain('.gw-prediction-panel{position:absolute!important;');

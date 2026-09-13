@@ -97,7 +97,7 @@ describe('Adapted reading Explain popup read-aloud', () => {
   });
 
   it('serves the simplify and custom results from the same popup', () => {
-    const props = mount({ revisionData: { ...explanation, type: 'simplify', result: 'Water goes into the air.' } });
+    const props = mount({ isTeacherMode: true, revisionData: { ...explanation, type: 'simplify', result: 'Water goes into the air.' } });
     click(speaker(EXPLAIN_ID));
     expect(props.handleSpeak).toHaveBeenCalledWith('Water goes into the air.', EXPLAIN_ID, 0);
   });
@@ -117,5 +117,77 @@ describe('Adapted reading popup read-aloud build parity', () => {
     expect(built).toContain('data-simplified-popup-speaker');
     expect(built).toContain("'simplified-define-popup'");
     expect(built).toContain("'simplified-revision-popup'");
+  });
+});
+
+
+const phonics = { word: 'agua', language: 'Spanish', data: { phoneticSpelling: 'a-gua', ipa: 'aɣwa', syllables: ['a', 'gua'] }, x: 20, y: 20 };
+function audioPlayers(play = () => Promise.resolve()) {
+  const players = [];
+  vi.stubGlobal('Audio', function Audio(url) { this.src = url;this.pause = vi.fn();this.play = vi.fn(play);players.push(this); });
+  return players;
+}
+const audioButton = key => host.querySelector('[data-word-help-audio="' + key + '"]');
+const clickAudio = async key => { await act(async () => audioButton(key).click()); };
+afterEach(() => vi.unstubAllGlobals());
+
+describe('Student word-help audio controls', () => {
+  it('generates pronunciation only on request with the selected word language and voice', async () => {
+    const players = audioPlayers();const callTTS = vi.fn().mockResolvedValue('https://example.test/word.wav');
+    const props = mount({ phonicsData: phonics, callTTS, voiceSpeed: 0.8, selectedVoice: 'Aoede' });
+    expect(callTTS).not.toHaveBeenCalled();expect(audioButton('phonics-word').textContent).toBe('Hear word');
+    await clickAudio('phonics-word');
+    expect(callTTS).toHaveBeenCalledWith('agua', 'Aoede', 0.8, 2, 'Spanish');
+    expect(props.stopPlayback).toHaveBeenCalled();expect(players[0].playbackRate).toBe(0.8);
+    expect(audioButton('phonics-word').textContent).toBe('Stop audio');
+    await clickAudio('phonics-word');expect(players[0].pause).toHaveBeenCalled();
+    expect(audioButton('phonics-word').textContent).toBe('Hear word');
+  });
+  it.each(['stop', 'close', 'new-word'])('ignores delayed synthesis after %s', async action => {
+    const players = audioPlayers();let resolveAudio;
+    const props = mount({ phonicsData: phonics, callTTS: vi.fn(() => new Promise(resolve => { resolveAudio = resolve; })) });
+    click(audioButton('phonics-word'));
+    expect(host.textContent).toContain('Preparing audio');
+    if (action === 'stop') click(audioButton('phonics-word'));
+    else rerender({ ...props, phonicsData: action === 'close' ? null : { ...phonics, word: 'lluvia' } });
+    await act(async () => resolveAudio('https://example.test/late.wav'));
+    expect(players).toHaveLength(0);expect(host.textContent).not.toContain('Preparing audio');
+  });
+  it('shows a retry after playback fails and can successfully retry', async () => {
+    const play = vi.fn().mockRejectedValueOnce(new Error('Blocked')).mockResolvedValue(undefined);audioPlayers(play);
+    mount({ phonicsData: phonics, callTTS: vi.fn().mockResolvedValue('https://example.test/word.wav') });
+    await clickAudio('phonics-word');
+    expect(host.textContent).toContain('Audio could not play');expect(audioButton('phonics-word').textContent).toBe('Try audio again');
+    await clickAudio('phonics-word');expect(audioButton('phonics-word').textContent).toBe('Stop audio');
+  });
+  it('stops pronunciation before a recording and stops the recording when the popup closes', async () => {
+    const players = audioPlayers();const props = mount({ phonicsData: { ...phonics, dictionary: { audio: 'https://example.test/recording.wav' } }, callTTS: vi.fn().mockResolvedValue('https://example.test/word.wav') });
+    await clickAudio('phonics-word');await clickAudio('phonics-recording');
+    expect(players[0].pause).toHaveBeenCalled();expect(players[1].src).toContain('recording.wav');
+    rerender({ ...props, phonicsData: null });expect(players[1].pause).toHaveBeenCalled();
+  });
+  it('stops a dictionary recording before reading its definition', async () => {
+    const players = audioPlayers();const props = mount({ definitionData: { ...definition, dictionary: { audio: 'https://example.test/recording.wav' } } });
+    await clickAudio('definition-recording');click(speaker(DEFINE_ID));
+    expect(players[0].pause).toHaveBeenCalled();expect(props.handleSpeak).toHaveBeenCalled();
+  });
+  it('stops local audio when shared narration starts or the reader unmounts', async () => {
+    const players = audioPlayers();const props = mount({ phonicsData: phonics, callTTS: vi.fn().mockResolvedValue('https://example.test/word.wav') });
+    await clickAudio('phonics-word');rerender({ ...props, isPlaying: true, playingContentId: 'simplified-main' });
+    expect(players[0].pause).toHaveBeenCalled();
+    rerender(props);await clickAudio('phonics-word');act(() => root.unmount());root = null;
+    expect(players[1].pause).toHaveBeenCalled();
+  });
+  it('preserves cache-owned audio URLs on stop', async () => {
+    audioPlayers();const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    window.__alloTtsCacheOwnsUrl = () => true;
+    mount({ phonicsData: phonics, callTTS: vi.fn().mockResolvedValue('blob:cached') });
+    await clickAudio('phonics-word');await clickAudio('phonics-word');expect(revoke).not.toHaveBeenCalled();
+    delete window.__alloTtsCacheOwnsUrl;revoke.mockRestore();
+  });
+  it('keeps incomplete syllable data readable instead of crashing', () => {
+    mount({ phonicsData: { ...phonics, data: { ipa: 'aɣwa' } } });
+    expect(host.querySelector('#phonics-popup-title').textContent).toBe('agua');
+    expect(audioButton('phonics-word')).not.toBeNull();
   });
 });

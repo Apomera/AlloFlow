@@ -24,7 +24,7 @@ for(const width of [1100,420])test.describe('Raptor target guidance '+width,()=>
       const bounds=await tracker.evaluate(el=>{
         const marker=el.getBoundingClientRect(),label=el.querySelector('.rh-target-label')!.getBoundingClientRect(),host=el.parentElement!.getBoundingClientRect();
         const rect=(r:DOMRect)=>({left:r.left-host.left,top:r.top-host.top,right:r.right-host.left,bottom:r.bottom-host.top});
-        const obstacles=Array.from(el.parentElement!.querySelectorAll('.rh-flight-mission-hud,.rh-flight-telemetry-strip,.rh-flight-key-guide,.rh-flight-altitude-gauge,.rh-scenic-toggle,.rh-practice-toggle')).map(node=>rect(node.getBoundingClientRect()));
+        const obstacles=Array.from(el.parentElement!.querySelectorAll('.rh-flight-mission-hud,.rh-flight-telemetry-strip,.rh-flight-key-guide,.rh-flight-altitude-gauge,.rh-scenic-toggle,.rh-practice-toggle')).map(node=>({...rect(node.getBoundingClientRect()),name:node.className}));
         return {obstacles,marker:rect(marker),label:rect(label),width:host.width,height:host.height,edge:(el as HTMLElement).dataset.targetEdge,arrow:getComputedStyle(el,'::after').content};
       });
       expect(bounds.edge).toBe(edge);
@@ -32,7 +32,7 @@ for(const width of [1100,420])test.describe('Raptor target guidance '+width,()=>
       expect(bounds.arrow).toBe(edge?'""':'none');
       if(edge)for(const r of [bounds.marker,bounds.label])for(const obstacle of bounds.obstacles){
         const overlap=Math.max(0,Math.min(r.right,obstacle.right)-Math.max(r.left,obstacle.left))*Math.max(0,Math.min(r.bottom,obstacle.bottom)-Math.max(r.top,obstacle.top));
-        expect(overlap).toBe(0);
+        expect(overlap,JSON.stringify({edge,r,obstacle})).toBe(0);
       }
     }
     await command('targetProbe',{ndcX:1.6,ndcY:-1.4,ndcZ:0});

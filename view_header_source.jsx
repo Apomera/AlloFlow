@@ -782,7 +782,6 @@ function HeaderBar(props) {
                   type="button"
                   onClick={toggleHeaderCollapsed}
                   aria-expanded={!headerCollapsed}
-                  aria-label={headerCollapsed ? (t('common.expand') || 'Expand header') : (t('common.collapse') || 'Collapse header to make room for content')}
                   className="inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
                 >
                   {headerCollapsed ? (t('common.more_information') || 'More') : (t('common.collapse') || 'Less')}
@@ -908,7 +907,6 @@ function HeaderBar(props) {
                     data-help-key="header_rerun_wizard"
                     className="hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
                     title={t('toolbar.start_setup') || 'Start & setup'}
-                    aria-label={t('toolbar.start_setup_aria') || 'Open Start and setup options'}
                   >
                     <Sparkles size={16} aria-hidden="true" />
                     <span className="max-w-[10rem] truncate">{t('toolbar.start_setup') || 'Start & setup'}</span>
@@ -918,7 +916,6 @@ function HeaderBar(props) {
                   type="button"
                   onClick={toggleHeaderCollapsed}
                   aria-expanded={!headerCollapsed}
-                  aria-label={t('common.expand') || 'Expand header'}
                   className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
                 >
                   <span>{t('common.more_information') || 'More'}</span>

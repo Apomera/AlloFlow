@@ -31,7 +31,15 @@ describe('boss battle: class-size-fair pacing', () => {
       expect(s).toMatch(/answerAccuracy \* perQuestionBudget \* 1\.2/);
     });
     it(`teacher ${name}: the battle always resolves — last-question HP comparison + both-zero edge`, () => {
-      expect(s).toMatch(/isLastQuestion = currentQuestionIndex >= quizLength - 1/);
+      // Exercise the boundary so equivalent length expressions do not break this check.
+      const boundary = s.match(/(?:const|let|var) isLastQuestion = ([^;]+);/);
+      expect(boundary).toBeTruthy();
+      const isLastQuestion = new Function('currentQuestionIndex', 'quizLength', 'generatedContent', 'return ' + boundary[1]);
+      const content = { data: { questions: [{}, {}, {}] } };
+      expect(isLastQuestion(1, 3, content)).toBe(false);
+      expect(isLastQuestion(2, 3, content)).toBe(true);
+      expect(isLastQuestion(3, 3, content)).toBe(true);
+      expect(isLastQuestion(0, 1, { data: { questions: [{}] } })).toBe(true);
       expect(s).toMatch(/classPct >= bossPct \? "boss-defeated" : "class-defeated"/);
       // both-zero: newHP <= 0 alone decides (no `&& newClassHP > 0` guard anymore)
       expect(s).not.toMatch(/newHP <= 0 && newClassHP > 0/);

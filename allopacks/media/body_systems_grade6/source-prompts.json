@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "body_systems_grade6",
+    "key": "lungs",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Soft clay and colored-pencil organ models. An isolated stylized teaching model of human lungs, front view, trachea splits once into two main bronchi, each entering its own lung and branching inside. Two pink lungs, no heart or torso. Rounded matte clay texture, no gore. Anatomical overview, not a detailed medical scan. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-lungs.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e08a6e5a-7330-42a0-8675-eb2de9d8c0d1.png",
+    "alt": "A pale trachea divides into two branching airways within a pair of pink model lungs.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "body_systems_grade6",
+    "key": "heart",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Soft clay and colored-pencil organ models. An isolated external human heart teaching model, an asymmetric fist-shaped muscular organ with a tapering lower tip and a few major vessels at top. Matte rose clay and subtle pencil contour, no valentine heart, no cutaway, no blood, no labels. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-heart.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-08f93ab3-1226-4791-8924-f3f57f2eeaf1.png",
+    "alt": "A rose-colored heart model has a tapered lower tip and several large vessels emerging at the top.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "body_systems_grade6",
+    "key": "brain",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Soft clay and colored-pencil organ models. An isolated side-view human brain teaching model, cerebrum with gentle folds, smaller cerebellum at lower rear, short brainstem extending downward. Matte muted mauve clay, no face, no skull, no gore. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-brain.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-722ab374-2cff-46d7-8cbc-f13a87d1fb30.png",
+    "alt": "A mauve brain model shows a folded cerebrum, smaller cerebellum and short downward brainstem.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "body_systems_grade6",
+    "key": "bone",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Soft clay and colored-pencil organ models. An isolated long bone teaching model, pale ivory with a long shaft and wider rounded ends, slightly curved like a generic limb bone. Matte clay and pencil texture. No broken bone, no X-ray, no injury. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-bone.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-efdc7926-8300-4436-9c8c-15e5ae04243b.png",
+    "alt": "An ivory long-bone model has a narrow shaft and wider rounded ends.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "body_systems_grade6",
+    "key": "muscle",
+    "prompt": "Square educational illustration for a grade-school AlloPack. Soft clay and colored-pencil organ models. An isolated fusiform skeletal muscle teaching model: reddish parallel fiber bundles forming a thicker middle tapering into pale tendons at both ends. Simple clay-and-pencil texture, no body, no exposed wound, no gore. Generous clear margins, subject centered, uncluttered warm ivory background unless a landscape needs sky/water. Focus on actual lesson content. No people, no text, no numbers, no symbols, no arrows, no labels, no watermark. Avoid photographic realism, glossy 3D and cartoon faces.",
+    "status": "visual-review-passed",
+    "file": "source-muscle.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-4b8a7d6e-63bf-4feb-a1b6-650b32165ddb.png",
+    "alt": "Parallel red muscle fibers form a broad middle that tapers into pale tendons at both ends.",
+    "reviewedAt": "2026-09-12"
+  }
+]

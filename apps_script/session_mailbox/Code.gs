@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 21;
+var VERSION = 23;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -692,6 +692,18 @@ function validActivityProgressValue(value) {
   if (!validWsMetricNumber(value.at, 999999999999999) || value.at <= 0) return false;
   return true;
 }
+function validMailboxImageDeliveryValue(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = ['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'];
+  var keys = Object.keys(value);
+  if (keys.length !== 8 || keys.some(function(key) { return allowed.indexOf(key) < 0; })) return false;
+  if (value.version !== 1 || typeof value.resourceId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(value.resourceId)) return false;
+  if (['loading', 'ready', 'failed'].indexOf(value.status) < 0) return false;
+  var validCount = function(n, max) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n && n >= 0 && n <= max; };
+  if (!validCount(value.total, 100000) || value.total < 1 || !validCount(value.loaded, value.total) || !validCount(value.omitted, value.total - value.loaded)) return false;
+  if (value.status === 'ready' && value.loaded !== value.total) return false;
+  return validCount(value.assignmentAt, 999999999999999) && validCount(value.at, 999999999999999) && value.at > 0;
+}
 function validLiveHostPresenceValue(value) {
   if (value === null) return true;
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -720,6 +732,7 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   if (field === 'organizerProgress') return validOrganizerProgressValue(value);
   if (field === 'activityProgress') return validActivityProgressValue(value);
+  if (field === 'imageDelivery') return validMailboxImageDeliveryValue(value);
   return false;
 }
 function validQuizResponseReceipt(value) {
@@ -801,6 +814,7 @@ function validLessonBoardAction(value, state) {
     || typeof value.turn !== 'number' || value.turn % 1 !== 0 || value.turn !== run.turn || value.turn < 0 || value.turn >= 48
     || typeof value.requestId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(value.requestId) || ['__proto__','constructor','prototype'].indexOf(value.requestId) >= 0
     || typeof value.targetId !== 'string' || !/^[a-z][a-z0-9_-]{0,39}$/.test(value.targetId) || ['constructor','prototype'].indexOf(value.targetId) >= 0 || typeof value.value !== 'string') return false;
+  if (step.retryRound > 0 && value.requestId.indexOf('r' + step.retryRound + '_') !== 0) return false;
   return step.phase === 'choose' && value.kind === 'vote' && value.value === ''
     || step.phase === 'answer' && value.kind === 'answer' && value.targetId === step.targetId && /^[0-9,]{1,24}$/.test(value.value);
 }
@@ -813,7 +827,7 @@ function participantCanPatchSession(updates, uid, sessionData) {
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingResourceAt: 1, viewingResourceStatus: 1, viewingAt: 1,
-    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, lastSeen: 1
+    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, imageDelivery: 1, lastSeen: 1
   };
   var roots = [
     'bridgeReactions.' + uid,

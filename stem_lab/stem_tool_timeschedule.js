@@ -577,7 +577,7 @@
           'aria-labelledby': 'ts-clock-heading' },
           h('label',{className:'flex items-center gap-2 text-sm text-slate-700'},h('input',{type:'checkbox',checked:!!d.showMinuteLabels,onChange:function(e){upd({showMinuteLabels:e.target.checked});}}),t('stem.timeschedule.show_minute_numbers','Show minute numbers (0–55)')),
           heading('ts-clock-heading', t('stem.timeschedule.clock_link', "Clock Link"),
-            t('stem.timeschedule.move_one_representation_and_watch_anal', "Move one representation and watch analog, 12-hour, and 24-hour time stay linked.")),
+            t('stem.timeschedule.clock_start', 'Set an exact time, use the + and − buttons, or adjust the minute slider. The clock and both time displays stay linked.')),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
             h('div', { className: 'rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 flex justify-center' },
               analog(clock, 'ts-main-clock', false)),

@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "figurative_language_grade5",
+    "key": "washer",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. A front-loading washing machine with a swirl of colored fabric clearly visible through its circular glass door. Isolated appliance with generous cream margins, no humans. Hand-cut felt applique with visible stitched edges, simple and tactile. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "A felt-style washing machine has colored fabric swirling behind its round door.",
+    "caption": "In the invented sentence, Marisol’s stomach is a washing machine on spin cycle. The appliance represents a churning nervous feeling; her stomach is not literally a machine.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-b3964862-2412-4dd2-a562-2838e39e22b3.png",
+    "file": "source-washer.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  },
+  {
+    "slug": "figurative_language_grade5",
+    "key": "clock",
+    "prompt": "Use case: scientific-educational. Asset type: square AlloPack lesson illustration. A deliberately personified alarm clock with two small arms planted on its hips, eyebrows and a clearly annoyed expressive face. Round blank clock body without a dial, numerals, hour marks or clock hands. Alarm bells on top. Educational personification example, in felt applique with stitched edges on cream background. Text-free: no writing, letters, numbers, logos or watermark. Focus on the stated lesson objects; do not add students, decorative badges, explanatory arrows or captions. Keep the subject complete and easy to identify at small size.",
+    "alt": "An expressive felt alarm clock has eyebrows and small arms resting on its hips.",
+    "caption": "“The alarm clock scolded me for oversleeping” gives an object a human intention. This deliberately impossible picture supports personification, not how a clock works.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-f3d41a09-d16b-4522-b205-6e4f82674250.png",
+    "file": "source-clock.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-13"
+  }
+]

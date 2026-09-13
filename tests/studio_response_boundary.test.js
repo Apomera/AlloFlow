@@ -37,6 +37,7 @@ describe('studio response ownership', () => {
     }
     host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);
     await act(async()=>root.render(React.createElement(Harness)));
+    if (typeName === 'applied-challenge') await act(async()=>[...host.querySelectorAll('nav button')].find(b=>b.textContent.startsWith('3.')).click());
     const input=typeName==='memory-aid' ? host.querySelector('textarea[id$="-draft"]') : host.querySelector('#applied-workspace-response');
     await type(input,'My own answer');
     expect(teacherUpdate).not.toHaveBeenCalled(); expect(JSON.stringify(original)).toBe(before);
@@ -54,12 +55,14 @@ describe('studio response ownership', () => {
   it('starts teacher authoring read-only, resets preview, and never autosaves preview work', async () => {
     const original=resource('applied-challenge'); const save=vi.fn(), canonical=vi.fn();
     mount({View:window.AlloModules.AppliedChallengeView,generatedContent:original,isTeacherMode:true,onResponseChange:save,handleNoteUpdate:canonical,allowRuntimeAi:false});
-    expect(host.querySelector('#applied-workspace-response').readOnly).toBe(true);
+    expect(host.querySelector('#applied-workspace-response')).toBeNull();
     const button = label => [...host.querySelectorAll('button')].find(b=>b.textContent===label);
     await act(async()=>button('Preview as student').click());
+    await act(async()=>[...host.querySelectorAll('nav button')].find(b=>b.textContent.startsWith('3.')).click());
     await type(host.querySelector('#applied-workspace-response'),'Temporary');
     expect(host.querySelector('#applied-workspace-response').value).toBe('Temporary');
     await act(async()=>button('Reset preview').click());
+    await act(async()=>[...host.querySelectorAll('nav button')].find(b=>b.textContent.startsWith('3.')).click());
     expect(host.querySelector('#applied-workspace-response').value).toBe('');
     expect(save).not.toHaveBeenCalled();expect(canonical).not.toHaveBeenCalled();
   });
@@ -67,7 +70,7 @@ describe('studio response ownership', () => {
     window.callGemini=vi.fn();
     mount({View:window.AlloModules.AppliedChallengeView,generatedContent:resource('applied-challenge'),isTeacherMode:false,onResponseChange:vi.fn(),handleNoteUpdate:vi.fn(),allowRuntimeAi:false});
     const buttons=[...host.querySelectorAll('button')].filter(b=>/hint|feedback|stress.test/i.test(b.textContent));
-    expect(buttons.length).toBeGreaterThan(0); buttons.forEach(b=>expect(b.disabled).toBe(true));
+    expect(buttons.length).toBe(0);
     expect(window.callGemini).not.toHaveBeenCalled();
   });
   it('retains history metadata when the active resource is smaller than the history row', () => {
@@ -105,10 +108,12 @@ describe('bounded submissions and delivery',()=>{
     expect(api.toResponseEntries(r,submitted.data)['r1:applied:response']).toBe('Proposal');
   });
   it('strips source excerpts from nested student packs while preserving the teacher project',()=>{
-    const shared={sourceExcerpt:'teacher-only',workspace:{response:'Draft'}};
+    const shared={sourceExcerpt:'teacher-only',qualityReview:{checks:{lessonUse:{reason:'PRIVATE TASK REVIEW'}}},workspace:{response:'Draft'}};
     const r={id:'outer',type:'lesson-plan',data:{neutral:shared,child:{id:'nested',type:'applied-challenge',data:shared}}};
     const safe=window.AlloModules.LiveAac.serializeResourceForStudentPack(r,{sanitizeHistoryForCloud:x=>x,stripUndefined:x=>x});
     expect(safe.data.child.data.sourceExcerpt).toBeUndefined();
+    expect(safe.data.child.data.qualityReview).toBeUndefined();
+    expect(r.data.child.data.qualityReview.checks.lessonUse.reason).toBe('PRIVATE TASK REVIEW');
     expect(safe.data.neutral.sourceExcerpt).toBe('teacher-only');
     expect(r.data.child.data.sourceExcerpt).toBe('teacher-only');
   });
@@ -129,17 +134,17 @@ describe('legacy resources and authoring controls', () => {
   it('lets teachers edit phase prompts while learner fields stay disabled', async () => {
     const update=vi.fn();
     mount({View:window.AlloModules.AppliedChallengeView,generatedContent:resource('applied-challenge'),isTeacherMode:true,onResponseChange:vi.fn(),handleNoteUpdate:update,allowRuntimeAi:false});
-    await act(async()=>[...host.querySelectorAll('button')].find(b=>b.textContent==='Edit challenge').click());
-    const label=[...host.querySelectorAll('label')].find(l=>l.textContent.startsWith('Teacher prompt for'));
+    await act(async()=>[...host.querySelectorAll('button')].find(b=>b.textContent==='Edit challenge brief').click());
+    const label=[...host.querySelectorAll('label')].find(l=>l.textContent.startsWith('1. Frame the challenge'));
     const prompt=label.querySelector('textarea');
     expect(prompt.matches(':disabled')).toBe(false);
-    expect(host.querySelector('#applied-workspace-response').matches(':disabled')).toBe(true);
+    expect(host.querySelector('#applied-workspace-response')).toBeNull();
     await type(prompt,'Explain your first step.');
     expect(update.mock.calls.some(([key])=>key==='supports')).toBe(true);
   });
   it('moves keyboard focus to the selected phase', async () => {
     mount({View:window.AlloModules.AppliedChallengeView,generatedContent:resource('applied-challenge'),isTeacherMode:false,onResponseChange:vi.fn(),handleNoteUpdate:vi.fn(),allowRuntimeAi:false});
-    const button=[...host.querySelectorAll('nav button')].find(b=>b.textContent.startsWith('7.'));
+    const button=[...host.querySelectorAll('nav button')].find(b=>b.textContent.startsWith('3.'));
     await act(async()=>button.click());
     expect(document.activeElement.id).toBe('applied-workspace-response');
     expect(button.getAttribute('aria-current')).toBe('step');

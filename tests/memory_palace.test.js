@@ -620,7 +620,7 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('_emptyDistanceSq(keep) <= 290 * 290');
     expect(source).toContain("var leaveReason = leaving && !leaving.empty ? 'filled' : 'departed'");
     expect(source).toContain('var best = null, bestD = 210 * 210');
-    expect(source).toContain('if (!ref.empty) return');
+    expect(source).toContain('if (!ref.empty || (!freeMode && palace.route[curIdx] !== id)) return');
     expect(source).toContain('ref.empty = false');
     expect(source).toContain('ref.empty = true');
     expect(view).toContain('onEmptyLocusApproach: (locus, near, idx, total, reason)');
@@ -744,7 +744,8 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(view).toContain("height: presenting ? '100%'");
     expect(view).toContain('!presenting && !recall && proximityLocus');
     expect(view).toContain('!presenting && directMode && !recall');
-    expect(view).toContain('!presenting && recall && !finished');
+    expect(view).toMatch(/!presenting && recall && \(\s*<div ref=\{recallPanelRef\}/);
+    expect(view).toContain('{!finished && current && (');
   });
   it('supports accessible drag, move, preview, save, reset, and undo route arrangement', () => {
     const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
@@ -955,10 +956,10 @@ describe('MemoryPalace view — own image + recall order wiring', () => {
 
   it('keeps the harder orders as a next step, not a fourth start button', () => {
     const v = view();
-    const summary = v.slice(v.indexOf("t('memory_palace.order_next')"));
+    const summary = v.slice(v.indexOf("t('memory_palace.order_practice')"));
     expect(summary.slice(0, 2000)).toContain("t('memory_palace.order_backward')");
     // offered from the finished-run summary
-    expect(v.indexOf("t('memory_palace.order_next')")).toBeGreaterThan(v.indexOf('recall && finished && ('));
+    expect(v.indexOf("t('memory_palace.order_practice')")).toBeGreaterThan(v.indexOf('{finished && ('));
   });
 });
 

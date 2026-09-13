@@ -7,6 +7,9 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomBytes } from 'node:crypto';
+import { Blob as NodeBlob } from 'node:buffer';
+import { CompressionStream as NodeCS, DecompressionStream as NodeDS } from 'node:stream/web';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
@@ -85,7 +88,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(21);
+        expect(call({ a: 'hello' }).v).toBe(23);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -456,7 +459,7 @@ function buildClientHelpers({ windowObj, fetchImpl, configuredBase = 'https://al
         helperSource + `;
         return { _alloCleanMailboxUrl, _alloMailboxCall, _alloSplitPackChunks, _alloReadMailboxEntryParam,
                  _buildAlloMailboxEntryUrl, _alloRandomToken, _alloBase64UrlEncode,
-                 _alloMailboxCallWithRetry, _alloNextPollDelay, _alloCollectResChunk, _alloWaitIceComplete };`
+                 _alloMailboxCallWithRetry, _alloNextPollDelay, _alloCollectResChunk, _alloFinishResChunk, _alloPruneResChunks, _alloWaitIceComplete };`
     );
 
     return factory(windowObj, fetchImpl, () => configuredBase, () => false);
@@ -668,6 +671,8 @@ describe('resilience helpers', () => {
         const store = { parts: {}, applied: new Set() };
         expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 1, of: 2, data: 'AA' })).toBe(null);
         expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 2, of: 2, data: 'BB' })).toBe('AABB');
+        expect(store.applied.has('r1')).toBe(false);
+        H._alloFinishResChunk(store, 'r1', true);
         // Mailbox replay of the same rid after the channel already delivered it.
         expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 1, of: 2, data: 'AA' })).toBe(null);
         expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 2, of: 2, data: 'BB' })).toBe(null);
@@ -903,14 +908,116 @@ describe('student-pack serialization (full-fidelity)', () => {
         expect(wrapper).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel })');
         expect(wrapper).not.toContain('safePortableTtsAssets');
         const calls = [];
-        const serialize = new Function('_alloLiveAacModule', 'sanitizeHistoryForCloud', 'stripUndefined', wrapper + '; return _alloSerializeResourceForStudentPack;')(
-            () => ({ serializeResourceForStudentPack: (item, deps) => { calls.push(deps); return item; } }), value => value, value => value);
+        const serialize = new Function('_alloLiveAacModule', 'sanitizeHistoryForCloud', 'stripUndefined', 'mbPreparedImagesRef', wrapper + '; return _alloSerializeResourceForStudentPack;')(
+            () => ({ serializeResourceForStudentPack: (item, deps) => { calls.push(deps); return item; } }), value => value, value => value, { current: new WeakMap() });
         const item = { id: 'channel-check' };
         expect(serialize(item)).toBe(item);
         expect(serialize(item, 'qr')).toBe(item);
         expect(calls.map(deps => deps.audioChannel)).toEqual(['live', 'qr']);
         expect(liveAacSource).toContain('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
         expect(liveAacSource).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
+    });
+
+    it.each([
+        ['image', { imageUrl: 'IMAGE', altText: 'A labelled leaf' }],
+        ['glossary', [{ word: 'leaf', image: 'IMAGE', alt: 'A green leaf' }]],
+        ['timeline', { items: [{ event: 'A seed sprouts', image: 'IMAGE', alt: 'A seedling' }] }],
+        ['timeline', [{ event: 'A seed sprouts', image: 'IMAGE' }]],
+        ['image', { visualPlan: { panels: [{ imageUrl: 'IMAGE', caption: 'A seed grows', frames: ['IMAGE', 'IMAGE'] }] } }],
+        ['lesson-plan', { resources: [{ id: 'picture', type: 'image', data: { imageUrl: 'IMAGE' } }] }],
+    ])('preserves %s instructional images without changing the teacher original', (type, data) => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const image = 'data:image/png;base64,' + 'A'.repeat(2048);
+        const source = { id: 'illustrated', type, data: JSON.parse(JSON.stringify(data).replaceAll('IMAGE', image)) };
+        const before = JSON.stringify(source);
+        expect(loadStudentPackSerializer(win)(source)).toEqual(source);
+        expect(JSON.stringify(source)).toBe(before);
+        expect(JSON.stringify(win.sanitizeSessionValue(source, 'resource'))).not.toContain(image);
+    });
+
+    it('restores HTTPS pictures but rejects unsafe or device-local sources and keeps removed parents private', () => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const helper = loadStudentPackSerializer(win);
+        const image = 'data:image/png;base64,' + 'A'.repeat(1024);
+        const bad = ['blob:https://teacher.example/id', 'javascript:alert(1)', 'data:image/svg+xml;base64,PHN2Zz4=', 'data:text/html;base64,QQ==', 'http://example.edu/image.png', '/teacher-only.png', 'data:image/png;base64,invalid!'];
+        const packed = helper({ id: 'safe', type: 'image', data: {
+            imageUrl: 'https://images.example.edu/leaf.png',
+            originalImage: { imageUrl: image },
+            audioRecording: { imageUrl: image, base64: 'PRIVATE' },
+            visualPlan: { panels: bad.map(imageUrl => ({ imageUrl })) },
+        }, karaokeStudentAudio: { entries: { student: { imageUrl: image } } } });
+        expect(packed.data.imageUrl).toBe('https://images.example.edu/leaf.png');
+        expect(packed.data.originalImage).toBeNull();
+        expect(packed.data.audioRecording).toBeNull();
+        expect(packed.data.visualPlan.panels.map(panel => panel.imageUrl)).toEqual(bad.map(() => null));
+        expect(packed).not.toHaveProperty('karaokeStudentAudio');
+        expect(helper({ id: 'private', type: 'persona-transcript', data: { imageUrl: image } })).toBeNull();
+    });
+
+    it('shares one image budget across nested images, frames and quiz choices', () => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const image = 'data:image/png;base64,' + 'A'.repeat(3 * 1024 * 1024);
+        const source = { id: 'budget', type: 'image', data: { imageUrl: image, frames: [image], questions: [{ optionImageUrls: [image] }] } };
+        const packed = loadStudentPackSerializer(win)(source);
+        expect(packed.data.imageUrl).toBe(image);
+        expect(packed.data.frames).toEqual([null]);
+        expect(packed.data.questions[0].optionImageUrls).toEqual([null]);
+        expect(source.data.frames).toEqual([image]);
+        expect(loadStudentPackSerializer(win)({ id: 'oversize', type: 'image', data: { imageUrl: 'data:image/png;base64,' + 'A'.repeat(5 * 1024 * 1024) } }).data.imageUrl).toBeNull();
+    });
+
+    it.each([false, true])('round-trips a multi-chunk picture through the real live sender, mailbox and late-join pack (RTC: %s)', async (rtc) => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const serialize = loadStudentPackSerializer(win);
+        const H = buildClientHelpers({});
+        const codec = new Function('Blob', 'Response', 'CompressionStream', 'DecompressionStream', helperSource + '; return { encode: _alloEncodeAlloPack, decode: _alloDecodeAlloPack };')(NodeBlob, globalThis.Response, NodeCS, NodeDS);
+        const { call } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const code = 'ABC23', secret = 'k_secret_k_secret_20';
+        expect(call({ a: 'open', admin, c: code, k: secret }).ok).toBe(true);
+        const joined = call({ a: 'join', c: code, k: secret });
+        const resource = { id: 'large-picture', type: 'image', title: 'Leaf diagram', data: { imageUrl: 'data:image/png;base64,' + randomBytes(150000).toString('base64'), altText: 'Parts of a leaf' } };
+        const instant = [], mailbox = [];
+        const deps = {
+            useCallback: fn => fn, mbLive: { code }, mbConfig: { url: 'test-mailbox', admin },
+            mbPeersRef: { current: rtc ? { student: { dc: { readyState: 'open' } } } : {} },
+            prepareMailboxResourceImages: async item => serialize(item), _alloEncodeAlloPack: codec.encode,
+            _alloSplitPackChunks: H._alloSplitPackChunks,
+            _alloDcSendDrained: async (_, text) => { instant.push(JSON.parse(text)); },
+            _alloMailboxCallWithRetry: async (_, payload) => { mailbox.push(payload.v); const result = call(payload); expect(result.ok).toBe(true); return result; },
+            warnLog: () => {},
+        };
+        const push = new Function(...Object.keys(deps), sliceBetween('const _mbPushOneResource = useCallback(', 'const pushResourceToMailbox = useCallback(') + '; return _mbPushOneResource;')(...Object.values(deps));
+        expect(await push(resource, { open: false, quiet: true })).toEqual({ rtcCount: rtc ? 1 : 0 });
+        expect(mailbox.length).toBeGreaterThan(1);
+        expect(mailbox.every(part => part.open === false && part.quiet === true && JSON.stringify(part).length < 90 * 1024)).toBe(true);
+        const received = call({ a: 'recv', c: code, uid: joined.uid, pt: joined.pt, box: 'down', since: '0' });
+        expect(received.ok).toBe(true);
+        const replay = received.b.down.m.map(([, message]) => message.v);
+        const store = { parts: {}, applied: new Set() };
+        const assembled = [...instant, ...replay].map(part => H._alloCollectResChunk(store, part)).filter(Boolean);
+        expect(assembled).toHaveLength(1);
+        expect(assembled[0].startsWith('1.')).toBe(true);
+        expect(JSON.parse(await codec.decode(assembled[0]))).toEqual(resource);
+
+        // Durable hosted packs are the fallback for late joiners after the
+        // transient replay ring has expired. Exercise the same bytes there.
+        const id = 'PK-12345678-1234-1234-1234-123456789012';
+        const packet = { v: 1, kind: 'assignment', resources: [serialize(resource)] };
+        const parts = H._alloSplitPackChunks(await codec.encode(JSON.stringify(packet)));
+        parts.forEach((data, i) => expect(call({ a: 'putpack', admin, id, k: secret, part: i + 1, of: parts.length, title: 'Live pack', data }).ok).toBe(true));
+        let downloaded = '', count = 1;
+        for (let part = 1; part <= count; part += 1) {
+            const result = call({ a: 'getpack', id, k: secret, part });
+            expect(result.ok).toBe(true);
+            downloaded += result.data;
+            count = result.of;
+        }
+        expect(JSON.parse(await codec.decode(downloaded)).resources[0]).toEqual(resource);
     });
 
     it('keeps lesson-plan/probe/game fields, strips student audio, nulls binary payloads', () => {

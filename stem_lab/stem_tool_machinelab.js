@@ -2231,6 +2231,50 @@ window.StemLab = window.StemLab || {
     if (id === 'lever') {
       S.fitPts.push(new THREE.Vector3(-eVis - 0.5, 0.28, 0), new THREE.Vector3(lVis + 0.5, 3.7, 0));
     }
+    // Freeze the original load geometry in model space, including parent
+    // rotation (lever), incline (ramp), and both timber halves (wedge).
+    S.model.updateMatrixWorld(true);
+    var initialLoads = id === 'lever' ? [demo.leverLoad] : id === 'pulley' ? [demo.pulleyLoad]
+      : id === 'windlass' ? [demo.load] : id === 'ramp' ? [demo.motion]
+      : id === 'wedge' ? demo.woodHalves : [demo.pressLoad];
+    demo.startLinks = [];
+    var referenceInk = contrast ? 0xff00ff : dark ? 0xe2e8f0 : 0x334155;
+    demo.startOutlines = initialLoads.map(function (load) {
+      var transform = new THREE.Matrix4().copy(S.model.matrixWorld).invert().multiply(load.matrixWorld);
+      var edges = new THREE.EdgesGeometry(load.geometry); edges.applyMatrix4(transform);
+      var outline = new THREE.LineSegments(edges, new THREE.LineDashedMaterial({
+        color: referenceInk,
+        dashSize: 0.10, gapSize: 0.065, depthTest: false, depthWrite: false, fog: false
+      }));
+      outline.computeLineDistances(); outline.visible = false; outline.renderOrder = 5;
+      S.model.add(outline);
+      // Join the same front-top point before and after movement. A straight
+      // comparison link shows displacement, not an extra force or travel path.
+      load.geometry.computeBoundingBox();
+      var bounds = load.geometry.boundingBox;
+      var localPoint = new THREE.Vector3((bounds.min.x + bounds.max.x) / 2, bounds.max.y, bounds.max.z + 0.035);
+      var startPoint = localPoint.clone().applyMatrix4(transform);
+      var link = new THREE.Group(); link.visible = false; S.model.add(link);
+      var line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([startPoint, startPoint]),
+        new THREE.LineBasicMaterial({ color: referenceInk, depthTest: false, depthWrite: false, fog: false }));
+      line.frustumCulled = false; line.renderOrder = 6; link.add(line);
+      var startMark = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.009, 6, 20),
+        new THREE.MeshBasicMaterial({ color: referenceInk, depthTest: false, depthWrite: false, fog: false }));
+      startMark.position.copy(startPoint); startMark.renderOrder = 7; link.add(startMark);
+      startMark.onBeforeRender = function (renderer, scene, camera) {
+        this.quaternion.copy(camera.quaternion); this.updateMatrixWorld(true);
+      };
+      var endHalo = new THREE.Mesh(new THREE.SphereGeometry(0.04, 12, 8),
+        new THREE.MeshBasicMaterial({ color: contrast || dark ? 0x07111f : 0xffffff,
+          depthTest: false, depthWrite: false, fog: false }));
+      endHalo.position.copy(startPoint); endHalo.renderOrder = 7; link.add(endHalo);
+      var endMark = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 8),
+        new THREE.MeshBasicMaterial({ color: referenceInk, depthTest: false, depthWrite: false, fog: false }));
+      endMark.position.copy(startPoint); endMark.renderOrder = 8; link.add(endMark);
+      demo.startLinks.push({ group: link, line: line, startMark: startMark, endMark: endMark, endHalo: endHalo,
+        load: load, localPoint: localPoint, startPoint: startPoint, currentPoint: startPoint.clone(), modelInverse: new THREE.Matrix4() });
+      return outline;
+    });
     demo.effortDot = effortDot; demo.loadDot = loadDot;
     S.mlDemo = demo; S.mlDemoId = null;
     S.tick = function (now) {
@@ -2238,13 +2282,18 @@ window.StemLab = window.StemLab || {
       var active = data.demoId || 0;
       if (active && S.mlDemoId !== active) { S.mlDemoId = active; S.mlDemoT0 = now; }
       var elapsed = active ? Math.max(0, (now - (S.mlDemoT0 == null ? now : S.mlDemoT0)) / 1000) : 0;
-      var reducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var wave = active ? (reducedMotion ? 1 : Math.sin(Math.min(1, elapsed / 2.2) * Math.PI)) : 0;
+      var reducedMotion = typeof data.reduced === 'boolean' ? data.reduced
+        : typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var demoSeconds = data.demoDuration === 6600 ? 6.6 : 2.2;
+      var wave = active ? (reducedMotion ? 1 : Math.sin(Math.min(1, elapsed / demoSeconds) * Math.PI)) : 0;
       // A manually selected pose uses linear travel and stays independent of the clock.
       var inspecting = !active && finite(data.motionProgress);
       var k = inspecting ? Math.max(0, Math.min(1, data.motionProgress)) : wave * wave * (3 - 2 * wave);
       var D = S.mlDemo || {};
       if (D.room) D.room.visible = !data.focusMechanism;
+      if (D.startOutlines) D.startOutlines.forEach(function (outline) {
+        outline.visible = !!data.startOutline && k > 0;
+      });
       if (D.lamps) {
         for (var li = 0; li < D.lamps.length; li++) {
           D.lamps[li].material.emissiveIntensity = active && !reducedMotion ? 0.58 + 0.06 * Math.sin(elapsed * 2 + li) : 0.48;
@@ -2300,6 +2349,17 @@ window.StemLab = window.StemLab || {
           D.pressLoad.position.y = D.pressBaseY + pressHeight / 2;
         }
       }
+      if (D.startLinks) D.startLinks.forEach(function (ref) {
+        ref.group.visible = !!data.startOutline && k > 0;
+        if (!ref.group.visible) return;
+        ref.load.updateWorldMatrix(true, false);
+        ref.modelInverse.copy(S.model.matrixWorld).invert();
+        ref.currentPoint.copy(ref.localPoint).applyMatrix4(ref.load.matrixWorld).applyMatrix4(ref.modelInverse);
+        var points = ref.line.geometry.attributes.position;
+        points.setXYZ(1, ref.currentPoint.x, ref.currentPoint.y, ref.currentPoint.z); points.needsUpdate = true;
+        ref.endMark.position.copy(ref.currentPoint);
+        ref.endHalo.position.copy(ref.currentPoint);
+      });
       if (D.effortDot) D.effortDot.position.x = D.effortStartX + (D.effortEndX - D.effortStartX) * k;
       if (D.loadDot) D.loadDot.position.x = D.loadStartX + (D.loadEndX - D.loadStartX) * k;
       if (D.effortFill && D.loadFill) {
@@ -6671,10 +6731,10 @@ window.StemLab = window.StemLab || {
       benchResult: null,
       benchStreak: 0,
       provenBenches: {},
-      shopDemoId: 0,
+      shopDemoId: 0, shopSlowMotion: false, shopDemoDuration: 2200,
       shopAnimating: false,
-      shopMotionProgress: null,
-      shopFocusMechanism: false,
+      shopMotionProgress: null, shopClueBench: null,
+      shopFocusMechanism: false, shopStartOutline: false,
       shopDemoBench: null,
 
       // ── P2/P3: siege machines ──
@@ -7100,9 +7160,57 @@ window.StemLab = window.StemLab || {
         }, children);
       }
 
+      function benchPreview(kind, active) {
+        var ink = active ? T.accentInk : T.text;
+        var force = active ? T.accentInk : T.effort;
+        var weight = active ? T.accentInk : T.load;
+        var shapes = {
+          lever: [
+            h('path', { key: 'base', d: 'M5 42H43 M20 39L25 26L30 39Z', stroke: ink }),
+            h('path', { key: 'beam', d: 'M5 32L43 22', stroke: force, strokeWidth: 3 }),
+            h('rect', { key: 'load', x: 32, y: 12, width: 10, height: 10, rx: 1, stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('path', { key: 'push', d: 'M9 12V25 M5 21L9 25L13 21', stroke: force })
+          ],
+          pulley: [
+            h('path', { key: 'frame', d: 'M6 6H42 M17 6V10 M31 6V10', stroke: ink }),
+            h('circle', { key: 'a', cx: 17, cy: 15, r: 5, stroke: force }),
+            h('circle', { key: 'b', cx: 31, cy: 15, r: 5, stroke: force }),
+            h('path', { key: 'rope', d: 'M12 15V29Q12 34 17 34Q22 34 22 29V15 M26 15V34 M36 15V29', stroke: ink }),
+            h('rect', { key: 'load', x: 10, y: 35, width: 18, height: 8, rx: 1, stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('path', { key: 'pull', d: 'M33 26L36 30L39 26', stroke: force })
+          ],
+          windlass: [
+            h('circle', { key: 'wheel', cx: 18, cy: 22, r: 13, stroke: force, strokeWidth: 2.4 }),
+            h('path', { key: 'spokes', d: 'M5 22H40 M18 9V35 M39 22V33 M13 42L18 25L23 42', stroke: ink }),
+            h('rect', { key: 'load', x: 33, y: 33, width: 11, height: 10, rx: 1, stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('circle', { key: 'grip', cx: 10, cy: 12, r: 2, fill: force, stroke: force })
+          ],
+          ramp: [
+            h('path', { key: 'ramp', d: 'M5 40L43 16V40Z', stroke: ink }),
+            h('rect', { key: 'load', x: 19, y: 14, width: 12, height: 12, rx: 1, transform: 'rotate(-32 25 26)', stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('path', { key: 'push', d: 'M5 27L16 20 M11 20H16L15 25', stroke: force })
+          ],
+          wedge: [
+            h('rect', { key: 'left', x: 6, y: 28, width: 15, height: 14, rx: 1, stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('rect', { key: 'right', x: 27, y: 28, width: 15, height: 14, rx: 1, stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('path', { key: 'blade', d: 'M17 14H31L24 37Z', stroke: ink }),
+            h('path', { key: 'push', d: 'M24 3V10 M20 6L24 10L28 6', stroke: force })
+          ],
+          screw: [
+            h('path', { key: 'frame', d: 'M5 43H43 M10 42V18H38V42', stroke: ink }),
+            h('path', { key: 'shaft', d: 'M24 6V33 M10 7H38 M20 14L28 17L20 21L28 25L20 29', stroke: force }),
+            h('rect', { key: 'load', x: 16, y: 35, width: 16, height: 7, rx: 1, stroke: weight, fill: weight, fillOpacity: 0.2 }),
+            h('path', { key: 'shoe', d: 'M17 33H31', stroke: ink, strokeWidth: 3 })
+          ]
+        };
+        return h('svg', { key: 'i', viewBox: '0 0 48 48', width: 42, height: 42,
+          'data-ml-bench-preview': kind, 'aria-hidden': 'true', focusable: 'false',
+          fill: 'none', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round',
+          style: { display: 'block', flexShrink: 0 } }, shapes[kind]);
+      }
       function benchTabs() {
         return h('div', {
-          key: 'tabs',
+          key: 'tabs', className: 'ml-bench-tabs',
           role: 'tablist',
           'aria-label': __alloT('stem.machinelab.aria_benchlist', 'Simple machine benches'),
           style: {
@@ -7114,28 +7222,40 @@ window.StemLab = window.StemLab || {
           var done = !!(d.provenBenches || {})[b.id];
           return h('button', {
             key: b.id,
-            role: 'tab',
+            role: 'tab', type: 'button', id: 'ml-bench-tab-' + b.id,
+            tabIndex: active ? 0 : -1, 'aria-controls': 'ml-shop-panel',
+            title: __alloT('stem.machinelab.station_keys', 'Use Left and Right arrow keys to switch stations; Home and End select the first and last.'),
+            onKeyDown: function (ev) {
+              var next = ev.key === 'ArrowRight' ? (stationIndex + 1) % BENCHES.length
+                : ev.key === 'ArrowLeft' ? (stationIndex + BENCHES.length - 1) % BENCHES.length
+                : ev.key === 'Home' ? 0 : ev.key === 'End' ? BENCHES.length - 1 : -1;
+              if (next < 0) return;
+              ev.preventDefault();
+              if (next === stationIndex) return;
+              var tabs = ev.currentTarget.closest('[role="tablist"]').querySelectorAll('[role="tab"]');
+              if (tabs[next]) { tabs[next].focus(); tabs[next].click(); }
+            },
             'aria-selected': active ? 'true' : 'false',
-            onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null }); },
+            onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null, shopClueBench: null }); },
             style: {
-              minHeight: 58, padding: '8px 10px', borderRadius: 12, cursor: 'pointer',
+              minHeight: 76, padding: '8px 10px', borderRadius: 12, cursor: 'pointer',
               border: '1px solid ' + (active ? T.accent : T.border), textAlign: 'left',
               boxShadow: active ? '0 0 0 2px ' + T.accent + '33' : 'none',
               background: active ? T.accent : T.card, color: active ? T.accentInk : T.text,
-              fontSize: 12, fontWeight: 750, display: 'grid', gridTemplateColumns: '28px 1fr auto',
+              fontSize: 12, fontWeight: 750, display: 'grid', gridTemplateColumns: '42px minmax(0,1fr)',
               alignItems: 'center', gap: 7
             }
           }, [
-            h('span', {
-              key: 'i', 'aria-hidden': 'true',
-              style: { fontSize: 20, lineHeight: 1, textAlign: 'center' }
-            }, b.icon),
+            benchPreview(b.id, active),
             h('span', { key: 'l', style: { lineHeight: 1.2 } }, [
               h('span', { key: 'n', style: { display: 'block', fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase' } },
                 __alloT('stem.machinelab.station', 'Station ') + (stationIndex + 1)),
-              h('span', { key: 't' }, b.label)
-            ]),
-            done ? h('span', { key: 'd', 'aria-hidden': 'true', style: { fontSize: 14 } }, '✓') : null
+              h('span', { key: 't' }, b.label),
+              done ? h('span', { key: 'd', style: { display: 'block', marginTop: 4, fontSize: 10, fontWeight: 800 } }, [
+                h('span', { key: 'check', 'aria-hidden': 'true' }, '✓ '),
+                __alloT('stem.machinelab.station_proven', 'Proven')
+              ]) : null
+            ])
           ]);
         }));
       }
@@ -8097,6 +8217,21 @@ window.StemLab = window.StemLab || {
           fsWhich === 'shop' ? btn('close', __alloT('stem.machinelab.cam_close_short', 'Close'),
             __alloT('stem.machinelab.cam_close', 'Show a close three-quarter view'),
             function () { cam.setView(24, d.bench === 'screw' ? 32 : 12, 1.38); }) : null,
+          fsWhich === 'shop' && d.bench === 'windlass' ? h('button', {
+            key: 'drum', type: 'button',
+            'aria-label': __alloT('stem.machinelab.cam_drum', 'Show the drum and lifting rope'),
+            title: __alloT('stem.machinelab.cam_drum_hint', 'Inspect the striped drum and lifting rope from an oblique side view.'),
+            'aria-pressed': cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18,
+            onClick: function () {
+              cam.setView(72, 16, 1.18);
+              announceToSR(__alloT('stem.machinelab.cam_drum_open', 'Drum view selected. The motion position is unchanged.'));
+            },
+            style: { padding: '5px 10px', minHeight: 34, borderRadius: 8, cursor: 'pointer',
+              border: '1px solid ' + T.border,
+              background: cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18 ? T.accent : T.card,
+              color: cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18 ? T.accentInk : T.text,
+              fontSize: 12, fontWeight: 800 }
+          }, __alloT('stem.machinelab.cam_drum_short', 'Drum')) : null,
           fsWhich === 'shop' ? h('button', {
             key: 'focus', type: 'button', 'aria-pressed': !!d.shopFocusMechanism,
             'aria-label': __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism'),
@@ -9173,7 +9308,7 @@ window.StemLab = window.StemLab || {
           pulley: ma === 1
             ? __alloT('stem.machinelab.observe_pulley_fixed', 'A fixed pulley changes the pull direction; ideal effort equals the load.')
             : __alloT('stem.machinelab.observe_pulley', 'More supporting rope segments share the load.'),
-          windlass: __alloT('stem.machinelab.observe_windlass_coupling', 'The marked grip and striped drum turn together as the rope lifts the load. Rotate to a side view to follow the drum; the curved arrow shows the turn.'),
+          windlass: __alloT('stem.machinelab.observe_windlass_drum_view', 'The marked grip and striped drum turn together as the rope lifts the load. Choose Drum to follow the barrel and lifting rope; the curved arrow shows the turn.'),
           ramp: __alloT('stem.machinelab.observe_ramp_travel', 'The blue marker tracks the crate along the front rail. Each interval is a quarter of the demonstration stroke; the upright arrow follows the rising load.'),
           wedge: __alloT('stem.machinelab.observe_wedge', 'Downward effort redirects force out to the sides.'),
           screw: __alloT('stem.machinelab.observe_screw_thread', 'Turn the handle to press downward by one visible thread spacing per revolution. The bands show the block compressing without turning.')
@@ -9206,11 +9341,46 @@ window.StemLab = window.StemLab || {
           if (!finite(progress)) return;
           updMulti({ shopAnimating: false, shopMotionProgress: progress });
         }
+        function shopStrokePreview(progress) {
+          if (!finite(ma) || ma <= 0) return null;
+          var effort = 100 * ma / Math.max(1, ma), load = 100 / Math.max(1, ma);
+          var ex = 10 + effort * progress, lx = 10 + load * progress;
+          return h('svg', { key: 'preview', viewBox: '0 0 120 42', width: 120, height: 42, 'aria-hidden': 'true', focusable: 'false',
+            'data-ml-stroke-preview': progress, style: { display: 'block', width: '100%', maxWidth: 180, height: 42, margin: '4px auto 0' } }, [
+            h('path', { key: 'ticks', d: 'M10 6V37 M35 9V15 M35 29V35 M60 9V15 M60 29V35 M85 9V15 M85 29V35 M110 9V15 M110 29V35',
+              fill: 'none', stroke: T.border, strokeWidth: 1 }),
+            h('path', { key: 'effort-rail', d: 'M10 12H' + (10 + effort), fill: 'none', stroke: T.effort, strokeWidth: 1 }),
+            h('path', { key: 'load-rail', d: 'M10 32H' + (10 + load), fill: 'none', stroke: T.load, strokeWidth: 1 }),
+            h('path', { key: 'effort-fill', d: 'M10 12H' + ex, fill: 'none', stroke: T.effort, strokeWidth: 4 }),
+            h('path', { key: 'load-fill', d: 'M10 32H' + lx, fill: 'none', stroke: T.load, strokeWidth: 4 }),
+            h('path', { key: 'effort', 'data-ml-preview-marker': 'effort', 'data-distance': effort * progress,
+              d: 'M' + ex + ' 7l5 5-5 5-5-5z', fill: T.effort }),
+            h('circle', { key: 'load', 'data-ml-preview-marker': 'load', 'data-distance': load * progress,
+              cx: lx, cy: 32, r: 4.5, fill: T.bg, stroke: T.load, strokeWidth: 2 })
+          ]);
+        }
         function shopMotionInspector() {
           return h('div', { key: 'inspect', className: 'ml-shop-inspector', style: {
             padding: '10px 12px', marginTop: 8, borderRadius: 12,
             background: T.bg, border: '1px solid ' + T.border
           } }, [
+            d.shopClueBench === bench.id ? h('div', { key: 'clue', className: 'ml-shop-clue-reminder',
+              role: 'group', 'aria-label': __alloT('stem.machinelab.current_clue', 'Current observation clue'),
+              style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '8px 10px', marginBottom: 10,
+                borderRadius: 8, borderLeft: '3px solid ' + T.accent, background: T.card } }, [
+              h('span', { key: 'question', style: { flex: '1 1 210px', fontSize: 12, lineHeight: 1.45, color: T.text } }, shopDiscoveryClue()[0]),
+              h('button', { key: 'back', type: 'button',
+                onClick: function (ev) {
+                  var world = ev.currentTarget.closest('.ml-shop-world');
+                  var card = world && world.querySelector('.ml-shop-discovery');
+                  var summary = card && card.querySelector('summary');
+                  if (summary) summary.focus({ preventScroll: true });
+                  if (card && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'auto' });
+                },
+                style: { minHeight: 36, padding: '5px 10px', borderRadius: 7, border: '1px solid ' + T.border,
+                  background: T.bg, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' }
+              }, __alloT('stem.machinelab.return_clue', 'Return to clue'))
+            ]) : null,
             h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, [
               h('label', { key: 'label', id: 'ml-shop-stroke-label', htmlFor: 'ml-shop-stroke', style: { fontSize: 12, fontWeight: 800, color: T.text } },
                 __alloT('stem.machinelab.inspect_motion', 'Inspect the motion')),
@@ -9226,25 +9396,122 @@ window.StemLab = window.StemLab || {
               style: { width: '100%', minWidth: 0, height: 32, margin: '4px 0', accentColor: T.effort, cursor: 'pointer' }
             }),
             h('div', { key: 'poses', role: 'group', 'aria-label': __alloT('stem.machinelab.stroke_positions', 'Working stroke positions'),
+              'aria-describedby': 'ml-shop-preview-help',
               style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6 } },
               [0, 0.5, 1].map(function (progress, index) {
                 var selected = !d.shopAnimating && shopProgress === progress;
                 return h('button', { key: index, type: 'button', disabled: shopStatus === 'failed',
                   'aria-pressed': selected, onClick: function () { inspectShopMotion(progress); },
-                  style: { minHeight: 40, padding: '5px 6px', borderRadius: 8, fontSize: 11, fontWeight: 800,
-                    cursor: 'pointer', color: selected ? T.accentInk : T.text, background: selected ? T.accent : T.card,
+                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: 40, padding: '6px', borderRadius: 8, fontSize: 11, fontWeight: 800,
+                    cursor: 'pointer', color: T.text, background: T.bg,
+                    boxShadow: selected ? 'inset 0 0 0 1px ' + T.accent : 'none',
                     border: '1px solid ' + (selected ? T.accent : T.border) }
-                }, index === 0 ? __alloT('stem.machinelab.stroke_start', 'Start') : index === 1
-                  ? __alloT('stem.machinelab.stroke_half', 'Halfway') : __alloT('stem.machinelab.stroke_full', 'Full stroke'));
+                }, [h('span', { key: 'label', style: { display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', padding: '3px 7px', borderRadius: 5,
+                    color: selected ? T.accentInk : T.text, background: selected ? T.accent : 'transparent' } },
+                  index === 0 ? __alloT('stem.machinelab.stroke_start', 'Start') : index === 1
+                    ? __alloT('stem.machinelab.stroke_half', 'Halfway') : __alloT('stem.machinelab.stroke_full', 'Full stroke')),
+                  shopStrokePreview(progress)]);
               })),
+            h('div', { key: 'outline', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 7 } }, [
+              h('label', { key: 'toggle', style: { display: 'inline-flex', alignItems: 'center', gap: 7, minHeight: 36,
+                padding: '0 8px', borderRadius: 7, border: '1px dashed ' + T.border, cursor: 'pointer', fontSize: 12, color: T.text } }, [
+                h('input', { key: 'check', type: 'checkbox', checked: !!d.shopStartOutline, disabled: shopStatus === 'failed',
+                  'aria-describedby': d.shopStartOutline ? 'ml-shop-outline-help' : undefined,
+                  onChange: function (ev) { upd('shopStartOutline', ev.target.checked); },
+                  style: { accentColor: T.accent, width: 16, height: 16, margin: 0 } }),
+                h('span', { key: 'text' }, __alloT('stem.machinelab.show_start_outline', 'Show starting outline'))
+              ]),
+              d.shopStartOutline ? h('span', { key: 'help', id: 'ml-shop-outline-help', style: { fontSize: 11, lineHeight: 1.4, color: T.dim } },
+                __alloT('stem.machinelab.start_outline_links_help', 'Dashed outline = load at the start. Open marker = start; solid marker = now. Move beyond Start to compare.')) : null
+            ]),
+            h('p', { key: 'preview-help', id: 'ml-shop-preview-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.text } },
+              __alloT('stem.machinelab.stroke_preview_help', 'Distance previews: ◆ effort · ○ load. One scale for all three positions.')),
             h('p', { key: 'help', id: 'ml-shop-stroke-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
               __alloT('stem.machinelab.inspect_help', 'Choose a position, then rotate the view to inspect it. The model stays still. These positions show the working stroke of the demonstration.'))
           ]);
         }
-        function runShopDemo() {
+        function shopDiscoveryClue() {
+          var clues = {
+            lever: [__alloT('stem.machinelab.detect_lever_q', 'Which end of this lever travels farther?'),
+              ma === 1 ? __alloT('stem.machinelab.detect_lever_equal', 'The arms are equal, so both ends travel the same distance. Compare the two distance bars.')
+                : ma < 1 ? __alloT('stem.machinelab.detect_lever_short', 'The load end travels farther because its arm is longer. The effort end moves less and needs more force.')
+                  : __alloT('stem.machinelab.detect_lever_long', 'The effort end travels farther because its arm is longer. That extra distance trades for less effort force.'), 0, 8, 1.08],
+            pulley: [__alloT('stem.machinelab.detect_pulley_q', 'Which rope strands support the load, and which end do you pull?'),
+              __alloT('stem.machinelab.detect_pulley_a', 'Count the small upward arrows: each marks a supporting strand. The free end with the grip is pulled downward; it is not an extra supporting strand.'), 0, 8, 1.08],
+            windlass: [__alloT('stem.machinelab.detect_windlass_q', 'Does the drum turn with the wheel, or stay still?'),
+              __alloT('stem.machinelab.detect_windlass_a', 'The marked grip and striped drum turn together on the same axle. The drum takes up rope as the load rises.'), 72, 16, 1.18],
+            ramp: [__alloT('stem.machinelab.detect_ramp_q', 'Does the crate travel farther along the ramp than it rises?'),
+              Number(d.rampHeight) >= Number(d.rampLength)
+                ? __alloT('stem.machinelab.detect_ramp_vertical', 'This ramp is vertical, so the distance along it equals the rise. There is no distance advantage at this setting.')
+                : __alloT('stem.machinelab.detect_ramp_a', 'The path along the slope is longer than the vertical rise. Follow the front marker and compare the effort and load distance bars.'), 0, 8, 1.08],
+            wedge: [__alloT('stem.machinelab.detect_wedge_q', 'How can pushing down make the two halves move sideways?'),
+              __alloT('stem.machinelab.detect_wedge_a', 'The two sloping faces redirect the downward push outward. As the wedge descends, a wider part enters the gap and separates the halves.'), 0, 12, 1.08],
+            screw: [__alloT('stem.machinelab.detect_screw_q', 'Does the block spin with the handle as it is pressed?'),
+              __alloT('stem.machinelab.detect_screw_a', 'The shaft turns, but the swivel shoe presses straight down without turning the block. The bands move closer together as the block compresses.'), 24, 32, 1.18]
+          };
+          return clues[bench.id];
+        }
+        function shopDiscoveryCard() {
+          var clue = shopDiscoveryClue();
+          return h('section', { key: 'detect-' + bench.id, className: 'ml-shop-discovery', 'aria-labelledby': 'ml-discovery-title',
+            style: { padding: 12, marginTop: 10, borderRadius: 12, border: '1px solid ' + T.border,
+              borderLeft: '4px solid ' + T.accent, background: T.card, color: T.text } }, [
+            h('div', { key: 'head', style: { display: 'flex', alignItems: 'center', gap: 10 } }, [
+              h('svg', { key: 'icon', viewBox: '0 0 32 32', width: 30, height: 30, 'aria-hidden': 'true', focusable: 'false',
+                style: { flexShrink: 0, color: T.accent } }, [
+                h('circle', { key: 'lens', cx: 13, cy: 13, r: 9, fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 }),
+                h('path', { key: 'handle', d: 'M20 20 L28 28 M9 13 H17 M13 9 V17', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round' })
+              ]),
+              h('div', { key: 'text', style: { minWidth: 0 } }, [
+                h('h3', { key: 'title', id: 'ml-discovery-title', style: { margin: 0, fontSize: 13, fontWeight: 850 } },
+                  __alloT('stem.machinelab.motion_detective', 'Motion detective')),
+                h('p', { key: 'question', 'data-ml-discovery-question': '', style: { margin: '4px 0 0', fontSize: 13, lineHeight: 1.45 } }, clue[0])
+              ])
+            ]),
+            h('div', { key: 'actions', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 10 } }, [
+              h('button', { key: 'inspect', type: 'button', disabled: shopStatus === 'failed',
+                title: __alloT('stem.machinelab.inspect_clue_hint', 'Pause halfway, frame the mechanism, and hide the room to inspect the clue.'),
+                onClick: function (ev) {
+                  var world = ev.currentTarget.closest('.ml-shop-world');
+                  var bay = world && world.querySelector('.ml-shop-bay');
+                  var card = ev.currentTarget.closest('.ml-shop-discovery');
+                  updMulti({ shopAnimating: false, shopMotionProgress: 0.5, shopFocusMechanism: true, shopClueBench: bench.id,
+                    shopRotY: clue[2], shopRotX: clue[3], shopZoom: clue[4] });
+                  // Wait for a running demo's disabled slider to become active.
+                  setTimeout(function () {
+                    if (!card || !card.isConnected) return;
+                    var slider = world.querySelector('#ml-shop-stroke');
+                    if (slider) slider.focus({ preventScroll: true });
+                    if (bay && bay.scrollIntoView) bay.scrollIntoView({ block: 'center', behavior: 'auto' });
+                    if (slider && slider.scrollIntoView) slider.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+                  }, 0);
+                  announceToSR(__alloT('stem.machinelab.clue_ready', 'Clue ready at half stroke. The room is hidden; use Focus mechanism to restore it.'));
+                },
+                style: { minHeight: 40, padding: '7px 12px', borderRadius: 8, border: '1px solid ' + T.accent,
+                  background: T.accent, color: T.accentInk, cursor: 'pointer', fontSize: 12, fontWeight: 800 }
+              }, __alloT('stem.machinelab.inspect_clue', 'Inspect the clue')),
+              h('span', { key: 'hint', style: { flex: '1 1 170px', fontSize: 11, lineHeight: 1.4, color: T.dim } },
+                __alloT('stem.machinelab.detect_hint', 'Make a prediction, inspect the scene, then reveal the explanation.'))
+            ]),
+            h('details', { key: 'answer-' + bench.id, style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid ' + T.border } }, [
+              h('summary', { key: 'reveal', style: { cursor: 'pointer', minHeight: 32, fontSize: 12, fontWeight: 750, lineHeight: '32px' } },
+                __alloT('stem.machinelab.reveal_explanation', 'Reveal explanation')),
+              h('p', { key: 'answer', 'data-ml-discovery-answer': '', style: { margin: '4px 0 0', fontSize: 13, lineHeight: 1.55, color: T.text } }, clue[1])
+            ])
+          ]);
+        }
+        function runShopDemo(ev) {
           if (d.shopAnimating || shopStatus === 'failed') return;
           var runId = (d.shopDemoId || 0) + 1, runBench = bench.id;
-          updMulti({ shopDemoId: runId, shopAnimating: true, shopMotionProgress: null, shopDemoBench: runBench });
+          var demoDuration = d.shopSlowMotion && !reducedMotion ? 6600 : 2200;
+          updMulti({ shopDemoId: runId, shopAnimating: true, shopMotionProgress: null, shopDemoBench: runBench,
+            shopDemoDuration: demoDuration });
+          var world = ev && ev.currentTarget && ev.currentTarget.closest('.ml-shop-world');
+          var bay = world && world.querySelector('.ml-shop-bay');
+          if (bay) {
+            bay.focus({ preventScroll: true });
+            bay.scrollIntoView({ block: 'center', behavior: 'auto' });
+          }
           announceToSR(__alloT('stem.machinelab.demo_started', 'Demonstration started for ') + bench.label + '.');
           if (typeof setTimeout === 'function') {
             setTimeout(function () {
@@ -9254,11 +9521,11 @@ window.StemLab = window.StemLab || {
                 if (!cur.shopAnimating || cur.shopDemoId !== runId || cur.bench !== runBench) return prev;
                 return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { shopAnimating: false }) });
               });
-            }, 2300);
+            }, demoDuration + 100);
           }
         }
         function openNextBench() {
-          updMulti({ bench: nextBench.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null });
+          updMulti({ bench: nextBench.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null, shopClueBench: null });
           announceToSR(__alloT('stem.machinelab.next_station_open', 'Opened the next station: ') + nextBench.label + '.');
         }
         SHOP_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
@@ -9271,8 +9538,10 @@ window.StemLab = window.StemLab || {
           rotY: shopCam.rotY, rotX: shopCam.rotX, zoom: shopCam.zoom,
           static: !d.shopAnimating,
           demoId: d.shopAnimating ? d.shopDemoId : 0,
+          demoDuration: d.shopDemoDuration === 6600 ? 6600 : 2200, reduced: reducedMotion,
           motionProgress: finite(d.shopMotionProgress) ? shopProgress : null,
           focusMechanism: !!d.shopFocusMechanism,
+          startOutline: !!d.shopStartOutline,
           dark: isDark, contrast: isContrast,
           params: {
             ma: ma, effortArm: d.leverEffortArm, loadArm: d.leverLoadArm,
@@ -9287,7 +9556,8 @@ window.StemLab = window.StemLab || {
           benchTabs(),
           h('style', {key:'shop-layout'}, '@media(max-width:600px){.ml-shop-world .ml-shop-hud{position:relative!important;top:auto!important;left:auto!important;right:auto!important;order:-1;margin-bottom:8px;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.ml-shop-hud>div{min-width:0!important;max-width:none!important}.ml-shop-hud>div:nth-child(2){grid-column:1/-1;order:3}.ml-shop-world .ml-shop-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}.ml-shop-world .ml-shop-legend{position:relative!important;left:auto!important;bottom:auto!important;align-self:flex-start;margin:8px 0 0}}'),
           h('div', {
-            key: 'world', ref: shopFsRef, className:'ml-shop-world',
+            key: 'world', ref: shopFsRef, className:'ml-shop-world', id: 'ml-shop-panel', role: 'tabpanel',
+            'aria-labelledby': 'ml-bench-tab-' + bench.id,
             style: {
               position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden',
               padding: 8, marginBottom: 12, borderRadius: 18, background: T.card,
@@ -9296,7 +9566,7 @@ window.StemLab = window.StemLab || {
             }
           }, [
             h('div', {
-              key: 'bay', ref: shopGlRef, role: 'img', className:'ml-shop-bay',
+              key: 'bay', ref: shopGlRef, role: 'img', tabIndex: -1, className:'ml-shop-bay',
               'data-ml-orbitable': 'true',
               onPointerDown: beginShopOrbit, onPointerMove: moveShopOrbit,
               onPointerUp: endShopOrbit, onPointerCancel: endShopOrbit,
@@ -9324,7 +9594,7 @@ window.StemLab = window.StemLab || {
                 }
               }, [
                 h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
-                  (d.shopAnimating ? '● ' + __alloT('stem.machinelab.motion_active', 'Motion active') :
+                  (d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.still_demo', 'Still demonstration') : '● ' + __alloT('stem.machinelab.motion_active', 'Motion active')) :
                     __alloT('stem.machinelab.live_workshop', 'Live workshop'))),
                 h('div', { key: 'nm', style: { marginTop: 2, fontSize: 20, fontWeight: 850 } }, bench.label)
               ]),
@@ -9338,7 +9608,7 @@ window.StemLab = window.StemLab || {
                 }
               }, [
                 h('span', { key: 'eye', style: { display: 'block', marginBottom: 2, color: '#fbbf24', fontSize: 9, fontWeight: 850, letterSpacing: 1, textTransform: 'uppercase' } },
-                  d.shopAnimating ? __alloT('stem.machinelab.watch_motion', 'Watch the motion') : __alloT('stem.machinelab.what_to_notice', 'What to notice')),
+                  d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.inspect_still_demo', 'Inspect the mechanism') : d.shopDemoDuration === 6600 ? __alloT('stem.machinelab.watch_slow_motion', 'Watch in slow motion') : __alloT('stem.machinelab.watch_motion', 'Watch the motion')) : __alloT('stem.machinelab.what_to_notice', 'What to notice')),
                 h('span', { key: 'cue' }, observationCues[bench.id]),
                 bench.id === 'lever' ? h('span', { key: 'arms', style: { display: 'block', marginTop: 4 } },
                   __alloT('stem.machinelab.lever_arm_guides', 'The colored guides beneath the beam measure each arm from the pivot to its contact point.')) : null,
@@ -9377,6 +9647,7 @@ window.StemLab = window.StemLab || {
             ]),
             camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
             shopMotionInspector(),
+            shopDiscoveryCard(),
             h('div', {
               key: 'mission',
               style: {
@@ -9409,7 +9680,15 @@ window.StemLab = window.StemLab || {
                   border: '1px solid ' + (hasRunDemo && !d.shopAnimating ? T.accent : T.border)
                 } }, '3 ' + __alloT('stem.machinelab.step_prove', 'Prove'))
               ]),
-              h('div', { key: 'actions', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, [
+              h('div', { key: 'actions', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } }, [
+                h('label', { key: 'slow', title: __alloT('stem.machinelab.slow_demo_hint', 'Play the same motion three times slower. Motion-off preferences still apply.'),
+                  style: { display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 36, padding: '0 8px',
+                    borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 11, cursor: 'pointer' } }, [
+                  h('input', { key: 'check', type: 'checkbox', checked: !!d.shopSlowMotion,
+                    disabled: !!d.shopAnimating || shopStatus === 'failed', onChange: function (ev) { upd('shopSlowMotion', ev.target.checked); },
+                    style: { width: 16, height: 16, margin: 0, accentColor: T.accent } }),
+                  h('span', { key: 'label' }, __alloT('stem.machinelab.slow_demo', 'Slow motion'))
+                ]),
                 h('button', {
                   key: 'run', type: 'button', onClick: runShopDemo,
                   disabled: !!d.shopAnimating || shopStatus === 'failed',

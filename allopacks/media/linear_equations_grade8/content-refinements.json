@@ -1,0 +1,224 @@
+[
+  {
+    "resourceId": "le-reading",
+    "path": "data",
+    "from": "## Slope and Start\n\nLast year, proportional relationships gave you lines through the **origin**, the point (0, 0) where the two axes cross. This year lines get to start anywhere, and that small change unlocks almost every real situation you will ever model.\n\nConsider two phone plans. Plan A charges 2 dollars per gigabyte, nothing else. Plan B charges a 10 dollar monthly fee plus 1 dollar per gigabyte. Plan A is proportional: no data, no cost. Plan B is not, because even with zero data you still owe 10 dollars. That starting fee is exactly what proportional relationships were not allowed to have. Now it is allowed, and it has a name.\n\nEvery straight line except a vertical one can be written as **y = mx + b**, and the whole year lives in those two letters. Here x and y are the **variable** quantities that change together, while m and b are the two numbers that describe exactly how.\n\nThe **m** is the **slope**, also called the rate of change. It answers: how much does y change every time x goes up by one? For Plan B, m is 1 — each gigabyte adds one dollar. Slope is steepness, and you calculate it as rise over run: how far the line goes up divided by how far it goes across between any two points.\n\nThe **b** is the **y-intercept**, also called the initial value or starting point. It answers: where does the line begin, when x is zero? For Plan B, b is 10 — the cost before you use any data at all. On a graph, b is the exact spot where the line crosses the y-axis.\n\nOnce you know m and b, you know everything. Plan B's equation is y = 1x + 10, or just y = x + 10. Want the cost of 15 gigabytes? Multiply 15 by the slope 1, then add the start 10, for 25 dollars. Every linear problem is that same two-step move: rate times amount, plus starting value.\n\nSlope also has a sign, and the sign is a direction. A **positive** slope rises to the right — savings growing, a plant getting taller. A **negative** slope falls to the right — a phone battery draining, water leaving a tub. A slope of zero is a flat line: nothing changing, like a savings account you never touch. Reading the sign is reading whether the story goes up, down, or holds steady.\n\nHere is why this matters beyond math class. Almost any steady real-world change is linear: a rate that repeats, added to a starting amount. Wages, fuel, distance, temperature drops, subscription costs. Writing one of those as y = mx + b builds a **model** of the situation, and every linear model is also a **function**, because each input x produces exactly one output y. When you can look at y = mx + b and say out loud what m and b mean in the real situation, you are not doing arithmetic anymore. You are reading the story the line is telling.",
+    "to": "## Slope and Start\n\nA proportional model y = mx passes through the origin, (0,0). A nonvertical line can also have a nonzero y-intercept: **y = mx + b**. This lesson uses that form. A vertical line cannot be written this way and is not a function of x.\n\nConsider invented phone prices. Plan A costs $2 per gigabyte with no fee: y = 2x. Plan B costs $10 per month plus $1 per gigabyte: y = x + 10. Define x as gigabytes used and y as monthly dollars, assuming no other charges.\n\nThe **slope m** is the change in y divided by the change in x between two distinct points. Keep the same subtraction order. The change in x must be nonzero. For (0,4) and (2,10), rise is 6 and run is 2, so slope is 3. Rise is a signed vertical change: it can be negative. Run is a signed horizontal change.\n\nThe **y-intercept b** is the output at x = 0. It is a starting amount only when zero input represents the beginning of the situation. A line does not literally begin at its intercept, and real data may cover a domain that excludes zero.\n\nFor Plan B, m is $1 per gigabyte and b is $10. At 15 gigabytes, cost is 15 + 10 = $25. State units when interpreting these numbers.\n\nWith x increasing to the right, positive slope means y increases, negative slope means y decreases, and zero slope means y is constant. A positive slope does not require positive output: y = 0.5x - 3 rises even where its values are negative. Apparent steepness also depends on axis scales; numerical slope comes from coordinate changes.\n\nReal situations use **models**. Constant rates can be useful approximations over a limited interval, but plants and batteries need not change linearly. A tank with 100 litres draining at five litres per minute follows y = 100 - 5x from zero through twenty minutes. Continuing the line below zero would predict an impossible negative amount of water.\n\nTwo distinct nonvertical lines with the same slope are parallel. Different slopes can produce an intersection. For weekly costs y = 40x and y = 25x + 300, equality gives 15x = 300, so x = 20 weeks and y = $800. Before that point the first is cheaper; after it the second is cheaper, under the stated assumptions.\n\nRead the equation as a model: what are the quantities and units, what do m and b mean, and for which inputs is it useful?"
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.0.def",
+    "from": "Forming a straight line when graphed.",
+    "to": "In this lesson, a function y = mx + b whose graph lies on a nonvertical straight line."
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.1.def",
+    "from": "How steep a line is — how much y changes for each step in x.",
+    "to": "Change in y divided by nonzero change in x, using the same subtraction order."
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.2.def",
+    "from": "Where a line crosses the y-axis, the value of y when x is zero.",
+    "to": "The y-intercept here: the output when x = 0. Other intercepts refer to other axes."
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.3.def",
+    "from": "How far a line goes up between two points.",
+    "to": "The signed vertical change between two points; it may be negative."
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.4.def",
+    "from": "How far a line goes across between two points.",
+    "to": "The signed horizontal change between two points; it must be nonzero to calculate slope."
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.8.def",
+    "from": "A slope that rises to the right — the quantity is growing.",
+    "to": "For slope: y increases as x increases; y itself need not be positive."
+  },
+  {
+    "resourceId": "le-glossary",
+    "path": "data.9.def",
+    "from": "A slope that falls to the right — the quantity is shrinking.",
+    "to": "For slope: y decreases as x increases; y itself need not be negative."
+  },
+  {
+    "resourceId": "le-anchor",
+    "path": "data.sections.0.bullets.1",
+    "from": "Rise over run between two points",
+    "to": "Signed change in y divided by nonzero change in x"
+  },
+  {
+    "resourceId": "le-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "The initial value",
+    "to": "A starting value when x = 0 means the start"
+  },
+  {
+    "resourceId": "le-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Any value: multiply by m, then add b",
+    "to": "For allowed inputs: multiply by m, then add b"
+  },
+  {
+    "resourceId": "le-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "Say what m and b MEAN in the story",
+    "to": "Name units, assumptions and allowed inputs"
+  },
+  {
+    "resourceId": "le-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Every straight line can be written as y = mx + b. The m is the slope, the rate of change: how much y changes every time x goes up by one. The b is the y-intercept, the starting point when x is zero. A positive slope rises to the right; a negative slope falls; a slope of zero is flat. Proportional relationships are the special case where b = 0.",
+    "to": "Every nonvertical line has y = mx + b. The slope is signed change in y divided by nonzero change in x. The intercept is y when x = 0; interpret the model within its domain."
+  },
+  {
+    "resourceId": "le-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "b is the y-intercept, the initial value: where the line is when x is zero, where it crosses the y-axis.",
+    "to": "b is the output at x = 0, a starting amount if zero input marks the beginning."
+  },
+  {
+    "resourceId": "le-memory",
+    "path": "data.cards.1.essentialFacts.0",
+    "from": "Positive slope rises to the right: savings growing, a plant getting taller.",
+    "to": "Positive slope means y increases with x; actual plant growth is not necessarily linear."
+  },
+  {
+    "resourceId": "le-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "Negative slope falls to the right: a battery draining, water leaving a tub.",
+    "to": "Negative slope means y decreases with x; a draining model stops when the tank is empty."
+  },
+  {
+    "resourceId": "le-memory",
+    "path": "data.cards.1.mapping",
+    "from": "Walking left to right matches how graphs are read, and the effort in your legs maps to the sign: climbing is positive, descending is negative, flat is zero.",
+    "to": "Read increasing x from left to right. The line is a graph of quantities, not necessarily a physical hill; its visible angle also depends on axis scales."
+  },
+  {
+    "resourceId": "le-math",
+    "path": "data.problems.3.question",
+    "from": "A candle is 20 cm tall and burns down 4 cm per hour. Write an equation for its height y after x hours.",
+    "to": "Assume a 20 cm candle loses height at a constant 4 cm per hour until used up. Write its height model and domain."
+  },
+  {
+    "resourceId": "le-math",
+    "path": "data.problems.3.answer",
+    "from": "y = -4x + 20",
+    "to": "y = -4x + 20, for 0 ≤ x ≤ 5 hours"
+  },
+  {
+    "resourceId": "le-math",
+    "path": "data.problems.3.steps.2.explanation",
+    "from": "The equation is y = -4x + 20.",
+    "to": "The model is y = -4x + 20. Height reaches zero at five hours, so do not use it beyond 0 ≤ x ≤ 5. This is an assumed model, not a burning activity."
+  },
+  {
+    "resourceId": "le-math",
+    "path": "data.problems.3.realWorld",
+    "from": "Modeling anything that decreases steadily, like a draining battery.",
+    "to": "Constant decrease is a limited model; real rates may vary."
+  },
+  {
+    "resourceId": "le-sort",
+    "path": "data.categories.0.label",
+    "from": "Positive slope (rising)",
+    "to": "POSITIVE"
+  },
+  {
+    "resourceId": "le-sort",
+    "path": "data.categories.1.label",
+    "from": "Negative slope (falling)",
+    "to": "NEGATIVE"
+  },
+  {
+    "resourceId": "le-sort",
+    "path": "data.categories.2.label",
+    "from": "Zero slope (flat)",
+    "to": "ZERO"
+  },
+  {
+    "resourceId": "le-sort",
+    "path": "data.items.5.content",
+    "from": "A phone battery losing 8% per hour",
+    "to": "A battery model losing 8 percentage points of full charge per hour"
+  },
+  {
+    "resourceId": "le-sort",
+    "path": "data.items.8.content",
+    "from": "A plant growing 1 cm each day",
+    "to": "A model of plant height increasing 1 cm per day over a limited interval"
+  },
+  {
+    "resourceId": "le-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "The equation is y = -5x + 50. The intercept 50 is the starting amount of water. The slope -5 is negative because water is leaving at 5 gallons per minute, so the line falls.",
+    "to": "y = -5x + 50, for 0 ≤ x ≤ 10 minutes. The intercept is 50 gallons initially, and the slope is -5 gallons per minute. At ten minutes the pool is empty; the line must not be extended to negative water amounts."
+  },
+  {
+    "resourceId": "le-faq",
+    "path": "data.0.answer",
+    "from": "Because it measures steepness, exactly like the slope of a hill or a roof. A big slope is a steep climb; a small slope is a gentle one; a negative slope goes downhill.",
+    "to": "Numerical slope is signed vertical change divided by horizontal change. Larger absolute slope is steeper when axis scales are held fixed. A negative slope can be very steep too."
+  },
+  {
+    "resourceId": "le-faq",
+    "path": "data.1.answer",
+    "from": "Last year every line went through the origin (b = 0). This year lines can start anywhere, which is the +b part. Proportional relationships are just the special case where the starting value is zero.",
+    "to": "A nonzero intercept adds an output at x = 0. Proportional models are the special case b = 0; both kinds may be useful within specified domains."
+  },
+  {
+    "resourceId": "le-faq",
+    "path": "data.2.answer",
+    "from": "Absolutely. A slope of 1/2 means y rises 1 for every 2 that x moves across — a gentle climb. Fractional slopes are everywhere, like a wheelchair ramp's gentle rise.",
+    "to": "Yes. Slope 1/2 means an increase of one output unit for two input units. State the axis units and scales before interpreting its apparent angle."
+  },
+  {
+    "resourceId": "le-faq",
+    "path": "data.3.answer",
+    "from": "A perfectly flat, horizontal line. Nothing is changing: a thermostat holding one temperature, or a parked car staying the same distance from home no matter how much time passes.",
+    "to": "A zero slope gives a horizontal line: y stays constant as x changes. This does not mean nothing in the real situation changes, only the modeled output."
+  },
+  {
+    "resourceId": "le-faq",
+    "path": "data.4.answer",
+    "from": "Parallel lines have the exact same slope and never meet. They rise at the same rate but start at different y-intercepts, like two savings plans adding money equally fast from different starting balances.",
+    "to": "Distinct nonvertical parallel lines have equal slopes and different intercepts. Coincident lines have the same slope and intercept; vertical parallel lines have undefined slope."
+  },
+  {
+    "resourceId": "le-faq",
+    "path": "data.5.answer",
+    "from": "Constantly: pricing plans, wages, fuel use, depreciation, temperature change, budgets, and nearly every trend line in science and economics. It may be the single most-used equation in everyday life.",
+    "to": "Linear models are useful for fixed-rate prices and other approximately steady changes. Real data may need another model, and predictions require checking assumptions and domain."
+  },
+  {
+    "resourceId": "le-challenge",
+    "path": "data.instructions",
+    "from": "Compare two real pricing plans, each written as y = mx + b, and decide which is better for a specific person. Find the exact point where the answer flips, and show your reasoning on a graph.",
+    "to": "Use the supplied hypothetical vendor prices to compare two linear cost models. Find the break-even point and state which is cheaper for the requested session lengths."
+  },
+  {
+    "resourceId": "le-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "Every straight line can be written as y = mx + b.",
+    "to": "Every nonvertical straight line can be written as y = mx + b."
+  },
+  {
+    "resourceId": "le-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "b is the y-intercept, the initial value: the cost before any weeks are used.",
+    "to": "b is the cost at zero weeks under the assumed billing rules."
+  },
+  {
+    "resourceId": "le-challenge",
+    "path": "data.coachHint",
+    "from": "Two equations, one crossing point. Everything the director needs is which side of that point the program lands on.",
+    "to": "A = 40x; B = 25x + 300. At 12 weeks: $480 versus $600. At 30: $1200 versus $1050. Equality at 20 weeks, $800. Week counts are nonnegative whole numbers; the lines show the model rule."
+  }
+]

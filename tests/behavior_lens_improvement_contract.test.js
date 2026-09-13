@@ -73,7 +73,7 @@ describe('Behavior Lens improvement contracts', () => {
     expect(guard.isCurrent(second)).toBe(true);
   });
 
-  it('extracts bounded workspace normalization into the focused runtime', () => {
+  it('preserves primary records while bounding auxiliary preferences in the focused runtime', () => {
     expect(source).not.toContain('function createBehaviorLensHydrationGuard');
     expect(source).not.toContain('BehaviorLens requires BehaviorLensWorkspace');
     expect(source).toContain('const BehaviorLensRuntimeBoundary = (props) =>');
@@ -84,9 +84,9 @@ describe('Behavior Lens improvement contracts', () => {
       teamNotes: Array.from({ length: 502 }, (_, index) => ({ index })),
       favorites: Array.from({ length: 102 }, (_, index) => String(index))
     });
-    expect(normalized.abcEntries).toHaveLength(5000);
-    expect(normalized.observationSessions).toHaveLength(1000);
-    expect(normalized.teamNotes).toHaveLength(500);
+    expect(normalized.abcEntries).toHaveLength(5002);
+    expect(normalized.observationSessions).toHaveLength(1002);
+    expect(normalized.teamNotes).toHaveLength(502);
     expect(normalized.favorites).toHaveLength(100);
   });
 

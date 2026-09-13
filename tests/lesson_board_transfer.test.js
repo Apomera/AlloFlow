@@ -30,8 +30,8 @@ describe('Portable lesson board files', () => {
   });
   it.each(['broken', '<script>alert(1)</script>'])('rejects non-JSON text %#', text => expect(() => transfer.parseBoardFile(text)).toThrow('board-file-format'));
   it('enforces both pre-read byte and post-read character limits', async () => {
-    for (const size of [0, -1, NaN, Infinity, 200001]) await expect(transfer.readBoardFile({ size, text: () => Promise.resolve('{}') })).rejects.toThrow('board-file-size');
-    await expect(transfer.readBoardFile({ size: 10, text: () => Promise.resolve('x'.repeat(60001)) })).rejects.toThrow('board-file-size');
+    for (const size of [0, -1, NaN, Infinity, transfer.MAX_BOARD_FILE_BYTES + 1]) await expect(transfer.readBoardFile({ size, text: () => Promise.resolve('{}') })).rejects.toThrow('board-file-size');
+    await expect(transfer.readBoardFile({ size: 10, text: () => Promise.resolve('x'.repeat(910001)) })).rejects.toThrow('board-file-size');
     await expect(transfer.readBoardFile({ size: 10, text: () => { throw Error('read failed'); } })).rejects.toThrow('read failed');
     await expect(transfer.readBoardFile({ size: 9000, text: () => Promise.resolve(JSON.stringify(pack())) })).resolves.toEqual(pack());
   });
@@ -67,11 +67,11 @@ describe('Saved copy replacement and resume descriptions', () => {
     store.setItem(key, 'broken'); expect(() => storage.replaceSavedBoard(store, source, 'English', old, old)).toThrow('kept'); expect(store.getItem(key)).toBe('broken');
   });
   it('describes resumed and unreadable saves without changing them', () => {
-    const store = memory(), board = makeBoard(), key = storage.soloStorageKey(board, 'app', 'u'), run = engine.merge(engine.emptyRun(), engine.begin(board, engine.emptyRun(), 'heater'));
-    expect(storage.soloStatus(store, board, 'app', 'u')).toBeNull();
+    const store = memory(), board = makeBoard(), key = storage.legacySoloStorageKey(board, 'app', 'u'), run = engine.merge(engine.emptyRun(), engine.begin(board, engine.emptyRun(), 'heater'));
+    expect(storage.soloStatus(store, board, 'app', 'u', store)).toBeNull();
     const raw = JSON.stringify({ version: 1, board: JSON.stringify(board), run }); store.setItem(key, raw);
-    expect(storage.soloStatus(store, board, 'app', 'u')).toEqual({ status: 'resume', turn: 1, concepts: 0, projects: 0 }); expect(store.getItem(key)).toBe(raw);
-    expect(storage.soloStatus(store, board, 'app', 'v')).toBeNull(); store.setItem(key, 'corrupt');
-    expect(storage.soloStatus(store, board, 'app', 'u')).toEqual({ status: 'unavailable' }); expect(store.getItem(key)).toBe('corrupt');
+    expect(storage.soloStatus(store, board, 'app', 'u', store)).toEqual({ status: 'resume', turn: 1, concepts: 0, projects: 0, legacy: true, savedAt: null }); expect(store.getItem(key)).toBe(raw);
+    expect(storage.soloStatus(store, board, 'app', 'v', store)).toBeNull(); store.setItem(key, 'corrupt');
+    expect(storage.soloStatus(store, board, 'app', 'u', store)).toEqual({ status: 'unavailable' }); expect(store.getItem(key)).toBe('corrupt');
   });
 });

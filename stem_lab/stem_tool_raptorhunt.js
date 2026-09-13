@@ -271,6 +271,8 @@
     '@media(forced-colors:active){.rh-collection-hero,.rh-collection-progress-card,.rh-collection-directory,.rh-collection-card,.rh-collection-card-icon,.rh-collection-progress-track{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-collection-kicker,.rh-collection-directory-kicker,.rh-collection-title,.rh-collection-desc,.rh-collection-progress-head,.rh-collection-progress-head strong,.rh-collection-progress-copy,.rh-collection-progress-copy strong,.rh-collection-next span,.rh-collection-next strong,.rh-collection-directory-head h2,.rh-collection-directory-head>span,.rh-collection-card-index,.rh-collection-card-copy strong,.rh-collection-card-copy>span,.rh-collection-card-status,.rh-collection-card-arrow{color:CanvasText}.rh-collection-progress-track>span{background:Highlight}.rh-collection-action{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-collection-card[data-section-state="next"],.rh-collection-card[data-section-state="visited"]{border-color:Highlight;}}'
   ].join('');
   st.textContent += "\n.rh-practice-toggle{position:absolute;right:12px;bottom:12px;z-index:24;min-height:42px;padding:9px 14px;border:1px solid #8eacb5;border-radius:8px;background:rgba(15,23,42,.86);color:#e5f5f3;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer}.rh-practice-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8}.rh-practice-toggle:focus-visible{outline:3px solid #f5d897;outline-offset:3px}.rh-practice-hud{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;max-width:calc(100% - 40px);padding:10px 20px;border:1px solid rgba(234,213,165,.4);border-radius:12px;background:rgba(11,24,33,.82);color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15)}.rh-practice-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-practice-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-practice-track{display:flex;justify-content:center;align-items:center;gap:7px;margin:8px 0}.rh-practice-track .rh-practice-pip{display:grid;place-items:center;width:22px;height:22px;margin:0;border:1px solid #788c96;border-radius:50%;font:600 10px/1 ui-monospace,monospace;color:#c4d2d7;background:#172a36}.rh-practice-pip[data-state=current]{border-color:#ffd18b!important;color:#ffe6b6!important;box-shadow:0 0 0 3px rgba(255,209,139,.13)}.rh-practice-pip[data-state=centered],.rh-practice-pip[data-state=passed]{border-color:#8ee4c0!important;background:#173d35!important;color:#bbffe3!important}.rh-practice-pip[data-state=missed]{border-color:#d5a896!important;color:#ffd1ba!important}.rh-practice-track .rh-practice-score{margin:0 0 0 5px;padding-left:10px;border-left:1px solid #647782;color:#ffe5af;font:600 11px/1.4 ui-sans-serif,system-ui;white-space:nowrap}.rh-practice-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-practice-hud{top:18px}[data-raptor-flight-trail=\"true\"] .rh-flight-reticle,[data-raptor-flight-trail=\"true\"] .rh-flight-target-cue,[data-raptor-flight-trail=\"true\"] .rh-flight-lock-meters,[data-raptor-flight-trail=\"true\"] .rh-flight-mission-hud{display:none!important}@media(max-width:760px){.rh-practice-toggle{bottom:64px;right:8px;padding:8px 10px;font-size:11px}[data-raptor-scenic-view=\"true\"] .rh-practice-toggle{bottom:12px}.rh-practice-hud{top:118px;width:245px;padding:8px 12px}}@media(forced-colors:active){.rh-practice-toggle,.rh-practice-hud{background:Canvas;color:CanvasText;border-color:CanvasText}}\n";
+    st.textContent += ".rh-practice-hud[data-complete=true]{width:340px;max-width:calc(100% - 32px);box-sizing:border-box;background:rgba(11,24,33,.96);border-color:#b89960;box-shadow:0 12px 32px rgba(0,0,0,.3)}.rh-practice-hud .rh-practice-best{font-size:11px;color:#bad6d6;margin-top:6px}.rh-practice-coach{margin:10px 0;color:#e4eceb;font:12px/1.5 system-ui}.rh-practice-actions{display:flex;flex-wrap:wrap;gap:8px;pointer-events:auto}.rh-practice-actions button{flex:1;min-height:42px;padding:8px 10px;border:1px solid #668788;border-radius:8px;background:#203b43;color:#f0f6f4;font:600 12px/1.35 system-ui;cursor:pointer}.rh-practice-actions button:first-child{background:#f2cd88;color:#182d33;border-color:#f2cd88}.rh-practice-actions button:hover{filter:brightness(1.12)}.rh-practice-actions button:focus-visible{outline:3px solid #fff;outline-offset:3px}.rh-practice-actions button:disabled{opacity:.55;cursor:default}.rh-practice-hud [hidden]{display:none!important}@media(forced-colors:active){.rh-practice-hud[data-complete=true],.rh-practice-actions button,.rh-practice-actions button:first-child{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-practice-hud .rh-practice-best,.rh-practice-coach{color:CanvasText}.rh-practice-actions button:focus-visible{outline-color:Highlight}}";
+  st.textContent += "@media(max-width:760px){[data-raptor-trail-result=true] .rh-practice-hud{top:78px}[data-raptor-trail-result=true][data-raptor-scenic-view=true] .rh-practice-hud{top:18px}[data-raptor-trail-result=true] .rh-flight-heading,[data-raptor-trail-result=true] .rh-flight-attitude,[data-raptor-trail-result=true] .rh-flight-state,[data-raptor-trail-result=true] .rh-flight-wind,[data-raptor-trail-result=true] .rh-flight-altitude-gauge,[data-raptor-trail-result=true] .rh-flight-mission-hud,[data-raptor-trail-result=true] .rh-flight-target-cue,[data-raptor-trail-result=true] .rh-flight-lock-meters,[data-raptor-trail-result=true] .rh-flight-reticle{display:none!important}}";
   st.textContent += "\n[data-raptor-perched=\"true\"] .rh-flight-mission-hud{display:none!important}.rh-perch-toggle{bottom:60px}.rh-perch-toggle:disabled{opacity:.68;cursor:default}.rh-perch-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-perch-hud{top:18px}.rh-perch-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-perch-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-perch-hud{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;border:1px solid;border-radius:12px;color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15);width:350px;max-width:calc(100% - 40px);padding:12px 18px;border-color:#a5baa0;background:rgba(16,32,30,.94)}.rh-perch-hud .rh-perch-keys{margin-top:8px;color:#f4dda8;font-weight:600}@media(max-width:760px){[data-raptor-perched=\"true\"] .rh-flight-heading,[data-raptor-perched=\"true\"] .rh-flight-attitude{display:none!important}.rh-perch-toggle{bottom:112px}[data-raptor-scenic-view=\"true\"] .rh-perch-toggle{bottom:60px}.rh-perch-hud{top:118px;width:270px}}\n";
   st.textContent += "\n.rh-scenic-toggle{position:absolute;z-index:24;left:12px;bottom:12px;min-height:40px;padding:9px 13px;border:1px solid #94a3b8;border-radius:8px;background:rgba(15,23,42,.82);color:#f1f5f9;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer;}\n.rh-scenic-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8;}\n[data-raptor-scenic-view=\"true\"] .rh-flight-telemetry-strip,[data-raptor-scenic-view=\"true\"] .rh-flight-key-guide,[data-raptor-scenic-view=\"true\"] .rh-flight-state,[data-raptor-scenic-view=\"true\"] .rh-flight-wind,[data-raptor-scenic-view=\"true\"] .rh-flight-heading,[data-raptor-scenic-view=\"true\"] .rh-flight-attitude,[data-raptor-scenic-view=\"true\"] .rh-flight-altitude-gauge,[data-raptor-scenic-view=\"true\"] .rh-flight-reticle,[data-raptor-scenic-view=\"true\"] .rh-flight-target-cue,[data-raptor-scenic-view=\"true\"] .rh-flight-lock-meters,[data-raptor-scenic-view=\"true\"] .rh-flight-marker,[data-raptor-scenic-view=\"true\"] .rh-flight-mission-hud{display:none!important;}\n@media(max-width:760px){.rh-scenic-toggle{bottom:64px;left:8px;min-height:40px;padding:8px;font-size:11px;}[data-raptor-scenic-view=\"true\"] .rh-scenic-toggle{bottom:12px;}}\n@media(forced-colors:active){.rh-scenic-toggle,.rh-scenic-toggle[aria-pressed=\"true\"]{background:ButtonFace;color:ButtonText;border-color:ButtonText;}}\n";
   st.textContent += `
@@ -380,7 +382,8 @@
     '.rh-flight-pause{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.72);backdrop-filter:blur(3px);pointer-events:none;}',
     '.rh-flight-pause[data-visible="true"]{display:flex;}',
     '.rh-flight-pause-card{border:2px solid #67e8f9;border-radius:14px;background:rgba(15,23,42,.96);padding:18px 24px;color:#ecfeff;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.4);}',
-    '.rh-flight-mission-hud{position:absolute;right:10px;bottom:12px;z-index:8;max-width:min(330px,48%);border:2px solid #fbbf24;border-radius:10px;background:rgba(15,23,42,.94);padding:9px 12px;color:#f8fafc;font:700 11px/1.35 ui-sans-serif,system-ui;pointer-events:none;}.rh-flight-mission-progress{display:block;}.rh-flight-mission-focus{display:block;margin-top:5px;padding-top:5px;border-top:1px solid rgba(251,191,36,.34);color:#fef3c7;font:800 9px/1.25 ui-sans-serif,system-ui;letter-spacing:.05em;text-transform:uppercase;}.rh-flight-mission-route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,.24);}.rh-flight-mission-route-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;color:#64748b;font:800 7px/1.05 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;text-align:center;}.rh-flight-mission-route-step:not(:last-child)::after{content:"";position:absolute;z-index:0;top:4px;left:calc(50% + 6px);right:calc(-50% + 2px);border-top:1px solid rgba(100,116,139,.45);}.rh-flight-mission-route-dot{position:relative;z-index:1;display:block;width:8px;height:8px;border:2px solid #475569;border-radius:50%;background:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.9);}.rh-flight-mission-route-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-mission-route-step[data-route-state="current"]{color:#fef3c7;}.rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fde68a;background:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.2),0 0 10px rgba(251,191,36,.58);}.rh-flight-mission-route-step[data-route-state="complete"]{color:#a7f3d0;}.rh-flight-mission-route-step[data-route-state="complete"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-step{color:#a7f3d0;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"]{color:#fecaca;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fca5a5;background:#f87171;}',
+    '.rh-flight-mission-hud{position:absolute;right:10px;top:104px;bottom:auto;z-index:8;max-width:min(330px,48%);border:2px solid #fbbf24;border-radius:10px;background:rgba(15,23,42,.94);padding:9px 12px;color:#f8fafc;font:700 11px/1.35 ui-sans-serif,system-ui;pointer-events:none;}.rh-flight-mission-progress{display:block;}.rh-flight-mission-focus{display:block;margin-top:5px;padding-top:5px;border-top:1px solid rgba(251,191,36,.34);color:#fef3c7;font:800 9px/1.25 ui-sans-serif,system-ui;letter-spacing:.05em;text-transform:uppercase;}.rh-flight-mission-route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,.24);}.rh-flight-mission-route-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;color:#64748b;font:800 7px/1.05 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;text-align:center;}.rh-flight-mission-route-step:not(:last-child)::after{content:"";position:absolute;z-index:0;top:4px;left:calc(50% + 6px);right:calc(-50% + 2px);border-top:1px solid rgba(100,116,139,.45);}.rh-flight-mission-route-dot{position:relative;z-index:1;display:block;width:8px;height:8px;border:2px solid #475569;border-radius:50%;background:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.9);}.rh-flight-mission-route-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-mission-route-step[data-route-state="current"]{color:#fef3c7;}.rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fde68a;background:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.2),0 0 10px rgba(251,191,36,.58);}.rh-flight-mission-route-step[data-route-state="complete"]{color:#a7f3d0;}.rh-flight-mission-route-step[data-route-state="complete"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-step{color:#a7f3d0;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"]{color:#fecaca;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fca5a5;background:#f87171;}',
+    '.rh-flight-mission-hud[data-hunt-step]{--hunt-accent:#8dd6df;border:1px solid var(--hunt-accent);background:linear-gradient(145deg,#102c35,#0b1722);box-shadow:0 6px 18px rgba(0,0,0,.16);}.rh-flight-mission-hud[data-hunt-step="success"],.rh-flight-mission-hud[data-hunt-step="strike"]{--hunt-accent:#9be7bb;}.rh-flight-mission-hud[data-hunt-step="reset"]{--hunt-accent:#f2d092;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-progress{font:700 9px/1.4 ui-sans-serif,system-ui;color:#c1d5dc;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-phase{display:block;margin-top:5px;font:800 12px/1.3 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;color:var(--hunt-accent);}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-focus{margin-top:5px;padding-top:0;border:0;font:500 10px/1.4 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;color:#e3edf0;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step{font-size:8px;color:#b2c4cd;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-label{font-size:8px;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step[data-route-state="current"]{color:#fff;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step[data-route-state="complete"]{color:#a7f3d0;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:var(--hunt-accent);background:var(--hunt-accent);box-shadow:0 0 0 2px rgba(141,214,223,.14);}',
     '.rh-flight-touch-hint{display:none;position:absolute;z-index:18;left:50%;bottom:22px;transform:translateX(-50%);align-items:center;gap:8px;padding:7px 10px;border:1px solid rgba(103,232,249,.58);border-radius:999px;background:rgba(2,6,23,.82);color:#ecfeff;box-shadow:0 8px 22px rgba(2,6,23,.28);font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;pointer-events:none;white-space:nowrap;}.rh-flight-touch-hint::before{content:"↔";display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border:1px solid rgba(103,232,249,.72);border-radius:50%;color:#67e8f9;font:900 12px/1 ui-sans-serif,system-ui;}.rh-flight-touch-hint-detail{color:#bae6fd;font:700 8px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:none;}.rh-flight-touch-hint[data-visible="true"]{display:inline-flex;}.rh-flight-touch-hint[data-visible="true"]::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(103,232,249,.22);border-radius:inherit;animation:rhTouchHintPulse 2.2s ease-in-out infinite;}@keyframes rhTouchHintPulse{0%,100%{opacity:.25;transform:scale(.98);}50%{opacity:.7;transform:scale(1.02);}}',
     '@media(max-width:760px){.rh-flight-mission-hud{max-width:min(360px,64%);}.rh-flight-mission-route-step{font-size:6px;}}@media(max-width:430px){.rh-flight-mission-hud{right:7px;bottom:8px;max-width:calc(100% - 14px);padding:8px 9px;}.rh-flight-mission-route{gap:2px;}.rh-flight-mission-route-label{font-size:6px;}}',
     '@media(pointer:fine){.rh-flight-touch-hint{display:none!important;}}@media(prefers-reduced-motion:reduce){.rh-flight-touch-hint[data-visible="true"]::after{animation:none;}}',
@@ -416,14 +419,20 @@
     '.rh-vision-field-track{position:relative;height:10px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-vision-field-total{position:relative;display:block;height:100%;max-width:100%;border-radius:inherit;background:linear-gradient(90deg,#64748b,#cbd5e1);}.rh-vision-field-row[data-vision-color="indigo"] .rh-vision-field-total{background:linear-gradient(90deg,#6366f1,#c4b5fd);}.rh-vision-field-row[data-vision-color="amber"] .rh-vision-field-total{background:linear-gradient(90deg,#d97706,#fcd34d);}.rh-vision-field-row[data-vision-color="orange"] .rh-vision-field-total{background:linear-gradient(90deg,#ea580c,#fdba74);}.rh-vision-field-row[data-vision-color="red"] .rh-vision-field-total{background:linear-gradient(90deg,#dc2626,#fca5a5);}.rh-vision-field-binocular{position:absolute;top:-2px;bottom:-2px;left:50%;display:block;min-width:4px;transform:translateX(-50%);border:1px solid #fef3c7;border-radius:999px;background:#fde047;box-shadow:0 0 0 1px rgba(15,23,42,.78),0 0 8px rgba(253,224,71,.68);}',
     '.rh-vision-field-values{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;color:#cbd5e1;font:800 9px/1.1 ui-monospace,Menlo,monospace;text-align:right;}.rh-vision-field-values strong{color:#fef3c7;}.rh-vision-field-note{color:#a5b4fc;font:700 9px/1.25 ui-sans-serif,system-ui;}@media(max-width:720px){.rh-vision-field-row{grid-template-columns:minmax(0,1fr) auto;}.rh-vision-field-track{grid-column:1/-1;grid-row:2;}.rh-vision-field-values{align-items:flex-end;}.rh-vision-field-note{font-size:8px;}}@media(max-width:430px){.rh-vision-field-head strong{font-size:11px;}.rh-vision-field-legend{gap:6px;font-size:8px;}.rh-vision-field-row{padding:7px;}.rh-vision-field-label strong{font-size:9px;}}@media(forced-colors:active){.rh-vision-field-map,.rh-vision-field-row,.rh-vision-field-track{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-vision-field-head,.rh-vision-field-head strong,.rh-vision-field-legend,.rh-vision-field-label strong,.rh-vision-field-label span,.rh-vision-field-values,.rh-vision-field-values strong,.rh-vision-field-note{color:CanvasText}.rh-vision-field-total{background:Highlight!important}.rh-vision-field-binocular{border-color:CanvasText;background:CanvasText;box-shadow:none}.rh-vision-field-swatch{border-color:CanvasText;background:Highlight}.rh-vision-field-swatch-binocular{background:CanvasText;}}',
     '.rh-flight-metric:last-child{border-right:0;}.rh-flight-metric-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-metric-value{display:block;margin-top:3px;color:#fff;font:800 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-flight-energy-bars{display:grid;gap:2px;margin-top:4px;}.rh-flight-energy-track{display:block;height:3px;border-radius:999px;background:rgba(15,23,42,.92);overflow:hidden;}.rh-flight-energy-fill{display:block;width:0;height:100%;border-radius:inherit;transition:width .16s linear,background-color .16s linear;}.rh-flight-energy-fill-calories{background:#fbbf24;}.rh-flight-energy-fill-stamina{background:#67e8f9;}.rh-flight-metric[data-energy-state="low"] .rh-flight-energy-fill-calories{background:#fb923c;}.rh-flight-metric[data-energy-state="critical"] .rh-flight-energy-fill-calories{background:#f87171;}.rh-flight-metric[data-energy-state="fatigued"] .rh-flight-energy-fill-stamina{background:#facc15;}',
-    '.rh-flight-readout{display:grid;gap:9px;padding:10px 12px;border-top:1px solid rgba(103,232,249,.35);border-bottom:1px solid rgba(100,116,139,.45);background:linear-gradient(100deg,rgba(8,47,73,.78),rgba(2,6,23,.96));color:#e0f2fe;}.rh-flight-readout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;}.rh-flight-readout-kicker{color:#67e8f9;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-flight-readout-title{display:block;margin-top:3px;color:#f8fafc;font:900 12px/1.2 ui-sans-serif,system-ui;}.rh-flight-readout-copy{margin-top:2px;color:#94a3b8;font:600 10px/1.3 ui-sans-serif,system-ui;}.rh-flight-readout-state{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:4px 8px;border:1px solid rgba(103,232,249,.5);border-radius:999px;background:rgba(8,47,73,.72);color:#cffafe;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}.rh-flight-readout-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#67e8f9;box-shadow:0 0 8px currentColor;}.rh-flight-readout-state[data-readout-state="paused"]{border-color:rgba(148,163,184,.72);background:rgba(51,65,85,.65);color:#e2e8f0;}.rh-flight-readout-state[data-readout-state="paused"]::before{background:#cbd5e1;}.rh-flight-readout-state[data-readout-state="success"]{border-color:rgba(52,211,153,.72);background:rgba(6,78,59,.58);color:#d1fae5;}.rh-flight-readout-state[data-readout-state="success"]::before{background:#34d399;}.rh-flight-readout-state[data-readout-state="failed"]{border-color:rgba(248,113,113,.75);background:rgba(127,29,29,.56);color:#fee2e2;}.rh-flight-readout-state[data-readout-state="failed"]::before{background:#f87171;}.rh-flight-readout-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;}.rh-flight-readout-item{min-width:0;padding:7px 8px;border:1px solid rgba(100,116,139,.48);border-radius:8px;background:rgba(2,6,23,.42);}.rh-flight-readout-item[data-readout-kind="target"]{border-color:rgba(251,191,36,.46);}.rh-flight-readout-item[data-readout-kind="strike"]{border-color:rgba(52,211,153,.42);}.rh-flight-readout-label{display:block;color:#a5f3fc;font:800 8px/1.1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-readout-value{display:block;margin-top:3px;color:#f8fafc;font:900 11px/1.15 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-readout-detail{display:block;margin-top:3px;color:#94a3b8;font:600 9px/1.2 ui-sans-serif,system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-readout-lock{display:grid;gap:5px;padding:7px 8px;border:1px solid rgba(167,139,250,.3);border-radius:8px;background:rgba(49,46,129,.2);}.rh-flight-readout-lock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#c4b5fd;font:800 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-readout-lock-head strong{color:#f5f3ff;font:900 10px/1 ui-monospace,Menlo,monospace;letter-spacing:0;text-transform:none;}.rh-flight-readout-lock-row{display:grid;grid-template-columns:42px minmax(0,1fr) 34px;align-items:center;gap:6px;color:#cbd5e1;font:800 8px/1 ui-sans-serif,system-ui;text-transform:uppercase;}.rh-flight-readout-lock-track{height:6px;border:1px solid rgba(148,163,184,.5);border-radius:999px;background:rgba(2,6,23,.72);overflow:hidden;}.rh-flight-readout-lock-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#4ade80);transition:width .16s linear;}.rh-flight-readout-lock-row output{color:#f8fafc;font:900 9px/1 ui-monospace,Menlo,monospace;text-align:right;}.dark [data-raptorhunt-root="true"] .rh-flight-readout{border-color:rgba(103,232,249,.35);}.dark [data-raptorhunt-root="true"] .rh-flight-readout-copy,.dark [data-raptorhunt-root="true"] .rh-flight-readout-detail{color:#a5b4c8;}@media(max-width:760px){.rh-flight-readout{padding:9px 10px;}.rh-flight-readout-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-readout-value{font-size:10px;}}@media(max-width:430px){.rh-flight-readout-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-flight-readout-lock-row{grid-template-columns:38px minmax(0,1fr) 30px;gap:5px;}.rh-flight-readout-copy{font-size:9px;}.rh-flight-readout-state{font-size:8px;}}@media(prefers-reduced-motion:reduce){.rh-flight-readout-lock-fill{transition:none;}}@media(forced-colors:active){.rh-flight-readout,.rh-flight-readout-item,.rh-flight-readout-lock{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-readout-kicker,.rh-flight-readout-title,.rh-flight-readout-copy,.rh-flight-readout-label,.rh-flight-readout-value,.rh-flight-readout-detail,.rh-flight-readout-lock-head,.rh-flight-readout-lock-head strong,.rh-flight-readout-lock-row,.rh-flight-readout-lock-row output{color:CanvasText}.rh-flight-readout-state{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-readout-lock-track{border-color:CanvasText;background:Canvas}.rh-flight-readout-lock-fill{background:Highlight!important;}}',
+    '.rh-flight-readout{display:grid;gap:9px;padding:10px 12px;border-top:1px solid rgba(103,232,249,.35);border-bottom:1px solid rgba(100,116,139,.45);background:linear-gradient(100deg,rgba(8,47,73,.78),rgba(2,6,23,.96));color:#e0f2fe;}.rh-flight-readout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;}.rh-flight-readout-kicker{color:#67e8f9;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-flight-readout-title{display:block;margin-top:3px;color:#f8fafc;font:900 12px/1.2 ui-sans-serif,system-ui;}.rh-flight-readout-copy{margin-top:2px;color:#94a3b8;font:600 10px/1.3 ui-sans-serif,system-ui;}.rh-flight-readout-state{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:4px 8px;border:1px solid rgba(103,232,249,.5);border-radius:999px;background:rgba(8,47,73,.72);color:#cffafe;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}.rh-flight-readout-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#67e8f9;box-shadow:0 0 8px currentColor;}.rh-flight-readout-state[data-readout-state="paused"]{border-color:rgba(148,163,184,.72);background:rgba(51,65,85,.65);color:#e2e8f0;}.rh-flight-readout-state[data-readout-state="paused"]::before{background:#cbd5e1;}.rh-flight-readout-state[data-readout-state="success"]{border-color:rgba(52,211,153,.72);background:rgba(6,78,59,.58);color:#d1fae5;}.rh-flight-readout-state[data-readout-state="success"]::before{background:#34d399;}.rh-flight-readout-state[data-readout-state="failed"]{border-color:rgba(248,113,113,.75);background:rgba(127,29,29,.56);color:#fee2e2;}.rh-flight-readout-state[data-readout-state="failed"]::before{background:#f87171;}.rh-flight-readout-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;}.rh-flight-readout-item{min-width:0;padding:7px 8px;border:1px solid rgba(100,116,139,.48);border-radius:8px;background:rgba(2,6,23,.42);}.rh-flight-readout-item[data-readout-kind="target"]{border-color:rgba(251,191,36,.46);}.rh-flight-readout-item[data-readout-kind="strike"]{border-color:rgba(52,211,153,.42);}.rh-flight-readout-label{display:block;color:#a5f3fc;font:800 8px/1.1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-readout-value{display:block;margin-top:3px;color:#f8fafc;font:900 11px/1.15 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-readout-detail{display:block;margin-top:3px;color:#94a3b8;font:600 9px/1.4 ui-sans-serif,system-ui;white-space:normal;overflow-wrap:anywhere;}.rh-flight-readout-lock{display:grid;gap:5px;padding:7px 8px;border:1px solid rgba(167,139,250,.3);border-radius:8px;background:rgba(49,46,129,.2);}.rh-flight-readout-lock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#c4b5fd;font:800 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-readout-lock-head strong{color:#f5f3ff;font:900 10px/1 ui-monospace,Menlo,monospace;letter-spacing:0;text-transform:none;}.rh-flight-readout-lock-row{display:grid;grid-template-columns:42px minmax(0,1fr) 34px;align-items:center;gap:6px;color:#cbd5e1;font:800 8px/1 ui-sans-serif,system-ui;text-transform:uppercase;}.rh-flight-readout-lock-track{height:6px;border:1px solid rgba(148,163,184,.5);border-radius:999px;background:rgba(2,6,23,.72);overflow:hidden;}.rh-flight-readout-lock-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#4ade80);transition:width .16s linear;}.rh-flight-readout-lock-row output{color:#f8fafc;font:900 9px/1 ui-monospace,Menlo,monospace;text-align:right;}.dark [data-raptorhunt-root="true"] .rh-flight-readout{border-color:rgba(103,232,249,.35);}.dark [data-raptorhunt-root="true"] .rh-flight-readout-copy,.dark [data-raptorhunt-root="true"] .rh-flight-readout-detail{color:#a5b4c8;}@media(max-width:760px){.rh-flight-readout{padding:9px 10px;}.rh-flight-readout-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-readout-value{font-size:10px;}}@media(max-width:430px){.rh-flight-readout-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-flight-readout-lock-row{grid-template-columns:38px minmax(0,1fr) 30px;gap:5px;}.rh-flight-readout-copy{font-size:9px;}.rh-flight-readout-state{font-size:8px;}}@media(prefers-reduced-motion:reduce){.rh-flight-readout-lock-fill{transition:none;}}@media(forced-colors:active){.rh-flight-readout,.rh-flight-readout-item,.rh-flight-readout-lock{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-readout-kicker,.rh-flight-readout-title,.rh-flight-readout-copy,.rh-flight-readout-label,.rh-flight-readout-value,.rh-flight-readout-detail,.rh-flight-readout-lock-head,.rh-flight-readout-lock-head strong,.rh-flight-readout-lock-row,.rh-flight-readout-lock-row output{color:CanvasText}.rh-flight-readout-state{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-readout-lock-track{border-color:CanvasText;background:Canvas}.rh-flight-readout-lock-fill{background:Highlight!important;}}',
     '.rh-flight-metric[data-raptor-weather="true"]{transition:background-color .25s,border-color .25s;}.rh-flight-metric[data-raptor-weather="true"][data-day-period="night"]{background:rgba(49,46,129,.28);}.rh-flight-metric[data-raptor-weather="true"][data-day-period="dawn"],.rh-flight-metric[data-raptor-weather="true"][data-day-period="dusk"]{background:rgba(120,53,15,.24);}.rh-flight-metric[data-raptor-weather="true"][data-cloud-band="overcast"]{border-bottom:2px solid rgba(148,163,184,.8);}.rh-flight-metric[data-raptor-weather="true"][data-precipitation="rain"]{border-bottom:2px solid rgba(56,189,248,.85);}.rh-flight-metric[data-raptor-weather="true"][data-precipitation="snow"]{border-bottom:2px solid rgba(226,232,240,.95);}.rh-flight-metric[data-raptor-mission-metric="true"][data-mission-state="success"]{background:rgba(6,78,59,.45);}.rh-flight-metric[data-raptor-mission-metric="true"][data-mission-state="failed"]{background:rgba(127,29,29,.42);}',
     '.rh-flight-settings{position:relative;}.rh-flight-settings>summary{list-style:none;}.rh-flight-settings>summary::-webkit-details-marker{display:none;}.rh-flight-settings-panel{position:absolute;right:0;bottom:calc(100% + 10px);z-index:30;display:flex;flex-wrap:wrap;gap:8px;width:min(330px,calc(100vw - 24px));padding:10px;border:1px solid #67e8f9;border-radius:11px;background:rgba(2,6,23,.98);box-shadow:0 18px 50px rgba(0,0,0,.45);}.rh-flight-quality{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 100%;color:#cffafe;font:800 11px/1.2 ui-sans-serif,system-ui;}.rh-flight-quality select{min-height:44px;border:1px solid #67e8f9;border-radius:9px;background:#0f172a;padding:8px 30px 8px 10px;color:#fff;font:800 12px/1.2 ui-sans-serif,system-ui;}',
     '.rh-flight-performance{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:1 1 100%;padding:7px 8px;border:1px solid rgba(100,116,139,.65);border-radius:8px;background:rgba(15,23,42,.7);color:#cbd5e1;font:800 10px/1.2 ui-sans-serif,system-ui;}.rh-flight-performance[data-performance-state="good"]{border-color:rgba(52,211,153,.75);color:#bbf7d0;}.rh-flight-performance[data-performance-state="warn"]{border-color:rgba(251,191,36,.85);color:#fef3c7;}.rh-flight-performance-label{color:#a5f3fc;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-performance-value{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;}',
     '.rh-flight-performance-help{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:1 1 100%;padding:7px 8px;border:1px solid rgba(251,191,36,.64);border-radius:8px;background:rgba(120,53,15,.28);color:#fef3c7;font:700 9px/1.25 ui-sans-serif,system-ui;}.rh-flight-performance-help-copy{min-width:0;}.rh-flight-performance-help-action{flex:0 0 auto;min-height:24px;padding:4px 7px;border:1px solid rgba(251,191,36,.72);border-radius:6px;background:rgba(146,64,14,.52);color:#fffbeb;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;}.rh-flight-performance-help-action:hover{border-color:#fde68a;background:#b45309;}.rh-flight-performance-help-action:focus-visible{outline:2px solid #67e8f9;outline-offset:2px;}',
-    '.rh-flight-result{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.66);backdrop-filter:blur(4px);}.rh-flight-result-card{max-width:460px;border:2px solid #fbbf24;border-radius:16px;background:rgba(15,23,42,.98);padding:22px;color:#f8fafc;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5);}.rh-flight-debrief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 16px;text-align:left;}.rh-flight-debrief-stat{min-width:0;padding:7px 8px;border:1px solid rgba(100,116,139,.6);border-radius:8px;background:rgba(2,6,23,.48);}.rh-flight-debrief-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.07em;}.rh-flight-debrief-value{display:block;margin-top:3px;color:#fff;font:900 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '.rh-flight-result{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(2,6,23,.72);backdrop-filter:blur(4px);box-sizing:border-box;}.rh-flight-result-card{display:flex;flex-direction:column;width:100%;max-width:460px;max-height:100%;min-height:0;overflow:hidden;box-sizing:border-box;border:1px solid #e4ba73;border-radius:16px;background:linear-gradient(145deg,#142c35,#0c1726);color:#f8fafc;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5);}.rh-flight-result[data-raptor-flight-result="success"] .rh-flight-result-card{border-color:#86d8b0;}.rh-flight-result-head{flex:none;padding:16px 20px 12px;border-bottom:1px solid rgba(148,163,184,.2);}.rh-flight-result-emblem{font-size:28px;line-height:1.2;margin-bottom:6px;}.rh-flight-result-title{font:800 21px/1.2 ui-sans-serif,system-ui;color:#fde4b4;}.rh-flight-result[data-raptor-flight-result="success"] .rh-flight-result-title{color:#b6f2d2;}.rh-flight-result-message{margin:8px 0 0;font:500 12px/1.5 ui-sans-serif,system-ui;color:#d0dde5;}.rh-flight-result-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:16px 18px 0;text-align:left;}.rh-flight-result-body:focus-visible{outline:2px solid #8dd6df;outline-offset:-3px;}.rh-flight-result-actions{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 18px;border-top:1px solid rgba(148,163,184,.24);background:rgba(5,17,28,.94);}.rh-flight-next-preview{grid-column:1/-1;min-width:0;text-align:left;padding-bottom:4px;}.rh-flight-next-preview-title{display:block;color:#c3d9e2;font:500 10px/1.4 ui-sans-serif,system-ui;}.rh-flight-next-preview-title strong{color:#f0f8fa;font-weight:800;}.rh-flight-next-preview-detail{display:block;margin-top:2px;color:#a9c7d5;font:500 10px/1.4 ui-sans-serif,system-ui;}.rh-flight-result-actions .rh-flight-btn{min-width:0;min-height:40px;white-space:normal;justify-content:center;}.rh-flight-result-actions .rh-flight-btn-primary{background:#b6f2d2;border-color:#b6f2d2;color:#102c29;}@media(max-width:430px){.rh-flight-result-head{padding:12px 14px 10px;}.rh-flight-result-body{padding:12px 10px 0;}.rh-flight-result-actions{padding:10px;grid-template-columns:repeat(2,minmax(0,1fr));}.rh-flight-result-actions .rh-flight-btn-primary{grid-column:1/-1;}.rh-flight-result-title{font-size:19px;}.rh-flight-result-message{font-size:11px;}}.rh-flight-debrief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 16px;text-align:left;}.rh-flight-debrief-stat{min-width:0;padding:7px 8px;border:1px solid rgba(100,116,139,.6);border-radius:8px;background:rgba(2,6,23,.48);}.rh-flight-debrief-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.07em;}.rh-flight-debrief-value{display:block;margin-top:3px;color:#fff;font:900 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.rh-flight-coach{position:absolute;left:10px;bottom:12px;z-index:18;width:min(330px,calc(100% - 20px));border:2px solid #67e8f9;border-radius:12px;background:rgba(2,6,23,.95);padding:12px;color:#f8fafc;box-shadow:0 14px 40px rgba(0,0,0,.4);}.rh-flight-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a5f3fc;font:800 11px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-flight-coach-title{margin-top:5px;color:#fff;font:800 15px/1.25 ui-sans-serif,system-ui;}.rh-flight-coach-copy{margin-top:4px;color:#dbeafe;font:600 12px/1.4 ui-sans-serif,system-ui;}.rh-flight-coach-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;}.rh-flight-target-cue{position:absolute;left:50%;top:58px;z-index:14;transform:translateX(-50%);max-width:calc(100% - 24px);border:1px solid #fca5a5;border-radius:9px;background:rgba(15,23,42,.9);padding:6px 10px;color:#fee2e2;font:800 11px/1.25 ui-sans-serif,system-ui;text-align:center;pointer-events:none;}.rh-flight-target-cue[data-target-state="search"]{border-color:#67e8f9;color:#cffafe;background:rgba(8,47,73,.94);}.rh-flight-target-cue[data-target-state="recovering"]{border-color:#fbbf24;color:#fef3c7;background:rgba(120,53,15,.94);}.rh-flight-target-cue[data-target-state="off"]{border-color:#94a3b8;color:#e2e8f0;background:rgba(15,23,42,.92);}.rh-flight-target-cue[data-target-state="ready"]{border-color:#86efac;color:#dcfce7;background:rgba(20,83,45,.94);}.rh-flight-target-cue[data-target-state="close"]{border-color:#fde047;color:#fef9c3;}.rh-flight-target-cue[data-target-state="stoop"]{border-color:#67e8f9;color:#cffafe;background:rgba(8,51,68,.94);}.rh-flight-lock-meters{position:absolute;left:50%;top:106px;z-index:14;transform:translateX(-50%);display:flex;flex-direction:column;gap:3px;width:min(190px,calc(100% - 28px));pointer-events:none;}.rh-lock-meter{display:flex;align-items:center;gap:6px;}.rh-lock-meter-label{flex:0 0 40px;color:#e2e8f0;font:800 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-shadow:0 1px 3px rgba(0,0,0,.9);}.rh-lock-meter-track{position:relative;flex:1 1 auto;height:6px;border-radius:999px;background:rgba(15,23,42,.85);border:1px solid rgba(148,163,184,.55);overflow:hidden;}.rh-lock-meter-fill{display:block;height:100%;border-radius:999px;background:#fbbf24;transition:width .12s linear;}.rh-lock-meter-fill[data-full="true"]{background:#4ade80;}.rh-flight-reticle{position:absolute;left:50%;top:50%;z-index:13;width:74px;height:74px;transform:translate(-50%,-50%);pointer-events:none;opacity:.78;transition:opacity .15s linear,transform .15s ease-out;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.95)) drop-shadow(0 0 3px rgba(0,0,0,.5));}.rh-flight-reticle[data-target-state="ready"]{opacity:1;transform:translate(-50%,-50%) scale(.86);}.rh-flight-reticle[data-target-state="off"]{opacity:.28;}.rh-reticle-ring{position:absolute;inset:12px;border:2px solid rgba(248,250,252,.92);border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.65);}.rh-reticle-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:rgba(226,232,240,.95);box-shadow:0 0 4px rgba(0,0,0,.8);}.rh-reticle-tick{position:absolute;background:rgba(248,250,252,.92);box-shadow:0 0 4px rgba(0,0,0,.75);}.rh-reticle-tick-n,.rh-reticle-tick-s{left:50%;width:2px;height:9px;margin-left:-1px;}.rh-reticle-tick-n{top:0;}.rh-reticle-tick-s{bottom:0;}.rh-reticle-tick-e,.rh-reticle-tick-w{top:50%;height:2px;width:9px;margin-top:-1px;}.rh-reticle-tick-w{left:0;}.rh-reticle-tick-e{right:0;}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-ring{border-color:#67e8f9;box-shadow:0 0 10px rgba(103,232,249,.55);}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-tick{background:#67e8f9;}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-dot{background:#67e8f9;}.rh-flight-reticle[data-target-state="close"] .rh-reticle-ring,.rh-flight-reticle[data-target-state="align"] .rh-reticle-ring{border-color:#fbbf24;}.rh-flight-reticle[data-target-state="close"] .rh-reticle-tick,.rh-flight-reticle[data-target-state="align"] .rh-reticle-tick{background:#fbbf24;}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-ring{border-color:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.65);}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-tick{background:#4ade80;}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-dot{background:#4ade80;}.rh-flight-acuity{position:absolute;inset:0;z-index:12;pointer-events:none;}.rh-acuity-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 38%,rgba(0,0,0,.34) 72%,rgba(0,0,0,.62) 100%);}.rh-acuity-bracket{position:absolute;width:26px;height:26px;border:2px solid rgba(125,211,252,.85);}.rh-acuity-bracket-tl{top:14px;left:14px;border-right:0;border-bottom:0;}.rh-acuity-bracket-tr{top:14px;right:14px;border-left:0;border-bottom:0;}.rh-acuity-bracket-bl{bottom:14px;left:14px;border-right:0;border-top:0;}.rh-acuity-bracket-br{bottom:14px;right:14px;border-left:0;border-top:0;}.rh-acuity-badge{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);color:#e0f2fe;background:rgba(8,47,73,.82);border:1px solid rgba(125,211,252,.7);border-radius:999px;padding:3px 10px;font:800 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.08em;}',
     '.rh-flight-reticle[data-offscreen="true"]::after{content:"";position:absolute;left:50%;top:50%;width:0;height:0;transform:translate(-50%,-50%);border:7px solid transparent;filter:drop-shadow(0 0 2px rgba(0,0,0,.9));}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="left"]::after{left:-7px;border-right-color:currentColor;}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="right"]::after{left:calc(100% + 7px);border-left-color:currentColor;}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="top"]::after{top:-7px;border-bottom-color:currentColor;}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="bottom"]::after{top:calc(100% + 7px);border-top-color:currentColor;}.rh-flight-reticle[data-offscreen="true"]{color:#f87171;}.rh-flight-reticle[data-offscreen="true"][data-lock-state="close"]{color:#fbbf24;}.rh-flight-reticle[data-offscreen="true"][data-lock-state="ready"]{color:#4ade80;}',
+    '[data-raptor-flight-mission=thermalKettle] .rh-flight-marker,[data-raptor-flight-mission=thermalKettle] .rh-flight-reticle,[data-raptor-flight-mission=thermalKettle] .rh-target-tracker{display:none!important;}',
+    '@media(min-width:761px){[data-raptor-flight-mission=thermalKettle] .rh-flight-target-cue{top:74px;}}',
+    '.rh-flight-target-cue[data-target-state=soar]{border-color:#67e8f9;color:#cffafe;background:rgba(8,47,73,.92);}.rh-flight-target-cue[data-target-state=lift]{border-color:#6ee7b7;color:#d1fae5;background:rgba(6,78,59,.92);}',
+    '.rh-flight-mission-hud[data-stoop-readiness=ready]{border-color:#6ee7b7;}.rh-flight-mission-hud[data-stoop-readiness=ready] .rh-flight-mission-focus{color:#d1fae5;}.rh-flight-mission-hud[data-stoop-readiness=ready] .rh-flight-mission-meter-fill{background:#6ee7b7;}',
+    '@media(max-width:760px){.rh-flight-altitude-gauge{display:none;}}',
+    '.rh-flight-mission-clock{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;padding:5px 7px;border:1px solid #486975;border-radius:6px;background:#0a202c;color:#c6e4ed;font:700 10px/1.3 ui-sans-serif,system-ui;}.rh-flight-mission-clock strong{flex-shrink:0;color:#f0faff;font:800 12px/1 ui-monospace,monospace;font-variant-numeric:tabular-nums;}.rh-flight-mission-clock[data-clock-state=low]{border-color:#d5a850;color:#fde6ae;background:#322718;}.rh-flight-mission-clock[data-clock-state=urgent]{border-color:#ee9c88;color:#ffd6ca;background:#3a2020;}.rh-flight-mission-clock[data-clock-state=paused],.rh-flight-mission-clock[data-clock-state=ended]{border-color:#64748b;color:#cbd5e1;background:#182330;}',
     '.rh-flight-marker{position:absolute;left:50%;top:50%;z-index:7;width:88px;height:32px;transform:translate(-50%,-50%);pointer-events:none;}',
     '.rh-flight-marker::before{content:"";position:absolute;left:0;right:0;top:15px;border-top:2px solid rgba(254,240,138,.9);box-shadow:0 1px 3px rgba(0,0,0,.8);}',
     '.rh-flight-marker::after{content:"";position:absolute;left:43px;top:5px;height:20px;border-left:2px solid rgba(254,240,138,.95);}',
@@ -436,8 +445,12 @@
     '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:calc(50% - 12px);}.rh-flight-wind{max-width:calc(47% - 8px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-altitude-gauge{right:7px;top:58%;}.rh-flight-lock-meters{left:8px;transform:none;top:184px;width:min(190px,calc(50% - 16px));}.rh-flight-altitude-track{height:96px;}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}}',
     '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;left:8px;right:8px;transform:none;max-width:none;width:auto;}.rh-flight-metric{min-width:0;flex:1 1 0;padding:6px 4px;overflow:hidden;}.rh-flight-metric-value{font-size:11px;}.rh-flight-metric:nth-child(6){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-reticle{transition:none;}.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%);}}@media(max-width:760px){.rh-flight-species-profile{grid-template-columns:1fr;gap:9px;}.rh-flight-species-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-lock-meters{top:176px;width:min(160px,calc(50% - 14px));}.rh-flight-mission-hud{top:91px;font-size:10px;max-width:calc(48% - 10px);}.rh-flight-wind{font-size:8px;letter-spacing:0;}.rh-flight-altitude-gauge{right:5px;}.rh-flight-altitude-label{font-size:7px;}.rh-flight-altitude-track{height:84px;width:7px;}.rh-flight-altitude-value{font-size:8px;min-width:30px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}.rh-flight-species-profile-grid{gap:5px;}.rh-flight-species-profile-stat{padding:6px;}.rh-flight-debrief{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+    '@media(max-width:760px){[data-raptor-flight-stage]{min-height:460px;}[data-raptor-flight-stage] .rh-flight-target-cue{top:64px;left:max(144px,calc(47% + 10px));right:8px;max-width:none;transform:none;box-sizing:border-box;padding:5px 7px;font-size:10px;line-height:1.3;overflow-wrap:anywhere;}[data-raptor-flight-stage] .rh-flight-mission-hud{top:104px;}}',
+    '@media(max-width:430px){.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-label{font-size:6px;letter-spacing:0;}}',
     '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4),.rh-flight-metric:nth-child(6){display:none;}.rh-flight-metric-value{font-size:12px;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-metric[data-raptor-weather="true"]{transition:none;}.rh-flight-energy-fill{transition:none;}.rh-flight-pause{backdrop-filter:none;}}',
+    ".rh-flight-strike-review{display:flex;align-items:flex-start;gap:12px;margin:0 12px 14px;padding:14px;border:1px solid #9d7951;border-radius:12px;background:#182b32;color:#eef5f2}.rh-flight-strike-review[data-raptor-strike-review=hit]{border-color:#568f7f}.rh-strike-review-mark{display:grid;place-items:center;flex:0 0 32px;height:32px;border-radius:50%;border:1px solid #c6a477;background:#443d2e;color:#ffe2ad;font:700 17px/1 system-ui}.rh-flight-strike-review[data-raptor-strike-review=hit] .rh-strike-review-mark{background:#203f35;border-color:#8ecab0;color:#beefcf}.rh-strike-review-copy{min-width:0}.rh-strike-review-kicker{color:#bad1ce;font:600 10px/1.4 system-ui;text-transform:uppercase;letter-spacing:.12em}.rh-strike-review-copy strong{display:block;margin-top:3px;font:650 15px/1.4 system-ui;color:#fff0cf}.rh-strike-review-copy p{margin:5px 0 0;font:13px/1.5 system-ui;overflow-wrap:anywhere}.rh-strike-review-copy .rh-strike-review-tip{color:#bed3cf;font-size:12px}@media(max-width:520px){.rh-flight-strike-review{margin:0 8px 10px;padding:12px;gap:10px}}@media(forced-colors:active){.rh-flight-strike-review,.rh-flight-strike-review[data-raptor-strike-review=hit],.rh-strike-review-mark,.rh-flight-strike-review[data-raptor-strike-review=hit] .rh-strike-review-mark{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-strike-review-copy strong,.rh-strike-review-kicker,.rh-strike-review-copy .rh-strike-review-tip{color:CanvasText}}",
+    ".rh-flight-pause{z-index:30;align-items:flex-start;padding:16px;box-sizing:border-box;background:rgba(2,6,23,.16);backdrop-filter:none}.rh-flight-pause-card{width:340px;max-width:100%;box-sizing:border-box;border:1px solid #93bcb7;border-radius:14px;padding:16px;background:#0c1d24;pointer-events:auto}.rh-pause-title{display:block;font:700 17px/1.4 system-ui;color:#fff0cf}.rh-flight-pause-card p{margin:7px 0;color:#d4e3e1;font:12px/1.45 system-ui}.rh-flight-pause-card .rh-pause-hint{font-size:11px;color:#b7d2cf}.rh-flight-pause-card button{min-height:42px;border:1px solid #668788;border-radius:8px;padding:8px 12px;font:600 12px/1.35 system-ui;background:#203b43;color:#f0f6f4;cursor:pointer}.rh-flight-pause-card .rh-pause-resume{width:100%;margin-top:6px;background:#f2cd88;color:#182d33;border-color:#f2cd88}.rh-pause-views{display:flex;gap:8px;margin-top:8px}.rh-pause-views button{flex:1}.rh-pause-views button[aria-pressed=true]{border-color:#f2cd88;color:#ffe5af}.rh-flight-pause-card button:focus-visible{outline:3px solid #fff;outline-offset:3px}.rh-flight-pause-card button:hover{filter:brightness(1.1)}@media(forced-colors:active){.rh-flight-pause-card,.rh-flight-pause-card button,.rh-flight-pause-card .rh-pause-resume{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-flight-pause-card p,.rh-pause-title,.rh-flight-pause-card .rh-pause-hint,.rh-pause-views button[aria-pressed=true]{color:CanvasText}.rh-flight-pause-card button:focus-visible{outline-color:Highlight}}",
     '.rh-flight-mission-meter-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;color:#cbd5e1;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-mission-meter-label-value{color:#fef3c7;font-variant-numeric:tabular-nums;letter-spacing:.04em;}.rh-flight-mission-meter-label[data-progress-state="success"] .rh-flight-mission-meter-label-value{color:#6ee7b7;}.rh-flight-mission-meter-label[data-progress-state="failed"] .rh-flight-mission-meter-label-value{color:#fca5a5;}.rh-flight-mission-phase{display:block;margin-top:4px;color:#a5f3fc;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-mission-phase[data-phase-state="success"]{color:#6ee7b7;}.rh-flight-mission-phase[data-phase-state="failed"]{color:#fca5a5;}.rh-flight-mission-meter{display:block;height:4px;margin-top:4px;border-radius:999px;background:#0f172a;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(148,163,184,.18);}.rh-flight-mission-meter-fill{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#34d399);transition:width .22s ease,background-color .22s ease;}.rh-flight-mission-meter[data-progress-state="success"] .rh-flight-mission-meter-fill{background:#34d399;}.rh-flight-mission-meter[data-progress-state="failed"] .rh-flight-mission-meter-fill{background:#f87171;}'
     ,'.rh-flight-btn[data-raptor-cue="primary"]{border-color:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.55);color:#fef3c7;}.rh-flight-btn[data-raptor-cue="secondary"]{border-color:rgba(103,232,249,.85);box-shadow:0 0 0 1px rgba(103,232,249,.3);}@media(forced-colors:active){.rh-flight-btn[data-raptor-cue="primary"],.rh-flight-btn[data-raptor-cue="secondary"]{border-color:Highlight;box-shadow:none;}}'
   ].join('');
@@ -631,9 +644,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     var a = raptorKeyLabel(schemeId, actionA), b = raptorKeyLabel(schemeId, actionB);
     return a && b ? a + '/' + b : a || b;
   }
+  // Display glyphs and abbreviations are separate from the key names exposed to assistive tools.
+  function raptorAriaKey(key) {
+    return ({' ': 'Space', escape: 'Escape', enter: 'Enter', shift: 'Shift',
+      arrowleft: 'ArrowLeft', arrowright: 'ArrowRight', arrowup: 'ArrowUp', arrowdown: 'ArrowDown',
+      pageup: 'PageUp', pagedown: 'PageDown', tab: 'Tab', backspace: 'Backspace', delete: 'Delete',
+      home: 'Home', end: 'End', insert: 'Insert', '+': 'plus'})[key] || String(key || '').toUpperCase();
+  }
+  function raptorActionShortcuts(schemeId, action) {
+    return raptorKeysForAction(schemeId, action).map(raptorAriaKey).join(' ') || undefined;
+  }
   function raptorSchemeShortcuts(schemeId) {
     var seen = {};
-    return Object.keys(raptorControlScheme(schemeId).keys).map(raptorKeyName).filter(function(name) {
+    return Object.keys(raptorControlScheme(schemeId).keys).map(raptorAriaKey).filter(function(name) {
       if (seen[name]) return false; seen[name] = true; return true;
     }).join(' ');
   }
@@ -8509,6 +8532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         flightSummary: null,
         fps: 0,
         strikeReady: true,
+        lastStrikeResult: null,
         tutorialSignals: {},
         targetAnnouncement: '',
         targetState: 'search',
@@ -8599,6 +8623,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }, 0);
         return function() { window.clearTimeout(resultFocusTimer); };
       }, [simUI.missionState]);
+      function handleFlightResultKeyDown(event) {
+        if (event.key !== 'Tab') return;
+        var dialog = event.currentTarget;
+        var stops = dialog.querySelectorAll('button:not([disabled]), [tabindex="0"]');
+        var first = stops[0], last = stops[stops.length - 1];
+        var active = document.activeElement;
+        if (!first) { event.preventDefault(); return; }
+        if (active === dialog || !dialog.contains(active) || (event.shiftKey ? active === first : active === last)) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus({ preventScroll: true });
+        }
+      }
       var HUNT_TUTORIAL = [
         { signal: 'steer', title: 'Steer the bird', copy: 'Drag across the sky, or use ' + (controlPair('turnLeft', 'turnRight') || 'the turn keys') + ', to turn toward open terrain.' },
         { signal: 'altitude', title: 'Manage altitude', copy: 'Hold ' + controlLabel('dive') + ' to dive or ' + controlLabel('pullUp') + ' to pull up.' + (controlPair('altUp', 'altDown') ? ' ' + controlPair('altUp', 'altDown') + ' trims altitude precisely.' : '') },
@@ -8655,31 +8691,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function startHuntFlight() {
         var nextSession = { speciesId: selectedSpecies, missionId: activeMissionId };
         setRH({ flightSession: nextSession });
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         rhAnnounce(findSpecies(selectedSpecies).name + ' flight ready');
       }
       function editHuntFlight() {
         setRH({ flightSession: null });
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         rhAnnounce(__alloT('stem.raptorhunt.sr_flight_setup_opened', 'Flight setup opened'));
       }
       function restartHuntRun() {
         if (!flightSession) return;
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         setSimRevision(function(value) { return value + 1; });
         rhAnnounce(__alloT('stem.raptorhunt.sr_flight_restarted', 'Flight restarted'));
       }
+      function nextHuntMission(missionId) {
+        var index = MISSIONS.findIndex(function(item) { return item.id === missionId; });
+        return MISSIONS[(index + 1 + MISSIONS.length) % MISSIONS.length] || MISSIONS[0];
+      }
       function advanceHuntMission() {
         if (!flightSession) return;
-        var index = MISSIONS.findIndex(function(item) { return item.id === flightSession.missionId; });
-        var nextMission = MISSIONS[(index + 1 + MISSIONS.length) % MISSIONS.length] || MISSIONS[0];
+        var nextMission = nextHuntMission(flightSession.missionId);
         var nextSpeciesId = nextMission.recommendedSpecies || flightSession.speciesId;
         setRH({
           activeMission: nextMission.id,
           selectedSpecies: nextSpeciesId,
           flightSession: { speciesId: nextSpeciesId, missionId: nextMission.id }
         });
-        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
+        patchSimUI({ ready: false, paused: false, missionState: 'active', missionMessage: '', strikeReady: true, lastStrikeResult: null, targetAnnouncement: '', flightSummary: null, fps: 0, touchHint: true, recorderReplay: 0 });
         setSimRevision(function(value) { return value + 1; });
         rhAnnounce(nextMission.name + ' started');
       }
@@ -8737,6 +8776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           try { canvas._rhCleanup(); } catch (e) {}
           canvas._rhCleanup = null;
         }
+        patchSimUI({ lastStrikeResult: null });
         initHuntSim(canvas, findSpecies(flightSession.speciesId), mission, patchSimUI, graphicsQuality);
         var focusTimer = window.setTimeout(function() {
           if (canvas && canvas.isConnected && canvas.focus) canvas.focus({ preventScroll: true });
@@ -10045,6 +10085,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // ── NEW v0.29: MISSION SYSTEM ──
       // Each mission defines a scenario tied to real raptor biology + game mechanics
+      // Gameplay threshold shared by the rule text and prey-alert check.
+      var SILENT_STRIKE_ALERT_RANGE_M = 48;
+      var HIGH_STOOP_MIN_MPH = 180;
       var MISSIONS = [
         {
           id: 'open',
@@ -10081,7 +10124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           icon: '🏜',
           difficulty: 'Medium',
           intro: __alloT('stem.raptorhunt.a_6_minute_migration_crossing_sparse_p', 'A 6-minute migration crossing. Sparse prey, headwinds, no time to dawdle.'),
-          objective: 'Stay airborne 6 minutes + catch at least 1 prey to refuel. Run out of calories = forced down = fail.',
+          objective: 'Stay airborne for 6 minutes and catch at least 1 prey to refuel. Landing or running out of energy ends the crossing.',
           timeLimit: 360,
           calorieGoal: 0,
           forbidden: [],
@@ -10095,8 +10138,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           name: __alloT('stem.raptorhunt.silent_strike_owl_mission', 'Silent Strike (owl mission)'),
           icon: '🌙',
           difficulty: 'Medium',
-          intro: __alloT('stem.raptorhunt.night_hunt_prey_can_t_see_you_but_if_y', 'Night hunt. Prey can\'t see you — but if you flap too loudly within 30m, they flee.'),
-          objective: 'Catch 3 prey in 5 minutes without alerting the rest of the prey. Heavy flapping in detection range = miss.',
+          intro: __alloFill(__alloT('stem.raptorhunt.silent_strike_mission_range', 'Mission rule: glide within {range} m of prey. Flapping inside this range ends the mission.'), { range: SILENT_STRIKE_ALERT_RANGE_M }),
+          objective: 'Catch 3 prey in 5 minutes. Glide inside ' + SILENT_STRIKE_ALERT_RANGE_M + ' m of prey; flapping inside this range ends the mission.',
           timeLimit: 300,
           calorieGoal: 0,
           forbidden: ['heavyFlap'],
@@ -10142,7 +10185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           icon: '🚀',
           difficulty: 'Hard',
           intro: __alloT('stem.raptorhunt.drop_from_1000m_altitude_hit_a_moving_', 'Drop from 1000m altitude. Hit a moving pigeon at terminal velocity. One strike to win.'),
-          objective: 'Begin at 1000m, then commit to a stoop. Strike during the dive above 180 mph within 3 minutes.',
+          objective: 'Begin high above the terrain. Catch prey while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster within 3 minutes. Speed alone does not complete the mission.',
           timeLimit: 180,
           calorieGoal: 0,
           forbidden: [],
@@ -10153,13 +10196,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       ];
       function missionRouteLabelsFor(missionDef) {
         var id = missionDef && missionDef.id;
-        if (id === 'feedChicks') return [['scan', 'Scan'], ['chase', 'Chase'], ['deliver', 'Deliver'], ['refuel', 'Refuel']];
+        if (id === 'feedChicks') return [['scan', 'Scan'], ['align', 'Align'], ['strike', 'Strike'], ['reset', 'Reset']];
         if (id === 'crossDesert') return [['plan', 'Plan'], ['glide', 'Glide'], ['refuel', 'Refuel'], ['cross', 'Cross']];
         if (id === 'silentStrike') return [['listen', 'Listen'], ['glide', 'Glide'], ['strike', 'Strike'], ['quiet', 'Quiet']];
         if (id === 'thermalKettle') return [['locate', 'Locate'], ['circle', 'Circle'], ['climb', 'Climb'], ['exit', 'Exit']];
         if (id === 'avoidPredator') return [['scan', 'Scan'], ['evade', 'Evade'], ['strike', 'Strike'], ['survive', 'Survive']];
-        if (id === 'highStoop') return [['climb', 'Climb'], ['dive', 'Dive'], ['align', 'Align'], ['stoop', 'Stoop']];
-        return [['scan', 'Scan'], ['align', 'Align'], ['strike', 'Strike'], ['explore', 'Explore']];
+        if (id === 'highStoop') return [['climb', 'Climb'], ['dive', 'Dive'], ['align', 'Align'], ['strike', 'Strike']];
+        return [['scan', 'Scan'], ['align', 'Align'], ['strike', 'Strike'], ['reset', 'Reset']];
       }
       function renderHunt() {
         var allStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
@@ -10171,12 +10214,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var flightMission = flightSession
           ? (MISSIONS.filter(function(item) { return item.id === flightSession.missionId; })[0] || MISSIONS[0])
           : null;
+        var thermalFlight = flightMission && flightMission.id === 'thermalKettle';
+        var nextFlightMission = flightSession ? nextHuntMission(flightSession.missionId) : null;
+        var nextFlightSpecies = nextFlightMission ? findSpecies(nextFlightMission.recommendedSpecies || flightSession.speciesId) : null;
         var flightRecord = flightSession
           ? (huntStats[flightSession.speciesId] || { catches: 0, attempts: 0, bestRun: 0 })
           : null;
         var readoutTargetState = simUI.targetState || 'search';
         var readoutTargetLabels = {
+          soar: 'Find rising air',
+          lift: 'In rising air',
           search: 'Scanning',
+          watch: 'Prey spotted',
+          hit: 'Catch made',
+          miss: 'Strike missed',
           align: 'Align target',
           close: 'Close distance',
           stoop: 'Dive window',
@@ -10187,28 +10238,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var readoutTargetLabel = readoutTargetLabels[readoutTargetState] || 'Scanning';
         var readoutAim = Math.round(Math.max(0, Math.min(1, Number(simUI.targetAlign) || 0)) * 100);
         var readoutRange = Math.round(Math.max(0, Math.min(1, Number(simUI.targetRange) || 0)) * 100);
-        var readoutState = simUI.paused
-          ? 'paused'
-          : simUI.missionState === 'success'
-            ? 'success'
-            : simUI.missionState === 'failed'
-              ? 'failed'
-              : readoutTargetState;
-        var readoutStateLabel = simUI.paused
-          ? 'Paused'
-          : simUI.missionState === 'success'
-            ? 'Mission complete'
-            : simUI.missionState === 'failed'
-              ? 'Mission ended'
-              : readoutTargetLabel;
+        var flightResolved = simUI.missionState === 'success' || simUI.missionState === 'failed';
+        var readoutState = flightResolved ? simUI.missionState : simUI.paused ? 'paused' : readoutTargetState;
+        var readoutStateLabel = flightResolved ? (simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended') : simUI.paused ? 'Paused' : readoutTargetLabel;
         var readoutCards = [
-          ['Status', simUI.paused ? 'Paused' : 'Airborne', simUI.missionState === 'active' ? 'Live mission' : 'Review run', 'status'],
-          ['Target', readoutTargetLabel, simUI.targetHint || 'Scan ahead for prey', 'target'],
-          ['Strike', simUI.strikeReady === false ? 'Recovering' : (readoutTargetState === 'ready' ? 'Ready' : 'Build lock'), simUI.strikeReady === false ? 'Cooldown active' : 'F key / Strike', 'strike'],
+          ['Status', flightResolved ? readoutStateLabel : simUI.paused ? 'Paused' : ({ perched: 'Perched', landed: 'Landed', stunned: 'Stunned', glide: 'Gliding', climb: 'Climbing', thermal: 'In thermal', descent: 'Descending', dive: 'Stooping', 'pull-up': 'Pulling up' })[simUI.flightState] || (simUI.ready ? 'Airborne' : 'Preparing'), simUI.missionState === 'active' ? 'Live mission' : 'Review run', 'status'],
+          [thermalFlight ? 'Lift' : 'Target', readoutTargetLabel, flightResolved ? (thermalFlight ? 'Last guidance before flight ended' : 'Last target before flight ended') : simUI.targetHint || (thermalFlight ? 'Glide toward the rising-air rings' : 'Scan ahead for prey'), 'target'],
+          ['Strike', flightResolved ? 'Flight ended' : simUI.paused ? 'Paused' : simUI.strikeReady === false || simUI.flightState === 'stunned' ? 'Recovering' : simUI.flightState === 'perched' || simUI.flightState === 'landed' ? 'Launch first' : readoutTargetState === 'ready' ? 'Ready' : 'Line up prey', flightResolved ? 'Start another flight to strike' : simUI.paused ? 'Resume flight to strike' : simUI.strikeReady === false ? 'Cooldown active' : controlLabel('strike') ? controlLabel('strike') + ' key / Strike' : 'Use the Strike button', 'strike'],
           ['Camera', simUI.camera === 'fp' ? 'First person' : 'Chase view', simUI.zoom ? 'Acuity zoom on' : 'Wide field', 'camera'],
           ['Assist', simUI.assist ? 'Target assist' : 'Manual scan', simUI.assist ? 'Guidance on' : 'Guidance off', 'assist'],
-          ['Renderer', simUI.fps > 0 ? simUI.fps + ' FPS' : 'Measuring', graphicsQuality + ' quality', 'renderer']
+          ['Renderer', simUI.paused ? 'Paused' : simUI.fps > 0 ? simUI.fps + ' FPS' : 'Measuring', graphicsQuality + ' quality', 'renderer']
         ];
+        if (thermalFlight) {
+          readoutCards = readoutCards.filter(function(card) { return card[3] !== 'strike' && card[3] !== 'assist'; });
+          readoutCards.splice(2, 0, ['Flight rule', 'Glide only', 'Use rising air to climb; pull-up flapping ends this mission', 'glide']);
+        }
         function holdFlightButton(label, keyName, extraClass, ariaLabel) {
           function setHeld(pressed, element) {
             sendHuntCommand('hold', { key: keyName, pressed: pressed });
@@ -10223,12 +10267,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           var cueAction = Object.keys(RAPTOR_ACTION_KEYS).filter(function(name) { return RAPTOR_ACTION_KEYS[name] === keyName; })[0];
           var cueState = (simUI.controlCues || {})[cueAction];
+          var thermalOnly = flightMission && flightMission.id === 'thermalKettle';
           return h('button', {
             type: 'button',
             className: 'rh-flight-btn ' + (extraClass || ''),
             'aria-label': ariaLabel || label,
             'data-raptor-cue': cueState || undefined,
-            'aria-keyshortcuts': (cueAction && controlLabel(cueAction)) || (keyName === ' ' ? 'Space' : keyName === 'shift' ? 'Shift' : String(keyName || '').toUpperCase()),
+            disabled: !!simUI.paused || (thermalOnly && keyName === 'e'),
+            'aria-keyshortcuts': raptorActionShortcuts(activeScheme, cueAction),
+            title: thermalOnly && keyName === 'e' ? 'Use rising air to climb in this mission' : thermalOnly && keyName === ' ' ? 'Pull-up flapping ends this thermal-only mission' : 'Hold to ' + (RAPTOR_ACTION_LABELS[cueAction] || label).toLowerCase() + (controlLabel(cueAction) ? ' · ' + controlLabel(cueAction) : ''),
             onPointerDown: function(event) {
               event.preventDefault();
               if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
@@ -10261,7 +10308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             onClick: function(event) { sendHuntCommandFromControl(event, action); },
             'aria-pressed': !!pressed,
             'aria-label': ariaLabel || label,
-            'aria-keyshortcuts': ({ view: 'V', zoom: 'Z', assist: 'T' })[action]
+            'aria-keyshortcuts': raptorActionShortcuts(activeScheme, action)
           }, label);
         }
         function renderMissionRoutePreview(missionDef) {
@@ -10307,9 +10354,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'rh-flight-progress-pulse-head' }, 'Species progress'),
               h('div', { className: 'rh-flight-progress-pulse-copy' }, copy)
             ),
-            h('div', { className: 'rh-flight-progress-pulse-meter', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_current_run_catches_best_run_catches', 'Current run {value1} catches, best run {value2} catches'), { value1: currentRun, value2: bestRun })},
+            h('div', { className: 'rh-flight-progress-pulse-meter', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_current_run_catches_best_run_catches', 'Current streak {value1} catches, best streak {value2} catches'), { value1: currentRun, value2: bestRun })},
               h('strong', { className: 'rh-flight-progress-pulse-value' }, currentRun + ' / ' + bestRun),
-              h('span', { className: 'rh-flight-progress-pulse-label' }, 'Run / best')
+              h('span', { className: 'rh-flight-progress-pulse-label' }, 'Streak / best')
             )
           );
         }
@@ -10518,6 +10565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 },
                   h('div', {
                     'data-raptor-flight-stage': 'true',
+                    'data-raptor-flight-mission': flightMission ? flightMission.id : 'open',
                     'data-raptor-scenic-view': rh.scenicView ? 'true' : 'false',
                     id: 'raptor-flight-stage'
                   },
@@ -10525,12 +10573,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       type: 'button', className: 'rh-scenic-toggle',
                       'aria-label': 'Scenic view', 'aria-pressed': !!rh.scenicView,
                       onClick: function(event) {
-                        setRH({ scenicView: !rh.scenicView });
+                        var nextScenicView = !rh.scenicView;
+                        setRH({ scenicView: nextScenicView });
+                        if (huntCanvasRef.current && huntCanvasRef.current._rhCommand) huntCanvasRef.current._rhCommand('scenic', nextScenicView);
                         rhAnnounce(rh.scenicView ? 'Flight overlays restored' : 'Scenic view. Flight overlays hidden; pause and flight controls remain available.');
                         if (event.detail > 0 && huntCanvasRef.current) huntCanvasRef.current.focus({ preventScroll: true });
                       }
                     }, rh.scenicView ? 'Show flight overlays' : 'Scenic view'),
                     h('canvas', {
+                      // Teardown releases the WebGL context. A new flight needs a fresh canvas.
+                      key: flightSession.speciesId + ':' + flightSession.missionId + ':' + simRevision + ':' + graphicsQuality,
                       ref: huntCanvasRef,
                       'data-raptor-canvas': 'true',
                       role: 'application',
@@ -10599,7 +10651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     }, simUI.targetAnnouncement),
                     // Two-bar lock readout. The strike gate needs BOTH alignment and
                     // range, and the text alone could not show which half was missing.
-                    (simUI.targetState === 'align' || simUI.targetState === 'close' || simUI.targetState === 'stoop' || simUI.targetState === 'ready') && h('div', {
+                    !thermalFlight && (simUI.targetState === 'align' || simUI.targetState === 'close' || simUI.targetState === 'stoop' || simUI.targetState === 'ready') && h('div', {
                       className: 'rh-flight-lock-meters',
                       'data-raptor-lock-meters': 'true',
                       'aria-hidden': 'true'
@@ -10641,12 +10693,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       'aria-modal': 'true',
                       'aria-labelledby': 'rh-flight-result-title',
                       'data-raptor-flight-result': simUI.missionState,
+                      onKeyDown: handleFlightResultKeyDown,
                       tabIndex: -1
                     },
                       h('div', { className: 'rh-flight-result-card' },
-                        h('div', { className: 'text-4xl mb-2', 'aria-hidden': 'true' }, simUI.missionState === 'success' ? '🏆' : '🪶'),
-                        h('h3', { id: 'rh-flight-result-title', className: 'text-xl font-black text-amber-200' }, simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended'),
-                        h('p', { className: 'text-sm text-slate-200 mt-2 mb-5' }, simUI.missionMessage || 'Review the objective and try another flight.'),
+                        h('div', { className: 'rh-flight-result-head' },
+                        h('div', { className: 'rh-flight-result-emblem', 'aria-hidden': 'true' }, simUI.missionState === 'success' ? '🏆' : '🪶'),
+                        h('h3', { id: 'rh-flight-result-title', className: 'rh-flight-result-title' }, simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended'),
+                        h('p', { className: 'rh-flight-result-message' }, simUI.missionMessage || 'Review the objective and try another flight.')
+                        ),
+                        h('div', { className: 'rh-flight-result-body', role: 'region', 'aria-label': 'Flight review details', tabIndex: 0 },
                         flightSummary && h('div', {
                           className: 'rh-flight-debrief',
                           role: 'group',
@@ -10654,7 +10710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           'data-raptor-flight-debrief': 'true'
                         },
                           [
-                            ['Catches', String(flightSummary.catches || 0)],
+                            ['Catches', String(flightSummary.missionCatches == null ? flightSummary.catches || 0 : flightSummary.missionCatches)],
                             ['Peak airspeed', (flightSummary.maxSpeedMph || 0) + ' mph'],
                             ['Peak altitude', (flightSummary.peakAltitudeM || 0) + ' m'],
                             ['Flight time', (flightSummary.flightTimeS || 0) + ' s'],
@@ -10728,9 +10784,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             'aria-label': __alloT('stem.raptorhunt.a11y_adjust_the_next_flight_setup', 'Adjust the next flight setup')
                           }, 'Adjust setup')
                         ),
-                        h('div', { className: 'flex justify-center gap-2 flex-wrap' },
+                        ),
+                        h('div', { className: 'rh-flight-result-actions' },
+                          nextFlightMission && nextFlightSpecies && h('div', { className: 'rh-flight-next-preview', id: 'rh-next-flight-preview', 'data-raptor-next-mission': nextFlightMission.id },
+                            h('span', { className: 'rh-flight-next-preview-title' }, 'Up next: ', h('strong', null, nextFlightMission.name)),
+                            h('span', { className: 'rh-flight-next-preview-detail' }, nextFlightSpecies.name + ' · ' + (nextFlightMission.timeLimit > 0 ? nextFlightMission.timeLimit / 60 + ' min' : 'No time limit'))
+                          ),
                           h('button', { type: 'button', onClick: restartHuntRun, className: 'rh-flight-btn rh-flight-btn-primary' }, 'Fly again'),
-                          h('button', { type: 'button', onClick: advanceHuntMission, className: 'rh-flight-btn' }, 'Next mission'),
+                          h('button', { type: 'button', onClick: advanceHuntMission, className: 'rh-flight-btn', 'aria-describedby': 'rh-next-flight-preview' }, 'Next mission'),
                           h('button', { type: 'button', onClick: editHuntFlight, className: 'rh-flight-btn' }, 'Change setup')
                         )
                       )
@@ -10747,7 +10808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       h('div', { className: 'min-w-0' },
                         h('div', { className: 'rh-flight-readout-kicker' }, 'Flight instruments'),
                         h('strong', { id: 'rh-flight-readout-title', className: 'rh-flight-readout-title' }, flightSpecies.name + ' · ' + flightMission.name),
-                        h('div', { className: 'rh-flight-readout-copy' }, simUI.targetHint || 'Scan ahead for prey')
+                        h('div', { className: 'rh-flight-readout-copy' }, flightResolved ? 'Review your results, then choose another flight.' : simUI.paused ? 'Flight is frozen. Resume when ready.' : simUI.targetHint || 'Scan ahead for prey')
                       ),
                       h('span', { className: 'rh-flight-readout-state', 'data-readout-state': readoutState }, readoutStateLabel)
                     ),
@@ -10766,7 +10827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         );
                       })
                     ),
-                    h('div', { className: 'rh-flight-readout-lock', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_target_lock_progress', 'Target lock progress') },
+                    !thermalFlight && h('div', { className: 'rh-flight-readout-lock', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_target_lock_progress', 'Target lock progress') },
                       h('div', { className: 'rh-flight-readout-lock-head' },
                         h('span', null, 'Target lock'),
                         h('strong', null, readoutAim + '% aim · ' + readoutRange + '% range')
@@ -10796,9 +10857,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         className: 'rh-flight-btn rh-flight-btn-primary',
                         onClick: function(event) { sendHuntCommandFromControl(event, 'pause'); },
                         'aria-pressed': !!simUI.paused,
-                        'aria-label': simUI.paused ? 'Resume flight' : 'Pause flight',
-                        'aria-keyshortcuts': 'P'
-                      }, simUI.paused ? 'Resume' : 'Pause'),
+                        'aria-label': flightResolved ? 'Flight ended' : simUI.paused ? 'Resume flight' : 'Pause flight',
+                        disabled: flightResolved,
+                        title: flightResolved ? 'Start another flight from the results card' : undefined,
+                        'aria-keyshortcuts': raptorActionShortcuts(activeScheme, 'pause')
+                      }, flightResolved ? 'Flight ended' : simUI.paused ? 'Resume' : 'Pause'),
                       h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-danger',
@@ -10817,7 +10880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       h('div', { className: 'rh-flight-settings-panel', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_flight_view_and_sound_settings', 'Flight view and sound settings') },
                         simToggleButton(simUI.camera === 'fp' ? 'First person' : 'Chase view', 'view', simUI.camera === 'fp', 'Toggle chase and first-person camera'),
                         simToggleButton('Zoom', 'zoom', simUI.zoom, 'Toggle raptor acuity zoom'),
-                        simToggleButton('Target assist', 'assist', simUI.assist, 'Toggle target assist'),
+                        !thermalFlight && simToggleButton('Target assist', 'assist', simUI.assist, 'Toggle target assist'),
                         simToggleButton(simUI.sound ? 'Sound on' : 'Sound off', 'sound', simUI.sound, 'Toggle flight sound'),
                         h('button', { type: 'button', className: 'rh-flight-btn', onClick: replayHuntTutorial }, 'Replay tutorial'),
                         h('button', {
@@ -10940,15 +11003,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       holdFlightButton('\u2191 Alt', 'e', '', 'Hold to climb'),
                       holdFlightButton('Dive (' + (controlLabel('dive') || 'hold') + ')', 'shift', 'rh-flight-btn-primary', 'Hold to dive and accelerate - keyboard ' + (controlLabel('dive') || 'unbound')),
                       holdFlightButton('Pull up (' + (controlLabel('pullUp') || 'hold') + ')', ' ', '', 'Hold to pull up - keyboard ' + (controlLabel('pullUp') || 'unbound')),
-                      h('button', {
+                      !thermalFlight && h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-strike',
                         onClick: function(event) { sendHuntCommandFromControl(event, 'strike'); },
-                        disabled: simUI.strikeReady === false,
+                        disabled: simUI.paused || simUI.strikeReady === false,
                         'data-raptor-cue': simUI.strikeReady === false ? undefined : (simUI.controlCues || {}).strike || undefined,
                         'aria-label': simUI.strikeReady === false ? 'Strike recovering' : 'Strike target' + (controlLabel('strike') ? ' - keyboard ' + controlLabel('strike') : ''),
-                        'aria-keyshortcuts': controlLabel('strike') || undefined
+                        'aria-keyshortcuts': raptorActionShortcuts(activeScheme, 'strike')
                       }, simUI.strikeReady === false ? 'Recovering' : 'Strike' + (controlLabel('strike') ? ' (' + controlLabel('strike') + ')' : ''))
+                    )
+                  ),
+                  simUI.lastStrikeResult && h('section', {
+                    className: 'rh-flight-strike-review',
+                    'data-raptor-strike-review': simUI.lastStrikeResult.kind,
+                    'aria-label': 'Last strike', role: 'region'
+                  },
+                    h('div', { className: 'rh-strike-review-mark', 'aria-hidden': 'true' }, simUI.lastStrikeResult.kind === 'hit' ? '✓' : '↗'),
+                    h('div', { className: 'rh-strike-review-copy' },
+                      h('div', { className: 'rh-strike-review-kicker' }, 'Last strike'),
+                      h('strong', null, simUI.lastStrikeResult.kind === 'hit' ? 'Catch secured' : 'Strike missed'),
+                      h('p', null, simUI.lastStrikeResult.message),
+                      h('p', { className: 'rh-strike-review-tip' }, simUI.lastStrikeResult.tip)
                     )
                   )
                 )
@@ -12803,6 +12879,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         wingPlumageTex.wrapS = wingPlumageTex.wrapT = THREE.RepeatWrapping;
         wingPlumageTex.repeat.set(3, 2);
         wingPlumageTex.needsUpdate = true;
+        // Long vanes need a single lengthwise feather, rather than repeating body contour tiles.
+        function paintRaptorFlightFeather(canvas) {
+          var ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+          var vane=ctx.createLinearGradient(0,0,w,0);
+          vane.addColorStop(0,'#c9c9c9');vane.addColorStop(0.16,'#d9d9d9');vane.addColorStop(0.47,'#eaeaea');
+          vane.addColorStop(0.53,'#e4e4e4');vane.addColorStop(0.84,'#dddddd');vane.addColorStop(1,'#cdcdcd');
+          ctx.fillStyle=vane;ctx.fillRect(0,0,w,h);
+          var lengthShade=ctx.createLinearGradient(0,0,0,h);
+          lengthShade.addColorStop(0,'rgba(30,27,24,0.13)');lengthShade.addColorStop(0.32,'rgba(30,27,24,0)');
+          lengthShade.addColorStop(0.78,'rgba(30,27,24,0.015)');lengthShade.addColorStop(1,'rgba(30,27,24,0.15)');
+          ctx.fillStyle=lengthShade;ctx.fillRect(0,0,w,h);
+          // Broad, low-contrast barbs survive mip filtering without glittering at chase distance.
+          for(var row=-70;row<h+90;row+=7){
+            var variation=Math.sin(row*0.37)*2.2;
+            [-1,1].forEach(function(side){
+              ctx.lineWidth=1.35;ctx.strokeStyle='rgba(48,43,37,0.13)';ctx.beginPath();ctx.moveTo(w*0.5+side*2,row);
+              ctx.bezierCurveTo(w*(0.5+side*0.16),row-13,w*(0.5+side*0.34),row-31+variation,w*(0.5+side*0.52),row-55+variation);ctx.stroke();
+              ctx.lineWidth=0.9;ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.beginPath();ctx.moveTo(w*0.5+side*3,row+2);
+              ctx.bezierCurveTo(w*(0.5+side*0.16),row-11,w*(0.5+side*0.34),row-29+variation,w*(0.5+side*0.52),row-53+variation);ctx.stroke();
+            });
+          }
+          var shaft=ctx.createLinearGradient(w*0.482,0,w*0.518,0);
+          shaft.addColorStop(0,'rgba(45,39,32,0)');shaft.addColorStop(0.36,'rgba(45,39,32,0.22)');
+          shaft.addColorStop(0.54,'rgba(255,255,255,0.32)');shaft.addColorStop(1,'rgba(255,255,255,0)');
+          ctx.fillStyle=shaft;ctx.beginPath();ctx.moveTo(w*0.482,0);ctx.lineTo(w*0.518,0);ctx.lineTo(w*0.503,h);ctx.lineTo(w*0.497,h);ctx.closePath();ctx.fill();
+        }
+        var flightFeatherCanvas=document.createElement('canvas');flightFeatherCanvas.width=256;flightFeatherCanvas.height=512;
+        paintRaptorFlightFeather(flightFeatherCanvas);
+        var flightFeatherTex=new THREE.CanvasTexture(flightFeatherCanvas);
+        flightFeatherTex.name='raptor-flight-vane';flightFeatherTex.encoding=THREE.sRGBEncoding;
+        flightFeatherTex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+        // Whole-number repeats keep the torso wrap continuous at the flank seam.
+        var torsoPlumageTex=bodyPlumageTex.clone();torsoPlumageTex.name='raptor-torso-plumage';
+        torsoPlumageTex.repeat.set(2,2);torsoPlumageTex.needsUpdate=true;
         var bodyColor = plumageProfile.body;
         var wingColor = plumageProfile.wing;
         var breastColor = plumageProfile.breast;
@@ -12810,6 +12920,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // One continuous body surface blends mantle and breast without an overlapping belly shell.
         function createRaptorBodyGeometry(quality,dorsal,ventral) {
           var geometry=new THREE.SphereGeometry(1,quality==='low'?24:36,quality==='low'?16:24);
+          // Put UV poles at the neck and tail, leaving the visible breast free of pinching.
+          geometry.rotateX(Math.PI/2);
           var p=geometry.attributes.position,colors=[],back=new THREE.Color(dorsal).convertSRGBToLinear(),chest=new THREE.Color(ventral).convertSRGBToLinear(),shade=new THREE.Color();
           function smooth(a,b,value){var t=Math.max(0,Math.min(1,(value-a)/(b-a)));return t*t*(3-2*t);}
           for(var i=0;i<p.count;i++){
@@ -12825,9 +12937,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ends of this, and which one is flying decides how hard it is to pick out.
         var raptorBodyLuminance = relativeLuminanceOfColor(new THREE.Color(bodyColor));
         var body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors:true, roughness: 0.84, metalness: 0, emissive: new THREE.Color(bodyColor).multiplyScalar(0.035), flatShading: false }));
-        body.material.map = bodyPlumageTex;
-        body.material.bumpMap = bodyPlumageTex;
-        body.material.bumpScale = 0.0035;
+        body.material.map = torsoPlumageTex;
+        body.material.bumpMap = torsoPlumageTex;
+        body.material.bumpScale = 0.0018;
+        // Representative field marks: Cornell Red-tailed Hawk / Great Horned Owl ID guides.
+        // Shade the continuous body directly so markings cannot detach or z-fight in flight.
+        function applyRaptorBodyMarkings(material,kind) {
+          if(kind!=='redTail'&&kind!=='greatHorned')return;
+          material.userData.bodyMarkingKind=kind==='redTail'?'streaked-belly-band':'pale-throat-patch';
+          material.onBeforeCompile=function(shader){
+            shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vRhBodyPosition;')
+              .replace('#include <begin_vertex>','#include <begin_vertex>\nvRhBodyPosition=position;');
+            var pattern=[
+              'vec3 rhBody=vRhBodyPosition/vec3(0.245,0.245,0.63);',
+              'float rhVentral=1.0-smoothstep(-0.48,-0.02,rhBody.y);'
+            ];
+            if(kind==='redTail')pattern.push(
+              'float rhAngle=atan(rhBody.x,-rhBody.y);',
+              'float rhRow=(rhBody.z+0.7)*8.0;',
+              'float rhLane=rhAngle*7.0+mod(floor(rhRow),2.0)*0.48;',
+              'float rhStreak=length(vec2((fract(rhLane)-0.5)/0.21,(fract(rhRow)-0.5)/0.44));',
+              'float rhEdge=max(fwidth(rhStreak),0.12);',
+              'float rhInk=(1.0-smoothstep(0.72-rhEdge,1.0+rhEdge,rhStreak))*rhVentral;',
+              'rhInk*=1.0-smoothstep(0.16,0.40,abs(rhBody.z+0.13));',
+              'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(0.20,0.14,0.09),rhInk*0.84);'
+            );
+            else pattern.push(
+              'float rhPatch=smoothstep(0.32,0.70,rhBody.z)*rhVentral*(1.0-smoothstep(0.42,0.80,abs(rhBody.x)));',
+              'vec3 rhPatchColor=vec3(0.91,0.89,0.82);',
+              '#ifdef USE_MAP',
+              'rhPatchColor*=texelColor.rgb;',
+              '#endif',
+              'diffuseColor.rgb=mix(diffuseColor.rgb,rhPatchColor,rhPatch*0.88);'
+            );
+            shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vRhBodyPosition;')
+              .replace('#include <map_fragment>','#include <map_fragment>\n'+pattern.join('\n'));
+            material.userData.bodyMarkingsCompiled=true;
+          };
+          material.customProgramCacheKey=function(){return 'raptor-body-markings-v1-'+kind;};
+        }
+        applyRaptorBodyMarkings(body.material,species.id);
         body.name='raptor-contour-body';
         raptorGroup.add(body);
         function createRaptorBeakGeometry() {
@@ -12873,17 +13022,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ctx.beginPath();ctx.moveTo(center+Math.cos(angle)*inner,center+Math.sin(angle)*inner);ctx.quadraticCurveTo(center+Math.cos(angle+0.012)*radius*0.66,center+Math.sin(angle+0.012)*radius*0.66,center+Math.cos(angle)*outer,center+Math.sin(angle)*outer);ctx.stroke();
           }
         }
+        function createRaptorEyeSurroundGeometry(owl,headColor) {
+          var positions=[],colors=[],indices=[],segments=32;
+          var outerColor=new THREE.Color(headColor).convertSRGBToLinear(),innerColor=new THREE.Color(0x302a23).convertSRGBToLinear(),shade=new THREE.Color();
+          [-1,1].forEach(function(side){
+            var normal=new THREE.Vector3(side*(owl?0.115:0.181),0.054,owl?0.18:0.135).normalize();
+            var anchor=owl?0.226:0.2205,rotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),normal),base=positions.length/3;
+            for(var ring=0;ring<3;ring++)for(var i=0;i<=segments;i++){
+              var angle=i/segments*Math.PI*2,upper=Math.max(0,Math.sin(angle)),t=ring/2;
+              var spread=1+t*(owl?0.22:0.22+upper*0.17),x=Math.cos(angle)*0.036*spread,y=Math.sin(angle)*0.028*spread;
+              var seated=Math.sqrt(Math.max(0.001,Math.pow(owl?0.224:0.22,2)-x*x-y*y))-anchor;
+              var z=ring===0?0:ring===1?seated*0.45+0.0006:seated;
+              var point=new THREE.Vector3(x,y,z).applyQuaternion(rotation).addScaledVector(normal,anchor);positions.push(point.x,point.y,point.z);
+              shade.copy(outerColor).lerp(innerColor,ring===0?0.76:ring===1?0.40:0);colors.push(shade.r,shade.g,shade.b);
+              if(ring<2&&i<segments){var a=base+ring*(segments+1)+i,b=a+1,c=a+segments+1,d=c+1;indices.push(a,c,b,b,c,d);}
+            }
+          });
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+        }
+        function paintRaptorFacialFeathers(canvas) {
+          var ctx=canvas.getContext('2d'),size=canvas.width,center=size/2;
+          ctx.fillStyle='#e8e8e8';ctx.fillRect(0,0,size,size);
+          for(var i=0;i<200;i++){
+            var angle=i/200*Math.PI*2,variation=Math.sin(i*17.31),start=0.12+(variation+1)*0.055,end=0.88+Math.sin(i*4.73)*0.06;
+            ctx.strokeStyle=i%3?'rgba(54,48,40,0.12)':'rgba(255,255,255,0.30)';ctx.lineWidth=i%3?0.85:1.1;
+            ctx.beginPath();ctx.moveTo(center+Math.cos(angle)*center*start,center+Math.sin(angle)*center*start);
+            ctx.quadraticCurveTo(center+Math.cos(angle+0.025)*center*0.55,center+Math.sin(angle+0.025)*center*0.55,center+Math.cos(angle)*center*end,center+Math.sin(angle)*center*end);ctx.stroke();
+          }
+          var rim=ctx.createRadialGradient(center,center,center*0.65,center,center,center);
+          rim.addColorStop(0,'rgba(42,36,30,0)');rim.addColorStop(0.8,'rgba(42,36,30,0.04)');rim.addColorStop(1,'rgba(42,36,30,0.17)');ctx.fillStyle=rim;ctx.fillRect(0,0,size,size);
+        }
         function createRaptorFacialDiscGeometry(kind) {
-          var positions=[],normals=[],colors=[],indices=[],steps=5,segments=24;
+          var positions=[],normals=[],colors=[],uvs=[],indices=[],steps=5,segments=24;
           var horned=kind==='greatHorned',discColor=new THREE.Color(0x927451).convertSRGBToLinear(),discRim=new THREE.Color(0x49392b).convertSRGBToLinear(),discShade=new THREE.Color();
           [-1,1].forEach(function(side){
             var base=positions.length/3;
-            function point(radius,angle){var x=side*0.098+Math.cos(angle)*0.098*radius,y=0.028+Math.sin(angle)*0.142*radius,z=Math.sqrt(Math.max(0.0001,0.224*0.224-x*x-y*y));positions.push(x,y,z);var length=Math.hypot(x,y,z);normals.push(x/length,y/length,z/length);var feather=0.035*Math.cos(angle*12)*radius,shade=0.9-radius*0.25+feather;if(horned){var rim=Math.max(0,(radius-0.70)/0.30);discShade.copy(discColor).lerp(discRim,rim*rim*0.8).multiplyScalar(0.96+feather);colors.push(discShade.r,discShade.g,discShade.b);}else colors.push(shade,shade*0.79,shade*0.53);}
+            function point(radius,angle){var x=side*0.098+Math.cos(angle)*0.098*radius,y=0.028+Math.sin(angle)*0.142*radius,z=Math.sqrt(Math.max(0.0001,0.224*0.224-x*x-y*y));positions.push(x,y,z);uvs.push(0.5+Math.cos(angle)*radius*0.5,0.5+Math.sin(angle)*radius*0.5);var length=Math.hypot(x,y,z);normals.push(x/length,y/length,z/length);var feather=0.035*Math.cos(angle*12)*radius,shade=0.9-radius*0.25+feather;if(horned){var rim=Math.max(0,(radius-0.70)/0.30);discShade.copy(discColor).lerp(discRim,rim*rim*0.8).multiplyScalar(0.96+feather);colors.push(discShade.r,discShade.g,discShade.b);}else colors.push(shade,shade*0.79,shade*0.53);}
             point(0,0);for(var ring=1;ring<=steps;ring++)for(var i=0;i<segments;i++)point(ring/steps,i/segments*Math.PI*2);
             for(var i=0;i<segments;i++)indices.push(base,base+1+i,base+1+(i+1)%segments);
             for(var ring=1;ring<steps;ring++)for(var i=0;i<segments;i++){var a=base+1+(ring-1)*segments+i,b=base+1+(ring-1)*segments+(i+1)%segments,c=a+segments,d=b+segments;indices.push(a,c,b,b,c,d);}
           });
-          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);return geometry;
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);return geometry;
         }
         function selectRaptorGazeTarget(prey,current,origin,eligible) {
           var best=null,bestDistance=80*80,currentDistance=Infinity;
@@ -12950,6 +13129,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var earTufts=new THREE.Mesh(createRaptorEarTufts(),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.92,side:THREE.DoubleSide}));
           earTufts.name='field-mark-great-horned-tufts';headGroup.add(earTufts);raptorFieldMarkIds.push('feather-tufts');
         }
+        var eyeSurrounds=new THREE.Mesh(createRaptorEyeSurroundGeometry(species.isOwl,plumageProfile.head),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.86}));
+        eyeSurrounds.name='raptor-eye-surrounds';headGroup.add(eyeSurrounds);
         var irisCanvas=document.createElement('canvas');irisCanvas.width=irisCanvas.height=256;paintRaptorIris(irisCanvas);
         var irisTexture=new THREE.CanvasTexture(irisCanvas);irisTexture.encoding=THREE.sRGBEncoding;irisTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
         var eyeMat = new THREE.MeshStandardMaterial({ color: 0xcb9229, map:irisTexture, roughness: 0.38 });
@@ -12998,6 +13179,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.88 })
           );
           // The paired cheek surfaces follow the head instead of floating in front.
+          var discCanvas=document.createElement('canvas');discCanvas.width=discCanvas.height=256;paintRaptorFacialFeathers(discCanvas);
+          var discTexture=new THREE.CanvasTexture(discCanvas);discTexture.name='raptor-facial-feathers';discTexture.encoding=THREE.sRGBEncoding;discTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+          facialDisc.material.map=discTexture;facialDisc.material.bumpMap=discTexture;facialDisc.material.bumpScale=0.0005;
           facialDisc.name = 'field-mark-owl-facial-disc';
           facialDisc.userData.raptorFieldMarkId = 'facial-disc';
           headGroup.add(facialDisc);
@@ -13191,9 +13375,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var layeredFeatherMaterial = new THREE.MeshStandardMaterial({
           vertexColors: true, roughness: 0.84, side: THREE.DoubleSide
         });
-        layeredFeatherMaterial.map = plumageTex;
-        layeredFeatherMaterial.bumpMap = plumageTex;
-        layeredFeatherMaterial.bumpScale = 0.003;
+        layeredFeatherMaterial.map = flightFeatherTex;
+        layeredFeatherMaterial.bumpMap = flightFeatherTex;
+        layeredFeatherMaterial.bumpScale = 0.0015;
         // Curved vanes remain batched: one mesh per wing, with static rest morphs.
         function createLayeredWingFeathers(side,featherCount) {
           var positions=[],colors=[],indices=[],uvs=[];
@@ -13204,8 +13388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var widths=[0.58,0.92,1,0.95,0.76,0.40,0.07];
           for(var feather=0;feather<featherCount;feather++){
             var centerU=0.04+(feather+0.5)/featherCount*featherRange,base=positions.length/3;
-            var tint=new THREE.Color(wingColor).convertSRGBToLinear().multiplyScalar(0.92+(feather%3)*0.035+centerU*0.05);
-            var atlasU=(feather%8)/8;
+            var tint=new THREE.Color(wingColor).convertSRGBToLinear().multiplyScalar(0.97+Math.sin(feather*2.399)*0.025+centerU*0.035);
             for(var row=0;row<stations.length;row++){
               var t=stations[row],chord=0.91-t*0.965;
               for(var column=0;column<3;column++){
@@ -13214,11 +13397,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var u=Math.abs(x)/halfSpan,rear=sampleRaptorWingSurface(u,0,side),front=sampleRaptorWingSurface(u,1,side);
                 var z=rear.z+(front.z-rear.z)*chord;
                 var surface=sampleRaptorWingSurface(u,chord,side);
-                var ridge=(1-Math.abs(across))*Math.sin(t*Math.PI)*0.012;
+                var ridge=(1-Math.abs(across))*Math.sin(t*Math.PI)*0.006;
                 positions.push(x,surface.y+0.009+ridge,z);
-                // Each vane samples one atlas feather from base to rounded tip.
-                uvs.push(atlasU+(column===0?0.015:column===1?0.0625:0.110),0.94-t*0.48);
-                var shade=column===1?1.045:column===0?0.97:1;
+                // Keep the shaft centered from the attached root to the rounded tip.
+                uvs.push(column*0.5,1-t);
+                // Soft root-to-tip shading follows the folded geometry without overlay seams.
+                var shade=(column===1?1.02:column===0?0.985:1)*(0.98+Math.sin(t*Math.PI)*0.045-t*0.035);
                 colors.push(tint.r*shade,tint.g*shade,tint.b*shade);
                 if(row<stations.length-1&&column<2){var i=base+row*3+column;
                   if(side>0)indices.push(i,i+1,i+3,i+1,i+4,i+3);
@@ -13248,12 +13432,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var tipZ=wingDepth*(silhouetteProfile.sweep+0.57-spread*1.65);
           var dx=tipX-rootX,dz=tipZ-rootZ,length=Math.hypot(dx,dz),px=-dz/length,pz=dx/length;
           var positions=[],uvs=[],indices=[];
-          for(var station=0;station<5;station++) {
-            var u=station/4,width=wingDepth*(station===4?0.025:0.17*Math.sin(0.7+u*2.15));
+          var stations=[0,0.16,0.32,0.48,0.64,0.78,0.88,0.95,1],widths=[0.64,0.90,1,0.98,0.88,0.71,0.50,0.28,0.055];
+          for(var station=0;station<stations.length;station++) {
+            var u=stations[station],width=wingDepth*0.17*widths[station];
             var x=rootX+dx*u,z=rootZ+dz*u,y=0.085+Math.sin(u*Math.PI)*0.055+u*u*0.055;
             positions.push(x+px*width,y,z+pz*width,x-px*width,y,z-pz*width);
             uvs.push(0.02,1-u,0.98,1-u);
-            if(station<4){var b=station*2;indices.push(b,b+1,b+2,b+1,b+3,b+2);}
+            if(station<stations.length-1){var b=station*2;indices.push(b,b+1,b+2,b+1,b+3,b+2);}
           }
           var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
           geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();
@@ -13267,7 +13452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             emissive: new THREE.Color(plumageProfile.primary).multiplyScalar(0.018),
             side: THREE.DoubleSide
           });
-          fingerMat.map=wingPlumageTex;fingerMat.bumpMap=wingPlumageTex;fingerMat.bumpScale=0.003;
+          fingerMat.map=flightFeatherTex;fingerMat.bumpMap=flightFeatherTex;fingerMat.bumpScale=0.0015;
           for (var fi = 0; fi < silhouetteProfile.primaryFingers; fi++) {
             var leftPrimary = new THREE.Mesh(
               createTaperedPrimaryGeometry(-1, fi, silhouetteProfile.primaryFingers),
@@ -13304,29 +13489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             feather.geometry.translate(-rootX,-rootY,-rootZ);feather.position.set(rootX,rootY,rootZ);
           });
         });
-        var dorsalMarkColor = plumageProfile.mark;
-        var dorsalMarkMat = new THREE.MeshStandardMaterial({ color: dorsalMarkColor, roughness: 0.9, transparent:true, opacity:0.10, depthWrite:false, emissive: dorsalMarkColor, emissiveIntensity: 0.025 });
-        function createWingMarkGeometry(side,start,end,chord,width) {
-          var positions=[],indices=[];
-          for(var markStation=0;markStation<=8;markStation++){
-            var u=start+(end-start)*markStation/8;
-            for(var edge=0;edge<2;edge++){
-              var p=sampleRaptorWingSurface(u,chord+(edge?1:-1)*width,side);
-              positions.push(p.x,p.y+0.014,p.z);
-            }
-            if(markStation<8){var i=markStation*2;
-              if(side<0)indices.push(i,i+2,i+1,i+1,i+2,i+3);
-              else indices.push(i,i+1,i+2,i+1,i+3,i+2);
-            }
-          }
-          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
-        }
-        [-1,1].forEach(function(side){
-          var shoulderMark=new THREE.Mesh(createWingMarkGeometry(side,0.18,0.58,0.65,0.045),dorsalMarkMat);
-          var wingEdgeMark=new THREE.Mesh(createWingMarkGeometry(side,0.76,0.96,0.55,0.035),dorsalMarkMat);
-          (side<0?leftWingGroup:rightWingGroup).add(shoulderMark,wingEdgeMark);
-        });
+        // Tonal variation belongs to the feather surfaces; separate strips intersected their ridges.
         // Every wing layer uses the same closed surface, including primaries whose
         // geometry is authored relative to an individual quill pivot.
         function foldedRaptorWingPoint(x,y,z,side) {
@@ -13377,7 +13540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               tip+half,0.03,end+0.075,tip+half*0.55,0.024,end+0.018,tip,0.02,end,
               tip-half*0.55,0.024,end+0.018,tip-half,0.03,end+0.075,(root+tip)*0.5,0.047,(-0.42+end)*0.5);
             along.push(0,0,0.91,0.99,1,0.99,0.91,0.5);
-            var atlas=(feather%8)/8;uvs.push(atlas,0.95,atlas+0.125,0.95,atlas+0.125,0.51,atlas+0.095,0.47,atlas+0.0625,0.45,atlas+0.03,0.47,atlas,0.51,atlas+0.0625,0.72);
+            uvs.push(0,1,1,1,1,0.09,0.78,0.01,0.5,0,0.22,0.01,0,0.09,0.5,0.5);
             for(var edge=0;edge<7;edge++)indices.push(base+edge,base+(edge+1)%7,base+7);
           }
           // A second pose rotates each complete feather toward the center; it does not
@@ -13405,9 +13568,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           tailGeometry,
           new THREE.MeshStandardMaterial({ morphTargets:true, morphNormals:true, color: tailColor, roughness: 0.75, metalness: 0.01, emissive: new THREE.Color(tailColor).multiplyScalar(0.02), side: THREE.DoubleSide })
         );
-        tail.material.map = plumageTex;
-        tail.material.bumpMap = plumageTex;
-        tail.material.bumpScale = 0.005;
+        tail.material.map = flightFeatherTex;
+        tail.material.bumpMap = flightFeatherTex;
+        tail.material.bumpScale = 0.002;
         tail.name = 'fan-tail-silhouette';
         tail.position.z=-0.42;
         raptorGroup.add(tail);
@@ -15147,6 +15310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var runElapsed = 0;
         var runCatches = 0;
         var missionElapsed = 0;
+        var missionGroundContact = false;
         var missionCatches = 0;
         var missionCalories = 0;
         var missionAlerts = 0;
@@ -15161,7 +15325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // count in the others with nothing failing.
         var FLIGHT_EVENT_ENTERED_THERMAL = 'Entered thermal';
         var runMaxAltitude = Math.max(0, startY - terrainHeightAt(raptor.x, raptor.z));
-        var lastStrike = 0;
+        var strikeRecoveryUntil = 0;
         var strikeReady = true;
         var lastSpawn = motionNow;
         // NEW v0.29: Track recent flight state for energy burn
@@ -15227,30 +15391,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         recordFlightEvent('start', 'Flight started', species.name + ' · ' + mission.name);
         var strikeFeedback = { kind: 'idle', message: '', startedAt: 0, duration: 0 };
-        function beginStrikeFeedback(kind, message, atTime) {
+        function beginStrikeFeedback(kind, message, atTime, tip) {
           strikeFeedback.kind = kind;
           strikeFeedback.message = message;
           strikeFeedback.startedAt = atTime;
           strikeFeedback.duration = kind === 'hit' ? 900 : 720;
+          notifyUI({ lastStrikeResult: { kind: kind, message: kind === 'hit' ? message.replace(/^CATCH - /, '') : message, tip: tip } });
         }
         function strikeMissReason(targetInfo) {
           if (!targetInfo) return { code: 'NO TARGET', detail: 'Scan ahead for prey' };
           if (targetInfo.distance > targetInfo.reach) {
             return { code: 'TOO FAR', detail: 'Close another ' + Math.max(1, Math.ceil(targetInfo.distance - targetInfo.reach)) + ' m' };
           }
-          if (targetInfo.verticalOffset > 2) return { code: 'PULL UP', detail: 'Bring the target down into the reticle' };
-          if (targetInfo.verticalOffset < -2) return { code: 'DIVE LOWER', detail: 'Bring the target up into the reticle' };
+          if (targetInfo.correction) return { code: targetCorrectionLabel(targetInfo.correction).toUpperCase(), detail: 'Face prey before striking' };
           return { code: 'ALIGN', detail: 'Center the target before striking' };
         }
 
-        var pendingTimers = [];
-        function queueTimer(callback, delay) {
-          var timerId = setTimeout(function() {
-            pendingTimers = pendingTimers.filter(function(id) { return id !== timerId; });
-            if (!disposed) callback();
-          }, delay);
-          pendingTimers.push(timerId);
-          return timerId;
+        // Delayed hunt actions share the flight clock, including recovery, calls and replacement prey.
+        var pendingFlightActions = [];
+        function queueFlightAction(callback, delay) {
+          pendingFlightActions.push({ at: motionNow + Math.max(0, delay), callback: callback });
+        }
+        function runFlightActions() {
+          if (disposed || simPaused || !pendingFlightActions.length) return;
+          var due = pendingFlightActions.filter(function(action) { return action.at <= motionNow; });
+          pendingFlightActions = pendingFlightActions.filter(function(action) { return action.at > motionNow; });
+          due.sort(function(a, b) { return a.at - b.at; }).forEach(function(action) {
+            if (!disposed && !simPaused) action.callback();
+          });
         }
 
         // Mission-specific landmarks make each objective readable in the world,
@@ -15374,6 +15542,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── Input ───
         var keys = {};
+        var heldFlightInputs = Object.create(null);
+        function setHeldFlightInput(source, key, pressed) {
+          var previous = heldFlightInputs[source];
+          if (pressed) heldFlightInputs[source] = key;
+          else delete heldFlightInputs[source];
+          [previous, key].forEach(function(actionKey) {
+            if (!actionKey) return;
+            keys[actionKey] = Object.keys(heldFlightInputs).some(function(input) { return heldFlightInputs[input] === actionKey; });
+          });
+        }
         var controlScheme = (function() {
           var id = canvasEl.dataset ? canvasEl.dataset.raptorControlScheme : '';
           if (id === 'custom' && canvasEl.dataset.raptorControlKeys) {
@@ -15415,6 +15593,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var touchPitchSensitivity = 0.003;
         var tutorialSignals = {};
         var lastTargetState = '';
+        var lastTrackerTargetInfo = null;
+        var lastTargetCorrection = null;
         var lastTargetHint = '';
         var lastTargetAlign = -1;
         var lastTargetRange = -1;
@@ -15439,6 +15619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           axis.value=target+difference*decay;
         }
         function clearHeldInputs() {
+          heldFlightInputs = Object.create(null);
           Object.keys(keys).forEach(function(key) { keys[key] = false; });
           turnAxis.value=turnAxis.integral=pitchAxis.value=pitchAxis.integral=0;
           pendingPointerYaw=pendingPointerPitch=0;
@@ -15446,6 +15627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           dragState.pointerId = null;
         }
         function publishControlState() {
+          updatePauseControls();
           notifyUI({
             ready: true,
             paused: simPaused,
@@ -15460,17 +15642,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (!flightStateEl || (nextState === lastFlightState && flightStateEl.dataset.flightState === nextState)) return;
           var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', perched: 'Perched', landed: 'Landed', stunned: 'Stunned', paused: 'Paused' };
           lastFlightState = nextState;
+          notifyUI({ flightState: nextState });
           flightStateEl.dataset.flightState = nextState;
           flightStateEl.textContent = labels[nextState] || nextState;
           recordFlightEvent('flight', labels[nextState] || nextState, nextState === 'thermal' ? 'Lift is carrying the bird' : '');
         }
         function setPaused(nextPaused, announcement) {
+          // A resolved mission stays frozen until a new flight is started.
+          if (!nextPaused && missionOutcome !== 'active') return;
           var wasPaused = simPaused;
           simPaused = !!nextPaused;
           clearHeldInputs();
           updateFlightState(simPaused ? 'paused' : raptor.crashed ? 'stunned' : raptor.landed ? (activePerch ? 'perched' : 'landed') : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : 'glide');
-          pauseOverlay.setAttribute('data-visible', simPaused ? 'true' : 'false');
-          pauseOverlay.setAttribute('aria-hidden', simPaused ? 'false' : 'true');
+          var showPauseOverlay = simPaused && missionOutcome === 'active';
+          pauseOverlay.setAttribute('data-visible', showPauseOverlay ? 'true' : 'false');
+          pauseOverlay.setAttribute('aria-hidden', showPauseOverlay ? 'false' : 'true');
           if (windGain && simPaused) windGain.gain.value = 0;
           setFlightAudioGate(!simPaused);
           if (simPaused) speedLineMat.opacity = 0;
@@ -15482,7 +15668,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             animId = requestAnimationFrame(loop);
           }
           publishControlState();
-          refreshKeyGuide();updatePerchHud();
+          refreshKeyGuide();updatePerchHud();updatePracticeHud();updateMissionClock();
+          repaintPausedFlight(false);
           if (announcement !== false) rhAnnounce(simPaused ? 'Flight paused' : 'Flight resumed');
         }
         function normalizedKey(event) {
@@ -15495,6 +15682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           controlScheme = schemeId === 'custom' ? raptorCustomScheme(customKeys) : raptorControlScheme(schemeId);
           clearHeldInputs();
           refreshKeyGuide(true);
+          updatePauseControls();
         }
         function setKeyGuideEnabled(enabled) {
           keyGuideEnabled = !!enabled;
@@ -15515,6 +15703,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if (pair) rows.push({ key: pair, text: text, primary: !!primary, actions: [actionA, actionB] });
           }
           if (simPaused) { add('pause', 'Resume', true); return rows; }
+          if (mission.id === 'thermalKettle') {
+            addPair('turnLeft', 'turnRight', thermalActive ? 'Circle in lift' : 'Turn toward lift', true);
+            addPair('pitchUp', 'pitchDown', 'Adjust glide');
+            add('pause', 'Pause');
+            return rows;
+          }
           if(practiceTrail && practiceTrail.active){addPair('turnLeft','turnRight','Turn',true);addPair('pitchUp','pitchDown','Pitch');addPair('altUp','altDown','Trim altitude');return rows;}
           // Flight school owns the prompts while it runs: show the keys for the step
           // the learner is on, not the keys for the flight phase they happen to be in.
@@ -15530,7 +15724,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (state === 'ready') { add('strike', 'Strike now', true); add('pullUp', 'Abort'); }
           else if (state === 'close') { add('strike', 'Strike when ready', true); add('pullUp', 'Pull up'); addPair('turnLeft', 'turnRight', 'Fine-turn'); }
           else if (state === 'stoop') { add('dive', 'Hold to stoop', true); add('pullUp', 'Pull up'); addPair('turnLeft', 'turnRight', 'Turn'); }
-          else if (state === 'align' || state === 'aligned') { addPair('turnLeft', 'turnRight', 'Turn onto target'); addPair('pitchUp', 'pitchDown', 'Pitch'); add('dive', 'Dive when below', true); }
+          else if (state === 'align' || state === 'aligned') {
+            if (lastTargetCorrection) add(lastTargetCorrection, targetCorrectionLabel(lastTargetCorrection), true);
+            if (lastTargetCorrection === 'turnLeft' || lastTargetCorrection === 'turnRight') addPair('pitchUp', 'pitchDown', 'Adjust pitch');
+            else addPair('turnLeft', 'turnRight', 'Adjust heading');
+            add('strike', 'Strike when ready');
+          }
           else { addPair('turnLeft', 'turnRight', 'Turn'); addPair('pitchUp', 'pitchDown', 'Pitch'); addPair('altUp', 'altDown', 'Trim altitude'); add('assist', 'Target assist'); }
           if (!simPaused && !landed) add('pause', 'Pause');
           return rows.slice(0, 5);
@@ -15570,22 +15769,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function toggleView() {
           camMode = camMode === 'chase' ? 'fp' : 'chase';
+          cameraFloorSmoothed = null;
+          updatePausedView(true);
           publishControlState();
           rhAnnounce(camMode === 'fp' ? 'First-person raptor vision' : 'Chase camera');
         }
         function toggleZoom() {
           zoomActive = !zoomActive;
+          updatePausedView(false);
           if (zoomActive) markTutorialSignal('acuity');
           publishControlState();
           rhAnnounce(zoomActive ? 'Raptor acuity zoom on' : 'Raptor acuity zoom off');
         }
         function toggleAssist() {
+          if (mission.id === 'thermalKettle') {
+            rhAnnounce('Follow the rising-air rings in this soaring mission.');
+            return;
+          }
           targetLockOn = !targetLockOn;
           attendedPrey=null;cameraTrackedPrey=null;
           preyMeshes.forEach(function(prey) {
             if (prey.beacon) prey.beacon.visible = false;
             if (prey.beaconCap) prey.beaconCap.visible = false;
           });
+          updateTargetFeedback(motionNow, false);
+          repaintPausedFlight(false);
           publishControlState();
           rhAnnounce(targetLockOn ? 'Target assist on' : 'Target assist off');
         }
@@ -15626,14 +15834,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           if (simPaused) return;
           var key = RAPTOR_ACTION_KEYS[action];
-          keys[key] = true;
+          setHeldFlightInput('keyboard:' + (event.code || raw), key, true);
           if (key === 'a' || key === 'd') markTutorialSignal('steer');
           if (key === 'q' || key === 'e' || key === 'shift' || key === ' ' || key === 'w' || key === 's') markTutorialSignal('altitude');
           if (key === 'f' && !event.repeat) strike();
           event.preventDefault();
         }
         function onKeyUp(event) {
-          keys[normalizedKey(event)] = false;
+          setHeldFlightInput('keyboard:' + (event.code || String(event.key || '').toLowerCase()), normalizedKey(event), false);
         }
         function onCanvasBlur() {
           clearHeldInputs();
@@ -15688,7 +15896,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         pauseOverlay.setAttribute('aria-hidden', 'true');
         var pauseCard = document.createElement('div');
         pauseCard.className = 'rh-flight-pause-card';
-        pauseCard.innerHTML = '<div style="font-size:18px;font-weight:800">Flight paused</div><div style="font-size:12px;margin-top:5px;color:#cbd5e1">Press P or use Resume below.</div>';
+        pauseCard.setAttribute('role', 'group');pauseCard.setAttribute('aria-label', 'Paused flight controls');
+        var pauseTitle=document.createElement('strong');pauseTitle.className='rh-pause-title';pauseTitle.textContent='Flight paused';pauseCard.appendChild(pauseTitle);
+        var pauseCopy=document.createElement('p');pauseCopy.textContent='Flight is frozen. Adjust your view or continue.';pauseCard.appendChild(pauseCopy);
+        var pauseHint=document.createElement('p');pauseHint.className='rh-pause-hint';pauseCard.appendChild(pauseHint);
+        var pauseResume=document.createElement('button');pauseResume.type='button';pauseResume.className='rh-pause-resume';pauseResume.textContent='Resume flight';pauseResume.setAttribute('aria-label','Resume paused flight');
+        pauseResume.onclick=function(){setPaused(false);canvasEl.focus({preventScroll:true});};pauseCard.appendChild(pauseResume);
+        var pauseViews=document.createElement('div');pauseViews.className='rh-pause-views';pauseCard.appendChild(pauseViews);
+        var pauseView=document.createElement('button');pauseView.type='button';pauseView.setAttribute('aria-label','Change paused camera');pauseView.onclick=toggleView;pauseViews.appendChild(pauseView);
+        var pauseZoom=document.createElement('button');pauseZoom.type='button';pauseZoom.setAttribute('aria-label','Toggle paused zoom');pauseZoom.onclick=toggleZoom;pauseViews.appendChild(pauseZoom);
+        pauseCard.onkeydown=function(event){
+          if(event.key==='Enter' || event.key===' ')return;
+          var action=controlScheme.keys[String(event.key||'').toLowerCase()];
+          if(action==='pause' || action==='view' || action==='zoom'){
+            onKeyDown(event);if(!simPaused)canvasEl.focus({preventScroll:true});
+          }
+        };
+        function updatePauseControls() {
+          if(!pauseHint)return;
+          var pauseKeys=raptorKeysForAction(controlScheme,'pause').filter(function(key){return key!=='escape' || !(document.fullscreenElement || document.webkitFullscreenElement);}).map(raptorKeyName);
+          pauseHint.textContent=pauseKeys.length?'Resume shortcut: '+pauseKeys.join(' or '):'Use Resume flight to continue.';
+          pauseView.textContent=camMode==='fp'?'First person':'Chase view';pauseView.setAttribute('aria-pressed',String(camMode==='fp'));
+          pauseZoom.textContent=zoomActive?'Zoom on':'Zoom off';pauseZoom.setAttribute('aria-pressed',String(zoomActive));
+          [[pauseResume,'pause'],[pauseView,'view'],[pauseZoom,'zoom']].forEach(function(binding){
+            var shortcut=raptorActionShortcuts(controlScheme,binding[1]);
+            if(shortcut)binding[0].setAttribute('aria-keyshortcuts',shortcut);else binding[0].removeAttribute('aria-keyshortcuts');
+          });
+        }
+        updatePauseControls();
         pauseOverlay.appendChild(pauseCard);
         hudParent2.appendChild(pauseOverlay);
 
@@ -15697,17 +15932,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         flightMarker.setAttribute('aria-hidden', 'true');
         hudParent2.appendChild(flightMarker);
 
+        var missionUsesHuntCycle = mission.id === 'open' || mission.id === 'feedChicks';
         var missionPanel = document.createElement('div');
         missionPanel.className = 'rh-flight-mission-hud';
         missionPanel.setAttribute('data-raptor-mission-progress', mission.id);
         missionPanel.setAttribute('role', 'group');
-        missionPanel.setAttribute('aria-label', 'Mission progress');
+        missionPanel.setAttribute('aria-label', mission.id === 'open' ? 'Free Hunt progress' : 'Mission progress');
         var missionProgressEl = document.createElement('span');
         missionProgressEl.className = 'rh-flight-mission-progress';
         missionPanel.appendChild(missionProgressEl);
+        var missionClockEl = null, missionClockLabelEl = null, missionClockValueEl = null;
+        if (mission.id === 'feedChicks' || mission.id === 'silentStrike' || mission.id === 'thermalKettle') {
+          missionClockEl = document.createElement('span');
+          missionClockEl.className = 'rh-flight-mission-clock';
+          missionClockEl.setAttribute('data-raptor-mission-clock', mission.id);
+          missionClockEl.setAttribute('role', 'timer');
+          missionClockEl.setAttribute('aria-live', 'off');
+          missionClockLabelEl = document.createElement('span');
+          missionClockValueEl = document.createElement('strong');
+          missionClockEl.appendChild(missionClockLabelEl);
+          missionClockEl.appendChild(missionClockValueEl);
+          missionPanel.appendChild(missionClockEl);
+        }
         var missionPhaseEl = document.createElement('span');
         missionPhaseEl.className = 'rh-flight-mission-phase';
-        missionPhaseEl.setAttribute('aria-hidden', 'true');
+        if (!missionUsesHuntCycle) missionPhaseEl.setAttribute('aria-hidden', 'true');
         missionPanel.appendChild(missionPhaseEl);
         var missionMeterLabelEl = document.createElement('span');
         missionMeterLabelEl.className = 'rh-flight-mission-meter-label';
@@ -15739,7 +15988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         missionRouteEl.className = 'rh-flight-mission-route';
         missionRouteEl.setAttribute('data-raptor-mission-route', 'true');
         missionRouteEl.setAttribute('role', 'list');
-        missionRouteEl.setAttribute('aria-label', 'Mission route');
+        missionRouteEl.setAttribute('aria-label', missionUsesHuntCycle ? 'Hunt cycle' : 'Mission route');
         var missionRouteItems = [];
         function missionRouteSteps() {
           return missionRouteLabelsFor(mission);
@@ -15770,6 +16019,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           recordFlightEvent(success ? 'success' : 'fail', success ? 'Mission complete' : 'Mission ended', missionOutcomeText);
           missionPanel.style.borderColor = success ? '#34d399' : '#fca5a5';
           missionPanel.setAttribute('data-mission-state', missionOutcome);
+          // Resolve the HUD before pausing cancels the next simulation frame.
+          updateMissionHud();
           setPaused(true, false);
           var finalEnergyPct = Math.max(0, Math.min(100, Math.round((raptor.calories / Math.max(1, raptor.caloriesMax)) * 100)));
           var finalAltitudeM = Math.max(0, Math.round(runMaxAltitude));
@@ -15807,7 +16058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             missionId: mission.id,
             missionName: mission.name,
             outcome: missionOutcome,
-            catches: runCatches,
+            catches: missionCatches,
             energyPct: finalEnergyPct,
             flightTimeS: Math.round(missionElapsed)
           };
@@ -15820,20 +16071,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           notifyUI({ missionState: missionOutcome, missionMessage: missionOutcomeText, flightSummary: finalSummary });
           energyEventLog.push({
             msg: (success ? 'MISSION COMPLETE - ' : 'MISSION FAILED - ') + missionOutcomeText,
-            t: performance.now(),
+            t: motionNow,
             color: success ? '#34d399' : '#fca5a5'
           });
           rhAnnounce((success ? 'Mission complete. ' : 'Mission failed. ') + missionOutcomeText);
         }
+        function missionClockReading(limit, elapsed, paused, outcome) {
+          var seconds = Math.max(0, Math.ceil(limit - elapsed));
+          var state = outcome !== 'active' ? 'ended' : paused ? 'paused' : seconds <= 10 ? 'urgent' : seconds <= 30 ? 'low' : 'normal';
+          var label = state === 'ended' ? (seconds === 0 ? 'Time expired' : 'Time at end') : state === 'paused' ? 'Paused' : state === 'urgent' ? 'Final seconds' : state === 'low' ? 'Time running low' : 'Time left';
+          return { seconds: seconds, state: state, label: label, text: Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0') };
+        }
+        function updateMissionClock() {
+          if (!missionClockEl) return;
+          var reading = missionClockReading(mission.timeLimit, missionElapsed, simPaused, missionOutcome);
+          if (missionClockValueEl.textContent !== reading.text) missionClockValueEl.textContent = reading.text;
+          if (missionClockLabelEl.textContent !== reading.label) { missionClockLabelEl.textContent = reading.label; targetHudBoundsDirty = true; }
+          missionClockEl.dataset.clockState = reading.state;
+          missionClockEl.setAttribute('aria-label', reading.label + ': ' + reading.text);
+        }
+        function missionTimeRemainingText() {
+          var seconds = Math.max(0, Math.ceil(mission.timeLimit - missionElapsed));
+          return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+        }
+        function highStoopQualifyingDive() {
+          return raptor.diving && raptor.speed * 2.237 >= HIGH_STOOP_MIN_MPH;
+        }
+        function highStoopSpeedText() {
+          // Do not round a speed below the success threshold up to the qualifying value.
+          return Math.floor(Math.max(0, raptor.speed * 2.237)) + ' / ' + HIGH_STOOP_MIN_MPH + ' mph';
+        }
         function missionProgressText() {
           if (missionOutcome !== 'active') return missionOutcomeText;
-          if (mission.id === 'open') return runCatches + ' catches - free flight';
+          if (mission.id === 'open') return missionCatches + (missionCatches === 1 ? ' catch' : ' catches') + ' this flight';
           if (mission.id === 'feedChicks') return Math.round(missionCalories) + ' / ' + mission.calorieGoal + ' kcal delivered';
-          if (mission.id === 'crossDesert') return missionCatches + ' / 1 refuel catch - ' + Math.max(0, Math.ceil(mission.timeLimit - missionElapsed)) + 's remaining';
+          if (mission.id === 'crossDesert') return (missionCatches > 0 ? 'Refuel secured' : 'Find a refuel catch') + ' · ' + missionTimeRemainingText() + ' left';
           if (mission.id === 'silentStrike') return missionCatches + ' / 3 silent catches - ' + missionAlerts + ' alerts';
           if (mission.id === 'thermalKettle') return Math.max(0, Math.round(raptor.y - terrainHeightAt(raptor.x, raptor.z))) + ' / 500m - ' + (thermalActive ? 'inside lift' : 'find the thermal rings');
-          if (mission.id === 'avoidPredator') return missionCatches + ' / 2 catches - hunter ' + (isFinite(hunterDistance) ? Math.round(hunterDistance) + 'm away' : 'searching');
-          if (mission.id === 'highStoop') return Math.round(raptor.speed * 2.237) + ' / 180 mph - strike while diving';
+          if (mission.id === 'avoidPredator') {
+            return missionCatches + ' / 2 catches · ' + missionTimeRemainingText() + ' left';
+          }
+          if (mission.id === 'highStoop') return highStoopSpeedText() + ' · ' + missionTimeRemainingText() + ' left';
           return Math.max(0, Math.ceil((mission.timeLimit || 0) - missionElapsed)) + 's remaining';
         }
         function missionProgressRatio() {
@@ -15844,7 +16122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (mission.id === 'silentStrike') return Math.min(1, missionCatches / 3);
           if (mission.id === 'thermalKettle') return Math.min(1, Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z)) / 500);
           if (mission.id === 'avoidPredator') return Math.min(1, Math.min(1, missionElapsed / Math.max(1, mission.timeLimit)) * 0.35 + Math.min(1, missionCatches / 2) * 0.65);
-          if (mission.id === 'highStoop') return Math.min(1, Math.max(0, raptor.speed * 2.237) / 180 * (raptor.diving ? 1 : 0.45));
+          if (mission.id === 'highStoop') return Math.min(1, Math.max(0, raptor.speed * 2.237) / HIGH_STOOP_MIN_MPH);
           return 0;
         }
         function missionProgressLabel() {
@@ -15855,10 +16133,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (mission.id === 'silentStrike') return 'Quiet catches';
           if (mission.id === 'thermalKettle') return 'Altitude gained';
           if (mission.id === 'avoidPredator') return 'Survival + catches';
-          if (mission.id === 'highStoop') return 'Dive speed';
+          if (mission.id === 'highStoop') return 'Speed requirement';
           return 'Free flight';
         }
+        // Free Hunt repeats after every attempt; it has no terminal exploration phase.
+        function freeHuntStage(targetState, grounded, crashed) {
+          if (crashed) return { phase: 0, title: 'Recover on the ground', tip: 'Wait for recovery, then take off.' };
+          if (grounded || targetState === 'watch') return { phase: 0, title: 'Launch to pursue', tip: 'Take off when you are ready to hunt.' };
+          if (targetState === 'hit') return { phase: 3, title: 'Catch secured', tip: 'Glide, then scan for your next target.' };
+          if (targetState === 'miss') return { phase: 3, title: 'Reset your approach', tip: 'Use the Last strike coaching, then try again.' };
+          if (targetState === 'recovering') return { phase: 3, title: 'Talons recovering', tip: 'Keep flying while the strike resets.' };
+          if (targetState === 'ready') return { phase: 2, title: 'Strike window open', tip: 'Strike while the target is READY.' };
+          if (targetState === 'align') return { phase: 1, title: 'Line up your approach', tip: 'Follow the steering cue before closing in.' };
+          if (targetState === 'close') return { phase: 1, title: 'Close the distance', tip: 'Keep prey ahead; wait for READY.' };
+          if (targetState === 'stoop') return { phase: 1, title: 'Control your descent', tip: 'Hold a steady line toward the prey.' };
+          if (targetState === 'off') return { phase: 0, title: 'Explore freely', tip: 'Target assist is off. Scan the landscape.' };
+          return { phase: 0, title: 'Find your next target', tip: 'Turn slowly and look for prey.' };
+        }
+        function currentFreeHuntStage() {
+          return freeHuntStage(lastTargetState, raptor.landed, raptor.crashed);
+        }
         function missionPhaseText() {
+          if (missionUsesHuntCycle) {
+            if (missionOutcome !== 'active') return missionOutcome === 'success' ? 'Mission complete' : 'Run ended';
+            if (mission.id === 'feedChicks' && lastTargetState === 'off' && !raptor.landed && !raptor.crashed) return 'Scan without assist';
+            return currentFreeHuntStage().title;
+          }
           var total = missionRouteItems.length;
           if (!total) return '';
           var phase = Math.max(0, Math.min(total, missionRoutePhase()));
@@ -15869,12 +16169,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function missionRoutePhase() {
           if (missionOutcome === 'success') return missionRouteItems.length;
-          if (mission.id === 'feedChicks') return missionCalories >= mission.calorieGoal ? 3 : missionCalories > 0 ? 2 : runCatches > 0 ? 1 : 0;
+          // The hunt cycle repeats; the calorie meter tracks the provisioning goal.
+          if (missionUsesHuntCycle) return currentFreeHuntStage().phase;
           if (mission.id === 'crossDesert') return missionCatches > 0 ? 3 : raptor.calories < raptor.caloriesMax * 0.65 ? 2 : lastTargetState === 'ready' || lastTargetState === 'close' ? 1 : 0;
           if (mission.id === 'silentStrike') return missionCatches >= 3 ? 3 : missionCatches > 0 ? 2 : missionAlerts > 0 ? 1 : lastTargetState === 'ready' || lastTargetState === 'close' ? 2 : 0;
           if (mission.id === 'thermalKettle') return raptor.y - terrainHeightAt(raptor.x, raptor.z) >= 500 ? 3 : thermalActive ? 2 : flightRecorder.some(function(event) { return event && event.kind === 'thermal' && event.label === FLIGHT_EVENT_ENTERED_THERMAL; }) ? 1 : 0;
-          if (mission.id === 'avoidPredator') return missionCatches >= 2 ? 3 : missionCatches > 0 ? 2 : hunterDistance < 70 ? 1 : 0;
-          if (mission.id === 'highStoop') return raptor.speed * 2.237 >= 180 ? 3 : raptor.diving ? 2 : raptor.y - terrainHeightAt(raptor.x, raptor.z) > 260 ? 1 : 0;
+          if (mission.id === 'avoidPredator') return hunterDistance < 70 ? 1 : missionCatches >= 2 ? 3 : missionCatches > 0 || lastTargetState === 'ready' ? 2 : 0;
+          if (mission.id === 'highStoop') return highStoopQualifyingDive() ? (lastTargetState === 'ready' && strikeReady ? 3 : 2) : raptor.diving ? 1 : raptor.y - terrainHeightAt(raptor.x, raptor.z) > 260 ? 1 : 0;
           return runCatches > 0 ? 3 : lastTargetState === 'ready' ? 2 : lastTargetState === 'close' || lastTargetState === 'stoop' ? 1 : 0;
         }
         function updateMissionRoute() {
@@ -15890,18 +16191,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function missionFocusText() {
           if (missionOutcome !== 'active') return missionOutcome === 'success' ? 'Objective resolved · review your debrief' : 'Reset the run · change one variable';
-          if (mission.id === 'feedChicks') return missionCalories > 0 ? 'Bank calories with short glides' : 'Find prey before you burn energy';
-          if (mission.id === 'crossDesert') return 'Glide to preserve fuel between refuels';
-          if (mission.id === 'silentStrike') return missionAlerts > 0 ? 'Alert raised · glide sooner inside 30m' : 'Stay quiet inside 30m';
-          if (mission.id === 'thermalKettle') return thermalActive ? 'Thermal active · circle to climb' : 'Find the rising-air rings';
-          if (mission.id === 'avoidPredator') return hunterDistance < 70 ? 'Threat close · change altitude now' : 'Keep the hunter beyond 30m';
-          if (mission.id === 'highStoop') return raptor.diving ? 'Stoop active · align before striking' : 'Build height, then commit to the stoop';
+          if (mission.id === 'open') return currentFreeHuntStage().tip;
+          if (mission.id === 'feedChicks') {
+            if (lastTargetState === 'hit' && !raptor.landed && !raptor.crashed) return 'Catch credited automatically · ' + Math.max(0, Math.ceil(mission.calorieGoal - missionCalories)) + ' kcal to go.';
+            return currentFreeHuntStage().tip;
+          }
+          if (mission.id === 'crossDesert') return missionCatches > 0 ? 'Stay airborne · glide to conserve energy' : 'Catch prey to refuel · landing ends this mission';
+          if (mission.id === 'silentStrike') return 'Inside ' + SILENT_STRIKE_ALERT_RANGE_M + ' m: release ' + (controlKeyLabel('pullUp') || 'Pull up') + ' and glide';
+          if (mission.id === 'thermalKettle') {
+            if (raptor.landed || raptor.crashed) return 'Grounded · restart this flight to try again';
+            return (thermalActive ? 'Circle in lift' : 'Find the rising-air rings') + ' · ' + (controlKeyLabel('pullUp') || 'Pull up') + ' pull-up ends this mission';
+          }
+          if (mission.id === 'avoidPredator') {
+            var hunterRange = isFinite(hunterDistance) ? Math.round(hunterDistance) + ' m away' : 'approaching';
+            if (hunterDistance < 70) return 'Hunter ' + hunterRange + ' · change altitude now';
+            return (missionCatches >= 2 ? 'Catches secured · ' : 'Keep hunting · ') + 'hunter ' + hunterRange + '. Keep beyond 30 m.';
+          }
+          if (mission.id === 'highStoop') {
+            if (raptor.landed || raptor.crashed) return 'Grounded · regain height before another dive';
+            if (!raptor.diving) return 'Hold ' + (controlKeyLabel('dive') || 'Dive') + ' to dive · a gliding catch does not finish this mission';
+            if (!highStoopQualifyingDive()) return 'Keep diving · reach ' + HIGH_STOOP_MIN_MPH + ' mph before the catch';
+            if (!strikeReady) return 'Speed met · let your talons recover';
+            if (lastTargetState === 'ready') return 'Strike now' + (controlKeyLabel('strike') ? ' (' + controlKeyLabel('strike') + ')' : '') + ' · keep diving through the catch';
+            return 'Speed met · line up prey, then catch while diving';
+          }
           return 'Scan → align → strike';
         }
         function updateMissionHud() {
-          var progressText = mission.name + ': ' + missionProgressText();
+          updateMissionClock();
+          if (mission.id === 'highStoop') missionPanel.dataset.stoopReadiness = missionOutcome !== 'active' ? missionOutcome : !highStoopQualifyingDive() ? 'build' : lastTargetState === 'ready' && strikeReady ? 'ready' : 'align';
+          var progressText = mission.id === 'open' ? 'Free Hunt · ' + missionProgressText() : mission.name + ': ' + missionProgressText();
+          if (missionUsesHuntCycle) missionPanel.dataset.huntStep = missionOutcome === 'active' ? ['scan', 'align', 'strike', 'reset'][currentFreeHuntStage().phase] : missionOutcome;
           var focusText = missionFocusText();
           var phaseText = missionPhaseText();
+          // Text can change panel height before ResizeObserver delivers its next callback.
+          if (missionProgressEl.textContent !== progressText || missionPhaseEl.textContent !== phaseText || missionFocusEl.textContent !== focusText) targetHudBoundsDirty = true;
           if (missionProgressEl.textContent !== progressText) missionProgressEl.textContent = progressText;
           missionPhaseEl.dataset.phaseState = missionOutcome;
           if (missionPhaseEl.textContent !== phaseText) missionPhaseEl.textContent = phaseText;
@@ -15915,11 +16239,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             missionMeterLabelEl.style.display = 'flex';
             missionMeterLabelEl.dataset.progressState = missionOutcome;
             missionMeterLabelTextEl.textContent = missionProgressLabel();
-            missionMeterLabelValueEl.textContent = progressPct + '%';
+            var stoopSpeedMeter = mission.id === 'highStoop' && missionOutcome === 'active';
+            missionMeterLabelValueEl.textContent = stoopSpeedMeter ? highStoopSpeedText() : progressPct + '%';
             missionMeterEl.style.display = 'block';
             missionMeterEl.dataset.progressState = missionOutcome;
-            missionMeterEl.setAttribute('aria-valuenow', String(progressPct));
-            missionMeterEl.setAttribute('aria-valuetext', progressPct + '% complete. ' + missionProgressText());
+            missionMeterEl.setAttribute('aria-label', stoopSpeedMeter ? 'Dive speed requirement' : 'Mission completion');
+            missionMeterEl.setAttribute('aria-valuemax', String(stoopSpeedMeter ? HIGH_STOOP_MIN_MPH : 100));
+            missionMeterEl.setAttribute('aria-valuenow', String(stoopSpeedMeter ? Math.min(HIGH_STOOP_MIN_MPH, Math.floor(Math.max(0, raptor.speed * 2.237))) : progressPct));
+            missionMeterEl.setAttribute('aria-valuetext', stoopSpeedMeter ? highStoopSpeedText() + '. ' + (highStoopQualifyingDive() ? 'Dive speed met. A successful catch is still required.' : 'Catch prey while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster.') : progressPct + '% complete. ' + missionProgressText());
             missionMeterFillEl.style.width = progressPct + '%';
           }
           updateMissionRoute();
@@ -15934,14 +16261,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           } else if (mission.id === 'thermalKettle' && raptor.y - terrainHeightAt(raptor.x, raptor.z) >= 500) {
             finishMission(true, mission.successText);
           } else if (mission.id === 'avoidPredator') {
+            // Catches do not end the survival period; resolve success at the deadline below.
             if (hunterDistance < 30) finishMission(false, 'The goshawk closed inside 30m.');
-            else if (missionCatches >= 2) finishMission(true, mission.successText);
-          } else if (mission.id === 'crossDesert' && raptor.calories <= -50) {
-            finishMission(false, 'Energy reserves were exhausted before the crossing ended.');
+          } else if (mission.id === 'crossDesert') {
+            if (raptor.calories <= 0) finishMission(false, 'Energy ran out before the crossing ended. Catch prey earlier to refuel.');
+            else if (missionGroundContact || raptor.landed || raptor.crashed) finishMission(false, 'The crossing ended on the ground. Stay airborne for the full 6 minutes.');
           }
           if (missionOutcome === 'active' && mission.timeLimit > 0 && missionElapsed >= mission.timeLimit) {
             if (mission.id === 'crossDesert') {
-              finishMission(missionCatches >= 1 && raptor.calories > 0, missionCatches >= 1 ? mission.successText : 'The crossing ended without a refuel catch.');
+              finishMission(missionCatches >= 1, missionCatches >= 1 ? mission.successText : 'The crossing ended without a refuel catch.');
             } else if (mission.id === 'avoidPredator') {
               finishMission(missionCatches >= 2 && hunterDistance >= 30, missionCatches >= 2 ? mission.successText : 'Survival required two catches while keeping distance.');
             } else {
@@ -15987,7 +16315,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           // The center remains usable even in a very short embedded stage.
           var middle = host.height / 2;
-          targetHudInsets = { top: Math.min(top, middle), bottom: Math.min(bottom, middle), right: right, labelRight: labelRight };
+          // Use the free vertical corridor before falling back to the center in short views.
+          var lowerInset = Math.min(bottom, middle);
+          var upperLimit = Math.max(middle, host.height - lowerInset);
+          targetHudInsets = { top: Math.min(top, upperLimit), bottom: lowerInset, right: right, labelRight: labelRight };
         }
         function clampProjectedTarget(ndcX, ndcY) {
           var clampedX = Math.max(-0.88, Math.min(0.88, ndcX));
@@ -16017,7 +16348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         canvasEl._rhCommand = function(action, value) {
           if (disposed) return;
           if (action === 'hold' && value) {
-            keys[value.key] = !!value.pressed && !simPaused;
+            setHeldFlightInput('button:' + value.key, value.key, !!value.pressed && !simPaused);
             // On-screen hold buttons must satisfy flight school too. Without this a learner
             // driving with the buttons (or any touch user not dragging) is stuck on step one.
             if (value.pressed && !simPaused) {
@@ -16034,6 +16365,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             toggleZoom();
           } else if (action === 'assist') {
             toggleAssist();
+          } else if (action === 'scenic') {
+            canvasEl.parentElement.dataset.raptorScenicView = value ? 'true' : 'false';
+            targetHudBoundsDirty = true;
+            updateTargetFeedback(motionNow, false);
+            applyFlightOverlayVisibility(false);
+            repaintPausedFlight(false);
           } else if (action === 'trail') {
             if(!simPaused) togglePracticeTrail();
           } else if (action === 'sound') {
@@ -16091,7 +16428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return count;
         }
         canvasEl._rhSnapshot = function() {
-          var snapshotTarget = targetLockOn ? acquireTarget() : null;
+          var snapshotTarget = targetLockOn && mission.id !== 'thermalKettle' ? acquireTarget() : null;
           var sampleRelativeY = 0;
           if (precipitationMode === 'rain' && activePrecipitationCount > 0) sampleRelativeY = rainPositions[1] - camera.position.y;
           else if (precipitationMode === 'snow' && activePrecipitationCount > 0) sampleRelativeY = snowPositions[1] - camera.position.y;
@@ -16123,6 +16460,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             renderFrames: renderFrameCount,
             snapshotTimeMs: performance.now(),
             motionTimeMs: motionNow,
+            strikeReady: strikeReady,
+            strikeRecoveryMs: Math.max(0, strikeRecoveryUntil - motionNow),
+            strikeFeedbackKind: strikeFeedback.kind,
+            strikeFeedbackAgeMs: strikeFeedback.kind === 'idle' ? 0 : Math.max(0, motionNow - strikeFeedback.startedAt),
+            pendingHuntActions: pendingFlightActions.length,
             raptorPosition: { x: raptor.x, y: raptor.y, z: raptor.z },
             perched: !!activePerch,
             practicePerch: practicePerch ? {x:practicePerch.x,y:practicePerch.y,z:practicePerch.z,radius:practicePerch.radius,kind:perchProfile.kind} : null,
@@ -16172,6 +16514,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             practiceTrailIndex: practiceTrail.index,
             practiceTrailPassed: practiceTrail.passed,
             practiceTrailScore: practiceTrail.score,
+            practiceTrailBestScore: practiceTrail.bestScore,
+            practiceTrailAttempts: practiceTrail.attempts,
             practiceNextGate: practiceTrail.active ? Object.assign({},practiceTrail.gates[practiceTrail.index]) : null,
             distantGroundVertices: terrainApron.geometry.attributes.position.count,
             lakeSurfaceVertices: lake ? lake.geometry.attributes.position.count : 0,
@@ -16399,6 +16743,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         vortexLeftGeometry.setAttribute('position', vortexLeftAttribute);
         vortexRightGeometry.setAttribute('position', vortexRightAttribute);
         var vortexMaterial = new THREE.LineBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0, depthWrite: false });
+        // A static per-vertex fade keeps the tiny lines from ending in a hard cutoff.
+        var vortexFade = new Float32Array(vortexPointCount);
+        for (var fadeIndex = 0; fadeIndex < vortexPointCount; fadeIndex++) {
+          var fadeProgress = fadeIndex / Math.max(1, vortexPointCount - 1);
+          vortexFade[fadeIndex] = Math.pow(1 - fadeProgress, 1.5);
+        }
+        vortexLeftGeometry.setAttribute('tipFade', new THREE.BufferAttribute(vortexFade, 1));
+        vortexRightGeometry.setAttribute('tipFade', new THREE.BufferAttribute(vortexFade, 1));
+        vortexMaterial.onBeforeCompile = function(shader) {
+          shader.vertexShader = 'attribute float tipFade; varying float vTipFade;\n' + shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvTipFade = tipFade;');
+          shader.fragmentShader = 'varying float vTipFade;\n' + shader.fragmentShader;
+          shader.fragmentShader = shader.fragmentShader.replace('#include <premultiplied_alpha_fragment>', 'gl_FragColor.a *= vTipFade;\n#include <premultiplied_alpha_fragment>');
+          vortexMaterial.userData.tipFadeCompiled = true;
+        };
+        vortexMaterial.customProgramCacheKey = function() { return 'raptor-wingtip-fade-v1'; };
         var wingtipVortices = new THREE.Group();
         wingtipVortices.name = 'raptor-wingtip-vortices';
         wingtipVortices.frustumCulled = false;
@@ -16413,6 +16773,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var vortexTip = new THREE.Vector3();
         var vortexRight = new THREE.Vector3();
         var vortexUp = new THREE.Vector3();
+        var vortexMorphPoint = new THREE.Vector3();
+        function wingtipAnchor(primary, surface) {
+          var mesh = primary || surface, count = mesh.geometry.attributes.position.count;
+          return { mesh: mesh, first: primary ? count - 2 : count - 4, second: primary ? count - 1 : count - 4 };
+        }
+        var vortexAnchors = [wingtipAnchor(leftPrimaryFeathers[0], leftWingSurface), wingtipAnchor(rightPrimaryFeathers[0], rightWingSurface)];
+        function readWingtipAnchor(anchor, output) {
+          var mesh = anchor.mesh, position = mesh.geometry.attributes.position;
+          var morph = mesh.geometry.morphAttributes.position[0], fold = mesh.morphTargetInfluences[0] || 0;
+          output.set((position.getX(anchor.first) + position.getX(anchor.second)) * 0.5,
+            (position.getY(anchor.first) + position.getY(anchor.second)) * 0.5,
+            (position.getZ(anchor.first) + position.getZ(anchor.second)) * 0.5);
+          if (morph && fold) {
+            vortexMorphPoint.set((morph.getX(anchor.first) + morph.getX(anchor.second)) * 0.5,
+              (morph.getY(anchor.first) + morph.getY(anchor.second)) * 0.5,
+              (morph.getZ(anchor.first) + morph.getZ(anchor.second)) * 0.5);
+            output.lerp(vortexMorphPoint, fold);
+          }
+          mesh.localToWorld(output);
+        }
         function updateWingtipVortices(now) {
           var vortexActive = !_rmFX && !raptor.landed && !raptor.crashed && !raptor.diving &&
             raptor.speed > raptor.maxLevel * 0.58;
@@ -16426,13 +16806,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           vortexUp.crossVectors(vortexRight, flightForward).normalize();
           var speedRatio = Math.max(0, Math.min(1, raptor.speed / Math.max(1, raptor.stoopMax)));
           var trailLength = 2.8 + speedRatio * 8.2;
-          var tipHeight = 0.04;
-          var tipDepth = silhouetteProfile.sweep * wingDepth * 0.78;
-          var sideSign;
+          // Resolve the just-animated wing hierarchy before sampling its world-space tips.
+          raptorGroup.updateMatrixWorld(true);
           for (var vortexSide = 0; vortexSide < 2; vortexSide++) {
-            sideSign = vortexSide === 0 ? -1 : 1;
-            vortexTip.set(sideSign * wingSpan * 1.05, tipHeight, tipDepth);
-            raptorGroup.localToWorld(vortexTip);
+            readWingtipAnchor(vortexAnchors[vortexSide], vortexTip);
             var positions = vortexSide === 0 ? vortexLeftPositions : vortexRightPositions;
             for (var vortexIndex = 0; vortexIndex < vortexPointCount; vortexIndex++) {
               var vortexProgress = vortexIndex / Math.max(1, vortexPointCount - 1);
@@ -16446,11 +16823,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           vortexLeftAttribute.needsUpdate = true;
           vortexRightAttribute.needsUpdate = true;
-          vortexMaterial.opacity = Math.min(0.26, 0.05 + speedRatio * 0.18 + weather.windSpeed * 0.003);
+          var onset = Math.max(0, Math.min(1, (raptor.speed / raptor.maxLevel - 0.58) / 0.2));
+          onset = onset * onset * (3 - 2 * onset);
+          vortexMaterial.opacity = onset * Math.min(0.22, 0.04 + speedRatio * 0.15 + weather.windSpeed * 0.002);
           vortexMaterial.color.setHex(thermalActive ? 0xfef3c7 : 0xe0f2fe);
           wingtipVortices.visible = true;
         }
 
+        // Steering advice follows the bird's heading and pitch, independent of chase-camera lag.
+        // Keep the previous axis until the other error is 20% larger to avoid alternating cues.
+        function targetSteeringCorrection(dx, dy, dz, yaw, pitch, previous) {
+          var horizontal = Math.hypot(dx, dz);
+          if (horizontal < 0.001 && Math.abs(dy) < 0.001) return null;
+          var yawError = horizontal < 0.001 ? 0 : Math.atan2(dx, -dz) - yaw;
+          yawError = Math.atan2(Math.sin(yawError), Math.cos(yawError));
+          var pitchError = Math.atan2(dy, horizontal) - pitch;
+          var yawSize = Math.abs(yawError), pitchSize = Math.abs(pitchError);
+          if (Math.max(yawSize, pitchSize) < 0.06) return null;
+          var useTurn = yawSize >= pitchSize;
+          if ((previous === 'turnLeft' || previous === 'turnRight') && yawSize >= 0.06 && pitchSize < yawSize * 1.2) useTurn = true;
+          if ((previous === 'pitchUp' || previous === 'pitchDown') && pitchSize >= 0.06 && yawSize < pitchSize * 1.2) useTurn = false;
+          return useTurn ? (yawError > 0 ? 'turnRight' : 'turnLeft') : (pitchError > 0 ? 'pitchUp' : 'pitchDown');
+        }
+        // Round close distances upward so an out-of-reach target never reads as in reach.
+        // Farther estimates stay quantized and explicitly approximate to avoid chattering digits.
+        function targetRangeLabel(distance) {
+          if (!isFinite(distance)) return '—';
+          distance = Math.max(0, distance);
+          if (distance <= 10) return (Math.ceil(distance * 10) / 10).toFixed(1) + ' m';
+          if (distance <= 50) return Math.ceil(distance) + ' m';
+          return '~' + Math.round(distance / 5) * 5 + ' m';
+        }
+        function targetMarkerLabel(state, edge, ready, recovering) {
+          // This is a screen bearing, not a steering command: chase-camera lag can differ from heading.
+          if (edge) {
+            var vertical = edge.indexOf('top') !== -1 ? 'ABOVE' : edge.indexOf('bottom') !== -1 ? 'BELOW' : '';
+            var horizontal = edge.indexOf('left') !== -1 ? 'LEFT' : edge.indexOf('right') !== -1 ? 'RIGHT' : '';
+            return 'PREY ' + [vertical, horizontal].filter(Boolean).join(' ');
+          }
+          if (state === 'watch') return 'WATCHING';
+          if (ready) return 'READY TO STRIKE';
+          if (recovering || state === 'recovering') return 'RECOVERING';
+          return { stoop: 'DESCEND', close: 'CLOSE', hit: 'NEXT TARGET', miss: 'RESET APPROACH' }[state] || 'ALIGN';
+        }
+        function targetCorrectionLabel(action) {
+          return { turnLeft: 'Turn left', turnRight: 'Turn right', pitchUp: 'Pitch up', pitchDown: 'Pitch down' }[action] || 'Hold steady';
+        }
         function evaluatePreyTarget(prey, index) {
           var dx = prey.mesh.position.x - raptor.x;
           var dy = prey.mesh.position.y - raptor.y;
@@ -16466,6 +16884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             index: index,
             distance: distance,
             verticalOffset: dy,
+            correction: targetSteeringCorrection(dx, dy, dz, raptor.yaw, raptor.pitch, lastTargetCorrection),
             dot: dot,
             reach: reach,
             canStrike: !activePerch && !raptor.crashed && distance <= reach && dot >= 0.7
@@ -16535,12 +16954,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function strike() {
           if(simPaused || raptor.crashed || activePerch)return;
           markTutorialSignal('strike');
-          var now = performance.now();
-          if (now - lastStrike < 400) return;
-          lastStrike = now;
+          if (!strikeReady) return;
+          var now = motionNow;
+          strikeRecoveryUntil = now + 400;
           strikeReady = false;
           publishControlState();
-          queueTimer(function() {
+          queueFlightAction(function() {
             strikeReady = true;
             publishControlState();
           }, 400);
@@ -16593,12 +17012,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             lastCatchCalories = Math.round(caloriesGained);
             lastCatchCapped = (preyMassKg * 1300) > (species.massKg * 0.3 * 1300);
             var catchFeedback = 'CATCH - ' + caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal';
-            energyEventLog.push({ msg: '✓ ' + catchFeedback, t: now, color: '#34d399' });
+            energyEventLog.push({ msg: '✓ ' + catchFeedback, t: motionNow, color: '#34d399' });
             recordFlightEvent('catch', 'Catch secured', caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal');
-            beginStrikeFeedback('hit', catchFeedback, now);
+            beginStrikeFeedback('hit', catchFeedback, now, mission.id === 'highStoop' && !highStoopQualifyingDive() ? 'Catch counted, but High Stoop needs a catch while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster. Build another approach.' : 'Glide to conserve energy, then scan for the next target.');
             rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_strike', 'Strike! {value1}'), { value1: catchFeedback }));
             playSpeciesCall('strike');
-            queueTimer(function() { playSpeciesCall('screech'); }, 200);
+            queueFlightAction(function() { playSpeciesCall('screech'); }, 200);
             if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
             setRH(function(prev) {
               var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
@@ -16607,20 +17026,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               allStats[species.id] = nextStats;
               return Object.assign({}, prev, { huntStats: allStats });
             });
-            queueTimer(function() {
+            queueFlightAction(function() {
               var newPrey = spawnPrey();
               if (newPrey) preyMeshes.push(newPrey);
             }, 1500);
             // Talon and particle feedback must not teleport the flight body.
-            if (mission.id === 'highStoop' && raptor.diving && raptor.speed * 2.237 >= 180) {
+            if (mission.id === 'highStoop' && highStoopQualifyingDive()) {
               finishMission(true, mission.successText);
             }
             evaluateMission();
           } else {
             var missFeedback = strikeMissReason(targetInfo);
             var missMessage = missFeedback.code + ' - ' + missFeedback.detail;
-            beginStrikeFeedback('miss', missMessage, now);
-            energyEventLog.push({ msg: '× MISS - ' + missMessage, t: now, color: '#fdba74' });
+            var strikeTip = {
+              'NO TARGET': 'Try a slow turn to bring prey into view before striking.',
+              'TOO FAR': 'Close the gap before striking. The range meter fills as you approach.',
+              'TURN LEFT': 'Turn gently left, then steady your heading when the target is ready.',
+              'TURN RIGHT': 'Turn gently right, then steady your heading when the target is ready.',
+              'PITCH UP': 'Raise the bird’s flight angle gently, then steady your approach.',
+              'PITCH DOWN': 'Lower the bird’s flight angle gently, then steady your approach.',
+              'ALIGN': 'Use small steering corrections to keep prey directly ahead.'
+            }[missFeedback.code];
+            beginStrikeFeedback('miss', missMessage, now, strikeTip);
+            energyEventLog.push({ msg: '× MISS - ' + missMessage, t: motionNow, color: '#fdba74' });
             recordFlightEvent('miss', 'Strike missed', missMessage);
             rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_miss', 'Miss. {value1}'), { value1: missMessage }));
             setRH(function(prev) {
@@ -16681,6 +17109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             strikeFxPositionAttribute.needsUpdate = true;
             strikeContactMesh.instanceMatrix.needsUpdate = true;
           }
+          repaintPausedFlight(true);
         }
         if (reducedMotionMedia && reducedMotionMedia.addEventListener) {
           reducedMotionMedia.addEventListener('change', onReducedMotionChange);
@@ -16759,7 +17188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         telemetryStaminaTrack.appendChild(telemetryStaminaFill);
         telemetryEnergyBars.appendChild(telemetryStaminaTrack);
         telemetryEnergy.parentElement.appendChild(telemetryEnergyBars);
-        var telemetryTarget = addTelemetryMetric('Target', 'target');
+        var telemetryTarget = addTelemetryMetric(mission.id === 'thermalKettle' ? 'Lift' : 'Target', 'target');
         var telemetryWeather = addTelemetryMetric('Weather', 'weather');
         telemetryWeather.parentElement.dataset.raptorWeather = 'true';
         var telemetryMission = addTelemetryMetric('Mission', 'mission');
@@ -16851,8 +17280,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var lastPublishedFps = 0;
         var lastFlightState = 'glide';
         var lastWindDisplay = '';
-        var practiceTrail={active:false,complete:false,index:0,passed:0,centered:0,score:0,gates:[],meshes:[],feedback:'',feedbackUntil:0};
-        var practiceButton=null,practiceHud=null,practiceProgress=null,practiceHint=null,practiceScore=null,practicePips=[];
+        var practiceTrail={active:false,complete:false,index:0,passed:0,centered:0,score:0,bestScore:null,attempts:0,gates:[],meshes:[],feedback:'',feedbackUntil:0};
+        var practiceButton=null,practiceHud=null,practiceProgress=null,practiceHint=null,practiceScore=null,practicePips=[],practiceResult=null,practiceBest=null,practiceCoach=null,practiceRetry=null,practiceDismiss=null;
         function buildPracticeTrail(origin,yaw,sampleHeight,ceiling) {
           var gates=[],x=origin.x,z=origin.z,heading=yaw;
           for(var i=0;i<5;i++) {
@@ -16910,7 +17339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function updatePracticeHud() {
           if(!practiceHud)return;
-          practiceScore.textContent=practiceTrail.score+' '+__alloT('stem.raptorhunt.trail_points','points');
+          practiceScore.textContent=practiceTrail.score+' / 10 '+__alloT('stem.raptorhunt.trail_points','points');
           practicePips.forEach(function(pip,i){
             var gate=practiceTrail.gates[i],done=i<practiceTrail.index;
             var state=done?(gate.hit?(gate.centered?'centered':'passed'):'missed'):i===practiceTrail.index&&practiceTrail.active?'current':'waiting';
@@ -16920,10 +17349,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             pip.setAttribute('aria-label',__alloT('stem.raptorhunt.trail_ring','Ring')+' '+(i+1)+(status?': '+status:''));
             if(state==='current')pip.setAttribute('aria-current','step');else pip.removeAttribute('aria-current');
           });
-          practiceHud.hidden=!practiceTrail.active && (!practiceTrail.complete || motionNow>practiceTrail.feedbackUntil);
+          practiceHud.hidden=!practiceTrail.active && !practiceTrail.complete;
+          practiceHud.dataset.complete=String(practiceTrail.complete);
+          hudParent.dataset.raptorTrailResult=String(practiceTrail.complete);
+          practiceResult.hidden=!practiceTrail.complete;
+          practiceRetry.disabled=simPaused || raptor.landed || raptor.crashed;
+          practiceRetry.title=simPaused?'Resume flight to fly another trail':raptor.landed || raptor.crashed?'Take off to fly another trail':'';
+          practiceBest.hidden=practiceTrail.bestScore===null;
+          practiceBest.textContent=practiceTrail.bestScore===null?'':'Best this flight: '+practiceTrail.bestScore+' / 10 · '+practiceTrail.attempts+' completed';
           if(practiceTrail.complete) {
             practiceProgress.textContent=__alloT('stem.raptorhunt.trail_finished','Trail finished')+' · '+practiceTrail.passed+' / 5';
-            practiceHint.textContent=practiceTrail.centered+' '+__alloT('stem.raptorhunt.trail_centered','centered')+' · '+practiceTrail.score+' '+__alloT('stem.raptorhunt.trail_points','points');
+            practiceHint.textContent=practiceTrail.centered+' '+__alloT('stem.raptorhunt.trail_centered','centered')+' · '+(5-practiceTrail.passed)+' missed';
+            practiceCoach.textContent=practiceTrail.passed<5?'Next try: turn toward the next ring early, then make small corrections.':practiceTrail.centered<5?'Next try: aim through the small inner circle. Each centered pass earns 2 points.':'All five centered. Try using the same gentle corrections to line up prey.';
           } else if(practiceTrail.active) {
             var next=practiceTrail.gates[practiceTrail.index],distance=Math.round(Math.hypot(next.x-raptor.x,next.y-raptor.y,next.z-raptor.z));
             practiceProgress.textContent=__alloT('stem.raptorhunt.trail_ring','Ring')+' '+(practiceTrail.index+1)+' / 5 · '+distance+' m';
@@ -16934,7 +17371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function togglePracticeTrail() {
           if(mission.id!=='open' || simPaused)return;
-          if(activePerch){rhAnnounce('Take off before starting the flight trail.');return;}
+          if(!practiceTrail.active && (raptor.landed || raptor.crashed)){rhAnnounce('Take off before starting the flight trail.');return;}
           if(practiceTrail.active) {
             practiceTrail.active=false;practiceTrail.complete=false;
             practiceTrail.meshes.forEach(function(mesh){mesh.group.visible=false;});
@@ -16948,6 +17385,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           practiceButton.setAttribute('aria-pressed',String(practiceTrail.active));
           practiceButton.textContent=practiceTrail.active?__alloT('stem.raptorhunt.trail_stop','Stop trail'):__alloT('stem.raptorhunt.flight_trail','Flight trail');
           refreshKeyGuide(true);updatePracticeHud();rhAnnounce(practiceTrail.active?practiceTrail.feedback:__alloT('stem.raptorhunt.trail_stopped','Flight trail stopped. Free flight continues.'));
+        }
+        function dismissPracticeResult() {
+          practiceTrail.complete=false;
+          practiceTrail.meshes.forEach(function(mesh){mesh.group.visible=false;});
+          practiceButton.textContent=__alloT('stem.raptorhunt.flight_trail','Flight trail');
+          updatePracticeHud();
         }
         var perchButton=null,perchHud=null,perchHint=null;
         function ensurePracticePerch() {
@@ -16993,6 +17436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function startPerchedPractice() {
           if(!perchProfile || mission.id!=='open' || simPaused || raptor.crashed)return;
           if(practiceTrail.active)togglePracticeTrail();
+          if(practiceTrail.complete)dismissPracticeResult();
           ensurePracticePerch();clearHeldInputs();clearTouchdownFx();
           strikeFeedback.kind='idle';attendedPrey=null;gazeTarget=null;
           activePerch=practicePerch;raptor.x=activePerch.x;raptor.z=activePerch.z;raptor.y=activePerch.y+1.5;
@@ -17024,7 +17468,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             practiceTrail.feedback=crossing.centered?__alloT('stem.raptorhunt.trail_perfect','Centered pass · +2'):crossing.hit?__alloT('stem.raptorhunt.trail_passed','Ring passed · +1'):__alloT('stem.raptorhunt.trail_missed','Missed ring · follow the next one');
             practiceTrail.feedbackUntil=motionNow+1800;practiceTrail.index++;
             if(practiceTrail.index===practiceTrail.gates.length) {
-              practiceTrail.active=false;practiceTrail.complete=true;practiceTrail.feedbackUntil=motionNow+6000;hudParent.dataset.raptorFlightTrail='false';
+              practiceTrail.active=false;practiceTrail.complete=true;practiceTrail.attempts++;
+              practiceTrail.bestScore=Math.max(practiceTrail.bestScore===null?0:practiceTrail.bestScore,practiceTrail.score);
+              hudParent.dataset.raptorFlightTrail='false';
               practiceButton.setAttribute('aria-pressed','false');practiceButton.textContent=__alloT('stem.raptorhunt.trail_again','Fly another trail');
               recordFlightEvent('trail',__alloT('stem.raptorhunt.trail_finished','Trail finished'),practiceTrail.passed+' / 5 · '+practiceTrail.centered+' '+__alloT('stem.raptorhunt.trail_centered','centered'));
               rhAnnounce(__alloT('stem.raptorhunt.trail_finished','Trail finished')+'. '+practiceTrail.passed+' / 5. '+practiceTrail.score+' '+__alloT('stem.raptorhunt.trail_points','points'));
@@ -17066,7 +17512,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var practiceTrack=document.createElement('div');practiceTrack.className='rh-practice-track';
           for(var stepIndex=0;stepIndex<5;stepIndex++){var pip=document.createElement('span');pip.className='rh-practice-pip';pip.setAttribute('role','img');practiceTrack.appendChild(pip);practicePips.push(pip);}
           practiceScore=document.createElement('span');practiceScore.className='rh-practice-score';practiceTrack.appendChild(practiceScore);
-          practiceHud.appendChild(practiceTrack);practiceHud.appendChild(practiceHint);hudParent.appendChild(practiceHud);
+          practiceHud.appendChild(practiceTrack);practiceHud.appendChild(practiceHint);
+          practiceBest=document.createElement('span');practiceBest.className='rh-practice-best';practiceBest.hidden=true;practiceHud.appendChild(practiceBest);
+          practiceResult=document.createElement('div');practiceResult.className='rh-practice-result';practiceResult.hidden=true;
+          practiceCoach=document.createElement('p');practiceCoach.className='rh-practice-coach';practiceResult.appendChild(practiceCoach);
+          var practiceActions=document.createElement('div');practiceActions.className='rh-practice-actions';
+          practiceRetry=document.createElement('button');practiceRetry.type='button';practiceRetry.textContent='Fly trail again';
+          practiceRetry.onclick=function(){togglePracticeTrail();canvasEl.focus({preventScroll:true});};
+          practiceDismiss=document.createElement('button');practiceDismiss.type='button';practiceDismiss.textContent='Return to hunt';
+          practiceDismiss.onclick=function(){dismissPracticeResult();canvasEl.focus({preventScroll:true});rhAnnounce('Trail result closed. Scan for prey to practice your approach.');};
+          practiceActions.appendChild(practiceRetry);practiceActions.appendChild(practiceDismiss);practiceResult.appendChild(practiceActions);
+          practiceHud.appendChild(practiceResult);hudParent.appendChild(practiceHud);
         }
 
         if(mission.id==='open' && perchProfile) {
@@ -17091,6 +17547,348 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         setRaptorCanvasData('raptorAudioOneShotCapacity', MAX_FLIGHT_ONE_SHOTS);
         setRaptorCanvasData('raptorQualityTier', graphicsQuality);
         setRaptorCanvasData('raptorReducedMotion', _rmFX ? 'true' : 'false');
+        var lastCameraDive = false, lastCameraTurn = 0, lastCameraStrike = 0;
+        // Retain animation eligibility separately from Scenic view's visibility mask.
+        var flightOverlayVisibility = { airflow: false, trail: false, vortices: false };
+        function updateFlightFov(dt, strikeEnvelope, snap) {
+          var _diveFrac = 0;
+          try {
+            if (raptor.diving && !zoomActive && !_rmFX) {
+              _diveFrac = (raptor.speed - raptor.maxLevel * 0.8) / (raptor.stoopMax - raptor.maxLevel * 0.8);
+              _diveFrac = Math.max(0, Math.min(1, _diveFrac));
+            }
+            if (diveVig) diveVig.style.opacity = String(_diveFrac * 0.85);
+          } catch (e) { _diveFrac = 0; }
+          var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)
+            ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 5 : 2)
+            : 0;
+          var targetFov = zoomActive ? acuityFov : (70 + _diveFrac * 16 + impactFovKick);
+          if (snap || Math.abs(camera.fov - targetFov) > 0.1) {
+            camera.fov += (targetFov - camera.fov) * (snap ? 1 : dampingAlpha(12, dt));
+            camera.updateProjectionMatrix();
+          }
+        }
+        // Share the same framing and ground clearance for live flight and paused view changes.
+        function updateFlightCamera(dt, diveKey, visualTurnRate, strikeEnvelope, snap) {
+          lastCameraDive = diveKey; lastCameraTurn = visualTurnRate; lastCameraStrike = strikeEnvelope;
+          // ── Camera follow: chase (3rd person) OR first-person (from head) ──
+          flightForwardVector(flightForward);
+          if (camMode === 'fp') {
+            raptorGroup.visible = false;
+            cameraTargetBlend += (0 - cameraTargetBlend) * (snap ? 1 : dampingAlpha(10, dt));
+            cameraLateralLead += (0 - cameraLateralLead) * (snap ? 1 : dampingAlpha(10, dt));
+            var fpOffset = 0.6;
+            var fpHeight = 0.45;
+            camera.position.set(
+              raptor.x + flightForward.x * fpOffset,
+              raptor.y + fpHeight + flightForward.y * fpOffset,
+              raptor.z + flightForward.z * fpOffset
+            );
+            var fpTerrainFloor =
+              terrainHeightAt(camera.position.x, camera.position.z) + 0.72;
+            if (cameraFloorSmoothed === null) cameraFloorSmoothed = fpTerrainFloor;
+            cameraFloorSmoothed += (fpTerrainFloor - cameraFloorSmoothed) * (snap ? 1 : dampingAlpha(14, dt));
+            if (cameraFloorSmoothed < fpTerrainFloor - 0.5) cameraFloorSmoothed = fpTerrainFloor - 0.5;
+            if (camera.position.y < cameraFloorSmoothed) camera.position.y = cameraFloorSmoothed;
+            var lookAhead = 30;
+            camera.up.set(0, 1, 0);
+            camera.lookAt(
+              raptor.x + flightForward.x * lookAhead,
+              raptor.y + flightForward.y * lookAhead,
+              raptor.z + flightForward.z * lookAhead
+            );
+            raptor.cameraRoll = 0;
+            cameraFloorClearance = camera.position.y - fpTerrainFloor + 0.72;
+          } else {
+            raptorGroup.visible = true;
+            var impactCameraPush = (!_rmFX && strikeFeedbackActive)
+              ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 0.65 : -0.25)
+              : 0;
+            var diveCameraDistance = Math.min(10.8, currentChaseDistance + 1.2);
+            smoothedChaseDistance += ((diveKey ? diveCameraDistance : currentChaseDistance) - smoothedChaseDistance) * (snap ? 1 : dampingAlpha(6, dt));
+            smoothedChaseHeight += ((diveKey ? Math.max(1.5, currentChaseHeight * 0.68) : currentChaseHeight) - smoothedChaseHeight) * (snap ? 1 : dampingAlpha(6, dt));
+            var camDist = smoothedChaseDistance - impactCameraPush;
+            var camHeight = smoothedChaseHeight;
+            var camTargetX = raptor.x - flightForward.x * camDist;
+            var camTargetY = raptor.y - flightForward.y * camDist + camHeight;
+            var camTargetZ = raptor.z - flightForward.z * camDist;
+            var cameraFollowAlpha = (snap ? 1 : dampingAlpha(12, dt));
+            camera.position.x += raptor.x - cameraFlightAnchor.x;
+            camera.position.y += raptor.y - cameraFlightAnchor.y;
+            camera.position.z += raptor.z - cameraFlightAnchor.z;
+            camera.position.x += (camTargetX - camera.position.x) * cameraFollowAlpha;
+            camera.position.y += (camTargetY - camera.position.y) * cameraFollowAlpha;
+            camera.position.z += (camTargetZ - camera.position.z) * cameraFollowAlpha;
+            cameraChaseLead += ((diveKey ? 9 : 3.5) - cameraChaseLead) * (snap ? 1 : dampingAlpha(6, dt));
+            var chaseLead = cameraChaseLead;
+            var chaseLookX = raptor.x + flightForward.x * chaseLead;
+            var chaseLookY = raptor.y + flightForward.y * chaseLead + 0.3;
+            var chaseLookZ = raptor.z + flightForward.z * chaseLead;
+            var lateralGoal = _rmFX
+              ? 0
+              : Math.max(-3.2, Math.min(3.2, visualTurnRate * 0.52));
+            cameraLateralLead +=
+              (lateralGoal - cameraLateralLead) * (snap ? 1 : dampingAlpha(7, dt));
+            chaseLookX += Math.cos(raptor.yaw) * cameraLateralLead;
+            chaseLookZ += Math.sin(raptor.yaw) * cameraLateralLead;
+            var targetBlendGoal = (!_rmFX && cameraTrackedPrey && targetLockOn && !practiceTrail.active)
+              ? Math.min(0.22, targetProximity * 0.22)
+              : 0;
+            cameraTargetBlend +=
+              (targetBlendGoal - cameraTargetBlend) * (snap ? 1 : dampingAlpha(5, dt));
+            // Smooth the aim vector itself, including target replacement/loss.
+            // A smooth weight alone still snaps toward the next prey position.
+            cameraAssistGoal.set(0, 0, 0);
+            if (cameraTrackedPrey && cameraTargetBlend > 0.001) {
+              cameraAssistGoal.set(
+                cameraTrackedPrey.mesh.position.x - chaseLookX,
+                cameraTrackedPrey.mesh.position.y + 0.4 - chaseLookY,
+                cameraTrackedPrey.mesh.position.z - chaseLookZ
+              ).multiplyScalar(cameraTargetBlend).clampLength(0, 2.4);
+            }
+            cameraAssistOffset.lerp(cameraAssistGoal, (snap ? 1 : dampingAlpha(4, dt)));
+            chaseLookX += cameraAssistOffset.x;
+            chaseLookY += cameraAssistOffset.y;
+            chaseLookZ += cameraAssistOffset.z;
+            var cameraTerrainFloor =
+              terrainHeightAt(camera.position.x, camera.position.z) + 1.05;
+            if (cameraFloorSmoothed === null) cameraFloorSmoothed = cameraTerrainFloor;
+            cameraFloorSmoothed += (cameraTerrainFloor - cameraFloorSmoothed) * (snap ? 1 : dampingAlpha(14, dt));
+            if (cameraFloorSmoothed < cameraTerrainFloor - 0.6) cameraFloorSmoothed = cameraTerrainFloor - 0.6;
+            if (camera.position.y < cameraFloorSmoothed) camera.position.y = cameraFloorSmoothed;
+            cameraFloorClearance = camera.position.y - cameraTerrainFloor + 1.05;
+            var rollTarget = _rmFX ? 0 : Math.max(-0.28, Math.min(0.28, -visualTurnRate * 0.20));
+            raptor.cameraRoll = raptor.cameraRoll || 0;
+            raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * (snap ? 1 : dampingAlpha(8, dt));
+            var rollSin = Math.sin(raptor.cameraRoll);
+            var rollCos = Math.cos(raptor.cameraRoll);
+            camera.up.set(rollSin, rollCos, 0);
+            camera.lookAt(chaseLookX, chaseLookY, chaseLookZ);
+          }
+          cameraFlightAnchor.set(raptor.x, raptor.y, raptor.z);
+          camera.getWorldDirection(cameraForward);
+          raptorProjected.copy(raptorGroup.position).project(camera);
+        }
+        // Lift guidance follows the actual mission column, independently of prey attention.
+        function thermalNavigation() {
+          var dx = thermalOrigin.x - raptor.x;
+          var dz = thermalOrigin.z - raptor.z;
+          var bearing = Math.atan2(dx, -dz) - raptor.yaw;
+          bearing = Math.atan2(Math.sin(bearing), Math.cos(bearing));
+          var correction = Math.abs(bearing) < 0.14 ? null : bearing < 0 ? 'turnLeft' : 'turnRight';
+          var distance = '~' + Math.max(5, Math.round(Math.hypot(dx, dz) / 5) * 5) + ' m';
+          return {
+            distance: distance,
+            hint: thermalActive ? 'IN LIFT · circle inside the rings' :
+              'FIND LIFT · ' + (correction ? (correction === 'turnLeft' ? 'turn left' : 'turn right') +
+                (controlKeyLabel(correction) ? ' (' + controlKeyLabel(correction) + ')' : '') : 'glide toward rings') + ' · ' + distance
+          };
+        }
+        // Refresh guidance independently of simulation steps, including paused control changes.
+        function updateTargetFeedback(now, recordProgress) {
+          var feedbackAge = motionNow - strikeFeedback.startedAt;
+          strikeFeedbackActive = strikeFeedback.kind !== 'idle' && feedbackAge >= 0 && feedbackAge < strikeFeedback.duration;
+          // Stable attention within this species' field of view, released immediately on occlusion.
+          var soaring = mission.id === 'thermalKettle';
+          var liftNavigation = soaring ? thermalNavigation() : null;
+          var targetInfo = targetLockOn && !soaring ? acquireTarget(true) : null;
+          var lockTarget = targetInfo ? targetInfo.prey : null;
+          cameraTrackedPrey = lockTarget;
+          targetProximity = targetInfo
+            ? Math.max(0, Math.min(1, 1 - targetInfo.distance / 300))
+            : 0;
+          if (targetInfo && recordProgress) markTutorialSignal('target');
+          var targetDistanceDisplay = soaring ? (thermalActive ? 'In lift' : liftNavigation.distance) : targetInfo ? targetRangeLabel(targetInfo.distance) : targetLockOn ? 'None' : 'Off';
+          // All target readouts use the same acquisition sample; only change DOM text when needed.
+          if (telemetryTarget.textContent !== targetDistanceDisplay) telemetryTarget.textContent = targetDistanceDisplay;
+          // Positioned to stoop: prey meaningfully below, roughly ahead, and not
+          // already diving. verticalOffset is prey-minus-bird, so below is negative.
+          var _stoopReady = !!(targetInfo && !raptor.landed && !raptor.crashed && !raptor.diving
+            && targetInfo.verticalOffset < -8
+            && targetInfo.dot >= 0.45
+            && targetInfo.correction !== 'turnLeft' && targetInfo.correction !== 'turnRight');
+          var nextTargetState = soaring ? (thermalActive ? 'lift' : 'soar') : !targetLockOn ? 'off' :
+            strikeFeedbackActive ? strikeFeedback.kind :
+            !targetInfo ? 'search' :
+            activePerch ? 'watch' :
+            targetInfo.canStrike && !strikeReady ? 'recovering' :
+            targetInfo.canStrike ? 'ready' :
+            targetInfo.dot < 0.7 && !_stoopReady ? 'align' :
+            targetInfo.distance > targetInfo.reach ? (_stoopReady ? 'stoop' : 'close') : 'align';
+          var nextTargetCorrection = nextTargetState === 'align' && targetInfo ? targetInfo.correction : null;
+          var targetCorrectionChanged = nextTargetCorrection !== lastTargetCorrection;
+          lastTargetCorrection = nextTargetCorrection;
+          var highlightedPrey = targetInfo ? targetInfo.prey : null;
+          var showTargetHighlights = !soaring && !practiceTrail.active && canvasEl.parentElement.dataset.raptorScenicView !== 'true';
+          preyMeshes.forEach(function(pm2) {
+            var selected = !!(showTargetHighlights && targetLockOn && highlightedPrey === pm2);
+            if (pm2.beacon) {
+              pm2.beacon.visible = selected;
+              if (selected) {
+                pm2.beacon.material.color.setHex(nextTargetState === 'ready' ? 0x22c55e : nextTargetState === 'close' ? 0xfbbf24 : 0xf87171);
+                var beaconPulse = _rmFX ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.12;
+                pm2.beacon.scale.setScalar(beaconPulse);
+              } else {
+                pm2.beacon.scale.setScalar(1);
+              }
+            }
+            if (pm2.beaconCap) {
+              pm2.beaconCap.visible = selected;
+              if (selected) {
+                pm2.beaconCap.material.color.setHex(nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
+                pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.08);
+              } else {
+                pm2.beaconCap.scale.setScalar(1);
+              }
+            }
+          });          // Continuous lock feedback. canStrike is a hard gate (dot >= 0.7 AND inside
+          // reach) so the HUD used to jump straight from "align" to "ready" with nothing
+          // in between: the player could not tell whether they were nearly on line or
+          // hopelessly off. These two report HOW CLOSE each half of the gate is, so the
+          // meters fill as you settle onto the target.
+          var _alignGate = 0.7;
+          var nextTargetAlign = targetInfo
+            ? Math.max(0, Math.min(1, (targetInfo.dot - 0.2) / (_alignGate - 0.2)))
+            : 0;
+          var nextTargetRange = targetInfo
+            ? Math.max(0, Math.min(1, targetInfo.reach / Math.max(targetInfo.reach, targetInfo.distance)))
+            : 0;
+          // Quantised: the meters must not push a React update every frame.
+          nextTargetAlign = Math.round(nextTargetAlign * 20) / 20;
+          nextTargetRange = Math.round(nextTargetRange * 20) / 20;
+          var _alignPct = Math.round(nextTargetAlign * 100);
+          var nextTargetHint = soaring ? liftNavigation.hint : nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
+            nextTargetState === 'watch' ? 'WATCH - prey '+targetDistanceDisplay+' · '+controlKeyLabel('pullUp')+' to launch' :
+            nextTargetState === 'off' ? 'Target assist is off' :
+            nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
+            nextTargetState === 'recovering' ? 'RECOVERING - talons resetting' :
+            nextTargetState === 'ready' ? 'READY - press Strike' :
+            nextTargetState === 'stoop' ? 'STOOP - hold ' + controlKeyLabel('dive') + ' (' + Math.round(-targetInfo.verticalOffset) + ' m below)' :
+            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' (need ' + Math.round(targetInfo.reach) + ' m)' :
+            'ALIGN ' + _alignPct + '% - ' + targetCorrectionLabel(nextTargetCorrection) +
+              (controlKeyLabel(nextTargetCorrection) ? ' · ' + controlKeyLabel(nextTargetCorrection) : '');
+          updateTargetGuide(targetInfo, nextTargetState, now);
+          updateTargetFocusHalo(targetInfo, nextTargetState, now);
+          if (!showTargetHighlights) { targetGuide.visible = false; targetFocusHalo.visible = false; }
+          if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint
+              || nextTargetAlign !== lastTargetAlign || nextTargetRange !== lastTargetRange) {
+            var targetStateChanged = nextTargetState !== lastTargetState;
+            lastTargetState = nextTargetState;
+            lastTargetHint = nextTargetHint;
+            lastTargetAlign = nextTargetAlign;
+            lastTargetRange = nextTargetRange;
+            var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,
+              targetAlign: nextTargetAlign, targetRange: nextTargetRange };
+            if (targetStateChanged || targetCorrectionChanged) refreshKeyGuide();
+            if (targetStateChanged && recordProgress) {
+              if (!soaring && nextTargetState !== 'hit' && nextTargetState !== 'miss') {
+                recordFlightEvent('target', nextTargetState === 'ready' ? 'Target ready' : nextTargetState === 'search' ? 'Scanning for prey' : 'Target ' + nextTargetState, nextTargetHint);
+              }
+              targetPatch.targetAnnouncement = soaring ? (thermalActive ? 'Rising air found. Circle inside the rings to climb.' : 'Glide toward the rising-air rings. Use the lift bearing to turn toward them.') : nextTargetState === 'hit' || nextTargetState === 'miss'
+                ? nextTargetHint
+                : nextTargetState === 'watch' ? 'Prey spotted from the lookout. Take off to pursue.'
+                : nextTargetState === 'ready' ? 'Target ready. Press Strike.'
+                : nextTargetState === 'recovering' ? 'Strike recovering. Scan for the next target.'
+                : nextTargetState === 'off' ? 'Target assist off.'
+                : nextTargetState === 'search' ? 'Scanning. No target locked.'
+                : nextTargetState === 'close' ? 'Target close. Align the reticle and prepare to strike.'
+                : nextTargetState === 'stoop' ? 'Target below. Hold ' + controlKeyLabel('dive') + ' to dive.'
+                : 'Target alignment changed. ' + targetCorrectionLabel(nextTargetCorrection) + '.';
+            }
+            notifyUI(targetPatch);
+            if (targetStateChanged) updateMissionHud();
+          }
+          lastTrackerTargetInfo = targetInfo;
+          updateTargetTracker(targetInfo, nextTargetState);
+          return targetInfo;
+        }
+        // The same projection path runs during flight and single paused redraws.
+        // It changes presentation only; prey, flight time, and strike recovery stay frozen.
+        function updateTargetTracker(targetInfo, nextTargetState) {
+          camera.updateMatrixWorld(true);
+          var lockTarget = targetInfo ? targetInfo.prey : null;
+          var targetDistanceDisplay = targetInfo ? targetRangeLabel(targetInfo.distance) : '';
+          var hasTargetProjection = false;
+          var projectedX = 0;
+          var projectedY = 0;
+          var projectedZ = 2;
+          if (targetProbe) {
+            hasTargetProjection = true;
+            projectedX = targetProbe.ndcX;
+            projectedY = targetProbe.ndcY;
+            projectedZ = targetProbe.ndcZ;
+          } else if (lockTarget) {
+            targetVector.set(
+              lockTarget.mesh.position.x,
+              lockTarget.mesh.position.y + 0.6,
+              lockTarget.mesh.position.z
+            ).project(camera);
+            hasTargetProjection = true;
+            projectedX = targetVector.x;
+            projectedY = targetVector.y;
+            projectedZ = targetVector.z;
+          }
+
+          targetNdcX = projectedX;
+          targetNdcY = projectedY;
+          var targetInDepth = projectedZ < 1 && projectedZ > -1;
+          if (mission.id !== 'thermalKettle' && targetLockOn && hasTargetProjection && targetInDepth) {
+            var projectedTarget = clampProjectedTarget(projectedX, projectedY);
+            var screenW = canvasEl.clientWidth;
+            var screenH = canvasEl.clientHeight;
+            var rawScreenX = (projectedTarget.x * 0.5 + 0.5) * screenW;
+            var rawScreenY = (-projectedTarget.y * 0.5 + 0.5) * screenH;
+            var screenX = Math.max(targetScreenInset, Math.min(screenW - targetScreenInset, rawScreenX));
+            var screenY = Math.max(targetScreenInset, Math.min(screenH - targetScreenInset, rawScreenY));
+            measureTargetHudInsets();
+            if (projectedTarget.offscreen) {
+              screenX = Math.min(screenW - targetHudInsets.right, screenX);
+              screenY = Math.max(targetHudInsets.top, Math.min(screenH - targetHudInsets.bottom, screenY));
+            }
+            var inStrikeRange = !!(targetInfo && targetInfo.canStrike && strikeReady && !targetProbe);
+            offscreenIndicatorVisible = projectedTarget.offscreen;
+            offscreenIndicatorEdge = projectedTarget.edge;
+            targetProjectionState = projectedTarget.offscreen ? 'offscreen' : 'onscreen';
+            reticle.dataset.lockState = nextTargetState;
+            reticle.dataset.offscreen = projectedTarget.offscreen ? 'true' : 'false';
+            reticle.dataset.targetEdge = projectedTarget.edge;
+            reticle.style.display = 'block';
+            reticle.style.left = screenX + 'px';
+            reticle.style.top = screenY + 'px';
+            var reticleReadyColor = inStrikeRange ? '#86efac' : nextTargetState === 'close' ? '#fde68a' : '#a5e7ef';
+            reticle.style.color = reticleReadyColor;
+            reticle.style.setProperty('--target-bearing', (Math.atan2(-projectedY * screenH, projectedX * screenW) * 180 / Math.PI + 45) + 'deg');
+            // The lower HUD inset includes 80px for the offscreen marker itself.
+            // Captions need the control boundary, even when the prey remains onscreen.
+            var labelViewportHeight = projectedTarget.offscreen ? screenH : screenH - Math.max(0, targetHudInsets.bottom - 80);
+            var labelLayout = layoutTargetLabel(screenX, screenY, screenW - (projectedTarget.offscreen ? targetHudInsets.labelRight : 0), labelViewportHeight);
+            reticleLabel.style.left = labelLayout.left + 'px';
+            reticleLabel.style.top = labelLayout.top + 'px';
+            reticleLabel.style.width = labelLayout.width + 'px';
+            var targetName = lockTarget && lockTarget.data ? lockTarget.data.label : 'target';
+            var reticlePrefix = targetMarkerLabel(nextTargetState, projectedTarget.offscreen ? projectedTarget.edge : '',
+              inStrikeRange, !!(targetInfo && targetInfo.canStrike && !strikeReady && !targetProbe));
+            var reticleCaption = targetName + (targetProbe ? '' : ' · ' + targetDistanceDisplay);
+            if (reticleStatus.textContent !== reticlePrefix) reticleStatus.textContent = reticlePrefix;
+            if (reticleName.textContent !== reticleCaption) reticleName.textContent = reticleCaption;
+          } else {
+            targetProjectionState = targetLockOn && hasTargetProjection ? 'behind' : 'none';
+            offscreenIndicatorVisible = false;
+            offscreenIndicatorEdge = '';
+            reticle.dataset.offscreen = 'false';
+            reticle.dataset.targetEdge = '';
+            reticle.style.display = 'none';
+          }
+        }
+        function updatePausedView(changeCamera) {
+          if (disposed || !simPaused) return;
+          updateFlightFov(0, lastCameraStrike, true);
+          if (changeCamera) updateFlightCamera(0, lastCameraDive, lastCameraTurn, lastCameraStrike, true);
+          skyDome.position.copy(camera.position);
+          sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance);
+          moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
+          repaintPausedFlight(changeCamera);
+        }
         function loop() {
           // Stop the rAF chain (and tear down the whole sim) once the
           // canvas leaves the DOM — happens when the user navigates away
@@ -17123,6 +17921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           animId = requestAnimationFrame(loop);
           motionNow += dt * 1000;
+          runFlightActions();
           renderFrameCount++;
           fpsSampleFrames++;
           if (now - fpsSampleAt >= 500) {
@@ -17175,6 +17974,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var restScanPitch=raptor.pitch;
           var diveKey = !!keys['shift'] && !wasLanded && !wasCrashed;
           var pullUpKey = !!keys[' '];
+          if (mission.id === 'thermalKettle' && pullUpKey) {
+            finishMission(false, 'Pull-up flapping is not allowed in this mission. Turn into the rings and glide to climb.');
+            return;
+          }
           raptor.diving = diveKey;
           raptor.pullingUp = pullUpKey;
 
@@ -17262,24 +18065,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (raptor.stamina <= 0 && !raptor.exhausted) {
             raptor.exhausted = true;
             rhAnnounce(__alloT('stem.raptorhunt.sr_exhausted_glide_to_recover', 'Exhausted! Glide to recover.'));
-            energyEventLog.push({ msg: '⚠ EXHAUSTED — glide to recover', t: now, color: '#fca5a5' });
+            energyEventLog.push({ msg: '⚠ EXHAUSTED — glide to recover', t: motionNow, color: '#fca5a5' });
             recordFlightEvent('warning', 'Stamina depleted', 'Glide to recover before flapping again');
           } else if (raptor.stamina > 30 && raptor.exhausted) {
             raptor.exhausted = false;
             rhAnnounce(__alloT('stem.raptorhunt.sr_recovered', 'Recovered.'));
-            energyEventLog.push({ msg: '✓ Recovered stamina', t: now, color: '#10b981' });
+            energyEventLog.push({ msg: '✓ Recovered stamina', t: motionNow, color: '#10b981' });
             recordFlightEvent('flight', 'Stamina recovered', 'Energy reserve is back above 30%');
           }
           // Calorie starvation
           if (raptor.calories <= 0 && !raptor.starving) {
             raptor.starving = true;
             rhAnnounce(__alloT('stem.raptorhunt.sr_critical_hunger_hunt_or_land', 'Critical hunger! Hunt or land.'));
-            energyEventLog.push({ msg: '⚠ STARVING — eat or land!', t: now, color: '#fca5a5' });
+            energyEventLog.push({ msg: '⚠ STARVING — eat or land!', t: motionNow, color: '#fca5a5' });
             recordFlightEvent('warning', 'Calories depleted', 'Catch prey or land to end the flight safely');
           }
           raptor.calories = Math.max(-100, raptor.calories);  // can go slightly negative before forced down
           // Prune old energy events
-          energyEventLog = energyEventLog.filter(function(e) { return now - e.t < 3500; });
+          energyEventLog = energyEventLog.filter(function(e) { return motionNow - e.t < 3500; });
 
           // ── NEW v0.30: Weather dynamics ──
           weather.gustPhase += dt;
@@ -17293,7 +18096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             weather.cloudCover = Math.max(0.05, Math.min(0.95, weather.cloudCover + (Math.random() - 0.5) * 0.15));
             // Atmosphere and thermal strength ease toward the new weather below.
             weather.changeTimer = 40 + Math.random() * 60;
-            energyEventLog.push({ msg: '🌤 Weather shift — wind ' + weather.windSpeed.toFixed(1) + ' m/s, clouds ' + Math.round(weather.cloudCover * 100) + '%', t: now, color: '#67e8f9' });
+            energyEventLog.push({ msg: '🌤 Weather shift — wind ' + weather.windSpeed.toFixed(1) + ' m/s, clouds ' + Math.round(weather.cloudCover * 100) + '%', t: motionNow, color: '#67e8f9' });
           }
           visualCloudCover += (weather.cloudCover - visualCloudCover) * dampingAlpha(0.65, dt);
           var thermalDaylight = Math.max(0, 1 - Math.abs(dayPhase - 0.5) * 2);
@@ -17449,7 +18252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 if (raptor.crashTimer <= 0) {
                   raptor.crashed = false;
                   raptor.landed = true;  // graduates from crash → standing perched
-                  energyEventLog.push({ kind: 'ground-contact', msg: '✓ Stood back up — ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: '#a3e635' });
+                  energyEventLog.push({ kind: 'ground-contact', msg: '✓ Stood back up — ' + controlKeyLabel('pullUp') + ' to take off', t: motionNow, color: '#a3e635' });
                 }
               }
               // SPACE = take off (only after crash recovery period)
@@ -17461,12 +18264,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 raptor.pitch = 0.3;  // pitched up for climb
                 energyEventLog=energyEventLog.filter(function(event){return event.kind!=='ground-contact';});
                 rhAnnounce(__alloT('stem.raptorhunt.sr_taking_off', 'Taking off.'));
-                energyEventLog.push({ msg: '↑ Takeoff', t: now, color: '#a3e635' });
+                energyEventLog.push({ msg: '↑ Takeoff', t: motionNow, color: '#a3e635' });
               }
             } else if (verticalSpeed > 18 || raptor.speed > 50) {
               // HARD CRASH — fast vertical impact OR very high overall speed
               rhAnnounce('Crash! Stunned. Wait, then ' + controlKeyLabel('pullUp') + ' to take off.');
-              energyEventLog.push({ kind: 'ground-contact', msg: '💥 CRASH — stunned ~3s', t: now, color: '#fca5a5' });
+              energyEventLog.push({ kind: 'ground-contact', msg: '💥 CRASH — stunned ~3s', t: motionNow, color: '#fca5a5' });
               raptor.crashed = true;
               raptor.crashTimer = 3.0;
               raptor.y = minY;
@@ -17479,13 +18282,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var soft = verticalSpeed < 6 && raptor.speed < 18;
               var msg = soft ? 'Landed.' : 'Rough landing.';
               rhAnnounce(msg);
-              energyEventLog.push({ kind: 'ground-contact', msg: '🪶 ' + msg + ' ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: soft ? '#a3e635' : '#fbbf24' });
+              energyEventLog.push({ kind: 'ground-contact', msg: '🪶 ' + msg + ' ' + controlKeyLabel('pullUp') + ' to take off', t: motionNow, color: soft ? '#a3e635' : '#fbbf24' });
               raptor.landed = true;
               raptor.y = minY;
               raptor.speed = 0;
               raptor.pitch = 0;
             }
           }
+          // Remember brief ground contact even if takeoff precedes the next mission check.
+          if (raptor.landed || raptor.crashed) missionGroundContact = true;
           if (raptor.y > missionCeiling) raptor.y = missionCeiling;
           runMaxAltitude = Math.max(runMaxAltitude, Math.max(0, raptor.y - groundY));
           if (raptor.landed && !wasLanded && !activePerch) spawnTouchdownFx('land');
@@ -17544,7 +18349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (wingMat.emissiveIntensity !== undefined) wingMat.emissiveIntensity = raptorReadability * 0.92;
           if (fingerMat && fingerMat.emissiveIntensity !== undefined) fingerMat.emissiveIntensity = raptorReadability * 0.78;
           if (tail.material.emissiveIntensity !== undefined) tail.material.emissiveIntensity = raptorReadability * 0.84;
-          dorsalMarkMat.emissiveIntensity = Math.min(0.10, raptorReadability * 0.3);          // ── NEW v0.24: Realistic flight cycle (mostly glide, periodic flap bursts) ──
+          // ── NEW v0.24: Realistic flight cycle (mostly glide, periodic flap bursts) ──
           updateRaptorWingPose(wingPose, flightAnimationProfile, motionNow,
             pullUpKey || (keys.e && mission.id !== 'thermalKettle') || raptor.speed < raptor.maxLevel * 0.55, diveKey,
             raptor.landed || raptor.crashed, _rmFX, dt);
@@ -17574,7 +18379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // (a separate writer would fight the zoom lerp). Same 0..1 normalization
           // the speed-lines use. Vignette opacity rides the same intensity. Both
           // disabled under prefers-reduced-motion (_rmFX); zoom always wins.
-          var strikeAge = now - strikeFeedback.startedAt;
+          var strikeAge = motionNow - strikeFeedback.startedAt;
           strikeFeedbackActive = strikeFeedback.kind !== 'idle' && strikeAge >= 0 && strikeAge < strikeFeedback.duration;
           var strikeEnvelope = strikeFeedbackActive ? Math.sin(Math.min(1, strikeAge / 420) * Math.PI) : 0;
           if (strikeFeedbackActive) {
@@ -17606,293 +18411,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           tail.scale.x += (tailSpreadTarget - tail.scale.x) * dampingAlpha(9, dt);
           tail.morphTargetInfluences[0]=wingPose.fold;
 
-          var _diveFrac = 0;
-          try {
-            if (raptor.diving && !zoomActive && !_rmFX) {
-              _diveFrac = (raptor.speed - raptor.maxLevel * 0.8) / (raptor.stoopMax - raptor.maxLevel * 0.8);
-              _diveFrac = Math.max(0, Math.min(1, _diveFrac));
-            }
-            if (diveVig) diveVig.style.opacity = String(_diveFrac * 0.85);
-          } catch (e) { _diveFrac = 0; }
-          var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)
-            ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 5 : 2)
-            : 0;
-          var targetFov = zoomActive ? acuityFov : (70 + _diveFrac * 16 + impactFovKick);
-          if (Math.abs(camera.fov - targetFov) > 0.1) {
-            camera.fov += (targetFov - camera.fov) * dampingAlpha(12, dt);
-            camera.updateProjectionMatrix();
-          }
-          // ── Camera follow: chase (3rd person) OR first-person (from head) ──
-          flightForwardVector(flightForward);
-          if (camMode === 'fp') {
-            raptorGroup.visible = false;
-            cameraTargetBlend += (0 - cameraTargetBlend) * dampingAlpha(10, dt);
-            cameraLateralLead += (0 - cameraLateralLead) * dampingAlpha(10, dt);
-            var fpOffset = 0.6;
-            var fpHeight = 0.45;
-            camera.position.set(
-              raptor.x + flightForward.x * fpOffset,
-              raptor.y + fpHeight + flightForward.y * fpOffset,
-              raptor.z + flightForward.z * fpOffset
-            );
-            var fpTerrainFloor =
-              terrainHeightAt(camera.position.x, camera.position.z) + 0.72;
-            if (cameraFloorSmoothed === null) cameraFloorSmoothed = fpTerrainFloor;
-            cameraFloorSmoothed += (fpTerrainFloor - cameraFloorSmoothed) * dampingAlpha(14, dt);
-            if (cameraFloorSmoothed < fpTerrainFloor - 0.5) cameraFloorSmoothed = fpTerrainFloor - 0.5;
-            if (camera.position.y < cameraFloorSmoothed) camera.position.y = cameraFloorSmoothed;
-            var lookAhead = 30;
-            camera.up.set(0, 1, 0);
-            camera.lookAt(
-              raptor.x + flightForward.x * lookAhead,
-              raptor.y + flightForward.y * lookAhead,
-              raptor.z + flightForward.z * lookAhead
-            );
-            raptor.cameraRoll = 0;
-            cameraFloorClearance = camera.position.y - fpTerrainFloor + 0.72;
-          } else {
-            raptorGroup.visible = true;
-            var impactCameraPush = (!_rmFX && strikeFeedbackActive)
-              ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 0.65 : -0.25)
-              : 0;
-            var diveCameraDistance = Math.min(10.8, currentChaseDistance + 1.2);
-            smoothedChaseDistance += ((diveKey ? diveCameraDistance : currentChaseDistance) - smoothedChaseDistance) * dampingAlpha(6, dt);
-            smoothedChaseHeight += ((diveKey ? Math.max(1.5, currentChaseHeight * 0.68) : currentChaseHeight) - smoothedChaseHeight) * dampingAlpha(6, dt);
-            var camDist = smoothedChaseDistance - impactCameraPush;
-            var camHeight = smoothedChaseHeight;
-            var camTargetX = raptor.x - flightForward.x * camDist;
-            var camTargetY = raptor.y - flightForward.y * camDist + camHeight;
-            var camTargetZ = raptor.z - flightForward.z * camDist;
-            var cameraFollowAlpha = dampingAlpha(12, dt);
-            camera.position.x += raptor.x - cameraFlightAnchor.x;
-            camera.position.y += raptor.y - cameraFlightAnchor.y;
-            camera.position.z += raptor.z - cameraFlightAnchor.z;
-            camera.position.x += (camTargetX - camera.position.x) * cameraFollowAlpha;
-            camera.position.y += (camTargetY - camera.position.y) * cameraFollowAlpha;
-            camera.position.z += (camTargetZ - camera.position.z) * cameraFollowAlpha;
-            cameraChaseLead += ((diveKey ? 9 : 3.5) - cameraChaseLead) * dampingAlpha(6, dt);
-            var chaseLead = cameraChaseLead;
-            var chaseLookX = raptor.x + flightForward.x * chaseLead;
-            var chaseLookY = raptor.y + flightForward.y * chaseLead + 0.3;
-            var chaseLookZ = raptor.z + flightForward.z * chaseLead;
-            var lateralGoal = _rmFX
-              ? 0
-              : Math.max(-3.2, Math.min(3.2, visualTurnRate * 0.52));
-            cameraLateralLead +=
-              (lateralGoal - cameraLateralLead) * dampingAlpha(7, dt);
-            chaseLookX += Math.cos(raptor.yaw) * cameraLateralLead;
-            chaseLookZ += Math.sin(raptor.yaw) * cameraLateralLead;
-            var targetBlendGoal = (!_rmFX && cameraTrackedPrey && targetLockOn && !practiceTrail.active)
-              ? Math.min(0.22, targetProximity * 0.22)
-              : 0;
-            cameraTargetBlend +=
-              (targetBlendGoal - cameraTargetBlend) * dampingAlpha(5, dt);
-            // Smooth the aim vector itself, including target replacement/loss.
-            // A smooth weight alone still snaps toward the next prey position.
-            cameraAssistGoal.set(0, 0, 0);
-            if (cameraTrackedPrey && cameraTargetBlend > 0.001) {
-              cameraAssistGoal.set(
-                cameraTrackedPrey.mesh.position.x - chaseLookX,
-                cameraTrackedPrey.mesh.position.y + 0.4 - chaseLookY,
-                cameraTrackedPrey.mesh.position.z - chaseLookZ
-              ).multiplyScalar(cameraTargetBlend).clampLength(0, 2.4);
-            }
-            cameraAssistOffset.lerp(cameraAssistGoal, dampingAlpha(4, dt));
-            chaseLookX += cameraAssistOffset.x;
-            chaseLookY += cameraAssistOffset.y;
-            chaseLookZ += cameraAssistOffset.z;
-            var cameraTerrainFloor =
-              terrainHeightAt(camera.position.x, camera.position.z) + 1.05;
-            if (cameraFloorSmoothed === null) cameraFloorSmoothed = cameraTerrainFloor;
-            cameraFloorSmoothed += (cameraTerrainFloor - cameraFloorSmoothed) * dampingAlpha(14, dt);
-            if (cameraFloorSmoothed < cameraTerrainFloor - 0.6) cameraFloorSmoothed = cameraTerrainFloor - 0.6;
-            if (camera.position.y < cameraFloorSmoothed) camera.position.y = cameraFloorSmoothed;
-            cameraFloorClearance = camera.position.y - cameraTerrainFloor + 1.05;
-            var rollTarget = _rmFX ? 0 : Math.max(-0.28, Math.min(0.28, -visualTurnRate * 0.20));
-            raptor.cameraRoll = raptor.cameraRoll || 0;
-            raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * dampingAlpha(8, dt);
-            var rollSin = Math.sin(raptor.cameraRoll);
-            var rollCos = Math.cos(raptor.cameraRoll);
-            camera.up.set(rollSin, rollCos, 0);
-            camera.lookAt(chaseLookX, chaseLookY, chaseLookZ);
-          }
-          cameraFlightAnchor.set(raptor.x, raptor.y, raptor.z);
-          camera.getWorldDirection(cameraForward);
-          raptorProjected.copy(raptorGroup.position).project(camera);
-          // Stable attention within this species' field of view, released immediately on occlusion.
-          var targetInfo = targetLockOn ? acquireTarget(true) : null;
+          updateFlightFov(dt, strikeEnvelope, false);
+          updateFlightCamera(dt, diveKey, visualTurnRate, strikeEnvelope, false);
+          var targetInfo = updateTargetFeedback(now, true);
           var lockTarget = targetInfo ? targetInfo.prey : null;
-          cameraTrackedPrey = lockTarget;
-          targetProximity = targetInfo
-            ? Math.max(0, Math.min(1, 1 - targetInfo.distance / 300))
-            : 0;
-          if (targetInfo) markTutorialSignal('target');
-          var targetDistanceDisplay = targetInfo ? Math.max(1, Math.round(targetInfo.distance / 5) * 5) : 0;
-          // Positioned to stoop: prey meaningfully below, roughly ahead, and not
-          // already diving. verticalOffset is prey-minus-bird, so below is negative.
-          var _stoopReady = !!(targetInfo && !raptor.landed && !raptor.crashed && !raptor.diving
-            && targetInfo.verticalOffset < -8
-            && targetInfo.dot >= 0.45);
-          var nextTargetState = strikeFeedbackActive ? strikeFeedback.kind :
-            !targetLockOn ? 'off' :
-            !targetInfo ? 'search' :
-            activePerch ? 'watch' :
-            targetInfo.canStrike && !strikeReady ? 'recovering' :
-            targetInfo.canStrike ? 'ready' :
-            targetInfo.distance > targetInfo.reach ? (_stoopReady ? 'stoop' : 'close') : 'align';
-          var highlightedPrey = targetInfo ? targetInfo.prey : null;
-          preyMeshes.forEach(function(pm2) {
-            var selected = !!(targetLockOn && highlightedPrey === pm2);
-            if (pm2.beacon) {
-              pm2.beacon.visible = selected;
-              if (selected) {
-                pm2.beacon.material.color.setHex(nextTargetState === 'ready' ? 0x22c55e : nextTargetState === 'close' ? 0xfbbf24 : 0xf87171);
-                var beaconPulse = _rmFX ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.12;
-                pm2.beacon.scale.setScalar(beaconPulse);
-              } else {
-                pm2.beacon.scale.setScalar(1);
-              }
-            }
-            if (pm2.beaconCap) {
-              pm2.beaconCap.visible = selected;
-              if (selected) {
-                pm2.beaconCap.material.color.setHex(nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
-                pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.08);
-              } else {
-                pm2.beaconCap.scale.setScalar(1);
-              }
-            }
-          });          // Continuous lock feedback. canStrike is a hard gate (dot >= 0.7 AND inside
-          // reach) so the HUD used to jump straight from "align" to "ready" with nothing
-          // in between: the player could not tell whether they were nearly on line or
-          // hopelessly off. These two report HOW CLOSE each half of the gate is, so the
-          // meters fill as you settle onto the target.
-          var _alignGate = 0.7;
-          var nextTargetAlign = targetInfo
-            ? Math.max(0, Math.min(1, (targetInfo.dot - 0.2) / (_alignGate - 0.2)))
-            : 0;
-          var nextTargetRange = targetInfo
-            ? Math.max(0, Math.min(1, targetInfo.reach / Math.max(targetInfo.reach, targetInfo.distance)))
-            : 0;
-          // Quantised: the meters must not push a React update every frame.
-          nextTargetAlign = Math.round(nextTargetAlign * 20) / 20;
-          nextTargetRange = Math.round(nextTargetRange * 20) / 20;
-          var _alignPct = Math.round(nextTargetAlign * 100);
-          var nextTargetHint = nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
-            nextTargetState === 'watch' ? 'WATCH - prey '+targetDistanceDisplay+' m · '+controlKeyLabel('pullUp')+' to launch' :
-            nextTargetState === 'off' ? 'Target assist is off' :
-            nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
-            nextTargetState === 'recovering' ? 'RECOVERING - talons resetting' :
-            nextTargetState === 'ready' ? 'READY - press Strike' :
-            nextTargetState === 'stoop' ? 'STOOP - hold ' + controlKeyLabel('dive') + ' (' + Math.round(-targetInfo.verticalOffset) + ' m below)' :
-            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' m (need ' + Math.round(targetInfo.reach) + ' m)' :
-            (targetInfo.verticalOffset > 0 ? 'ALIGN ' + _alignPct + '% - pull up' : 'ALIGN ' + _alignPct + '% - dive lower');
           updateFlightTrail();
           updateAirflowLines(now);
           updateWingtipVortices(now);
-          updateTargetGuide(targetInfo, nextTargetState, now);
-          updateTargetFocusHalo(targetInfo, nextTargetState, now);
-          if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint
-              || nextTargetAlign !== lastTargetAlign || nextTargetRange !== lastTargetRange) {
-            var targetStateChanged = nextTargetState !== lastTargetState;
-            lastTargetState = nextTargetState;
-            lastTargetHint = nextTargetHint;
-            lastTargetAlign = nextTargetAlign;
-            lastTargetRange = nextTargetRange;
-            var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,
-              targetAlign: nextTargetAlign, targetRange: nextTargetRange };
-            if (targetStateChanged) refreshKeyGuide();
-            if (targetStateChanged) {
-              if (nextTargetState !== 'hit' && nextTargetState !== 'miss') {
-                recordFlightEvent('target', nextTargetState === 'ready' ? 'Target ready' : nextTargetState === 'search' ? 'Scanning for prey' : 'Target ' + nextTargetState, nextTargetHint);
-              }
-              targetPatch.targetAnnouncement = nextTargetState === 'hit' || nextTargetState === 'miss'
-                ? nextTargetHint
-                : nextTargetState === 'watch' ? 'Prey spotted from the lookout. Take off to pursue.'
-                : nextTargetState === 'ready' ? 'Target ready. Press Strike.'
-                : nextTargetState === 'recovering' ? 'Strike recovering. Scan for the next target.'
-                : nextTargetState === 'off' ? 'Target assist off.'
-                : nextTargetState === 'search' ? 'Scanning. No target locked.'
-                : nextTargetState === 'close' ? 'Target close. Align the reticle and prepare to strike.'
-                : nextTargetState === 'stoop' ? 'Target below. Hold ' + controlKeyLabel('dive') + ' to dive.'
-                : 'Target alignment changed. Adjust pitch.';
-            }
-            notifyUI(targetPatch);
-          }
-          var hasTargetProjection = false;
-          var projectedX = 0;
-          var projectedY = 0;
-          var projectedZ = 2;
-          if (targetProbe) {
-            hasTargetProjection = true;
-            projectedX = targetProbe.ndcX;
-            projectedY = targetProbe.ndcY;
-            projectedZ = targetProbe.ndcZ;
-          } else if (lockTarget) {
-            targetVector.set(
-              lockTarget.mesh.position.x,
-              lockTarget.mesh.position.y + 0.6,
-              lockTarget.mesh.position.z
-            ).project(camera);
-            hasTargetProjection = true;
-            projectedX = targetVector.x;
-            projectedY = targetVector.y;
-            projectedZ = targetVector.z;
-          }
-
-          targetNdcX = projectedX;
-          targetNdcY = projectedY;
-          var targetInDepth = projectedZ < 1 && projectedZ > -1;
-          if (targetLockOn && hasTargetProjection && targetInDepth) {
-            var projectedTarget = clampProjectedTarget(projectedX, projectedY);
-            var screenW = canvasEl.clientWidth;
-            var screenH = canvasEl.clientHeight;
-            var rawScreenX = (projectedTarget.x * 0.5 + 0.5) * screenW;
-            var rawScreenY = (-projectedTarget.y * 0.5 + 0.5) * screenH;
-            var screenX = Math.max(targetScreenInset, Math.min(screenW - targetScreenInset, rawScreenX));
-            var screenY = Math.max(targetScreenInset, Math.min(screenH - targetScreenInset, rawScreenY));
-            if (projectedTarget.offscreen) {
-              measureTargetHudInsets();
-              screenX = Math.min(screenW - targetHudInsets.right, screenX);
-              screenY = Math.max(targetHudInsets.top, Math.min(screenH - targetHudInsets.bottom, screenY));
-            }
-            var inStrikeRange = !!(targetInfo && targetInfo.canStrike && strikeReady && !targetProbe);
-            offscreenIndicatorVisible = projectedTarget.offscreen;
-            offscreenIndicatorEdge = projectedTarget.edge;
-            targetProjectionState = projectedTarget.offscreen ? 'offscreen' : 'onscreen';
-            reticle.dataset.lockState = nextTargetState;
-            reticle.dataset.offscreen = projectedTarget.offscreen ? 'true' : 'false';
-            reticle.dataset.targetEdge = projectedTarget.edge;
-            reticle.style.display = 'block';
-            reticle.style.left = screenX + 'px';
-            reticle.style.top = screenY + 'px';
-            var reticleReadyColor = inStrikeRange ? '#86efac' : nextTargetState === 'close' ? '#fde68a' : '#a5e7ef';
-            reticle.style.color = reticleReadyColor;
-            reticle.style.setProperty('--target-bearing', (Math.atan2(-projectedY * screenH, projectedX * screenW) * 180 / Math.PI + 45) + 'deg');
-            var labelLayout = layoutTargetLabel(screenX, screenY, screenW - (projectedTarget.offscreen ? targetHudInsets.labelRight : 0), screenH);
-            reticleLabel.style.left = labelLayout.left + 'px';
-            reticleLabel.style.top = labelLayout.top + 'px';
-            reticleLabel.style.width = labelLayout.width + 'px';
-            var targetName = lockTarget && lockTarget.data ? lockTarget.data.label : 'target';
-            var directionHint = projectedTarget.edge.indexOf('left') !== -1 ? 'TURN LEFT' :
-              projectedTarget.edge.indexOf('right') !== -1 ? 'TURN RIGHT' :
-              projectedTarget.edge.indexOf('top') !== -1 ? 'PULL UP' :
-              projectedTarget.edge.indexOf('bottom') !== -1 ? 'DIVE LOWER' : '';
-            if(activePerch)directionHint=directionHint.replace('PULL UP','LOOK UP').replace('DIVE LOWER','LOOK DOWN');
-            var reticlePrefix = projectedTarget.offscreen ? directionHint :
-              nextTargetState === 'watch' ? 'WATCHING' :
-              inStrikeRange ? 'READY TO STRIKE' : nextTargetState === 'close' ? 'CLOSE' : 'ALIGN';
-            var reticleCaption = targetName + (targetProbe ? '' : ' · ' + targetDistanceDisplay + 'm');
-            if (reticleStatus.textContent !== reticlePrefix) reticleStatus.textContent = reticlePrefix;
-            if (reticleName.textContent !== reticleCaption) reticleName.textContent = reticleCaption;
-          } else {
-            targetProjectionState = targetLockOn && hasTargetProjection ? 'behind' : 'none';
-            offscreenIndicatorVisible = false;
-            offscreenIndicatorEdge = '';
-            reticle.dataset.offscreen = 'false';
-            reticle.dataset.targetEdge = '';
-            reticle.style.display = 'none';
-          }
           // Distant flock silhouettes.
           for (var fbi = 0; fbi < flockBirds.length; fbi++) {
             var fbird = flockBirds[fbi];
@@ -18077,11 +18602,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               pm2.alerted = true;
               pm2.fleeBoost = 2.0;
             }
-            // Same anchor as the detection radius: 30 of 25 becomes 48 of 40.
-            if (mission.id === 'silentStrike' && pullUpKey && pd3 < 48 && !pm2.missionAlerted) {
+            if (mission.id === 'silentStrike' && pullUpKey && pd3 < SILENT_STRIKE_ALERT_RANGE_M && !pm2.missionAlerted) {
               pm2.missionAlerted = true;
               missionAlerts++;
-              energyEventLog.push({ msg: 'Prey alert - glide silently near the target', t: now, color: '#fca5a5' });
+              energyEventLog.push({ msg: 'Prey alert - glide silently near the target', t: motionNow, color: '#fca5a5' });
               evaluateMission();
             }
             if (pm2.alerted) {
@@ -18248,9 +18772,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             setRaptorCanvasData('raptorReducedMotion', _rmFX ? 'true' : 'false');
             if (thermalActive !== lastRecordedThermal) {
               lastRecordedThermal = thermalActive;
+              if (mission.id === 'thermalKettle') refreshKeyGuide();
               recordFlightEvent('thermal', thermalActive ? FLIGHT_EVENT_ENTERED_THERMAL : 'Left thermal', thermalActive ? 'Circle to trade lift for altitude' : 'Search for the next lift column');
             }
-            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? (activePerch?'perched':'landed') : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e ? 'climb' : keys.q ? 'descent' : 'glide';
+            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? (activePerch?'perched':'landed') : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e && mission.id !== 'thermalKettle' ? 'climb' : keys.q ? 'descent' : 'glide';
             updateFlightState(nextFlightState);
             updateMissionHud();
             var mph = (raptor.speed * 2.237).toFixed(0);
@@ -18264,7 +18789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             flightAltitudeGauge.dataset.altitudeState = altitudeAboveGround < 12 ? 'low' : altitudeRatio > 0.82 ? 'high' : 'cruise';
             var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
             var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
-            var telemetryTargetInfo = targetLockOn ? acquireTarget() : null;
+            var telemetryTargetInfo = targetInfo;
             var headingDegrees = ((raptor.yaw * 180 / Math.PI) % 360 + 360) % 360;
             var headingCompass = headingDegrees < 22.5 || headingDegrees >= 337.5 ? 'N' :
               headingDegrees < 67.5 ? 'NE' : headingDegrees < 112.5 ? 'E' :
@@ -18273,16 +18798,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var targetBearingText = '—';
             var headingState = 'none';
             var targetRelativeBearing = null;
-            if (telemetryTargetInfo && telemetryTargetInfo.prey && telemetryTargetInfo.prey.mesh) {
-              var targetDx = telemetryTargetInfo.prey.mesh.position.x - raptor.x;
-              var targetDz = telemetryTargetInfo.prey.mesh.position.z - raptor.z;
+            var headingTarget = mission.id === 'thermalKettle' ? thermalOrigin : telemetryTargetInfo && telemetryTargetInfo.prey && telemetryTargetInfo.prey.mesh ? telemetryTargetInfo.prey.mesh.position : null;
+            if (headingTarget) {
+              var targetDx = headingTarget.x - raptor.x;
+              var targetDz = headingTarget.z - raptor.z;
               var targetBearingDegrees = ((Math.atan2(targetDx, -targetDz) * 180 / Math.PI) % 360 + 360) % 360;
               targetRelativeBearing = ((targetBearingDegrees - headingDegrees + 540) % 360) - 180;
               var targetRelativeRounded = Math.round(targetRelativeBearing);
               targetBearingText = (targetRelativeRounded < -1 ? 'L ' : targetRelativeRounded > 1 ? 'R ' : 'A ') + Math.abs(targetRelativeRounded) + '°';
               headingState = Math.abs(targetRelativeRounded) <= 8 ? 'aligned' : targetRelativeRounded < 0 ? 'left' : 'right';
             }
-            var headingDisplay = headingCompass + ' ' + Math.round(headingDegrees).toString().padStart(3, '0') + '° · TGT ' + targetBearingText;
+            var headingDisplay = headingCompass + ' ' + Math.round(headingDegrees).toString().padStart(3, '0') + (mission.id === 'thermalKettle' ? '° · LIFT ' : '° · TGT ') + targetBearingText;
             if (flightHeadingEl.textContent !== headingDisplay || flightHeadingEl.dataset.headingState !== headingState) {
               flightHeadingEl.textContent = headingDisplay;
               flightHeadingEl.dataset.headingState = headingState;
@@ -18308,7 +18834,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             telemetryStaminaFill.style.width = Math.round(stamPct) + '%';
             telemetryEnergy.parentElement.dataset.energyState = calPct < 20 ? 'critical' : calPct < 40 ? 'low' : stamPct < 20 ? 'fatigued' : 'stable';
             telemetryEnergy.parentElement.setAttribute('aria-label', 'Energy: calories ' + Math.round(calPct) + ' percent, stamina ' + Math.round(stamPct) + ' percent');
-           telemetryTarget.textContent = telemetryTargetInfo ? telemetryTargetInfo.distance.toFixed(0) + ' m' : 'None';
            telemetryMission.textContent = missionProgressText();
            telemetryMission.parentElement.dataset.missionState = missionOutcome;
           var dayLabel = dayPhase < 0.18 ? '🌑 Night' :
@@ -18353,7 +18878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // ── Event log: render transient messages ──
           eventLogEl.innerHTML = '';
           energyEventLog.slice(-3).forEach(function(ev) {
-            var age = (now - ev.t) / 1000;
+            var age = (motionNow - ev.t) / 1000;
             var op = Math.max(0, 1 - age / 3.5);
             var msgEl = document.createElement('div');
             msgEl.style.cssText = 'background:rgba(15,23,42,0.92);border:2px solid ' + ev.color + ';color:' + ev.color + ';padding:6px 12px;border-radius:8px;font-family:ui-sans-serif,system-ui;font-size:13px;font-weight:bold;opacity:' + op + ';text-shadow:0 0 4px rgba(0,0,0,0.85)';
@@ -18362,13 +18887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
           }
           paintPracticeTrail();
-          var scenicView=canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView==='true';
-          targetGuide.visible=targetGuide.visible && !scenicView && !practiceTrail.active;
-          targetFocusHalo.visible=targetFocusHalo.visible && !scenicView && !practiceTrail.active;
-          speedLines.visible=!scenicView && !_rmFX && !raptor.landed && !raptor.crashed;
-          airflowLines.visible=airflowLines.visible && !scenicView;
-          if(scenicView) flightTrail.visible=false;
-          if(scenicView || practiceTrail.active) preyMeshes.forEach(function(prey){if(prey.beacon)prey.beacon.visible=false;if(prey.beaconCap)prey.beaconCap.visible=false;});
+          applyFlightOverlayVisibility(true);
           waterAppearance.time.value=_rmFX ? 0 : motionNow*0.001;
           if(lake && !_rmFX) waterUpdateCount++; // Continuous GPU waves; no geometry uploads.
           waterAppearance.daylight.value=skyAtmosphere.day.value;
@@ -18379,10 +18898,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             sun.target.position.set(shadowX,terrainHeightAt(shadowX,shadowZ),shadowZ);
             sun.position.copy(sun.target.position).addScaledVector(sunDir,350);
           }
+          renderFlightScene();
+        }
+        loop();
+
+        function applyFlightOverlayVisibility(captureEligibility) {
+          if (captureEligibility) {
+            flightOverlayVisibility.airflow = airflowLines.visible;
+            flightOverlayVisibility.trail = flightTrail.visible;
+            flightOverlayVisibility.vortices = wingtipVortices.visible;
+          }
+          var scenicView = canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView === 'true';
+          speedLines.visible = !scenicView && !_rmFX && !raptor.landed && !raptor.crashed;
+          airflowLines.visible = !scenicView && !_rmFX && flightOverlayVisibility.airflow;
+          flightTrail.visible = !scenicView && !_rmFX && flightOverlayVisibility.trail;
+          wingtipVortices.visible = !scenicView && !_rmFX && !raptor.landed && !raptor.crashed && flightOverlayVisibility.vortices;
+          if (_rmFX) targetGuide.visible = false;
+          if (scenicView || practiceTrail.active || mission.id === 'thermalKettle') {
+            targetGuide.visible = false;
+            targetFocusHalo.visible = false;
+            preyMeshes.forEach(function(prey) {
+              if (prey.beacon) prey.beacon.visible = false;
+              if (prey.beaconCap) prey.beaconCap.visible = false;
+            });
+          }
+        }
+        function renderFlightScene() {
           if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
           else { renderer.render(scene, camera); }
         }
-        loop();
+        // Paused flights have no animation loop. Repaint visual changes once without
+        // running physics, prey movement, timers, or starting another frame chain.
+        function repaintPausedFlight(refreshShadows) {
+          if (disposed || !simPaused) return;
+          if (refreshShadows && sun.castShadow) renderer.shadowMap.needsUpdate = true;
+          // A catch may remove the tracked prey immediately before the player pauses.
+          if (lastTrackerTargetInfo && preyMeshes.indexOf(lastTrackerTargetInfo.prey) === -1) lastTrackerTargetInfo = null;
+          updateTargetTracker(lastTrackerTargetInfo, lastTargetState);
+          applyFlightOverlayVisibility(false);
+          renderFlightScene();
+        }
 
         // ─── Cleanup hook ───
         var onResize = function() {
@@ -18398,6 +18953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (composer) {
             try { composer.setSize(width, height); } catch (resizeComposerError) {}
           }
+          repaintPausedFlight(false);
         };
         var resizeObserver = null;
         window.addEventListener('resize', onResize);
@@ -18413,8 +18969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           cleanupComplete = true;
           disposed = true;
           cancelAnimationFrame(animId);
-          pendingTimers.forEach(function(timerId) { clearTimeout(timerId); });
-          pendingTimers = [];
+          pendingFlightActions = [];
           clearHeldInputs();
 
           window.removeEventListener('resize', onResize);
@@ -18436,8 +18991,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           canvasEl._rhSnapshot = null;
           canvasEl._rhInit = false;
           delete hudParent.dataset.raptorFlightTrail;
+          delete hudParent.dataset.raptorTrailResult;
           delete hudParent.dataset.raptorPerched;
+          pauseResume.onclick=pauseView.onclick=pauseZoom.onclick=pauseCard.onkeydown=null;
           if(practiceButton)practiceButton.onclick=null;
+          if(practiceRetry)practiceRetry.onclick=null;
+          if(practiceDismiss)practiceDismiss.onclick=null;
           if(perchButton)perchButton.onclick=null;
 
           [

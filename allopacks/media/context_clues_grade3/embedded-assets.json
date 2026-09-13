@@ -1,0 +1,281 @@
+[
+  {
+    "id": "ccx-term-1",
+    "kind": "term",
+    "file": "ccx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A middle line on a schematic page is gold, surrounded by four teal lines.",
+    "altHash": "img-5ub-5a5b3453"
+  },
+  {
+    "id": "ccx-term-2",
+    "kind": "term",
+    "file": "ccx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A magnifying-glass outline highlights the middle of a schematic page.",
+    "altHash": "img-fmz-10ccf4b7"
+  },
+  {
+    "id": "ccx-term-3",
+    "kind": "term",
+    "file": "ccx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One wide teal box points down to one wide gold box.",
+    "altHash": "img-4b3-607c5cab"
+  },
+  {
+    "id": "ccx-term-4",
+    "kind": "term",
+    "file": "ccx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One teal box branches to three gold circles.",
+    "altHash": "img-e0n-9a580e2f"
+  },
+  {
+    "id": "ccx-term-5",
+    "kind": "term",
+    "file": "ccx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two matching teal blocks have a pair of short gold lines between them.",
+    "altHash": "img-43n-9502120c"
+  },
+  {
+    "id": "ccx-term-6",
+    "kind": "term",
+    "file": "ccx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A short teal column and tall coral column are compared with an arrow.",
+    "altHash": "img-47z-b9fc5713"
+  },
+  {
+    "id": "ccx-term-7",
+    "kind": "term",
+    "file": "ccx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blank word-part blocks have the first position highlighted in gold.",
+    "altHash": "img-3x3-58bf5b30"
+  },
+  {
+    "id": "ccx-term-8",
+    "kind": "term",
+    "file": "ccx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blank word-part blocks have the last position highlighted in gold.",
+    "altHash": "img-3xf-3b00c9ea"
+  },
+  {
+    "id": "ccx-term-9",
+    "kind": "term",
+    "file": "ccx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blank word-part blocks have the middle position highlighted in gold.",
+    "altHash": "img-3yf-5c1748ec"
+  },
+  {
+    "id": "ccx-term-10",
+    "kind": "term",
+    "file": "ccx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A bent teal route ends in a gold arrow.",
+    "altHash": "img-4l3-972aacda"
+  },
+  {
+    "id": "ccx-anchor-1",
+    "kind": "anchor",
+    "file": "ccx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One wide teal box points down to one wide gold box.",
+    "altHash": "img-4b3-607c5cab"
+  },
+  {
+    "id": "ccx-anchor-2",
+    "kind": "anchor",
+    "file": "ccx-anchor-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A lemon, lime and orange sit separately beside a cut orange half.",
+    "altHash": "img-amj-bae53e13"
+  },
+  {
+    "id": "ccx-anchor-3",
+    "kind": "anchor",
+    "file": "ccx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two matching teal blocks have a pair of short gold lines between them.",
+    "altHash": "img-43n-9502120c"
+  },
+  {
+    "id": "ccx-anchor-4",
+    "kind": "anchor",
+    "file": "ccx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A short teal column and tall coral column are compared with an arrow.",
+    "altHash": "img-47z-b9fc5713"
+  },
+  {
+    "id": "ccx-anchor-5",
+    "kind": "anchor",
+    "file": "ccx-anchor-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open book has blank pages with a central fold.",
+    "altHash": "img-ah3-f14a84cb"
+  },
+  {
+    "id": "ccx-sort-1",
+    "kind": "sort",
+    "file": "ccx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Cracked soil lies beneath a bright sun.",
+    "altHash": "img-cyn-e2b4ed6a"
+  },
+  {
+    "id": "ccx-sort-2",
+    "kind": "sort",
+    "file": "ccx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A crescent moon hangs above three trees.",
+    "altHash": "img-at3-ed5fb47c"
+  },
+  {
+    "id": "ccx-sort-3",
+    "kind": "sort",
+    "file": "ccx-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A lemon, lime and orange sit separately beside a cut orange half.",
+    "altHash": "img-amj-bae53e13"
+  },
+  {
+    "id": "ccx-sort-4",
+    "kind": "sort",
+    "file": "ccx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A fork, spoon and table knife stand separately.",
+    "altHash": "img-8h3-44e28752"
+  },
+  {
+    "id": "ccx-sort-5",
+    "kind": "sort",
+    "file": "ccx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three objects are neatly aligned below a shelf in a clean room.",
+    "altHash": "img-4pn-75c1d771"
+  },
+  {
+    "id": "ccx-sort-6",
+    "kind": "sort",
+    "file": "ccx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A backpack lies beside a winding uphill route drawn schematically.",
+    "altHash": "img-9xb-9d005a8b"
+  },
+  {
+    "id": "ccx-sort-7",
+    "kind": "sort",
+    "file": "ccx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A street between buildings contains no people or vehicles.",
+    "altHash": "img-63z-2907e6e2"
+  },
+  {
+    "id": "ccx-sort-8",
+    "kind": "sort",
+    "file": "ccx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two separated containers hold gold counters, with an arrow between them.",
+    "altHash": "img-5yr-f2154d53"
+  },
+  {
+    "id": "ccx-lesson-1",
+    "kind": "lesson",
+    "file": "ccx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A narrow woodland path runs between ferns, with boot prints along its center.",
+    "altHash": "img-2amv-3893d1e7"
+  },
+  {
+    "id": "ccx-lesson-2",
+    "kind": "lesson",
+    "file": "ccx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A middle line on a schematic page is gold, surrounded by four teal lines.",
+    "altHash": "img-5ub-5a5b3453"
+  },
+  {
+    "id": "ccx-lesson-3",
+    "kind": "lesson",
+    "file": "ccx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One wide teal box points down to one wide gold box.",
+    "altHash": "img-4b3-607c5cab"
+  },
+  {
+    "id": "ccx-lesson-4",
+    "kind": "lesson",
+    "file": "ccx-lesson-4.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A lemon, lime and orange sit separately beside a cut orange half.",
+    "altHash": "img-1037-46537fa6"
+  },
+  {
+    "id": "ccx-lesson-5",
+    "kind": "lesson",
+    "file": "ccx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two matching teal blocks have a pair of short gold lines between them.",
+    "altHash": "img-43n-9502120c"
+  },
+  {
+    "id": "ccx-lesson-6",
+    "kind": "lesson",
+    "file": "ccx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A short teal column and tall coral column are compared with an arrow.",
+    "altHash": "img-47z-b9fc5713"
+  },
+  {
+    "id": "ccx-lesson-7",
+    "kind": "lesson",
+    "file": "ccx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three blank word-part blocks have the middle position highlighted in gold.",
+    "altHash": "img-3yf-5c1748ec"
+  },
+  {
+    "id": "ccx-lesson-8",
+    "kind": "lesson",
+    "file": "ccx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open book has blank pages with a central fold.",
+    "altHash": "img-ah3-f14a84cb"
+  }
+]

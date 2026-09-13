@@ -1,0 +1,254 @@
+[
+  {
+    "resourceId": "dg-reading",
+    "path": "data",
+    "from": "## What Counts as Typical\n\nSome questions have one answer. Some questions have a pile of answers. Statistics is about the second kind.\n\n\"How tall am I?\" has one answer. Measure once and you are finished. \"How tall are the students in my class?\" is different. Ask thirty people and you get thirty numbers, most of them different. A question like that is a **statistical** question, and the giveaway is that you expect the answers to vary before you even start collecting them.\n\nThat pile of answers is called a **data** set, and staring at thirty numbers tells you almost nothing. So we summarise. Two questions do most of the work: **where is the middle, and how spread out are they?**\n\n### Two ways to say middle\n\nThe **mean** is what most people call the average. Add every value, divide by how many there are. It uses every single number, which is its strength.\n\nThe **median** is the value in the middle once you put them in order. Half the values sit above it and half below. With an even count there are two middle numbers, so you take the mean of those two.\n\nMost of the time these two land close together. When they do not, something interesting is going on.\n\n### The number that ruins the average\n\nLook at this set: 4, 5, 6, 7, 100.\n\nThe median is 6, which describes four of the five values well. The mean is 24.4 — a number larger than four of the five things it is supposed to summarise. Nobody in that group is anywhere near 24.4.\n\nThe 100 is an **outlier**: a value far from the rest. Because the mean uses every number, one extreme value drags it. The median barely notices, because moving one value from 100 to 1,000 does not change which number sits in the middle.\n\nSo neither one is the right answer in general. The mean is the better summary when the values are fairly even. The median is more honest when a few extremes would distort the picture. Anyone reporting an average without saying which one they used has left something out.\n\n### One number is never the whole story\n\nHere are two groups, and both have a mean of 50:\n\n- 49, 50, 50, 51\n- 5, 20, 80, 95\n\nThe same centre, and nothing else in common. What separates them is **spread**, how far the values sit from each other. The simplest measure is the **range**, the largest value minus the smallest: 2 for the first group and 90 for the second.\n\nThis is why a single number can mislead without anybody lying. Report only the centre and you have hidden whether the group is tightly packed or scattered everywhere.\n\nSo when you meet a statistic, ask three things. What exactly was measured? Which middle is this? And what was the spread?",
+    "to": "## What Counts as Typical\n\nA **statistical** question anticipates variation in the data used to answer it. Heights across a class or waits across bus arrivals can vary. A single specified person's height on one occasion asks for one value; studying that person's height across time is a different question.\n\nA **data** set records observations. Before calculating, ask what was measured, who or what was included, and in which units. Plots can reveal patterns, gaps and unusual values.\n\nThe **mean** is the sum of the values divided by the number of values. For 2,3,3,4,8, the total is 20 and there are five values, so the mean is 4. An equal-sharing picture divides twenty squares into five groups of four.\n\nThe **median** comes from ordered data. With five values it is the third. For 2,3,3,4,8, the median is 3. Values can equal the median, so it is not always true that exactly half are strictly above and half strictly below. With an even count, average the two middle values: 3,5,8,10 has median (5 + 8) ÷ 2 = 6.5.\n\nThe **mode** is the most frequent value. Three is the mode of 2,3,3,4,8. More than one value can tie. Under our classroom convention, a set in which every value appears once has no mode. Modes also summarize categories, such as most common book genre.\n\nNow consider 4,5,6,7,100. The mean is 24.4 and median is 6. The distant 100 is an **outlier** in this example. Changing only 100 to 1000 leaves the middle position unchanged, but increases the mean. The median is less sensitive to extreme magnitudes; adding, deleting or reordering observations can still change it.\n\nNeither summary is automatically more honest. For a value near the cluster here, median 6 is useful. For equal sharing of the total, mean 24.4 answers another legitimate question. Check the distribution and purpose; a gap between mean and median does not by itself prove an error or a single outlier.\n\n**Spread** describes variation. Two sets, 49,50,50,51 and 5,20,80,95, both have mean 50. Their **ranges**, largest minus smallest, are 2 and 90. Range uses only extremes; the plots reveal more.\n\nA **sample** is the subset observed from a wider group. More observations do not automatically remove selection bias. Report how data were chosen and handle unusual values transparently.\n\nAsk: what was measured, which summary is reported, and what does the spread show? One number cannot replace the full story."
+  },
+  {
+    "resourceId": "dg-glossary",
+    "path": "data.3.def",
+    "from": "The middle value once the data is in order.",
+    "to": "The middle of ordered numerical data; for an even count, the mean of the two middle values."
+  },
+  {
+    "resourceId": "dg-glossary",
+    "path": "data.4.def",
+    "from": "The value that appears most often in a set.",
+    "to": "A value with the highest frequency; several can tie."
+  },
+  {
+    "resourceId": "dg-glossary",
+    "path": "data.8.def",
+    "from": "A single value used to stand for the whole set.",
+    "to": "A summary of location, such as mean or median; it does not represent every feature of a set."
+  },
+  {
+    "resourceId": "dg-outline",
+    "path": "data.branches.0.items.1",
+    "from": "How tall am I? is not one. How tall are the students in my class? is",
+    "to": "One specified height asks for one value; heights across a group or time can anticipate variation"
+  },
+  {
+    "resourceId": "dg-outline",
+    "path": "data.branches.0.items.2",
+    "from": "If you can answer it by measuring once, it is not statistical",
+    "to": "Define the question and variation, not just the number of people"
+  },
+  {
+    "resourceId": "dg-outline",
+    "path": "data.branches.1.items.0",
+    "from": "The pile itself tells you almost nothing",
+    "to": "Plotting data helps reveal patterns, gaps and unusual values"
+  },
+  {
+    "resourceId": "dg-outline",
+    "path": "data.branches.2.items.2",
+    "from": "Usually close together; when they are not, look closer",
+    "to": "Mean and median can differ; inspect the distribution and purpose"
+  },
+  {
+    "resourceId": "dg-outline",
+    "path": "data.branches.3.title",
+    "from": "Outliers pull one and not the other",
+    "to": "Different sensitivity to extremes"
+  },
+  {
+    "resourceId": "dg-outline",
+    "path": "data.branches.3.items.1",
+    "from": "The median only cares which value sits in the middle",
+    "to": "The median depends on ordered middle values and can change when the data change"
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.0.target",
+    "from": "Why an outlier drags the mean but not the median",
+    "to": "Compare how mean and median respond to this extreme value"
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "The median only depends on which value sits in the middle.",
+    "to": "The median depends on the ordered middle value or values; some changes affect it and some do not."
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Picture a seesaw with the values as weights along the plank. The mean is where you would put the pivot to balance it, so a heavy weight far out at one end forces the pivot to slide toward it. The median is just the person standing in the middle of the queue, and they do not move no matter how far away the last person walks.",
+    "to": "Place equal-mass markers at the data values along a number line. The mean is their balance point: moving one marker farther right shifts that point. In 4,5,6,7,100, replacing only 100 with 1000 keeps the third value at 6, so this median stays unchanged."
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Two different physical pictures for two different definitions. The seesaw shows why distance matters to the mean, and the queue shows why only position matters to the median.",
+    "to": "Markers must have equal mass; their positions represent the values. The unchanged median is specific to moving the already-largest value farther out, not a promise that a median never changes."
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "The outlier moves the ____ because ____, but not the ____ because ____.",
+    "to": "In this replacement example, the mean ____ and the median ____ because ____."
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Draw the values as weights on a plank.",
+    "to": "Draw equal-mass markers at the numerical values, not heavier markers for bigger values."
+  },
+  {
+    "resourceId": "dg-sort",
+    "path": "data.categories.0.label",
+    "from": "STATISTICAL — the answers will vary",
+    "to": "STATISTICAL"
+  },
+  {
+    "resourceId": "dg-sort",
+    "path": "data.categories.1.label",
+    "from": "NOT STATISTICAL — one measurement settles it",
+    "to": "ONE VALUE"
+  },
+  {
+    "resourceId": "dg-sort",
+    "path": "data.items.5.content",
+    "from": "How tall am I?",
+    "to": "How tall am I at this specified time, using one measurement?"
+  },
+  {
+    "resourceId": "dg-sort",
+    "path": "data.items.7.content",
+    "from": "What time is the first bus scheduled to leave?",
+    "to": "What is the scheduled first departure for this route on this date?"
+  },
+  {
+    "resourceId": "dg-math",
+    "path": "data.problems.3.question",
+    "from": "Find the mean and the median of 4, 5, 6, 7, 100. Which one describes this group better, and why?",
+    "to": "For 4,5,6,7,100, find mean and median. Which is nearer the cluster of four values?"
+  },
+  {
+    "resourceId": "dg-math",
+    "path": "data.problems.3.answer",
+    "from": "Mean 24.4, median 6; the median describes it better",
+    "to": "Mean 24.4, median 6; median is nearer the cluster"
+  },
+  {
+    "resourceId": "dg-math",
+    "path": "data.problems.3.steps.2.explanation",
+    "from": "The median is better here. The mean of 24.4 is larger than four of the five values, because the outlier of 100 drags it upward.",
+    "to": "Median 6 is near the cluster from 4 to 7. Mean 24.4 describes equal sharing of all 122 across five observations. The useful summary depends on the question."
+  },
+  {
+    "resourceId": "dg-math",
+    "path": "data.problems.5.steps.2.explanation",
+    "from": "The middle of 5 ordered values is the 3rd, which is 155. Mean and median agree here because there is no outlier pulling the mean.",
+    "to": "The third value is 155, so the median is 155. Mean and median agree in this particular symmetric set; lack of outliers alone does not guarantee equality."
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.2.options.3",
+    "from": "It is 6.5, the same as the mean of the whole set",
+    "to": "It is 13, because you add the middle values without dividing"
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.3.question",
+    "from": "Why does an outlier move the mean much more than the median?",
+    "to": "In 4,5,6,7,100, why does replacing 100 with 1000 change the mean but not the median?"
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.3.options.3",
+    "from": "The mean uses every value, so distance matters to it",
+    "to": "The sum changes, while the third ordered value stays 6"
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.3.correctAnswer",
+    "from": "The mean uses every value, so distance matters to it",
+    "to": "The sum changes, while the third ordered value stays 6"
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.4.options.0",
+    "from": "Nothing at all, because centre says nothing about spread",
+    "to": "The mean alone does not determine how spread out either group is"
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.4.correctAnswer",
+    "from": "Nothing at all, because centre says nothing about spread",
+    "to": "The mean alone does not determine how spread out either group is"
+  },
+  {
+    "resourceId": "dg-quiz",
+    "path": "data.questions.6.expectedAnswer",
+    "from": "The mean adds every value and divides, so the 100 contributes as much as everything else and pulls the result far upward. The median only asks which value sits in the middle once the set is in order, and that is 6 regardless of how large the last value is. The gap between them is a signal that an extreme value is present.",
+    "to": "The sum is 122 and dividing by five gives mean 24.4. The largest value, 100, exceeds the other four combined (22) and raises the mean. The third ordered value is 6, so the median is 6. This example shows different sensitivity to an extreme; a gap alone is not proof of one particular cause in every data set."
+  },
+  {
+    "resourceId": "dg-faq",
+    "path": "data.3.answer",
+    "from": "Both happen. If every value appears exactly once there is no mode at all, and if two values tie for most common the set has two.",
+    "to": "Values can tie for the highest frequency. In this lesson, when every value occurs once we say there is no mode; some conventions instead list all tied values. State the convention you use."
+  },
+  {
+    "resourceId": "dg-faq",
+    "path": "data.4.answer",
+    "from": "Bigger usually helps, but who is in the sample matters more than how many. Asking two thousand people outside a football ground about sport gives you a worse answer than asking two hundred people chosen from across a town.",
+    "to": "A larger well-designed sample can improve precision, but increasing the size of a biased sample does not remove the bias. Describe the target group and how participants or objects were selected."
+  },
+  {
+    "resourceId": "dg-faq",
+    "path": "data.5.answer",
+    "from": "Easily, and it is worth watching for. Starting a vertical axis somewhere other than zero can turn a small change into a dramatic-looking cliff. Every number on it can be correct while the picture tells you something false.",
+    "to": "Graph design can mislead. Check labels, units, axis limits and spacing. A nonzero axis start can be useful for some plots if shown clearly; bar charts need special care because bar length encodes magnitude."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.brief.context",
+    "from": "You may collect data from your own class or year group during one lesson. Questions must be about things people will happily answer out loud: minutes spent travelling to school, number of letters in a first name, hours of sleep last night, number of siblings, shoe size.",
+    "to": "Collect at least fifteen nonpersonal measurements, such as lengths of classroom pencils or letter counts in teacher-selected book titles. Alternatively use anonymous voluntary responses to an agreed question. No one must disclose sleep, family or travel information."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Choose something you genuinely do not know the answer to. If you can guess the result now, the data will not teach you anything.",
+    "to": "Choose a clear question that anticipates variation. A prediction is welcome; collect data to test it rather than selecting values that support it."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "The mean uses every value, so an outlier drags it; the median does not move in the same way.",
+    "to": "The mean responds to all values; the median is less sensitive to extreme magnitudes but can also change."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.brief.constraints.2",
+    "from": "Report every value you collected, including any outlier",
+    "to": "Report the data and any corrections or exclusions transparently, without identifying participants"
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A student asked how many minutes classmates spend travelling to school.",
+    "to": "An invented practice set of seven object lengths is 5,7,9,11,13,18,70 centimetres."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "Most answers clustered between five and fifteen minutes, but one classmate travelled seventy. The mean came out at nineteen minutes, which described almost nobody. She reported the median of eleven, showed the seventy, and wrote that her summary hid the fact that one person's journey was six times the typical one.",
+    "to": "The total is 133, so the mean is 19 cm. The fourth ordered value is 11 cm, the median. The range is 65 cm. The student reported both centres and the distant 70, explaining that a central value hides the spread. These are illustrative numbers, not collected class data."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "She did not delete the awkward value or bury it. Naming it made her report more trustworthy, not less, and the outlier turned out to be the most interesting thing she found.",
+    "to": "The full data support every reported calculation, and no individual is identified by an unusual personal measurement."
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.supports.coachPrompts.2",
+    "from": "Is there a value you would rather not report? Report it.",
+    "to": "Is an unusual value an error or a real observation? Explain how you checked without identifying a person."
+  }
+]

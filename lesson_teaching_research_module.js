@@ -76,9 +76,11 @@
         signal.removeEventListener('abort', onAbort); callback(value);
       }
       function onAbort() { finish(reject, signal.reason instanceof Error ? signal.reason : abortError()); }
-      signal.addEventListener('abort', onAbort, { once: true });
-      if (signal.aborted) { onAbort(); return; }
+      // Always observe the work's rejection, even if it aborts synchronously
+      // before returning its promise. A late rejection must not become unhandled.
       Promise.resolve(promise).then(function (value) { finish(resolve, value); }, function (error) { finish(reject, error); });
+      signal.addEventListener('abort', onAbort, { once: true });
+      if (signal.aborted) onAbort();
     });
   }
   async function bounded(work, duration, externalSignal) {
@@ -94,6 +96,11 @@
       }), controller.signal);
       checkCanceled(externalSignal);
       return result;
+    } catch (error) {
+      // A rejected response (for example an oversized body) must also stop
+      // the underlying fetch instead of leaving its response streaming.
+      controller.abort(error);
+      throw error;
     } finally {
       clearTimeout(timer);
       if (externalSignal) externalSignal.removeEventListener('abort', onAbort);

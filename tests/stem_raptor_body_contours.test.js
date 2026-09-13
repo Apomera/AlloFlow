@@ -42,3 +42,18 @@ describe('Raptor head contours',()=>{
     expect(Array.from(g.attributes.normal.array).every(Number.isFinite)).toBe(true);expect(Array.from(sculpt(original.clone(),true).attributes.position.array)).toEqual(Array.from(q.array));original.dispose();g.dispose();
   });
 });
+
+
+describe('Longitudinal body feather mapping',()=>{
+  for(const quality of ['low','high'])it('keeps texture poles away from the breast and UVs finite: '+quality,()=>{
+    const g=body(quality,0x6b4423,0xfef3c7),p=g.attributes.position,uv=g.attributes.uv,n=g.attributes.normal,used=new Set(g.index.array);let breastVertices=0;
+    for(let i=0;i<p.count;i++){
+      const u=uv.getX(i),v=uv.getY(i);expect(Number.isFinite(u)&&Number.isFinite(v)).toBe(true);
+      expect(v).toBeGreaterThanOrEqual(0);expect(v).toBeLessThanOrEqual(1);
+      if(v===0||v===1)expect(Math.abs(p.getZ(i))).toBeCloseTo(0.63,6);
+      if(p.getY(i)<-0.20){breastVertices++;expect(v).toBeGreaterThan(0.20);expect(v).toBeLessThan(0.80);}
+      if(used.has(i))expect(Math.hypot(n.getX(i),n.getY(i),n.getZ(i))).toBeCloseTo(1,5);
+    }
+    expect(breastVertices).toBeGreaterThan(10);g.dispose();
+  });
+});

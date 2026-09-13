@@ -1,0 +1,32 @@
+[
+  {
+    "key": "buttons",
+    "prompt": "Use case: scientific-educational. Create one square text-free illustration for a first-grade Making Ten lesson. Tactile felt applique and cut-paper craft style, clear bold shapes on warm ivory background, not photorealistic. Exactly TEN large round buttons arranged in TWO perfectly straight rows of FIVE, evenly spaced, top-down. All buttons teal; each has two small holes that are visibly holes, not separate counters. No other objects, no hands, no people, no numerals, no letters, no captions, no border decorations. Count accuracy and separation are essential. Fill central 80 percent with the ten buttons.",
+    "slug": "making_ten_grade1",
+    "file": "source-buttons.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-65a373a8-5dc9-4e21-ac27-50cfc92497a7.png",
+    "alt": "Ten teal felt buttons are arranged in two rows of five.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "key": "tiles",
+    "prompt": "Use case: scientific-educational. One square text-free first-grade Making Ten illustration in tactile felt applique and layered paper craft style on warm ivory. Exactly six teal square felt tiles in a separate LEFT group arranged two rows of three. Exactly four coral square felt tiles in a separate RIGHT group arranged two rows of two. All tiles same size, clear gaps, top-down, no overlapping. Ten tiles total. Very large plainly countable shapes. No other objects, no dots on tiles, no hands, letters, numbers, captions, arrows or decorative pieces.",
+    "slug": "making_ten_grade1",
+    "file": "source-tiles.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-fbf24672-71f6-4877-ad47-12c3f2283348.png",
+    "alt": "Six teal square tiles in two rows of three sit beside four coral tiles in two rows of two.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "key": "stars",
+    "prompt": "Use case: scientific-educational. One square illustration for first-grade number bonds in layered paper and felt applique craft style on warm ivory. TWO separate identical shallow oval felt mats, side by side. Each mat contains EXACTLY FIVE large golden felt stars, arranged three above two, no overlaps. Ten stars total. Same star size in both groups. Broad clear gap between mats, large simple countable shapes. No other objects or stars, no people, no words, letters, numbers or mathematical symbols. Not photorealistic.",
+    "slug": "making_ten_grade1",
+    "file": "source-stars.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-1aa2ec0d-7504-4f65-a3aa-97a2826b0876.png",
+    "alt": "Two blue mats each hold five gold stars, arranged three above two.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "ratios_real_life_grade6",
+    "key": "boxes",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Matte gouache still life. Two plain blank cereal cartons side by side, a smaller teal box and a larger coral box, each with a simple grain-bowl illustration but no writing. No prices or claim about actual contents. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-boxes.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0e84a7f0-08a6-4117-85a4-d16eb0579d9e.png",
+    "alt": "A smaller teal cereal carton and a larger coral carton have grain-and-bowl pictures but no printed prices.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "ratios_real_life_grade6",
+    "key": "cups",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Matte gouache still life. Two identical cups containing pale flour on the left, three identical cups containing white milk on the right. Five cups total, separated and fully visible. No measurement markings. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-cups.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-717c33fd-058d-4a01-a91d-06397331c550.png",
+    "alt": "Two cups with mounded flour sit beside three cups containing milk.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

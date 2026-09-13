@@ -1,3 +1,49 @@
+// Only the active printable activity participates in paged layout. Hide sibling
+// app branches with display:none so they cannot leave blank pages behind.
+const GlossaryPrintStyles = () => <style>{`
+  .glossary-matching-sheet { display:none; }
+  @media print {
+    @page { margin:12mm; }
+    body:has(.allo-glossary-print-dialog) { background:#fff !important; }
+    body:has(.allo-glossary-print-dialog) *:not(:has(.allo-glossary-print-dialog)):not(.allo-glossary-print-dialog):not(.allo-glossary-print-dialog *) { display:none !important; }
+    body *:has(.allo-glossary-print-dialog), .allo-glossary-print-dialog {
+      display:block !important; position:static !important; overflow:visible !important;
+      height:auto !important; min-height:0 !important; max-height:none !important;
+      width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important;
+      transform:none !important; contain:none !important; box-shadow:none !important; backdrop-filter:none !important;
+    }
+    .allo-glossary-print-dialog { color:#000 !important; background:#fff !important; }
+    .allo-glossary-print-dialog,.allo-glossary-print-dialog * { animation:none !important; transition:none !important; opacity:1 !important; color:#000 !important; text-shadow:none !important; }
+    .allo-glossary-print-dialog .no-print,.allo-glossary-print-dialog .sr-only { display:none !important; }
+    .allo-glossary-print-dialog :is(.overflow-hidden,.overflow-auto,.overflow-y-auto,.overflow-x-auto) { overflow:visible !important; height:auto !important; max-height:none !important; }
+    .glossary-matching-dialog > div { display:none !important; }
+    .glossary-matching-sheet { display:block !important; font:11pt/1.4 Arial,sans-serif; }
+    .glossary-matching-sheet h2 { font-size:20pt; text-align:center; margin:0 0 12pt; }
+    .glossary-matching-sheet table { table-layout:fixed; width:100%; border-collapse:collapse; margin-top:12pt; }
+    .glossary-matching-sheet td { padding:10pt 8pt; border-bottom:1px solid #777; vertical-align:top; overflow-wrap:anywhere; }
+    .glossary-matching-sheet tr { break-inside:avoid; }
+    .glossary-matching-sheet td:first-child { width:38%; }
+    .glossary-crossword-dialog > .flex-grow { display:block !important; }
+    .glossary-crossword-dialog [data-help-key="crossword_grid"] { grid-template-columns:repeat(var(--crossword-columns),minmax(0,1fr)) !important; width:160mm !important; max-width:100% !important; gap:0 !important; padding:0 !important; border:0 !important; break-inside:avoid; background:#fff !important; }
+    .glossary-crossword-dialog [role="gridcell"] { width:100% !important; height:auto !important; aspect-ratio:1; box-shadow:none !important; background:#fff !important; }
+    .glossary-crossword-dialog [role="gridcell"]:not([aria-disabled="true"]) { border:1px solid #555; }
+    .glossary-crossword-dialog [role="gridcell"] > span { font-size:7pt !important; }
+    .glossary-crossword-dialog .crossword-entered-letter { display:none !important; }
+    .glossary-crossword-dialog [data-help-key="crossword_clues_list"] { display:block !important; width:100% !important; height:auto !important; break-inside:auto !important; border:0 !important; }
+    .glossary-crossword-dialog [data-help-key="crossword_clues_list"] .flex-grow { display:block !important; column-count:2; column-gap:20pt; }
+    .glossary-crossword-dialog [data-help-key="crossword_clues_list"] li { break-inside:avoid; }
+    .glossary-crossword-dialog [data-help-key="crossword_clues_list"] button { min-height:0 !important; padding:2pt !important; font:10pt/1.4 Arial,sans-serif; color:#000 !important; background:#fff !important; }
+    .glossary-crossword-dialog .break-before-page { break-before:page !important; }
+    .glossary-bingo-dialog #bingo-print-area { position:static !important; display:block !important; }
+    .glossary-bingo-dialog #bingo-print-area > div { display:flex !important; width:100% !important; max-width:170mm; margin:0 auto !important; padding:8mm !important; aspect-ratio:auto !important; break-inside:avoid; break-after:page; box-shadow:none !important; }
+    .glossary-bingo-dialog #bingo-print-area > div:last-child { break-after:auto; }
+    .glossary-bingo-dialog #bingo-print-area > div > .grid { aspect-ratio:1 !important; }
+    .glossary-bingo-dialog #bingo-print-area .grid > div { min-width:0; overflow:visible !important; font-size:11pt !important; color:#000 !important; background:#fff !important; border-color:#555 !important; }
+    .glossary-bingo-dialog #bingo-print-area span { min-width:0; max-width:100%; overflow-wrap:anywhere; color:#000 !important; }
+    .glossary-bingo-dialog .bingo-modal-container,.glossary-bingo-dialog .bingo-scroll-container { margin:0 !important; padding:0 !important; }
+  }
+`}</style>;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Token hygiene and script support, shared by every letter-based activity.
 //
@@ -1142,7 +1188,17 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setAnnouncement('');
   };
   return (
-    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`allo-glossary-print-dialog glossary-matching-dialog fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+        <GlossaryPrintStyles />
+        <section className="glossary-matching-sheet">
+            <h2>{t('matching.print_title')}</h2>
+            <p>{t('matching.print_name')}: ____________________ &nbsp; {t('matching.print_date')}: ______________</p>
+            <p>{t('matching.print_instructions')}</p>
+            <table><tbody>{items.map((item, index) => <tr key={item.id}>
+                <td><strong>{index + 1}. {item.term}</strong> <span>_____</span></td>
+                <td><strong>{String.fromCharCode(65 + index)}.</strong> {rightCol[index]?.text}</td>
+            </tr>)}</tbody></table>
+        </section>
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
         <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative">
             <div>
@@ -1162,6 +1218,9 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  </div>
             </div>
             <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto">
+                <button type="button" onClick={() => window.print()} data-help-key="matching_print_btn" disabled={!items.length} className="min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 rounded-full focus:ring-2 focus:ring-indigo-500">
+                    <Printer size={14} aria-hidden="true" /> {t('common.print')}
+                </button>
                 <button
                     type="button"
                     onClick={toggleAudioHints}
@@ -1994,9 +2053,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   );
 });
 const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect, imageScale, onImageScaleChange, allowAddItems = true }) => {
-  // Image scale: defaults to 1.5 if host doesn't pass one. Bounded 0.5–3.0 to
+  // Image scale: defaults to 2.0 if host doesn't pass one. Bounded 0.5–3.0 to
   // match the host's slider range. Used to scale card visuals during play.
-  const _imgScale = (typeof imageScale === 'number' && imageScale >= 0.5 && imageScale <= 3.0) ? imageScale : 1.5;
+  const _imgScale = (typeof imageScale === 'number' && imageScale >= 0.5 && imageScale <= 3.0) ? imageScale : 2.0;
   const _imgPx = Math.round(64 * _imgScale); // base 64px (w-16 h-16)
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
@@ -5341,7 +5400,8 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     }));
   };
   return (
-    <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
+    <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="allo-glossary-print-dialog glossary-crossword-dialog fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
+      <GlossaryPrintStyles />
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       {/* no-print: W2 rendered this under emulateMedia('print') and the indigo
           bar, with the theme toggle and the close button in it, landed at the
@@ -5422,6 +5482,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
               onKeyDown={handleKeyDown}
               className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 print:shadow-none"
               style={{
+                 '--crossword-columns': grid[0]?.length || 1,
                  gridTemplateColumns: `repeat(${grid[0]?.length || 0}, max-content)`,
                  width: 'fit-content',
               }}
@@ -5458,7 +5519,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
                            {cell.number && <span className="absolute top-0.5 start-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal print:text-slate-700">{cell.number}</span>}
-                           {userChar && <span key={userChar} className="inline-block animate-in motion-reduce:animate-none zoom-in duration-200">{userChar}</span>}
+                           {userChar && <span key={userChar} className="crossword-entered-letter inline-block animate-in motion-reduce:animate-none zoom-in duration-200">{userChar}</span>}
                         </div>
                      );
                   })}
@@ -5884,7 +5945,8 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       };
   }, []);
   return (
-    <div ref={bingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="bingo-generator-title" className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+    <div ref={bingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="bingo-generator-title" className="allo-glossary-print-dialog glossary-bingo-dialog fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+        <GlossaryPrintStyles />
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
             <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
             <button

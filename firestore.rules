@@ -67,6 +67,20 @@ service cloud.firestore {
             && progress.completed <= progress.total
             && progress.at is number && progress.at > 0;
         }
+        function validImageDelivery(receipt) {
+          return receipt is map
+            && receipt.keys().hasAll(['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'])
+            && receipt.keys().hasOnly(['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'])
+            && receipt.version == 1
+            && receipt.resourceId is string && receipt.resourceId.matches('^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$')
+            && receipt.status in ['loading', 'ready', 'failed']
+            && receipt.total is int && receipt.total >= 1 && receipt.total <= 100000
+            && receipt.loaded is int && receipt.loaded >= 0 && receipt.loaded <= receipt.total
+            && receipt.omitted is int && receipt.omitted >= 0 && receipt.omitted <= receipt.total - receipt.loaded
+            && (receipt.status != 'ready' || receipt.loaded == receipt.total)
+            && receipt.assignmentAt is int && receipt.assignmentAt >= 0 && receipt.assignmentAt <= 999999999999999
+            && receipt.at is int && receipt.at > 0 && receipt.at <= 999999999999999;
+        }
         function rosterOnlySelf() {
           // Students may only touch their OWN roster entry. Nested fields are
           // deliberately not enumerated here (the client/mailbox validators
@@ -87,7 +101,9 @@ service cloud.firestore {
             && (!('organizerProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
               || validOrganizerProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('organizerProgress', null)))
             && (!('activityProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
-              || validActivityProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('activityProgress', null)));
+              || validActivityProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('activityProgress', null)))
+            && (!('imageDelivery' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || validImageDelivery(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('imageDelivery', null)));
         }
         function quizNestedOnlySelf(field) {
           return !(field in resource.data.get('quizState', {})
@@ -198,7 +214,8 @@ service cloud.firestore {
               && action.turn is int && action.turn == run.get('turn', -1) && action.turn >= 0 && action.turn < 48
               && action.requestId is string && action.requestId.matches('^[A-Za-z0-9_-]{1,128}$')
               && !(action.requestId in ['constructor', 'prototype', '__proto__'])
-              && action.targetId is string && action.targetId.matches('^[a-z][a-z0-9-]{0,39}$')
+              && (step.get('retryRound', 0) == 0 || action.requestId.matches('^r' + string(step.get('retryRound', 0)) + '_[A-Za-z0-9_-]*$'))
+              && action.targetId is string && action.targetId.matches('^[a-z][a-z0-9_-]{0,39}$')
               && !(action.targetId in ['constructor', 'prototype', '__proto__'])
               && action.value is string
               && ((action.kind == 'vote' && step.get('phase', '') == 'choose' && action.value == '')

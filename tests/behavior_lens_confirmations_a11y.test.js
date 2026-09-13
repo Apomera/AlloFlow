@@ -22,10 +22,10 @@ describe('Behavior Lens destructive confirmations accessibility', () => {
     expect(source).toContain('cancel.focus();');
   });
 
-  it('routes all seven destructive workflows through the service', () => {
-    const titles = ['Delete ABC entry', 'Remove frequency counter', 'Reset frequency data', 'Delete behavior goal', 'Remove crisis contact', 'Delete self-check entry', 'Reset skill progress'];
+  it('routes destructive workflows and observation exit choices through the service', () => {
+    const titles = ['Delete ABC entry', 'Remove frequency counter', 'Reset frequency data', 'Delete behavior goal', 'Remove crisis contact', 'Delete self-check entry', 'Reset skill progress', 'Keep observation draft', 'Discard observation draft'];
     for (const title of titles) expect(source).toContain(`title: '${title}'`);
-    expect(source.match(/await askBehaviorLensConfirmation\(/g)).toHaveLength(7);
+    expect(source.match(/await askBehaviorLensConfirmation\(/g)).toHaveLength(9);
   });
 
   it('contains no native alert, confirm, or prompt calls', () => {

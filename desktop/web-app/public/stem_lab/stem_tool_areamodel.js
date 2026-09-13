@@ -986,6 +986,7 @@ window.StemLab = window.StemLab || {
             word:         { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCDD', title: t('stem.areamodel.word_problems_multiplication_in_the_wo', 'Word Problems \u2014 multiplication in the world'),   hint: t('stem.areamodel.a_garden_with_4_rows_of_6_plants_a_the', 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.') }
           };
           var meta = MODE_META[viewMode] || MODE_META.basic;
+              var startInstructions = {"basic":"Change Rows and Columns to resize the array. Select a square to highlight part of it.","distributive":"Adjust the factors and split to see how two smaller products make the total.","word":"Choose a word problem, use the model, then enter and check your answer.","multidigit":"Set the factors, then connect each smaller rectangle to its partial product."};
           return h('div', {
             style: {
               margin: '12px 0 0',
@@ -1000,7 +1001,10 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.areamodel.start_' + viewMode, startInstructions[viewMode] || startInstructions.basic)),
+              h('details', { className: 'math-learning-note' },
+                h('summary', null, t('stem.areamodel.about_model', 'About this activity')),
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
             )
           );
         })(),
@@ -1054,12 +1058,12 @@ window.StemLab = window.StemLab || {
         ),
 
         // Commutative toggle (basic mode)
-        viewMode === 'basic' && h('div', { className: 'flex items-center gap-3' },
+        viewMode === 'basic' && h('div', { className: 'flex flex-wrap items-center gap-3' },
           h('button', { 'aria-label': t('stem.areamodel.clear_highlight', 'Clear highlight'),
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
             className: 'text-xs text-slate-600 hover:text-amber-600' + onHostInk
           }, t('stem.areamodel.clear_highlight_2', 'Clear highlight')),
-          h('button', { 'aria-label': 'Commutative:',
+          h('button', { 'aria-pressed': swapped,
             onClick: function() {
               sfxClick();
               upd({ swapped: !swapped, usedCommutative: true });
@@ -1068,7 +1072,7 @@ window.StemLab = window.StemLab || {
             className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
               (swapped ? 'bg-violet-100 text-violet-700 border border-violet-600' : 'bg-slate-100 text-slate-600 hover:bg-violet-50 border border-slate-400')
           },
-            '\u21C4 Commutative: ' + rows + ' \u00d7 ' + cols + (swapped ? ' (swapped!)' : '')
+            t('stem.areamodel.swap_rows_columns', 'Swap rows and columns') + ': ' + rows + ' \u00d7 ' + cols
           ),
           swapped && h('span', { className: 'text-xs text-violet-500 italic' }, t('stem.areamodel.same_product_a_b_b_a', '\uD83D\uDCA1 Same product! a\u00d7b = b\u00d7a'))
         ),

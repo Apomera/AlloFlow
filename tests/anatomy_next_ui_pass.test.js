@@ -103,9 +103,9 @@ describe('Anatomy compact study dashboard', () => {
 });
 
 describe('Anatomy desktop learning-mode strip', () => {
-  it.each(ANATOMY_PATHS)('keeps all modes in one horizontally scrollable row at every width in %s', (filePath) => {
+  it.each(ANATOMY_PATHS)('keeps a desktop mode strip and a matching mobile activity selector in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
-    const root = parseMarkup(renderAnatomy(filePath));
+    const root = parseMarkup(renderAnatomy(filePath, { complexity: 1 }));
     const strip = root.querySelector('[data-anatomy-tab-strip="true"]');
     const tabs = [...(strip?.querySelectorAll(':scope > [role="tab"]') || [])];
 
@@ -113,8 +113,8 @@ describe('Anatomy desktop learning-mode strip', () => {
     expect(strip.className.split(/\s+/)).not.toContain('flex-wrap');
     expect(strip.getAttribute('role')).toBe('tablist');
     expect(strip.getAttribute('aria-orientation')).toBe('horizontal');
-    // Harness profile is '5th Grade': Quiz joins the strip, the two clinician-level workspaces
-    // (Imaging Lab, Procedure Studio) are hidden for a known K-5 profile.
+    // An explicit K-5 choice hides the two advanced workspaces.
+    expect(root.querySelectorAll('#anatomy-mobile-activity option')).toHaveLength(10);
     expect(tabs).toHaveLength(9);
     expect(tabs.map((tab) => tab.id)).toContain('anatomy-mode-tab-quiz');
     expect(tabs.map((tab) => tab.id)).not.toContain('anatomy-mode-tab-imaging');

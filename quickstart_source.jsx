@@ -662,7 +662,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                     data-help-key="wizard_grade_option"
                                     aria-pressed={localData.grade === g.value}
                                     onClick={() => setLocalData(prev => ({ ...prev, grade: g.value }))}
-                                    className={`py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`}
+                                    className={`py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-700 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`}
                                   >
                                     {g.label}
                                   </button>

@@ -3495,18 +3495,19 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
 
   it('differentiates catches and misses with restrained, accessible strike feedback', () => {
     const init = functionBody(source(), 'initHuntSim');
-    expect(init).toContain('function beginStrikeFeedback(kind, message, atTime)');
+    expect(init).toContain('function beginStrikeFeedback(kind, message, atTime, tip)');
     expect(init).toContain('function strikeMissReason(targetInfo)');
-    ['NO TARGET', 'TOO FAR', 'PULL UP', 'DIVE LOWER', 'ALIGN'].forEach((label) => {
+    ['NO TARGET', 'TOO FAR', 'ALIGN'].forEach((label) => {
       expect(init).toContain("code: '" + label + "'");
     });
-    expect(init).toContain("beginStrikeFeedback('hit', catchFeedback, now)");
-    expect(init).toContain("beginStrikeFeedback('miss', missMessage, now)");
+    expect(init).toContain('targetCorrectionLabel(targetInfo.correction).toUpperCase()');
+    expect(init).toContain("beginStrikeFeedback('hit', catchFeedback, now,");
+    expect(init).toContain("beginStrikeFeedback('miss', missMessage, now, strikeTip)");
     expect(init).toContain("energyEventLog.push({ msg: '× MISS - '");
     expect(init).toContain('strikeFeedbackEl.dataset.raptorStrikeFeedback = strikeFeedback.kind');
     expect(init).toContain("var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)");
     expect(init).toContain("var impactCameraPush = (!_rmFX && strikeFeedbackActive)");
-    expect(init).toContain('var talonStrikeAmount = !_rmFX && strikeFeedbackActive');
+    expect(init).toContain('var talonStrikeAmount = !_rmFX && !raptor.landed && !raptor.crashed && strikeFeedbackActive');
     expect(init).toContain("targetInfo.canStrike && !strikeReady ? 'recovering'");
     expect(init).toContain('var STRIKE_FX_SLOT_COUNT = 4');
     expect(init).toContain('var STRIKE_FX_PER_SLOT = 28');

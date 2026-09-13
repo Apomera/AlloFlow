@@ -14,9 +14,13 @@ const {doc,setDoc,updateDoc}=require('../desktop/web-app/node_modules/firebase/f
  await deny(updateDoc(v,{[key]:{...action,requestId:'forged'}}));await deny(updateDoc(outsider,{'escapeRoomState.teams.outsider':'All'}));
  for(const [key,value] of Object.entries({'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.result':{success:true},'escapeRoomState.teamProgress.All.boardRuns.attempt.turn':8,'escapeRoomState.teamProgress.All':{},'escapeRoomState.teamProgress':{},'escapeRoomState.board':{},'escapeRoomState.isPaused':true,'escapeRoomState.teams.v':'Red'}))await deny(updateDoc(u,{[key]:value}));
  await pass(updateDoc(host,{'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.phase':'answer','escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.targetId':'heater'}));
+ await pass(updateDoc(host,{'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.targetId':'heater_station'}));await pass(updateDoc(u,{[key]:{...action,kind:'answer',targetId:'heater_station',value:'1',requestId:'underscore'}}));await pass(updateDoc(host,{'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.targetId':'heater'}));
  await deny(updateDoc(u,{[key]:{...action,requestId:'late-vote'}}));await pass(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId:'response'}}));await deny(updateDoc(u,{[key]:{...action,kind:'answer',targetId:'cloud',value:'1',requestId:'wrong-location'}}));
- await pass(updateDoc(host,{'escapeRoomState.isPaused':true}));await deny(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId:'paused'}}));
- await pass(updateDoc(host,{'escapeRoomState.isPaused':false,'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.phase':'review'}));await deny(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId:'late'}}));
+ await pass(updateDoc(host,{'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.retryRound':2}));
+ await pass(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId:'r2_current'}}));
+ for(const requestId of ['old-round-zero','r1_old','r3_future','r20_wrong'])await deny(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId}}));
+ await pass(updateDoc(host,{'escapeRoomState.isPaused':true}));await deny(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId:'r2_paused'}}));
+ await pass(updateDoc(host,{'escapeRoomState.isPaused':false,'escapeRoomState.teamProgress.All.boardRuns.attempt.steps.t0.phase':'review'}));await deny(updateDoc(u,{[key]:{...action,kind:'answer',value:'1',requestId:'r2_late'}}));
  await pass(updateDoc(host,{'escapeRoomState.isActive':false}));await deny(updateDoc(u,{[key]:{...action,requestId:'after-end'}}));
  console.log('Lesson board Firestore permissions: '+checks+' checks passed.');
  }finally{await env.cleanup();}

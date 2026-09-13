@@ -50,9 +50,9 @@ describe('Anatomy heading structure', () => {
     expect(source).toContain('.anatomy-body-title-heading{margin:0;font:inherit;font-weight:700;}');
     expect(source).toContain('.anatomy-body-header strong,.anatomy-body-header .anatomy-body-title-heading{font-size:14px;');
     expect(source).toContain("h('h4', { className: 'anatomy-body-title-heading' }, sys.icon + ' ' + sys.name)");
-    // Two inline value labels still read "Belongs to: <system>" and "1 - Body system: <system>".
-    // Those are not section titles and must stay as <strong>.
-    expect(source.match(/h\('strong', null, sys\.icon/g)).toHaveLength(2);
+    // Inline relationship values remain strong text, with scientific membership separated from the navigation label.
+    expect(source).toContain("h('strong', null, scientificSystemNames(sel))");
+    expect(source.match(/h\('strong', null, sys\.icon/g)).toHaveLength(1);
   });
 
   it.each(ANATOMY_PATHS)('never skips a heading level going down in %s', (filePath) => {

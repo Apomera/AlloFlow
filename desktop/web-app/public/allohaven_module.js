@@ -20780,6 +20780,7 @@
                 getEarnings: function() { return (state.earnings || []).slice(); },
                 callImagen: props.callImagen,
                 callGemini: props.callGemini,
+                callGeminiVision: props.callGeminiVision || null,
                 callTTS: props.callTTS,
                 callGeminiAudio: props.callGeminiAudio || null,
                 callGeminiImageEdit: props.callGeminiImageEdit

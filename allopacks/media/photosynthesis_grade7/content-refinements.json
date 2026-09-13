@@ -1,0 +1,398 @@
+[
+  {
+    "resourceId": "ph-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nEvery bite of food you have ever eaten traces back to a plant catching sunlight. Today you find out exactly how that trick works — and why you are breathing because of it.\n\n1. Read **The Sugar Factory in Every Leaf**. Notice the three ingredients and the two products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else. Then win the **Memory** game.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. It hunts for the two ideas almost everyone gets backwards.\n6. Write your explanation with the **Sentence Frames**.\n7. Lock the ideas in with **Remember the Sugar Factory** — study the example aid, then make one your own.\n8. Finish with **Investigation: Which Light Grows a Plant?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **Four Things People Get Wrong** chart before the quiz — every one of those four is a common wrong answer.\n\nOne warning: two of the quiz questions are traps that catch even adults. Read carefully. 🌱☀️\n\nPicture panels: Inputs and living leaves; Inside the leaf; Energy and respiration; Building living matter. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nPhotosynthesis supports most familiar food webs and replenishes atmospheric oxygen. Investigate how matter and energy contribute to plant growth.\n\n1. Read **The Sugar Factory in Every Leaf**. Distinguish two material inputs from light energy, then identify the products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else. Then win the **Memory** game.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. Explain the evidence behind each answer.\n6. Write your explanation with the **Sentence Frames**.\n7. Lock the ideas in with **Remember the Sugar Factory** — study the example aid, then make one your own.\n8. Finish with **Investigation: Which Light Grows a Plant?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **Four Things People Get Wrong** chart before the quiz — every one of those four is a common wrong answer.\n\nCheck the difference between matter and energy, and between observations and conclusions. 🌱☀️\n\nPicture panels: Inputs and living leaves; Inside the leaf; Energy and respiration; Building living matter. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending."
+  },
+  {
+    "resourceId": "ph-reading",
+    "path": "data",
+    "from": "## The Sugar Factory in Every Leaf\n\nA tree standing in a field looks like it is doing nothing. It is actually running one of the most important chemical factories on Earth, and it is running on sunlight.\n\nHere is the puzzle that confused scientists for centuries: where does the *stuff* of a tree come from? A giant oak weighs many tons. Does it eat the soil? In the 1600s, a scientist named Jan Baptist van Helmont grew a willow in a pot for five years. The tree gained about 74 kilograms. The soil lost almost nothing. The mass had come from somewhere else.\n\nMost of it came from the **air**.\n\nInside every leaf are tiny green structures called **chloroplasts**, packed with a pigment called **chlorophyll**. Chlorophyll absorbs red and blue light and reflects green — which is the only reason leaves look green to you. That captured light energy powers a chemical reaction. It has three ingredients, called **reactants**: **carbon dioxide** from the air, **water** from the roots, and light itself.\n\nThe reaction rearranges those atoms into two **products**: **glucose**, a sugar the plant uses for food and building material, and **oxygen**, which leaves through the same tiny pores that let carbon dioxide in. Those pores are called **stomata**, and a plant opens and closes them like windows — wide open to feed, squeezed shut when water is scarce.\n\nSo the oak tree is built, quite literally, out of thin air and water, assembled by sunlight.\n\nNow the part that surprises people: plants also perform **cellular respiration**, the same process your cells use to release energy from sugar. Plants do it day and night. Photosynthesis is not the opposite of breathing — it is how the plant makes the fuel that its breathing burns. During bright daylight a healthy plant photosynthesizes much faster than it respires, so oxygen flows out on balance.\n\nEvery breath you take contains oxygen released by this reaction. Every calorie you eat, whether from broccoli or a burger, was originally sunlight captured by chlorophyll. Trace any food chain backward far enough and it always ends at a leaf, quietly turning light into life.",
+    "to": "## The Sugar Factory in Every Leaf\n\nA growing tree builds new material using photosynthesis. Where does its matter come from? In the seventeenth century, Jan Baptist van Helmont reported that a willow gained about 74 kilograms while its soil mass changed little. This challenged the idea that growth simply consumed soil. It did not identify every source of matter or distinguish all effects of water content.\n\nCarbon in plant sugars and wood comes from carbon dioxide in the air. Water also supplies matter, fresh plant mass includes water, and mineral nutrients are essential. Sunlight supplies energy; it does not become the atoms in wood.\n\nIn photosynthetic plant cells, chloroplasts contain chlorophyll in internal membranes. Chlorophyll absorbs strongly in red and blue regions. Leaves also absorb some green light; reflected and transmitted green contribute to their color. Green light can support photosynthesis, and its effects depend on intensity, the plant and the canopy.\n\nA simplified overall equation uses carbon dioxide and water as material reactants. Light is an energy input, not a material reactant. Products include sugars, represented here by glucose, and oxygen. Real photosynthesis involves many linked reactions. Released oxygen originates from water; carbon dioxide supplies carbon that is incorporated into sugars.\n\nStomata are pores controlled by guard cells. They allow gases to move between a leaf and the air. Opening can support carbon dioxide uptake but also permits water loss. Pore behavior depends on conditions and plant type; some plants take in much of their carbon dioxide at night.\n\nPlants use sugars for growth, storage and cellular respiration. Living plant cells respire during day and night. Aerobic respiration uses oxygen and transfers energy from sugars into forms the cell can use, producing carbon dioxide and water. It is not the same as breathing. Photosynthesis needs suitable light, whether sunlight or artificial light. In darkness it cannot continue sustained sugar production using light energy, although stored material can support growth and respiration for a time.\n\nWhen photosynthetic oxygen production exceeds oxygen consumption by respiration, the plant releases oxygen on balance. Bright light alone does not guarantee this: temperature, water, carbon dioxide and other conditions matter.\n\nPhotosynthesis supports most familiar food webs and replenishes atmospheric oxygen. Many algae and some bacteria photosynthesize too; it does not happen only in leaves. Some ecosystems instead rely on chemosynthesis. A bean plant, an oak and microscopic algae all help us connect light energy with living matter, while each has structures and conditions worth investigating."
+  },
+  {
+    "resourceId": "ph-reading",
+    "path": "meta",
+    "from": "7th Grade • Leveled reading • ~350 words",
+    "to": "7th Grade • Matter, energy and plant processes"
+  },
+  {
+    "resourceId": "ph-glossary",
+    "path": "data.0.def",
+    "from": "The process plants use to turn light energy, carbon dioxide, and water into sugar and oxygen.",
+    "to": "A process using light energy to build organic compounds; in plants, carbon dioxide and water are inputs and sugars and oxygen are products."
+  },
+  {
+    "resourceId": "ph-glossary",
+    "path": "data.6.def",
+    "from": "A substance that absorbs some colors of light and reflects others.",
+    "to": "A substance that absorbs some wavelengths of light more strongly than others; remaining light may be reflected or transmitted."
+  },
+  {
+    "resourceId": "ph-glossary",
+    "path": "data.7.def",
+    "from": "An ingredient that goes INTO a chemical reaction.",
+    "to": "A material substance consumed or changed in a chemical reaction; light supplies energy rather than atoms."
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "The mass came from air and water",
+    "to": "Carbon comes from carbon dioxide; water contributes matter and fresh mass includes water"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.1.label",
+    "from": "NOT: \"leaves are green because they use green light\"",
+    "to": "GREEN LIGHT CAN CONTRIBUTE"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Chlorophyll absorbs red and blue",
+    "to": "Chlorophyll absorbs strongly in red and blue regions"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.1.bullets.1",
+    "from": "It reflects green",
+    "to": "Leaves reflect and transmit some green, and absorb some too"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "You are seeing the colour it refuses",
+    "to": "Green light is not useless; conditions and intensity matter"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "Photosynthesis makes the fuel that respiration burns",
+    "to": "Photosynthesis makes organic compounds; respiration transfers energy from them"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.2.bullets.2",
+    "from": "They are not opposites",
+    "to": "They are distinct linked processes, not the same as breathing"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Glucose is the product the plant is after",
+    "to": "Sugars support growth, storage and respiration"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "In bright light output beats use, so oxygen flows out on balance",
+    "to": "Net oxygen output occurs when production exceeds use"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.4.bullets.0",
+    "from": "Light energy + carbon dioxide + water → glucose + oxygen",
+    "to": "Carbon dioxide + water → sugars + oxygen, powered by light"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.4.bullets.1",
+    "from": "Inside the chloroplasts, in the leaf",
+    "to": "In chloroplasts of photosynthetic plant cells"
+  },
+  {
+    "resourceId": "ph-anchor",
+    "path": "data.sections.4.bullets.2",
+    "from": "Reactants on the left, products on the right",
+    "to": "Matter reacts; light provides energy"
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.sourceExcerpt",
+    "from": "The reaction has three reactants: carbon dioxide from the air, water from the roots, and light itself. It makes two products: glucose and oxygen. Chlorophyll absorbs red and blue light and reflects green. Plants also perform cellular respiration, day and night. Photosynthesis is how the plant makes the fuel that its breathing burns.",
+    "to": "Carbon dioxide and water are material reactants; light is an energy input. Products include sugars and oxygen. Leaves absorb some green light as well as red and blue. Plant cells respire day and night; photosynthesis requires suitable light."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.0.target",
+    "from": "Three reactants in, two products out",
+    "to": "Two material inputs plus light energy; sugar and oxygen outputs"
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Reactants (in): carbon dioxide from the air, water from the roots, light energy captured by chlorophyll.",
+    "to": "Material inputs: carbon dioxide and water. Energy input: light captured by pigments."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Most of a tree's mass comes from the carbon dioxide in the air, not from the soil.",
+    "to": "Carbon in plant sugars comes from carbon dioxide; water also contributes matter, and fresh mass includes water."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Chunk it 3-and-2. IN: Air, Water, Light. OUT: Sugar, Oxygen. Say 'three in, two out' and the numbers catch any missing ingredient.",
+    "to": "Two materials plus energy: carbon dioxide and water, powered by light. Outputs: sugars and oxygen. Count inputs without calling light a material reactant."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Splitting the list into a chunk of three and a chunk of two turns five separate facts into two groups you can count on your fingers, and the count itself is a check.",
+    "to": "The three inputs have different roles: two supply matter and one supplies energy. The output pair summarizes a complex process."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Write the three reactants as one group and the two products as another.",
+    "to": "Group the two material reactants, then add light as a separate energy input."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "It reflects green light, which is the only reason leaves look green to you.",
+    "to": "Leaves reflect and transmit some green light, and also absorb some green for photosynthesis."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Green is the REJECT. Chlorophyll keeps red and blue and throws green back at your eyes. What you see is what the leaf did not want.",
+    "to": "Green takes three paths: some reflected, some transmitted, some absorbed. Seeing green does not mean green light is unused."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.mapping",
+    "from": "The keyword REJECT flips the usual assumption (green must be what the leaf uses) into the correct one (green is what it reflects), and it sticks because it is surprising.",
+    "to": "The three paths replace an all-or-nothing rule. Reflected and transmitted light contribute to appearance; absorbed light can contribute energy."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.scaffoldStarter",
+    "from": "Green is the ____. The leaf keeps ____ and ____ and throws back ____.",
+    "to": "Some green is ____, some ____, and some ____."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.coachPrompts.0",
+    "from": "Using your keyword, which color of light would be the worst for a plant?",
+    "to": "Why can leaf color alone not tell us which lamp produces the most growth?"
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.reasoningPrompt",
+    "from": "How does your keyword explain the FAQ about growing plants under red light?",
+    "to": "How do reflected, transmitted and absorbed light explain both appearance and the limits of a growth prediction?"
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.1.hookFact.text",
+    "from": "Pure green light is the worst choice for growing a plant, because that is the color chlorophyll reflects away.",
+    "to": "Green light can contribute to photosynthesis and can penetrate into leaves and canopies. Equal lamp distance does not guarantee equal photon delivery."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.2.essentialFacts.2",
+    "from": "In bright daylight a healthy plant photosynthesizes much faster than it respires, so oxygen flows out on balance.",
+    "to": "A plant releases oxygen on balance when photosynthetic production exceeds respiratory use; conditions matter."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.2.aiExample",
+    "from": "A leaf is a kitchen with a stove. Photosynthesis is cooking the meal from sunlight, water, and air. Respiration is eating it. You can only cook in daylight, but you eat all day and all night.",
+    "to": "A leaf is like a solar-powered workshop: photosynthesis builds organic material with light energy; respiration transfers energy from stored material. Suitable artificial light can power photosynthesis too."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.2.mapping",
+    "from": "Cooking maps to making glucose, eating maps to releasing its energy, and the daylight rule maps to why photosynthesis stops at night while respiration keeps going.",
+    "to": "Making versus using is the useful analogy. Clock time is not the rule: photosynthesis needs suitable light, while respiration continues day and night."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.2.scaffoldStarter",
+    "from": "Photosynthesis is like ____ a meal; respiration is like ____ it. Plants can only ____ in daylight, but they ____ all the time.",
+    "to": "Photosynthesis uses ____ energy to build ____; respiration transfers energy from ____."
+  },
+  {
+    "resourceId": "ph-memory",
+    "path": "data.cards.2.hookFact.text",
+    "from": "A bedroom plant will not steal your air at night; the amounts it takes in are tiny.",
+    "to": "Plant cells continue respiration in darkness, using stored organic compounds. Photosynthesis and respiration are different cellular processes."
+  },
+  {
+    "resourceId": "ph-timeline",
+    "path": "data.items.2.event",
+    "from": "Inside a chloroplast, chlorophyll absorbs red and blue light energy from the Sun.",
+    "to": "Chlorophyll and other pigments absorb light; leaves can use some green light as well as red and blue."
+  },
+  {
+    "resourceId": "ph-timeline",
+    "path": "data.items.4.event",
+    "from": "The atoms rearrange: water molecules are split, their oxygen is released, and the carbon and hydrogen are built into a glucose molecule.",
+    "to": "Water is split in light-driven reactions, releasing oxygen; linked reactions incorporate carbon dioxide into organic compounds used to make sugars."
+  },
+  {
+    "resourceId": "ph-outline",
+    "path": "data.branches.0.title",
+    "from": "Reactants (what goes IN)",
+    "to": "Inputs: material reactants and light energy"
+  },
+  {
+    "resourceId": "ph-outline",
+    "path": "data.branches.3.items.2",
+    "from": "Plant mass comes mostly from air, not soil",
+    "to": "Carbon in plant organic matter comes from carbon dioxide; water and minerals also matter"
+  },
+  {
+    "resourceId": "ph-sort",
+    "path": "data.categories.0.label",
+    "from": "Goes IN (reactant)",
+    "to": "INPUT (material or energy)"
+  },
+  {
+    "resourceId": "ph-sort",
+    "path": "data.categories.2.label",
+    "from": "NEITHER (not a reactant or a product)",
+    "to": "OTHER ROLE (in this model)"
+  },
+  {
+    "resourceId": "ph-quiz",
+    "path": "data.questions.0.question",
+    "from": "A 500-kilogram oak tree grew from a tiny acorn. Where did most of that mass come from?",
+    "to": "Where did the carbon atoms in an oak tree’s wood mainly come from?"
+  },
+  {
+    "resourceId": "ph-quiz",
+    "path": "data.questions.1.options.1",
+    "from": "Chlorophyll reflects green light instead of absorbing it",
+    "to": "Leaves reflect and transmit some green light while also absorbing some"
+  },
+  {
+    "resourceId": "ph-quiz",
+    "path": "data.questions.1.correctAnswer",
+    "from": "Chlorophyll reflects green light instead of absorbing it",
+    "to": "Leaves reflect and transmit some green light while also absorbing some"
+  },
+  {
+    "resourceId": "ph-quiz",
+    "path": "data.questions.3.question",
+    "from": "Which list shows ONLY reactants of photosynthesis?",
+    "to": "Which list contains the two material inputs and the energy input for the simplified photosynthesis process?"
+  },
+  {
+    "resourceId": "ph-quiz",
+    "path": "data.questions.5.question",
+    "from": "Van Helmont's willow gained 74 kg while the soil lost almost none. Explain what his experiment proved and what it did NOT prove.",
+    "to": "What did van Helmont’s small soil-mass change suggest, and what could that experiment alone not establish?"
+  },
+  {
+    "resourceId": "ph-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "It proved the tree's mass did not come from soil. It did not prove where the mass DID come from — he thought it was water alone, but most of it actually came from carbon dioxide in the air.",
+    "to": "The small soil-mass loss did not account for the willow’s large gain, challenging the idea that the tree simply consumed soil. The experiment alone did not identify all matter sources or account fully for plant water content. Modern evidence shows carbon comes from carbon dioxide and water also contributes matter."
+  },
+  {
+    "resourceId": "ph-frames",
+    "path": "data.items.0.text",
+    "from": "Photosynthesis needs three ingredients: ____, ____, and ____.",
+    "to": "The two material inputs are ____ and ____; the energy input is ____."
+  },
+  {
+    "resourceId": "ph-frames",
+    "path": "data.items.2.text",
+    "from": "Leaves look green because chlorophyll ____ green light instead of ____ it.",
+    "to": "Green light can be ____, ____ or ____ by a leaf."
+  },
+  {
+    "resourceId": "ph-frames",
+    "path": "data.items.3.text",
+    "from": "Most of a tree's mass comes from ____, not from ____, which we know because ____.",
+    "to": "Carbon in wood comes from ____, while water contributes ____; sunlight supplies ____."
+  },
+  {
+    "resourceId": "ph-faq",
+    "path": "data.2.answer",
+    "from": "Yes, surprisingly well. Chlorophyll absorbs red and blue best, so red light works. Pure green light is the worst choice, because that is the color chlorophyll reflects away.",
+    "to": "Plants can photosynthesize under suitable colored light, but growth depends on spectrum, photon delivery, species and other conditions. Green light can contribute too. Equal electrical power, apparent brightness or lamp distance does not guarantee an equal photosynthetic photon supply."
+  },
+  {
+    "resourceId": "ph-faq",
+    "path": "data.3.answer",
+    "from": "Enormously. Tiny floating algae called phytoplankton run photosynthesis at massive scale and produce a huge share of Earth's oxygen — arguably more than rainforests.",
+    "to": "Photosynthetic ocean organisms, including algae and cyanobacteria, contribute greatly to global oxygen production and food webs. Phytoplankton is a diverse group, not simply tiny land plants."
+  },
+  {
+    "resourceId": "ph-faq",
+    "path": "data.4.answer",
+    "from": "Mostly yes, and it sounds impossible until you know carbon dioxide is a gas made of solid-forming atoms. The carbon in wood was floating in the sky not long ago.",
+    "to": "The carbon in plant sugars and wood comes from carbon dioxide in the air. But a plant also contains water and matter from water and mineral nutrients. “Made of air” is a memorable shortcut, not a complete mass accounting."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.instructions",
+    "from": "Design a fair test of how light color affects a fast-growing plant. Predict from what chlorophyll absorbs, control everything but the color, and decide what counts as evidence of photosynthesis.",
+    "to": "Compare plant growth under specified light treatments. Record potential confounding factors and distinguish growth observations from direct measurements of photosynthesis."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.fitReason",
+    "from": "The reading says chlorophyll absorbs red and blue and reflects green. An investigation lets students turn that into a prediction, then find out whether the plant agrees.",
+    "to": "Pigment absorption motivates predictions, but leaf and canopy behavior and photon delivery also affect growth. The investigation tests treatments under recorded conditions."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Predict first from the pigment: chlorophyll absorbs red and blue and reflects green. Then design the test so that only the color changes.",
+    "to": "Predict using absorption and the fact that green light can contribute. To isolate spectrum, match photosynthetic photon flux and duration at leaf level, not just distance or electrical watts."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Chlorophyll absorbs red and blue light most strongly and reflects green.",
+    "to": "Leaves absorb strongly in red and blue regions and also absorb some green light; some green is reflected or transmitted."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.brief.lockedLessonFacts.4",
+    "from": "Most of a plant's mass comes from carbon dioxide in the air.",
+    "to": "Carbon in sugars comes from carbon dioxide; water also contributes matter and fresh mass includes water."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.brief.openQuestions.2",
+    "from": "How bright is each strip, and does brightness differ between colors?",
+    "to": "Can we measure photosynthetic photon flux at leaf level? If not, how will we state the intensity confound?"
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.brief.criteria.0",
+    "from": "Only light color differs between trays; water, distance, and temperature are matched and recorded",
+    "to": "Match water, temperature, starting plants and photoperiod. Match photosynthetic photon flux at leaf level if suitable equipment is available; otherwise report the comparison as lamp treatments, not color alone."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.brief.constraints.3",
+    "from": "No claims beyond what the data shows",
+    "to": "No claims beyond the data: height can reflect stretching and fresh mass includes water; neither directly measures photosynthetic rate"
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.supports.coachPrompts.1",
+    "from": "Which of your measurements shows photosynthesis happened, and which only shows the plant stretched toward light?",
+    "to": "Which observations show growth or stretching, and why do they not directly measure photosynthetic rate?"
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.coachHint",
+    "from": "Match everything but color. If the green tray also sat farther from its light, you learned nothing about color.",
+    "to": "Equal distance and electrical power do not ensure equal photon delivery. Without that control, compare the tested lamps and disclose the limitation."
+  },
+  {
+    "resourceId": "ph-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Chlorophyll absorbs red and blue light and reflects green, which is the only reason leaves look green to you.",
+    "to": "Leaves absorb some green light as well as red and blue. To test spectrum, account for photon delivery, duration, plant conditions and the difference between growth and photosynthetic rate."
+  }
+]

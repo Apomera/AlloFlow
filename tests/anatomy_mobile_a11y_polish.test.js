@@ -167,7 +167,7 @@ describe('Anatomy mode banner', () => {
     const labels = [...actions.querySelectorAll('button')].map((b) => b.textContent.trim());
     expect(labels).toHaveLength(3);
     expect(labels[0]).toMatch(/Anatomy Lens/);
-    expect(labels[2]).toMatch(/Mastery map/);
+    expect(labels[2]).toMatch(/Study progress/);
 
     // The Imaging workspace takes the full width, so the banner there carries no actions.
     const imaging = parseMarkup(renderAnatomy(filePath, { _activeTab: 'imaging' }));
@@ -212,10 +212,10 @@ describe('Anatomy retrieval announcements', () => {
     for (const handler of HANDLERS) {
       const start = source.indexOf('function ' + handler + '(');
       expect(start, handler).toBeGreaterThan(-1);
-      const body = source.slice(start, start + 1600);
+      const body = source.slice(start, source.indexOf("\n        function ", start + 10));
       expect(body, handler).toContain('announceToSR(');
     }
-    expect(source).toContain("t('stem.anatomy.quiz_sr_wrong', 'Not quite. The answer was ')");
+    expect(source).toContain("t('stem.anatomy.quiz_sr_wrong','Not quite. The answer was ')");
   });
 });
 
@@ -228,12 +228,12 @@ describe('Anatomy compare-surface contrast', () => {
     const source = fs.readFileSync(filePath, 'utf8');
     expect(source).toContain('.anatomy-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#475569;}');
     expect(source).not.toContain("'text-[0.6875rem] text-rose-600 italic leading-relaxed'");
-    expect(source).toContain("'text-[0.6875rem] text-rose-700 italic leading-relaxed'");
+    expect(source).toContain('.anatomy-clinical-note{padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;color:#334155');
 
     const root = parseMarkup(renderAnatomy(filePath, { selectedStructure: 'femur', _compareStructure: 'tibia' }));
     const tray = root.querySelector('[data-anatomy-compare-tray="true"]');
     expect(tray).not.toBeNull();
-    expect(root.querySelector('.anatomy-structure-detail p.text-rose-700')).not.toBeNull();
+    expect(root.querySelector('.anatomy-structure-detail .anatomy-clinical-note')).not.toBeNull();
     expect(root.querySelector('.anatomy-structure-detail p.text-rose-600')).toBeNull();
   }, 60_000);
 });

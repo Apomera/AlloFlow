@@ -11,6 +11,8 @@ beforeAll(() => {
   act = React.act || require(resolve('desktop/web-app/node_modules/react-dom/test-utils')).act;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   window.React = globalThis.React = React;
+  loadAlloModule('resource_content_fingerprint_module.js');
+  loadAlloModule('lesson_teaching_script_module.js');
   loadAlloModule('view_lesson_teaching_script_module.js');
   loadAlloModule('view_lesson_plan_module.js');
   View = window.AlloModules.LessonTeachingScriptView;
@@ -22,7 +24,7 @@ afterEach(() => {
   window.AlloModules.LessonTeachingScriptView = View;
   vi.restoreAllMocks(); vi.useRealTimers();
 });
-const materials = [{ id: 'fractions-cards', type: 'flashcards', title: 'Fraction models' }, { id: 42, type: 'quiz', title: 'Fraction comparison check' }];
+const materials = [{ id: 'fractions-cards', type: 'source', title: 'Fraction models', data: { text: 'Use models of equal wholes to compare halves and fourths.' } }, { id: 42, type: 'quiz', title: 'Fraction comparison check', data: { questions: [{ question: 'Which fraction is larger?', options: ['One half', 'One fourth'], answer: 'One half' }] } }];
 function script(id = 'script-a', overrides = {}) {
   return {
     id, schemaVersion: 2, scope: 'segment', title: 'Compare fractions on a number line', createdAt: '2026-09-04T12:00:00.000Z', durationMinutes: 15,
@@ -190,7 +192,7 @@ describe('lesson-aware teaching-script UI', () => {
     expect(JSON.stringify(p.generatedContent)).toBe(before);
     expect(field('Script version').disabled).toBe(true);
     await act(async () => button('Save edits').click());
-    expect(p.onUpdateTeachingScript).toHaveBeenCalledWith('plan-a','script-a',expect.arrayContaining([expect.objectContaining({id:'step-1',teacherSays:'Use the number line to explain your fraction comparison and justify it to your partner.',resourceIds:['fractions-cards'],recommendationIds:['number-line']})]));
+    expect(p.onUpdateTeachingScript).toHaveBeenCalledWith('plan-a','script-a',expect.arrayContaining([expect.objectContaining({id:'step-1',teacherSays:'Use the number line to explain your fraction comparison and justify it to your partner.',resourceIds:['fractions-cards'],recommendationIds:['number-line']})]), saved.steps);
     expect(host.textContent).toContain('This plan changed; keep your draft.');
     expect(field('Teacher says').value).toContain('Use the number line');
     expect(JSON.stringify(p.generatedContent)).toBe(before);
@@ -289,6 +291,85 @@ describe('lesson-aware teaching-script UI', () => {
       if(originalClipboard)Object.defineProperty(navigator,'clipboard',originalClipboard);else delete navigator.clipboard;
       URL.createObjectURL=originalCreate;URL.revokeObjectURL=originalRevoke;
     }
+  });
+  it('allows long teaching wording up to the runtime limit and explains an overlong draft', () => {
+    const p = props({ generatedContent: plan('plan-a', [script()]) }); mount(React.createElement(View, p)); expand(); click('Edit script');
+    expect(field('Teacher says').maxLength).toBe(16000);
+    change('Teacher says', 'A'.repeat(6000)); expect(button('Save edits').disabled).toBe(false);
+    change('Teacher says', 'A'.repeat(16001)); expect(button('Save edits').disabled).toBe(true);
+    expect(host.textContent).toContain('within 16,000 characters');
+  });
+  it('previews selected content limits before starting generation', () => {
+    const huge = { id: 'large-source', title: 'Long reference chapter', type: 'source', data: { text: 'Teacher content. '.repeat(5000) } };
+    mount(React.createElement(View, props({ history: [huge] }))); expand();
+    expect(host.textContent).toContain('Only portions of these selected materials were used: Long reference chapter');
+    expect(button('Generate script').disabled).toBe(false);
+  });
+  it('keeps saved scripts readable when optional input preview dependencies are still unavailable', () => {
+    const core = window.AlloModules.LessonTeachingScript;
+    window.AlloModules.LessonTeachingScript = { ...core, captureInputs: () => { throw new Error('Loading fingerprint dependency'); } };
+    try { mount(React.createElement(View, props({ generatedContent: plan('plan-a', [script()]) }))); expand(); expect(button('Edit script').disabled).toBe(false); }
+    finally { window.AlloModules.LessonTeachingScript = core; }
+  });
+  it('refreshes unedited defaults after plan changes while preserving teacher choices and allowing an explicit reset', () => {
+    const p = props(); mount(React.createElement(View, p)); expand();
+    change('Lesson topic', 'My small-group focus'); change('Teaching time', 20); change('Relevant prior learning', 'We used strips yesterday.');
+    const revised = plan(); revised.data.objectives = ['Explain equivalent fractions using models'];
+    act(() => root.render(React.createElement(View, { ...p, generatedContent: revised, defaultSettings: defaults({ grade: '5th Grade', topic: 'Equivalent fractions', standard: '5.NF' }) })));
+    expect(field('Learning goal').value).toBe('Explain equivalent fractions using models');
+    expect(field('Grade').value).toBe('5th Grade'); expect(field('Target standard').value).toBe('5.NF');
+    expect(field('Lesson topic').value).toBe('My small-group focus'); expect(field('Teaching time').value).toBe('20');
+    expect(host.textContent).toContain('your custom settings were kept');
+    click('Use current lesson defaults'); expect(field('Lesson topic').value).toBe('Equivalent fractions');
+    expect(field('Relevant prior learning').value).toBe('We used strips yesterday.');
+  });
+  it('requires review of disappeared selections instead of silently dropping them from generation', async () => {
+    const p = props(); mount(React.createElement(View, p)); expand();
+    act(() => root.render(React.createElement(View, { ...p, history: [materials[0]] })));
+    expect(button('Generate script').disabled).toBe(true);
+    expect(host.textContent).toContain('A selected resource was removed');
+    click('Remove unavailable selections'); expect(button('Generate script').disabled).toBe(false);
+    await submit(); expect(p.onGenerateTeachingScript.mock.calls[0][0].materialIds).toEqual(['fractions-cards']);
+  });
+  it('does not preselect empty or ambiguous resources and explains why they are unavailable', () => {
+    const empty = { id: 'empty', type: 'source', title: 'Empty source', data: { text: '' } };
+    const duplicate = { ...materials[1], title: 'Duplicate check' };
+    mount(React.createElement(View, props({ history: [empty, materials[0], materials[1], duplicate] }))); expand();
+    expect(field('Empty source').disabled).toBe(true); expect(field('Empty source').checked).toBe(false);
+    expect(field('Duplicate check').disabled).toBe(true); expect(field('Fraction comparison check').disabled).toBe(true);
+    expect(field('Fraction models').checked).toBe(true); expect(button('Generate script').disabled).toBe(false);
+  });
+  it('keeps cancellation reachable with collapsed settings or panel and restores focus after cancellation', () => {
+    const p = props({ generatedContent: plan('plan-a', [script()]), scriptRun: { planId: 'plan-a', busy: true, stage: 'Preparing script' } });
+    mount(React.createElement(View, p));
+    expect(button('Cancel generation').closest('[hidden]')).toBeNull(); expand();
+    expect(button('Cancel generation').closest('[hidden]')).toBeNull();
+    click('Cancel generation'); expect(p.onCancelTeachingScript).toHaveBeenCalledWith('plan-a');
+    expect(document.activeElement).toBe(button('Create another script+'));
+  });
+  it('does not transfer a draft to a replacement version with identical steps', () => {
+    const original = script(); const p = props({ generatedContent: plan('plan-a', [original]) });
+    mount(React.createElement(View, p)); expand(); click('Edit script');
+    act(() => root.render(React.createElement(View, { ...p, generatedContent: plan('plan-a', [{ ...original, id: 'replacement' }]) })));
+    expect(button('Save edits').disabled).toBe(true); expect(host.textContent).toContain('This saved version changed');
+    click('Discard edits'); expect(document.activeElement).toBe(button('Edit script'));
+  });
+  it('returns focus to the edit action after a successful save and passes the unedited baseline to the host', async () => {
+    const original = script(); const p = props({ generatedContent: plan('plan-a', [original]) });
+    mount(React.createElement(View, p)); expand(); click('Edit script');
+    change('Teacher says', 'Use equal wholes to compare both fractions. Explain how the number line shows the relationship between the two values.');
+    await act(async () => button('Save edits').click());
+    expect(p.onUpdateTeachingScript.mock.calls[0][3]).toEqual(original.steps);
+    expect(document.activeElement).toBe(button('Edit script'));
+  });
+  it('flags a saved script based on older lesson content without flagging an unchanged saved plan', () => {
+    const resource = plan('plan-a', [script()]);
+    resource.data.teachingScripts[0].inputSnapshot.planFingerprint = window.AlloModules.LessonTeachingScript.captureInputs(resource, {}, []).planFingerprint;
+    const p = props({ generatedContent: resource }); mount(React.createElement(View, p)); expand();
+    expect(host.textContent).not.toContain('differs from the lesson content captured');
+    act(() => root.render(React.createElement(View, { ...p, generatedContent: { ...resource, data: { ...resource.data, directInstruction: 'Teach a revised comparison strategy.' } } })));
+    expect(host.textContent).toContain('differs from the lesson content captured');
+    expect(button('Edit script').disabled).toBe(false);
   });
   it('does not replace the clipboard with empty text when the export boundary rejects incomplete script data', async () => {
     const originalCore = window.AlloModules.LessonTeachingScript;

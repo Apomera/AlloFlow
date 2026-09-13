@@ -2,6 +2,9 @@
 
 The sandbox is available from Renewables Lab's core library and launch panel. It remains an exploratory learning activity alongside the established technology lessons.
 
+
+The lab now also includes [nine individual 3D energy workbenches](ENERGY-3D.md), added September 12, 2026. These have separate mechanism calculations, component inspection, response curves, and persistent investigation notebooks.
+
 ## Planning and simulation
 
 - Construct a portfolio for 2025–2050 using annual solar, wind, and battery additions, fossil retirement, demand growth, efficiency, battery duration, and regional link capacity.

@@ -4445,22 +4445,26 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         });
         const next = { ...store };
         if (Object.keys(marks).length) next.locusFor = marks; else delete next.locusFor;
+        mpRef.current = next;
         persist(next, 'memoryPalace');
     };
     const aliveRef = React.useRef(true);           // false after unmount → skip late persists
     const finishedRef = React.useRef(false);       // synchronous double-finish guard for recall
     const recallTimersRef = React.useRef([]);      // pending auto-advance timers, cleared on exit/unmount
     const genCancelRef = React.useRef(false);      // Stop button → halt an in-progress furnish/sculpt
-    React.useEffect(() => () => {
-        aliveRef.current = false;
-        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
-        recallTimersRef.current = [];
-        if (tourTimerRef.current) { try { clearTimeout(tourTimerRef.current); } catch (e) {} tourTimerRef.current = null; }
-        if (tourChapterTimerRef.current) { try { clearTimeout(tourChapterTimerRef.current); } catch (e) {} tourChapterTimerRef.current = null; }
-        const spoken = tourSpeechTextRef.current;
-        const player = window.AlloSpeechPlayer;
-        if (spoken && player?.getCurrentText?.() === spoken) { try { player.stop(); } catch (e) {} }
-        tourSpeechTextRef.current = '';
+    React.useEffect(() => {
+        aliveRef.current = true;
+        return () => {
+            aliveRef.current = false;
+            recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
+            recallTimersRef.current = [];
+            if (tourTimerRef.current) { try { clearTimeout(tourTimerRef.current); } catch (e) {} tourTimerRef.current = null; }
+            if (tourChapterTimerRef.current) { try { clearTimeout(tourChapterTimerRef.current); } catch (e) {} tourChapterTimerRef.current = null; }
+            const spoken = tourSpeechTextRef.current;
+            const player = window.AlloSpeechPlayer;
+            if (spoken && player?.getCurrentText?.() === spoken) { try { player.stop(); } catch (e) {} }
+            tourSpeechTextRef.current = '';
+            };
     }, []);
     const _laterRecall = (fn) => {
         const id = setTimeout(() => { recallTimersRef.current = recallTimersRef.current.filter((x) => x !== id); fn(); }, 700);
@@ -4480,6 +4484,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const startedByArmRef = React.useRef(false);
     const bankRef = React.useRef([]);                                 // live choices for the in-VR answer chips (stale-closure safe)
     const [answered, setAnswered] = React.useState(0);
+    const recallPanelRef = React.useRef(null);
+    const recallKeyboardRef = React.useRef(false);
     const [recallHint, setRecallHint] = React.useState(null);
     const [canReveal, setCanReveal] = React.useState(false);
     const [typedAnswer, setTypedAnswer] = React.useState('');
@@ -4495,8 +4501,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [elapsed, setElapsed] = React.useState(0);
     const elapsedRef = React.useRef(0);
     const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-    const totalItems = React.useMemo(() => (Array.isArray(data?.branches) ? data.branches : []).reduce((s, b) => s + ((b.items || []).filter((it) => (typeof it === 'object' ? it.text : it)).length), 0), [data]);
-    const recallEligible = totalItems >= 4;
+    const totalItems = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP?.buildPalace) return 0;
+        try { return MP.buildPalace(data || {}).route.filter((id) => id !== '__entry').length; } catch (error) { return 0; }
+    }, [data, ready]);
+    const recallEligible = totalItems >= 2;
     const dataKey = JSON.stringify({
         m: data?.main,
         b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
@@ -4636,6 +4646,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
                 setCanReveal(!!(r && r.attempts >= 3 && !r.correct && !r.revealed));
                 setTypedAnswer('');
+                setWrongFlash(false);
                 setSelfRevealId(null);
             },
             onEmptyLocusApproach: (locus, near, idx, total, reason) => {
@@ -4648,6 +4659,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     }
                     return;
                 }
+                // An automatic proximity hint must not dismiss the cue review.
+                if (quickCreateRef.current) return;
                 currentRef.current = locus;
                 setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, mine: !!locus.mine, idx, total: total - 1, entry: false });
                 if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
@@ -4776,7 +4789,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     const startRecall = (mode, viaArm, direction, only) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
-        if (!MP || recall) return;
+        if (!MP || recall || artJobRef.current || noWalk) return;
         if (isTeacherMode && viaArm !== true && liveRecallReadiness?.ok === false) {
             if (addToast) addToast(liveRecallReadiness.message || 'Finish setting up this Memory Palace before starting the student activity.', 'info');
             return;
@@ -4809,19 +4822,39 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // (rather than exit-then-start) matters: exitRecall's setRecall(null) has not
     // landed yet inside one handler, so a start call would still see the old recall
     // state and bail — and dropping to null would also disarm a live session.
-    const retryRecall = (direction) => {
+    const retryRecall = (direction, onlyIds) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !recall || !palaceRef.current) return;
         const mode = recall.mode;
         const palace = palaceRef.current;
         const targets = palace.route.filter((id) => id !== '__entry');
-        _resetRecallRun();
+        const scope = recallOrderRef.current.length ? recallOrderRef.current.slice() : targets;
+        // Capture the subset before reset clears results. An empty or obsolete
+        // selection must never silently turn into a whole-palace review.
+        const only = Array.isArray(onlyIds)
+            ? [...new Set(onlyIds.filter((id) => scope.includes(id) && targets.includes(id)))]
+            : (recall.focused ? scope : null);
+        if (only && !only.length) return;
         const seed = (Date.now() % 2147483647) || 11;
         const dir = (MP.RECALL_DIRECTIONS || []).indexOf(direction) >= 0 ? direction : (recall.direction || 'forward');
-        const only = recall.focused ? recallOrderRef.current.slice() : null;   // a retry keeps the same scope
-        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
-        recallOrderRef.current = order.length ? order : targets;   // a re-shuffle gets a fresh sequence
-        setRecall({ mode, seed, direction: dir, focused: !!recall.focused, startAt: recallOrderRef.current[0] });   // new identity => scene remounts covered
+        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : (only || targets);
+        if (!order.length) return;
+        _resetRecallRun();
+        recallOrderRef.current = order;
+        setRecall({ mode, seed, direction: dir, focused: !!only, startAt: order[0] });
+    };
+
+    const _recallStopsToStrengthen = () => {
+        if (!finished || !palaceRef.current) return [];
+        const palace = palaceRef.current;
+        const scope = recallOrderRef.current.length ? recallOrderRef.current : palace.route;
+        return scope.filter((id) => id !== '__entry').flatMap((id) => {
+            const locus = palace.loci.find((item) => item.id === id);
+            const result = recallResultsRef.current[id];
+            if (!locus || (result?.correct && !result.revealed && (result.selfRated || result.attempts <= 1))) return [];
+            return [{ id, label: locus.label, mnemonic: locus.mnemonic, stop: palace.route.indexOf(id),
+                reason: result?.revealed ? 'revealed' : (result?.correct ? 'retried' : 'missed') }];
+        });
     };
 
     // Live-session arming (mirrors the Strand Challenge contract).
@@ -4848,6 +4881,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     }, [recall, current, nonce]);
     bankRef.current = recallChoices;
 
+    const _inRecallScope = (id) => !!id && id !== '__entry'
+        && (!recallOrderRef.current.length || recallOrderRef.current.includes(id));
+
     const advanceRecall = () => {
         if (!palaceRef.current || !handleRef.current) return;
         const route = palaceRef.current.route;
@@ -4867,7 +4903,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         for (let s = 0; s <= order.length; s++) {
             const id = order[(start + s) % order.length];
             const r = res[id];
-            if (!r || (!r.correct && !r.revealed)) { nextId = id; break; }
+            if (!r || (!r.correct && !r.revealed && !r.selfChecked)) { nextId = id; break; }
         }
         if (nextId == null) { finishRecall(); return; }
         const nextIdx = route.indexOf(nextId);
@@ -4889,7 +4925,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const targets = (recallOrderRef.current && recallOrderRef.current.length)
             ? recallOrderRef.current.slice()
             : palaceRef.current.route.filter((id) => id !== '__entry');
-        const res = recallResultsRef.current;
+        const res = {};
+        targets.forEach((id) => { if (recallResultsRef.current[id]) res[id] = recallResultsRef.current[id]; });
         targets.forEach((id) => { if (!res[id]) res[id] = { attempts: 0, correct: false, revealed: true }; });
         const score = MP.scoreRecall(res);
         setFinished(score);
@@ -4923,6 +4960,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const submitRecallAnswer = (given, chipId) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const cur = currentRef.current;
+        if (!_inRecallScope(cur?.id)) return;
         if (!MP || !recall || !cur || cur.id === '__entry' || finished) return;
         const res = recallResultsRef.current;
         const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
@@ -4931,6 +4969,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const ok = chipId ? (chipId === cur.id || MP.matchAnswer(cur.label, given)) : MP.matchAnswer(cur.label, given);
         if (ok) {
             r.correct = true;
+            setWrongFlash(false);
             setRecallSaid(t('memory_palace.answer_right') || 'Correct.');
             if (playSound) playSound('correct');
             if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'correct'); }
@@ -4941,11 +4980,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             if (playSound) playSound('reveal');
             if (handleRef.current) handleRef.current.setLocusStatus(cur.id, 'incorrect');
             setWrongFlash(true);
-            setTimeout(() => {
-                setWrongFlash(false);
+            const attempt = r.attempts;
+            _laterRecall(() => {
                 const rr = recallResultsRef.current[cur.id];
-                if (handleRef.current && rr && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
-            }, 700);
+                if (!rr || rr.attempts !== attempt) return;
+                if (currentRef.current?.id === cur.id) setWrongFlash(false);
+                if (handleRef.current && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
+            });
             // Colour + sound reaches neither a screen-reader user nor anyone who
             // cannot distinguish the flash. Say it.
             setRecallSaid(
@@ -4959,6 +5000,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     const revealCurrent = () => {
         const cur = currentRef.current;
+        if (!_inRecallScope(cur?.id)) return;
         if (!cur || !recall || finished || cur.id === '__entry') return;
         const res = recallResultsRef.current;
         const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
@@ -4967,9 +5009,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'incorrect'); }
         setRecallHint(null); setCanReveal(false); setTypedAnswer('');
         setAnswered((n) => n + 1);
-        // Tracked, so exiting recall cannot leave an advance pending that later
-        // yanks the camera in study mode.
-        _laterRecall(() => advanceRecall());
+        // A revealed answer needs reading time. Continue is learner-controlled.
+        setWrongFlash(false);
+        setRecallSaid('');
     };
 
     // Low-pressure guided journey: the learner recalls privately, reveals the
@@ -4977,6 +5019,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // bank/type quizzes while keeping those stronger retrieval modes intact.
     const revealSelfCheck = () => {
         const cur = currentRef.current;
+        if (!_inRecallScope(cur?.id)) return;
         if (!cur || !recall || recall.mode !== 'self' || finished || cur.id === '__entry') return;
         if (handleRef.current) handleRef.current.revealLocus(cur.id);
         setSelfRevealId(cur.id);
@@ -4984,6 +5027,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     const markSelfCheck = (remembered) => {
         const cur = currentRef.current;
+        if (!_inRecallScope(cur?.id)) return;
         if (!cur || !recall || recall.mode !== 'self' || finished || selfRevealId !== cur.id) return;
         const res = recallResultsRef.current;
         if (res[cur.id]) return;
@@ -5032,6 +5076,19 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // Walking on closes the editor: a draft written for the last locus must never
     // follow the student to the next one.
     const mnLocusId = current && current.id;
+    // Only restore focus for keyboard activation within practice. Pointer actions
+    // and a deliberate move to the walking controls keep their own focus.
+    React.useLayoutEffect(() => {
+        const panel = recallPanelRef.current;
+        if (!recall || !panel || !recallKeyboardRef.current) return;
+        const active = document.activeElement;
+        if (active && active !== document.body && !panel.contains(active)) {
+            recallKeyboardRef.current = false;
+            return;
+        }
+        const next = panel.querySelector('[data-recall-focus], input:not(:disabled), button:not(:disabled)');
+        if (next) next.focus({ preventScroll: true });
+    }, [mnLocusId, selfRevealId, answered, finished, recall]);
     React.useEffect(() => { setRecallSaid(''); }, [mnLocusId]);
     React.useEffect(() => { setMnEditing(false); setMnDraft(''); }, [mnLocusId]);
     const mnFeedback = React.useMemo(() => {
@@ -5167,6 +5224,46 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     quickCreateRef.current = quickCreate;
     const [refinePrompt, setRefinePrompt] = React.useState('');    // "tell the AI what to change" for the current sculpture
     const [refineBusy, setRefineBusy] = React.useState(false);
+    const artJobRef = React.useRef(null); // synchronous lock, including rapid double clicks
+    const [artJob, setArtJob] = React.useState(null);
+    const [stopRequested, setStopRequested] = React.useState(false);
+    const artScopeRef = React.useRef(dataKey);
+    artScopeRef.current = dataKey;
+    const artBusy = !!artJob;
+    const _beginArtJob = (kind, locus) => {
+        if (artJobRef.current || !aliveRef.current || noWalk || recall) return null;
+        const job = { kind, label: locus?.label || '', scope: artScopeRef.current };
+        artJobRef.current = job; setArtJob(job);
+        return job;
+    };
+    const _endArtJob = (job) => {
+        if (artJobRef.current !== job) return;
+        artJobRef.current = null;
+        if (aliveRef.current) setArtJob(null);
+    };
+    const _artTarget = (locus) => ({
+        id: locus.id, label: locus.label, mnemonic: locus.mnemonic, scope: artScopeRef.current,
+        before: ['images', 'depths', 'objects', 'stamps', 'covered'].map((key) => mpRef.current?.[key]?.[locus.id]),
+    });
+    const _artTargetValid = (target) => {
+        const locus = palaceRef.current?.loci?.find((item) => item.id === target.id);
+        return aliveRef.current && artScopeRef.current === target.scope && locus?.label === target.label && locus?.mnemonic === target.mnemonic
+            && ['images', 'depths', 'objects', 'stamps', 'covered'].every((key, i) => mpRef.current?.[key]?.[target.id] === target.before[i]);
+    };
+    const _artDiscarded = () => {
+        if (aliveRef.current && addToast) addToast(t('memory_palace.art_changed_during_generation') || 'This stop changed while creating. Its current cue was kept; try again at the updated stop.', 'info');
+    };
+    const _saveGeneratedImage = (id, image, depth) => {
+        const nx = { ...(mpRef.current || {}), images: { ...(mpRef.current?.images || {}), [id]: image } };
+        ['depths', 'stamps', 'covered'].forEach((key) => {
+            if (nx[key]?.[id] !== undefined) { nx[key] = { ...nx[key] }; delete nx[key][id]; }
+        });
+        if (depth) nx.depths = { ...(nx.depths || {}), [id]: depth };
+        persistPalace(nx);
+        if (depth && handleRef.current?.setLocusRelief) handleRef.current.setLocusRelief(id, image, depth);
+        else handleRef.current?.setLocusImage?.(id, image);
+    };
+    React.useEffect(() => { setDirectEval(null); setDirectPrompt(''); setRefinePrompt(''); }, [mnLocusId, directType, dataKey]);
     // ── Voice input for Direct-the-AI (hands-free / accessible making): walk to a
     //    locus and SPEAK what belongs there; the spoken prompt runs through the
     //    same eval → generate flow as typing. Feature-detected on Web Speech, so
@@ -5212,24 +5309,30 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const palace = MP.buildPalace(data || {});
         const targets = palace.loci.filter((l) => l.id !== '__entry' && !objects3d[l.id]);
         if (!targets.length) { if (addToast) addToast(t('memory_palace.sculpt_done_already') || 'Every locus already has a sculpture.', 'info'); return; }
-        genCancelRef.current = false;
+        const job = _beginArtJob('sculpture', null);
+        if (!job) return;
+        genCancelRef.current = false; setStopRequested(false);
         setSculpting({ done: 0, total: targets.length });
         let done = 0, failures = 0;
         const step = (i) => {
-            if (i >= targets.length || genCancelRef.current || !aliveRef.current) {
-                setSculpting(null);
+            if (i >= targets.length || genCancelRef.current || !aliveRef.current || job.scope !== artScopeRef.current) {
+                _endArtJob(job);
+                if (aliveRef.current) setSculpting(null);
                 if (addToast && aliveRef.current) {
-                    if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+                    if (job.scope !== artScopeRef.current) _artDiscarded();
+                    else if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
                     else if (failures) addToast((t('memory_palace.sculpt_partial') || 'Sculpted {ok} loci; {fail} could not be designed.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
                     else addToast(t('memory_palace.sculpt_done') || '🗿 Sculptures placed! Walk the route to meet them.', 'success');
                 }
                 return;
             }
             const l = targets[i];
+            if (mpRef.current?.objects?.[l.id]) { step(i + 1); return; }
+            const target = _artTarget(l);
             const subject = l.mnemonic || l.label;
-            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
+            Promise.resolve().then(() => window.callGemini(P3D.buildRecipePrompt(subject), true))
                 .then((res) => {
-                    if (!aliveRef.current) return;
+                    if (!_artTargetValid(target)) { failures += 1; return; }
                     const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
                     const recipe = P3D.parseRecipe(text);
                     if (recipe) {
@@ -5246,64 +5349,70 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     // Directed generation for the CURRENT locus (the walk is the locus picker).
     // Reset the eval whenever the student edits their prompt or moves to a new locus.
-    const handleDirectSubmit = (promptOverride) => {
+    const handleDirectSubmit = async (promptOverride) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const cur = currentRef.current;
-        if (!MP || !MP.buildPromptEvalPrompt || !cur || cur.id === '__entry' || directBusy || typeof window.callGemini !== 'function') return;
+        if (!MP?.buildPromptEvalPrompt || !cur || cur.id === '__entry' || !persist || typeof window.callGemini !== 'function') return;
+        if (directType === 'image' ? !canImagen : !window.AlloModules?.Prim3D) return;
         const userPrompt = (typeof promptOverride === 'string' && promptOverride.trim()) ? promptOverride.trim() : directPrompt.trim();
         if (!userPrompt) return;
+        const job = _beginArtJob('checking', cur);
+        if (!job) return;
+        const context = { locus: { ...cur }, type: directType, relief: reliefOn, target: _artTarget(cur) };
         setDirectBusy('evaluating'); setDirectEval(null);
-        const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: cur.mnemonic, topic: data?.main || title || '', mode: directType });
-        Promise.resolve(window.callGemini(prompt, true))
-            .then((res) => {
-                if (!aliveRef.current) return;
-                const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
-                const ev = MP.parsePromptEval(text) || { verdict: 'ok', reason: '', enhancedPrompt: userPrompt };
-                if (ev.verdict === 'ok') { handleDirectGenerate(ev.enhancedPrompt || userPrompt); }
-                else { setDirectEval(ev); setDirectBusy(null); }   // reject → retry; enhance → let them choose
-            })
-            .catch(() => { if (aliveRef.current) { setDirectBusy(null); if (addToast) addToast(t('memory_palace.direct_eval_failed') || 'Could not check the prompt — try again.', 'error'); } });
+        try {
+            const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: cur.mnemonic, topic: data?.main || title || '', mode: context.type });
+            const res = await window.callGemini(prompt, true);
+            if (!_artTargetValid(context.target)) { _artDiscarded(); return; }
+            const text = typeof res === 'string' ? res : ((res && (res.text || res.output || res.response)) || '');
+            const ev = MP.parsePromptEval(text);
+            if (!ev) throw new Error('Invalid prompt evaluation');
+            if (ev.verdict === 'ok') await handleDirectGenerate(ev.enhancedPrompt || userPrompt, context, job);
+            else if (currentRef.current?.id === cur.id) setDirectEval({ ...ev, context });
+        } catch (error) {
+            if (aliveRef.current && addToast) addToast(t('memory_palace.direct_eval_failed') || 'Could not check the prompt — try again.', 'error');
+        } finally {
+            if (aliveRef.current) setDirectBusy(null);
+            _endArtJob(job);
+        }
     };
-    const handleDirectGenerate = (finalPrompt) => {
+    const handleDirectGenerate = async (finalPrompt, suppliedContext, existingJob) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
-        const cur = currentRef.current;
-        if (!MP || !cur || cur.id === '__entry' || !persist) return;
+        const context = suppliedContext || directEval?.context;
+        if (!MP || !context || !persist) return;
+        if (!_artTargetValid(context.target)) { _artDiscarded(); setDirectEval(null); return; }
+        const cur = context.locus;
+        const job = existingJob || _beginArtJob(context.type, cur);
+        if (!job) return;
+        setArtJob({ ...job, kind: context.type });
         setDirectBusy('generating'); setDirectEval(null);
-        const done = (store, key, val, depthVal) => {
-            if (!aliveRef.current) return;
-            if (val) {
-                if (handleRef.current) {
-                    if (key === 'images' && depthVal && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(cur.id, val, depthVal);
-                    else if (key === 'images' && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, val);
-                    else if (key !== 'images' && handleRef.current.setLocusObject) handleRef.current.setLocusObject(cur.id, val);
+        handleRef.current?.setLocusBusy?.(cur.id, true);
+        try {
+            let value, depth = null;
+            if (context.type === 'sculpture') {
+                if (!P3D || typeof window.callGemini !== 'function') throw new Error('Sculpture generation unavailable');
+                const res = await window.callGemini(P3D.buildRecipePrompt(finalPrompt), true);
+                const text = typeof res === 'string' ? res : ((res && (res.text || res.output || res.response)) || '');
+                value = P3D.parseRecipe(text);
+            } else {
+                if (!canImagen) throw new Error('Image generation unavailable');
+                value = await callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400);
+                if (value && context.relief && MP.buildDepthPrompt && _artTargetValid(context.target)) {
+                    try { depth = await callImagen(MP.buildDepthPrompt(finalPrompt), 400); } catch (error) { /* Keep the usable flat image. */ }
                 }
-                const nx = { ...(mpRef.current || {}), [store]: { ...((mpRef.current && mpRef.current[store]) || {}), [cur.id]: val } };
-                if (key === 'images' && depthVal) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [cur.id]: depthVal };
-                // an AI image supersedes any stamp here → drop its stale SR name
-                if (key === 'images' && nx.stamps && nx.stamps[cur.id]) { const s = { ...nx.stamps }; delete s[cur.id]; nx.stamps = s; }
-                persistPalace(nx);
-                if (addToast) addToast(t('memory_palace.direct_placed') || '✨ Placed at this locus! Walk on and direct the next.', 'success');
-                setDirectPrompt('');
-            } else if (addToast) addToast(t('memory_palace.direct_gen_failed') || 'Generation failed — try a different prompt.', 'error');
-            setDirectBusy(null);
-        };
-        if (directType === 'sculpture') {
-            if (!P3D || typeof window.callGemini !== 'function') { setDirectBusy(null); return; }
-            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(finalPrompt), true))
-                .then((res) => { const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || ''); done('objects', 'objects', P3D.parseRecipe(text)); })
-                .catch(() => done('objects', 'objects', null));
-        } else {
-            if (!canImagen) { setDirectBusy(null); return; }
-            callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
-                .then((base64) => {
-                    if (base64 && reliefOn && typeof MP.buildDepthPrompt === 'function') {
-                        return callImagen(MP.buildDepthPrompt(finalPrompt), 400).catch(() => null)
-                            .then((d64) => done('images', 'images', base64, d64 || null));
-                    }
-                    done('images', 'images', base64);
-                })
-                .catch(() => done('images', 'images', null));
+            }
+            if (!_artTargetValid(context.target)) { _artDiscarded(); return; }
+            if (!value) throw new Error('No generated cue');
+            if (context.type === 'image') _saveGeneratedImage(cur.id, value, depth);
+            else _persistObject(cur.id, value);
+            if (currentRef.current?.id === cur.id) setDirectPrompt('');
+            if (addToast) addToast((t('memory_palace.art_saved_at') || 'Cue saved at {label}.').replace('{label}', cur.label), 'success');
+        } catch (error) {
+            if (aliveRef.current && addToast) addToast(t('memory_palace.direct_gen_failed') || 'Generation failed — try a different prompt.', 'error');
+        } finally {
+            if (aliveRef.current) { handleRef.current?.setLocusBusy?.(cur.id, false); setDirectBusy(null); }
+            _endArtJob(job);
         }
     };
 
@@ -5448,10 +5557,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
         const instr = refinePrompt.trim();
         if (!rec || !instr || rec.glbItem) return;   // library items have no editable parts
+        const job = _beginArtJob('refine', cur);
+        if (!job) return;
+        const target = _artTarget(cur);
         setRefineBusy(true);
-        Promise.resolve(window.callGemini(MP.buildRefinePrompt(rec, instr), true))
+        Promise.resolve().then(() => window.callGemini(MP.buildRefinePrompt(rec, instr), true))
             .then((res) => {
-                if (!aliveRef.current) return;
+                if (!_artTargetValid(target)) { _artDiscarded(); return; }
                 const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
                 const newRec = P3D.parseRecipe(text);
                 if (newRec) {
@@ -5461,8 +5573,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     if (addToast) addToast(t('memory_palace.refine_done') || '✨ Refined!', 'success');
                 } else if (addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error');
             })
-            .catch(() => { if (addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error'); })
-            .then(() => { if (aliveRef.current) setRefineBusy(false); });
+            .catch(() => { if (aliveRef.current && addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error'); })
+            .finally(() => { _endArtJob(job); if (aliveRef.current) setRefineBusy(false); });
     };
 
     const handleFurnish = () => {
@@ -5474,23 +5586,30 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const wantRelief = reliefOn && typeof MP.buildDepthPrompt === 'function';
         const targets = palace.loci.filter((l) => l.id !== '__entry' && (!images[l.id] || (wantRelief && !depths[l.id])));
         if (!targets.length) { if (addToast) addToast(t('memory_palace.furnish_done_already') || 'Every locus already has an image.', 'info'); return; }
-        genCancelRef.current = false;
+        const job = _beginArtJob('image', null);
+        if (!job) return;
+        genCancelRef.current = false; setStopRequested(false);
         setFurnishing({ done: 0, total: targets.length });
         let done = 0, failures = 0;
         const step = (i) => {
-            if (i >= targets.length || genCancelRef.current || !aliveRef.current) {
-                setFurnishing(null);
+            if (i >= targets.length || genCancelRef.current || !aliveRef.current || job.scope !== artScopeRef.current) {
+                _endArtJob(job);
+                if (aliveRef.current) setFurnishing(null);
                 if (addToast && aliveRef.current) {
-                    if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+                    if (job.scope !== artScopeRef.current) _artDiscarded();
+                    else if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
                     else if (failures) addToast((t('memory_palace.furnish_partial') || 'Furnished {ok} loci; {fail} could not be generated.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
                     else addToast(t('memory_palace.furnish_done') || '🖼 Palace furnished! Walk the route to lock the images in.', 'success');
                 }
                 return;
             }
             const l = targets[i];
+            if (mpRef.current?.images?.[l.id] && (!wantRelief || mpRef.current?.depths?.[l.id])) { step(i + 1); return; }
+            const target = _artTarget(l);
             const subject = l.mnemonic || l.label;
             const haveImg = (mpRef.current && mpRef.current.images && mpRef.current.images[l.id]) || null;
             const finishWith = (base64, depthB64) => {
+                if (!_artTargetValid(target)) { failures += 1; return; }
                 // depth-upgrade-only target that got no depth = a failure; a fresh image
                 // without depth still counts (flat frame, exactly as before relief mode).
                 if (haveImg && !depthB64) { failures += 1; return; }
@@ -5501,18 +5620,19 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 }
                 const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [l.id]: base64 } };
                 if (depthB64) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [l.id]: depthB64 };
-                if (nx.stamps && nx.stamps[l.id]) { const s = { ...nx.stamps }; delete s[l.id]; nx.stamps = s; }   // AI image supersedes a stamp's SR name
+                if (!haveImg && nx.covered?.[l.id]) { nx.covered = { ...nx.covered }; delete nx.covered[l.id]; }
+                if (!haveImg && nx.stamps && nx.stamps[l.id]) { const s = { ...nx.stamps }; delete s[l.id]; nx.stamps = s; }   // AI image supersedes a stamp's SR name
 
                 persistPalace(nx);
             };
             const colorP = haveImg ? Promise.resolve(haveImg)
-                : callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400);
+                : Promise.resolve().then(() => callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400));
             colorP
                 .then((base64) => {
-                    if (!aliveRef.current || !base64) { if (!base64) failures += 1; return; }
+                    if (!_artTargetValid(target) || !base64) { failures += 1; return; }
                     if (wantRelief) {
                         // returning the promise keeps generation sequential (depth lands before the next locus starts)
-                        return callImagen(MP.buildDepthPrompt(subject), 400).catch(() => null)
+                        return Promise.resolve().then(() => callImagen(MP.buildDepthPrompt(subject), 400)).catch(() => null)
                             .then((d64) => { if (aliveRef.current) finishWith(base64, d64 || null); });
                     }
                     finishWith(base64, null);
@@ -5530,46 +5650,66 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         depth: mpRef.current?.depths?.[id],
         object: mpRef.current?.objects?.[id],
         stamp: mpRef.current?.stamps?.[id],
+        covered: mpRef.current?.covered?.[id],
     });
+    const _quickPreviewValid = (session) => {
+        if (session?.applied && _artTargetValid(session.applied)) return true;
+        quickCreateRef.current = null; setQuickCreate(null);
+        _artDiscarded();
+        return false;
+    };
     const handleQuickCreate = (type, locus, originalPrevious) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
         if (!locus || locus.id === '__entry' || !persist || quickCreateRef.current?.status === 'generating') return;
+        if (locus.applied && !_quickPreviewValid(locus)) return;
         if (type === 'image' && !canImagen) return;
         if (type === 'sculpture' && (!P3D || typeof window.callGemini !== 'function')) return;
+        const job = _beginArtJob(type, locus);
+        if (!job) return;
+        const target = _artTarget(locus);
         const previous = originalPrevious || _quickSnapshot(locus.id);
         const subject = locus.mnemonic || locus.label;
-        const session = { ...locus, type, status: 'generating', previous, variants: Array.isArray(locus.variants) ? locus.variants : [] };
+        const session = { ...locus, type, status: 'generating', error: null, previous, variants: Array.isArray(locus.variants) ? locus.variants : [] };
+        const priorPreview = locus.applied && locus.variants?.length ? { ...locus, status: 'ready' } : null;
+        quickCreateRef.current = session;
         setQuickCreate(session);
         if (handleRef.current?.setLocusBusy) handleRef.current.setLocusBusy(locus.id, true);
         const fail = () => {
+            _endArtJob(job);
+            if (!aliveRef.current) return;
+            const recovered = priorPreview && _artTargetValid(priorPreview.applied)
+                ? { ...priorPreview, error: t('memory_palace.quick_retry_failed') || 'Could not make a new version. Your saved cue, versions, and Undo are still available.' }
+                : null;
+            quickCreateRef.current = recovered;
             if (handleRef.current?.setLocusBusy) handleRef.current.setLocusBusy(locus.id, false);
-            if (aliveRef.current) setQuickCreate(null);
+            setQuickCreate(recovered);
             if (addToast) addToast(t('memory_palace.quick_failed') || 'Could not create that cue. Please try again.', 'error');
         };
         const finish = (value, depthValue) => {
-            if (!aliveRef.current || !value) { fail(); return; }
+            if (!_artTargetValid(target)) {
+                if (aliveRef.current) { handleRef.current?.setLocusBusy?.(locus.id, false); setQuickCreate(null); _artDiscarded(); }
+                quickCreateRef.current = null; _endArtJob(job); return;
+            }
+            if (!value) { fail(); return; }
             const live = handleRef.current;
             if (type === 'image') {
-                if (depthValue && live?.setLocusRelief) live.setLocusRelief(locus.id, value, depthValue);
-                else if (live?.setLocusImage) live.setLocusImage(locus.id, value);
-                const nx = { ...(mpRef.current || {}), images: { ...(mpRef.current?.images || {}), [locus.id]: value } };
-                if (depthValue) nx.depths = { ...(mpRef.current?.depths || {}), [locus.id]: depthValue };
-                else if (nx.depths?.[locus.id]) { const d = { ...nx.depths }; delete d[locus.id]; nx.depths = d; }
-                if (nx.stamps?.[locus.id]) { const s = { ...nx.stamps }; delete s[locus.id]; nx.stamps = s; }
-                persistPalace(nx);
+                _saveGeneratedImage(locus.id, value, depthValue);
             } else {
                 if ((session.variants.length || mpRef.current?.objects?.[locus.id]) && live?.replaceLocusObject) live.replaceLocusObject(locus.id, value);
                 else if (live?.setLocusObject) live.setLocusObject(locus.id, value);
                 persistPalace({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [locus.id]: value } });
             }
+            _endArtJob(job);
             if (live?.setLocusBusy) live.setLocusBusy(locus.id, false);
             const nextVariants = [...session.variants, { type, value, depth: depthValue || null }].slice(-3);
-            setQuickCreate(nearbyEmptyRef.current === locus.id ? { ...session, status: 'ready', variants: nextVariants, selected: nextVariants.length - 1 } : null);
-            if (addToast) addToast(t('memory_palace.quick_ready') || '✨ Preview ready at this locus.', 'success');
+            const readyPreview = { ...session, status: 'ready', applied: _artTarget(locus), variants: nextVariants, selected: nextVariants.length - 1 };
+            quickCreateRef.current = readyPreview;
+            setQuickCreate(readyPreview);
+            if (addToast) addToast((t('memory_palace.quick_saved_at') || 'Cue saved at {label}. Review it or undo the change.').replace('{label}', locus.label), 'success');
         };
         if (type === 'sculpture') {
-            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
+            Promise.resolve().then(() => window.callGemini(P3D.buildRecipePrompt(subject), true))
                 .then((res) => {
                     const raw = typeof res === 'string' ? res : ((res && (res.text || res.output || res.response)) || '');
                     finish(P3D.parseRecipe(raw));
@@ -5578,10 +5718,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             return;
         }
         const imagePrompt = 'A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.';
-        callImagen(imagePrompt, 400)
+        Promise.resolve().then(() => callImagen(imagePrompt, 400))
             .then((base64) => {
-                if (base64 && reliefOn && MP?.buildDepthPrompt) {
-                    return callImagen(MP.buildDepthPrompt(subject), 400).catch(() => null)
+                if (base64 && reliefOn && MP?.buildDepthPrompt && _artTargetValid(target)) {
+                    return Promise.resolve().then(() => callImagen(MP.buildDepthPrompt(subject), 400)).catch(() => null)
                         .then((depth64) => finish(base64, depth64 || null));
                 }
                 finish(base64, null);
@@ -5590,10 +5730,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     };
     const handleQuickUndo = () => {
         const session = quickCreateRef.current;
-        if (!session || session.status !== 'ready' || !persist) return;
+        if (!session || session.status !== 'ready' || !persist || artJobRef.current || recall || !_quickPreviewValid(session)) return;
         const prev = session.previous || {};
         const nx = { ...(mpRef.current || {}) };
-        [['images', prev.image], ['depths', prev.depth], ['objects', prev.object], ['stamps', prev.stamp]].forEach(([key, value]) => {
+        [['images', prev.image], ['depths', prev.depth], ['objects', prev.object], ['stamps', prev.stamp], ['covered', prev.covered]].forEach(([key, value]) => {
             const bucket = { ...(nx[key] || {}) };
             if (value === undefined) delete bucket[session.id];
             else bucket[session.id] = value;
@@ -5605,27 +5745,23 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         else if (prev.image && live?.setLocusImage) live.setLocusImage(session.id, prev.image);
         if (prev.object && live?.setLocusObject) live.setLocusObject(session.id, prev.object);
         persistPalace(nx);
-        setQuickCreate(null);
+        quickCreateRef.current = null; setQuickCreate(null);
         if (!prev.image && !prev.object) setNearbyEmpty({ id: session.id, label: session.label, mnemonic: session.mnemonic, idx: session.idx, total: session.total });
         if (addToast) addToast(t('memory_palace.quick_undone') || 'Undo complete. The previous locus cue is restored.', 'info');
     };
     const handleQuickVariant = (index) => {
         const session = quickCreateRef.current;
         const variant = session?.variants?.[index];
-        if (!session || session.status !== 'ready' || !variant || !persist) return;
+        if (!session || session.status !== 'ready' || !variant || !persist || artJobRef.current || recall || !_quickPreviewValid(session)) return;
         const live = handleRef.current;
         if (variant.type === 'image') {
-            if (variant.depth && live?.setLocusRelief) live.setLocusRelief(session.id, variant.value, variant.depth);
-            else if (live?.setLocusImage) live.setLocusImage(session.id, variant.value);
-            const nx = { ...(mpRef.current || {}), images: { ...(mpRef.current?.images || {}), [session.id]: variant.value } };
-            if (variant.depth) nx.depths = { ...(mpRef.current?.depths || {}), [session.id]: variant.depth };
-            else if (nx.depths?.[session.id]) { const d = { ...nx.depths }; delete d[session.id]; nx.depths = d; }
-            persistPalace(nx);
+            _saveGeneratedImage(session.id, variant.value, variant.depth);
         } else {
             if (live?.replaceLocusObject) live.replaceLocusObject(session.id, variant.value);
             persistPalace({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [session.id]: variant.value } });
         }
-        setQuickCreate({ ...session, selected: index });
+        const updated = { ...session, error: null, applied: _artTarget(session), selected: index };
+        quickCreateRef.current = updated; setQuickCreate(updated);
     };
     const proximityLocus = quickCreate || nearbyEmpty;
     const progressPalace = palaceRef.current;
@@ -5892,10 +6028,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     return (
         <div ref={presentationRef} onPointerDownCapture={handleTourInteraction} onKeyDownCapture={handleTourInteraction} className={presenting ? 'fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-950' : 'max-w-6xl mx-auto'} role={presenting ? 'dialog' : undefined} aria-modal={presenting ? 'true' : undefined} tabIndex={presenting ? -1 : undefined} aria-label={presenting ? (t('memory_palace.presentation_aria') || 'Memory Palace presentation') : undefined}>
-            <div className={(presenting ? 'hidden ' : 'flex ') + 'items-center justify-between gap-2 mb-3 flex-wrap'}>
-                <div className="text-xs text-slate-500">
+            <div className={(presenting ? 'hidden ' : 'flex ') + 'items-center justify-between gap-3 mb-3 flex-wrap rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-indigo-50/40 p-3 sm:p-4'}>
+                <div className="w-full text-xs leading-relaxed text-slate-600">
+                    <div className="mb-1 flex items-center gap-2 text-sm font-extrabold text-slate-900"><span className="h-2 w-2 rounded-full bg-indigo-500" aria-hidden="true" />{recall ? (t('memory_palace.practice_heading') || 'Recall practice') : (t('memory_palace.study_heading') || 'Explore, picture, remember')}</div>
                     {recall
-                        ? (t('memory_palace.recall_hint') || '🧠 The labels are covered — the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears.')
+                        ? (recall.mode === 'self'
+                            ? (t('memory_palace.self_check_hint') || 'Picture the cue and recall the fact privately. Reveal the answer, then rate whether you remembered it. Every rating moves you forward.')
+                            : (t('memory_palace.recall_hint') || '🧠 The labels are covered — the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears.'))
                         : (t('memory_palace.hint') || 'A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.')}
                     {recall && recall.direction && recall.direction !== 'forward' && (
                         <span className="ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
@@ -5905,12 +6044,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         </span>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className={(recall ? 'flex flex-wrap ' : 'grid sm:grid-cols-2 ') + 'w-full min-w-0 gap-3 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button]:justify-center [&_button]:focus-visible:outline [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-offset-2 [&_button]:focus-visible:outline-indigo-600'} data-palace-toolbar="true">
                     {recall ? (
                         <>
                             <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums">
-                                ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_progress') || '{done}/{total} recalled')
-                                    .replace('{done}', String(answered)).replace('{total}', String((palaceRef.current?.route?.length || 1) - 1))}
+                                ⏱ {fmtTime(elapsed)} · {(t('memory_palace.review_progress') || '{done}/{total} reviewed')
+                                    .replace('{done}', String(answered)).replace('{total}', String(recallOrderRef.current.length || (palaceRef.current?.route?.length || 1) - 1))}
                             </span>
                             {finished && (
                                 <button
@@ -5929,42 +6068,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         </>
                     ) : (
                         <>
-                            {hasContent && !failed && !noWalk && recallEligible && (
-                                <button
-                                    onClick={() => startRecall('bank', false)}
-                                    disabled={!!furnishing || !!sculpting || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
-                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                    title={t('memory_palace.recall_tooltip') || 'Practice: the labels are covered — walk the palace and recall what lives at each locus'}
-                                >
-                                    🧠 {t('memory_palace.recall_play') || 'Recall walk'}
-                                </button>
-                            )}
-                            {hasContent && !failed && !noWalk && recallEligible && (
-                                <button
-                                    onClick={() => startRecall('self', false)}
-                                    disabled={!!furnishing || !!sculpting || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
-                                    className="flex items-center gap-1 bg-white text-indigo-700 border border-indigo-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title={t('memory_palace.self_check_tooltip') || 'Move through the route, reveal each answer, then mark whether you remembered it'}
-                                >
-                                    ✨ {t('memory_palace.self_check') || 'Guided self-check'}
-                                </button>
-                            )}
-                            {hasContent && !failed && recallEligible && isTeacherMode && (
-                                <button
-                                    onClick={() => startRecall('type', false)}
-                                    disabled={!!furnishing || !!sculpting || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
-                                    className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title={t('memory_palace.recall_expert_tooltip') || 'Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)'}
-                                >
-                                    ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
-                                </button>
-                            )}
-                            {isTeacherMode && liveRecallReadiness?.ok === false && (
-                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
-                                    Recall walk: {liveRecallReadiness.message}
-                                </span>
-                            )}
-                            {hasContent && !failed && !noWalk && (
+                            {hasContent && !failed && (<section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" role="group" aria-label={t('memory_palace.controls_explore') || 'Explore'}>
+                                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.controls_explore') || 'Explore'}</div>
+                                <div className="flex flex-wrap gap-2">                            {hasContent && !failed && !noWalk && (
                                 <button
                                     type="button"
                                     data-palace-tour-control="true"
@@ -6006,16 +6112,61 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${customizeOpen ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'}`}
                                     title={t('memory_palace.customize_tooltip') || 'Decorate the palace: AI images, sculptures, built-in decorations and relief'}
                                 >
-                                    🎨 {t('memory_palace.customize') || 'Customize'} <span aria-hidden="true">{customizeOpen ? '▲' : '▼'}</span>
+                                    🎨 {t('memory_palace.customize_art') || 'Art & customize'} <span aria-hidden="true">{customizeOpen ? '▲' : '▼'}</span>
                                 </button>
                             )}
+</div>
+                            </section>)}
+                            {hasContent && !failed && !noWalk && (<section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" role="group" aria-label={t('memory_palace.controls_practice') || 'Practice'}>
+                                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.controls_practice') || 'Practice'}</div>
+                                {!recallEligible && <p className="mb-2 text-xs leading-relaxed text-slate-600">{t('memory_palace.practice_minimum') || 'Add a second memory stop to unlock recall practice.'}</p>}
+                                <div className="flex flex-wrap gap-2">                            {hasContent && !failed && !noWalk && recallEligible && (
+                                <button
+                                    onClick={() => startRecall('bank', false)}
+                                    disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
+                                    className="flex items-center gap-1 bg-indigo-700 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                    title={t('memory_palace.recall_tooltip') || 'Practice: the labels are covered — walk the palace and recall what lives at each locus'}
+                                >
+                                    🧠 {t('memory_palace.recall_play') || 'Recall walk'}
+                                </button>
+                            )}
+                            {hasContent && !failed && !noWalk && recallEligible && (
+                                <button
+                                    onClick={() => startRecall('self', false)}
+                                    disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
+                                    className="flex items-center gap-1 bg-white text-indigo-700 border border-indigo-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.self_check_tooltip') || 'Move through the route, reveal each answer, then mark whether you remembered it'}
+                                >
+                                    ✨ {t('memory_palace.self_check') || 'Guided self-check'}
+                                </button>
+                            )}
+                            {hasContent && !failed && recallEligible && isTeacherMode && (
+                                <button
+                                    onClick={() => startRecall('type', false)}
+                                    disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
+                                    className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.recall_expert_tooltip') || 'Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)'}
+                                >
+                                    ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
+                                </button>
+                            )}
+                            {isTeacherMode && liveRecallReadiness?.ok === false && (
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                    Recall walk: {liveRecallReadiness.message}
+                                </span>
+                            )}
+</div>
+                            </section>)}
                             {/* The "make it look good" family, collapsed behind Customize (kept open while a
                                 generation runs so its progress + Stop stay visible). */}
                             {(customizeOpen || furnishing || sculpting) && (
-                                <>
-                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                                <div className="col-span-full rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3" role="group" aria-label={t('memory_palace.controls_create') || 'Create & personalize'}>
+                                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800">{t('memory_palace.controls_create') || 'Create & personalize'}</div>
+                                <div className="flex flex-wrap gap-2">
+                            {hasContent && !failed && !noWalk && persist && typeof window.callGemini === 'function' && (
                                 <button
                                     onClick={() => { setDirectMode((d) => !d); setDirectEval(null); }}
+                                    aria-pressed={directMode}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${directMode ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50'}`}
                                     title={t('memory_palace.direct_tooltip') || 'Direct the AI yourself: write the prompt for each locus and the AI checks it before creating'}
                                 >
@@ -6045,6 +6196,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && !noWalk && canImagen && persist && (
                                 <button
                                     onClick={() => setReliefOn((r) => !r)}
+                                    disabled={artBusy}
                                     aria-pressed={reliefOn ? 'true' : 'false'}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${reliefOn ? 'bg-stone-700 text-white border-stone-700' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'}`}
                                     title={t('memory_palace.relief_tooltip') || 'Relief mode: also generate a depth map per locus so furnished images become 3D bas-reliefs (two images per locus — uses more image credits and save space)'}
@@ -6055,7 +6207,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && !noWalk && canImagen && persist && (
                                 <button
                                     onClick={handleFurnish}
-                                    disabled={!!furnishing || !!sculpting}
+                                    disabled={artBusy}
                                     className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     title={t('memory_palace.furnish_tooltip') || 'Generate one AI illustration per locus from its mnemonic (uses image credits; saved with the resource)'}
                                 >
@@ -6064,10 +6216,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         : (t('memory_palace.furnish') || 'Furnish with AI images')}
                                 </button>
                             )}
-                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                            {hasContent && !failed && !noWalk && persist && typeof window.callGemini === 'function' && (
                                 <button
                                     onClick={handleSculpt}
-                                    disabled={!!sculpting || !!furnishing}
+                                    disabled={artBusy || !window.AlloModules?.Prim3D}
                                     className="flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     title={t('memory_palace.sculpt_tooltip') || 'AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)'}
                                 >
@@ -6076,39 +6228,23 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         : (t('memory_palace.sculpt') || 'Sculpt 3D objects')}
                                 </button>
                             )}
-                                </>
-                            )}
-                            {hasContent && !failed && !noWalk && persist && (
-                                <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
-                                    {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
-                                        const on = paletteTheme === thm;
-                                        const icon = thm === 'gallery' ? '🏛' : thm === 'pasture' ? '🌿' : '🪐';
-                                        const label = thm === 'gallery' ? (t('memory_palace.theme_gallery') || 'Gallery') : thm === 'pasture' ? (t('memory_palace.theme_pasture') || 'Pasture') : (t('memory_palace.theme_space') || 'Space');
-                                        return (
-                                            <button key={thm} onClick={() => handleSetTheme(thm)} aria-pressed={on ? 'true' : 'false'} title={label}
-                                                className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${on ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}>
-                                                {icon} {label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                            {(furnishing || sculpting) && (
+                                                            {(furnishing || sculpting) && (
                                 <button
-                                    onClick={() => { genCancelRef.current = true; }}
+                                    onClick={() => { genCancelRef.current = true; setStopRequested(true); }}
+                                    disabled={stopRequested}
                                     className="flex items-center gap-1 bg-white text-red-600 border border-red-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-50 transition-colors"
                                     title={t('memory_palace.gen_stop_tooltip') || 'Stop generating — keep what has been made so far'}
                                 >
-                                    ⏹ {t('memory_palace.gen_stop') || 'Stop'}
+                                    ⏹ {stopRequested ? (t('memory_palace.gen_stopping') || 'Finishing current cue…') : (t('memory_palace.gen_stop_after') || 'Stop after this cue')}
                                 </button>
                             )}
-                            {hasContent && !failed && !noWalk && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
+                            {hasContent && !failed && !noWalk && persist && (imageCount > 0 || objectCount > 0) && !artBusy && (
                                 <button
                                     onClick={() => {
                                         // Drop ONLY the generated art — keep the spaced-repetition mastery
                                         // (which also lives in this store), so clearing images doesn't wipe review progress.
                                         const keep = { ...(mpRef.current || {}) };
-                                        delete keep.images; delete keep.objects; delete keep.depths; delete keep.stamps; delete keep.generatedAt;
+                                        delete keep.images; delete keep.objects; delete keep.depths; delete keep.stamps; delete keep.covered; delete keep.generatedAt;
                                         persistPalace(Object.keys(keep).length ? keep : null);
                                         setNonce((n) => n + 1);
                                     }}
@@ -6118,10 +6254,44 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ↺ {t('memory_palace.clear_generated') || 'Clear generated art'}
                                 </button>
                             )}
+
+                                </div></div>
+                            )}
+
+                            {hasContent && !failed && !noWalk && persist && (<div className="col-span-full flex flex-wrap items-center gap-3 px-1" data-palace-setting-row="true"><span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.theme_label') || 'Palace setting'}</span>                            {hasContent && !failed && !noWalk && persist && (
+                                <div className="grid w-full grid-cols-3 items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:flex sm:w-auto" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
+                                    {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
+                                        const on = paletteTheme === thm;
+                                        const icon = thm === 'gallery' ? '🏛' : thm === 'pasture' ? '🌿' : '🪐';
+                                        const label = thm === 'gallery' ? (t('memory_palace.theme_gallery') || 'Gallery') : thm === 'pasture' ? (t('memory_palace.theme_pasture') || 'Pasture') : (t('memory_palace.theme_space') || 'Space');
+                                        return (
+                                            <button key={thm} onClick={() => handleSetTheme(thm)} aria-pressed={on ? 'true' : 'false'} title={label}
+                                                className={`flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-xs font-bold transition-colors sm:flex-row sm:px-3 ${on ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:bg-white/70'}`}>
+                                                <span aria-hidden="true">{icon}</span><span>{label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+</div>)}
                         </>
                     )}
                 </div>
             </div>
+            {!presenting && !recall && !noWalk && customizeOpen && persist && (
+                <div className="mb-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800" data-palace-art-guide="true">
+                    <p>{t('memory_palace.art_guide') || 'One stop: choose a numbered frame, then create an image or sculpture, write an advanced prompt, or use built-in cues. Furnish and Sculpt fill missing cues throughout the palace.'}</p>
+                    <p className="mt-1 text-xs text-indigo-800">{t('memory_palace.art_relief_guide') || 'Relief adds raised depth to images and requests an extra image per stop. Built-in cues need no generation.'}</p>
+                    {!canImagen && <p className="mt-1 text-xs font-semibold">{t('memory_palace.art_images_unavailable') || 'Image generation is unavailable here. Try a sculpture or built-in cue.'}</p>}
+                </div>
+            )}
+            {!presenting && !recall && artJob && (
+                <div className="mt-3 rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-3 text-sm text-indigo-950" role="status" aria-live="polite" aria-atomic="true">
+                    {artJob.label
+                        ? (t('memory_palace.art_working_at') || 'Working on the cue for {label}. You can keep walking; it will be saved at that stop.').replace('{label}', artJob.label)
+                        : (t('memory_palace.art_batch_progress') || '{done} of {total} stops processed. Completed cues are saved as they finish.').replace('{done}', String((furnishing || sculpting)?.done || 0)).replace('{total}', String((furnishing || sculpting)?.total || 0))}
+                </div>
+            )}
             {!presenting && noWalk && (
                 <div className="mt-3 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700" role="status">
                     🖥 {t('memory_palace.no_walk_notice') || 'This device cannot show the 3D palace, so the walking route is listed below instead. Making art, decorating, building and the recall walk all need the 3D walk and are turned off here — the printable study sheet still works.'}
@@ -6144,7 +6314,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 </div>
             )}
             {!presenting && !recall && dueInfo && dueInfo.dueCount > 0 && (
-                <div className="mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5" role="status">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5" role="status">
                     <div className="text-sm text-amber-900">
                         <span className="font-bold">🔁 {(t('memory_palace.review_due') || '{count} loci are ready for review').replace('{count}', String(dueInfo.dueCount))}</span>
                         {' '}<span className="text-amber-800">{t('memory_palace.review_due_why') || '— walk the palace again to strengthen the ones fading from memory.'}</span>
@@ -6152,7 +6322,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     {recallEligible && (
                         <button
                             onClick={() => startRecall('bank', false, 'forward', (dueInfo.due || []).concat(dueInfo.newIds || []))}
-                            className="flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
+                            className="min-h-[44px] flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
                         >
                             🔁 {t('memory_palace.review_now') || 'Review now'}
                         </button>
@@ -6168,7 +6338,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     .replace('{done}', String(customizedCount)).replace('{total}', String(progressStops.length))}
                             </div>
                             <div className="mt-1 h-1.5 w-36 max-w-[38vw] overflow-hidden rounded-full bg-slate-200"
-                                role="progressbar" aria-valuemin="0" aria-valuemax={progressStops.length} aria-valuenow={customizedCount}>
+                                role="progressbar" aria-label={t('memory_palace.art_progress_aria') || 'Stops with visual cues'} aria-valuemin="0" aria-valuemax={progressStops.length} aria-valuenow={customizedCount}>
                                 <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-[width] motion-reduce:transition-none" style={{ width: progressPercent + '%' }} />
                             </div>
                         </div>
@@ -6179,6 +6349,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             <span><i className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />{t('memory_palace.status_both') || 'Both'}</span>
                         </div>
                     </div>
+                    <p className="mt-2 text-xs text-slate-600">{t('memory_palace.art_practice_note') || 'Artwork is optional. To practice remembering, picture each cue in its place, then try Guided self-check with the labels hidden.'}</p>
                     {(persist && progressStops.length > 1) && (
                         <div className="mt-2 flex flex-wrap items-center gap-2">
                             {!routeEditing && (
@@ -6458,22 +6629,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         aria-busy={quickCreate?.status === 'generating' ? 'true' : 'false'}
                     >
                         <div className="flex items-start gap-3">
-                            <div className={'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-white shadow-md ' + (quickCreate?.status === 'ready' ? 'bg-emerald-600' : 'bg-gradient-to-br from-violet-600 to-indigo-600')} aria-hidden="true">
+                            <div className={'hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-white shadow-md sm:flex ' + (quickCreate?.status === 'ready' ? 'bg-emerald-600' : 'bg-gradient-to-br from-violet-600 to-indigo-600')} aria-hidden="true">
                                 {quickCreate?.status === 'generating' ? '•••' : quickCreate?.status === 'ready' ? '✓' : '+'}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-sm font-extrabold text-slate-900">
+                                <div className="pr-10 text-sm font-extrabold text-slate-900 sm:pr-0">
                                     {quickCreate?.status === 'generating'
                                         ? (t('memory_palace.quick_creating') || 'Creating a {type} for {label}…').replace('{type}', quickCreate.type).replace('{label}', quickCreate.label)
                                         : quickCreate?.status === 'ready'
-                                            ? (t('memory_palace.quick_preview') || 'Preview ready: {label}').replace('{label}', quickCreate.label)
+                                            ? (t('memory_palace.quick_saved') || 'Saved cue: {label}').replace('{label}', quickCreate.label)
                                             : (t('memory_palace.empty_nearby') || 'Empty gallery spot: {label}').replace('{label}', proximityLocus.label)}
                                 </div>
-                                <div className="mt-0.5 hidden text-xs font-medium text-slate-700 sm:block">
+                                <div className="mt-0.5 text-xs font-medium text-slate-700">
                                     {quickCreate?.status === 'generating'
                                         ? (t('memory_palace.quick_creating_help') || 'Watch the frame—the progress cue will change as soon as your new memory cue is ready.')
                                         : quickCreate?.status === 'ready'
-                                            ? (t('memory_palace.quick_preview_help') || 'Look at the frame, then keep it, regenerate another version, or restore what was here before.')
+                                            ? (quickCreate.error ? (t('memory_palace.quick_already_saved') || 'Saved automatically.') : (t('memory_palace.quick_saved_help') || 'Saved automatically. Picture this cue in its place and explain its link to the fact.'))
                                             : (t('memory_palace.empty_nearby_help') || 'Make this stop memorable with one quick cue, or open the full creative controls.')}
                                 </div>
                                 {quickCreate?.status === 'generating' ? (
@@ -6483,16 +6654,34 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     </div>
                                 ) : quickCreate?.status === 'ready' ? (
                                     <div className="mt-2">
+                                        {quickCreate.error && <p className="mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950" role="alert">{quickCreate.error}</p>}
+                                        <div className="flex flex-wrap gap-2">
+                                            <button type="button" onClick={() => { setQuickCreate(null); setNearbyEmpty(null); }}
+                                                className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
+                                                ✓ {t('memory_palace.quick_done') || 'Done'}
+                                            </button>
+                                            <button type="button" onClick={() => handleQuickCreate(quickCreate.type, quickCreate, quickCreate.previous)} disabled={artBusy}
+                                                className="min-h-[44px] rounded-xl bg-indigo-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700">
+                                                ↻ {t('memory_palace.quick_regenerate') || 'Regenerate'}
+                                            </button>
+                                            <button type="button" onClick={handleQuickUndo} disabled={artBusy}
+                                                className="min-h-[44px] rounded-xl border border-slate-400 bg-white px-3 py-2 text-xs font-extrabold text-slate-800 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">
+                                                ↶ {t('memory_palace.quick_undo') || 'Undo'}
+                                            </button>
+                                        </div>
+                                        <button type="button" onClick={() => { const index = palaceRef.current?.route?.indexOf(quickCreate.id); if (index > 0) handleRef.current?.goTo(index); }} className="mb-2 min-h-[44px] rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-800">
+                                            {t('memory_palace.quick_return') || 'View this stop'}
+                                        </button>
                                         {quickCreate.variants?.length > 1 && (
                                             <div className="mb-2 rounded-xl border border-indigo-200 bg-indigo-50/80 p-2">
                                                 <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800">
                                                     {t('memory_palace.quick_variants') || 'Recent versions'}
                                                 </div>
-                                                <div className="flex gap-2" role="list" aria-label={t('memory_palace.quick_variants_aria') || 'Recent generated variants'}>
+                                                <div className="flex gap-2" role="group" aria-label={t('memory_palace.quick_variants_aria') || 'Recent generated variants'}>
                                                     {quickCreate.variants.map((variant, index) => (
-                                                        <button key={index} type="button" role="listitem" onClick={() => handleQuickVariant(index)}
+                                                        <button key={index} type="button" disabled={artBusy} onClick={() => handleQuickVariant(index)}
                                                             aria-pressed={quickCreate.selected === index ? 'true' : 'false'}
-                                                            aria-label={(t('memory_palace.quick_variant') || 'Preview version {number}').replace('{number}', String(index + 1))}
+                                                            aria-label={(t('memory_palace.quick_use_version') || 'Use saved version {number}').replace('{number}', String(index + 1))}
                                                             className={'relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border-2 bg-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ' + (quickCreate.selected === index ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-slate-300 hover:border-indigo-400')}>
                                                             {variant.type === 'image'
                                                                 ? <img src={variant.value} alt="" className="h-full w-full object-cover" />
@@ -6503,33 +6692,20 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="flex flex-wrap gap-2">
-                                            <button type="button" onClick={() => { setQuickCreate(null); setNearbyEmpty(null); }}
-                                                className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
-                                                ✓ {t('memory_palace.quick_keep') || 'Keep it'}
-                                            </button>
-                                            <button type="button" onClick={() => handleQuickCreate(quickCreate.type, quickCreate, quickCreate.previous)}
-                                                className="min-h-[44px] rounded-xl bg-indigo-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700">
-                                                ↻ {t('memory_palace.quick_regenerate') || 'Regenerate'}
-                                            </button>
-                                            <button type="button" onClick={handleQuickUndo}
-                                                className="min-h-[44px] rounded-xl border border-slate-400 bg-white px-3 py-2 text-xs font-extrabold text-slate-800 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">
-                                                ↶ {t('memory_palace.quick_undo') || 'Undo'}
-                                            </button>
-                                        </div>
+
                                     </div>
                                 ) : (
                                     <div className="mt-2 flex flex-wrap gap-2">
                                         {canImagen && (
                                             <button type="button" onClick={() => handleQuickCreate('image', proximityLocus)}
-                                                disabled={!!furnishing || !!sculpting || !!directBusy}
+                                                disabled={artBusy}
                                                 className="min-h-[44px] rounded-xl bg-indigo-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700">
                                                 🖼 {t('memory_palace.quick_image_here') || 'Quick image here'}
                                             </button>
                                         )}
                                         {typeof window.callGemini === 'function' && !!(window.AlloModules && window.AlloModules.Prim3D) && (
                                             <button type="button" onClick={() => handleQuickCreate('sculpture', proximityLocus)}
-                                                disabled={!!sculpting || !!furnishing || !!directBusy}
+                                                disabled={artBusy}
                                                 className="min-h-[44px] rounded-xl bg-slate-800 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-800">
                                                 🗿 {t('memory_palace.quick_sculpture_here') || 'Quick sculpture here'}
                                             </button>
@@ -6554,7 +6730,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 onClick={() => { setNearbyEmpty(null); setQuickCreate(null); }}
                                 disabled={quickCreate?.status === 'generating'}
                                 aria-label={t('common.close') || 'Close'}
-                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+                                className="absolute right-2 top-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl font-bold text-slate-600 transition sm:static hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
                             >
                                 ×
                             </button>
@@ -6675,6 +6851,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             ✍️ {current.source === 'self' ? (t('memory_palace.own_edit') || 'Edit my image') : (t('memory_palace.own_write') || 'Write my own image')}
                         </button>
                     )}
+                    {persist && !mnEditing && <p className="mt-1 text-xs text-indigo-800">{t('memory_palace.own_connection_help') || 'In your own words: what does the cue do, and how does that action remind you of this fact? Writing here changes the memory hint, not the artwork.'}</p>}
                     {persist && mnEditing && (
                         <form className="mt-2" onSubmit={(e) => { e.preventDefault(); saveOwnMnemonic(current.id, mnDraft); }}>
                             <label className="block text-xs font-bold text-indigo-800 mb-1" htmlFor="mp-own-mnemonic">
@@ -6766,7 +6943,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                 aria-label={t('memory_palace.refine_placeholder') || 'Tell the AI what to change'}
                                                 className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
                                             />
-                                            <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <button type="submit" disabled={!refinePrompt.trim() || artBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                                 {refineBusy ? (t('memory_palace.direct_creating') || 'Creating…') : ('✨ ' + (t('memory_palace.refine_apply') || 'Refine'))}
                                             </button>
                                         </form>
@@ -6775,8 +6952,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )}
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xs font-bold text-fuchsia-800">{t('memory_palace.direct_make') || 'Make:'}</span>
-                                <button onClick={() => setDirectType('image')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
-                                <button onClick={() => setDirectType('sculpture')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                <button disabled={artBusy || !canImagen} aria-pressed={directType === 'image'} onClick={() => { setDirectType('image'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                <button disabled={artBusy || !window.AlloModules?.Prim3D} aria-pressed={directType === 'sculpture'} onClick={() => { setDirectType('sculpture'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
                             </div>
                             {directEval && directEval.verdict === 'reject' && (
                                 <div className="mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="status" aria-live="polite">
@@ -6788,14 +6965,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     {directEval.reason && <div className="mb-1">{directEval.reason}</div>}
                                     {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-2">“{directEval.enhancedPrompt}”</div>}
                                     <div className="flex gap-2 flex-wrap">
-                                        <button onClick={() => handleDirectGenerate(directEval.enhancedPrompt || directPrompt)} disabled={!!directBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
-                                        <button onClick={() => handleDirectGenerate(directPrompt)} disabled={!!directBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50">{t('memory_palace.direct_use_mine') || 'Use mine as-is'}</button>
+                                        <button onClick={() => handleDirectGenerate(directEval.enhancedPrompt || directPrompt)} disabled={artBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                        <button onClick={() => handleDirectGenerate(directPrompt)} disabled={artBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50">{t('memory_palace.direct_use_mine') || 'Use mine as-is'}</button>
                                     </div>
                                 </div>
                             )}
                             {(!directEval || directEval.verdict === 'reject') && (
                                 <form onSubmit={(e) => { e.preventDefault(); handleDirectSubmit(); }}>
                                     <textarea
+                                        disabled={artBusy}
                                         value={directPrompt}
                                         onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }}
                                         placeholder={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here…'}
@@ -6804,11 +6982,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         className="w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
                                     />
                                     <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                        <button type="submit" disabled={!directPrompt.trim() || !!directBusy} className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <button type="submit" disabled={!directPrompt.trim() || artBusy || (directType === 'image' ? !canImagen : !window.AlloModules?.Prim3D)} className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                             {directBusy === 'evaluating' ? (t('memory_palace.direct_checking') || 'Checking…') : directBusy === 'generating' ? (t('memory_palace.direct_creating') || 'Creating…') : (t('memory_palace.direct_submit') || 'Check & create')}
                                         </button>
                                         {voiceSupported && (
-                                            <button type="button" onClick={toggleVoiceDirect} disabled={!!directBusy}
+                                            <button type="button" onClick={toggleVoiceDirect} disabled={artBusy}
                                                 aria-pressed={voiceListening ? 'true' : 'false'}
                                                 title={t('memory_palace.voice_direct_title') || 'Speak your prompt for this locus, hands-free'}
                                                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? 'bg-rose-600 text-white animate-pulse motion-reduce:animate-none' : 'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50'}`}>
@@ -6895,9 +7073,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     )}
                 </div>
             )}
-            {!presenting && recall && finished && (
-                <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900" role="status">
-                    <span className="font-bold">
+            {!presenting && recall && (
+                <div ref={recallPanelRef} onClickCapture={(event) => { recallKeyboardRef.current = event.detail === 0; }} data-palace-recall-panel="true">
+            {finished && (
+                <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2" role="status">
+                    <span className="font-bold outline-none" tabIndex={-1} data-recall-focus="true">
                         {finished.perfect
                             ? (t('memory_palace.recall_perfect') || '🏛✨ Perfect walk! Every locus recalled on the first try.')
                             : (t('memory_palace.recall_summary') || 'Recalled {ok} of {total} ({first} on the first try).')
@@ -6910,7 +7090,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         either as a full tested result would overclaim. */}
                     {recall.focused && (
                         <div className="mt-1 text-xs text-emerald-800">
-                            {(t('memory_palace.recall_focused_note') || 'Focused review: only the {count} loci that were due.').replace('{count}', String(finished.total))}
+                            {(t('memory_palace.recall_scope_note') || 'Focused review: {count} selected stops.').replace('{count}', String(finished.total))}
                         </div>
                     )}
                     {finished.selfRated > 0 && (
@@ -6918,12 +7098,40 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {(t('memory_palace.recall_self_rated_note') || 'You rated {count} of these yourself — practice, not a tested recall.').replace('{count}', String(finished.selfRated))}
                         </div>
                     )}
+                    {(() => {
+                        const stops = _recallStopsToStrengthen();
+                        if (!stops.length) return null;
+                        return (
+                            <section className="mt-4 rounded-2xl border border-amber-200 bg-white p-3 text-slate-800" aria-label={t('memory_palace.strengthen_heading') || 'Stops to strengthen'}>
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <h3 className="text-sm font-extrabold text-slate-900">{t('memory_palace.strengthen_heading') || 'Stops to strengthen'} <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{stops.length}</span></h3>
+                                    <button type="button" onClick={() => retryRecall('forward', stops.map((stop) => stop.id))} className="bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800">
+                                        {t('memory_palace.practice_selected') || 'Practice these stops'}
+                                    </button>
+                                </div>
+                                <p className="mt-2 text-xs leading-relaxed text-slate-600">{t('memory_palace.strengthen_help') || 'Review the facts and cues below, then try these stops again from memory. Other stops keep their practice records.'}</p>
+                                <details className="mt-2 rounded-xl border border-slate-200 bg-slate-50">
+                                    <summary className="min-h-[44px] cursor-pointer rounded-xl px-3 py-3 text-xs font-bold text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{t('memory_palace.review_facts_cues') || 'Review facts and memory cues'}</summary>
+                                    <ol className="space-y-2 px-3 pb-3">
+                                        {stops.map((stop) => <li key={stop.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                                            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold">
+                                                <span className="text-slate-500">{(t('memory_palace.stop_number') || 'Stop {number}').replace('{number}', String(stop.stop))}</span>
+                                                <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-900">{stop.reason === 'revealed' ? (t('memory_palace.answer_revealed') || 'Answer revealed') : stop.reason === 'retried' ? (t('memory_palace.needed_retry') || 'Needed another try') : (t('memory_palace.not_yet_recalled') || 'Not yet recalled')}</span>
+                                            </div>
+                                            <p className="mt-2 break-words font-bold text-slate-900">{stop.label}</p>
+                                            {stop.mnemonic && <p className="mt-1 break-words text-xs leading-relaxed text-slate-600">{stop.mnemonic}</p>}
+                                        </li>)}
+                                    </ol>
+                                </details>
+                            </section>
+                        );
+                    })()}
                     {/* Next challenge. Walking the route BACKWARDS (or from a random
                         start) is what separates a route anchored to places from a list
                         rehearsed in order — so it is offered as the step after a walk,
                         not as one more button competing at the start. */}
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span className="text-xs font-bold text-emerald-800">{t('memory_palace.order_next') || 'Try it a harder way:'}</span>
+                        <span className="text-xs font-bold text-emerald-800">{t('memory_palace.order_practice') || 'Another way to practice:'}</span>
                         {recall.direction !== 'backward' && (
                             <button
                                 type="button"
@@ -6945,27 +7153,40 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     </div>
                 </div>
             )}
-            {!presenting && recall && (
-                <div className="sr-only" role="status" aria-live="assertive" aria-atomic="true">{recallSaid}</div>
-            )}
-            {!presenting && recall && !finished && current && (
-                current.entry ? (
+
+            {!finished && current && (
+                !current.entry && !_inRecallScope(current.id) ? (
+                    <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950" role="status">
+                        <p>{t('memory_palace.outside_review') || 'This stop is outside your focused review. Its practice record will stay unchanged.'}</p>
+                        <button type="button" onClick={advanceRecall} className="mt-2 min-h-[44px] rounded-xl bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                            {t('memory_palace.return_review') || 'Return to review'}
+                        </button>
+                    </div>
+                ) : current.entry ? (
                     <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600">
                         {t('memory_palace.recall_at_entry') || 'Walk forward (▶ or →) to the first locus to begin recalling.'}
                     </div>
                 ) : (
-                    <div className={`mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-200'}`}>
+                    <div className={`mt-3 rounded-xl px-4 py-3 border transition-colors [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 ${wrongFlash ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-200'}`}>
                         <div className="text-xs font-bold text-amber-800 mb-2">
-                            {(t('memory_palace.locus_of') || 'Locus {idx} of {total}').replace('{idx}', String(current.idx)).replace('{total}', String(current.total))} — {t('memory_palace.recall_q') || 'What belongs at this locus?'}
+                            {(t('memory_palace.review_stop_of') || 'Review stop {idx} of {total}').replace('{idx}', String(recallOrderRef.current.indexOf(current.id) + 1)).replace('{total}', String(recallOrderRef.current.length || current.total))} — {t('memory_palace.recall_q') || 'What belongs at this locus?'}
                         </div>
-                        {recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? (
-                            <div className="text-sm text-amber-900">
-                                {t('memory_palace.recall_answered') || 'Answered — walk on (▶) or pick another frame.'}
+                        {recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked ? (
+                            <div className="space-y-3 text-sm text-amber-950">
+                                <div className="rounded-xl border border-amber-200 bg-white px-3 py-3" role="status">
+                                    <p className="text-[11px] font-extrabold uppercase tracking-wide text-amber-800">{recallResultsRef.current[current.id]?.revealed
+                                        ? (t('memory_palace.answer_revealed') || 'Answer revealed')
+                                        : (t('memory_palace.recall_recorded') || 'Response recorded.')}</p>
+                                    <p className="mt-1 break-words font-bold text-slate-900">{current.label}</p>
+                                    {current.mnemonic && <p className="mt-1 break-words leading-relaxed text-slate-600">{current.mnemonic}</p>}
+                                    {recallResultsRef.current[current.id]?.revealed && <p className="mt-2 text-xs leading-relaxed text-amber-900">{t('memory_palace.reveal_pause') || 'Take a moment to connect this fact with the cue. Continue when you are ready.'}</p>}
+                                </div>
+                                <button type="button" onClick={advanceRecall} className="px-4 py-2 bg-indigo-700 text-white font-bold text-xs hover:bg-indigo-800">{t('memory_palace.next_review_stop') || 'Continue review'}</button>
                             </div>
                         ) : recall.mode === 'self' ? (
                             selfRevealId === current.id ? (
                                 <div className="space-y-2">
-                                    <div className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800" role="status" aria-live="polite">
+                                    <div className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600" tabIndex={-1} data-recall-focus="true" role="status" aria-live="polite">
                                         <span className="font-bold">{current.label}</span>
                                         {current.mnemonic ? <span className="block mt-1 text-xs text-slate-600">💡 {current.mnemonic}</span> : null}
                                     </div>
@@ -7005,14 +7226,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 ))}
                             </div>
                         ) : (
-                            <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (typedAnswer.trim()) submitRecallAnswer(typedAnswer, null); }}>
+                            <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); if (typedAnswer.trim()) submitRecallAnswer(typedAnswer, null); }}>
                                 <input
                                     type="text"
                                     value={typedAnswer}
                                     onChange={(e) => setTypedAnswer(e.target.value)}
                                     placeholder={t('memory_palace.recall_type_placeholder') || 'Type what belongs here…'}
                                     aria-label={t('memory_palace.recall_q') || 'What belongs at this locus?'}
-                                    className="flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 bg-white"
+                                    className="min-w-0 flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 bg-white"
                                 />
                                 <button
                                     type="submit"
@@ -7023,6 +7244,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             </form>
                         )}
+                        <div role="status" aria-live="polite" aria-atomic="true" className="mt-2 text-sm font-semibold text-amber-950">
+                            {recallSaid && !(recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked)
+                                ? (t('memory_palace.answer_wrong') || 'Not quite — try again.') : ''}
+                        </div>
                         {recallHint && (
                             <div className="mt-2 text-sm text-amber-900" role="status" aria-live="polite">
                                 💡 <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {recallHint}
@@ -7038,6 +7263,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         )}
                     </div>
                 )
+            )}
+                </div>
             )}
             <p className={presenting ? 'sr-only' : 'text-xs text-slate-500 italic text-center mt-3'}>
                 {t('memory_palace.caption') || 'Method of loci: a practice strategy with strong evidence for remembering ordered material — the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself.'}

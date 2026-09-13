@@ -2525,41 +2525,46 @@ const createExport = (deps) => {
         const { generatedContent, t, addToast } = liveRef.current;
         if (!generatedContent || generatedContent.type !== 'glossary') return;
         const cleanText = (text) => _escapeExportText(text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '');
-        const cards = generatedContent?.data;
+        const cards = Array.isArray(generatedContent.data) ? generatedContent.data.filter(item => item && item.term) : [];
+        if (!cards.length) { if (addToast) addToast('Add glossary terms before exporting flashcards.', 'info'); return; }
         const isLanguageMode = mode === 'language';
         const cardStyle = `
             .card-container {
+                position: relative;
                 display: flex;
                 border: 2px dashed #cbd5e1;
                 margin-bottom: 20px;
                 page-break-inside: avoid;
-                height: 220px;
+                min-height: 220px;
+                height: auto;
                 background: white;
             }
             .card-side {
-                flex: 1;
+                flex: 1 1 0;
+                min-width: 0;
+                overflow-wrap: anywhere;
                 padding: 20px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 text-align: center;
-                position: relative;
-                overflow: hidden;
+                position: static;
+                overflow: visible;
             }
-            .front { border-right: 2px dashed #cbd5e1; }
+            .front { border-inline-end: 2px dashed #cbd5e1; }
             .cut-guide {
                 position: absolute;
-                top: -10px; left: 50%;
+                top: 4px; left: 50%;
                 transform: translateX(-50%);
-                font-size: 10px; color: #94a3b8;
+                font-size: 10px; color: #475569;
                 background: white; padding: 0 5px;
                 font-weight: bold;
             }
             .lang-label {
                 font-size: 10px;
                 text-transform: uppercase;
-                color: #94a3b8;
+                color: #475569;
                 margin-bottom: 2px;
                 font-weight: bold;
             }
@@ -2625,7 +2630,7 @@ const createExport = (deps) => {
                     frontContent = `
                         <div class="lang-label">${_escapeExportText(t('languages.english'))}</div>
                         <div class="primary-text">${cleanText(item.term)}</div>
-                        <div class="def-text">${cleanText(item.def)}</div>
+                        <div class="def-text">${cleanText(item.def || item.definition)}</div>
                     `;
                     backContent = `
                         <div class="lang-label">${_escapeExportText(lang)}</div>
@@ -2640,7 +2645,7 @@ const createExport = (deps) => {
                         ${transTerm ? `<div class="secondary-text">${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${_escapeExportText(lang)}</div>` : ''}
                     `;
                     backContent = `
-                        <div class="def-text"><strong>${_escapeExportText(t('languages.english'))}:</strong> ${cleanText(item.def)}</div>
+                        <div class="def-text"><strong>${_escapeExportText(t('languages.english'))}:</strong> ${cleanText(item.def || item.definition)}</div>
                         ${transDef ? `<div class="def-trans"><strong>${_escapeExportText(lang)}:</strong> ${cleanText(transDef)}</div>` : ''}
                         ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                         ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); return allRel.length > 0 ? `<div class="etym-related"><strong>${_escapeExportText(t('export.related_words_label') || 'Related words:')}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : ''; })()}` : ''}
@@ -2671,10 +2676,14 @@ const createExport = (deps) => {
                 <title>Flashcards - ${new Date().toLocaleDateString()}</title>
                 <style>
                     body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #1e293b; }
+                    @page { margin: 12mm; }
+                    * { box-sizing: border-box; }
                     @media print {
                         body { padding: 0; margin: 0; max-width: 100%; }
                         .no-print { display: none; }
                         .card-container { break-inside: avoid; }
+                        .card-container, .front { border-color: #777 !important; }
+                        .card-side * { color: #000 !important; }
                     }
                     ${cardStyle}
                 </style>

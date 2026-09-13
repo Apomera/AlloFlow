@@ -1134,12 +1134,12 @@ window.StemLab = window.StemLab || {
           )
         ),
         h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2' },
-            h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': t('stem.multtable.toggle_hidden_mode_h', 'Toggle hidden mode (H)'),
+            h('button', { 'aria-pressed': multTableHidden,
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: t('stem.multtable.toggle_hidden_mode_h_2', 'Toggle hidden mode (H)')
-            }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
+            }, multTableHidden ? t('stem.multtable.table_answers_hidden', 'Table answers hidden') : t('stem.multtable.table_answers_visible', 'Table answers visible')),
             h('div', { className: 'text-xs font-bold text-emerald-700', style: { color: ctx.isContrast ? '#000000' : undefined } }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
             (_mt.streak || 0) >= 2 && h('div', { 
@@ -1155,7 +1155,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: askAI,
               className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border border-purple-600 text-purple-600 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined },
               title: t('stem.multtable.ai_tutor', 'AI Tutor (?)')
-            }, t('stem.multtable.ai', '\uD83E\uDDE0 AI')),
+            }, t('stem.multtable.ai_tutor_button', 'AI Tutor')),
             // Mute toggle (v3)
             h('button', {
               onClick: function() {

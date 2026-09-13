@@ -1585,6 +1585,9 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
           if (run.abortController.signal.aborted || run.workflow.files.length === 1) throw error;
           rows.push({ file, status: 'failed', error: error.message || String(error) });run.progress.failed++;
           rlog('file failed: ' + path.basename(file) + ': ' + (error.message || error));
+        } finally {
+          // Files run sequentially; abandoned asks must never survive into the next file.
+          failPending('File finished');
         }
         run.progress.currentFile = null;run.partialRows = rows;persistAgentRun(run);
       }

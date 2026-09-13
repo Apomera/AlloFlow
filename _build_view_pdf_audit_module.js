@@ -34,6 +34,9 @@ const reviewHelpers = fs.readFileSync(path.join(ROOT, 'remediation_review_helper
 
 const entry = `
 /* global React */
+const _PDF_WORKSPACE_CSS = ${JSON.stringify(fs.readFileSync(path.join(ROOT, 'remediation_workspace.css'), 'utf8'))};
+${fs.readFileSync(path.join(ROOT, 'remediation_workspace_component.jsx'), 'utf8')}
+${fs.readFileSync(path.join(ROOT, 'remediation_batch_workspace.jsx'), 'utf8')}
 ${fs.readFileSync(path.join(ROOT, 'remediation_review_component.jsx'), 'utf8')}
 ${source}
 `;
@@ -88,6 +91,7 @@ var X = _lazyIcon('X');
 ${reviewHelpers}
 ${compiled}
 window.AlloModules = window.AlloModules || {};
+window.AlloModules.PdfWorkspace = { state: _pdfWorkspaceState, jump: _pdfWorkspaceJump, Header: _PdfWorkspaceHeader, Sources: _PdfWorkspaceSources, AfterFix: _PdfWorkspaceAfterFix, BatchStatus: _PdfWorkspaceBatchStatus, batchModel: _pdfWorkspaceBatchModel, acceptRecovery: _pdfWorkspaceAcceptRecovery, batchFindings: _pdfWorkspaceBatchFindings };
 window.AlloModules.PdfPreservationReview = _PdfPreservationReview;
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
 window.AlloModules.PdfAuditVerificationEngineList = (typeof _PdfAuditVerificationEngineList !== 'undefined') ? _PdfAuditVerificationEngineList : null;

@@ -53,8 +53,37 @@ describe('Geometry World place/remove wrappers preserve the full signature', () 
       // ground plus every lesson structure arrive through the same placeBlock, so
       // without the _placingLessonBlocks guard a 25 x 25 floor was 625 student
       // placements: 'Master Builder' unlocked on load.
-      expect(src).toContain("if (!had && engine.blocks[key] && !engine._placingLessonBlocks) {");
-      expect(src).toContain("if (had && !engine.blocks[key]) {");
+      const events = [];
+      const engine = {
+        blocks: {}, logEvent: (type, data) => events.push({type, data}),
+        placeBlock(x, y, z, type, shape, rotation) {
+          const key = [x, y, z].join(',');
+          if (this.blocks[key]) return false;
+          this.blocks[key] = {type, shape, rotation}; return true;
+        },
+        removeBlock(x, y, z, force) {
+          const key = [x, y, z].join(',');
+          if (this.blocks[key]?.protected && !force) return;
+          delete this.blocks[key];
+        },
+      };
+      const start = src.indexOf('        var origPlace = engine.placeBlock;');
+      const end = src.indexOf('        // Export session data as CSV for research', start);
+      expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
+      new Function('engine', src.slice(start, end))(engine);
+      expect(engine.placeBlock(1, 1, 1, 'wood', 'quarter', 3)).toBe(true);
+      expect(engine.placeBlock(1, 1, 1, 'stone', 'cube', 0)).toBe(false);
+      engine._placingLessonBlocks = true; engine.placeBlock(2, 1, 1, 'stone', 'cube', 0);
+      engine._placingLessonBlocks = false; engine._batchSuppressEvents = true;
+      engine.placeBlock(3, 1, 1, 'stone', 'cube', 0); engine._batchSuppressEvents = false;
+      engine.blocks['2,1,1'].protected = true; engine.removeBlock(2, 1, 1);
+      engine.removeBlock(9, 1, 1); engine.removeBlock(1, 1, 1);
+      expect(events).toEqual([
+        {type: 'block_place', data: {x: 1, y: 1, z: 1, type: 'wood', shape: 'quarter', rotation: 3}},
+        {type: 'block_remove', data: {x: 1, y: 1, z: 1}},
+      ]);
+      expect(engine.blocks['2,1,1']).toBeDefined();
+      engine.removeBlock(2, 1, 1, true); expect(events.at(-1).type).toBe('block_remove');
     });
 
     it(`carries rotation through undo and redo — ${p}`, () => {
@@ -193,38 +222,34 @@ function loadValidateLesson() {
 describe('Geometry World lesson block budget', () => {
   const fill = (x1, y1, z1, x2, y2, z2) => ({ type: 'fill', x1, y1, z1, x2, y2, z2, block: 'stone' });
 
-  it('drops a structure that alone exceeds the block limit', () => {
+  it('rejects an oversized authored structure without dropping a referenced teaching target', () => {
     const v = loadValidateLesson();
-    // The coordinate clamps permit x/z in [-4,30] and y in [0,20]: 35*21*35 = 25,725
-    // meshes, 17x MAX_BLOCKS. Building it locked up the tab.
-    const lesson = v.validateLesson({
+    const lesson = {
       title: 'Huge',
       ground: { xMin: -4, xMax: 24, zMin: -4, zMax: 24, y: 0, type: 'grass' },
-      structures: [fill(-4, 0, -4, 30, 20, 30)],
+      structures: [fill(-4, 1, -4, 24, 20, 24)],
       npcs: [{ name: 'A', position: [1, 1, 1], dialogue: 'hi' }],
-    });
-
-    expect(lesson.structures.some((s) => (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1) > v.MAX_BLOCKS)).toBe(false);
-    expect(v.toasts.some((t) => /exceeded the 1500-block limit/.test(t.message))).toBe(true);
+    };
+    expect(() => v.validateLesson(lesson)).toThrow(/limit is 900/);
+    expect(lesson.structures).toHaveLength(1);
+    expect(v.toasts.some((t) => /Dropped/.test(t.message))).toBe(false);
   });
 
-  it('keeps the total under the limit across many structures', () => {
+  it('rejects aggregate authored overflow and keeps ground outside the construction budget', () => {
     const v = loadValidateLesson();
-    // Ten 10x10x10 fills = 10,000 blocks; nothing used to bound the count.
     const many = [];
-    for (let i = 0; i < 10; i += 1) many.push(fill(i, 0, 0, i + 9, 9, 9));
-    const lesson = v.validateLesson({
+    for (let i = 0; i < 10; i += 1) many.push(fill(i, 1, 0, i + 9, 10, 9));
+    const lesson = {
       title: 'Many',
-      ground: { xMin: 0, xMax: 9, zMin: 0, zMax: 9, y: 0, type: 'grass' },
+      ground: { xMin: -48, xMax: 48, zMin: -48, zMax: 48, y: 0, type: 'grass' },
       structures: many,
       npcs: [{ name: 'A', position: [1, 1, 1], dialogue: 'hi' }],
-    });
-
-    const groundCost = 10 * 10;
-    const total = lesson.structures.reduce(
-      (sum, s) => sum + (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1), 0);
-    expect(groundCost + total).toBeLessThanOrEqual(v.MAX_BLOCKS);
-    expect(lesson.structures.length).toBeGreaterThan(0);
+    };
+    expect(() => v.validateLesson(lesson)).toThrow(/limit is 900/);
+    expect(lesson.structures).toHaveLength(10);
+    lesson.structures = [fill(0, 1, 0, 9, 8, 9),
+      { ...fill(-48, 0, -1, 48, 0, 1), measurementLayer: 'ground' }];
+    expect(v.validateLesson(lesson).structures).toHaveLength(2);
   });
 
   it('leaves a normal lesson completely intact', () => {
@@ -248,9 +273,10 @@ describe('Geometry World fillBlocks respects the limit', () => {
       const src = readFileSync(p, 'utf8');
       // MAX_BLOCKS was enforced only on student placement, never on the path lesson
       // loading actually uses.
-      expect(src).toContain('if (count >= MAX_BLOCKS) { engine._fillTruncated = true; return; }');
+      expect(src).toContain('if (count >= limit) { engine._fillTruncated = true; return; }');
       // Counted incrementally — Object.keys() inside the triple loop would be quadratic.
-      expect(src).toContain('var count = Object.keys(engine.blocks).length;');
+      expect(src).toContain('var count = groundFill ? engine.getGroundBlockCount() : engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length;');
+      expect(src).toContain('var limit = groundFill ? engine._groundBlockLimit : MAX_BLOCKS;');
       expect(src).toContain('if (engine._fillTruncated && addToast) {');
     });
   });

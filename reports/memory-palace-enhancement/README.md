@@ -242,3 +242,78 @@ Landmark-mount verification: all 124 logic checks and seven real WebGL scenarios
 - Raised inactive room-sign opacity from 0.62 to 0.78 so neighboring destinations remain easier to read. Symbols share the existing plaque textures and add no scene meshes.
 
 Room-plaque verification: all 124 logic checks and seven real WebGL scenarios passed, covering multilingual/high-contrast captions, stable landmarks, recall concealment, map ceiling restoration, and all three environment lifecycles. All 15 desktop/mobile theme previews and three gateway previews were regenerated. Gateway views for gallery, pasture, and space, the gallery overview, and the mobile space entrance were visually reviewed. Source syntax, desktop mirror equality, and patch whitespace passed.
+
+## Image and sculpture generation reliability review — 2026-09-12
+
+- Bound directed prompt evaluation and generation to the original stop, selected media type, and relief setting. Walking onward no longer redirects an approved prompt to the next stop. Malformed evaluation responses now offer a retry instead of silently approving generation.
+- Added a synchronous shared generation lock across directed, quick-create, batch, and refinement requests. Delayed results are discarded if the document, target fact/mnemonic, or existing art changes; no late persistence occurs after unmount. Incremental saves update the current store immediately to preserve earlier results before a parent rerender.
+- Directed sculpture replacement now updates the live figure through the replacement API. Image replacement clears obsolete depth maps, stamp names, and buried stamp backups; quick-create Undo restores the original backup as well as the visible cue.
+- Provider calls now handle synchronous throws as well as rejected promises. Optional depth failures retain a usable flat image. Batch Stop explicitly finishes the current cue, preserves completed work, and starts no further cue. Batch generation skips art added to a later stop while earlier stops are processing.
+- Image decoding retains the prior frame until success, rejects outdated loads after replacement/clear/teardown, and provides an accessible failure message. Replacing reliefs disposes their old depth textures; stale relief failures cannot overwrite newer artwork. Empty model loads release their claim for retry, and a rejected old model load cannot cancel a replacement model.
+- Renamed the disclosure to Art & customize, added visible per-stop/batch/built-in and Relief guidance, named the original destination in generation status, exposed unavailable image generation, and disabled incompatible generation actions. The main toolbar now wraps on narrow screens. Recall continues to withhold answer labels from the new status strip.
+
+Validation: all 139 logic checks passed, including 15 new behavioral generation cases using deferred/failing providers. Four existing real-WebGL scenarios passed for recall concealment and gallery/pasture/space mobile lifecycle/teardown. Both new rendering regressions passed in the final run, covering image replacement/error/clear ordering, relief texture cleanup, and model replacement/retry. The actual React component was exercised in Chromium at 1280, 390, and 320 pixels (mobile root text enlarged to 20px), confirming destination persistence and no horizontal overflow. Desktop generation feedback and final 320-pixel controls were visually reviewed. Initial visual QA exposed a pre-existing non-wrapping toolbar; the initial rendering test also needed its selector narrowed from the caption sprite to the artwork mesh. Both were corrected and rerun. Renderer compilation, syntax, root/desktop mirror equality, and whitespace checks passed. AI providers were simulated; no paid or live-provider generation request was made.
+
+Artifacts: `generation-review-logic.json`, `generation-review-final-logic.json`, `generation-review/results.json`, and the desktop/mobile screenshots in `generation-review/`. Reproduce the UI check with `node dev-tools/memory_palace_generation_qa.cjs`.
+
+## Saved-cue recovery and practice clarity — 2026-09-12
+
+- Failed quick regenerations now retain the last saved cue, recent versions, and the original Undo snapshot. Undo, saved-version selection, and regeneration validate the preview against current content/art so an old review cannot erase a newer edit; conflicting generators block preview mutations.
+- Cue reviews now say Saved automatically and provide Done, Regenerate, Undo, and View this stop. Saved versions are accessible toggle buttons in a named group. A cue completed after the learner walks away remains available for review and Undo.
+- Fixed automatic nearby-empty-frame hints stealing selection after a guided stop was filled. Guided hints now follow the selected route stop; free exploration keeps proximity-based selection. Automatic hints also preserve an open cue review.
+- Recall eligibility now counts the actual palace route, including student-created stops, and uses the same two-stop minimum as the recall handler. Recall entry is blocked while art generation is active.
+- Clarified that artwork is optional, separated visual-cue progress from practice, and added an explicit prompt to explain the cue-to-fact connection. The own-image editor now explains that it changes the written memory hint rather than the artwork.
+- Mobile cue reviews give the message full width, shorten repeated help during errors, and place primary recovery controls before secondary versions. The final enlarged-text 320-pixel capture visibly contains the failure message and Done/Regenerate/Undo; additional versions remain scrollable.
+
+Validation: all 147 logic checks passed, including eight new saved-preview/practice cases. Five real-WebGL scenarios passed: selected-stop proximity, recall concealment, and gallery/pasture/space mobile lifecycle/teardown. The actual React browser flow passed creation, a second version, failed regeneration, accessible version selection, Undo, and two-stop guided self-check at 1280/390/320 pixels, with 20-pixel mobile root text and no horizontal overflow. Final desktop and 320-pixel recovery cards were visually reviewed. An existing source assertion was updated for the new selected-stop filter. A browser assertion was corrected to use the self-check button's accessible name, including its icon. Final compilation and desktop synchronization passed using atomic output replacement after a transient workspace file-lock error. AI responses were simulated; no paid generation requests were made.
+
+Artifacts: `preview-practice-verified-logic.json`, `preview-practice-browser/`, and screenshots/results in `preview-practice-review/`. Reproduce the React flow with `node dev-tools/memory_palace_generation_qa.cjs --previews`.
+
+## Grouped control panel and visual hierarchy refinement
+
+- Replaced the single crowded toolbar with labeled Explore and Practice cards inside a softly framed study panel. Added a compact Explore, picture, remember heading; active recall uses Recall practice.
+- Creative controls now sit together in a distinct Create & personalize disclosure. Stop remains visible while batch generation runs; Clear generated art stays with the creative actions. Direct the AI now exposes its pressed state.
+- Unified toolbar button shape, keyboard focus treatment, and 44-pixel minimum height. Removed the repeating pulse/scale treatment from Recall walk and used a consistent indigo action color.
+- Gave palace settings a separate row with a raised selected surface. On phones, Gallery, Pasture, and Space use three equal columns with icons above labels; desktop keeps the compact horizontal layout.
+- Empty/fallback states show only available groups, and a short route explains the practice requirement. Softened the separate art guidance card so it supports the controls without competing visually.
+
+Verification: all 147 logic checks passed. The actual React/WebGL control panel passed open/close disclosure, 44-pixel target measurements, horizontal containment, and all three setting selectors at 1280/390/320 pixels (20-pixel mobile root text). The saved-preview browser flow also passed creation, failed regeneration recovery, version selection, Undo, and two-stop guided self-check on desktop/mobile. Final desktop and enlarged-text 320-pixel control captures were visually reviewed, including the revised equal-width setting selector. Compilation, desktop mirror equality, syntax, and whitespace passed. No live or paid AI generation was used.
+
+Artifacts: `controls-review-logic.json` and the six collapsed/expanded captures plus `results.json` in `controls-review/`. Reproduce with `node dev-tools/memory_palace_generation_qa.cjs --controls`.
+
+
+## Recall completion, focused scope, and practice clarity — 2026-09-12
+
+- Fixed guided self-check getting stuck after I missed it: self-checked results now count as completed stops for progression and the answered UI. Duplicate ratings remain ignored, and an all-missed walk completes and schedules each reviewed stop once.
+- Restricted answer submission, reveal, and self-rating to the selected review stops. Finishing builds a scoped result set so unrelated records cannot affect scores or reschedule unselected stops. Leaving a focused review's route shows an explicit Return to review action.
+- Progress now says reviewed, including missed/revealed responses, and uses the selected review's total. Question numbering follows the review order. Guided self-check has instructions matching its reveal-and-rate workflow.
+- Incorrect-answer feedback now uses session-owned timers, cleared on recall exit. Recorded responses include Continue review, which also works when revisiting a completed stop.
+- Added 44-pixel answer/completion targets and visible keyboard focus. Typed-answer controls and the due-review banner wrap on narrow screens. Completion offers Another way to practice rather than pushing a harder route after misses.
+
+Verification: 154 logic checks passed, including seven new behavioral recall cases for missed self-check completion, duplicate ratings, each out-of-scope interaction, focused scoring/mastery isolation, and tracked feedback. The actual React/WebGL Chromium flow passed saved-cue recovery at 1280/390/320 pixels, an all-missed two-stop self-check, and a one-stop focused review with an out-of-scope detour and unchanged unselected mastery. Mobile used 20-pixel root text; completion target heights and overflow were checked. Mobile completion and focused-return screenshots were visually reviewed. The final renderer compiled, its desktop mirror matched, and whitespace checks passed. AI responses were simulated; no paid generation was used.
+
+Artifacts: recall-review-logic.json and preview-practice-review/results.json, with missed-self-check-completion-mobile.png and focused-review-return-mobile.png in that directory. Reproduce the browser flow with node dev-tools/memory_palace_generation_qa.cjs --previews.
+
+
+## Readable recall feedback and keyboard continuity — 2026-09-12
+
+- Wrong answers now show persistent visible text in a polite live region, alongside earned mnemonic hints. Feedback no longer depends on a brief color flash or sound. Earlier attempt timers cannot clear newer feedback, and navigation clears the previous stop's flash.
+- Revealing a quiz answer no longer advances after 700 milliseconds. A distinct answer card shows the fact, its mnemonic, a short cue-to-fact reflection prompt, and a learner-controlled Continue review action. Reveals remain recorded without recall points and duplicate reveals do not increment progress.
+- Keyboard activation inside practice preserves focus across removed/replaced controls: revealed answers, continuation, the next question, self-check ratings, and completion. Pointer interactions do not trigger this restoration, and focus deliberately moved to an external control remains there.
+- Reviewed desktop and 320-pixel enlarged-text answer cards: clear answer/cue hierarchy, wrapping text, visible focus, and a prominent continuation action.
+
+Verification: all 157 targeted logic checks passed, including three new behavioral reveal/timer cases. The real React/WebGL feedback flow passed persistent wrong-answer text, answer concealment before reveal, no timed advance after reveal, keyboard continuation, keyboard self-check ratings, completion focus, and respect for focus moved elsewhere. Layout/overflow checks passed at 1280, 390, and 320 pixels (20-pixel mobile root text). The existing browser flow also passed saved-cue recovery, variants, Undo, all-missed self-check completion, and focused-review isolation. JSX compilation, desktop mirror equality, and whitespace passed. Updated two source-contract tests for the shared panel and the renamed completion guidance; corrected the browser leak assertion to exclude the quiz's answer choices. AI providers were simulated; no paid generation requests were made.
+
+Artifacts: recall-feedback-logic.json and recall-feedback-review/results.json, with revealed-answer-1280.png, revealed-answer-390.png, and revealed-answer-320.png. Reproduce with node dev-tools/memory_palace_generation_qa.cjs --feedback; compatibility flow uses --previews.
+
+
+## Completion review and targeted follow-up — 2026-09-12
+
+- Added a Stops to strengthen completion section for missed, revealed, or retried facts. First-try correct answers and remembered self-ratings are excluded. Expandable cards show each physical stop number, the reason to revisit it, the fact, and its memory cue.
+- Practice these stops starts a fresh covered review of only that set, preserving the current answer mode. Subsequent backwards/shuffled retries keep the subset, and unrelated stops retain their practice records.
+- Retry validates and captures the requested scope before clearing results. Empty, deleted, duplicate, or out-of-scope selections cannot unexpectedly broaden practice to the full palace.
+- The review section disappears during active practice and after a successful follow-up. Focused completion text now describes selected stops rather than assuming every focused review came from the due schedule.
+
+Verification: all 164 targeted logic checks passed, including seven new cases covering difficult-stop selection, first-try/self-rating exclusions, answer concealment during practice, safe retry reset, invalid selection handling, and preserved retry scope. The real React/WebGL browser flow passed expansion, correct selection, keyboard follow-up, fresh answer concealment, successful completion, and unchanged unselected mastery. It also reran readable feedback, manual reveals, self-check keyboard progression, and focus preservation. Completion cards passed overflow checks at 1280/390/320 pixels with enlarged mobile text; the expanded 320-pixel card was visually reviewed. Compilation, desktop mirror equality, and whitespace checks passed. Corrected the parameterized test argument nesting after the initial test run; application behavior passed the browser flow. No live or paid AI generation was used.
+
+Artifacts: follow-up-practice-logic.json; recall-feedback-review/results.json and follow-up-practice-1280.png, follow-up-practice-390.png, follow-up-practice-320.png. Reproduce the browser flow with node dev-tools/memory_palace_generation_qa.cjs --feedback.

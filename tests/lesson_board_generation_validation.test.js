@@ -1,0 +1,11 @@
+import * as engine from '../lesson_board_engine.js';
+import {describe,it,expect,vi} from 'vitest';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),{CASES,loadEngine,solve,runValidation}=require('../dev-tools/validate_lesson_board_generation.cjs'),{makeBoard,source}=require('../dev-tools/fixtures/lesson_board.cjs');
+describe('Prepared AI board validation runner',()=>{
+ it('loads the standalone validator engine',()=>{const output=require('node:child_process').execFileSync(process.execPath,['-e',"const runner=require('./dev-tools/validate_lesson_board_generation.cjs');console.log(typeof runner.loadEngine().generateBoard)"],{encoding:'utf8'});expect(output.trim()).toBe('function');});
+ it.each(['core','expedition','architect'])('plays a complete %s fixture and checks a wrong-answer retry',goal=>{const board=engine.prepareBoard({...makeBoard(),goal},source),result=solve(engine,board);expect(result.retryChecked).toBe(true);expect(result.moves).toBeLessThanOrEqual(48);});
+ it('runs the three subject/age cases against the production validator',async()=>{let index=0;const result=await runValidation({engine,generate:async()=>{const scenario=CASES[index++],board=makeBoard();board.locations.forEach(node=>node.sourceQuote=scenario.source.split('. ')[0]+'.');return JSON.stringify(board);}});expect(result.status).toBe('generated-and-playable');expect(result.calls).toBe(3);expect(result.results.every(item=>item.educatorReview==='pending')).toBe(true);});
+ it('caps calls at six and keeps generation failures visible',async()=>{const generate=vi.fn(async()=>'{}'),result=await runValidation({engine,generate,cases:[...CASES,...CASES]});expect(generate).toHaveBeenCalledTimes(6);expect(result.calls).toBe(6);expect(result.status).toBe('needs-review');expect(result.results.every(item=>item.status==='failed')).toBe(true);});
+ it('does not invent a result when a provider is unavailable',async()=>{const result=await runValidation({engine,generate:async()=>{throw Error('provider unavailable');},cases:[CASES[0]]});expect(result.status).toBe('needs-review');expect(result.calls).toBe(1);expect(result.results[0].reason).toContain('provider unavailable');});
+});

@@ -9,16 +9,13 @@ const viewSource = readFileSync('view_adventure_source.jsx', 'utf8');
 const viewModule = readFileSync('view_adventure_module.js', 'utf8');
 const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
 
-describe('Adventure cast-review establishing shot', () => {
-  it('generates a characterless setting image while cast review is open', () => {
-    expect(handlersSource).toContain('callGemini, callGeminiVision, callImagen, addToast');
-    expect(handlersSource).toContain('Wide establishing shot introducing this setting:');
-    expect(handlersSource).toContain('absolutely no people, no characters, no text');
-    expect(handlersSource).toContain('scheduleAdventureEstablishingShot({');
-    expect(handlersSource).toContain('cancelAdventureEstablishingShot');
-    expect(handlersSource).toContain('prev.isReviewingCharacters');
-    expect(handlersSource).toContain('? { ...prev, sceneImage: url, isImageLoading: false }');
-    expect(anti).toMatch(/const _alloAdventureHandlersDeps[\s\S]*callGemini,[\s\S]*callImagen,/);
+describe('Adventure cast-review image ownership', () => {
+  it('leaves the opening image to cast confirmation instead of generating a temporary setting', () => {
+    const opening = handlersSource.slice(handlersSource.indexOf('const executeStartAdventure'), handlersSource.indexOf('let adventureRestartPromptPending'));
+    expect(opening).not.toContain('scheduleAdventureEstablishingShot({');
+    expect(opening).toContain('Cast confirmation owns the opening illustration');
+    expect(opening).toContain('isImageLoading: sceneCharacters.length === 0');
+    expect(opening).toContain('if (!adventureConsistentCharacters || sceneCharacters.length === 0)');
   });
 
   it('keeps the generated handler module and deployed copy synchronized', () => {
@@ -81,11 +78,12 @@ describe('Adventure perceived-latency polish', () => {
     expect(previewIndex).toBeLessThan(cleanupIndex);
     expect(finalIndex).toBeGreaterThan(cleanupIndex);
     expect(sessionSource).toContain("imagePolishStage: 'matching'");
-    expect(sessionSource).toContain("loadingStage: 'Polishing scene details…'");
+    expect(sessionSource).toContain("'Polishing scene details…'");
   });
 
   it('shows real stages and reserves the final scene height in both views', () => {
-    expect(viewSource).toContain("adventureState.loadingStage || t('adventure.status.loading_story')");
+    expect(viewSource).toContain("const stage = typeof state.loadingStage === 'string' ? state.loadingStage.trim() : '';");
+    expect(viewSource).toContain("{stage || adventureSettingsText(t, 'turn_waiting'");
     expect(viewSource).toContain("style={{ minHeight: adventureImageSize + 'px' }}");
     expect(viewSource).toContain('adventureState.sceneImage || adventureState.sceneImagePreview');
     expect(viewSource).toContain("adventureState.imagePolishStage === 'matching' ? 'Matching your cast…' : 'Polishing scene details…'");

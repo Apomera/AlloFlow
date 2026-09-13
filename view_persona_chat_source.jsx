@@ -119,6 +119,71 @@ function PersonaChatView(props) {
   var personaReflectionText = typeof personaReflectionInput === 'string' ? personaReflectionInput : '';
   var reflectionBusy = Boolean(isGradingReflection || reflectionSubmitPending);
   var summaryBusy = Boolean(personaState.isGeneratingSummary || summaryRequestPending);
+  var composerLabel = function (key, fallback, params) {
+    var value = t('persona.composer.' + key, params || {});
+    return value && value !== 'persona.composer.' + key ? value : fallback;
+  };
+  var recoveryLabel = function (key, fallback) {
+    var value = t('persona.recovery.' + key);
+    return value && value !== 'persona.recovery.' + key ? value : fallback;
+  };
+  var renderPersonaTurnError = function () {
+    if (!personaState.turnError || personaState.isLoading) return null;
+    return <div data-persona-turn-error id="persona-turn-error" role="alert" className="m-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs leading-relaxed text-red-900">
+      <p className="font-bold">{recoveryLabel('reply_failed', 'The reply could not be completed.')}</p>
+      <p className="mt-1">{isPersonaFreeResponse
+        ? recoveryLabel('draft_kept', 'Your question is still in the box. Select Send question when you are ready to try again.')
+        : recoveryLabel('choice_kept', 'Your choices are still available. Choose a response to try again.')}</p>
+      {isPersonaFreeResponse && personaAutoSend && <p className="mt-1">{recoveryLabel('auto_send_paused', 'Auto-Send is paused until you send a question.')}</p>}
+    </div>;
+  };
+  var renderPersonaHintRecovery = function (panel) {
+    if (!isPersonaFreeResponse || !showPersonaHints || personaState.isLoading) return null;
+    var suggestions = panel ? personaState.panelSuggestions : personaState.suggestions;
+    var error = panel ? personaState.panelSuggestionsError : personaState.suggestionsError;
+    var busy = suggestionsRetryPending || (panel ? personaState.isGeneratingPanelSuggestions : personaState.isGeneratingSuggestions);
+    if (Array.isArray(suggestions) && suggestions.length > 0 && !error) return null;
+    return <div data-persona-hint-recovery role="status" aria-live="polite" className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-900">
+      <span>{busy ? recoveryLabel('hints_loading', 'Preparing question ideas…') : error ? recoveryLabel('hints_failed', 'Some question ideas could not load. You can still write your own question.') : recoveryLabel('hints_empty', 'Need a starting point? Generate a few question ideas, or write your own.')}</span>
+      {!busy && <button type="button" onClick={() => _retryPersonaChoices(panel ? 'panel' : 'single')}
+        className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+        {recoveryLabel('hints_retry', 'Get question ideas')}
+      </button>}
+    </div>;
+  };
+  var renderPersonaComposer = function (panel) {
+    var id = 'persona-question-' + (panel ? 'panel' : 'single');
+    var value = typeof personaInput === 'string' ? personaInput : '';
+    var busy = personaState.isLoading || panelChoicePending;
+    var send = function () {
+      if (busy || !value.trim()) return;
+      if (panel) handlePanelChatSubmit(value); else handlePersonaChatSubmit();
+    };
+    return <section data-persona-composer className="min-w-0 p-3 sm:p-4 bg-white text-slate-800">
+      {renderPersonaTurnError()}
+      {renderPersonaHintRecovery(panel)}
+      <label htmlFor={id} className="block text-sm font-bold mb-1">{composerLabel(panel ? 'panel_label' : 'single_label', panel ? 'Your question for the panel' : 'Your question')}</label>
+      <p id={id + '-guide'} className="text-xs leading-relaxed text-slate-600 mb-2">{composerLabel(panel ? 'panel_guide' : 'single_guide', panel ? 'Ask both figures to compare their ideas, explain a difference, or support a claim with evidence.' : 'Ask about an idea, request an example, or follow up with evidence from the lesson.')}</p>
+      <textarea id={id} rows={2} maxLength={2000} value={value} onChange={(e) => setPersonaInput(e.target.value)}
+        aria-describedby={id + '-guide ' + id + '-keys' + (personaState.turnError ? ' persona-turn-error' : '')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+            e.preventDefault(); send();
+          }
+        }}
+        placeholder={panel ? t('persona.panel_question_placeholder') : t('persona.character_question_placeholder', { name: personaState.selectedCharacter?.name })}
+        disabled={busy}
+        className="block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed" />
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <p id={id + '-keys'} className="text-[11px] leading-relaxed text-slate-600">{composerLabel('keyboard', 'Enter to send · Shift + Enter for a new line.')}</p>
+        <button type="button" onClick={send} disabled={busy || !value.trim()} aria-busy={busy}
+          className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          {busy ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <Send size={16} aria-hidden="true" />}
+          {composerLabel('send', 'Send question')}
+        </button>
+      </div>
+    </section>;
+  };
   var _handlePanelChoice = function (option) {
     if (panelChoicePendingRef.current || panelChoicePending || personaState.isLoading || !option || typeof option.text !== 'string' || !option.text.trim()) return;
     panelChoicePendingRef.current = true;
@@ -727,6 +792,7 @@ function PersonaChatView(props) {
         ...prev,
         ...snap.state,
         isLoading: false,
+        turnError: null,
         isImageLoading: false,
         avatarGenerationFailed: false,
         isGeneratingSuggestions: false,
@@ -948,7 +1014,7 @@ function PersonaChatView(props) {
                                 aria-pressed={personaAutoRead}
                             >
                                 {personaAutoRead ? <Volume2 size={16} className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16}/>}
-                                <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_read_label')}</span>
+                                <span className="text-xs font-bold">{t('persona.auto_read_label')}</span>
                             </button>
                             <button type="button"
                                 data-help-key="persona_auto_send"
@@ -974,13 +1040,13 @@ function PersonaChatView(props) {
                                     onClick={handleToggleShowPersonaHints}
                                     className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                         !showPersonaHints
-                                        ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
+                                        ? 'bg-red-50 text-red-700 border-red-200 shadow-inner'
                                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                     }`}
                                     title={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
                                 >
                                     {showPersonaHints ? <Eye size={16} /> : <EyeOff size={16} />}
-                                    <span className="text-xs font-bold hidden sm:inline">
+                                    <span className="text-xs font-bold">
                                         {showPersonaHints ? t('persona.hints_on') : t('persona.hints_off')}
                                     </span>
                                 </button>
@@ -989,8 +1055,10 @@ function PersonaChatView(props) {
                             <button type="button"
                                 aria-label={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
                                 data-help-key="persona_response_mode"
+                                disabled={personaState.isLoading || panelChoicePending}
                                 aria-pressed={isPersonaFreeResponse}
                                 onClick={() => {
+                                    if (personaState.isLoading || panelChoicePending) return;
                                     const newMode = !isPersonaFreeResponse;
                                     setIsPersonaFreeResponse(newMode);
                                     if (!newMode) setShowPersonaHints(true);
@@ -1003,7 +1071,7 @@ function PersonaChatView(props) {
                                 title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
                             >
                                 {isPersonaFreeResponse ? <MessageSquare size={16} /> : <ListChecks size={16} />}
-                                <span className="text-xs font-bold hidden sm:inline">
+                                <span className="text-xs font-bold">
                                     {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
                                 </span>
                             </button>
@@ -1342,8 +1410,9 @@ function PersonaChatView(props) {
                                         </div>
                                     )}
                                 </div>
-                                {(personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? (
-                                    <div className="p-4 bg-white border-t border-slate-200">
+                                {!isPersonaFreeResponse && renderPersonaTurnError()}
+                                {(showPersonaHints || !isPersonaFreeResponse) && (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? (
+                                    <div className="p-3 sm:p-4 bg-white border-t border-slate-200 max-h-[45vh] overflow-y-auto overscroll-contain">
                                         <p className="text-xs text-slate-600 text-center mb-3 font-medium">{t('persona.panel_choose_response')}</p>
                                         <div className="flex justify-center mb-2">
                                             <button type="button"
@@ -1375,7 +1444,8 @@ function PersonaChatView(props) {
                                                 </button>
                                             ))}
                                         </div>
-                                        {(personaState.panelSuggestions || []).length < 6 && (
+                                        {isPersonaFreeResponse && renderPersonaComposer(true)}
+                                        {!isPersonaFreeResponse && (personaState.panelSuggestions || []).length < 6 && (
                                             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600" role="status" aria-live="polite">
                                                 {personaState.isGeneratingPanelSuggestions ? (
                                                     <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none text-indigo-600" /> {t('persona.choices_partial')}</>
@@ -1405,33 +1475,7 @@ function PersonaChatView(props) {
                                         </div>
                                     </div>
                                 ) : isPersonaFreeResponse ? (
-                                    <div className="p-4 bg-white border-t border-slate-200">
-                                        <div className="flex gap-2">
-                                            <input aria-label={t('common.enter_persona_input')}
-                                                maxLength={2000}
-                                                value={personaInput}
-                                                onChange={(e) => setPersonaInput(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
-                                                        e.preventDefault();
-                                                        if (!personaState.isLoading && typeof personaInput === 'string' && personaInput.trim()) handlePanelChatSubmit(personaInput);
-                                                    }
-                                                }}
-                                                className="flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all motion-reduce:transition-none placeholder:text-slate-600"
-                                                placeholder={t('persona.panel_question_placeholder')}
-                                                disabled={personaState.isLoading}
-                                            />
-                                            <button type="button"
-                                                aria-label={personaState.isLoading ? t('persona.waiting_for_response') : t('persona.send_panel_message')}
-                                                aria-busy={personaState.isLoading ? 'true' : 'false'}
-                                                onClick={() => handlePanelChatSubmit(personaInput)}
-                                                disabled={!personaInput.trim() || personaState.isLoading}
-                                                className="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {personaState.isLoading ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none"/> : <Send size={20} />}
-                                            </button>
-                                        </div>
-                                    </div>
+                                    renderPersonaComposer(true)
                                 ) : (
                                     <div className="p-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-center gap-3" role="status" aria-live="polite">
                                         <RefreshCw size={18} className={(personaState.isLoading || personaState.isGeneratingPanelSuggestions) ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'} />
@@ -1649,7 +1693,7 @@ function PersonaChatView(props) {
                     >
                         <X size={24} />
                     </button>
-                    <div className="bg-white border-b border-slate-100 p-3 pr-14 flex items-center justify-between gap-2 shrink-0 z-20 shadow-sm">
+                    <div data-persona-chat-header className="bg-white border-b border-slate-100 p-3 xl:pr-14 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20 shadow-sm">
                         <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
                             <Star size={16} className="text-yellow-500" />
                             <div className="flex flex-col">
@@ -1668,7 +1712,7 @@ function PersonaChatView(props) {
                                 ></div>
                             </div>
                         </div>
-                        <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
+                        <div className="w-full xl:w-auto xl:flex-1 flex flex-wrap items-center justify-start xl:justify-end gap-2 min-w-0">
                         <button type="button"
                             aria-label={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
                             data-help-key="persona_auto_read"
@@ -1686,7 +1730,7 @@ function PersonaChatView(props) {
                             title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
                         >
                             {personaAutoRead ? <Volume2 size={16} className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16}/>}
-                            <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_read_label')}</span>
+                            <span className="text-xs font-bold">{t('persona.auto_read_label')}</span>
                         </button>
                         <button type="button"
                             data-help-key="persona_auto_send"
@@ -1711,13 +1755,13 @@ function PersonaChatView(props) {
                             onClick={handleToggleShowPersonaHints}
                                 className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     !showPersonaHints
-                                    ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
+                                    ? 'bg-red-50 text-red-700 border-red-200 shadow-inner'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
                                 title={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
                             >
                                 {showPersonaHints ? <Eye size={16} /> : <EyeOff size={16} />}
-                                <span className="text-xs font-bold hidden sm:inline">
+                                <span className="text-xs font-bold">
                                     {showPersonaHints ? t('persona.hints_on') : t('persona.hints_off')}
                                 </span>
                             </button>
@@ -1725,9 +1769,11 @@ function PersonaChatView(props) {
                         <button type="button"
                             aria-label={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
                             data-help-key="persona_response_mode"
+                                disabled={personaState.isLoading || panelChoicePending}
                                 aria-pressed={isPersonaFreeResponse}
                             onClick={() => {
-                                const newMode = !isPersonaFreeResponse;
+                                if (personaState.isLoading || panelChoicePending) return;
+                                    const newMode = !isPersonaFreeResponse;
                                 setIsPersonaFreeResponse(newMode);
                                 if (!newMode) setShowPersonaHints(true);
                             }}
@@ -1739,7 +1785,7 @@ function PersonaChatView(props) {
                             title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
                         >
                             {isPersonaFreeResponse ? <MessageSquare size={16} /> : <ListChecks size={16} />}
-                            <span className="text-xs font-bold hidden sm:inline">
+                            <span className="text-xs font-bold">
                                 {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
                             </span>
                         </button>
@@ -1989,7 +2035,8 @@ function PersonaChatView(props) {
                             </div>
                         )}
                     </div>
-                    <div className="bg-white border-t border-slate-100 flex flex-col shrink-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                    <div className="bg-white border-t border-slate-100 flex flex-col shrink-0 max-h-[45vh] overflow-y-auto overscroll-contain z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                        {!isPersonaFreeResponse && renderPersonaTurnError()}
                         {isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && (
                             <div className="px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in">
                                 <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
@@ -2024,7 +2071,7 @@ function PersonaChatView(props) {
                                         onClick={() => handlePersonaChatSubmit(typeof q === 'string' ? q : q.text, true)}
                                         className={`whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors motion-reduce:transition-none shadow-sm ${
                                             isPersonaFreeResponse
-                                            ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0'
+                                            ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0 max-w-[75vw] sm:max-w-sm [overflow-wrap:anywhere]'
                                             : 'bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 w-full sm:w-[48%] py-3 text-sm'
                                         }`}
                                     >
@@ -2055,35 +2102,7 @@ function PersonaChatView(props) {
                                 )}
                             </div>
                         )}
-                        {isPersonaFreeResponse && (
-                            <div className="p-4 flex gap-2">
-                                <input aria-label={t('common.enter_persona_input')}
-                                    type="text"
-                                    maxLength={2000}
-                                    value={personaInput}
-                                    onChange={(e) => setPersonaInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
-                                            e.preventDefault();
-                                            if (!personaState.isLoading && typeof personaInput === 'string' && personaInput.trim()) handlePersonaChatSubmit();
-                                        }
-                                    }}
-                                    placeholder={t('persona.character_question_placeholder', {name: personaState.selectedCharacter?.name})}
-                                    className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all motion-reduce:transition-none placeholder:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
-                                    autoFocus
-                                    disabled={personaState.isLoading}
-                                />
-                                <button type="button"
-                                    aria-label={personaState.isLoading ? t('persona.waiting_for_response') : t('persona.send_character_question', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') })}
-                                    aria-busy={personaState.isLoading ? 'true' : 'false'}
-                                    onClick={() => handlePersonaChatSubmit()}
-                                    disabled={!personaInput.trim() || personaState.isLoading}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold p-3 rounded-xl transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
-                                >
-                                    {personaState.isLoading ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none"/> : <Send size={20}/>}
-                                </button>
-                            </div>
-                        )}
+                        {isPersonaFreeResponse && renderPersonaComposer(false)}
                         {!isPersonaFreeResponse && (personaState.suggestions || []).length === 0 && (
                             <div role="status" aria-live="polite" className="p-5 text-center text-slate-600 text-xs flex flex-wrap items-center justify-center gap-2">
                                 <RefreshCw size={14} className={(personaState.isLoading || personaState.isGeneratingSuggestions) ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'}/>

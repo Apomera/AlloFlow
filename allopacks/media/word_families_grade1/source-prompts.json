@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "word_families_grade1",
+    "key": "cat",
+    "prompt": "Square text-free educational illustration in tactile felt applique and stitched fabric style. A friendly orange cat sits on a teal woven mat beside a separate broad-brimmed purple hat. All three objects clear and fully visible, ivory background. No people, no letters, no numbers. Teach cat, hat, mat through recognizable objects. Simple fabric shapes, not photorealistic.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-8c0f0ebe-84aa-4ab2-bdca-3816f2cff627.png",
+    "alt": "An orange felt cat sits on a teal mat beside a separate purple hat.",
+    "caption": "Cat, hat and mat share the written ending at and rhyme in the pronunciation used here. Read the words in the app and blend their sounds; do not guess a word from the picture alone.",
+    "file": "source-cat.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "word_families_grade1",
+    "key": "pig",
+    "prompt": "Square text-free educational illustration in tactile felt applique and stitched fabric style. A pink pig uses its snout to dig a small patch of loose brown soil. A distinct forked twig rests beside the hole. Large simple clear objects on ivory backdrop. No people, lettering, numbers or watermark. Show pig, dig, twig without labels; no tools held by pig.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-299e6344-dab3-4f3d-ba72-19523c524c0c.png",
+    "alt": "A pink felt pig pushes its snout into loose soil beside a forked twig.",
+    "caption": "Pig, dig and twig share the ending ig. The scene cues meanings; decoding the written words supplies their sounds.",
+    "file": "source-pig.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

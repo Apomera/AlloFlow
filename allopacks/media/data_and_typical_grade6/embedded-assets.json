@@ -1,0 +1,299 @@
+[
+  {
+    "id": "dgx-term-1",
+    "kind": "term",
+    "file": "dgx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five dots on an evenly spaced number line lie at two, three, three, four and eight.",
+    "altHash": "img-76n-828ea5ed"
+  },
+  {
+    "id": "dgx-term-2",
+    "kind": "term",
+    "file": "dgx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four bars share a baseline but have different heights.",
+    "altHash": "img-4gn-950f3ef9"
+  },
+  {
+    "id": "dgx-term-3",
+    "kind": "term",
+    "file": "dgx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five stacks of two, three, three, four and eight squares become five equal stacks of four squares below.",
+    "altHash": "img-883-2c6f1907"
+  },
+  {
+    "id": "dgx-term-4",
+    "kind": "term",
+    "file": "dgx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Dots at two, three, three, four and eight have the upper repeated three circled in gold.",
+    "altHash": "img-8gz-51386e66"
+  },
+  {
+    "id": "dgx-term-5",
+    "kind": "term",
+    "file": "dgx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold ring surrounds the two dots stacked at three on a number line.",
+    "altHash": "img-9of-0476312a"
+  },
+  {
+    "id": "dgx-term-6",
+    "kind": "term",
+    "file": "dgx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold segment spans the smallest and largest positions above five data dots.",
+    "altHash": "img-7cv-e3f283e0"
+  },
+  {
+    "id": "dgx-term-7",
+    "kind": "term",
+    "file": "dgx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four dots cluster near the left end of a number line and one dot is far to the right.",
+    "altHash": "img-7nr-12fdc252"
+  },
+  {
+    "id": "dgx-term-8",
+    "kind": "term",
+    "file": "dgx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An upper number line has tightly clustered dots near its middle; a lower line has four widely separated dots.",
+    "altHash": "img-apv-a14a7a5a"
+  },
+  {
+    "id": "dgx-term-9",
+    "kind": "term",
+    "file": "dgx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Dots at two, three, three, four and eight have the upper repeated three circled in gold.",
+    "altHash": "img-8gz-51386e66"
+  },
+  {
+    "id": "dgx-term-10",
+    "kind": "term",
+    "file": "dgx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twenty dots form four rows of five; the five dots in the top row are enclosed by a gold outline.",
+    "altHash": "img-g9j-b372a6d9"
+  },
+  {
+    "id": "dgx-term-11",
+    "kind": "term",
+    "file": "dgx-term-11.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Five upright books with plain colored covers differ in height and thickness.",
+    "altHash": "img-4pv-188860f5"
+  },
+  {
+    "id": "dgx-anchor-1",
+    "kind": "anchor",
+    "file": "dgx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five stacks of two, three, three, four and eight squares become five equal stacks of four squares below.",
+    "altHash": "img-883-2c6f1907"
+  },
+  {
+    "id": "dgx-anchor-2",
+    "kind": "anchor",
+    "file": "dgx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Dots at two, three, three, four and eight have the upper repeated three circled in gold.",
+    "altHash": "img-8gz-51386e66"
+  },
+  {
+    "id": "dgx-anchor-3",
+    "kind": "anchor",
+    "file": "dgx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An upper number line has tightly clustered dots near its middle; a lower line has four widely separated dots.",
+    "altHash": "img-apv-a14a7a5a"
+  },
+  {
+    "id": "dgx-anchor-4",
+    "kind": "anchor",
+    "file": "dgx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twenty dots form four rows of five; the five dots in the top row are enclosed by a gold outline.",
+    "altHash": "img-g9j-b372a6d9"
+  },
+  {
+    "id": "dgx-sort-1",
+    "kind": "sort",
+    "file": "dgx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four bars share a baseline but have different heights.",
+    "altHash": "img-4gn-950f3ef9"
+  },
+  {
+    "id": "dgx-sort-2",
+    "kind": "sort",
+    "file": "dgx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two clock faces show different hand positions.",
+    "altHash": "img-b5f-37f2ac15"
+  },
+  {
+    "id": "dgx-sort-3",
+    "kind": "sort",
+    "file": "dgx-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A blue bus stands beside a shelter, bench and blank round bus-stop sign.",
+    "altHash": "img-5sn-9ad99ae8"
+  },
+  {
+    "id": "dgx-sort-4",
+    "kind": "sort",
+    "file": "dgx-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Five upright books with plain colored covers differ in height and thickness.",
+    "altHash": "img-3pz-a2da2418"
+  },
+  {
+    "id": "dgx-sort-5",
+    "kind": "sort",
+    "file": "dgx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twelve equal dots form three rows of four.",
+    "altHash": "img-c8b-d3ef0deb"
+  },
+  {
+    "id": "dgx-sort-6",
+    "kind": "sort",
+    "file": "dgx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One tall bar stands beside an unnumbered ruler.",
+    "altHash": "img-4lr-034330d9"
+  },
+  {
+    "id": "dgx-sort-7",
+    "kind": "sort",
+    "file": "dgx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Twelve equal dots form three rows of four.",
+    "altHash": "img-c8b-d3ef0deb"
+  },
+  {
+    "id": "dgx-sort-8",
+    "kind": "sort",
+    "file": "dgx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One clock face has two hands in a fixed position.",
+    "altHash": "img-70z-bd2f41ac"
+  },
+  {
+    "id": "dgx-sort-9",
+    "kind": "sort",
+    "file": "dgx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A paper sheet has three checkmarks beside blank lines.",
+    "altHash": "img-8ij-db932eeb"
+  },
+  {
+    "id": "dgx-sort-10",
+    "kind": "sort",
+    "file": "dgx-sort-10.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Five upright books with plain colored covers differ in height and thickness.",
+    "altHash": "img-3pz-a2da2418"
+  },
+  {
+    "id": "dgx-lesson-1",
+    "kind": "lesson",
+    "file": "dgx-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five dots on an evenly spaced number line lie at two, three, three, four and eight.",
+    "altHash": "img-76n-828ea5ed"
+  },
+  {
+    "id": "dgx-lesson-2",
+    "kind": "lesson",
+    "file": "dgx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five stacks of two, three, three, four and eight squares become five equal stacks of four squares below.",
+    "altHash": "img-883-2c6f1907"
+  },
+  {
+    "id": "dgx-lesson-3",
+    "kind": "lesson",
+    "file": "dgx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Dots at two, three, three, four and eight have the upper repeated three circled in gold.",
+    "altHash": "img-8gz-51386e66"
+  },
+  {
+    "id": "dgx-lesson-4",
+    "kind": "lesson",
+    "file": "dgx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four dots cluster near the left end of a number line and one dot is far to the right.",
+    "altHash": "img-7nr-12fdc252"
+  },
+  {
+    "id": "dgx-lesson-5",
+    "kind": "lesson",
+    "file": "dgx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An upper number line has tightly clustered dots near its middle; a lower line has four widely separated dots.",
+    "altHash": "img-apv-a14a7a5a"
+  },
+  {
+    "id": "dgx-lesson-6",
+    "kind": "lesson",
+    "file": "dgx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four dots at three, five, eight and ten sit above a number line; a gold segment joins five and eight with a midpoint marker.",
+    "altHash": "img-7dr-ca13cc76"
+  },
+  {
+    "id": "dgx-lesson-7",
+    "kind": "lesson",
+    "file": "dgx-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Five upright books with plain colored covers differ in height and thickness.",
+    "altHash": "img-cjr-13acfd56"
+  },
+  {
+    "id": "dgx-lesson-8",
+    "kind": "lesson",
+    "file": "dgx-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A blue bus stands beside a shelter, bench and blank round bus-stop sign.",
+    "altHash": "img-eyf-c0c04b60"
+  }
+]

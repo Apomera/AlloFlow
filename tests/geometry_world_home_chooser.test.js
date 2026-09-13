@@ -147,7 +147,7 @@ describe('Geometry World home chooser lifecycle', () => {
     m.unmount();
   });
 
-  it('does not interrupt a pending Print Lab return or build handoff', () => {
+  it('bypasses Home only for an explicit return, not a saved Print Lab backup', () => {
     window.__alloGeometryWorldPendingBuild = { projectId: 'p1' };
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
     m.rerender();
@@ -158,7 +158,7 @@ describe('Geometry World home chooser lifecycle', () => {
     window.__alloGeometryWorldReturnProject = { id: 'p1' };
     const m2 = mountTool(cfg, { _introShownOnce: true, worldActive: true });
     m2.rerender();
-    expect(m2.bucket().showGeometryHome).not.toBe(true);
+    expect(m2.bucket().showGeometryHome).toBe(true);
     m2.unmount();
   });
 
@@ -221,5 +221,66 @@ describe('Geometry World home chooser lifecycle', () => {
     } finally {
       window.StemLab.geometryWorldBuilderPure = pure;
     }
+  });
+
+  it('does not open Home after a pending return has been consumed', () => {
+    window.__alloGeometryWorldPendingBuild = {projectId:'returning'};
+    const m=mountTool(cfg,{worldActive:true,_introShownOnce:true});
+    delete window.__alloGeometryWorldPendingBuild;
+    m.set({worldActive:true,showGeometryHome:false});
+    m.rerender();
+    expect(m.bucket().showGeometryHome).toBe(false);
+    m.unmount();
+  });
+
+  it('resets a persisted subpage and stale modal flags on a new visit', () => {
+    const m=mountTool(cfg,{worldActive:true,showGeometryHome:true,geometryHomePage:'create',showGameSettings:true,showLessonIntro:true,creatorMode:true});
+    expect(m.bucket().geometryHomePage).toBe('start');
+    expect(m.bucket().showGameSettings).toBe(false);
+    expect(m.bucket().showLessonIntro).toBe(false);
+    expect(m.bucket().creatorMode).toBe(false);
+    expect(m.container.querySelectorAll('.gwe-home-card')).toHaveLength(4);
+    m.unmount();
+  });
+
+  it('upgrades a fallback intro when the enhancement becomes available', () => {
+    const pure=window.StemLab.geometryWorldBuilderPure;
+    let m;
+    try {
+      delete window.StemLab.geometryWorldBuilderPure;
+      m=mountTool(cfg,{});
+      expect(m.bucket().showLessonIntro).toBe(true);
+      window.StemLab.geometryWorldBuilderPure=pure;
+      m.rerender();
+      expect(m.bucket().showGeometryHome).toBe(true);
+      expect(m.bucket().showLessonIntro).toBe(false);
+    } finally {window.StemLab.geometryWorldBuilderPure=pure;if(m)m.unmount();}
+  });
+
+  it('falls back to the main menu for an unknown saved page', () => {
+    const m=mountTool(cfg,{worldActive:true});
+    m.set({geometryHomePage:'obsolete-page'});
+    expect(m.container.querySelectorAll('.gwe-home-card')).toHaveLength(4);
+    expect(m.container.querySelector('nav[aria-label="Geometry World modes"]')).toBeTruthy();
+    m.unmount();
+  });
+
+  it('returns keyboard focus to the mode used to enter a subpage', () => {
+    const m=mountTool(cfg,{worldActive:true});
+    React.act(()=>m.container.querySelector('[data-path="build"]').click());
+    expect(m.bucket().geometryHomePage).toBe('build');
+    React.act(()=>m.container.querySelector('.gwe-home-back').click());
+    expect(document.activeElement).toBe(m.container.querySelector('[data-path="build"]'));
+    m.unmount();
+  });
+
+  it('keeps Garden out of the lesson selector even when it was saved as the chosen lesson', () => {
+    const m=mountTool(cfg,{worldActive:true,geometryHomeLesson:'geometryGarden'});
+    React.act(()=>m.container.querySelector('[data-path="learn"]').click());
+    const select=m.container.querySelector('#gwe-home-lesson');
+    expect(select.value).not.toBe('geometryGarden');
+    expect(select.value).not.toBe('');
+    expect(m.container.querySelector('.gwe-home-preview h2').textContent).toBe(select.selectedOptions[0].textContent);
+    m.unmount();
   });
 });

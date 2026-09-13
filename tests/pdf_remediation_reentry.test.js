@@ -143,7 +143,8 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     // _remediationBusy (pdfFixLoading OR the pipeline's own live-run lock), because the host flag
     // alone was observed reading idle over a live run — which would have re-armed this very
     // destructive control mid-remediation.
-    expect(branch).toContain('disabled={_remediationBusy}');
+    expect(branch).toContain('disabled={_modalWorkBusy}');
+    expect(branch).toContain('if (_modalHasActiveWork() || pdfAuditLoading) return;');
     expect(viewSrc).toContain("t('pdf_audit.start_new_running_title')"); // idle-branch loading title retained
   });
 
@@ -152,7 +153,7 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     const idx = viewSrc.indexOf("t('pdf_audit.whatnow.materials_running_title')");
     const around = viewSrc.slice(idx - 400, idx);
     // 2026-07-26 (audit M1): strengthened to _remediationBusy — see the class-invariant test below.
-    expect(around).toContain('disabled={_remediationBusy || pdfAutoContinueRunning}');
+    expect(around).toContain('disabled={_modalDismissBusy}');
   });
 
   it('EVERY "load doc as source then close modal" teardown button is run-guarded (class invariant)', () => {
@@ -172,7 +173,7 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
       count++;
       // the disabled prop sits on the same <button> element, a few lines after the onClick body
       const window = viewSrc.slice(idx, idx + 700);
-      expect(window.includes(guard), `un-guarded teardown button near source offset ${idx}`).toBe(true);
+      expect(window.includes(guard) || window.includes('disabled={_modalDismissBusy}'), `un-guarded teardown button near source offset ${idx}`).toBe(true);
       from = idx + sig.length;
     }
     expect(count).toBeGreaterThanOrEqual(2); // at least the two known teardown buttons exist

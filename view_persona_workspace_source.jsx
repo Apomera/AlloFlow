@@ -30,9 +30,13 @@ function PersonaWorkspaceView({
   getPersonaVoiceOptions,
   savePersonaTeacherEditor
 }) {
+  const workspaceLabel = (key, fallback, params = {}) => {
+    const value = t('persona.workspace.' + key, params);
+    return value && value !== 'persona.workspace.' + key ? value : fallback;
+  };
   return (
 <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
-                    <div className="h-full flex flex-col relative" data-help-key="persona_panel" aria-busy={isProcessing || isGeneratingPersona}>
+                    <div className="h-full min-h-0 min-w-0 flex flex-col relative" data-help-key="persona_panel" aria-busy={isProcessing || isGeneratingPersona}>
                         <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-2 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 shadow-sm">
                             <div className="flex items-center gap-3 w-full sm:w-auto">
                                 <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-200 text-yellow-700 shrink-0">
@@ -40,10 +44,10 @@ function PersonaWorkspaceView({
                                 </div>
                                 <div className="text-start flex-grow">
                                     <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
-                                    <p className="text-slate-600 text-xs truncate max-w-[300px] hidden sm:block">
+                                    <p data-persona-mode-guide className="text-slate-600 text-xs leading-relaxed max-w-lg mt-1">
                                         {personaState.mode === 'single'
-                                            ? t('persona.instruction_single')
-                                            : t('persona.instruction_panel', { current: personaState.selectedCharacters.length })
+                                            ? workspaceLabel('single_guide', 'Choose one figure to explore their ideas and ask follow-up questions.')
+                                            : workspaceLabel('panel_guide', 'Choose two figures to compare perspectives, ask both a question, and explore where their ideas differ.')
                                         }
                                     </p>
                                 </div>
@@ -138,7 +142,7 @@ function PersonaWorkspaceView({
                                 </details>
                             );
                         })()}
-                        <div className="flex flex-nowrap gap-6 overflow-auto p-6 custom-scrollbar flex-grow items-center snap-x snap-mandatory z-10 w-full bg-slate-50/50 relative">
+                        <div className="flex flex-nowrap gap-4 sm:gap-6 overflow-auto p-3 sm:p-6 custom-scrollbar flex-grow min-h-0 items-start sm:items-center snap-x snap-mandatory z-10 w-full bg-slate-50/50 relative">
                             {isGeneratingPersona && (
                                 <div role="status" aria-live="polite" className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-lg">
                                     <div className="relative">
@@ -155,7 +159,7 @@ function PersonaWorkspaceView({
                                 <div
                                     key={idx}
                                     className={`
-                                        min-w-[300px] w-[320px] h-[500px] max-h-[75vh] snap-center shrink-0
+                                        min-w-0 w-[min(320px,calc(100vw-2.5rem))] h-[440px] sm:h-[500px] max-h-[75vh] snap-center shrink-0
                                         bg-white rounded-2xl border-2 transition-all p-6 flex flex-col relative group overflow-hidden cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-2 duration-300
                                         ${isSelectedInPanel ? 'border-purple-500 ring-4 ring-purple-100' : 'border-slate-100 hover:border-yellow-300'}
                                     `}
@@ -230,11 +234,15 @@ function PersonaWorkspaceView({
                             )}
                         </div>
                         {personaState.mode === 'panel' && (
-                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
-                                <button aria-label={t('common.start_panel_chat')}
+                            <div data-persona-panel-selection className="shrink-0 border-t border-purple-200 bg-purple-50 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                <div className="flex-1 min-w-0 text-sm text-purple-900" role="status" aria-live="polite">
+                                    <p className="font-bold">{t('persona.instruction_panel', { current: personaState.selectedCharacters.length })}</p>
+                                    {personaState.selectedCharacters.length > 0 && <p className="mt-1 text-xs leading-relaxed break-words">{personaState.selectedCharacters.map(person => person.name).join(' · ')}</p>}
+                                </div>
+                                <button type="button" aria-label={t('common.start_panel_chat')}
                                     onClick={handleStartPanelChat}
                                     disabled={personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
-                                    className="bg-purple-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-xl hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-95"
+                                    className="bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"
                                 >
                                     {(isProcessing || isGeneratingPersona) ? <RefreshCw className="animate-spin motion-reduce:animate-none"/> : <Users size={24}/>}
                                     {t('persona.start_panel')}

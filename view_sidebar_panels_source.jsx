@@ -1241,6 +1241,15 @@ function AdventurePanel(props) {
                         </div>
                     ) : (
                         <>
+                            {!aiTextAvailable && <AiSetupNotice t={t} />}
+                            <button type="button" aria-label={adventureState.currentScene ? t('adventure.restart') : t('adventure.start')}
+                                data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+                                disabled={!hasSourceOrAnalysis || adventureState.isLoading || isProcessing || !aiTextAvailable} aria-busy={adventureState.isLoading || isProcessing}
+                                className={SIDEBAR_PANEL_UI.primaryAction}
+                            >
+                                <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{adventureState.currentScene ? t('adventure.restart') : t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
+                                <ArrowRight size={16} className="text-slate-600 group-hover:text-purple-600" />
+                            </button>
                             <AdventureSetupFields {...props} compact idPrefix="sidebar-adventure"/>
                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && <details>
                               <summary className="min-h-11 py-3 cursor-pointer text-sm font-bold text-slate-800">{learningText('teacher_controls', 'Teacher story controls')}</summary>
@@ -1293,15 +1302,7 @@ function AdventurePanel(props) {
                                     </button>
                                 </div>
                             </details>}
-                            {!aiTextAvailable && <AiSetupNotice t={t} />}
-                            <button type="button" aria-label={t('common.next')}
-                                data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
-                                className={SIDEBAR_PANEL_UI.primaryAction}
-                            >
-                                <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
-                                <ArrowRight size={16} className="text-slate-600 group-hover:text-purple-600" />
-                            </button>
+
                         </>
                     )}
                 </div>
@@ -3594,7 +3595,7 @@ function GeneratorActionsView(props) {
     adventureCustomArtStyle, adventureCustomInstructions, adventureDifficulty,
     adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureState,
     aiCapability, aiStandardQuery, anchorChartCustomInstructions, anchorChartType,
-    appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengeFamily,
+    appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengePlan, appliedChallengeFamily,
     appliedChallengeScope, appliedChallengeSelectionMode, autoAttachManipulatives, autoRemoveWords,
     brainstormCustomInstructions, bridgeSimType, bridgeStepCount, callGemini, callGeminiVision,
     checkAccuracyWithSearch, conceptImageMode, conceptInput, conceptItemCount,
@@ -3638,7 +3639,7 @@ function GeneratorActionsView(props) {
     setAdventureConsistentCharacters, setAdventureCustomArtStyle, setAdventureCustomInstructions,
     setAdventureDifficulty, setAdventureFreeResponseEnabled, setAdventureInputMode,
     setAdventureLanguageMode, setAdventureState, setAiStandardQuery, setAnchorChartCustomInstructions,
-    setAnchorChartType, setAppliedChallengeAgencyMode, setAppliedChallengeCustomInstructions,
+    setAnchorChartType, setAppliedChallengeAgencyMode, setAppliedChallengeCustomInstructions, setAppliedChallengePlan,
     setAppliedChallengeFamily, setAppliedChallengeScope, setAppliedChallengeSelectionMode,
     setAutoAttachManipulatives, setAutoRemoveWords, setBrainstormCustomInstructions, setBridgeSimType,
     setBridgeStepCount, setCheckAccuracyWithSearch, setConceptImageMode, setConceptInput,
@@ -3950,7 +3951,7 @@ function GeneratorActionsView(props) {
                   appliedChallengeFamily, setAppliedChallengeFamily,
                   appliedChallengeAgencyMode, setAppliedChallengeAgencyMode,
                   appliedChallengeScope, setAppliedChallengeScope,
-                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions
+                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions, appliedChallengePlan, setAppliedChallengePlan
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -4180,6 +4181,7 @@ function GeneratorActionsView(props) {
           setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setStudentProjectSettings, setUseLowQualityVisuals,
           socialStoryFocus, studentProjectSettings, t, universalImageStyle, useLowQualityVisuals,
           openUniversalSettings: props.openUniversalSettings,
+          currentUiLanguage: props.currentUiLanguage, translationMode: props.translationMode, resolveTranslationPolicy: props.resolveTranslationPolicy,
           adventureAutoRead: props.adventureAutoRead, setAdventureAutoRead: props.setAdventureAutoRead, stopPlayback: props.stopPlayback,
           theme: props.theme, adventureTypingPaceEnabled: props.adventureTypingPaceEnabled, adventureFluencyEnabled: props.adventureFluencyEnabled,
           setAdventureTypingPaceEnabled: props.setAdventureTypingPaceEnabled, setAdventureFluencyEnabled: props.setAdventureFluencyEnabled

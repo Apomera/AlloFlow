@@ -1,0 +1,299 @@
+[
+  {
+    "id": "prx-term-1",
+    "kind": "term",
+    "file": "prx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-term-2",
+    "kind": "term",
+    "file": "prx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four boxes each contain three teal counters.",
+    "altHash": "img-e4r-0849ab04"
+  },
+  {
+    "id": "prx-term-3",
+    "kind": "term",
+    "file": "prx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-term-4",
+    "kind": "term",
+    "file": "prx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold circle highlights the crossing of horizontal and vertical axes.",
+    "altHash": "img-7cn-73a6f7b6"
+  },
+  {
+    "id": "prx-term-5",
+    "kind": "term",
+    "file": "prx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four boxes each contain three teal counters.",
+    "altHash": "img-e4r-0849ab04"
+  },
+  {
+    "id": "prx-term-6",
+    "kind": "term",
+    "file": "prx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "prx-term-7",
+    "kind": "term",
+    "file": "prx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four boxes each contain three teal counters.",
+    "altHash": "img-e4r-0849ab04"
+  },
+  {
+    "id": "prx-term-8",
+    "kind": "term",
+    "file": "prx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-term-9",
+    "kind": "term",
+    "file": "prx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 3; 3 red points are marked.",
+    "altHash": "img-g3z-b479aea4"
+  },
+  {
+    "id": "prx-term-10",
+    "kind": "term",
+    "file": "prx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "prx-term-11",
+    "kind": "term",
+    "file": "prx-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four boxes each contain three teal counters.",
+    "altHash": "img-e4r-0849ab04"
+  },
+  {
+    "id": "prx-term-12",
+    "kind": "term",
+    "file": "prx-term-12.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "prx-anchor-1",
+    "kind": "anchor",
+    "file": "prx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-anchor-2",
+    "kind": "anchor",
+    "file": "prx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four boxes each contain three teal counters.",
+    "altHash": "img-e4r-0849ab04"
+  },
+  {
+    "id": "prx-anchor-3",
+    "kind": "anchor",
+    "file": "prx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold circle highlights the crossing of horizontal and vertical axes.",
+    "altHash": "img-7cn-73a6f7b6"
+  },
+  {
+    "id": "prx-anchor-4",
+    "kind": "anchor",
+    "file": "prx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-sort-1",
+    "kind": "sort",
+    "file": "prx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-sort-2",
+    "kind": "sort",
+    "file": "prx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 3; 3 red points are marked.",
+    "altHash": "img-g3z-b479aea4"
+  },
+  {
+    "id": "prx-sort-3",
+    "kind": "sort",
+    "file": "prx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "prx-sort-4",
+    "kind": "sort",
+    "file": "prx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 5; 0 red points are marked.",
+    "altHash": "img-fxb-67675336"
+  },
+  {
+    "id": "prx-sort-5",
+    "kind": "sort",
+    "file": "prx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-sort-6",
+    "kind": "sort",
+    "file": "prx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 0 red points are marked.",
+    "altHash": "img-erj-218767fa"
+  },
+  {
+    "id": "prx-sort-7",
+    "kind": "sort",
+    "file": "prx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "prx-sort-8",
+    "kind": "sort",
+    "file": "prx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 10; 0 red points are marked.",
+    "altHash": "img-fxb-67675336"
+  },
+  {
+    "id": "prx-sort-9",
+    "kind": "sort",
+    "file": "prx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "prx-lesson-1",
+    "kind": "lesson",
+    "file": "prx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Three tacos with different fillings sit together on a plain plate.",
+    "altHash": "img-1acr-79630ce5"
+  },
+  {
+    "id": "prx-lesson-2",
+    "kind": "lesson",
+    "file": "prx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Four boxes each contain three teal counters.",
+    "altHash": "img-e4r-0849ab04"
+  },
+  {
+    "id": "prx-lesson-3",
+    "kind": "lesson",
+    "file": "prx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold circle highlights the crossing of horizontal and vertical axes.",
+    "altHash": "img-7cn-73a6f7b6"
+  },
+  {
+    "id": "prx-lesson-4",
+    "kind": "lesson",
+    "file": "prx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 3 red points are marked.",
+    "altHash": "img-gej-938e221a"
+  },
+  {
+    "id": "prx-lesson-5",
+    "kind": "lesson",
+    "file": "prx-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Water pours from a pipe into a partially filled transparent rectangular tank.",
+    "altHash": "img-1anr-34b39c1c"
+  },
+  {
+    "id": "prx-lesson-6",
+    "kind": "lesson",
+    "file": "prx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 10; 0 red points are marked.",
+    "altHash": "img-fxb-67675336"
+  },
+  {
+    "id": "prx-lesson-7",
+    "kind": "lesson",
+    "file": "prx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 3; 3 red points are marked.",
+    "altHash": "img-g3z-b479aea4"
+  },
+  {
+    "id": "prx-lesson-8",
+    "kind": "lesson",
+    "file": "prx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  }
+]

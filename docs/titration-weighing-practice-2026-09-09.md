@@ -42,3 +42,7 @@ Run `node reports/chemistry-refinement-2026-09-06/titration-weighing-browser.cjs
 These are local component checks using the actual widget, React, Three.js, and application stylesheet. No deployment, physical-device classroom trial, or complete accessibility certification was performed.
 
 Follow-up: [sample-transfer practice](titration-transfer-practice-2026-09-09.md) now connects the weighing record to residue accounting and solution preparation.
+
+Follow-up: [balance reading breakdown](titration-weighing-breakdown-2026-09-12.md) adds signed gross/tare/net bars, live arithmetic, and explanations of negative readings and retained off-pan samples.
+
+Follow-up: [weighing target guide](titration-weighing-target-guide-2026-09-12.md) adds a fixed full-range scale, a close-up of the practice band, exact distance from the target, and labeled off-scale markers.

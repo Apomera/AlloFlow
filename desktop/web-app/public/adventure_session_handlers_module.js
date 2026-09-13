@@ -25,6 +25,7 @@ const applyAdventureSystemUpdate = (previous, update, policy = { enabled: true, 
     const resources = Array.isArray(previous) ? previous : [];
     if (policy.enabled === false) return resources.map(r => ({ ...r }));
     const nameOf = value => typeof value === 'string' ? value.trim().slice(0, 80) : '';
+    const nameKey = value => nameOf(value).toLocaleLowerCase();
     const numeric = value => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value));
     const bounded = (resource, quantity) => {
         const percentage = /^(%|percent|percentage)$/i.test(resource.unit || '');
@@ -34,7 +35,7 @@ const applyAdventureSystemUpdate = (previous, update, policy = { enabled: true, 
     };
     const result = [];
     for (const item of resources.slice(0, 24)) {
-        if (!item || !nameOf(item.name) || result.some(r => r.name === nameOf(item.name))) continue;
+        if (!item || !nameOf(item.name) || result.some(r => nameKey(r.name) === nameKey(item.name))) continue;
         const resource = { ...item, name: nameOf(item.name), unit: typeof item.unit === 'string' ? item.unit.trim().slice(0, 30) : '' };
         resource.quantity = bounded(resource, numeric(item.quantity) ? Number(item.quantity) : 0);
         result.push(resource);
@@ -47,7 +48,7 @@ const applyAdventureSystemUpdate = (previous, update, policy = { enabled: true, 
             if (!name) return;
             const quantity = item.quantity === undefined ? 1 : numeric(item.quantity) ? Number(item.quantity) : NaN;
             if (!Number.isFinite(quantity)) return;
-            const existing = result.find(r => r.name === name);
+            const existing = result.find(r => nameKey(r.name) === nameKey(name));
             if (existing) existing.quantity = bounded(existing, existing.quantity + direction * quantity);
             else if (direction > 0 && policy.mode !== 'manual' && result.length < 24) {
                 const resource = { id: Date.now() + Math.random(), name,
@@ -122,6 +123,8 @@ const recordAdventureConsequence = (previous, next, data, mode) => {
     return { ...next, history };
 };
 
+// Ignore duplicate animation/completion callbacks carrying the same result.
+const appliedAdventureTurnUpdates = new WeakMap();
 const handleDiceRollComplete = (deps) => {
   const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
   try { if (window._DEBUG_PHASE_L) console.log("[PhaseL] handleDiceRollComplete fired"); } catch(_) {}
@@ -130,6 +133,20 @@ const handleDiceRollComplete = (deps) => {
           return;
       }
       const data = pendingAdventureUpdate;
+      let applied = appliedAdventureTurnUpdates.get(setAdventureState);
+      if (!applied) { applied = new WeakSet(); appliedAdventureTurnUpdates.set(setAdventureState, applied); }
+      if (applied.has(data)) return;
+      applied.add(data);
+      // React can replay the updater. Dispatch one batch using the last computed
+      // transition, so scene requests, item art, sounds and notices run once.
+      let turnEffects = null;
+      let effectsScheduled = false;
+      const scheduleTurnEffects = effect => {
+          turnEffects = effect;
+          if (effectsScheduled) return;
+          effectsScheduled = true;
+          setTimeout(() => { const run = turnEffects; turnEffects = null; if (run) run(); }, 0);
+      };
       if (!data.scene || typeof data.scene !== 'object') {
           data.scene = { text: t('adventure.status_messages.continue') || 'The adventure continues.', options: [] };
       }
@@ -418,14 +435,14 @@ const handleDiceRollComplete = (deps) => {
                   ...prev.history,
                   { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }
               ];
-              generateNarrativeLedger(victoryHistory, deps);
-              addToast(t('adventure.status_messages.log_updated'), "info");
-              setTimeout(() => {
+              scheduleTurnEffects(() => {
+                  generateNarrativeLedger(victoryHistory, deps);
+                  addToast(t('adventure.status_messages.log_updated'), "info");
                   playAdventureEventSound('critical_success');
                   addToast(t('adventure.climax.toast_victory'), "success");
                   setShowGlobalLevelUp(true);
                   try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } })); } catch (_) {}
-              }, 0);
+              });
               return recordAdventureConsequence(prev, {
                   ...prev,
                   isGameOver: true,
@@ -444,12 +461,12 @@ const handleDiceRollComplete = (deps) => {
                   ...prev.history,
                   { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }
               ];
-              generateNarrativeLedger(failureHistory, deps);
-              addToast(t('adventure.status_messages.log_updated'), "info");
-              setTimeout(() => {
+              scheduleTurnEffects(() => {
+                  generateNarrativeLedger(failureHistory, deps);
+                  addToast(t('adventure.status_messages.log_updated'), "info");
                   playAdventureEventSound('failure');
                   addToast(t('adventure.climax.toast_failure'), "error");
-              }, 0);
+              });
               return recordAdventureConsequence(prev, {
                   ...prev,
                   history: [...prev.history, { type: 'feedback', text: data.feedback, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
@@ -467,7 +484,9 @@ const handleDiceRollComplete = (deps) => {
                   stats: newStats
               }, data, { chanceMode: adventureChanceMode, inputMode: adventureInputMode });
           }
-          setTimeout(() => {
+          const shouldContinue = newEnergy > 0 && !data.isTerminalTurn
+              && (adventureFreeResponseEnabled || data.scene.options.length !== 0);
+          scheduleTurnEffects(() => {
               setAdventureEffects({
                   xp: safeXpDelta !== 0 ? safeXpDelta : null,
                   energy: safeEnergyDelta !== 0 ? safeEnergyDelta : null,
@@ -537,9 +556,6 @@ const handleDiceRollComplete = (deps) => {
                       }));
                   });
               });
-              const shouldContinue = newEnergy > 0
-                  && !data.isTerminalTurn
-                  && (adventureFreeResponseEnabled || data.scene.options.length !== 0);
               if (shouldContinue) {
                   generateAdventureImage(data.scene.text, nextTurn, deps);
               }
@@ -557,7 +573,7 @@ const handleDiceRollComplete = (deps) => {
               if (nextTurn % 10 === 0 && nextTurn > 0) {
                   addToast(t('adventure.save_reminder') || "💾 Consider saving your adventure progress!", "info");
               }
-          }, 0);
+          });
           return recordAdventureConsequence(prev, {
               ...prev,
               history: [...prev.history, { type: 'feedback', text: feedbackText, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
@@ -574,9 +590,9 @@ const handleDiceRollComplete = (deps) => {
               gold: newGold,
               sceneImage: null,
               sceneImagePreview: null,
-              isImageLoading: true,
-              imagePolishStage: 'generating',
-              loadingStage: 'Painting scene art…',
+              isImageLoading: shouldContinue,
+              imagePolishStage: shouldContinue ? 'generating' : null,
+              loadingStage: shouldContinue ? 'Painting scene art…' : null,
               inventory: newInventory,
               systemResources: newSystemResources,
               voiceMap: updatedVoices,
@@ -688,12 +704,52 @@ const buildAdventureConsistencyReference = async ({ portraitCharacters, protagon
   return { referenceBase64, consistencyPrompt };
 };
 
-const generateAdventureImage = async (sceneText, targetTurn, deps) => {
+// One image pipeline per scene and mounted Adventure state owner. Keep a successful
+// result until the next scene so repeated callbacks cannot generate it again.
+const adventureSceneImageRequests = new WeakMap();
+const cancelAdventureSceneImage = (setAdventureState) => {
+  const request = adventureSceneImageRequests.get(setAdventureState);
+  if (!request) return false;
+  request.cancelled = true;
+  adventureSceneImageRequests.delete(setAdventureState);
+  return true;
+};
+
+const generateAdventureImage = (sceneText, targetTurn, deps) => {
+  const owner = deps.setAdventureState;
+  const text = String(sceneText || '');
+  const turn = Number(targetTurn);
+  if (!text.trim() || !Number.isFinite(turn) || typeof owner !== 'function') return Promise.resolve();
+  const key = JSON.stringify([turn, text]);
+  const matchesScene = state => !!state && Number(state.turnCount) === turn
+      && state.currentScene?.text === text && !state.isLoading;
+  const current = adventureSceneImageRequests.get(owner);
+  if (current?.key === key && !current.cancelled) return current.promise;
+  cancelAdventureSceneImage(owner);
+  const request = { key, cancelled: false, completed: false, promise: null };
+  adventureSceneImageRequests.set(owner, request);
+  const ownsRequest = () => !request.cancelled && adventureSceneImageRequests.get(owner) === request;
+  request.isCurrent = () => ownsRequest()
+      && (typeof deps.getAdventureState !== 'function' || matchesScene(deps.getAdventureState()));
+  request.matchesState = state => ownsRequest() && matchesScene(state);
+  // Opening/turn callers may still hold the preceding React render. Let the
+  // committed state settle, then use the live snapshot for cast and scene data.
+  request.promise = new Promise(resolve => setTimeout(resolve, 0)).then(async () => {
+    if (!request.isCurrent()) return;
+    const state = typeof deps.getAdventureState === 'function' ? deps.getAdventureState() : deps.adventureState;
+    await runAdventureImage(text, turn, { ...deps, adventureState: state }, request);
+  }).finally(() => {
+    if (!request.completed && adventureSceneImageRequests.get(owner) === request) adventureSceneImageRequests.delete(owner);
+  });
+  return request.promise;
+};
+
+const runAdventureImage = async (sceneText, targetTurn, deps, request) => {
   const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, isGeminiImageBackend, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, universalImageStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
   try { if (window._DEBUG_PHASE_L) console.log("[PhaseL] generateAdventureImage fired"); } catch(_) {}
       try {
-          setAdventureState(prev => prev.turnCount === targetTurn
-              ? { ...prev, sceneImage: null, sceneImagePreview: null, loadingStage: 'Painting scene art…', imagePolishStage: 'generating' }
+          setAdventureState(prev => request.matchesState(prev)
+              ? { ...prev, sceneImage: null, sceneImagePreview: null, isImageLoading: true, loadingStage: 'Painting scene art…', imagePolishStage: 'generating' }
               : prev);
           let characterContext = "";
           if (adventureConsistentCharacters && adventureState.characters?.length > 0) {
@@ -736,7 +792,7 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
                      const randomHair = hairOptions[Math.floor(Math.random() * hairOptions.length)];
                      const randomOutfit = outfitOptions[Math.floor(Math.random() * outfitOptions.length)];
                      const generatedAppearance = `${ageDesc} with ${randomHair}, wearing ${randomOutfit}, friendly expression`;
-                     setAdventureState(prev => ({ ...prev, characterAppearance: generatedAppearance }));
+                     setAdventureState(prev => request.matchesState(prev) ? { ...prev, characterAppearance: generatedAppearance } : prev);
                      characterContext = `Main character: ${generatedAppearance}. `;
                  }
               } else {
@@ -751,7 +807,7 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
                      const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
                      const randomFeature = featureOptions[Math.floor(Math.random() * featureOptions.length)];
                      const generatedAppearance = `${randomColor} ${creatureType} with ${randomFeature}`;
-                     setAdventureState(prev => ({ ...prev, characterAppearance: generatedAppearance }));
+                     setAdventureState(prev => request.matchesState(prev) ? { ...prev, characterAppearance: generatedAppearance } : prev);
                      characterContext = `Main character: ${generatedAppearance}. `;
                  }
               }
@@ -790,45 +846,51 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
           }
           const targetWidth = useLowQualityVisuals ? 300 : 800;
           const targetQual = useLowQualityVisuals ? 0.5 : 0.9;
+          if (!request.isCurrent()) return;
           let imageUrl = await callImagen(prompt, targetWidth, targetQual);
+          if (!request.isCurrent()) return;
           if (!imageUrl) {
               warnLog("Imagen returned no image, skipping refinement.");
               setAdventureState(prev => {
-                  if (prev.turnCount === targetTurn) {
+                  if (request.matchesState(prev)) {
                       return { ...prev, isImageLoading: false, sceneImagePreview: null, imagePolishStage: null, loadingStage: null };
                   }
                   return prev;
               });
               return;
           }
-          setAdventureState(prev => prev.turnCount === targetTurn
+          setAdventureState(prev => request.matchesState(prev)
               ? {
                   ...prev,
                   sceneImagePreview: imageUrl,
                   isImageLoading: true,
-                  imagePolishStage: 'cleaning',
-                  loadingStage: 'Polishing scene details…',
+                  imagePolishStage: useLowQualityVisuals ? 'generating' : 'cleaning',
+                  loadingStage: useLowQualityVisuals ? 'Finishing scene art…' : 'Polishing scene details…',
               }
               : prev);
-          try {
-              const rawBase64 = imageUrl.split(',')[1];
-              const editPrompt = `
-                Refine this image to look like a ${(isAdventureStoryMode || isSocialMode) ? 'high-quality storybook illustration' : 'high-quality, cinematic screenshot'} of: "${sceneText.substring(0, 200)}...".
-                CRITICAL INSTRUCTION: REMOVE ALL TEXT.
-                1. Erase any text, letters, numbers, speech bubbles, labels, or UI elements visible in the image.
-                2. Paint over these areas to seamlessly match the background scenery.
-                3. Ensure the image is purely visual with zero writing.
-                ${(isAdventureStoryMode || isSocialMode) ? "4. Ensure it looks friendly and inviting." : ""}
-              `;
-              const refinedUrl = await callGeminiImageEdit(editPrompt, rawBase64, targetWidth, targetQual);
-              if (refinedUrl) {
-                  imageUrl = refinedUrl;
-              }
-          } catch (refineErr) {
-              warnLog("Adventure image refinement failed, using original.", refineErr);
+          if (!useLowQualityVisuals) {
+            try {
+                const rawBase64 = imageUrl.split(',')[1];
+                const editPrompt = `
+                  Refine this image to look like a ${(isAdventureStoryMode || isSocialMode) ? 'high-quality storybook illustration' : 'high-quality, cinematic screenshot'} of: "${sceneText.substring(0, 200)}...".
+                  CRITICAL INSTRUCTION: REMOVE ALL TEXT.
+                  1. Erase any text, letters, numbers, speech bubbles, labels, or UI elements visible in the image.
+                  2. Paint over these areas to seamlessly match the background scenery.
+                  3. Ensure the image is purely visual with zero writing.
+                  ${(isAdventureStoryMode || isSocialMode) ? "4. Ensure it looks friendly and inviting." : ""}
+                `;
+                const refinedUrl = await callGeminiImageEdit(editPrompt, rawBase64, targetWidth, targetQual);
+                if (!request.isCurrent()) return;
+                if (refinedUrl) {
+                    imageUrl = refinedUrl;
+                }
+            } catch (refineErr) {
+                warnLog("Adventure image refinement failed, using original.", refineErr);
+            }
           }
+          if (!request.isCurrent()) return;
           if (adventureConsistentCharacters && adventureState.characters?.length > 0) {
-              setAdventureState(prev => prev.turnCount === targetTurn
+              setAdventureState(prev => request.matchesState(prev)
                   ? {
                       ...prev,
                       sceneImagePreview: imageUrl,
@@ -855,8 +917,10 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
                           useReferenceSheet: useGeminiReferenceSheet,
                           warn: warnLog,
                       });
+                      if (!request.isCurrent()) return;
                       if (referenceBase64) {
                           const consistentUrl = await callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, referenceBase64);
+                          if (!request.isCurrent()) return;
                           if (consistentUrl) {
                               imageUrl = consistentUrl;
                               debugLog('Character consistency pass applied successfully');
@@ -867,11 +931,11 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
                   }
               }
           }
+          if (!request.isCurrent()) return;
           setAdventureState(prev => {
-              if (prev.turnCount === targetTurn) {
+              if (request.matchesState(prev)) {
                   const newCacheEntry = { turn: targetTurn, image: imageUrl };
-                  const updatedCache = [...(prev.imageCache || []), newCacheEntry].slice(-5);
-                  adventureImageDB.storeImage(targetTurn, imageUrl);
+                  const updatedCache = [...(prev.imageCache || []).filter(entry => entry.turn !== targetTurn), newCacheEntry].slice(-5);
                   return {
                       ...prev,
                       sceneImage: imageUrl,
@@ -884,10 +948,18 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
               }
               return prev;
           });
+          request.completed = true;
+          // Storage is an external effect, never part of a replayable React updater.
+          try {
+              await adventureImageDB.storeImage(targetTurn, imageUrl);
+          } catch (storageError) {
+              warnLog("Adventure image could not be saved; keeping the displayed image.", storageError);
+          }
       } catch (e) {
+          if (!request.isCurrent()) return;
           warnLog("Adventure Image Gen Failed", e);
           setAdventureState(prev => {
-              if (prev.turnCount === targetTurn) {
+              if (request.matchesState(prev)) {
                   return { ...prev, isImageLoading: false, sceneImagePreview: null, imagePolishStage: null, loadingStage: null };
               }
               return prev;
@@ -938,6 +1010,7 @@ window.AlloModules.AdventureSessionHandlers = {
   applyAdventureSystemUpdate,
   handleDiceRollComplete,
   generateAdventureImage,
+  cancelAdventureSceneImage,
   generateNarrativeLedger,
   selectAdventureReferenceCharacters,
   createAdventureReferenceSheet,

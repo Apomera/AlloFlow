@@ -19,12 +19,12 @@ test.describe('Raptor gaze and facial detail',()=>{
       w.placeGazePrey=(side:number)=>{bird.updateWorldMatrix(true,false);const origin=head.position.clone().applyMatrix4(bird.matrixWorld),offset=new T.Vector3(side*20,-12,26).applyQuaternion(bird.quaternion);prey.forEach((p:any,i:number)=>p.position.copy(i===0?origin.clone().add(offset):origin.clone().add(new T.Vector3(2000+i*20,2000,2000))));};
       for(let i=0;i<30;i++){w.placeGazePrey(1);w.advanceGaze(25);}const right=c._rhSnapshot();w.placeGazePrey(-1);w.advanceGaze(25);const firstLeft=c._rhSnapshot();for(let i=0;i<30;i++){w.placeGazePrey(-1);w.advanceGaze(25);}const left=c._rhSnapshot();
       const eye=head.getObjectByName('right-eye'),pupil=head.getObjectByName('right-pupil'),beak=head.getObjectByName('hooked-beak');
-      return {right,firstLeft,left,bodyVertexColors:bird.getObjectByName('raptor-contour-body').material.vertexColors,tuftVertices:head.getObjectByName('field-mark-great-horned-tufts')?.geometry.attributes.position.count||0,eyeRadius:eye.position.length(),pupilRadius:pupil.position.length(),beakVertices:beak.geometry.attributes.position.count,irisVertices:eye.geometry.attributes.position.count,irisMap:!!eye.material.map,billLineCompiled:!!beak.material.userData.billLineCompiled,attached:[eye,pupil,beak].every(o=>o.parent===head)};
+      return {right,firstLeft,left,bodyVertexColors:bird.getObjectByName('raptor-contour-body').material.vertexColors,tuftVertices:head.getObjectByName('field-mark-great-horned-tufts')?.geometry.attributes.position.count||0,eyeRadius:eye.position.length(),pupilRadius:pupil.position.length(),beakVertices:beak.geometry.attributes.position.count,irisVertices:eye.geometry.attributes.position.count,irisMap:!!eye.material.map,billLineCompiled:!!beak.material.userData.billLineCompiled,surroundVertices:head.getObjectByName('raptor-eye-surrounds').geometry.attributes.position.count,discMap:head.getObjectByName('field-mark-owl-facial-disc')?.material.map?.name||null,attached:[eye,pupil,beak,head.getObjectByName('raptor-eye-surrounds')].every(o=>o.parent===head)};
     });
     expect(tracking.right.gazeTracking).toBe(true);expect(tracking.right.gazeYaw).toBeGreaterThan(0.3);expect(tracking.right.gazePitch).toBeGreaterThan(0.15);expect(tracking.left.gazeYaw).toBeLessThan(-0.3);
     expect(Math.abs(tracking.firstLeft.gazeYaw-tracking.right.gazeYaw)).toBeLessThan(0.2);expect(tracking.left.drawCalls).toBeLessThan(150);
     expect(tracking.bodyVertexColors).toBe(true);expect(tracking.tuftVertices).toBe(model.id==='greatHorned'?150:0);
-    expect(tracking.eyeRadius).toBeGreaterThan(0.22);expect(tracking.pupilRadius).toBeGreaterThan(tracking.eyeRadius);expect(tracking.beakVertices).toBe(274);expect(tracking.irisVertices).toBe(193);expect(tracking.irisMap).toBe(true);expect(tracking.billLineCompiled).toBe(true);expect(tracking.attached).toBe(true);
+    expect(tracking.eyeRadius).toBeGreaterThan(0.22);expect(tracking.pupilRadius).toBeGreaterThan(tracking.eyeRadius);expect(tracking.beakVertices).toBe(274);expect(tracking.irisVertices).toBe(193);expect(tracking.irisMap).toBe(true);expect(tracking.billLineCompiled).toBe(true);expect(tracking.attached).toBe(true);expect(tracking.surroundVertices).toBe(198);expect(tracking.discMap).toBe(model.id==='greatHorned'?'raptor-facial-feathers':null);
     const paused=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('pause');const a=c._rhSnapshot();(window as any).advanceGaze(60000);return {a,b:c._rhSnapshot()};});
     expect(paused.a.gazeYaw).toBe(paused.b.gazeYaw);expect(paused.a.gazePitch).toBe(paused.b.gazePitch);
     const portrait=await page.evaluate(()=>{
@@ -34,7 +34,7 @@ test.describe('Raptor gaze and facial detail',()=>{
       const center=face.position.clone(),camera=new T.PerspectiveCamera(32,renderer.domElement.clientWidth/renderer.domElement.clientHeight,0.01,100),framing=Math.max(1.15,1.05/camera.aspect);camera.position.copy(center).add(new T.Vector3(0.88,0.32,1.1).multiplyScalar(framing));camera.lookAt(center);
       renderer.render(study,camera);const png=renderer.domElement.toDataURL('image/png');renderer.render(scene,camera);return png;
     });
-    writeFileSync('scratch/raptor-flight-review/iris-bill-face-'+model.id+'.png',Buffer.from(portrait.split(',')[1],'base64'));
+    writeFileSync('scratch/raptor-flight-review/soft-face-'+model.id+'.png',Buffer.from(portrait.split(',')[1],'base64'));
     await page.emulateMedia({reducedMotion:'reduce'});
     await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>{const s=c._rhSnapshot();return s.gazeYaw===0&&s.gazePitch===0&&!s.gazeTracking;})).toBe(true);
     await page.emulateMedia({reducedMotion:'no-preference'});

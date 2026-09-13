@@ -1244,3 +1244,24 @@ it('cancels an active command even after its current availability changes', asyn
     expect(startNewPdfAudit).toHaveBeenCalled();
   });
 });
+
+
+describe('Focus view command naming and compatibility', () => {
+  it.each([false, true])('uses the same entry and exit names with teacher=%s', isTeacherMode => {
+    const ctx = { isTeacherMode, zenActive: false, zenOn: vi.fn(), zenOff: vi.fn() };
+    const enter = AC.buildAlloCommands(ctx).find(command => command.id === 'zen_on');
+    expect(enter.label).toBe('Enter focus view');
+    enter.run(ctx);expect(ctx.zenOn).toHaveBeenCalledOnce();
+    const exit = AC.buildAlloCommands({ ...ctx, zenActive: true }).find(command => command.id === 'zen_off');
+    expect(exit.label).toBe('Exit focus view');
+    exit.run(ctx);expect(ctx.zenOff).toHaveBeenCalledOnce();
+  });
+  it.each(['focus view', 'enter focus view', 'zen', 'zen mode'])('routes %s to focused reading', async text => {
+    const result = await AC.routeUtterance({ isTeacherMode: false, zenActive: false, zenOn: vi.fn() }, text, { preview: true, allowAi: false });
+    expect(result.commandId).toBe('zen_on');
+  });
+  it.each(['exit focus view', 'exit zen'])('routes %s back to the normal workspace', async text => {
+    const result = await AC.routeUtterance({ isTeacherMode: false, zenActive: true, zenOff: vi.fn() }, text, { preview: true, allowAi: false });
+    expect(result.commandId).toBe('zen_off');
+  });
+});

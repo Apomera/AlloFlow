@@ -324,11 +324,11 @@ function ClassMailboxSetupView(props) {
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, mbBusy ? 'Testing…' : 'Connect & self-test')), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 21 && /*#__PURE__*/React.createElement("div", {
+  }, mbBusy ? 'Testing…' : 'Connect & self-test')), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 23 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"
-  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v18 for current surveys, assignments, live visual-organizer readiness, secure live tools, and automatic student submissions (about 1 minute, the URL stays the same):"), /*#__PURE__*/React.createElement("ol", {
+  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v23 for independent image-delivery status, lesson boards, and current live tools (about 1 minute, the URL stays the same):"), /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal list-inside text-xs text-amber-900 space-y-1"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -340,7 +340,7 @@ function ClassMailboxSetupView(props) {
     type: "button",
     onClick: retryMailboxScriptSource,
     className: "font-bold underline underline-offset-2"
-  }, t('mailbox.retry_loading') || 'retry loading'), ")"), " ", t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'), /*#__PURE__*/React.createElement("li", null, t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:', " ", /*#__PURE__*/React.createElement("b", null, t('mailbox.new_version') || 'New version'), " ", t('mailbox.deploy') || '→ Deploy.'), /*#__PURE__*/React.createElement("li", null, t('mailbox.press_connect_self_test_again') || 'Press "Connect & self-test" here again — this notice disappears at v13.'))), mbConfig && !mbLive && mbResumable.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, t('mailbox.retry_loading') || 'retry loading'), ")"), " ", t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'), /*#__PURE__*/React.createElement("li", null, t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:', " ", /*#__PURE__*/React.createElement("b", null, t('mailbox.new_version') || 'New version'), " ", t('mailbox.deploy') || '→ Deploy.'), /*#__PURE__*/React.createElement("li", null, t('mailbox.reconnect_after_update') || 'Press "Connect & self-test" here again after updating.'))), mbConfig && !mbLive && mbResumable.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-emerald-800 mb-2"

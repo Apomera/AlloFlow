@@ -453,6 +453,28 @@
 })();
 // STEM_INPUT_RUNTIME_END
 
+// Readable controls for Math Fundamentals. Geometric pieces and table cells keep their dimensions.
+(function () {
+  if (document.getElementById("allo-basic-math-controls-css")) return;
+  var style = document.createElement("style");
+  style.id = "allo-basic-math-controls-css";
+  style.textContent = [
+    "[data-stem-basic-math] button:not(table button):not([style*=\"width\"]):not([style*=\"height\"]):not(.fraction-lab-strip-segment):not([data-math-grid-cell]){min-height:44px;min-width:44px}",
+    "[data-stem-basic-math] :is(button,select,summary):is(.text-xs,[class*=\"text-[0.6\"],[class*=\"text-[10px]\"],[class*=\"text-[11px]\"]){font-size:.875rem;line-height:1.45}",
+    "[data-stem-basic-math] :is(select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=hidden])){min-height:44px}",
+    "[data-stem-basic-math] summary{min-height:44px;align-content:center;cursor:pointer}",
+    "[data-stem-basic-math] :is(input[type=checkbox],input[type=radio]){width:20px;height:20px;flex-shrink:0}",
+    "[data-stem-basic-math] .math-learning-note{margin-top:8px;font-size:.875rem;line-height:1.5}",
+    "[data-stem-basic-math] .math-learning-note>summary{font-weight:700}",
+    "[data-stem-basic-math] .math-learning-note>p{font-size:.875rem!important;font-style:normal!important;line-height:1.5!important}",
+    "[data-stem-basic-math] .math-conversion-fields{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end}",
+    "[data-stem-basic-math] .math-conversion-fields :is(input,select){width:100%;min-width:0}",
+    "[data-stem-basic-math] .math-conversion-fields [role=status]{min-height:44px;overflow-wrap:anywhere}",
+    "@media(max-width:480px){[data-stem-basic-math] .math-conversion-fields{grid-template-columns:minmax(0,1fr)}[data-stem-basic-math] .math-conversion-fields>button{justify-self:center}}"
+  ].join('\n');
+  document.head.appendChild(style);
+})();
+
 
 // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
 (function() {
@@ -2358,6 +2380,7 @@
               padding: isDarkBackdrop ? 10 : 0
             },
             'data-stem-tool-shell': id,
+            'data-stem-basic-math': ['numberline', 'areamodel', 'arithmeticStudio', 'fractionViz', 'fractions', 'base10', 'multtable', 'ratioLab', 'moneyMath', 'unitConvert', 'timeSchedule'].indexOf(id) >= 0 ? 'true' : undefined,
             'data-stem-theme': shellTheme
           },
             // sr-only tool-name heading — gives every tool a semantic H1 landmark

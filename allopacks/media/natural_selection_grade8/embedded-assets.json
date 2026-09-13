@@ -1,0 +1,326 @@
+[
+  {
+    "id": "nsx-term-1",
+    "kind": "term",
+    "file": "nsx-term-1.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Six beetles share a similar body form but range from pale tan to dark brown.",
+    "altHash": "img-itr-04257efb"
+  },
+  {
+    "id": "nsx-term-2",
+    "kind": "term",
+    "file": "nsx-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Three snails on a rock have shells with differing yellow and brown bands.",
+    "altHash": "img-o7z-f7a336b9"
+  },
+  {
+    "id": "nsx-term-3",
+    "kind": "term",
+    "file": "nsx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One dark beetle symbol branches by three arrows to three smaller dark beetles.",
+    "altHash": "img-hrz-83e62cc2"
+  },
+  {
+    "id": "nsx-term-4",
+    "kind": "term",
+    "file": "nsx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rows of six DNA-symbol blocks differ at one position, marked gold in the lower row.",
+    "altHash": "img-7uf-fc84bf76"
+  },
+  {
+    "id": "nsx-term-5",
+    "kind": "term",
+    "file": "nsx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows each contain eight beetle symbols; dark beetles increase from two to four to six down the rows.",
+    "altHash": "img-18tf-3993bf28"
+  },
+  {
+    "id": "nsx-term-6",
+    "kind": "term",
+    "file": "nsx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A larger pale beetle has one offspring symbol below it; a smaller dark beetle has three.",
+    "altHash": "img-f7b-6b046702"
+  },
+  {
+    "id": "nsx-term-7",
+    "kind": "term",
+    "file": "nsx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows each contain eight beetle symbols; dark beetles increase from two to four to six down the rows.",
+    "altHash": "img-18tf-3993bf28"
+  },
+  {
+    "id": "nsx-term-8",
+    "kind": "term",
+    "file": "nsx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small pale beetle symbol is followed by an arrow and a larger pale beetle symbol.",
+    "altHash": "img-ajj-c3db2750"
+  },
+  {
+    "id": "nsx-term-9",
+    "kind": "term",
+    "file": "nsx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One dark beetle symbol branches by three arrows to three smaller dark beetles.",
+    "altHash": "img-hrz-83e62cc2"
+  },
+  {
+    "id": "nsx-term-10",
+    "kind": "term",
+    "file": "nsx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A mixed row of eight rod-shaped microbe symbols is followed by two dark survivors and eight dark descendants.",
+    "altHash": "img-nz3-b8ffcb41"
+  },
+  {
+    "id": "nsx-term-11",
+    "kind": "term",
+    "file": "nsx-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The same pale and dark beetle symbols appear against a light background and a dark background.",
+    "altHash": "img-dof-921fbd7d"
+  },
+  {
+    "id": "nsx-term-12",
+    "kind": "term",
+    "file": "nsx-term-12.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A pale speckled moth rests with spread wings against pale lichen-covered bark.",
+    "altHash": "img-1h2z-84d486d1"
+  },
+  {
+    "id": "nsx-anchor-1",
+    "kind": "anchor",
+    "file": "nsx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small pale beetle symbol is followed by an arrow and a larger pale beetle symbol.",
+    "altHash": "img-ajj-c3db2750"
+  },
+  {
+    "id": "nsx-anchor-2",
+    "kind": "anchor",
+    "file": "nsx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows each contain eight beetle symbols; dark beetles increase from two to four to six down the rows.",
+    "altHash": "img-18tf-3993bf28"
+  },
+  {
+    "id": "nsx-anchor-3",
+    "kind": "anchor",
+    "file": "nsx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows each contain eight beetle symbols; dark beetles increase from two to four to six down the rows.",
+    "altHash": "img-18tf-3993bf28"
+  },
+  {
+    "id": "nsx-anchor-4",
+    "kind": "anchor",
+    "file": "nsx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A larger pale beetle has one offspring symbol below it; a smaller dark beetle has three.",
+    "altHash": "img-f7b-6b046702"
+  },
+  {
+    "id": "nsx-sort-1",
+    "kind": "sort",
+    "file": "nsx-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Six beetles share a similar body form but range from pale tan to dark brown.",
+    "altHash": "img-dvf-ef1186aa"
+  },
+  {
+    "id": "nsx-sort-2",
+    "kind": "sort",
+    "file": "nsx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One dark beetle symbol branches by three arrows to three smaller dark beetles.",
+    "altHash": "img-hrz-83e62cc2"
+  },
+  {
+    "id": "nsx-sort-3",
+    "kind": "sort",
+    "file": "nsx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows each contain eight beetle symbols; dark beetles increase from two to four to six down the rows.",
+    "altHash": "img-18tf-3993bf28"
+  },
+  {
+    "id": "nsx-sort-4",
+    "kind": "sort",
+    "file": "nsx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One dark beetle symbol branches by three arrows to three smaller dark beetles.",
+    "altHash": "img-hrz-83e62cc2"
+  },
+  {
+    "id": "nsx-sort-5",
+    "kind": "sort",
+    "file": "nsx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The same pale and dark beetle symbols appear against a light background and a dark background.",
+    "altHash": "img-dof-921fbd7d"
+  },
+  {
+    "id": "nsx-sort-6",
+    "kind": "sort",
+    "file": "nsx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rows of six DNA-symbol blocks differ at one position, marked gold in the lower row.",
+    "altHash": "img-7uf-fc84bf76"
+  },
+  {
+    "id": "nsx-sort-7",
+    "kind": "sort",
+    "file": "nsx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small pale beetle symbol is followed by an arrow and a larger pale beetle symbol.",
+    "altHash": "img-ajj-c3db2750"
+  },
+  {
+    "id": "nsx-sort-8",
+    "kind": "sort",
+    "file": "nsx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rows of six DNA-symbol blocks differ at one position, marked gold in the lower row.",
+    "altHash": "img-7uf-fc84bf76"
+  },
+  {
+    "id": "nsx-sort-9",
+    "kind": "sort",
+    "file": "nsx-sort-9.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A giraffe stands beside an acacia tree with its head near the leaves.",
+    "altHash": "img-lqj-dd0bead6"
+  },
+  {
+    "id": "nsx-sort-10",
+    "kind": "sort",
+    "file": "nsx-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three groups of eight symbols have four, six and three dark members in successive rows.",
+    "altHash": "img-18jj-7cbfe991"
+  },
+  {
+    "id": "nsx-sort-11",
+    "kind": "sort",
+    "file": "nsx-sort-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A larger pale beetle has one offspring symbol below it; a smaller dark beetle has three.",
+    "altHash": "img-f7b-6b046702"
+  },
+  {
+    "id": "nsx-sort-12",
+    "kind": "sort",
+    "file": "nsx-sort-12.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A mixed row of eight rod-shaped microbe symbols is followed by two dark survivors and eight dark descendants.",
+    "altHash": "img-nz3-b8ffcb41"
+  },
+  {
+    "id": "nsx-lesson-1",
+    "kind": "lesson",
+    "file": "nsx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Six beetles share a similar body form but range from pale tan to dark brown.",
+    "altHash": "img-1gk3-b3e34a3c"
+  },
+  {
+    "id": "nsx-lesson-2",
+    "kind": "lesson",
+    "file": "nsx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One dark beetle symbol branches by three arrows to three smaller dark beetles.",
+    "altHash": "img-hrz-83e62cc2"
+  },
+  {
+    "id": "nsx-lesson-3",
+    "kind": "lesson",
+    "file": "nsx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three rows each contain eight beetle symbols; dark beetles increase from two to four to six down the rows.",
+    "altHash": "img-18tf-3993bf28"
+  },
+  {
+    "id": "nsx-lesson-4",
+    "kind": "lesson",
+    "file": "nsx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A larger pale beetle has one offspring symbol below it; a smaller dark beetle has three.",
+    "altHash": "img-f7b-6b046702"
+  },
+  {
+    "id": "nsx-lesson-5",
+    "kind": "lesson",
+    "file": "nsx-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A pale speckled moth rests with spread wings against pale lichen-covered bark.",
+    "altHash": "img-4n0n-2e5d6da4"
+  },
+  {
+    "id": "nsx-lesson-6",
+    "kind": "lesson",
+    "file": "nsx-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A dark speckled moth rests with spread wings against dark bark.",
+    "altHash": "img-3jp3-1c5c8771"
+  },
+  {
+    "id": "nsx-lesson-7",
+    "kind": "lesson",
+    "file": "nsx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rows of six DNA-symbol blocks differ at one position, marked gold in the lower row.",
+    "altHash": "img-7uf-fc84bf76"
+  },
+  {
+    "id": "nsx-lesson-8",
+    "kind": "lesson",
+    "file": "nsx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A mixed row of eight rod-shaped microbe symbols is followed by two dark survivors and eight dark descendants.",
+    "altHash": "img-nz3-b8ffcb41"
+  }
+]

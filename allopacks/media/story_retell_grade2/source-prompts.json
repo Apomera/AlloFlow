@@ -1,0 +1,24 @@
+[
+  {
+    "slug": "story_retell_grade2",
+    "key": "puppy",
+    "prompt": "Square text-free children story illustration in soft gouache and paper collage. A small golden puppy with floppy ears has just arrived at a home doorway, sitting beside a plain teal pet bed. Warm daytime entryway, clear puppy subject, no people, no text, no numbers. Stylized, not photorealistic; this is the beginning of a story.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-0c117226-8328-41c5-b74c-4540a4fb12ea.png",
+    "alt": "A golden puppy sits inside a home doorway beside a teal pet bed.",
+    "caption": "Beginning of Ada’s invented story: a new puppy arrives. Use the text to establish Ada and the setting; the illustration adds an imagined doorway and bed.",
+    "file": "source-puppy.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "story_retell_grade2",
+    "key": "rope",
+    "prompt": "Square text-free children story illustration in soft gouache and paper collage. A small golden puppy with floppy ears lies on an ivory floor chewing its own sturdy teal knotted rope toy. A pair of purple shoes rests safely up on a shelf in the background. Clear toy and puppy as the main focus. No people, no text, no numbers. Stylized, not photorealistic; scene illustrates the ending of an invented puppy story.",
+    "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-4b9d0e8d-57e5-4ef7-b69d-105ac3c5a858.png",
+    "alt": "A golden puppy chews a teal rope toy while purple shoes rest on a shelf.",
+    "caption": "Ending of the invented story: the puppy chews its own rope toy. This solves the chewing problem within the story, not a promise about real puppy training.",
+    "file": "source-rope.png",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

@@ -1,0 +1,326 @@
+[
+  {
+    "id": "thx-term-1",
+    "kind": "term",
+    "file": "thx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open book has three arrows converging beneath it.",
+    "altHash": "img-fhf-c68b4ab1"
+  },
+  {
+    "id": "thx-term-2",
+    "kind": "term",
+    "file": "thx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A closed teal book has a gold strip along its spine.",
+    "altHash": "img-3wz-dffea22f"
+  },
+  {
+    "id": "thx-term-3",
+    "kind": "term",
+    "file": "thx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold signpost points to the right.",
+    "altHash": "img-67z-d89cc070"
+  },
+  {
+    "id": "thx-term-4",
+    "kind": "term",
+    "file": "thx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes form a sequence, with the middle box highlighted gold.",
+    "altHash": "img-4t3-746b6c55"
+  },
+  {
+    "id": "thx-term-5",
+    "kind": "term",
+    "file": "thx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three small pages each have a gold key repeated below them.",
+    "altHash": "img-akz-1367e66a"
+  },
+  {
+    "id": "thx-term-6",
+    "kind": "term",
+    "file": "thx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic page is enclosed by two balanced gold brackets.",
+    "altHash": "img-74n-3a0e5e80"
+  },
+  {
+    "id": "thx-term-7",
+    "kind": "term",
+    "file": "thx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two teal clues lead by arrows to one larger gold conclusion circle.",
+    "altHash": "img-cej-f52defd5"
+  },
+  {
+    "id": "thx-term-8",
+    "kind": "term",
+    "file": "thx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic page has a highlighted middle line and a magnifying-glass outline beside it.",
+    "altHash": "img-b93-180b1e0c"
+  },
+  {
+    "id": "thx-term-9",
+    "kind": "term",
+    "file": "thx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal route turns upward at a gold dot and then continues right.",
+    "altHash": "img-57z-3a67447d"
+  },
+  {
+    "id": "thx-term-10",
+    "kind": "term",
+    "file": "thx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Teal and coral speech bubbles face one another with arrows running both ways.",
+    "altHash": "img-dnb-badc0a4a"
+  },
+  {
+    "id": "thx-term-11",
+    "kind": "term",
+    "file": "thx-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The last box of a three-step sequence is gold with a closing bracket below it.",
+    "altHash": "img-5c3-e959a4a9"
+  },
+  {
+    "id": "thx-term-12",
+    "kind": "term",
+    "file": "thx-term-12.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five lines on a large page lead toward three shorter gold lines.",
+    "altHash": "img-6i7-89f064ca"
+  },
+  {
+    "id": "thx-anchor-1",
+    "kind": "anchor",
+    "file": "thx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A closed teal book has a gold strip along its spine.",
+    "altHash": "img-3wz-dffea22f"
+  },
+  {
+    "id": "thx-anchor-2",
+    "kind": "anchor",
+    "file": "thx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A gold signpost points to the right.",
+    "altHash": "img-67z-d89cc070"
+  },
+  {
+    "id": "thx-anchor-3",
+    "kind": "anchor",
+    "file": "thx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open book has three arrows converging beneath it.",
+    "altHash": "img-fhf-c68b4ab1"
+  },
+  {
+    "id": "thx-anchor-4",
+    "kind": "anchor",
+    "file": "thx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three small pages each have a gold key repeated below them.",
+    "altHash": "img-akz-1367e66a"
+  },
+  {
+    "id": "thx-sort-1",
+    "kind": "sort",
+    "file": "thx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A winding gold path climbs a teal mountain.",
+    "altHash": "img-dc3-9bbfbd45"
+  },
+  {
+    "id": "thx-sort-2",
+    "kind": "sort",
+    "file": "thx-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A suitcase rests at an open doorway, with a path visible outside.",
+    "altHash": "img-qd7-807400f0"
+  },
+  {
+    "id": "thx-sort-3",
+    "kind": "sort",
+    "file": "thx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two differently colored rings touch in the center.",
+    "altHash": "img-f17-77904375"
+  },
+  {
+    "id": "thx-sort-4",
+    "kind": "sort",
+    "file": "thx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two red hearts are separated by a dashed teal line.",
+    "altHash": "img-767-24040f86"
+  },
+  {
+    "id": "thx-sort-5",
+    "kind": "sort",
+    "file": "thx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A winding gold path climbs a teal mountain.",
+    "altHash": "img-dc3-9bbfbd45"
+  },
+  {
+    "id": "thx-sort-6",
+    "kind": "sort",
+    "file": "thx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two differently colored rings touch in the center.",
+    "altHash": "img-f17-77904375"
+  },
+  {
+    "id": "thx-sort-7",
+    "kind": "sort",
+    "file": "thx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Teal and coral speech bubbles face one another with arrows running both ways.",
+    "altHash": "img-dnb-badc0a4a"
+  },
+  {
+    "id": "thx-sort-8",
+    "kind": "sort",
+    "file": "thx-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A suitcase rests at an open doorway, with a path visible outside.",
+    "altHash": "img-qd7-807400f0"
+  },
+  {
+    "id": "thx-sort-9",
+    "kind": "sort",
+    "file": "thx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two gold lines sit inside a teal speech bubble.",
+    "altHash": "img-7yf-c77d6d07"
+  },
+  {
+    "id": "thx-sort-10",
+    "kind": "sort",
+    "file": "thx-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two gold lines sit inside a teal speech bubble.",
+    "altHash": "img-7yf-c77d6d07"
+  },
+  {
+    "id": "thx-sort-11",
+    "kind": "sort",
+    "file": "thx-sort-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A winding gold path climbs a teal mountain.",
+    "altHash": "img-dc3-9bbfbd45"
+  },
+  {
+    "id": "thx-sort-12",
+    "kind": "sort",
+    "file": "thx-sort-12.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two differently colored rings touch in the center.",
+    "altHash": "img-f17-77904375"
+  },
+  {
+    "id": "thx-lesson-1",
+    "kind": "lesson",
+    "file": "thx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A brass house key rests on a wooden table beside a closed moving box.",
+    "altHash": "img-3ky7-af05c060"
+  },
+  {
+    "id": "thx-lesson-2",
+    "kind": "lesson",
+    "file": "thx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open book has three arrows converging beneath it.",
+    "altHash": "img-fhf-c68b4ab1"
+  },
+  {
+    "id": "thx-lesson-3",
+    "kind": "lesson",
+    "file": "thx-lesson-3.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A suitcase rests at an open doorway, with a path visible outside.",
+    "altHash": "img-3wx3-4b9c29f2"
+  },
+  {
+    "id": "thx-lesson-4",
+    "kind": "lesson",
+    "file": "thx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three small pages each have a gold key repeated below them.",
+    "altHash": "img-akz-1367e66a"
+  },
+  {
+    "id": "thx-lesson-5",
+    "kind": "lesson",
+    "file": "thx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal route turns upward at a gold dot and then continues right.",
+    "altHash": "img-57z-3a67447d"
+  },
+  {
+    "id": "thx-lesson-6",
+    "kind": "lesson",
+    "file": "thx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three connected boxes form a sequence, with the middle box highlighted gold.",
+    "altHash": "img-4t3-746b6c55"
+  },
+  {
+    "id": "thx-lesson-7",
+    "kind": "lesson",
+    "file": "thx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Teal and coral speech bubbles face one another with arrows running both ways.",
+    "altHash": "img-dnb-badc0a4a"
+  },
+  {
+    "id": "thx-lesson-8",
+    "kind": "lesson",
+    "file": "thx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five lines on a large page lead toward three shorter gold lines.",
+    "altHash": "img-6i7-89f064ca"
+  }
+]

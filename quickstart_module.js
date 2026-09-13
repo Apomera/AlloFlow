@@ -910,7 +910,7 @@ const QuickStartWizard = React.memo(({
       ...prev,
       grade: g.value
     })),
-    className: `py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`
+    className: `py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-700 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`
   }, g.label)))), !isParentMode && /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("label", {

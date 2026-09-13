@@ -137,6 +137,35 @@
       if (input) input.select();
     });
   }
+  var studioDialogIsolation = new WeakMap();
+  function isolateStudioDialog(root) {
+    var blocked = [];
+    var branch = root;
+    while (branch && branch.parentElement) {
+      Array.prototype.forEach.call(branch.parentElement.children, function (sibling) {
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK)$/.test(sibling.tagName)) return;
+        var state = studioDialogIsolation.get(sibling);
+        if (!state) {
+          state = { count: 0, inert: sibling.hasAttribute('inert'), hidden: sibling.getAttribute('aria-hidden') };
+          studioDialogIsolation.set(sibling, state);
+        }
+        state.count += 1; blocked.push(sibling);
+        sibling.setAttribute('inert', ''); sibling.setAttribute('aria-hidden', 'true');
+      });
+      branch = branch.parentElement;
+      if (branch === document.body) break;
+    }
+    return function () {
+      blocked.forEach(function (element) {
+        var state = studioDialogIsolation.get(element);
+        if (!state || --state.count > 0) return;
+        if (!state.inert) element.removeAttribute('inert');
+        if (state.hidden == null) element.removeAttribute('aria-hidden'); else element.setAttribute('aria-hidden', state.hidden);
+        studioDialogIsolation.delete(element);
+      });
+      blocked = [];
+    };
+  }
   function askSymbolStudioConfirmation(message, options) {
     return openSymbolStudioDecisionDialog(message, options || {});
   }
@@ -176,7 +205,7 @@
     if (!q) return Promise.resolve([]);
     var url = 'https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q)
       + '&symbolset=mulberry&language=' + mulberryLangCode(lang) + '&language_iso_format=639-3&limit=30';
-    return fetch(url).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+    return promiseWithTimeout(fetch(url).then(function (r) { return r.ok ? r.json() : []; }), 15000, 'Symbol search timed out').then(function (rows) {
       if (!Array.isArray(rows)) return [];
       var seen = {};
       return rows.map(function (row) {
@@ -192,7 +221,7 @@
   // safe and embeds in .obf/.obz exports. Falls back to the URL if fetch fails.
   function fetchSymbolAsDataUri(url) {
     if (!/^https:\/\//i.test(String(url || ''))) return Promise.resolve(url);
-    return fetch(url).then(function (r) { return r.ok ? r.blob() : null; }).then(function (blob) {
+    return promiseWithTimeout(fetch(url).then(function (r) { return r.ok ? r.blob() : null; }), 15000, 'Symbol download timed out').then(function (blob) {
       if (!blob || blob.size > 512000) return url; // guard against anything unexpectedly large
       return new Promise(function (resolve) {
         var fr = new FileReader();
@@ -248,6 +277,35 @@
     + '.ss-theme-dark.ss-modal-root ::placeholder{color:#64748b !important}'
     + '.ss-theme-dark.ss-modal-root :focus-visible{outline:2px solid #a78bfa !important;outline-offset:2px !important}';
     if (document.head) document.head.appendChild(st);
+  })();
+
+
+  (function injectStudioLayoutStyles() {
+    if (document.getElementById('ss-layout-css')) return;
+    var style = document.createElement('style'); style.id = 'ss-layout-css';
+    style.textContent = '.ss-modal-root,.ss-modal-root *{box-sizing:border-box}'
+      + '.ss-body,.ss-workspace,.ss-symbol-browser{min-width:0;min-height:0}'
+      + '.ss-tabs{overflow-x:auto;scrollbar-width:thin}.ss-tabs [role=tab]{min-width:70px;min-height:44px;flex:1 0 70px!important}'
+      + '.ss-setup-toggle{display:none}.ss-symbol-creator{overflow-y:auto;min-height:0}'
+      + '.ss-modal-root button,.ss-modal-root select,.ss-modal-root input:not([type=checkbox]):not([type=radio]){min-height:32px}'
+      + '.ss-modal-root button{min-width:32px}.ss-modal-root input,.ss-modal-root textarea{min-width:0}'
+      + '@media(max-width:800px){.ss-modal-root{padding:0!important}.ss-main-modal{border-radius:0!important}'
+      + '.ss-main-modal>.ss-header{padding:10px!important}.ss-body{flex-direction:column;overflow-y:auto!important}'
+      + '.ss-setup-toggle{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;width:100%;padding:10px 14px;border:0;border-bottom:1px solid #cbd5e1;background:#f5f3ff;color:#5b21b6;font-weight:700;text-align:left}'
+      + '.ss-settings{display:none!important;width:100%!important;overflow:visible!important;border-right:0!important}.ss-settings[data-expanded=true]{display:flex!important}'
+      + '.ss-workspace{flex:0 0 auto!important;overflow:visible!important}.ss-workspace>div{overflow:visible!important;min-width:0;flex-shrink:0!important}'
+      + '.ss-symbols-workspace{flex-direction:column!important;padding:12px!important}.ss-symbol-creator{width:100%!important;overflow:visible!important}.ss-symbol-browser{overflow:visible!important}'
+      + '.ss-modal-root button,.ss-modal-root select,.ss-modal-root input:not([type=checkbox]):not([type=radio]){min-height:44px}'
+      + '.ss-modal-root button{min-width:44px}.ss-workspace button{max-width:100%;white-space:normal!important;overflow-wrap:anywhere}'
+      + '.ss-workspace img{max-width:100%;object-fit:contain}.ss-workspace input,.ss-workspace select,.ss-workspace textarea{max-width:100%;font-size:16px!important}'
+      + '.ss-workspace .ss-board-topic{min-width:min(160px,100%)!important;flex-basis:160px!important}'
+      + '.ss-workspace [style*="min-width"]{min-width:0!important}.ss-workspace [style*="display: flex"]{flex-wrap:wrap}'
+      + '.ss-symbol-bank-heading{flex-wrap:wrap}.ss-symbol-bank-heading input{flex-basis:50%!important}'
+      + '}'
+      + ".ss-setup-toggle{gap:12px}.ss-setup-toggle>span:last-child{flex-shrink:0}@media screen and (max-width:800px){.ss-workspace #ss-pb>div[style*=\"grid-template-columns\"]{grid-template-columns:repeat(auto-fit,minmax(min(132px,100%),1fr))!important}.ss-workspace #ss-pb .ss-board-cell{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;justify-items:center;min-width:0}.ss-workspace #ss-pb .ss-board-cell>img,.ss-workspace #ss-pb .ss-board-cell>span,.ss-workspace #ss-pb .ss-board-cell>div{grid-column:1/-1}.ss-workspace #ss-pb .ss-board-cell>button{position:static!important;min-width:44px!important;min-height:44px!important;width:100%!important;height:auto!important;margin:0!important}.ss-workspace #ss-pb .ss-board-cell>button[aria-label^=\"Speak \"]{grid-column:1/-1}.ss-workspace #ss-pb .ss-board-cell>div[aria-hidden=true]{display:none}.ss-workspace input[type=color]{min-width:44px!important}.ss-workspace button[data-schedule-move-id],.ss-workspace button[aria-label^=\"Move \"][aria-label$=\" later\"],.ss-workspace button[aria-label^=\"Remove \"][aria-label$=\" from sequence\"]{min-height:44px!important}}";
+    style.textContent += ".ss-stories-workspace,.ss-story-viewer,.ss-pack-workspace,.ss-pack-details{min-width:0;min-height:0}.ss-story-print-pages{display:none}@media screen and (max-width:800px){.ss-stories-workspace,.ss-pack-workspace{flex-direction:column!important;overflow:visible!important}.ss-story-editor,.ss-pack-list{width:100%!important;overflow:visible!important;border-right:0!important;flex-shrink:0}.ss-story-viewer,.ss-pack-details{overflow:visible!important;flex:0 0 auto!important;width:100%;padding:12px!important}.ss-story-page{flex-direction:column!important;gap:12px!important;padding:12px!important}.ss-story-page>div{min-width:0}.ss-story-page img{max-width:100%}.ss-workspace .ss-pack-create-field{min-width:min(180px,100%)!important;flex-basis:180px!important}.ss-pack-details [style*=\"grid-template-columns\"]{grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))!important}}@media print{.ss-story-print-pages{display:block!important}.ss-story-viewer,.ss-stories-workspace{display:block!important;overflow:visible!important;padding:0!important}.ss-story-editor{display:none!important}}";
+    style.textContent += '@media print{.ss-print-story,.ss-print-story .ss-main-modal,.ss-print-story .ss-body,.ss-print-story .ss-workspace{position:static!important;display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;min-height:0!important;width:100%!important;max-width:none!important;padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important}.ss-print-story .ss-header,.ss-print-story .ss-settings,.ss-print-story .ss-setup-toggle{display:none!important}.ss-print-story #ss-py{position:static!important}.ss-story-print-pages>div{break-inside:avoid}body:has(.ss-print-story) [inert]{display:none!important}body:has(.ss-print-story),body:has(.ss-print-story) :has(.ss-print-story){position:static!important;display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;min-height:0!important;width:auto!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important;transform:none!important}}';
+    document.head.appendChild(style);
   })();
 
   // ── Constants ─────────────────────────────────────────────────────────────
@@ -486,10 +544,221 @@
     { label: 'Weather', icon: '☀️', items: ['sunny', 'cloudy', 'rainy', 'windy', 'snowy', 'foggy', 'hot', 'cold', 'stormy', 'rainbow'] },
   ];
 
+  // Backups keep profile ownership explicit. Validate and stage every section before
+  // changing storage; a failed write restores all keys already touched in this import.
+  var BACKUP_FIELDS = {
+    gallery: STORAGE_GALLERY, boards: STORAGE_BOARDS, schedules: STORAGE_SCHEDULES,
+    books: STORAGE_BOOKS, familiarity: STORAGE_FAMILIARITY, usageLog: STORAGE_USAGE,
+    iepGoals: 'alloSymbolIEPGoals', growthLog: 'alloGardenGrowthLog'
+  };
+  var BACKUP_MAP_FIELDS = ['familiarity', 'usageLog', 'growthLog'];
+  function readBackupProfile(pid, live) {
+    if (live && String(live.activeProfileId || 'default') === String(pid)) return live;
+    var data = {};
+    Object.keys(BACKUP_FIELDS).forEach(function (field) {
+      data[field] = loadScoped(BACKUP_FIELDS[field], BACKUP_MAP_FIELDS.indexOf(field) >= 0 ? {} : [], pid, true);
+    });
+    return data;
+  }
+  function buildStudioBackup(live) {
+    var profileData = Object.create(null);
+    live.profiles.forEach(function (profile) {
+      var source = readBackupProfile(profile.id, live);
+      var data = {};
+      Object.keys(BACKUP_FIELDS).forEach(function (field) {
+        data[field] = field === 'boards' ? source[field].map(withoutDeviceSpeechReference) : source[field];
+      });
+      profileData[profile.id] = data;
+    });
+    return {
+      version: 8, type: 'alloSymbolStudioBackup', exportDate: new Date().toISOString(),
+      activeProfileId: live.activeProfileId, profiles: live.profiles, profileData: profileData,
+      customTemplates: live.customTemplates, gardenTranslations: live.gardenTranslations,
+      gardenHomeLang: live.gardenHomeLang, wishSeeds: live.wishSeeds
+    };
+  }
+  function validateBackupRows(rows, field) {
+    if (!Array.isArray(rows) || rows.some(function (row) { return !isStoredRecord(row); })) throw new Error('Invalid ' + field + ' list.');
+    rows.forEach(function (row) {
+      ['label', 'title', 'name', 'text', 'description', 'category', 'profileId', 'date'].forEach(function (key) {
+        if (row[key] != null && typeof row[key] !== 'string') throw new Error('Invalid ' + field + ' ' + key + '.');
+      });
+      if (field === 'profiles' && (typeof row.id !== 'string' || !row.id || ['__proto__', 'constructor', 'prototype'].indexOf(row.id) >= 0)) throw new Error('Invalid profile ID.');
+      if ((field === 'wishSeeds' || field === 'gallery' || field === 'entries') && typeof row.label !== 'string') throw new Error('Missing ' + field + ' label.');
+      ['words', 'items', 'pages', 'trials', 'sessions', 'entries'].forEach(function (key) {
+        if (row[key] != null) validateBackupRows(row[key], key);
+      });
+    });
+  }
+  function validateBackupSection(data) {
+    if (!isStoredRecord(data)) throw new Error('Invalid profile data.');
+    Object.keys(BACKUP_FIELDS).forEach(function (field) {
+      if (data[field] == null) return;
+      if (BACKUP_MAP_FIELDS.indexOf(field) < 0) validateBackupRows(data[field], field);
+      else if (!isStoredRecord(data[field])) throw new Error('Invalid ' + field + '.');
+    });
+    Object.keys(data.usageLog || {}).forEach(function (id) {
+      var usage = data.usageLog[id];
+      if (!isStoredRecord(usage)) throw new Error('Invalid usage log.');
+      validateBackupRows(usage.sessions, 'sessions');
+    });
+    Object.keys(data.familiarity || {}).forEach(function (word) {
+      if (!isStoredRecord(data.familiarity[word])) throw new Error('Invalid vocabulary familiarity.');
+    });
+  }
+  function mergeBackupRows(current, imported, keyForRow) {
+    var ids = Object.create(null);
+    var result = [];
+    (imported || []).concat(current || []).forEach(function (row) {
+      var id = keyForRow ? keyForRow(row) : row.id;
+      if (id == null || !ids[id]) { result.push(row); if (id != null) ids[id] = true; }
+    });
+    return result;
+  }
+  function mergeBackupProfile(current, imported) {
+    var result = {};
+    Object.keys(BACKUP_FIELDS).forEach(function (field) {
+      if (BACKUP_MAP_FIELDS.indexOf(field) >= 0) result[field] = Object.assign({}, current[field], imported[field]);
+      else result[field] = mergeBackupRows(current[field], imported[field]);
+    });
+    result.gallery = normalizeBank(result.gallery);
+    result.boards = normalizeStoredRows(STORAGE_BOARDS, result.boards).map(withoutDeviceSpeechReference);
+    result.schedules = normalizeStoredRows(STORAGE_SCHEDULES, result.schedules);
+    result.iepGoals = normalizeStoredRows('alloSymbolIEPGoals', result.iepGoals);
+    result.books = result.books.map(normalizeVisualPack);
+    Object.keys(imported.usageLog || {}).forEach(function (id) {
+      var previous = current.usageLog && current.usageLog[id];
+      result.usageLog[id] = Object.assign({}, previous, imported.usageLog[id], {
+        sessions: mergeBackupRows(previous && previous.sessions, imported.usageLog[id].sessions, function (session) { return JSON.stringify(session); })
+      });
+    });
+    return result;
+  }
+  function isPristineStudioPlaceholder(live) {
+    if (live.profiles.length !== 1) return false;
+    var profile = live.profiles[0];
+    var codename = String(profile.codename || '').split(' ');
+    if (profile.id !== live.activeProfileId || profile.name !== 'Student 1' || profile.description || profile.image
+        || codename.length !== 2 || CN_ADJ.indexOf(codename[0]) < 0 || CN_ANI.indexOf(codename[1]) < 0) return false;
+    var hasData = function (value) { return value != null && (typeof value !== 'object' || Object.keys(value).length > 0); };
+    if (Object.keys(BACKUP_FIELDS).some(function (field) { return hasData(live[field]); })
+        || hasData(live.customTemplates) || hasData(live.wishSeeds) || hasData(live.gardenTranslations)) return false;
+    try {
+      return !Object.keys(BACKUP_FIELDS).some(function (field) {
+        var base = BACKUP_FIELDS[field];
+        return hasData(JSON.parse(localStorage.getItem(profKey(base, profile.id)) || 'null'))
+          || hasData(JSON.parse(localStorage.getItem(base) || 'null'));
+      }) && !hasData(JSON.parse(localStorage.getItem('alloGardenWishSeeds') || 'null'))
+        && !hasData(JSON.parse(localStorage.getItem('alloCustomStoryTemplates') || 'null'));
+    } catch (_) { return false; }
+  }
+  function prepareStudioBackupImport(data, live) {
+    if (!isStoredRecord(data)) throw new Error('Choose a Symbol Studio backup file.');
+    if (data.version != null && (!Number.isFinite(data.version) || data.version > 8)) throw new Error('This backup version is not supported.');
+    if (data.profiles != null) validateBackupRows(data.profiles, 'profiles');
+    ['customTemplates', 'wishSeeds'].forEach(function (field) { if (data[field] != null) validateBackupRows(data[field], field); });
+    if (data.gardenTranslations != null && !isStoredRecord(data.gardenTranslations)) throw new Error('Invalid translations.');
+    if (data.gardenHomeLang != null && typeof data.gardenHomeLang !== 'string') throw new Error('Invalid home language.');
+    var importedProfiles = data.profiles || [];
+    if (!importedProfiles.length && isStoredRecord(data.avatar) && (data.avatar.name || data.avatar.image)) {
+      importedProfiles = [Object.assign({}, data.avatar, { id: uid(), name: String(data.avatar.name || 'Imported'), codename: generateCodename() })];
+    }
+    var profiles = mergeBackupRows(live.profiles, importedProfiles);
+    if (profiles.length > MAX_PROFILES && importedProfiles.length <= MAX_PROFILES && isPristineStudioPlaceholder(live)) {
+      profiles = profiles.filter(function (profile) { return profile.id !== live.activeProfileId; });
+    }
+    if (profiles.length > MAX_PROFILES) throw new Error('This backup would exceed the ' + MAX_PROFILES + '-profile limit. No data was imported.');
+    profiles = profiles.map(function (profile) { return Object.assign({}, profile, { codename: profile.codename || generateCodename() }); });
+    var profileIds = Object.create(null);
+    profiles.forEach(function (profile) { profileIds[profile.id] = true; });
+    var sections = Object.create(null);
+    var legacy = !data.profileData;
+    if (!legacy) {
+      if (!isStoredRecord(data.profileData)) throw new Error('Invalid profile data.');
+      Object.keys(data.profileData).forEach(function (id) {
+        if (!profileIds[id]) throw new Error('Backup contains data for an unknown profile.');
+        validateBackupSection(data.profileData[id]); sections[id] = data.profileData[id];
+      });
+    } else {
+      validateBackupSection(data);
+      var owner = data.activeProfileId && profileIds[data.activeProfileId] ? data.activeProfileId
+        : importedProfiles.length === 1 ? importedProfiles[0].id : live.activeProfileId;
+      if (!profileIds[owner] && importedProfiles.length) owner = importedProfiles[0].id;
+      sections[owner || 'default'] = data;
+    }
+    var recognized = Object.keys(sections).some(function (id) { return Object.keys(BACKUP_FIELDS).some(function (field) { return sections[id][field] != null; }); })
+      || importedProfiles.length || data.customTemplates || data.wishSeeds || data.gardenHomeLang || data.gardenTranslations;
+    if (!recognized) throw new Error('No Symbol Studio backup data was found.');
+    var writes = [];
+    var mergedSections = Object.create(null);
+    Object.keys(sections).forEach(function (id) {
+      var merged = mergeBackupProfile(readBackupProfile(id, live), sections[id]);
+      mergedSections[id] = merged;
+      Object.keys(BACKUP_FIELDS).forEach(function (field) { writes.push([profKey(BACKUP_FIELDS[field], id), merged[field]]); });
+    });
+    var activeId = data.activeProfileId && profileIds[data.activeProfileId] ? data.activeProfileId
+      : legacy && importedProfiles.length === 1 ? importedProfiles[0].id : live.activeProfileId;
+    if (!profileIds[activeId] && importedProfiles.length) activeId = importedProfiles[0].id;
+    var templates = mergeBackupRows(live.customTemplates, data.customTemplates, function (row) { return row.id || row.label; });
+    var wishes = mergeBackupRows(live.wishSeeds, data.wishSeeds, function (row) { return String(row.profileId || '') + ':' + String(row.label || '').toLowerCase(); });
+    var homeLang = data.gardenHomeLang == null ? live.gardenHomeLang : data.gardenHomeLang;
+    writes.push([STORAGE_PROFILES, profiles], [STORAGE_ACTIVE_PROFILE, activeId], ['alloCustomStoryTemplates', templates], ['alloGardenWishSeeds', wishes], ['alloGardenHomeLang', homeLang]);
+    return { writes: writes, profiles: profiles, activeProfileId: activeId,
+      active: mergedSections[activeId] || readBackupProfile(activeId, live),
+      customTemplates: templates, wishSeeds: wishes, gardenHomeLang: homeLang,
+      gardenTranslations: Object.assign({}, live.gardenTranslations, data.gardenTranslations),
+      legacyAmbiguous: legacy && importedProfiles.length > 1, profileCount: Object.keys(sections).length };
+  }
+  function commitStudioBackupImport(writes) {
+    var staged = writes.map(function (entry) { return { key: entry[0], value: JSON.stringify(entry[1]), before: localStorage.getItem(entry[0]) }; });
+    var applied = [];
+    try {
+      staged.forEach(function (entry) { localStorage.setItem(entry.key, entry.value); applied.push(entry); });
+    } catch (error) {
+      var rollbackFailed = false;
+      applied.reverse().forEach(function (entry) {
+        try { if (entry.before == null) localStorage.removeItem(entry.key); else localStorage.setItem(entry.key, entry.before); }
+        catch (_) { rollbackFailed = true; }
+      });
+      throw new Error(rollbackFailed ? 'Storage became unavailable. Some backup data may have been imported; keep your backup and reopen Symbol Studio.' : 'Device storage is unavailable or full. No backup data was imported.');
+    }
+  }
+
   // ── Storage helpers ───────────────────────────────────────────────────────
   function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (e) { try { console.warn('[SymbolStudio] storage write failed for ' + key + ' (' + (e && e.name) + ')'); } catch (_) {} return false; } }
   function notifyVisualSupportsUpdated() { try { window.dispatchEvent(new Event('allo-visual-supports-updated')); } catch (e) {} }
-  function load(key, def) { try { return JSON.parse(localStorage.getItem(key) || 'null') || def; } catch (e) { return def; } }
+  function isStoredRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+  function load(key, def) {
+    try {
+      var value = JSON.parse(localStorage.getItem(key) || 'null');
+      if (value == null) return def;
+      if (Array.isArray(def)) return Array.isArray(value) ? value.filter(isStoredRecord).filter(function (row) { return key !== 'alloGardenWishSeeds' || typeof row.label === 'string'; }) : def;
+      if (isStoredRecord(def)) return isStoredRecord(value) ? value : def;
+      return def != null && typeof value !== typeof def ? def : value;
+    } catch (e) { return def; }
+  }
+  function normalizeStoredRows(base, rows) {
+    return (Array.isArray(rows) ? rows : []).filter(isStoredRecord).map(function (row) {
+      var copy = Object.assign({}, row);
+      copy.id = typeof row.id === 'string' && row.id ? row.id : uid();
+      if (base === STORAGE_BOARDS || base === STORAGE_SCHEDULES) {
+        copy.title = String(row.title || 'Untitled');
+        var field = base === STORAGE_BOARDS ? 'words' : 'items';
+        copy[field] = (Array.isArray(row[field]) ? row[field] : []).filter(isStoredRecord).map(function (cell) {
+          return Object.assign({}, cell, { id: String(cell.id || uid()), label: String(cell.label || ''), description: String(cell.description || ''), image: typeof cell.image === 'string' ? cell.image : null });
+        });
+        if (base === STORAGE_BOARDS) {
+          copy.cols = Math.max(1, Math.min(12, Math.floor(Number(row.cols) || 4)));
+          if (row.pages != null) copy.pages = normalizeStoredRows(STORAGE_BOARDS, row.pages);
+        }
+      }
+      if (base === 'alloSymbolIEPGoals') {
+        copy.text = String(row.text || '');
+        copy.trials = (Array.isArray(row.trials) ? row.trials : []).filter(isStoredRecord);
+      }
+      return copy;
+    });
+  }
 
   // Per-profile scoping for student-specific data (gallery/boards/schedules) so a shared
   // classroom device doesn't surface one student's data under another's profile. A one-time
@@ -504,7 +773,25 @@
       }
     } catch (e) {}
   }
-  function loadScoped(base, def, pid) { migrateGlobalKey(base, pid); return load(profKey(base, pid), def); }
+  function loadScoped(base, def, pid, skipMigration) {
+    if (!skipMigration) migrateGlobalKey(base, pid);
+    var value = load(profKey(base, pid), def);
+    if (base === STORAGE_BOARDS || base === STORAGE_SCHEDULES || base === 'alloSymbolIEPGoals') return normalizeStoredRows(base, value);
+    if (base === STORAGE_USAGE) {
+      var usage = {};
+      Object.keys(value).forEach(function (id) {
+        if (id === '__proto__' || id === 'constructor' || id === 'prototype') return;
+        if (isStoredRecord(value[id])) usage[id] = Object.assign({}, value[id], { sessions: (Array.isArray(value[id].sessions) ? value[id].sessions : []).filter(isStoredRecord).map(function (session) { return Object.assign({}, session, { date: String(session.date || ''), entries: (Array.isArray(session.entries) ? session.entries : []).filter(function (entry) { return isStoredRecord(entry) && typeof entry.label === 'string'; }) }); }) });
+      });
+      return usage;
+    }
+    if (base === STORAGE_FAMILIARITY) {
+      var familiarity = {};
+      Object.keys(value).forEach(function (word) { if (word !== '__proto__' && word !== 'constructor' && word !== 'prototype' && isStoredRecord(value[word])) familiarity[word] = value[word]; });
+      return familiarity;
+    }
+    return value;
+  }
   function uid() { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('id-' + Date.now() + '-' + Math.random().toString(36).slice(2)); }
 
   // Additive Symbol Bank contract. Legacy gallery rows remain valid; these
@@ -531,6 +818,7 @@
       ? source.reviewStatus : 'unreviewed';
     return Object.assign({}, source, {
       id: id,
+      label: String(source.label || ''),
       conceptId: String(source.conceptId || id),
       aliases: cleanAliases,
       reviewStatus: review,
@@ -541,7 +829,7 @@
     });
   }
   function normalizeBank(assets) {
-    return (Array.isArray(assets) ? assets : []).map(normalizeBankAsset);
+    return (Array.isArray(assets) ? assets : []).filter(isStoredRecord).map(normalizeBankAsset);
   }
   function assetSearchText(asset) {
     var item = normalizeBankAsset(asset);
@@ -1387,8 +1675,13 @@
   }
   // Load profiles with migration from legacy single-avatar format
   function loadProfiles() {
-    var saved = load(STORAGE_PROFILES, null);
-    if (saved && saved.length) {
+    var saved = load(STORAGE_PROFILES, []);
+    var seenProfiles = Object.create(null);
+    saved = saved.filter(function (p) {
+      if (typeof p.id !== 'string' || !p.id || seenProfiles[p.id]) return false;
+      seenProfiles[p.id] = true; return true;
+    }).map(function (p) { return Object.assign({}, p, { name: String(p.name || 'Student'), description: String(p.description || ''), image: typeof p.image === 'string' ? p.image : null }); });
+    if (saved.length) {
       // Migration: add codenames to profiles that don't have one
       var changed = false;
       saved.forEach(function (p) { if (!p.codename) { p.codename = generateCodename(); changed = true; } });
@@ -1500,26 +1793,29 @@
     for (var attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         if (attempt > 0) await new Promise(function (r) { setTimeout(r, 1000 * Math.pow(2, attempt)); });
-        return await genImage(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, width);
+        return await promiseWithTimeout(genImage(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, width), 90000, 'Image generation timed out. Please try again.');
       } catch (e) {
         if (attempt === MAX_RETRIES - 1) throw e;
       }
     }
   }
 
-  async function batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, style, onProgress) {
+  async function batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, style, onProgress, isCurrent) {
     var results = []; var failed = [];
     for (var i = 0; i < items.length; i += BATCH_SIZE) {
+      if (isCurrent && !isCurrent()) break;
       var batch = items.slice(i, i + BATCH_SIZE);
       var batchResults = await Promise.all(batch.map(async function (item) {
         try {
           var prompt = buildSymbolPrompt(item.label, item.description || '', style || '', avatarBase64 ? '' : '');
           var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64);
+          if (!imageUrl) throw new Error('No image returned');
           if (onProgress) onProgress(item.id || item.label);
           return Object.assign({}, item, { image: imageUrl });
         } catch (e) {
           warnLog('Failed for "' + (item.label || '') + '":', e.message);
           failed.push(item.label || '?');
+          if (onProgress) onProgress(item.id || item.label);
           return Object.assign({}, item, { image: null });
         }
       }));
@@ -1589,6 +1885,263 @@
   }
 
   // ── Main component ──────────────────────────────────────────────────────────
+  // Per-learner authoring drafts. No image-bearing localStorage fallback.
+  // A resolved write means IDBTransaction.complete fired, not merely put.success.
+  var SYMBOL_STUDIO_DRAFT_DB = 'alloSymbolStudioDrafts';
+  var SYMBOL_STUDIO_DRAFT_MAX_BYTES = 25 * 1024 * 1024;
+  var symbolStudioDraftOperationTails = new Map();
+
+  function symbolStudioDraftError(code, message, cause) {
+    var error = new Error(message); error.name = 'SymbolStudioDraftError'; error.code = code;
+    if (cause) error.cause = cause;
+    return error;
+  }
+  function normalizeSymbolStudioDraftPayload(payload) {
+    function invalid(path) { throw symbolStudioDraftError('invalid-draft', 'Invalid draft field: ' + path); }
+    function record(value, path) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) invalid(path);
+      var proto = Object.getPrototypeOf(value);
+      if (proto !== null && Object.getPrototypeOf(proto) !== null) invalid(path);
+      return value;
+    }
+    function field(source, key, path) {
+      var descriptor = Object.getOwnPropertyDescriptor(source, key);
+      if (!descriptor) return undefined;
+      if (!Object.prototype.hasOwnProperty.call(descriptor, 'value')) invalid(path + '.' + key);
+      return descriptor.value;
+    }
+    function text(max) { return function (value, path) {
+      if (typeof value !== 'string' || value.length > max) invalid(path);
+      return value;
+    }; }
+    function nullable(fn) { return function (value, path) { return value === null ? null : fn(value, path); }; }
+    function number(min, max, integer) { return function (value, path) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || (integer && Math.floor(value) !== value)) invalid(path);
+      return value;
+    }; }
+    function boolean(value, path) { if (typeof value !== 'boolean') invalid(path); return value; }
+    function choice(values) { return function (value, path) { if (values.indexOf(value) < 0) invalid(path); return value; }; }
+    function identifier(value, path) {
+      if (typeof value === 'number' && Number.isSafeInteger(value)) return value;
+      return text(160)(value, path);
+    }
+    function image(value, path) {
+      if (value === null || value === '') return value;
+      text(SYMBOL_STUDIO_DRAFT_MAX_BYTES)(value, path);
+      if (/^data:image\/[a-z0-9.+-]+(?:;[a-z0-9=.+_-]+)*,[\s\S]+$/i.test(value)) return value;
+      if (!/^https?:\/\//i.test(value) || /[\u0000-\u0020\u007f]/.test(value)) invalid(path);
+      try { var parsed = new URL(value); if (!parsed.hostname || !/^https?:$/.test(parsed.protocol)) invalid(path); }
+      catch (error) { invalid(path); }
+      return value;
+    }
+    function audio(value, path) {
+      if (value === null || value === '') return value;
+      text(SYMBOL_STUDIO_DRAFT_MAX_BYTES)(value, path);
+      if (!/^data:audio\/[a-z0-9.+-]+(?:;[a-z0-9=.+_-]+)*;base64,[a-z0-9+/]+={0,2}$/i.test(value)) invalid(path);
+      return value;
+    }
+    function shape(spec) { return function (value, path) {
+      record(value, path); var out = {};
+      Object.keys(spec).forEach(function (key) {
+        var item = field(value, key, path);
+        if (item !== undefined) out[key] = spec[key](item, path + '.' + key);
+      });
+      return out;
+    }; }
+    function array(max, fn) { return function (value, path) {
+      if (!Array.isArray(value) || value.length > max) invalid(path);
+      var out = [];
+      for (var i = 0; i < value.length; i++) {
+        var item = field(value, String(i), path);
+        if (item === undefined) invalid(path + '[' + i + ']');
+        out.push(fn(item, path + '[' + i + ']'));
+      }
+      return out;
+    }; }
+    var id = nullable(identifier);
+    function required(fn, fields, defaults) { return function (value, path) {
+      record(value, path);
+      fields.forEach(function (key) { if (field(value, key, path) === undefined) invalid(path + '.' + key); });
+      return Object.assign({}, defaults || {}, fn(value, path));
+    }; }
+    var cell = required(shape({
+      id: identifier, label: text(500), image: image,
+      translatedLabel: text(500), originalLabel: text(500), vocalLabel: text(500), displayLabel: text(500),
+      description: text(2000), category: text(80), assetId: id, conceptId: id,
+      locked: boolean, complete: boolean, audioData: audio,
+      action: text(80), linkPage: nullable(number(0, 23, true)),
+      aliases: array(40, text(160)), language: text(40)
+    }), ['id', 'label'], { image: null });
+    var board = shape({
+      topic: text(8000), title: text(2000), words: array(64, cell),
+      pages: nullable(array(24, required(shape({ id: identifier, title: text(2000), words: array(64, cell), cols: number(1, 8, true) }), ['id', 'words'], { title: '', cols: 4 }))),
+      activePageIdx: number(0, 23, true), cols: number(1, 8, true), color: boolean,
+      textPos: choice(['above', 'below', 'none']), textSize: number(0, 72, false),
+      cellSize: choice(['small', 'medium', 'large']), language: text(40), editingId: id,
+      fctMeta: nullable(shape({ fctFunction: nullable(text(160)), fctPhase: nullable(number(1, 4, true)), fctGoal: nullable(text(8000)) }))
+    });
+    var sequence = shape({ items: array(12, cell), input: text(16000), topic: text(8000), title: text(2000),
+      orientation: choice(['horizontal', 'vertical']), nowId: id, editingId: id });
+    var story = shape({ situation: text(8000), studentName: text(500), details: text(16000),
+      pages: array(12, required(shape({ id: identifier, text: text(2000), image: image, imagePrompt: text(8000) }), ['id', 'text'], { image: null, imagePrompt: '' })), current: number(0, 11, true) });
+    var quickBoards = shape({
+      qbMode: choice(['firstthen', 'choice', 'token', 'calming', 'sensory', 'askme', 'bodycheck', 'transition']),
+      cbPath: choice(['fct', 'goal']), cbFunction: choice(['Attention', 'Escape', 'Tangible', 'Sensory']), cbPhase: number(1, 4, true), cbGoalText: text(8000),
+      ftFirstLabel: text(2000), ftFirstImage: image, ftThenLabel: text(2000), ftThenImage: image,
+      cbCount: number(2, 4, true), cbItems: array(4, cell),
+      tokenTotal: number(2, 10, true), tokenLabel: text(2000), tokenRewardLabel: text(2000), tokenRewardImage: image,
+      cmItems: array(8, cell), snItems: array(10, cell), amItems: array(10, cell), bcItems: array(8, cell), twItems: array(8, cell)
+    });
+    var result = shape({ board: board, sequence: sequence, story: story, quickBoards: quickBoards })(payload, 'payload');
+    var json = JSON.stringify(result);
+    // UTF-16 length is a cheap lower bound; native encoding avoids walking large
+    // image data strings in JavaScript on every autosave. ASCII is exact as-is.
+    var maxBytes = SYMBOL_STUDIO_DRAFT_MAX_BYTES;
+    function tooLarge() { throw symbolStudioDraftError('too-large', 'This draft exceeds the 25 MB device storage limit.'); }
+    if (json.length > maxBytes) tooLarge();
+    if (/[^\x00-\x7f]/.test(json)) {
+      if (typeof TextEncoder !== 'undefined') {
+        if (new TextEncoder().encode(json).byteLength > maxBytes) tooLarge();
+      } else {
+        var bytes = 0;
+        for (var i = 0; i < json.length; i++) {
+          var code = json.charCodeAt(i);
+          if (code < 128) bytes++;
+          else if (code < 2048) bytes += 2;
+          else if (code >= 0xd800 && code <= 0xdbff && i + 1 < json.length && json.charCodeAt(i + 1) >= 0xdc00 && json.charCodeAt(i + 1) <= 0xdfff) { bytes += 4; i++; }
+          else bytes += 3;
+          if (bytes > maxBytes) tooLarge();
+        }
+      }
+    }
+    return result;
+  }
+
+  function createSymbolStudioDraftStore(options) {
+    options = options || {};
+    var injected = Object.prototype.hasOwnProperty.call(options, 'indexedDB');
+    var db = null, opening = null;
+    function timeout(value, fallback) { return typeof value === 'number' && Number.isFinite(value) ? Math.max(1, Math.min(15000, value)) : fallback; }
+    var openTimeout = timeout(options.openTimeoutMs, 5000);
+    var transactionTimeout = timeout(options.transactionTimeoutMs, 5000);
+    function profileKey(value) {
+      if (typeof value !== 'string' || !value.trim() || value.length > 160 || /[\u0000-\u001f]/.test(value)) {
+        throw symbolStudioDraftError('invalid-profile', 'A valid learner identity is required for this draft.');
+      }
+      return value;
+    }
+    function release(connection) {
+      if (db === connection) db = null;
+      try { connection.close(); } catch (_) { /* Already closed. */ }
+    }
+    function open() {
+      if (db) return Promise.resolve(db);
+      if (opening) return opening;
+      var pending = new Promise(function (resolve, reject) {
+        var request, settled = false;
+        var timer = setTimeout(function () { finish(symbolStudioDraftError('open-timeout', 'Opening draft storage took too long. Try again.')); }, openTimeout);
+        function finish(error, connection) {
+          if (settled) { if (connection) release(connection); return; }
+          settled = true; clearTimeout(timer);
+          if (error) reject(error); else { db = connection; resolve(connection); }
+        }
+        try {
+          var factory = injected ? options.indexedDB : (typeof indexedDB !== 'undefined' ? indexedDB : null);
+          if (!factory || typeof factory.open !== 'function') { finish(symbolStudioDraftError('unavailable', 'Draft storage is unavailable on this device.')); return; }
+          request = factory.open(SYMBOL_STUDIO_DRAFT_DB, 1);
+          request.onupgradeneeded = function () {
+            if (settled) { try { request.transaction.abort(); } catch (_) {} return; }
+            try { if (!request.result.objectStoreNames.contains('drafts')) request.result.createObjectStore('drafts', { keyPath: 'profileId' }); }
+            catch (error) { try { request.transaction.abort(); } catch (_) {} finish(symbolStudioDraftError('open-failed', 'Draft storage could not be prepared.', error)); }
+          };
+          request.onerror = function () { finish(symbolStudioDraftError('open-failed', 'Draft storage could not be opened. Try again.', request.error)); };
+          request.onblocked = function () { finish(symbolStudioDraftError('blocked', 'Draft storage is busy in another window. Close it and retry.')); };
+          request.onsuccess = function () {
+            var connection = request.result;
+            if (settled) { release(connection); return; }
+            connection.onversionchange = function () { release(connection); };
+            connection.onclose = function () { if (db === connection) db = null; };
+            finish(null, connection);
+          };
+        } catch (error) { finish(symbolStudioDraftError('unavailable', 'Draft storage is unavailable on this device.', error)); }
+      });
+      opening = pending;
+      pending.then(function () { if (opening === pending) opening = null; }, function () { if (opening === pending) opening = null; });
+      return pending;
+    }
+    function transaction(connection, method, key, value) {
+      return new Promise(function (resolve, reject) {
+        var tx, request, result, settled = false, failure = null;
+        var timer = setTimeout(function () {
+          failure = symbolStudioDraftError('transaction-timeout', 'Saving or reading the draft took too long. Try again.');
+          try { if (tx) tx.abort(); } catch (_) {}
+          release(connection); finish(failure);
+        }, transactionTimeout);
+        function finish(error) {
+          if (settled) return;
+          settled = true; clearTimeout(timer);
+          if (error) reject(error); else resolve(result);
+        }
+        try {
+          tx = connection.transaction(['drafts'], method === 'get' ? 'readonly' : 'readwrite');
+          tx.oncomplete = function () { finish(failure); };
+          tx.onabort = function () { finish(failure || symbolStudioDraftError('transaction-failed', 'The draft transaction did not finish. Try again.', tx.error)); };
+          tx.onerror = function () { failure = failure || symbolStudioDraftError('transaction-failed', 'The draft transaction failed. Try again.', tx.error); };
+          var store = tx.objectStore('drafts');
+          request = method === 'put' ? store.put(value) : store[method](key);
+          request.onsuccess = function () { result = method === 'put' ? value : method === 'delete' ? true : request.result; };
+          request.onerror = function () {
+            failure = symbolStudioDraftError(request.error && request.error.name === 'QuotaExceededError' ? 'quota-exceeded' : 'transaction-failed', 'The draft could not be stored or read. Free device space or retry.', request.error);
+            try { tx.abort(); } catch (_) { finish(failure); }
+          };
+        } catch (error) {
+          try { if (tx) tx.abort(); } catch (_) {}
+          release(connection); finish(symbolStudioDraftError('transaction-failed', 'The draft transaction could not start. Try again.', error));
+        }
+      });
+    }
+    function enqueue(profileId, operation) {
+      var key;
+      try { key = profileKey(profileId); } catch (error) { return Promise.reject(error); }
+      var previous = symbolStudioDraftOperationTails.get(key) || Promise.resolve();
+      var result = previous.then(operation);
+      var tail = result.catch(function () {});
+      symbolStudioDraftOperationTails.set(key, tail);
+      tail.then(function () { if (symbolStudioDraftOperationTails.get(key) === tail) symbolStudioDraftOperationTails.delete(key); });
+      return result;
+    }
+    return {
+      read: function (profileId) {
+        return enqueue(profileId, function () {
+          var key = profileKey(profileId);
+          return open().then(function (connection) { return transaction(connection, 'get', key); }).then(function (stored) {
+            if (stored === undefined) return null;
+            try {
+              if (!stored || stored.version !== 1 || stored.profileId !== key || typeof stored.updatedAt !== 'number' || !Number.isFinite(stored.updatedAt) || stored.updatedAt < 0) throw new Error('Invalid envelope');
+              return { version: 1, profileId: key, updatedAt: stored.updatedAt, payload: normalizeSymbolStudioDraftPayload(stored.payload) };
+            } catch (error) { throw symbolStudioDraftError('corrupt-draft', 'The saved draft could not be read safely. It has not been overwritten.', error); }
+          });
+        });
+      },
+      write: function (profileId, payload) {
+        // Snapshot synchronously so a queued write cannot observe later caller edits.
+        var envelope;
+        try { envelope = { version: 1, profileId: profileKey(profileId), updatedAt: Date.now(), payload: normalizeSymbolStudioDraftPayload(payload) }; }
+        catch (error) { return Promise.reject(error); }
+        return enqueue(profileId, function () { return open().then(function (connection) { return transaction(connection, 'put', envelope.profileId, envelope); }); });
+      },
+      remove: function (profileId) {
+        return enqueue(profileId, function () { var key = profileKey(profileId); return open().then(function (connection) { return transaction(connection, 'delete', key); }); });
+      }
+    };
+  }
+
+  var symbolStudioSharedDraftStore = null;
+  function getSymbolStudioDraftStore() {
+    if (!symbolStudioSharedDraftStore) symbolStudioSharedDraftStore = createSymbolStudioDraftStore();
+    return symbolStudioSharedDraftStore;
+  }
+
   var SymbolStudio = React.memo(function SymbolStudio(props) {
     var onCallImagen = props.onCallImagen;
     var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
@@ -1648,11 +2201,21 @@
 
     // Shared state. initialTab (optional) lets a caller deep-link / restore the opening tab;
     // absent => 'symbols' (unchanged default), so existing callers + the golden master are byte-identical.
-    var _tab = useState(props.initialTab || 'symbols'); var tab = _tab[0]; var setTab = _tab[1];
+    var _tab = useState(TABS.some(function (item) { return item.id === props.initialTab; }) ? props.initialTab : 'symbols'); var tab = _tab[0]; var setTab = _tab[1];
+    var requestedTabFocusRef = useRef(null);
+    useEffect(function () {
+      if (!isOpen) return;
+      var selectedTab = document.getElementById('ss-tab-' + tab);
+      if (!selectedTab) return;
+      if (requestedTabFocusRef.current === tab) { selectedTab.focus(); requestedTabFocusRef.current = null; }
+      if (selectedTab.scrollIntoView) selectedTab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }, [tab, isOpen]);
     var _profiles = useState(function () { return loadProfiles(); });
     var profiles = _profiles[0]; var setProfiles = _profiles[1];
+    var avatarProfilesRef = useRef(profiles); avatarProfilesRef.current = profiles;
+    var avatarImageEpochRef = useRef(0);
     var _activeProfileId = useState(function () {
-      var profs = load(STORAGE_PROFILES, null) || [];
+      var profs = profiles;
       var saved = load(STORAGE_ACTIVE_PROFILE, null);
       if (saved && profs.find(function (p) { return p.id === saved; })) return saved;
       return profs[0] ? profs[0].id : null;
@@ -1661,6 +2224,7 @@
     var activeProfileIdRef = useRef(activeProfileId); activeProfileIdRef.current = activeProfileId;
     var scopedKey = function (base) { return profKey(base, activeProfileIdRef.current); };
     var activeProfile = profiles.find(function (p) { return p.id === activeProfileId; }) || profiles[0] || { id: null, image: null, name: '', description: '' };
+    var _showSetup = useState(false); var showSetup = _showSetup[0]; var setShowSetup = _showSetup[1];
     var _showAvatar = useState(false); var showAvatar = _showAvatar[0]; var setShowAvatar = _showAvatar[1];
     var _avatarGenerating = useState(false); var avatarGenerating = _avatarGenerating[0]; var setAvatarGenerating = _avatarGenerating[1];
     var _avatarDesc = useState(activeProfile.description || ''); var avatarDesc = _avatarDesc[0]; var setAvatarDesc = _avatarDesc[1];
@@ -1684,12 +2248,55 @@
     // Symbols tab state
     var _gallery = useState(function () { return loadScopedBank(activeProfileId); });
     var gallery = _gallery[0]; var setGallery = _gallery[1];
+    var galleryStateRef = useRef(gallery); galleryStateRef.current = gallery;
+    var _symbolSaveError = useState(false); var symbolSaveError = _symbolSaveError[0]; var setSymbolSaveError = _symbolSaveError[1];
+    var studioDraftWorkEpochRef = useRef({ board: 0, story: 0, quickBoards: 0 });
+    var symbolWorkRef = useRef({ epoch: 0, profileId: activeProfileId, open: isOpen, pending: {} });
+    if (symbolWorkRef.current.profileId !== activeProfileId || symbolWorkRef.current.open !== isOpen) {
+      symbolWorkRef.current = { epoch: symbolWorkRef.current.epoch + 1, profileId: activeProfileId, open: isOpen, pending: {} };
+    }
+    useEffect(function () {
+      setBoardGenerating(false); setBoardLoading({});
+      setSymLoading({}); setMulberryLoading(false); setMulberryAdding(null); setMulberryOpen(false);
+      setSelectedId(null);
+      return function () { symbolWorkRef.current.epoch += 1; symbolWorkRef.current.pending = {}; };
+    }, [activeProfileId, isOpen]);
+    useEffect(function () { setSymbolSaveError(false); }, [activeProfileId]);
+    function studioDraftWorkGroup(key) { return /^story/.test(key) ? 'story' : /^goal-board/.test(key) ? 'quickBoards' : /^board-(topic|images|cell)-/.test(key) ? 'board' : null; }
+    function startSymbolWork(key) {
+      var state = symbolWorkRef.current;
+      if (!state.open || state.pending[key]) return null;
+      state.pending[key] = true;
+      var work = { epoch: state.epoch, profileId: state.profileId, key: key };
+      var draftGroup = studioDraftWorkGroup(key);
+      if (draftGroup) { work.draftGroup = draftGroup; work.draftEpoch = studioDraftWorkEpochRef.current[draftGroup]; }
+      return work;
+    }
+    function symbolWorkIsCurrent(work) {
+      return !!work && symbolWorkRef.current.open && work.epoch === symbolWorkRef.current.epoch && work.profileId === activeProfileIdRef.current && (work.draftEpoch == null || work.draftEpoch === studioDraftWorkEpochRef.current[work.draftGroup]);
+    }
+    function finishSymbolWork(work) {
+      if (!symbolWorkIsCurrent(work)) return;
+      delete symbolWorkRef.current.pending[work.key];
+      setSymLoading(function (prev) { var next = Object.assign({}, prev); delete next[work.key]; return next; });
+    }
+    function commitSymbolBank(update, work) {
+      if (!symbolWorkIsCurrent(work)) return false;
+      var next = update(galleryStateRef.current);
+      var saved = store(profKey(STORAGE_GALLERY, work.profileId), next);
+      galleryStateRef.current = next;
+      setGallery(next); setSymbolSaveError(!saved);
+      if (!saved && addToast) addToast('Symbols are available for this session, but could not be saved on this device. Download a backup before closing.', 'error');
+      return saved;
+    }
     var _selectedId = useState(null); var selectedId = _selectedId[0]; var setSelectedId = _selectedId[1];
     var _symLabel = useState(''); var symLabel = _symLabel[0]; var setSymLabel = _symLabel[1];
     var _symDesc = useState(''); var symDesc = _symDesc[0]; var setSymDesc = _symDesc[1];
     var _symBatch = useState(''); var symBatch = _symBatch[0]; var setSymBatch = _symBatch[1];
     var _symMode = useState('single'); var symMode = _symMode[0]; var setSymMode = _symMode[1];
     var _symLoading = useState({}); var symLoading = _symLoading[0]; var setSymLoading = _symLoading[1];
+    var _symAliasDraft = useState({}); var symAliasDraft = _symAliasDraft[0]; var setSymAliasDraft = _symAliasDraft[1];
+    useEffect(function () { setSymAliasDraft({}); }, [activeProfileId]);
     var _symRefine = useState({}); var symRefine = _symRefine[0]; var setSymRefine = _symRefine[1];
     var _symFilter = useState(''); var symFilter = _symFilter[0]; var setSymFilter = _symFilter[1];
     var _symCatFilter = useState(''); var symCatFilter = _symCatFilter[0]; var setSymCatFilter = _symCatFilter[1];
@@ -1702,16 +2309,25 @@
     var _mulResults = useState([]); var mulberryResults = _mulResults[0]; var setMulberryResults = _mulResults[1];
     var _mulLoading = useState(false); var mulberryLoading = _mulLoading[0]; var setMulberryLoading = _mulLoading[1];
     var _mulAdding = useState(null); var mulberryAdding = _mulAdding[0]; var setMulberryAdding = _mulAdding[1];
+    var mulberryDialogRef = useRef(null);
+    var mulberryOpenerRef = useRef(null);
+    var mulberrySearchEpochRef = useRef(0);
     var _mulSearched = useState(false); var mulberrySearched = _mulSearched[0]; var setMulberrySearched = _mulSearched[1];
     var openMulberryPicker = function () {
+      mulberryOpenerRef.current = document.activeElement;
+      mulberrySearchEpochRef.current += 1;
+      setMulberryLoading(false);
       setMulberryQuery(symLabel || '');
       setMulberryResults([]); setMulberrySearched(false); setMulberryOpen(true);
     };
     var runMulberrySearch = function (q) {
       var query = ((q != null ? q : mulberryQuery) || '').trim();
       if (!query) return;
+      var searchEpoch = ++mulberrySearchEpochRef.current;
+      var workEpoch = symbolWorkRef.current.epoch;
       setMulberryLoading(true); setMulberrySearched(true);
       searchMulberrySymbols(query, boardLang).then(function (results) {
+        if (searchEpoch !== mulberrySearchEpochRef.current || workEpoch !== symbolWorkRef.current.epoch) return;
         setMulberryResults(results); setMulberryLoading(false);
       }).catch(function () { setMulberryResults([]); setMulberryLoading(false); });
     };
@@ -1720,8 +2336,11 @@
     // CC BY-SA attribution. The SVG is embedded as a data: URI for portability.
     var addMulberryToGallery = function (result) {
       if (!result || mulberryAdding) return;
+      var work = startSymbolWork('mulberry');
+      if (!work) return;
       setMulberryAdding(result.id);
       fetchSymbolAsDataUri(result.svgUrl).then(function (img) {
+        if (!symbolWorkIsCurrent(work)) return;
         var label = ((mulberryQuery || result.label || '').trim()) || result.label || 'symbol';
         var entry = normalizeBankAsset({
           id: uid(), label: label, description: '', image: safeImgUrl(img) || result.svgUrl,
@@ -1729,17 +2348,21 @@
           source: 'mulberry', validated: true,
           attribution: { set: 'Mulberry Symbols', license: 'CC BY-SA', via: 'Global Symbols', url: 'https://globalsymbols.com' }
         });
-        var updated = [entry].concat(gallery);
-        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+        var saved = commitSymbolBank(function (current) { return [entry].concat(current); }, work);
         setSelectedId(entry.id); setMulberryAdding(null);
-        addToast && addToast('Added validated symbol "' + label + '" (Mulberry)', 'success');
+        finishSymbolWork(work);
+        saved && addToast && addToast('Added validated symbol "' + label + '" (Mulberry)', 'success');
       }).catch(function () {
+        if (!symbolWorkIsCurrent(work)) return;
+        finishSymbolWork(work);
         setMulberryAdding(null);
         addToast && addToast('Could not add that symbol — try another.', 'error');
       });
     };
 
     // Board Builder state
+    var boardDraftEpochRef = useRef(0);
+    var _deletedBoardPage = useState(null); var deletedBoardPage = _deletedBoardPage[0]; var setDeletedBoardPage = _deletedBoardPage[1];
     var _boardTopic = useState(''); var boardTopic = _boardTopic[0]; var setBoardTopic = _boardTopic[1];
     var _boardWords = useState([]); var boardWords = _boardWords[0]; var setBoardWords = _boardWords[1];
     // Multi-page boards — activePage = index of the page currently being edited
@@ -1755,6 +2378,9 @@
     var _savedBoards = useState(function () { return loadScoped(STORAGE_BOARDS, [], activeProfileId); });
     var savedBoards = _savedBoards[0]; var setSavedBoards = _savedBoards[1];
     var savedBoardsRef = useRef(savedBoards); savedBoardsRef.current = savedBoards;
+    var _editingBoardId = useState(null); var editingBoardId = _editingBoardId[0]; var setEditingBoardId = _editingBoardId[1];
+    var editingBoardRef = useRef(null);
+    function resetBoardEditingIdentity() { editingBoardRef.current = null; setEditingBoardId(null); pendingFctMetaRef.current = null; setBoardLoading({}); setBoardGenerating(false); }
     var _showBoardGallery = useState(false); var showBoardGallery = _showBoardGallery[0]; var setShowBoardGallery = _showBoardGallery[1];
     var _boardProfileFilter = useState(''); var boardProfileFilter = _boardProfileFilter[0]; var setBoardProfileFilter = _boardProfileFilter[1];
     // Board drag-to-reorder
@@ -1787,6 +2413,10 @@
     var _schedNowId = useState(null); var schedNowId = _schedNowId[0]; var setSchedNowId = _schedNowId[1];
     var _savedSchedules = useState(function () { return loadScoped(STORAGE_SCHEDULES, [], activeProfileId); });
     var savedSchedules = _savedSchedules[0]; var setSavedSchedules = _savedSchedules[1];
+    var savedSchedulesRef = useRef(savedSchedules); savedSchedulesRef.current = savedSchedules;
+    var _editingScheduleId = useState(null); var editingScheduleId = _editingScheduleId[0]; var setEditingScheduleId = _editingScheduleId[1];
+    var editingScheduleRef = useRef(null);
+    function resetScheduleEditingIdentity() { editingScheduleRef.current = null; setEditingScheduleId(null); }
     var visualPackImportEpochRef = useRef(0);
     var visualPackImportStateRef = useRef(null);
     visualPackImportStateRef.current = {
@@ -1826,6 +2456,8 @@
       schedGenerationEpochRef.current += 1;
       setSchedGenerating(false);
       setSchedPlanning(false);
+      resetBoardEditingIdentity(); resetScheduleEditingIdentity();
+      boardDraftEpochRef.current += 1; setDeletedBoardPage(null);
       setBoardTopic(''); setBoardWords([]); setBoardPages(null); setActivePageIdx(0); setBoardTitle('');
       setSchedItems([]); setSchedInput(''); setSchedTitle(''); setSchedNowId(null);
       setSchedTopic('');
@@ -1841,6 +2473,32 @@
     var _storyGenerating = useState(false); var storyGenerating = _storyGenerating[0]; var setStoryGenerating = _storyGenerating[1];
     var _storyIllustrating = useState({}); var storyIllustrating = _storyIllustrating[0]; var setStoryIllustrating = _storyIllustrating[1];
     var _storySpeaking = useState(false); var storySpeaking = _storySpeaking[0]; var setStorySpeaking = _storySpeaking[1];
+    var _storyError = useState(''); var storyError = _storyError[0]; var setStoryError = _storyError[1];
+    var _storyProgress = useState({ ready: 0, total: 0 }); var storyProgress = _storyProgress[0]; var setStoryProgress = _storyProgress[1];
+    var storyRevisionRef = useRef(0);
+    // Keep unsaved page wording separate from the committed story and its illustrations.
+    var _storyTextEdit = useState(null); var storyTextEdit = _storyTextEdit[0]; var setStoryTextEdit = _storyTextEdit[1];
+    var _storyTextEditError = useState(''); var storyTextEditError = _storyTextEditError[0]; var setStoryTextEditError = _storyTextEditError[1];
+    var storyTextEditButtonRef = useRef(null);
+    var storyTextEditReturnFocusRef = useRef(false);
+    useEffect(function () {
+      setStoryTextEdit(null); setStoryTextEditError(''); storyTextEditReturnFocusRef.current = false;
+    }, [activeProfileId, isOpen, tab, storyCurrent, storyRevisionRef.current]);
+    useEffect(function () {
+      if (!storyTextEdit && storyTextEditReturnFocusRef.current) {
+        storyTextEditReturnFocusRef.current = false;
+        if (storyTextEditButtonRef.current) storyTextEditButtonRef.current.focus();
+      }
+    }, [storyTextEdit]);
+    useEffect(function () {
+      setStoryGenerating(false); setStoryIllustrating({}); setStorySpeaking(false);
+      setAvatarGenerating(false); avatarImageEpochRef.current += 1;
+    }, [activeProfileId, isOpen]);
+    useEffect(function () {
+      storyRevisionRef.current += 1;
+      setStoryPages([]); setStoryCurrent(0); setStorySituation(''); setStoryDetails('');
+      setStoryStudentName(activeProfile.name || ''); setStoryError(''); setStoryProgress({ ready: 0, total: 0 });
+    }, [activeProfileId]);
 
     // Custom story templates
     var STORAGE_CUSTOM_TEMPLATES = 'alloCustomStoryTemplates';
@@ -1875,6 +2533,22 @@
     var _boardLang = useState(function () { return load(STORAGE_BOARD_LANG, 'en'); });
     var boardLang = _boardLang[0]; var setBoardLang = _boardLang[1];
     var _translating = useState(false); var translating = _translating[0]; var setTranslating = _translating[1];
+    var boardTranslationRequestRef = useRef(null);
+    var boardTranslationContextRef = useRef(null);
+    boardTranslationContextRef.current = { profileId: activeProfileId, open: isOpen, draftEpoch: boardDraftEpochRef.current, pageIndex: activePageIdx, pageId: boardPages && boardPages[activePageIdx] ? boardPages[activePageIdx].id : null, language: boardLang };
+    var boardTranslationContextKey = JSON.stringify(boardTranslationContextRef.current);
+    function boardTranslationIsCurrent(request) {
+      return boardTranslationRequestRef.current === request && boardTranslationContextRef.current.open
+        && boardTranslationContextRef.current.draftEpoch === boardDraftEpochRef.current
+        && request.contextKey === JSON.stringify(boardTranslationContextRef.current);
+    }
+    function cancelBoardTranslation() { boardTranslationRequestRef.current = null; setTranslating(false); }
+    useEffect(function () {
+      var request = boardTranslationRequestRef.current;
+      if (request && !boardTranslationIsCurrent(request)) cancelBoardTranslation();
+    }, [boardTranslationContextKey]);
+    useEffect(function () { return function () { boardTranslationRequestRef.current = null; }; }, []);
+
 
     // ── IEP Goal Tracking ──
     var STORAGE_GOALS = 'alloSymbolIEPGoals';
@@ -1998,6 +2672,331 @@
     var _twLoading = useState({}); var twLoading = _twLoading[0]; var setTwLoading = _twLoading[1];
     var _twStep = useState(0); var twStep = _twStep[0]; var setTwStep = _twStep[1];
 
+    // Drafts keep authoring work local to this learner. Saved supports remain separate.
+    var draftStoreRef = useRef(null);
+    if (!draftStoreRef.current) draftStoreRef.current = props.draftStorage || getSymbolStudioDraftStore();
+    var _draftStatus = useState('loading'); var draftStatus = _draftStatus[0]; var setDraftStatus = _draftStatus[1];
+    var _draftHydratedProfile = useState(null); var draftHydratedProfile = _draftHydratedProfile[0]; var setDraftHydratedProfile = _draftHydratedProfile[1];
+    var _draftRecovery = useState(null); var draftRecovery = _draftRecovery[0]; var setDraftRecovery = _draftRecovery[1];
+    var draftApplyingRef = useRef(false);
+    var _draftApplyRevision = useState(0); var draftApplyRevision = _draftApplyRevision[0]; var setDraftApplyRevision = _draftApplyRevision[1];
+    var draftTextPendingRef = useRef(false);
+    draftTextPendingRef.current = !!storyTextEdit && storyTextEdit.text !== ((storyPages.find(function (page) { return page.id === storyTextEdit.pageId; }) || {}).text || '');
+    var draftLifeRef = useRef({ owner: null, generation: 0, records: Object.create(null), timer: null, mounted: true });
+    var draftSnapshot = React.useMemo(function () {
+      return {
+        board: {topic: boardTopic, title: boardTitle, words: boardWords, pages: boardPages && boardPages.map(function (page, index) { return index === activePageIdx ? Object.assign({}, page, { words: boardWords, cols: boardCols }) : page; }), activePageIdx: activePageIdx, cols: boardCols, color: boardColor, textPos: boardTextPos, textSize: boardTextSize, cellSize: boardCellSz, language: boardLang, editingId: editingBoardId, fctMeta: pendingFctMetaRef.current},
+        sequence: {items: schedItems, input: schedInput, topic: schedTopic, title: schedTitle, orientation: schedOrientation, nowId: schedNowId, editingId: editingScheduleId},
+        story: {situation: storySituation, studentName: storyStudentName, details: storyDetails, pages: storyPages, current: storyCurrent},
+        quickBoards: {qbMode: qbMode, cbPath: cbPath, cbFunction: cbFunction, cbPhase: cbPhase, cbGoalText: cbGoalText, ftFirstLabel: ftFirstLabel, ftFirstImage: ftFirstImage, ftThenLabel: ftThenLabel, ftThenImage: ftThenImage, cbCount: cbCount, cbItems: cbItems, tokenTotal: tokenTotal, tokenLabel: tokenLabel, tokenRewardLabel: tokenRewardLabel, tokenRewardImage: tokenRewardImage, cmItems: cmItems, snItems: snItems, amItems: amItems, bcItems: bcItems, twItems: twItems}
+      };
+    }, [boardTopic, boardTitle, boardWords, boardPages, activePageIdx, boardCols, boardColor, boardTextPos, boardTextSize, boardCellSz, boardLang, editingBoardId, schedItems, schedInput, schedTopic, schedTitle, schedOrientation, schedNowId, editingScheduleId, storySituation, storyStudentName, storyDetails, storyPages, storyCurrent, qbMode, cbPath, cbFunction, cbPhase, cbGoalText, ftFirstLabel, ftFirstImage, ftThenLabel, ftThenImage, cbCount, cbItems, tokenTotal, tokenLabel, tokenRewardLabel, tokenRewardImage, cmItems, snItems, amItems, bcItems, twItems]);
+    var draftDefaultsRef = useRef(draftSnapshot);
+
+    function draftDefaultsForProfile() {
+      return Object.assign({}, draftDefaultsRef.current, {
+        story: Object.assign({}, draftDefaultsRef.current.story, { studentName: activeProfile.name || '' })
+      });
+    }
+    function applyStudioDraft(payload, trustedSession) {
+      var base = draftDefaultsForProfile();
+      var clean = trustedSession ? (payload || {}) : normalizeSymbolStudioDraftPayload(payload || {});
+      var next = {};
+      ['board', 'sequence', 'story', 'quickBoards'].forEach(function (key) { next[key] = Object.assign({}, base[key], clean[key] || {}); });
+      ['cbItems', 'cmItems', 'snItems', 'amItems', 'bcItems', 'twItems'].forEach(function (key) {
+        var supplied = next.quickBoards[key];
+        next.quickBoards[key] = base.quickBoards[key].map(function (cell) {
+          var match = (supplied || []).find(function (item) { return item.id === cell.id; });
+          return match ? Object.assign({}, cell, match) : cell;
+        });
+      });
+      var pages = next.board.pages;
+      if (Array.isArray(pages) && pages.length) {
+        next.board.activePageIdx = Math.max(0, Math.min(Number(next.board.activePageIdx) || 0, pages.length - 1));
+        next.board.words = pages[next.board.activePageIdx].words || [];
+        next.board.cols = pages[next.board.activePageIdx].cols || next.board.cols;
+      } else { next.board.pages = null; next.board.activePageIdx = 0; }
+      next.story.current = Math.max(0, Math.min(Number(next.story.current) || 0, Math.max(0, next.story.pages.length - 1)));
+      draftApplyingRef.current = true; setDraftApplyRevision(function (value) { return value + 1; });
+      Object.keys(studioDraftWorkEpochRef.current).forEach(function (key) { studioDraftWorkEpochRef.current[key] += 1; });
+      Object.keys(symbolWorkRef.current.pending).forEach(function (key) { if (studioDraftWorkGroup(key)) delete symbolWorkRef.current.pending[key]; });
+      boardDraftEpochRef.current += 1; schedGenerationEpochRef.current += 1; storyRevisionRef.current += 1;
+      stopBoardPlayback(true); setStorySpeaking(false); setStoryTextEdit(null); setStoryTextEditError('');
+      setBoardLoading({}); setBoardGenerating(false); setDeletedBoardPage(null);
+      setSchedGenerating(false); setSchedPlanning(false); setStoryGenerating(false); setStoryIllustrating({}); setStoryError('');
+      setStoryProgress({ ready: next.story.pages.filter(function (page) { return !!page.image; }).length, total: next.story.pages.length });
+      quickBoardImageJobsRef.current = {}; quickBoardPreviousLabelsRef.current = null;
+      setFtFirstLoading(false); setFtThenLoading(false); setTokenRewardLoading(false);
+      setCbLoading({}); setCmLoading({}); setSnLoading({}); setAmLoading({}); setBcLoading({}); setTwLoading({});
+      setCbSelected(null); setTokenEarned(0); setBcPainLevel(null); setTwStep(0); setCbGoalBusy(false); setQbUploadTarget(null);
+      setBoardTopic(next.board.topic);
+      setBoardTitle(next.board.title);
+      setBoardWords(next.board.words);
+      setBoardPages(next.board.pages);
+      setActivePageIdx(next.board.activePageIdx);
+      setBoardCols(next.board.cols);
+      setBoardColor(next.board.color);
+      setBoardTextPos(next.board.textPos);
+      setBoardTextSize(next.board.textSize);
+      setBoardCellSz(next.board.cellSize);
+      setBoardLang(next.board.language);
+      setSchedItems(next.sequence.items);
+      setSchedInput(next.sequence.input);
+      setSchedTopic(next.sequence.topic);
+      setSchedTitle(next.sequence.title);
+      setSchedOrientation(next.sequence.orientation);
+      setSchedNowId(next.sequence.nowId);
+      setStorySituation(next.story.situation);
+      setStoryStudentName(next.story.studentName);
+      setStoryDetails(next.story.details);
+      setStoryPages(next.story.pages);
+      setStoryCurrent(next.story.current);
+      setQbMode(next.quickBoards.qbMode);
+      setCbPath(next.quickBoards.cbPath);
+      setCbFunction(next.quickBoards.cbFunction);
+      setCbPhase(next.quickBoards.cbPhase);
+      setCbGoalText(next.quickBoards.cbGoalText);
+      setFtFirstLabel(next.quickBoards.ftFirstLabel);
+      setFtFirstImage(next.quickBoards.ftFirstImage);
+      setFtThenLabel(next.quickBoards.ftThenLabel);
+      setFtThenImage(next.quickBoards.ftThenImage);
+      setCbCount(next.quickBoards.cbCount);
+      setCbItems(next.quickBoards.cbItems);
+      setTokenTotal(next.quickBoards.tokenTotal);
+      setTokenLabel(next.quickBoards.tokenLabel);
+      setTokenRewardLabel(next.quickBoards.tokenRewardLabel);
+      setTokenRewardImage(next.quickBoards.tokenRewardImage);
+      setCmItems(next.quickBoards.cmItems);
+      setSnItems(next.quickBoards.snItems);
+      setAmItems(next.quickBoards.amItems);
+      setBcItems(next.quickBoards.bcItems);
+      setTwItems(next.quickBoards.twItems);
+      var storedBoard = loadScoped(STORAGE_BOARDS, [], activeProfileId).find(function (board) { return board.id === next.board.editingId; });
+      editingBoardRef.current = storedBoard ? { profileId: activeProfileId, record: storedBoard } : null; setEditingBoardId(storedBoard ? storedBoard.id : null);
+      pendingFctMetaRef.current = next.board.fctMeta || null;
+      var storedSequence = loadScoped(STORAGE_SCHEDULES, [], activeProfileId).find(function (sequence) { return sequence.id === next.sequence.editingId; });
+      editingScheduleRef.current = storedSequence ? { profileId: activeProfileId, record: storedSequence } : null; setEditingScheduleId(storedSequence ? storedSequence.id : null);
+      return next;
+    }
+    function flushStudioDraft(profileId) {
+      var life = draftLifeRef.current;
+      var record = life.records[profileId];
+      if (!record || record.deleted || record.blocked || !record.dirty || !record.snapshot) return Promise.resolve();
+      if (record.writingVersion === record.version) return record.writing;
+      var version = record.version; var snapshot = record.snapshot;
+      record.writingVersion = version;
+      if (life.mounted && life.owner === profileId) setDraftStatus('saving');
+      var operation;
+      try { operation = draftStoreRef.current.write(profileId, snapshot); } catch (error) { operation = Promise.reject(error); }
+      record.writing = Promise.resolve(operation).then(function () {
+        if (record.deleted) return;
+        if (record.version === version) {
+          record.dirty = false; record.persisted = true; record.error = false;
+          if (life.mounted && life.owner === profileId) setDraftStatus('saved');
+        }
+      }).catch(function () {
+        if (record.deleted) return;
+        record.error = true;
+        if (life.mounted && life.owner === profileId && record.version === version) setDraftStatus('error');
+      }).finally(function () { if (record.writingVersion === version) { record.writingVersion = null; record.writing = null; } });
+      return record.writing;
+    }
+    function completeStudioDraftRecovery(profileId, payload, persisted) {
+      var life = draftLifeRef.current;
+      if (!life.mounted || life.owner !== profileId) return;
+      var record = life.records[profileId];
+      var next = applyStudioDraft(payload);
+      record.ready = true; record.snapshot = next; record.dirty = false; record.blocked = false; record.loadFailed = false; record.error = false; record.persisted = persisted;
+      setDraftHydratedProfile(profileId); setDraftRecovery(null); setDraftStatus(persisted ? 'restored' : 'ready');
+    }
+    useEffect(function () {
+      var life = draftLifeRef.current; var profileId = activeProfileId;
+      var previous = life.owner;
+      if (life.timer) { clearTimeout(life.timer); life.timer = null; }
+      if (previous != null && previous !== profileId) flushStudioDraft(previous);
+      life.owner = profileId;
+      var generation = ++life.generation;
+      setDraftHydratedProfile(null); setDraftRecovery(null); setDraftStatus('loading');
+      var cached = life.records[profileId];
+      if (cached && cached.ready && !cached.deleted) {
+        applyStudioDraft(cached.snapshot || {}, true);
+        setDraftHydratedProfile(profileId);
+        setDraftStatus(cached.blocked || cached.error ? 'error' : cached.dirty ? 'saving' : cached.persisted ? 'restored' : 'ready');
+        if (cached.dirty && !cached.blocked) flushStudioDraft(profileId);
+        return;
+      }
+      life.records[profileId] = { snapshot: null, version: 0, ready: false, dirty: false, blocked: false, persisted: false };
+      applyStudioDraft({});
+      Promise.resolve().then(function () { return draftStoreRef.current.read(profileId); }).then(function (stored) {
+        if (!life.mounted || life.owner !== profileId || life.generation !== generation) return;
+        completeStudioDraftRecovery(profileId, stored && stored.payload || {}, !!stored);
+      }).catch(function () {
+        if (!life.mounted || life.owner !== profileId || life.generation !== generation) return;
+        var record = life.records[profileId]; record.ready = true; record.blocked = true; record.loadFailed = true; record.error = true;
+        setDraftHydratedProfile(profileId); setDraftStatus('error');
+      });
+    }, [activeProfileId]);
+    useEffect(function () {
+      var life = draftLifeRef.current; var record = life.records[activeProfileId];
+      if (draftHydratedProfile !== activeProfileId || life.owner !== activeProfileId || !record || record.deleted) return;
+      if (draftApplyingRef.current) {
+        draftApplyingRef.current = false; record.snapshot = draftSnapshot;
+        return;
+      }
+      if (record.snapshot === draftSnapshot) return;
+      record.snapshot = draftSnapshot; record.version += 1; record.dirty = true;
+      if (life.timer) clearTimeout(life.timer);
+      if (record.blocked) { setDraftApplyRevision(function (value) { return value + 1; }); return; }
+      setDraftStatus('saving');
+      var profileId = activeProfileId;
+      life.timer = setTimeout(function () { life.timer = null; flushStudioDraft(profileId); }, 500);
+    }, [draftSnapshot, draftHydratedProfile, activeProfileId, draftApplyRevision]);
+    useEffect(function () {
+      var life = draftLifeRef.current; life.mounted = true;
+      function flush() {
+        if (life.timer) { clearTimeout(life.timer); life.timer = null; }
+        Object.keys(life.records).forEach(function (profileId) { flushStudioDraft(profileId); });
+      }
+      function onVisibility() { if (document.visibilityState === 'hidden') flush(); }
+      function onBeforeUnload(event) {
+        flush();
+        var pending = draftTextPendingRef.current || Object.keys(life.records).some(function (key) { var record = life.records[key]; return !record.deleted && (record.dirty || record.writingVersion != null); });
+        if (pending) { event.preventDefault(); event.returnValue = ''; }
+      }
+      window.addEventListener('beforeunload', onBeforeUnload); window.addEventListener('pagehide', flush); document.addEventListener('visibilitychange', onVisibility);
+      return function () {
+        life.mounted = false; life.generation += 1; flush();
+        window.removeEventListener('beforeunload', onBeforeUnload); window.removeEventListener('pagehide', flush); document.removeEventListener('visibilitychange', onVisibility);
+      };
+    }, []);
+    useEffect(function () { if (!isOpen) flushStudioDraft(activeProfileId); }, [isOpen]);
+    function retryStudioDraft() {
+      var life = draftLifeRef.current; var profileId = activeProfileId; var record = life.records[profileId];
+      if (!record || record.deleted) return;
+      if (!record.loadFailed) { flushStudioDraft(profileId); return; }
+      var generation = ++life.generation; setDraftStatus('loading');
+      Promise.resolve().then(function () { return draftStoreRef.current.read(profileId); }).then(function (stored) {
+        if (!life.mounted || life.owner !== profileId || life.generation !== generation) return;
+        if (stored && record.dirty) {
+          setDraftRecovery(stored.payload); setDraftStatus('recovery');
+        } else if (record.dirty) {
+          record.blocked = false; record.loadFailed = false; flushStudioDraft(profileId);
+        } else completeStudioDraftRecovery(profileId, stored && stored.payload || {}, !!stored);
+      }).catch(function () { if (life.mounted && life.owner === profileId && life.generation === generation) setDraftStatus('error'); });
+    }
+    function keepCurrentStudioDraft() {
+      var record = draftLifeRef.current.records[activeProfileId];
+      if (!record) return;
+      record.blocked = false; record.loadFailed = false; record.dirty = true; record.version += 1;
+      setDraftRecovery(null); flushStudioDraft(activeProfileId);
+    }
+    async function replaceUnreadableStudioDraft() {
+      var profileId = activeProfileId;
+      var confirmed = await askSymbolStudioConfirmation('Replace the unreadable saved draft with your current work? This only affects this learner\u2019s draft on this device.', { title: 'Replace unreadable draft', confirmText: 'Save current draft' });
+      if (!confirmed || activeProfileIdRef.current !== profileId) return;
+      keepCurrentStudioDraft();
+    }
+    function forgetStudioDraft(profileId) {
+      var life = draftLifeRef.current; var record = life.records[profileId];
+      if (record) record.deleted = true;
+      Promise.resolve().then(function () { return draftStoreRef.current.remove(profileId); }).catch(function () {
+        if (life.mounted && addToast) addToast('The learner was removed, but their draft could not be cleared from this device.', 'error');
+      });
+    }
+    async function clearCurrentStudioDraft() {
+      var profileId = activeProfileId;
+      var section = { board: 'board', schedule: 'sequence', stories: 'story', quickboards: 'quickBoards' }[tab];
+      if (!section || !(await askSymbolStudioConfirmation('Clear this draft? Saved boards and sequences remain in their galleries.', { title: 'Clear current draft', confirmText: 'Clear draft' }))) return;
+      if (activeProfileIdRef.current !== profileId) return;
+      var life = draftLifeRef.current; var record = life.records[profileId];
+      if (!record || record.deleted) return;
+      var next = Object.assign({}, record.snapshot); next[section] = draftDefaultsForProfile()[section];
+      draftApplyingRef.current = true; setDraftApplyRevision(function (value) { return value + 1; });
+      if (Object.prototype.hasOwnProperty.call(studioDraftWorkEpochRef.current, section)) studioDraftWorkEpochRef.current[section] += 1;
+      Object.keys(symbolWorkRef.current.pending).forEach(function (key) { if (studioDraftWorkGroup(key) === section) delete symbolWorkRef.current.pending[key]; });
+      if (section === 'board') {
+        boardDraftEpochRef.current += 1; resetBoardEditingIdentity(); setDeletedBoardPage(null);
+        setBoardTopic(next.board.topic);
+        setBoardTitle(next.board.title);
+        setBoardWords(next.board.words);
+        setBoardPages(next.board.pages);
+        setActivePageIdx(next.board.activePageIdx);
+        setBoardCols(next.board.cols);
+        setBoardColor(next.board.color);
+        setBoardTextPos(next.board.textPos);
+        setBoardTextSize(next.board.textSize);
+        setBoardCellSz(next.board.cellSize);
+        setBoardLang(next.board.language);
+        setEditingBoardId(next.board.editingId);
+      }
+      else if (section === 'sequence') {
+        schedGenerationEpochRef.current += 1; resetScheduleEditingIdentity(); setSchedGenerating(false); setSchedPlanning(false);
+        setSchedItems(next.sequence.items);
+        setSchedInput(next.sequence.input);
+        setSchedTopic(next.sequence.topic);
+        setSchedTitle(next.sequence.title);
+        setSchedOrientation(next.sequence.orientation);
+        setSchedNowId(next.sequence.nowId);
+        setEditingScheduleId(next.sequence.editingId);
+      }
+      else if (section === 'story') {
+        storyRevisionRef.current += 1; stopBoardPlayback(true); setStorySpeaking(false); setStoryTextEdit(null); setStoryTextEditError(''); setStoryGenerating(false); setStoryIllustrating({}); setStoryError(''); setStoryProgress({ ready: 0, total: 0 });
+        setStorySituation(next.story.situation);
+        setStoryStudentName(next.story.studentName);
+        setStoryDetails(next.story.details);
+        setStoryPages(next.story.pages);
+        setStoryCurrent(next.story.current);
+      }
+      else if (section === 'quickBoards') {
+        quickBoardImageJobsRef.current = {}; quickBoardPreviousLabelsRef.current = null; setCbSelected(null); setTokenEarned(0); setBcPainLevel(null); setTwStep(0); setCbGoalBusy(false); setQbUploadTarget(null); setFtFirstLoading(false); setFtThenLoading(false); setTokenRewardLoading(false); setCbLoading({}); setCmLoading({}); setSnLoading({}); setAmLoading({}); setBcLoading({}); setTwLoading({});
+        setQbMode(next.quickBoards.qbMode);
+        setCbPath(next.quickBoards.cbPath);
+        setCbFunction(next.quickBoards.cbFunction);
+        setCbPhase(next.quickBoards.cbPhase);
+        setCbGoalText(next.quickBoards.cbGoalText);
+        setFtFirstLabel(next.quickBoards.ftFirstLabel);
+        setFtFirstImage(next.quickBoards.ftFirstImage);
+        setFtThenLabel(next.quickBoards.ftThenLabel);
+        setFtThenImage(next.quickBoards.ftThenImage);
+        setCbCount(next.quickBoards.cbCount);
+        setCbItems(next.quickBoards.cbItems);
+        setTokenTotal(next.quickBoards.tokenTotal);
+        setTokenLabel(next.quickBoards.tokenLabel);
+        setTokenRewardLabel(next.quickBoards.tokenRewardLabel);
+        setTokenRewardImage(next.quickBoards.tokenRewardImage);
+        setCmItems(next.quickBoards.cmItems);
+        setSnItems(next.quickBoards.snItems);
+        setAmItems(next.quickBoards.amItems);
+        setBcItems(next.quickBoards.bcItems);
+        setTwItems(next.quickBoards.twItems);
+      }
+      record.snapshot = next; record.dirty = true; record.version += 1;
+      if (record.blocked) setDraftStatus('error'); else flushStudioDraft(profileId);
+    }
+    function renderStudioDraftStatus() {
+      if (['board', 'schedule', 'stories', 'quickboards'].indexOf(tab) < 0 && draftHydratedProfile === activeProfileId) return null;
+      var record = draftLifeRef.current.records[activeProfileId];
+      var messages = {
+        loading: 'Loading this learner’s draft…', ready: 'Drafts save on this device.', saving: 'Saving draft…',
+        saved: 'Draft saved on this device.', restored: 'Draft restored from this device.',
+        error: record && record.loadFailed ? 'Draft recovery is unavailable. Current edits stay in this session.' : 'Draft could not be saved. Current edits stay in this session.',
+        recovery: 'A saved draft is available. Restoring it will replace your current edits.'
+      };
+      var buttonStyle = { border: '1px solid #cbd5e1', borderRadius: '7px', background: '#fff', color: '#334155', padding: '8px 10px', minHeight: '44px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 };
+      return e('div', { className: 'ss-draft-status ss-no-print', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', padding: '9px 12px', borderRadius: '9px', background: draftStatus === 'error' || draftStatus === 'recovery' ? '#fffbeb' : '#f1f5f9', color: '#334155', flexShrink: 0 } },
+        e('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 180px', fontSize: '12px' } }, tab === 'stories' && storyTextEdit ? 'Page text has unsaved changes. Use Save text to include them in the draft.' : messages[draftStatus] || messages.ready),
+        draftStatus === 'error' && e('button', { type: 'button', onClick: retryStudioDraft, 'aria-label': record && record.loadFailed ? 'Retry draft recovery' : 'Retry saving draft', style: buttonStyle }, 'Retry'),
+        draftStatus === 'error' && record && record.loadFailed && record.dirty && e('button', { type: 'button', onClick: replaceUnreadableStudioDraft, 'aria-label': 'Save current draft instead', style: buttonStyle }, 'Save current instead'),
+        draftRecovery && e('button', { type: 'button', onClick: function () {
+          var pending = draftRecovery; var rec = draftLifeRef.current.records[activeProfileId]; if (!rec) return;
+          completeStudioDraftRecovery(activeProfileId, pending, true);
+        }, 'aria-label': 'Restore saved draft', style: buttonStyle }, 'Restore saved'),
+        draftRecovery && e('button', { type: 'button', onClick: keepCurrentStudioDraft, 'aria-label': 'Keep current draft', style: buttonStyle }, 'Keep current'),
+        draftHydratedProfile === activeProfileId && !draftRecovery && e('button', { type: 'button', onClick: clearCurrentStudioDraft, 'aria-label': 'Clear current draft', style: buttonStyle }, 'Clear this draft')
+      );
+    }
+
+
     // Customizable category colors
     var STORAGE_CAT_COLORS = 'alloSymbolCatColors';
     var STORAGE_BOARD_THEME = 'alloSymbolTheme';
@@ -2036,6 +3035,10 @@
     var _speechPreparing = useState(false); var speechPreparing = _speechPreparing[0]; var setSpeechPreparing = _speechPreparing[1];
     var _speechProgress = useState({ ready: 0, total: 0 }); var speechProgress = _speechProgress[0]; var setSpeechProgress = _speechProgress[1];
     var _speechRevision = useState(0); var speechRevision = _speechRevision[0]; var setSpeechRevision = _speechRevision[1];
+    // Playback owns a single request independently of speech preparation/cache.
+    var boardPlaybackRef = useRef(null);
+    var boardPlaybackContextRef = useRef('');
+    boardPlaybackContextRef.current = JSON.stringify([isOpen, activeProfileId, tab, useBoardId, scanBoardId, usePageIdx, storyCurrent]);
     var boardSpeechStoresRef = useRef({});
     var boardSpeechInflightRef = useRef({});
     var boardSpeechGenerationRef = useRef(1);
@@ -2162,7 +3165,11 @@
     }
 
     // Sync story student name when avatar name changes
-    useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
+    var storyNameFollowRef = useRef(avatarName);
+    useEffect(function () {
+      var previousName = storyNameFollowRef.current; storyNameFollowRef.current = avatarName;
+      if (avatarName && !draftApplyingRef.current) setStoryStudentName(function (current) { return !current || current === previousName ? avatarName : current; });
+    }, [avatarName]);
 
     // Auto-load from cloud on mount (once, when cloudSync becomes available)
     // GATED: cloudSync disabled in Canvas — PII (student names, profiles) must not transit Canvas sandbox
@@ -2179,12 +3186,12 @@
       if (!cloudSync || isCanvasEnv) return;
       var t = setTimeout(syncToCloud, 5000);
       return function () { clearTimeout(t); };
-    }, [syncToCloud, isCanvasEnv]); // syncToCloud ref changes whenever profiles/boards/schedules/gallery change
+    }, [cloudSync, isCanvasEnv, profiles, savedBoards, savedSchedules, gallery]); // The callback is declared later; depend on its input data here.
 
     // Use-mode keyboard shortcuts stay out of editable controls and route Escape
     // through the normal session exit so logs and debriefs are not lost.
     useEffect(function () {
-      if (!useBoardId) return;
+      if (!isOpen || !useBoardId) return;
       var focusTimer = setTimeout(function () {
         try { if (useOverlayRef.current && useOverlayRef.current.focus) useOverlayRef.current.focus(); } catch (_) {}
       }, 0);
@@ -2211,21 +3218,38 @@
           if (opener && opener.focus && document.contains(opener)) opener.focus();
         } catch (_) {}
       };
-    }, [useBoardId]);
+    }, [useBoardId, isOpen]);
 
     // Scanning interval — auto-advance highlighted cell
     useEffect(function () {
       if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
-      if (!scanBoardId || scanPaused || scanManual) return;
+      if (!isOpen || !scanBoardId || scanPaused || scanManual) return;
       var board = savedBoards.find(function (b) { return b.id === scanBoardId; });
       if (!board) return;
-      var cells = collectBoardSpeechCells(board).filter(function (cell) { return cell.image; });
+      var cells = collectBoardSpeechCells(board);
       if (!cells.length) return;
       scanIntervalRef.current = setInterval(function () {
         setScanIndex(function (prev) { return (prev + 1) % cells.length; });
       }, scanSpeed);
       return function () { clearInterval(scanIntervalRef.current); };
-    }, [scanBoardId, scanPaused, scanManual, scanSpeed, savedBoards]);
+    }, [scanBoardId, scanPaused, scanManual, scanSpeed, savedBoards, isOpen]);
+
+    useEffect(function () {
+      if (!isOpen) return;
+      var surface = useBoardId ? useOverlayRef.current : scanBoardId ? scanOverlayRef.current : modalRef.current;
+      return surface ? isolateStudioDialog(surface) : undefined;
+    }, [isOpen, useBoardId, scanBoardId]);
+    useEffect(function () {
+      if (!mulberryOpen || !isOpen || !mulberryDialogRef.current) return;
+      var restore = isolateStudioDialog(mulberryDialogRef.current);
+      var field = mulberryDialogRef.current.querySelector('input');
+      if (field) field.focus();
+      return function () {
+        restore();
+        var opener = mulberryOpenerRef.current;
+        if (opener && opener.isConnected) opener.focus();
+      };
+    }, [mulberryOpen, isOpen]);
 
     // Move focus into the primary dialog on open and return it to the invoking
     // control when the studio closes (WCAG 2.4.3 / 2.4.11).
@@ -2249,7 +3273,7 @@
     // Focus the switch-scanning surface once per opening, not on every render,
     // and return focus to the Scan button when the nested dialog closes.
     useEffect(function () {
-      if (!scanBoardId) return;
+      if (!isOpen || !scanBoardId) return;
       var t = setTimeout(function () {
         try { if (scanOverlayRef.current && scanOverlayRef.current.focus) scanOverlayRef.current.focus(); } catch (e) {}
       }, 0);
@@ -2268,45 +3292,72 @@
           } catch (e) {}
         }, 0);
       };
-    }, [scanBoardId]);
-
-    if (!isOpen) return null;
+    }, [scanBoardId, isOpen]);
 
     var avatarRef = activeProfile.image ? activeProfile.image.split(',')[1] : null;
 
     // ── Avatar / profile actions ──────────────────────────────────────────
+    function commitAvatarImage(work, image, epoch, expectedDescription, expectedImage) {
+      if (!symbolWorkIsCurrent(work) || epoch !== avatarImageEpochRef.current) return false;
+      var current = avatarProfilesRef.current.find(function (profile) { return profile.id === work.profileId; });
+      if (!current) return false;
+      if (expectedDescription != null && (current.description !== expectedDescription || current.image !== expectedImage)) {
+        addToast && addToast('The avatar was edited while generation was running. Generate again to use the latest appearance.', 'info'); return false;
+      }
+      var updated = avatarProfilesRef.current.map(function (profile) { return profile.id === work.profileId ? Object.assign({}, profile, { image: image }) : profile; });
+      if (!store(STORAGE_PROFILES, updated)) { addToast && addToast('The avatar could not be saved on this device. Please try again.', 'error'); return false; }
+      avatarProfilesRef.current = updated; setProfiles(updated); return true;
+    }
     var generateAvatar = useCallback(async function () {
       if (!onCallImagen || !avatarDesc.trim() || !activeProfileId) return;
+      var work = startSymbolWork('avatar'); if (!work) return;
+      var epoch = ++avatarImageEpochRef.current;
+      var sourceProfile = avatarProfilesRef.current.find(function (profile) { return profile.id === work.profileId; });
       setAvatarGenerating(true);
       try {
         var prompt = 'Friendly stylized portrait of a child: ' + avatarDesc.trim() + '. Soft cartoon style, centered head and shoulders, warm expression, white background. STRICTLY NO TEXT.';
-        var img = await onCallImagen(prompt, 300, 0.9);
-        if (onCallGeminiImageEdit && img) {
+        var img = await promiseWithTimeout(Promise.resolve(onCallImagen(prompt, 300, 0.9)), 90000, 'Avatar generation timed out.');
+        if (!symbolWorkIsCurrent(work) || epoch !== avatarImageEpochRef.current) return;
+        if (!safeImgUrl(img)) throw new Error('No avatar image was returned.');
+        if (onCallGeminiImageEdit) {
           var raw = await ensureBase64(img);
-          if (raw) img = await onCallGeminiImageEdit('Refine this child portrait. Make it warm, friendly, and consistent with the description: "' + avatarDesc.trim() + '". Clean white background. Remove any text.', raw, 300, 0.9) || img;
+          if (!symbolWorkIsCurrent(work) || epoch !== avatarImageEpochRef.current) return;
+          if (raw) img = await promiseWithTimeout(Promise.resolve(onCallGeminiImageEdit('Refine this child portrait. Maintain the appearance: ' + avatarDesc.trim() + '. Clean white background. Remove text.', raw, 300, 0.9)), 90000, 'Avatar editing timed out.') || img;
         }
-        var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img, name: avatarName, description: avatarDesc }) : p; });
-        setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
-        setStoryStudentName(avatarName);
-        addToast && addToast(t('toasts.avatar_created') + (avatarName || 'student') + '!', 'success');
+        if (!safeImgUrl(img)) throw new Error('No avatar image was returned.');
+        if (commitAvatarImage(work, img, epoch, sourceProfile && sourceProfile.description, sourceProfile && sourceProfile.image)) addToast && addToast(t('toasts.avatar_created') + (avatarName || 'student') + '!', 'success');
       } catch (e) {
-        warnLog("Avatar generation failed:", e);
-        addToast && addToast(t('toasts.avatar_generation_failed'), 'error');
-      } finally { setAvatarGenerating(false); }
-    }, [avatarDesc, avatarName, activeProfileId, profiles, onCallImagen, onCallGeminiImageEdit, addToast]);
+        if (symbolWorkIsCurrent(work) && epoch === avatarImageEpochRef.current) addToast && addToast(t('toasts.avatar_generation_failed'), 'error');
+      } finally {
+        if (symbolWorkIsCurrent(work) && epoch === avatarImageEpochRef.current) setAvatarGenerating(false);
+        finishSymbolWork(work);
+      }
+    }, [avatarDesc, avatarName, activeProfileId, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     var uploadAvatarFile = useCallback(function (ev) {
-      var file = ev.target.files && ev.target.files[0];
-      if (!file) return;
+      var input = ev.target; var file = input.files && input.files[0]; if (!file) return;
+      if (file.size > 10 * 1024 * 1024 || (file.type && file.type.indexOf('image/') !== 0)) {
+        addToast && addToast('Choose an image smaller than 10 MB for the avatar.', 'error'); input.value = ''; return;
+      }
+      var epoch = ++avatarImageEpochRef.current;
+      var work = startSymbolWork('avatar-upload-' + epoch); if (!work) return;
+      setAvatarGenerating(false);
       var reader = new FileReader();
-      reader.onload = function (e2) {
-        var img = e2.target.result;
-        var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img }) : p; });
-        setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
-        addToast && addToast(t('toasts.avatar_photo_uploaded'), 'success');
+      reader.onload = function (event) {
+        try {
+          if (!symbolWorkIsCurrent(work) || epoch !== avatarImageEpochRef.current) return;
+          var img = event.target.result; if (!safeImgUrl(img)) throw new Error('Invalid avatar image');
+          if (commitAvatarImage(work, img, epoch)) addToast && addToast(t('toasts.avatar_photo_uploaded'), 'success');
+        } catch (_) {
+          if (symbolWorkIsCurrent(work)) addToast && addToast('The avatar image could not be read. Try another image.', 'error');
+        } finally { finishSymbolWork(work); }
       };
-      reader.readAsDataURL(file);
-    }, [activeProfileId, profiles, addToast]);
+      reader.onerror = function () {
+        if (symbolWorkIsCurrent(work)) addToast && addToast('The avatar image could not be read. Try another image.', 'error');
+        finishSymbolWork(work);
+      };
+      reader.readAsDataURL(file); input.value = '';
+    }, [addToast]);
 
     var clearAvatar = useCallback(function () {
       var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: null }) : p; });
@@ -2333,7 +3384,8 @@
     var deleteProfile = useCallback(function (id) {
       if (profiles.length <= 1) return;
       var updated = profiles.filter(function (p) { return p.id !== id; });
-      setProfiles(updated); store(STORAGE_PROFILES, updated);
+      if (!store(STORAGE_PROFILES, updated)) { addToast && addToast('The learner could not be removed because device storage is unavailable.', 'error'); return; }
+      forgetStudioDraft(id); setProfiles(updated);
       if (activeProfileId === id) {
         var first = updated[0];
         setActiveProfileId(first.id); store(STORAGE_ACTIVE_PROFILE, first.id);
@@ -2344,60 +3396,71 @@
     // ── Symbol actions ────────────────────────────────────────────────────
     var genSingle = useCallback(async function () {
       if (!symLabel.trim() || !onCallImagen) return;
-      var tid = 'pend-' + Date.now();
+      var work = startSymbolWork('generate');
+      if (!work) return;
+      var tid = work.key;
       setSymLoading(function (p) { var n = Object.assign({}, p); n[tid] = true; return n; });
       try {
         var prompt = buildSymbolPrompt(symLabel, symDesc, globalStyle, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         var entry = normalizeBankAsset({ id: uid(), label: symLabel.trim(), description: symDesc.trim(), image: imageUrl, style: globalStyle || 'flat vector', category: symCategory || 'other', isFavorite: false, createdAt: Date.now(), source: 'ai-symbol-studio' });
-        var updated = [entry].concat(gallery);
-        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+        if (!symbolWorkIsCurrent(work)) return;
+        if (!imageUrl) throw new Error('No image returned. Please try again.');
+        var saved = commitSymbolBank(function (current) { return [entry].concat(current); }, work);
         setSelectedId(entry.id);
-        addToast && addToast(t('toasts.symbol_created'), 'success');
+        if (saved && addToast) addToast(t('toasts.symbol_created'), 'success');
       } catch (e) {
+        if (!symbolWorkIsCurrent(work)) return;
         addToast && addToast(t('toasts.generation_failed') + e.message, 'error');
-      } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[tid]; return n; }); }
-    }, [symLabel, symDesc, globalStyle, gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
+      } finally { finishSymbolWork(work); }
+    }, [symLabel, symDesc, symCategory, globalStyle, gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     var genBatch = useCallback(async function () {
       if (!onCallImagen) return;
       var lines = symBatch.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
       if (!lines.length) return;
+      var work = startSymbolWork('generate');
+      if (!work) return;
       var items = lines.map(function (l) { return { id: uid(), label: l, description: '', style: globalStyle || 'flat vector', createdAt: Date.now() }; });
-      var loadMap = {};
+      var loadMap = { generate: true };
       items.forEach(function (i) { loadMap[i.id] = true; });
       setSymLoading(function (p) { return Object.assign({}, p, loadMap); });
       var batchOut = await batchGenerate(
         items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
-        function (id) { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+        function (id) { if (symbolWorkIsCurrent(work)) setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }, function () { return symbolWorkIsCurrent(work); }
       );
+      if (!symbolWorkIsCurrent(work)) return;
       var valid = batchOut.results.filter(function (r) { return r.image; }).map(function (r) { return normalizeBankAsset(Object.assign({}, r, { source: 'ai-symbol-studio' })); });
       if (valid.length > 0) {
-        var updated = valid.concat(gallery);
-        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+        var saved = commitSymbolBank(function (current) { return valid.concat(current); }, work);
         setSelectedId(valid[0].id);
-        addToast && addToast(valid.length + ' symbol(s) created!', 'success');
+        saved && addToast && addToast(valid.length + ' symbol(s) created!', 'success');
       }
       if (batchOut.failed.length > 0) {
         addToast && addToast(t('toasts.failed_generate') + batchOut.failed.join(', '), 'error');
       }
-      setSymLoading({});
+      finishSymbolWork(work);
     }, [symBatch, globalStyle, gallery, autoClean, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     var regenSymbol = useCallback(async function (id) {
       var item = gallery.find(function (i) { return i.id === id; });
       if (!item || !onCallImagen) return;
       if (item.locked) { addToast && addToast('🔒 "' + item.label + '" is locked. Unlock it to change its look.', 'info'); return; }
-      if (!(await confirmRegen(item.label))) return;
+      var work = startSymbolWork(id);
+      if (!work) return;
+      if (!(await confirmRegen(item.label)) || !symbolWorkIsCurrent(work)) { finishSymbolWork(work); return; }
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       try {
         var prompt = buildSymbolPrompt(item.label, item.description, item.style, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
-        var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: imageUrl, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
-        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+        if (!symbolWorkIsCurrent(work)) return;
+        if (!imageUrl) throw new Error('No image returned');
+        var updated = galleryStateRef.current.map(function (i) { return i.id === id && !i.locked ? Object.assign({}, i, { image: imageUrl, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
+        commitSymbolBank(function () { return updated; }, work);
       } catch (e) {
+        if (!symbolWorkIsCurrent(work)) return;
         addToast && addToast(t('toasts.regen_failed'), 'error');
-      } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+      } finally { finishSymbolWork(work); }
     }, [gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast, savedBoards, familiarity]);
 
     var refineSymbol = useCallback(async function (id, instruction) {
@@ -2406,26 +3469,32 @@
       if (item.locked) { addToast && addToast('🔒 "' + item.label + '" is locked. Unlock it to edit.', 'info'); return; }
       if (!onCallGeminiImageEdit) { addToast && addToast(t('toasts.image_editing_available_2'), 'error'); return; }
       if (!item.image) { addToast && addToast(t('toasts.image_refine_generate_one_first'), 'error'); return; }
+      var work = startSymbolWork(id);
+      if (!work) return;
+      if (!(await confirmRegen(item.label)) || !symbolWorkIsCurrent(work)) { finishSymbolWork(work); return; }
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       addToast && addToast(t('toasts.refining_icon'), 'info');
       try {
         var raw = await ensureBase64(item.image);
         if (!raw) throw new Error('Could not extract image data');
+        if (!symbolWorkIsCurrent(work)) return;
         var refinementPrompt = 'Edit this educational icon. Instruction: ' + instruction + '. Maintain the simple, flat vector art style. White background. STRICTLY NO TEXT.';
-        var refined = await onCallGeminiImageEdit(refinementPrompt, raw, 400, 0.85);
+        var refined = await promiseWithTimeout(Promise.resolve(onCallGeminiImageEdit(refinementPrompt, raw, 400, 0.85)), 90000, 'Image editing timed out. Please try again.');
         if (refined) {
-          var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: refined, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
-          setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+          if (!symbolWorkIsCurrent(work)) return;
+          var updated = galleryStateRef.current.map(function (i) { return i.id === id && !i.locked ? Object.assign({}, i, { image: refined, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
+          var saved = commitSymbolBank(function () { return updated; }, work);
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
-          addToast && addToast(t('toasts.icon_refined'), 'success');
+          saved && addToast && addToast(t('toasts.icon_refined'), 'success');
         } else {
           addToast && addToast(t('toasts.refinement_returned_image'), 'error');
         }
       } catch (e) {
+        if (!symbolWorkIsCurrent(work)) return;
         warnLog('Symbol refinement failed:', e);
         addToast && addToast(t('toasts.refinement_failed_2') + (e.message || 'Unknown error'), 'error');
-      } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [gallery, onCallGeminiImageEdit, addToast]);
+      } finally { finishSymbolWork(work); }
+    }, [gallery, onCallGeminiImageEdit, addToast, savedBoards, familiarity]);
 
     var setSymbolReview = useCallback(function (id, status) {
       if (['unreviewed', 'approved', 'needs_changes'].indexOf(status) < 0) return;
@@ -2446,17 +3515,15 @@
     }, [addToast]);
 
     var setSymbolAliases = useCallback(function (id, text) {
-      var aliases = String(text || '').split(',').map(function (value) {
-        return value.replace(/\s+/g, ' ').trim().slice(0, 80);
-      }).filter(Boolean);
-      setGallery(function (prev) {
-        var updated = prev.map(function (item) {
-          return item.id === id ? normalizeBankAsset(Object.assign({}, item, { aliases: aliases, updatedAt: Date.now() })) : item;
-        });
-        if (!store(scopedKey(STORAGE_GALLERY), updated)) return prev;
-        return updated;
-      });
-    }, []);
+      var aliases = String(text || '').split(',').map(function (value) { return value.replace(/\s+/g, ' ').trim().slice(0, 80); }).filter(Boolean);
+      var work = startSymbolWork('aliases-' + id);
+      if (!work) return;
+      commitSymbolBank(function (current) {
+        return current.map(function (item) { return item.id === id ? normalizeBankAsset(Object.assign({}, item, { aliases: aliases, updatedAt: Date.now() })) : item; });
+      }, work);
+      finishSymbolWork(work);
+      setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); delete next[id]; return next; });
+    }, [addToast]);
 
     var setSymbolReviewNote = useCallback(function (id, note) {
       setGallery(function (prev) {
@@ -2492,16 +3559,19 @@
         addToast && addToast(t('toasts.image_editing_available_2'), 'error');
         return;
       }
+      var work = startSymbolWork(id);
+      if (!work) return;
       setSymLoading(function (prev) { var next = Object.assign({}, prev); next[id] = true; return next; });
       try {
         var raw = await ensureBase64(item.image);
         if (!raw) throw new Error('Could not extract image data');
         var prompt = 'Create a new visual variant of this educational icon. Instruction: ' + edit
           + '. Keep the meaning and simple AAC-friendly composition. White background. STRICTLY NO TEXT.';
-        var image = await onCallGeminiImageEdit(prompt, raw, 400, 0.85);
+        var image = await promiseWithTimeout(Promise.resolve(onCallGeminiImageEdit(prompt, raw, 400, 0.85)), 90000, 'Image editing timed out. Please try again.');
+        if (!symbolWorkIsCurrent(work)) return;
         if (!image) throw new Error('No image returned');
         var conceptId = item.conceptId || item.id;
-        var variantCount = gallery.filter(function (candidate) { return (candidate.conceptId || candidate.id) === conceptId; }).length;
+        var variantCount = galleryStateRef.current.filter(function (candidate) { return (candidate.conceptId || candidate.id) === conceptId; }).length;
         var variant = normalizeBankAsset(Object.assign({}, item, {
           id: uid(),
           conceptId: conceptId,
@@ -2517,19 +3587,16 @@
           createdAt: Date.now(),
           updatedAt: Date.now()
         }));
-        var updated = [variant].concat(gallery);
-        if (!store(scopedKey(STORAGE_GALLERY), updated)) {
-          addToast && addToast('Could not save the new variant. Device storage may be full.', 'error');
-          return;
-        }
-        setGallery(updated);
+        var updated = [variant].concat(galleryStateRef.current);
+        var saved = commitSymbolBank(function () { return updated; }, work);
         setSelectedId(variant.id);
         setSymRefine(function (prev) { var next = Object.assign({}, prev); next[id] = ''; return next; });
-        addToast && addToast('New symbol variant saved for review.', 'success');
+        saved && addToast && addToast('New symbol variant saved for review.', 'success');
       } catch (error) {
+        if (!symbolWorkIsCurrent(work)) return;
         addToast && addToast('Could not create the symbol variant.', 'error');
       } finally {
-        setSymLoading(function (prev) { var next = Object.assign({}, prev); delete next[id]; return next; });
+        finishSymbolWork(work);
       }
     }, [gallery, onCallGeminiImageEdit, addToast]);
 
@@ -2572,172 +3639,65 @@
       addToast && addToast(t('toasts.gallery_cleared'), 'info');
     }, [gallery, addToast]);
 
+    var backupStateRef = useRef(null);
+    backupStateRef.current = { activeProfileId: activeProfileId, profiles: profiles, gallery: gallery,
+      boards: savedBoards, schedules: savedSchedules, books: books, familiarity: familiarity,
+      usageLog: usageLog, iepGoals: iepGoals, growthLog: prevGrowthMap, customTemplates: customTemplates,
+      gardenTranslations: gardenTranslations, gardenHomeLang: gardenHomeLang, wishSeeds: wishSeeds };
+    var backupImportEpochRef = useRef(0);
+    var cloudLoadEpochRef = useRef(0);
     var exportData = useCallback(async function () {
-      var hasPhotos = profiles.some(function (p) { return p.image; });
-      var ok = await askSymbolStudioConfirmation('This file restores EVERYTHING, so it is NOT de-identified — it contains student names' + (hasPhotos ? ', photos' : '') + ', descriptions, communication logs, and IEP data in plain text.\n\n'
-        + 'FERPA: treat it as a confidential student record. Save it only to a school-approved, encrypted location — do not email it or put it in personal cloud storage. To share or analyze data, use the de-identified CSV exports instead.\n\n'
-        + 'Continue with the full backup?', { title: 'Download confidential full backup', confirmText: 'Download full backup' });
+      var ok = await askSymbolStudioConfirmation('This confidential backup includes all student profiles and their saved symbols, boards, sequences, Visual Packs, communication history, and goals. It contains student names, photos, and descriptions in plain text. Prepared speech recordings and unsaved drafts are not included.\n\nSave it only to a school-approved, encrypted location. Continue with the full backup?', { title: 'Download confidential full backup', confirmText: 'Download full backup' });
       if (!ok) return;
-      var data = {
-        version: 7,
-        exportDate: new Date().toISOString(),
-        gallery: gallery,
-        boards: savedBoards.map(withoutDeviceSpeechReference),
-        schedules: savedSchedules,
-        profiles: profiles,
-        books: books,
-        familiarity: familiarity,
-        usageLog: usageLog,
-        iepGoals: iepGoals,
-        growthLog: prevGrowthMap,
-        customTemplates: customTemplates,
-        gardenTranslations: gardenTranslations,
-        gardenHomeLang: gardenHomeLang,
-        wishSeeds: wishSeeds,
-      };
-      var json = JSON.stringify(data, null, 2);
-      var blob = new Blob([json], { type: 'application/json' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'symbol_studio_CONFIDENTIAL_' + new Date().toISOString().slice(0, 10) + '.json';
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-      addToast && addToast(t('toasts.backup_downloaded'), 'success');
-    }, [gallery, savedBoards, savedSchedules, profiles, books, familiarity, usageLog, iepGoals, prevGrowthMap, customTemplates, addToast]);
+      try {
+        var data = buildStudioBackup(backupStateRef.current);
+        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'symbol_studio_CONFIDENTIAL_' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        addToast && addToast(t('toasts.backup_downloaded'), 'success');
+      } catch (error) { addToast && addToast('Could not create the backup. ' + error.message, 'error'); }
+    }, [addToast, t]);
 
     var importData = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
       if (!file) return;
+      if (file.size > 50 * 1024 * 1024) { addToast && addToast('This backup is too large to import (maximum 50 MB).', 'error'); return; }
+      var epoch = ++backupImportEpochRef.current;
+      var workEpoch = symbolWorkRef.current.epoch;
+      var originProfile = activeProfileIdRef.current;
       var reader = new FileReader();
-      reader.onload = function (e2) {
+      var current = function () { return epoch === backupImportEpochRef.current && workEpoch === symbolWorkRef.current.epoch && originProfile === activeProfileIdRef.current; };
+      reader.onerror = function () { if (current()) addToast && addToast('Could not read the backup file. Please try again.', 'error'); };
+      reader.onload = function (event) {
+        if (!current()) { addToast && addToast('Backup import canceled because the student profile changed. Import again for the intended profile.', 'info'); return; }
         try {
-          var data = JSON.parse(e2.target.result);
-          var summary = [];
-          if (Array.isArray(data.gallery) && data.gallery.length) {
-            // Merge: keep existing items not already in the imported set (match by id)
-            var importedAssets = normalizeBank(data.gallery);
-            var importedIds = {};
-            importedAssets.forEach(function (g) { importedIds[g.id] = true; });
-            var merged = importedAssets.concat(gallery.filter(function (g) { return !importedIds[g.id]; }));
-            setGallery(merged); store(scopedKey(STORAGE_GALLERY), merged);
-            summary.push(data.gallery.length + ' symbol(s)');
-          }
-          if (Array.isArray(data.boards) && data.boards.length) {
-            var portableImportedBoards = data.boards.map(withoutDeviceSpeechReference);
-            var importedBoardIds = {};
-            portableImportedBoards.forEach(function (board) { importedBoardIds[board.id] = true; });
-            var mergedBoards = portableImportedBoards.concat(savedBoards.filter(function (board) { return !importedBoardIds[board.id]; }));
-            setSavedBoards(mergedBoards); store(scopedKey(STORAGE_BOARDS), mergedBoards);
-            summary.push(portableImportedBoards.length + ' board(s)');
-          }
-          if (Array.isArray(data.schedules) && data.schedules.length) {
-            var importedSchedIds = {};
-            data.schedules.forEach(function (s) { importedSchedIds[s.id] = true; });
-            var mergedScheds = data.schedules.concat(savedSchedules.filter(function (s) { return !importedSchedIds[s.id]; }));
-            setSavedSchedules(mergedScheds); store(scopedKey(STORAGE_SCHEDULES), mergedScheds);
-            summary.push(data.schedules.length + ' schedule(s)');
-          }
-          // New format: profiles array
-          if (Array.isArray(data.profiles) && data.profiles.length) {
-            var impProfIds = {};
-            data.profiles.forEach(function (p) { impProfIds[p.id] = true; });
-            var mergedProfs = data.profiles.concat(profiles.filter(function (p) { return !impProfIds[p.id]; }));
-            if (mergedProfs.length > MAX_PROFILES) mergedProfs = mergedProfs.slice(0, MAX_PROFILES);
-            setProfiles(mergedProfs); store(STORAGE_PROFILES, mergedProfs);
-            summary.push(data.profiles.length + ' profile(s)');
-          }
-          // Legacy format: single avatar object
-          else if (data.avatar && (data.avatar.image || data.avatar.name)) {
-            var legacyProf = { id: uid(), name: data.avatar.name || 'Imported', description: data.avatar.description || '', image: data.avatar.image || null };
-            var withLegacy = profiles.concat([legacyProf]).slice(0, MAX_PROFILES);
-            setProfiles(withLegacy); store(STORAGE_PROFILES, withLegacy);
-            setAvatarName(legacyProf.name); setAvatarDesc(legacyProf.description);
-            summary.push('student profile');
-          }
-          if (Array.isArray(data.books) && data.books.length) {
-            var importedPacks = data.books.map(normalizeVisualPack);
-            var impBookIds = {};
-            importedPacks.forEach(function (b) { impBookIds[b.id] = true; });
-            var mergedBooks = importedPacks.concat(books.filter(function (b) { return !impBookIds[b.id]; }));
-            setBooks(mergedBooks); store(scopedKey(STORAGE_BOOKS), mergedBooks);
-            summary.push(importedPacks.length + ' Visual Pack(s)');
-          }
-          // Import familiarity data (merge: imported values override existing per-word)
-          if (data.familiarity && typeof data.familiarity === 'object') {
-            var mergedFam = Object.assign({}, familiarity, data.familiarity);
-            setFamiliarity(mergedFam); store(scopedKey(STORAGE_FAMILIARITY),mergedFam);
-            summary.push('vocabulary familiarity');
-          }
-          // Import AAC usage log (merge sessions)
-          if (data.usageLog && typeof data.usageLog === 'object') {
-            var mergedUsage = Object.assign({}, usageLog);
-            Object.keys(data.usageLog).forEach(function (pid) {
-              var existing = mergedUsage[pid] || { sessions: [] };
-              var imported = data.usageLog[pid] || { sessions: [] };
-              // Deduplicate by session date
-              var existDates = {};
-              existing.sessions.forEach(function (s) { existDates[s.date] = true; });
-              var newSessions = imported.sessions.filter(function (s) { return !existDates[s.date]; });
-              mergedUsage[pid] = { sessions: existing.sessions.concat(newSessions) };
-            });
-            setUsageLog(mergedUsage); store(scopedKey(STORAGE_USAGE),mergedUsage);
-            summary.push('AAC usage log');
-          }
-          // Import IEP goals (merge by ID)
-          if (Array.isArray(data.iepGoals) && data.iepGoals.length) {
-            var existingGoalIds = {};
-            iepGoals.forEach(function (g) { existingGoalIds[g.id] = true; });
-            var newGoals = data.iepGoals.filter(function (g) { return !existingGoalIds[g.id]; });
-            if (newGoals.length > 0) {
-              var mergedGoals = iepGoals.concat(newGoals);
-              setIepGoals(mergedGoals); store(scopedKey(STORAGE_GOALS),mergedGoals);
-              summary.push(newGoals.length + ' IEP goal(s)');
-            }
-          }
-          // Import growth log snapshot
-          if (data.growthLog && typeof data.growthLog === 'object') {
-            var mergedGrowth = Object.assign({}, prevGrowthMap, data.growthLog);
-            setPrevGrowthMap(mergedGrowth); store(scopedKey(STORAGE_GROWTH_LOG),mergedGrowth);
-            summary.push('growth history');
-          }
-          // Import custom story templates
-          if (Array.isArray(data.customTemplates) && data.customTemplates.length) {
-            var existingTmplIds = {};
-            customTemplates.forEach(function (t) { existingTmplIds[t.id || t.label] = true; });
-            var newTmpls = data.customTemplates.filter(function (t) { return !existingTmplIds[t.id || t.label]; });
-            if (newTmpls.length > 0) {
-              var mergedTmpls = customTemplates.concat(newTmpls);
-              setCustomTemplates(mergedTmpls); store(STORAGE_CUSTOM_TEMPLATES, mergedTmpls);
-              summary.push(newTmpls.length + ' story template(s)');
-            }
-          }
-          // Import garden translations
-          if (data.gardenTranslations && typeof data.gardenTranslations === 'object') {
-            var mergedTrans = Object.assign({}, gardenTranslations, data.gardenTranslations);
-            setGardenTranslations(mergedTrans);
-            summary.push('translations');
-          }
-          if (data.gardenHomeLang && typeof data.gardenHomeLang === 'string') {
-            setGardenHomeLang(data.gardenHomeLang); store(STORAGE_HOME_LANG, data.gardenHomeLang);
-          }
-          // Import wish seeds
-          if (Array.isArray(data.wishSeeds) && data.wishSeeds.length) {
-            var existWishes = {}; wishSeeds.forEach(function (w) { existWishes[w.label.toLowerCase()] = true; });
-            var newWishes = data.wishSeeds.filter(function (w) { return !existWishes[w.label.toLowerCase()]; });
-            if (newWishes.length > 0) { var mw = wishSeeds.concat(newWishes); setWishSeeds(mw); store(STORAGE_WISHES, mw); summary.push(newWishes.length + ' wish seed(s)'); }
-          }
-          addToast && addToast(summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', summary.length ? 'success' : 'info');
-        } catch (err) {
-          warnLog('Import failed:', err);
-          addToast && addToast(t('toasts.import_failed_check_valid_symbol'), 'error');
+          var data = JSON.parse(event.target.result, function (key, value) {
+            if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error('Invalid backup key.');
+            return value;
+          });
+          var prepared = prepareStudioBackupImport(data, backupStateRef.current);
+          commitStudioBackupImport(prepared.writes);
+          setProfiles(prepared.profiles); setActiveProfileId(prepared.activeProfileId);
+          var active = prepared.active;
+          setGallery(active.gallery); setSavedBoards(active.boards); setSavedSchedules(active.schedules); setBooks(active.books);
+          setFamiliarity(active.familiarity); setUsageLog(active.usageLog); setIepGoals(active.iepGoals); setPrevGrowthMap(active.growthLog);
+          setCustomTemplates(prepared.customTemplates); setWishSeeds(prepared.wishSeeds); setGardenHomeLang(prepared.gardenHomeLang); setGardenTranslations(prepared.gardenTranslations);
+          var profile = prepared.profiles.find(function (p) { return p.id === prepared.activeProfileId; });
+          if (profile) { setAvatarName(profile.name || ''); setAvatarDesc(profile.description || ''); }
+          notifyVisualSupportsUpdated();
+          addToast && addToast('Backup imported for ' + prepared.profileCount + ' profile(s).' + (prepared.legacyAmbiguous ? ' This older backup contains one dataset without a profile assignment; it was restored to the current student.' : ''), 'success');
+        } catch (error) {
+          warnLog('Import failed:', error);
+          addToast && addToast('Could not import backup. ' + error.message, 'error');
         }
       };
       reader.readAsText(file);
-      ev.target.value = '';
-    }, [gallery, savedBoards, savedSchedules, profiles, books, addToast]);
+    }, [addToast]);
 
-    // ── Cloud sync actions ────────────────────────────────────────────────
     var syncToCloud = useCallback(async function () {
       if (!cloudSync || isCanvasEnv) return; // PII gate: no cloud sync in Canvas sandbox
       setSyncStatus('syncing');
@@ -2767,18 +3727,30 @@
         setSyncStatus('error');
         addToast && addToast(t('toasts.cloud_sync_failed') + e.message, 'error');
       }
-    }, [cloudSync, profiles, savedBoards, savedSchedules, gallery, addToast]);
+    }, [cloudSync, profiles, savedBoards, savedSchedules, gallery, addToast, isCanvasEnv, t]);
 
     var loadFromCloud = useCallback(async function () {
       if (!cloudSync || isCanvasEnv) return; // PII gate: no cloud sync in Canvas sandbox
+      var originProfile = activeProfileIdRef.current;
+      var workEpoch = symbolWorkRef.current.epoch;
+      var cloudEpoch = ++cloudLoadEpochRef.current;
+      var current = function () { return cloudEpoch === cloudLoadEpochRef.current && workEpoch === symbolWorkRef.current.epoch && originProfile === activeProfileIdRef.current; };
       setSyncStatus('syncing');
       try {
         var data = await cloudSync.load();
+        if (!current()) { if (cloudEpoch === cloudLoadEpochRef.current) setSyncStatus('idle'); return; }
+        var profiles = backupStateRef.current.profiles;
+        var savedBoards = backupStateRef.current.boards;
+        var savedSchedules = backupStateRef.current.schedules;
         if (!data) {
           setSyncStatus('idle');
           addToast && addToast(t('toasts.cloud_backup_found'), 'info'); return;
         }
+        validateBackupSection(data);
+        if (data.profiles != null) validateBackupRows(data.profiles, 'profiles');
         var summary = [];
+        var cloudWrites = [];
+        var nextProfiles = profiles, nextBoards = savedBoards, nextSchedules = savedSchedules;
         // Profiles: merge cloud metadata with local images
         if (Array.isArray(data.profiles) && data.profiles.length) {
           var localProfMap = {};
@@ -2787,13 +3759,13 @@
             var lp = localProfMap[cp.id];
             // Display name is restored from the codename — real names are intentionally NEVER
             // synced/round-tripped. Do NOT "fix" this by adding name to syncToCloud (would egress PII).
-            return { id: cp.id, name: cp.codename || cp.id, description: cp.description, image: lp ? lp.image : null };
+            return Object.assign({}, cp, lp || {}, { id: cp.id, name: lp ? lp.name : (cp.codename || cp.id), codename: cp.codename || (lp && lp.codename) || generateCodename(), description: lp ? lp.description : '', image: lp ? lp.image : null });
           });
           var cloudProfIds = {};
           data.profiles.forEach(function (p) { cloudProfIds[p.id] = true; });
           profiles.forEach(function (lp) { if (!cloudProfIds[lp.id]) mergedProfs.push(lp); });
-          mergedProfs = mergedProfs.slice(0, MAX_PROFILES);
-          setProfiles(mergedProfs); store(STORAGE_PROFILES, mergedProfs);
+          if (mergedProfs.length > MAX_PROFILES) throw new Error('Cloud restore would exceed the profile limit.');
+          nextProfiles = mergedProfs; cloudWrites.push([STORAGE_PROFILES, mergedProfs]);
           summary.push(data.profiles.length + ' profile(s)');
         }
         // Boards: merge cloud structure with local images
@@ -2802,16 +3774,16 @@
           savedBoards.forEach(function (b) { localBoardMap[b.id] = b; });
           var mergedBoards = data.boards.map(function (cb) {
             var lb = localBoardMap[cb.id];
-            return { id: cb.id, title: cb.title, createdAt: cb.createdAt, cols: cb.cols || 4,
+            return Object.assign({}, lb || {}, { id: cb.id, title: cb.title, createdAt: cb.createdAt, cols: cb.cols || 4,
               words: (cb.words || []).map(function (cw, idx) {
                 var lw = lb && lb.words && lb.words[idx] && lb.words[idx].label === cw.label ? lb.words[idx] : null;
-                return Object.assign({}, cw, { id: uid(), image: lw ? lw.image : null });
-              })};
+                return Object.assign({}, lw || {}, cw, { id: lw ? lw.id : uid(), image: lw ? lw.image : null });
+              })});
           });
           var cloudBoardIds = {};
           data.boards.forEach(function (b) { cloudBoardIds[b.id] = true; });
           savedBoards.forEach(function (lb) { if (!cloudBoardIds[lb.id]) mergedBoards.push(lb); });
-          setSavedBoards(mergedBoards); store(scopedKey(STORAGE_BOARDS), mergedBoards);
+          nextBoards = normalizeStoredRows(STORAGE_BOARDS, mergedBoards); cloudWrites.push([scopedKey(STORAGE_BOARDS), nextBoards]);
           summary.push(data.boards.length + ' board(s)');
         }
         // Schedules: same pattern
@@ -2820,31 +3792,37 @@
           savedSchedules.forEach(function (s) { localSchedMap[s.id] = s; });
           var mergedScheds = data.schedules.map(function (cs) {
             var ls = localSchedMap[cs.id];
-            return { id: cs.id, title: cs.title, createdAt: cs.createdAt, orientation: cs.orientation || 'horizontal',
+            return Object.assign({}, ls || {}, { id: cs.id, title: cs.title, createdAt: cs.createdAt, orientation: cs.orientation || 'horizontal',
               items: (cs.items || []).map(function (ci) {
                 var li = ls && ls.items && ls.items.find(function (i) { return i.id === ci.id; });
-                return Object.assign({}, ci, { image: li ? li.image : null });
-              })};
+                return Object.assign({}, li || {}, ci, { image: li ? li.image : null });
+              })});
           });
           var cloudSchedIds = {};
           data.schedules.forEach(function (s) { cloudSchedIds[s.id] = true; });
           savedSchedules.forEach(function (ls) { if (!cloudSchedIds[ls.id]) mergedScheds.push(ls); });
-          setSavedSchedules(mergedScheds); store(scopedKey(STORAGE_SCHEDULES), mergedScheds);
+          nextSchedules = normalizeStoredRows(STORAGE_SCHEDULES, mergedScheds); cloudWrites.push([scopedKey(STORAGE_SCHEDULES), nextSchedules]);
           summary.push(data.schedules.length + ' schedule(s)');
         }
+        commitStudioBackupImport(cloudWrites);
+        setProfiles(nextProfiles); setSavedBoards(nextBoards); setSavedSchedules(nextSchedules);
         if (data.lastSynced) setLastSynced(data.lastSynced);
         setSyncStatus('synced');
         addToast && addToast(t('toasts.loaded_from_cloud') + (summary.length ? summary.join(', ') : 'up to date'), 'success');
       } catch (e) {
+        if (!current()) { if (cloudEpoch === cloudLoadEpochRef.current) setSyncStatus('idle'); return; }
         warnLog('Cloud load failed:', e);
         setSyncStatus('error');
         addToast && addToast(t('toasts.cloud_load_failed') + e.message, 'error');
       }
-    }, [cloudSync, profiles, savedBoards, savedSchedules, addToast]);
+    }, [cloudSync, profiles, savedBoards, savedSchedules, addToast, isCanvasEnv, t]);
 
     // ── Board Builder actions ─────────────────────────────────────────────
     var generateBoardFromTopic = useCallback(async function () {
       if (!boardTopic.trim() || !onCallGemini) return;
+      var draftEpoch = boardDraftEpochRef.current;
+      var work = startSymbolWork('board-topic-' + draftEpoch);
+      if (!work) return;
       setBoardGenerating(true);
       try {
         var prompt = 'Create a communication board for the topic: "' + boardTopic.trim() + '".\n'
@@ -2852,21 +3830,27 @@
           + 'Return ONLY a JSON array:\n'
           + '[{ "label": "word or short phrase", "description": "one-sentence context for icon generation", "category": "noun" | "verb" | "adjective" | "other" }]\n'
           + 'Include a natural mix of nouns, verbs, and adjectives. Focus on functional vocabulary.';
-        var result = await onCallGemini(prompt, true);
+        var result = await promiseWithTimeout(Promise.resolve(onCallGemini(prompt, true)), 60000, 'Board planning timed out. Please try again.');
+        if (!symbolWorkIsCurrent(work) || draftEpoch !== boardDraftEpochRef.current) return;
         var parsed = parseJson(result);
         if (!Array.isArray(parsed) || !parsed.length) throw new Error('Could not parse word list');
+        parsed = parsed.filter(function (word) { return word && typeof word.label === 'string' && word.label.trim(); }).slice(0, 64).map(function (word) { return { id: uid(), label: word.label.trim().slice(0, 160), description: typeof word.description === 'string' ? word.description.slice(0, 500) : '', category: typeof word.category === 'string' ? word.category : 'other', image: null }; });
+        if (!parsed.length) throw new Error('No usable words returned');
+        resetBoardEditingIdentity(); boardDraftEpochRef.current += 1;
+        setBoardPages(null); setActivePageIdx(0);
         setBoardTitle(boardTopic.trim());
         setBoardWords(parsed.map(function (w) { return Object.assign({ id: uid(), image: null }, w); }));
         addToast && addToast(parsed.length + ' words ready — click Generate Images!', 'success');
       } catch (e) {
+        if (!symbolWorkIsCurrent(work) || draftEpoch !== boardDraftEpochRef.current) return;
         warnLog("Board word gen failed:", e);
         addToast && addToast(t('toasts.word_list_generation_failed') + e.message, 'error');
-      } finally { setBoardGenerating(false); }
+      } finally { if (symbolWorkIsCurrent(work) && draftEpoch === boardDraftEpochRef.current) setBoardGenerating(false); finishSymbolWork(work); }
     }, [boardTopic, onCallGemini, addToast]);
 
     var generateBoardImages = useCallback(async function () {
       if (!boardWords.length || !onCallImagen) return;
-      var items = boardWords.filter(function (w) { return !w.image; });
+      var items = boardWords.filter(function (w) { return !w.image && !w.locked; });
       if (!items.length) { addToast && addToast(t('toasts.all_images_already_generated'), 'info'); return; }
       // ── Symbol reuse: check gallery before calling Imagen ──────────────
       var preMatched = []; var toGenerate = [];
@@ -2886,15 +3870,21 @@
         addToast && addToast(preMatched.length + ' symbol(s) reused from the Symbol Bank: saving API calls!', 'info');
       }
       if (!toGenerate.length) { addToast && addToast(t('toasts.all_images_ready'), 'success'); return; }
+      var work = startSymbolWork('board-images-' + boardDraftEpochRef.current);
+      if (!work) return;
+      var requestedDraftEpoch = boardDraftEpochRef.current;
+      function requestIsCurrent() { return symbolWorkIsCurrent(work) && requestedDraftEpoch === boardDraftEpochRef.current; }
+      var requestedLabels = {}; toGenerate.forEach(function (word) { requestedLabels[word.id] = word.label; });
       var loadMap = {};
       toGenerate.forEach(function (i) { loadMap[i.id] = true; });
       setBoardLoading(function (p) { return Object.assign({}, p, loadMap); });
       var batchOut = await batchGenerate(
         toGenerate, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
-        function (id) { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+        function (id) { if (requestIsCurrent()) setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }, requestIsCurrent
       );
+      if (!requestIsCurrent()) { finishSymbolWork(work); return; }
       var generatedMap = {}; var generatedAssets = [];
-      batchOut.results.forEach(function (result) {
+      batchOut.results.filter(function (result) { return result.image; }).forEach(function (result) {
         var asset = normalizeBankAsset({
           id: uid(),
           label: result.label,
@@ -2909,9 +3899,8 @@
         generatedMap[result.id] = { image: result.image, assetId: asset.id, conceptId: asset.conceptId };
       });
       if (generatedAssets.length) {
-        var bankUpdate = generatedAssets.concat(gallery);
-        if (store(scopedKey(STORAGE_GALLERY), bankUpdate)) setGallery(bankUpdate);
-        else {
+        var saved = commitSymbolBank(function (current) { return generatedAssets.concat(current); }, work);
+        if (!saved) {
           generatedMap = {};
           batchOut.results.forEach(function (result) { generatedMap[result.id] = { image: result.image }; });
           addToast && addToast('Board images are ready, but could not be added to the Symbol Bank.', 'error');
@@ -2920,29 +3909,49 @@
       setBoardWords(function (prev) {
         return prev.map(function (word) {
           var result = generatedMap[word.id];
-          return result ? Object.assign({}, word, result) : word;
+          return result && word.label === requestedLabels[word.id] && !word.image && !word.locked ? Object.assign({}, word, result) : word;
         });
       });
-      setBoardLoading({});
+      setBoardLoading({}); finishSymbolWork(work);
       addToast && addToast(t('toasts.board_images_generated'), 'success');
       if (batchOut.failed.length > 0) {
         addToast && addToast(t('toasts.failed_2') + batchOut.failed.join(', '), 'error');
       }
     }, [boardWords, gallery, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
+    var generateBoardImagesRef = useRef(null); generateBoardImagesRef.current = generateBoardImages;
+    function queueBoardImageGeneration() {
+      var epoch = symbolWorkRef.current.epoch;
+      var draftEpoch = boardDraftEpochRef.current;
+      setTimeout(function () {
+        if (epoch !== symbolWorkRef.current.epoch || draftEpoch !== boardDraftEpochRef.current || !symbolWorkRef.current.open) return;
+        Promise.resolve(generateBoardImagesRef.current()).catch(function (error) { warnLog('Board image generation failed:', error); });
+      }, 80);
+    }
+
     var regenBoardCell = useCallback(async function (id) {
       var word = boardWords.find(function (w) { return w.id === id; });
       if (!word || !onCallImagen) return;
-      if (word.locked) { addToast && addToast('🔒 "' + word.label + '" is locked. Unlock the cell to change its look.', 'info'); return; }
-      if (!(await confirmRegen(word.label))) return;
-      setBoardLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      if (word.locked) { addToast && addToast('This cell is locked. Unlock it to change its look.', 'info'); return; }
+      var requestedDraftEpoch = boardDraftEpochRef.current;
+      var work = startSymbolWork('board-cell-' + requestedDraftEpoch + '-' + id);
+      if (!work) return;
       try {
+        if (!(await confirmRegen(word.label))) return;
+        if (!symbolWorkIsCurrent(work) || requestedDraftEpoch !== boardDraftEpochRef.current) return;
+        setBoardLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
         var prompt = buildSymbolPrompt(word.label, word.description, globalStyle, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 300);
-        setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { image: imageUrl }) : w; }); });
+        if (!symbolWorkIsCurrent(work) || requestedDraftEpoch !== boardDraftEpochRef.current || !imageUrl) return;
+        setBoardWords(function (prev) { return prev.map(function (w) {
+          return w.id === id && w.label === word.label && w.image === word.image && !w.locked ? Object.assign({}, w, { image: imageUrl }) : w;
+        }); });
       } catch (e) {
-        addToast && addToast(t('toasts.image_failed') + (word.label || ''), 'error');
-      } finally { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+        if (symbolWorkIsCurrent(work) && requestedDraftEpoch === boardDraftEpochRef.current) addToast && addToast(t('toasts.image_failed') + (word.label || ''), 'error');
+      } finally {
+        if (symbolWorkIsCurrent(work) && requestedDraftEpoch === boardDraftEpochRef.current) setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; });
+        finishSymbolWork(work);
+      }
     }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast, savedBoards, familiarity]);
 
     // Symbol-stability lock toggles (see helpers above). Gallery flag persists
@@ -2961,76 +3970,130 @@
     // ── Per-cell audio recording ──
     var _cellRecording = useState(null); var cellRecording = _cellRecording[0]; var setCellRecording = _cellRecording[1];
     var cellMediaRef = useRef(null);
+    var cellRecordingWorkRef = useRef(null);
+    var cellRecordingContextRef = useRef(null);
+    cellRecordingContextRef.current = { open: isOpen, tab: tab, profileId: activeProfileId, boardEpoch: boardDraftEpochRef.current, page: activePageIdx, words: boardWords };
+    function cellRecordingWordMatches(word, original) {
+      return !!word && ['id', 'label', 'translatedLabel', 'spokenLabel', 'assetId', 'conceptId', 'image', 'audioData'].every(function (key) { return word[key] === original[key]; });
+    }
+    function cellRecordingHasContext(work) {
+      var context = cellRecordingContextRef.current;
+      return !!context && context.open && context.tab === 'board' && context.profileId === work.profileId
+        && context.boardEpoch === work.boardEpoch && boardDraftEpochRef.current === work.boardEpoch && context.page === work.page;
+    }
+    function cellRecordingIsCurrent(work) {
+      return !!work && !work.cancelled && !work.finished && symbolStudioMountedRef.current && cellRecordingWorkRef.current === work
+        && cellRecordingHasContext(work) && cellRecordingContextRef.current.words.some(function (word) { return cellRecordingWordMatches(word, work.word); });
+    }
+    function stopCellRecordingTracks(stream) {
+      try { if (stream) stream.getTracks().forEach(function (track) { try { track.stop(); } catch (_) {} }); } catch (_) {}
+    }
+    function releaseCellRecording(work, discard, notify) {
+      if (!work) return;
+      if (discard) work.cancelled = true;
+      work.finished = true;
+      if (work.timer) { clearTimeout(work.timer); work.timer = null; }
+      if (work.reader) {
+        work.reader.onloadend = null; work.reader.onerror = null;
+        if (discard) { try { work.reader.abort(); } catch (_) {} }
+      }
+      if (discard && work.controller) {
+        if (work.inline) { work.controller.onstop = null; work.controller.ondataavailable = null; work.controller.onerror = null; }
+        try {
+          if (typeof work.controller.cancel === 'function') work.controller.cancel();
+          else if (work.controller.state !== 'inactive') work.controller.stop();
+        } catch (_) {}
+      }
+      stopCellRecordingTracks(work.stream); work.stream = null;
+      if (cellRecordingWorkRef.current === work) {
+        cellRecordingWorkRef.current = null; cellMediaRef.current = null;
+        if (notify && symbolStudioMountedRef.current) setCellRecording(null);
+      }
+    }
+    function failCellRecording(work) {
+      var current = cellRecordingIsCurrent(work);
+      releaseCellRecording(work, true, true);
+      if (current && addToast) addToast(t('toasts.microphone_access_denied'), 'error');
+    }
+    function commitCellRecording(work, data) {
+      if (!cellRecordingIsCurrent(work)) { releaseCellRecording(work, true, true); return; }
+      if (typeof data !== 'string' || data.length > 16 * 1024 * 1024 || !/^data:audio\/[^,]+;base64,[a-z0-9+/=\s]+$/i.test(data)) {
+        releaseCellRecording(work, false, true); return;
+      }
+      setBoardWords(function (prev) {
+        if (!cellRecordingHasContext(work)) return prev;
+        return prev.map(function (word) { return cellRecordingWordMatches(word, work.word) ? Object.assign({}, word, { audioData: data }) : word; });
+      });
+      releaseCellRecording(work, false, true);
+      if (addToast) addToast(t('toasts.audio_recorded_cell'), 'success');
+    }
+    useEffect(function () {
+      var work = cellRecordingWorkRef.current;
+      if (work && !cellRecordingIsCurrent(work)) releaseCellRecording(work, true, true);
+    }, [isOpen, tab, activeProfileId, activePageIdx, boardWords, boardDraftEpochRef.current]);
+    useEffect(function () { return function () { releaseCellRecording(cellRecordingWorkRef.current, true, false); }; }, []);
     var recordCellAudio = useCallback(function (id) {
-      if (cellRecording === id) {
-        // Stop recording — works for both inline MR (.stop()) and shared
-        // controller (.stop()).
-        if (cellMediaRef.current) {
-          try { cellMediaRef.current.stop(); } catch (e) { /* ignore */ }
-          cellMediaRef.current = null;
-        }
+      var current = cellRecordingWorkRef.current;
+      if (current && current.word.id === id && cellRecordingIsCurrent(current) && !current.stopping) {
+        current.stopping = true;
+        try { if (current.controller) current.controller.stop(); } catch (_) { failCellRecording(current); }
         setCellRecording(null);
         return;
       }
-      // Phase 3v.MR — shared module path with inline fallback
+      if (current) releaseCellRecording(current, true, true);
+      var word = boardWords.find(function (item) { return item.id === id; });
+      if (!word || !isOpen || tab !== 'board') return;
+      var work = { word: Object.assign({}, word), profileId: activeProfileId, boardEpoch: boardDraftEpochRef.current, page: activePageIdx, controller: null, stream: null, reader: null, timer: null };
+      cellRecordingWorkRef.current = work; setCellRecording(id);
+      // The shared controller owns capture, including permission requests still in flight.
       if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
-        var ctrl = window.AlloFlowVoice.recordAudioBlob({
-          maxDurationMs: 10 * 1000, // 10s cap, matches legacy
-          preferredMimeType: 'audio/webm;codecs=opus',
-          onError: function () {
-            if (addToast) addToast(t('toasts.microphone_access_denied'), 'error');
-            setCellRecording(null);
-          }
-        });
-        if (!ctrl.supported) {
-          if (addToast) addToast(t('toasts.recording_supported_browser'), 'error');
+        var ctrl;
+        try {
+          ctrl = window.AlloFlowVoice.recordAudioBlob({
+            maxDurationMs: 10000, preferredMimeType: 'audio/webm;codecs=opus',
+            onStream: function (stream) { if (cellRecordingIsCurrent(work)) work.stream = stream; else stopCellRecordingTracks(stream); },
+            onError: function () { failCellRecording(work); }
+          });
+        } catch (_) { failCellRecording(work); return; }
+        work.controller = ctrl; cellMediaRef.current = ctrl;
+        if (!ctrl || !ctrl.supported) {
+          if (ctrl && ctrl.result) Promise.resolve(ctrl.result).catch(function () {});
+          var supportedCurrent = cellRecordingIsCurrent(work);
+          releaseCellRecording(work, true, true);
+          if (supportedCurrent && addToast) addToast(t('toasts.recording_supported_browser'), 'error');
           return;
         }
-        cellMediaRef.current = ctrl;
-        setCellRecording(id);
-        ctrl.result.then(function (rec) {
-          if (rec && rec.base64) {
-            // rec.base64 is a full data URI; legacy stored full data URI too
-            setBoardWords(function (prev) {
-              return prev.map(function (w) {
-                return w.id === id ? Object.assign({}, w, { audioData: rec.base64 }) : w;
-              });
-            });
-            if (addToast) addToast(t('toasts.audio_recorded_cell'), 'success');
-          }
-          if (cellMediaRef.current === ctrl) cellMediaRef.current = null;
-          setCellRecording(null);
-        }).catch(function () {
-          if (cellMediaRef.current === ctrl) cellMediaRef.current = null;
-          setCellRecording(null);
-        });
+        Promise.resolve(ctrl.result).then(function (rec) { commitCellRecording(work, rec && rec.base64); }).catch(function () { releaseCellRecording(work, true, true); });
+        if (!cellRecordingIsCurrent(work)) releaseCellRecording(work, true, true);
         return;
       }
-      // Inline fallback (pre-3v.MR behavior, identical)
-      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-        setCellRecording(id);
-        var chunks = [];
-        var mr = new MediaRecorder(stream);
-        cellMediaRef.current = mr;
-        mr.ondataavailable = function (ev) { if (ev.data.size > 0) chunks.push(ev.data); };
+      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function' || typeof MediaRecorder === 'undefined') {
+        releaseCellRecording(work, true, true);
+        if (addToast) addToast(t('toasts.recording_supported_browser'), 'error');
+        return;
+      }
+      Promise.resolve().then(function () { return navigator.mediaDevices.getUserMedia({ audio: true }); }).then(function (stream) {
+        work.stream = stream;
+        if (!cellRecordingIsCurrent(work) || work.stopping) { releaseCellRecording(work, true, true); return; }
+        var chunks = []; var mr = new MediaRecorder(stream);
+        work.controller = mr; work.inline = true; cellMediaRef.current = mr;
+        mr.ondataavailable = function (ev) { if (cellRecordingIsCurrent(work) && ev.data && ev.data.size > 0) chunks.push(ev.data); };
+        mr.onerror = function () { failCellRecording(work); };
         mr.onstop = function () {
-          stream.getTracks().forEach(function (t) { t.stop(); });
-          var blob = new Blob(chunks, { type: 'audio/webm' });
-          var reader = new FileReader();
-          reader.onloadend = function () {
-            var b64 = reader.result;
-            setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { audioData: b64 }) : w; }); });
-            if (addToast) addToast(t('toasts.audio_recorded_cell'), 'success');
-          };
-          reader.readAsDataURL(blob);
+          stopCellRecordingTracks(work.stream); work.stream = null;
+          if (work.timer) { clearTimeout(work.timer); work.timer = null; }
+          if (!cellRecordingIsCurrent(work)) { releaseCellRecording(work, true, true); return; }
           setCellRecording(null);
+          if (!chunks.length) { releaseCellRecording(work, false, true); return; }
+          var reader = new FileReader(); work.reader = reader;
+          reader.onloadend = function () { commitCellRecording(work, reader.result); };
+          reader.onerror = function () { failCellRecording(work); };
+          try { reader.readAsDataURL(new Blob(chunks, { type: mr.mimeType || 'audio/webm' })); } catch (_) { failCellRecording(work); }
         };
         mr.start();
-        setTimeout(function () { if (mr.state === 'recording') mr.stop(); }, 10000);
-      }).catch(function () {
-        if (addToast) addToast(t('toasts.microphone_access_denied'), 'error');
-      });
-    }, [cellRecording, addToast]);
+        work.timer = setTimeout(function () { if (cellRecordingIsCurrent(work) && mr.state === 'recording') mr.stop(); }, 10000);
+      }).catch(function () { failCellRecording(work); });
+    }, [boardWords, tab, isOpen, activeProfileId, activePageIdx, addToast]);
 
     var playCellAudio = useCallback(function (audioData) {
       var audio = new Audio(audioData);
@@ -3381,29 +4444,72 @@
     }
 
     function fallbackBrowserSpeech(text, onDone) {
-      if (!window.speechSynthesis) { if (onDone) onDone(); return; }
-      var utterance = new window.SpeechSynthesisUtterance(text);
-      applyVoice(utterance);
-      if (onDone) { utterance.onend = onDone; utterance.onerror = onDone; }
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
+      if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') { if (onDone) onDone(); return null; }
+      try {
+        var utterance = new window.SpeechSynthesisUtterance(text);
+        applyVoice(utterance);
+        if (onDone) { utterance.onend = onDone; utterance.onerror = onDone; }
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        return utterance;
+      } catch (_) { if (onDone) onDone(); return null; }
+    }
+
+    function stopBoardPlayback(notifyDone) {
+      var playback = boardPlaybackRef.current;
+      boardPlaybackRef.current = null;
+      if (!playback) return;
+      playback.finished = true;
+      if (playback.audio) {
+        playback.audio.onended = null; playback.audio.onerror = null;
+        try { playback.audio.pause(); } catch (_) {}
+      }
+      if (playback.utterance) {
+        playback.utterance.onend = null; playback.utterance.onerror = null;
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+      }
+      if (notifyDone && symbolStudioMountedRef.current && playback.onDone) playback.onDone();
     }
 
     function playResolvedBoardSpeech(board, cell, text, options) {
       var spokenText = String(text || vocalLabelForCell(cell)).trim();
-      var done = options && options.onDone;
-      return resolveBoardSpeech(board, cell, spokenText, options).then(function (url) {
-        if (!url) { fallbackBrowserSpeech(spokenText, done); return null; }
-        var audio = new Audio(url);
-        if (done) audio.onended = done;
-        return audio.play().then(function () { return url; }).catch(function () {
-          fallbackBrowserSpeech(spokenText, done);
-          return null;
-        });
-      }).catch(function () {
-        fallbackBrowserSpeech(spokenText, done);
+      stopBoardPlayback(true);
+      var playback = { context: boardPlaybackContextRef.current, onDone: options && options.onDone, finished: false, audio: null, utterance: null, fallbackStarted: false };
+      boardPlaybackRef.current = playback;
+      function isCurrent() {
+        return !playback.finished && symbolStudioMountedRef.current && boardPlaybackRef.current === playback
+          && playback.context === boardPlaybackContextRef.current;
+      }
+      function finish() {
+        if (playback.finished) return;
+        playback.finished = true;
+        if (playback.audio) { playback.audio.onended = null; playback.audio.onerror = null; }
+        if (playback.utterance) { playback.utterance.onend = null; playback.utterance.onerror = null; }
+        if (boardPlaybackRef.current === playback) boardPlaybackRef.current = null;
+        if (symbolStudioMountedRef.current && playback.onDone) playback.onDone();
+      }
+      function fallback() {
+        if (!isCurrent() || playback.fallbackStarted) return null;
+        playback.fallbackStarted = true;
+        if (playback.audio) {
+          playback.audio.onended = null; playback.audio.onerror = null;
+          try { playback.audio.pause(); } catch (_) {}
+        }
+        playback.utterance = fallbackBrowserSpeech(spokenText, finish);
         return null;
-      });
+      }
+      var resolvedAudio = options && options.resolveAudio ? Promise.resolve().then(options.resolveAudio) : resolveBoardSpeech(board, cell, spokenText, options);
+      return resolvedAudio.then(function (url) {
+        if (!isCurrent()) return null;
+        if (!url) return fallback();
+        var audio = new Audio(url);
+        playback.audio = audio;
+        audio.onended = finish;
+        audio.onerror = fallback;
+        return Promise.resolve(audio.play()).then(function () {
+          return isCurrent() && !playback.fallbackStarted ? url : null;
+        }).catch(fallback);
+      }).catch(fallback);
     }
 
     function boardSpeechStatus(board, cells) {
@@ -3548,6 +4654,13 @@
         boardSpeechTombstonesRef.current = {};
       };
     }, []);
+    // Stop only this studio's playback when its owner changes or unmounts.
+    useEffect(function () {
+      stopBoardPlayback(false);
+      setStripSpeaking(false); setStorySpeaking(false);
+      return function () { stopBoardPlayback(false); };
+    }, [isOpen, activeProfileId, tab, useBoardId, scanBoardId, usePageIdx, storyCurrent]);
+
     // ── Multi-page board helpers ──────────────────────────────────────────────
 
     // ── Multi-page board helpers ───────────────────────────────────────────
@@ -3588,15 +4701,28 @@
 
     var deletePage = useCallback(function (idx) {
       setBoardPages(function (prev) {
-        if (!prev || prev.length <= 1) return prev;
-        var updated = prev.filter(function (_, i) { return i !== idx; });
-        var newIdx = Math.min(idx, updated.length - 1);
-        setBoardWords(updated[newIdx].words || []);
-        setBoardCols(updated[newIdx].cols || 4);
-        setActivePageIdx(newIdx);
+        if (!prev || prev.length <= 1 || idx < 0 || idx >= prev.length) return prev;
+        var flushed = commitCurrentPage(prev, activePageIdx, boardWords, boardCols, null);
+        setDeletedBoardPage({ page: flushed[idx], index: idx, profileId: activeProfileId, epoch: boardDraftEpochRef.current });
+        var updated = flushed.filter(function (_, i) { return i !== idx; });
+        var nextIdx = activePageIdx === idx ? Math.min(idx, updated.length - 1) : activePageIdx > idx ? activePageIdx - 1 : activePageIdx;
+        setBoardWords(updated[nextIdx].words || []); setBoardCols(updated[nextIdx].cols || 4); setActivePageIdx(nextIdx);
         return updated;
       });
-    }, []);
+    }, [activePageIdx, boardWords, boardCols, activeProfileId, commitCurrentPage]);
+
+    var undoDeletedBoardPage = useCallback(function () {
+      if (!deletedBoardPage || deletedBoardPage.profileId !== activeProfileId || deletedBoardPage.epoch !== boardDraftEpochRef.current) return;
+      setBoardPages(function (prev) {
+        if (!prev || prev.some(function (page) { return page.id === deletedBoardPage.page.id; })) return prev;
+        var restored = commitCurrentPage(prev, activePageIdx, boardWords, boardCols, null).slice();
+        var index = Math.min(deletedBoardPage.index, restored.length);
+        restored.splice(index, 0, deletedBoardPage.page);
+        setBoardWords(deletedBoardPage.page.words || []); setBoardCols(deletedBoardPage.page.cols || 4); setActivePageIdx(index);
+        return restored;
+      });
+      setDeletedBoardPage(null);
+    }, [deletedBoardPage, activeProfileId, activePageIdx, boardWords, boardCols, commitCurrentPage]);
 
     var enablePages = useCallback(function () {
       // Convert current single-page state to multi-page
@@ -3606,44 +4732,56 @@
       addToast && addToast(t('toasts.multi_page_mode_enabled_add'), 'info');
     }, [boardWords, boardCols, boardTitle, boardTopic, addToast]);
 
-    var saveBoard = useCallback(function () {
-      if (!boardWords.length && (!boardPages || boardPages.every(function (p) { return !p.words.length; }))) return;
+    var saveBoard = useCallback(function (saveAsCopy) {
       var finalPages = boardPages ? commitCurrentPage(boardPages, activePageIdx, boardWords, boardCols, null) : null;
-      // If the Communication Builder populated this board, attach its metadata so the
-      // saved record can be filtered or analytically grouped by FCT function / phase.
+      var hasContent = (finalPages || [{ words: boardWords }]).some(function (page) {
+        return (page.words || []).some(function (word) { return !!vocalLabelForCell(word) || !!word.image; });
+      });
+      if (!hasContent) return;
+      var editor = editingBoardRef.current;
+      var original = editor && editor.profileId === activeProfileId ? editor.record : null;
+      var currentBoards = savedBoardsRef.current;
+      var existing = original && currentBoards.find(function (board) { return board.id === original.id; });
+      var updating = !!existing && saveAsCopy !== true;
+      var source = existing || original || {};
       var fctMeta = pendingFctMetaRef.current || null;
-      var saved = {
-        id: uid(), title: boardTitle || boardTopic, profileId: activeProfileId || null, createdAt: Date.now(),
-        words: boardWords, cols: boardCols,
+      var saved = Object.assign({}, source, {
+        id: updating ? existing.id : uid(),
+        title: String(boardTitle || boardTopic || 'Communication board').trim().slice(0, 160) || 'Communication board',
+        profileId: source.profileId != null ? source.profileId : activeProfileId || null,
+        createdAt: updating && existing.createdAt != null ? existing.createdAt : Date.now(),
+        updatedAt: Date.now(),
+        words: finalPages && finalPages.length ? finalPages[0].words : boardWords,
+        cols: finalPages && finalPages.length ? finalPages[0].cols : boardCols,
         pages: finalPages || null,
-        language: boardLang || 'en',
-        fctFunction: fctMeta && fctMeta.fctFunction || null,
-        fctPhase: fctMeta && fctMeta.fctPhase != null ? fctMeta.fctPhase : null,
-        fctGoal: fctMeta && fctMeta.fctGoal || null
-      };
-      // Consume the pending metadata after saving so the next save (manual or template-only)
-      // doesn't accidentally inherit it.
-      var updated = [saved].concat(savedBoards);
-      var _saveOk = store(scopedKey(STORAGE_BOARDS), updated);
-      if (!_saveOk) {
+        language: boardLang || 'en'
+      });
+      if (fctMeta) {
+        saved.fctFunction = fctMeta.fctFunction || null;
+        saved.fctPhase = fctMeta.fctPhase != null ? fctMeta.fctPhase : null;
+        saved.fctGoal = fctMeta.fctGoal || null;
+      }
+      if (!updating) saved = withoutDeviceSpeechReference(saved);
+      var updated = updating ? currentBoards.map(function (board) { return board.id === saved.id ? saved : board; }) : [saved].concat(currentBoards);
+      if (!store(scopedKey(STORAGE_BOARDS), updated)) {
         addToast && addToast('Could not save the board - device storage is full. Remove some saved boards or images and try again.', 'error');
         return;
       }
       pendingFctMetaRef.current = null;
-      setSavedBoards(updated);
+      savedBoardsRef.current = updated; setSavedBoards(updated);
+      editingBoardRef.current = { profileId: activeProfileId, record: saved }; setEditingBoardId(saved.id);
+      if (finalPages) setBoardPages(finalPages);
       notifyVisualSupportsUpdated();
-      addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
-      // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
+      addToast && addToast((saveAsCopy === true ? 'Board copy saved!' : updating ? 'Board changes saved!' : t('toasts.board_saved')) + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
       if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
-        setTimeout(function () {
-          addToast(t('toasts.words_growing_check_word_garden'), 'info');
-          store('alloGardenNudgeSeen', true);
-        }, 1500);
+        setTimeout(function () { addToast(t('toasts.words_growing_check_word_garden'), 'info'); store('alloGardenNudgeSeen', true); }, 1500);
       }
-      if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
-    }, [boardWords, boardPages, activePageIdx, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, commitCurrentPage, addToast]);
+    }, [boardWords, boardPages, activePageIdx, boardTitle, boardTopic, boardCols, boardLang, activeProfileId, commitCurrentPage, gallery, addToast, t]);
 
     var applyBoardTemplate = useCallback(function (template) {
+      resetBoardEditingIdentity();
+      boardDraftEpochRef.current += 1;
+      setBoardPages(null); setActivePageIdx(0);
       var words = template.words.map(function (w) { return Object.assign({}, w, { id: uid(), image: null }); });
       setBoardWords(words);
       setBoardTitle(template.label);
@@ -3663,6 +4801,7 @@
         addToast && addToast(t('toasts.invalid_fct_template'), 'error');
         return;
       }
+      resetBoardEditingIdentity(); boardDraftEpochRef.current += 1; setBoardPages(null); setActivePageIdx(0);
       var words = labels.map(function (lbl) {
         return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: fmap.tip || '', image: null };
       });
@@ -3681,7 +4820,7 @@
       // Kick off image generation on the next tick so setBoardWords has committed.
       // We temporarily store the fct metadata on a ref so the save pipeline picks it up.
       pendingFctMetaRef.current = { fctFunction: functionId, fctPhase: phase };
-      setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+      queueBoardImageGeneration();
     }, [addToast, generateBoardImages]);
 
     // ── Free-text goal → board builder (uses Gemini to interpret the goal) ─
@@ -3693,6 +4832,7 @@
       if (!goal) { addToast && addToast(t('toasts.enter_communication_goal_first'), 'error'); return; }
       // Offline / no-Gemini fallback: empty 6-cell scaffold with the goal as title.
       if (!onCallGemini) {
+        resetBoardEditingIdentity(); boardDraftEpochRef.current += 1; setBoardPages(null); setActivePageIdx(0);
         var scaffold = [];
         for (var si = 0; si < 6; si++) scaffold.push({ id: uid(), label: '', category: 'other', description: '', image: null });
         setBoardWords(scaffold);
@@ -3703,6 +4843,9 @@
         addToast && addToast(t('toasts.ai_goal_parser_unavailable_blank'), 'info');
         return;
       }
+      var work = startSymbolWork('goal-board-' + boardDraftEpochRef.current);
+      if (!work) return;
+      var requestedDraftEpoch = boardDraftEpochRef.current;
       addToast && addToast(t('toasts.planning_symbols') + goal + '"…', 'info');
       try {
         var prompt = [
@@ -3717,7 +4860,8 @@
           '- "function" is the ABA behavioral function this goal serves.',
           '- Keep "rationale" under 20 words.'
         ].join('\n');
-        var raw = await onCallGemini(prompt);
+        var raw = await promiseWithTimeout(Promise.resolve(onCallGemini(prompt)), 60000, 'Goal planning timed out.');
+        if (!symbolWorkIsCurrent(work) || requestedDraftEpoch !== boardDraftEpochRef.current) return;
         // Gemini usually returns text; strip any code fences it slipped in.
         var stripped = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
         var parsed; try { parsed = JSON.parse(stripped); } catch (pe) { parsed = null; }
@@ -3725,8 +4869,9 @@
           addToast && addToast(t('toasts.goal_parser_returned_unexpected_output'), 'error');
           return;
         }
-        var labels = parsed.words.map(function (w) { return String(w).trim(); }).filter(function (w) { return w; }).slice(0, 6);
+        var labels = parsed.words.filter(function (word) { return typeof word === 'string'; }).map(function (w) { return w.trim().slice(0, 160); }).filter(function (w) { return w; }).slice(0, 6);
         if (!labels.length) { addToast && addToast(t('toasts.usable_labels_from_goal_try'), 'error'); return; }
+        resetBoardEditingIdentity(); boardDraftEpochRef.current += 1; setBoardPages(null); setActivePageIdx(0);
         var words = labels.map(function (lbl) {
           return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: '', image: null };
         });
@@ -3741,24 +4886,30 @@
         var fnNormalized = fnMap[fnRaw] || null;
         pendingFctMetaRef.current = fnNormalized ? { fctFunction: fnNormalized, fctPhase: null, fctGoal: goal } : { fctGoal: goal };
         addToast && addToast(t('toasts.board_ready') + (fnNormalized ? ' (' + fnNormalized + ')' : '') + ' — images generating…', 'success');
-        setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+        queueBoardImageGeneration();
       } catch (err) {
+        if (!symbolWorkIsCurrent(work)) return;
         addToast && addToast(t('toasts.could_reach_ai_goal_parser'), 'error');
-      }
+      } finally { finishSymbolWork(work); }
     }, [addToast, onCallGemini, generateBoardImages]);
 
     var loadBoard = useCallback(function (board) {
-      var pages = board.pages && board.pages.length > 0 ? board.pages : null;
-      var firstPage = pages ? pages[0] : board;
-      setBoardWords((firstPage.words || []).map(function (w) { return Object.assign({}, w); }));
-      setBoardTitle(board.title || '');
-      setBoardCols(firstPage.cols || board.cols || 4);
-      if (board.language) { setBoardLang(board.language); store(STORAGE_BOARD_LANG, board.language); }
-      setBoardPages(pages);
-      setActivePageIdx(0);
-      setShowBoardGallery(false);
+      var normalized = normalizeStoredRows(STORAGE_BOARDS, [board])[0];
+      if (!normalized) return;
+      boardDraftEpochRef.current += 1; setBoardLoading({}); setBoardGenerating(false); setDeletedBoardPage(null);
+      var pages = normalized.pages && normalized.pages.length ? normalized.pages.map(function (page) {
+        return Object.assign({}, page, { words: (page.words || []).map(function (word) { return Object.assign({}, word); }) });
+      }) : null;
+      var firstPage = pages ? pages[0] : normalized;
+      editingBoardRef.current = { profileId: activeProfileId, record: normalized }; setEditingBoardId(normalized.id);
+      pendingFctMetaRef.current = null;
+      setBoardWords((firstPage.words || []).map(function (word) { return Object.assign({}, word); }));
+      setBoardTitle(normalized.title || ''); setBoardTopic(normalized.title || '');
+      setBoardCols(firstPage.cols || normalized.cols || 4);
+      if (normalized.language) { setBoardLang(normalized.language); store(STORAGE_BOARD_LANG, normalized.language); }
+      setBoardPages(pages); setActivePageIdx(0); setShowBoardGallery(false);
       addToast && addToast(t('toasts.board_loaded') + (pages && pages.length > 1 ? ' (' + pages.length + ' pages)' : ''), 'success');
-    }, [addToast]);
+    }, [addToast, activeProfileId, t]);
 
     var deleteSavedBoard = useCallback(function (id) {
       var deletedBoard = savedBoards.find(function (b) { return b.id === id; }) || null;
@@ -5028,15 +6179,15 @@
         });
         return;
       }
-      if (!onCallTTS) return;
-      onCallTTS(label, selectedVoice || 'Kore', voiceSpeed, {
-        language: boardLang || primaryLanguage || 'English',
-        priority: 'interactive',
-        maxRetries: 1,
-        reason: 'symbol-studio-support'
-      }).then(function (url) {
-        if (url) { var audio = new Audio(url); audio.play().catch(function () {}); }
-      }).catch(function () {});
+      playResolvedBoardSpeech(null, null, label, {
+        resolveAudio: function () {
+          if (!onCallTTS) return null;
+          return promiseWithTimeout(Promise.resolve(onCallTTS(label, selectedVoice || 'Kore', voiceSpeed, {
+            language: boardLang || primaryLanguage || 'English',
+            priority: 'interactive', maxRetries: 1, reason: 'symbol-studio-support'
+          })), 30000, 'Speech timed out.');
+        }
+      });
     }, [onCallTTS, selectedVoice, voiceSpeed, ttsProvider, ttsEngine, ttsModel, boardLang, primaryLanguage, boardPages, activePageIdx, activeProfileId, recordFamiliarity]);
 
     // ── Schedule actions ──────────────────────────────────────────────────
@@ -5047,6 +6198,7 @@
         .slice(0, 12);
       if (!safeLines.length || !onCallImagen) return false;
 
+      resetScheduleEditingIdentity();
       var generationEpoch = ++schedGenerationEpochRef.current;
       setSchedGenerating(true);
       var items = safeLines.map(function (label) {
@@ -5159,6 +6311,9 @@
         if (onCallImagen) {
           await generateSequenceItems(steps);
         } else {
+          resetScheduleEditingIdentity();
+          var textSteps = steps.map(function (label) { var asset = findExactBankAsset(gallery, label); return { id: uid(), label: label, image: asset ? asset.image : null, assetId: asset ? asset.id : null, conceptId: asset ? (asset.conceptId || asset.id) : null, complete: false }; });
+          setSchedItems(textSteps); setSchedNowId(textSteps.length ? textSteps[0].id : null);
           addToast && addToast('Sequence steps are ready. Image generation is currently unavailable.', 'info');
         }
       } catch (e) {
@@ -5168,7 +6323,7 @@
       } finally {
         if (planningEpoch === schedGenerationEpochRef.current) setSchedPlanning(false);
       }
-    }, [schedTopic, schedPlanning, schedGenerating, onCallGemini, onCallImagen, generateSequenceItems, addToast]);
+    }, [schedTopic, schedPlanning, schedGenerating, onCallGemini, onCallImagen, generateSequenceItems, gallery, addToast]);
 
     var announceScheduleChange = function (message) {
       if (!ssLiveRef.current) return;
@@ -5229,27 +6384,32 @@
       announceScheduleChange((removed ? removed.label : 'Activity') + ' removed from the sequence');
     }, [schedItems, schedNowId]);
 
-    var saveSchedule = useCallback(function () {
+    var saveSchedule = useCallback(function (saveAsCopy) {
       if (!schedItems.length) return;
-      var saved = {
-        id: uid(),
+      var editor = editingScheduleRef.current;
+      var original = editor && editor.profileId === activeProfileId ? editor.record : null;
+      var currentSchedules = savedSchedulesRef.current;
+      var existing = original && currentSchedules.find(function (sequence) { return sequence.id === original.id; });
+      var updating = !!existing && saveAsCopy !== true;
+      var saved = Object.assign({}, existing || original || {}, {
+        id: updating ? existing.id : uid(),
         title: (schedTitle || 'Sequence').trim().slice(0, 120) || 'Sequence',
         items: schedItems.map(function (item) { return Object.assign({}, item); }),
         orientation: schedOrientation === 'vertical' ? 'vertical' : 'horizontal',
         nowId: schedNowId || null,
-        createdAt: Date.now()
-      };
-      var updated = [saved].concat(savedSchedules);
-      var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated);
-      if (!saveOk) {
+        createdAt: updating && existing.createdAt != null ? existing.createdAt : Date.now(),
+        updatedAt: Date.now()
+      });
+      var updated = updating ? currentSchedules.map(function (sequence) { return sequence.id === saved.id ? saved : sequence; }) : [saved].concat(currentSchedules);
+      if (!store(scopedKey(STORAGE_SCHEDULES), updated)) {
         addToast && addToast('Could not save the sequence - device storage is full. Remove some saved supports or images and try again.', 'error');
         return;
       }
-      setSavedSchedules(updated);
+      savedSchedulesRef.current = updated; setSavedSchedules(updated);
+      editingScheduleRef.current = { profileId: activeProfileId, record: saved }; setEditingScheduleId(saved.id);
       notifyVisualSupportsUpdated();
-      addToast && addToast('Sequence saved!', 'success');
-      if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
-    }, [schedItems, schedTitle, schedOrientation, schedNowId, savedSchedules, cloudSync, syncToCloud, addToast]);
+      addToast && addToast(saveAsCopy === true ? 'Sequence copy saved!' : updating ? 'Sequence changes saved!' : 'Sequence saved!', 'success');
+    }, [schedItems, schedTitle, schedOrientation, schedNowId, activeProfileId, addToast]);
 
     var resetSchedule = useCallback(function () {
       setSchedItems(function (prev) { return prev.map(function (i) { return Object.assign({}, i, { complete: false }); }); });
@@ -5258,28 +6418,29 @@
     }, [schedItems]);
 
     var loadSchedule = useCallback(function (sched) {
-      var rawItems = sched && Array.isArray(sched.items) ? sched.items : [];
+      if (!sched || typeof sched !== 'object') return;
+      schedGenerationEpochRef.current += 1;
+      setSchedGenerating(false); setSchedPlanning(false);
+      var rawItems = Array.isArray(sched.items) ? sched.items : [];
       var safeItems = rawItems.map(function (item, index) {
         var safe = item && typeof item === 'object' ? item : {};
-        return {
+        return Object.assign({}, safe, {
           id: typeof safe.id === 'string' && safe.id ? safe.id : uid(),
           label: typeof safe.label === 'string' && safe.label.trim() ? safe.label.trim() : 'Unlabeled step ' + (index + 1),
           image: typeof safe.image === 'string' ? safe.image : null,
           complete: !!safe.complete
-        };
+        });
       });
-      setSchedItems(safeItems);
-      setSchedTitle(sched && typeof sched.title === 'string' ? sched.title : '');
-      setSchedOrientation(sched && sched.orientation === 'vertical' ? 'vertical' : 'horizontal');
-      var requestedNow = sched && sched.nowId;
+      editingScheduleRef.current = { profileId: activeProfileId, record: Object.assign({}, sched, { items: safeItems }) }; setEditingScheduleId(sched.id || null);
+      setSchedItems(safeItems); setSchedInput(safeItems.map(function (item) { return item.label; }).join('\n')); setSchedTopic('');
+      setSchedTitle(typeof sched.title === 'string' ? sched.title : '');
+      setSchedOrientation(sched.orientation === 'vertical' ? 'vertical' : 'horizontal');
+      var requestedNow = sched.nowId;
       var current = safeItems.find(function (item) { return item.id === requestedNow && !item.complete; })
-        || safeItems.find(function (item) { return !item.complete; })
-        || safeItems[0]
-        || null;
-      setSchedNowId(current ? current.id : null);
-      setShowSchedGallery(false);
+        || safeItems.find(function (item) { return !item.complete; }) || null;
+      setSchedNowId(current ? current.id : null); setShowSchedGallery(false);
       addToast && addToast('Sequence loaded!', 'success');
-    }, [addToast]);
+    }, [addToast, activeProfileId]);
 
     var deleteSavedSchedule = useCallback(function (id) {
       var updated = savedSchedules.filter(function (s) { return s.id !== id; });
@@ -5300,9 +6461,8 @@
     // ── Social Story actions ──────────────────────────────────────────────
     var generateStory = useCallback(async function () {
       if (!storySituation.trim() || !onCallGemini) return;
-      setStoryGenerating(true);
-      setStoryPages([]);
-      setStoryCurrent(0);
+      var work = startSymbolWork('story'); if (!work) return;
+      setStoryGenerating(true); setStoryError(''); setStoryProgress({ ready: 0, total: 0 });
       try {
         var name = storyStudentName.trim() || 'the student';
         // Enrich story with garden vocabulary — aided language modeling via narrative
@@ -5324,37 +6484,55 @@
           + '\nFormat as 5-7 short pages. Each page = 2-3 sentences.\n'
           + '\nReturn ONLY a JSON array:\n'
           + '[{ "text": "page text here", "imagePrompt": "brief scene description for illustration, e.g. \'A child sitting with friends at a lunch table, smiling\'" }]';
-        var result = await onCallGemini(prompt, true);
+        var result = await promiseWithTimeout(Promise.resolve(onCallGemini(prompt, true)), 60000, 'Story writing timed out.');
+        if (!symbolWorkIsCurrent(work)) return;
         var parsed = parseJson(result);
-        if (!Array.isArray(parsed) || !parsed.length) throw new Error('Could not parse story');
-        var pages = parsed.map(function (p) { return { id: uid(), text: p.text || '', imagePrompt: p.imagePrompt || '', image: null }; });
-        setStoryPages(pages);
+        if (!Array.isArray(parsed)) throw new Error('Could not parse story');
+        var pages = parsed.filter(function (page) { return page && typeof page.text === 'string' && page.text.trim(); }).slice(0, 12).map(function (page) {
+          return { id: uid(), text: page.text.trim().slice(0, 2000), imagePrompt: typeof page.imagePrompt === 'string' ? page.imagePrompt.trim().slice(0, 1000) : '', image: null };
+        });
+        if (!pages.length) throw new Error('The response did not include any story text.');
+        stopBoardPlayback(true); setStorySpeaking(false);
+        storyRevisionRef.current += 1; setStoryPages(pages); setStoryCurrent(0);
+        setStoryProgress({ ready: 0, total: onCallImagen ? pages.length : 0 });
         addToast && addToast(t('toasts.story_written_generating_illustrations'), 'success');
         // Auto-generate illustrations — sequential to avoid rate limiting
         if (onCallImagen) {
           var illMap = {};
           pages.forEach(function (p) { illMap[p.id] = true; });
           setStoryIllustrating(illMap);
+          var readyImages = 0;
           for (var i = 0; i < pages.length; i++) {
+            if (!symbolWorkIsCurrent(work)) return;
             var page = pages[i];
             var fullPrompt = page.imagePrompt
               ? ('Illustration for a children\'s social story: ' + page.imagePrompt + '. Warm, friendly, child-appropriate watercolor style. Simple composition. White or soft background. STRICTLY NO TEXT.')
               : ('Warm illustration of a child in a social situation, friendly, simple, child-appropriate. NO TEXT.');
             try {
               var img = await genWithRetry(fullPrompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600);
-              setStoryPages(function (prev) { var pid = page.id; return prev.map(function (pp) { return pp.id === pid ? Object.assign({}, pp, { image: img }) : pp; }); });
+              if (!symbolWorkIsCurrent(work)) return;
+              if (!safeImgUrl(img)) throw new Error('No illustration was returned.');
+              setStoryPages(function (pageId, image) { return function (prev) { return prev.map(function (pp) { return pp.id === pageId ? Object.assign({}, pp, { image: image }) : pp; }); }; }(page.id, img));
+              readyImages += 1;
             } catch (illErr) {
               warnLog("Illustration failed for page " + (i + 1) + ":", illErr.message);
             }
-            setStoryIllustrating(function (p) { var pid = page.id; var n = Object.assign({}, p); delete n[pid]; return n; });
+            if (!symbolWorkIsCurrent(work)) return;
+            setStoryIllustrating(function (pageId) { return function (current) { var next = Object.assign({}, current); delete next[pageId]; return next; }; }(page.id));
+            setStoryProgress({ ready: readyImages, total: pages.length });
             // Rate-limit pause between pages (skip after last)
             if (i < pages.length - 1) await new Promise(function (r) { setTimeout(r, 1500); });
           }
+          if (symbolWorkIsCurrent(work) && readyImages < pages.length) setStoryError('Some illustrations could not be generated. Your story text is ready; use Regen Image to retry each missing picture.');
         }
       } catch (e) {
-        warnLog("Story generation failed:", e);
+        if (!symbolWorkIsCurrent(work)) return;
+        setStoryError('Could not create the story. ' + e.message + ' Try again when ready.');
         addToast && addToast(t('toasts.story_generation_failed') + e.message, 'error');
-      } finally { setStoryGenerating(false); }
+      } finally {
+        if (symbolWorkIsCurrent(work)) setStoryGenerating(false);
+        finishSymbolWork(work);
+      }
     }, [storySituation, storyStudentName, storyDetails, avatarRef, onCallGemini, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // Helper: set browser TTS voice fallback
@@ -5369,28 +6547,39 @@
 
     // ── Multilingual board translation ──
     var translateBoardLabels = useCallback(async function (words, targetLang) {
-      if (!onCallGemini || targetLang === 'en') return words;
-      setTranslating(true);
+      if (!onCallGemini || targetLang === 'en' || !words.length) return false;
+      var request = { contextKey: JSON.stringify(boardTranslationContextRef.current) };
+      boardTranslationRequestRef.current = request; setTranslating(true);
       try {
         var labels = words.map(function (w) { return w.label; });
         var langName = (LANG_OPTIONS.find(function (l) { return l.code === targetLang; }) || {}).label || targetLang;
         var prompt = 'Translate these AAC communication board labels to ' + langName + '. Return ONLY a JSON array of translated strings in the same order, no explanation.\n\n' + JSON.stringify(labels);
-        var result = await onCallGemini(prompt);
-        var text = typeof result === 'string' ? result : (result && result.text ? result.text : '');
+        var result = await promiseWithTimeout(Promise.resolve(onCallGemini(prompt)), 60000, 'Board translation timed out. Try again.');
+        if (!boardTranslationIsCurrent(request)) return false;
+        var text = typeof result === 'string' ? result : (result && typeof result.text === 'string' ? result.text : '');
         var cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
         var translated = JSON.parse(cleaned);
-        if (!Array.isArray(translated) || translated.length !== words.length) return words;
-        return words.map(function (w, i) {
-          return Object.assign({}, w, {
-            translatedLabel: translated[i],
-            originalLabel: w.originalLabel || w.label
+        if (!Array.isArray(translated) || translated.length !== words.length || translated.some(function (label) { return typeof label !== 'string' || !label.trim() || label.length > 500; })) {
+          throw new Error('The translation did not contain valid labels for every cell.');
+        }
+        setBoardWords(function (current) {
+          if (!boardTranslationIsCurrent(request)) return current;
+          return current.map(function (cell) {
+            var index = words.findIndex(function (source) { return source.id === cell.id && source.label === cell.label; });
+            return index < 0 ? cell : Object.assign({}, cell, { translatedLabel: translated[index].trim(), originalLabel: cell.originalLabel || cell.label });
           });
         });
+        return true;
       } catch (err) {
-        warnLog('Translation failed:', err);
-        addToast && addToast(t('toasts.translation_failed_2') + err.message, 'error');
-        return words;
-      } finally { setTranslating(false); }
+        if (boardTranslationIsCurrent(request)) {
+          warnLog('Translation failed:', err);
+          addToast && addToast(t('toasts.translation_failed_2') + err.message, 'error');
+        }
+        return false;
+      } finally {
+        // Keep the ownership token until the queued state updater commits.
+        if (boardTranslationIsCurrent(request)) setTranslating(false);
+      }
     }, [onCallGemini, addToast]);
 
     // ── IEP Goal Tracking helpers ──
@@ -5531,235 +6720,216 @@
     }, [activeProfileId, profiles, iepGoals]);
 
     var speakPage = useCallback(function (text) {
-      if (!onCallTTS) return;
+      if (storySpeaking) { stopBoardPlayback(true); setStorySpeaking(false); return; }
+      if (!String(text || '').trim()) return;
       setStorySpeaking(true);
-      var voice = selectedVoice || 'Kore';
-      onCallTTS(text, voice, 1).then(function (url) {
-        if (url) {
-          var a = new Audio(url);
-          a.onended = function () { setStorySpeaking(false); };
-          a.play().catch(function () { setStorySpeaking(false); });
-        } else { setStorySpeaking(false); }
-      }).catch(function () { setStorySpeaking(false); });
-    }, [onCallTTS, selectedVoice]);
+      playResolvedBoardSpeech(null, null, text, {
+        resolveAudio: function () { return onCallTTS ? promiseWithTimeout(Promise.resolve(onCallTTS(text, selectedVoice || 'Kore', 1)), 30000, 'Story speech timed out.') : null; },
+        onDone: function () { setStorySpeaking(false); }
+      });
+    }, [onCallTTS, selectedVoice, storySpeaking]);
+
+    var beginStoryTextEdit = function (page) {
+      stopBoardPlayback(true); setStorySpeaking(false); setStoryTextEditError('');
+      storyTextEditReturnFocusRef.current = false;
+      setStoryTextEdit({ pageId: page.id, profileId: activeProfileId, revision: storyRevisionRef.current, text: String(page.text || '').slice(0, 2000) });
+    };
+    var cancelStoryTextEdit = function () {
+      storyTextEditReturnFocusRef.current = true;
+      setStoryTextEdit(null); setStoryTextEditError('');
+    };
+    var saveStoryPageText = function () {
+      var edit = storyTextEdit;
+      var page = storyPages[storyCurrent];
+      if (!edit || !isOpen || tab !== 'stories' || edit.profileId !== activeProfileId || edit.revision !== storyRevisionRef.current || !page || page.id !== edit.pageId) return;
+      var text = edit.text.trim().slice(0, 2000);
+      if (!text) { setStoryTextEditError('Enter some story text before saving.'); return; }
+      stopBoardPlayback(true); setStorySpeaking(false);
+      // Merge into the latest page so an illustration finishing during editing is retained.
+      setStoryPages(function (pages) { return pages.map(function (item) { return item.id === edit.pageId ? Object.assign({}, item, { text: text }) : item; }); });
+      cancelStoryTextEdit();
+    };
 
     var regenPageIllustration = useCallback(async function (pageId) {
       var page = storyPages.find(function (p) { return p.id === pageId; });
       if (!page || !onCallImagen) return;
+      var work = startSymbolWork('story-image-' + pageId); if (!work) return;
+      var revision = storyRevisionRef.current;
       setStoryIllustrating(function (p) { var n = Object.assign({}, p); n[pageId] = true; return n; });
       try {
         var prompt = page.imagePrompt
           ? ('Illustration for a children\'s social story: ' + page.imagePrompt + '. Warm, friendly watercolor style. NO TEXT.')
           : ('Warm illustration of a child in a social situation, friendly, simple. NO TEXT.');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600);
+        if (!symbolWorkIsCurrent(work) || revision !== storyRevisionRef.current) return;
+        if (!safeImgUrl(img)) throw new Error('No illustration was returned.');
         setStoryPages(function (prev) { return prev.map(function (pp) { return pp.id === pageId ? Object.assign({}, pp, { image: img }) : pp; }); });
       } catch (e) {
-        addToast && addToast(t('toasts.illustration_failed'), 'error');
-      } finally { setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[pageId]; return n; }); }
+        if (symbolWorkIsCurrent(work) && revision === storyRevisionRef.current) addToast && addToast(t('toasts.illustration_failed'), 'error');
+      } finally {
+        if (symbolWorkIsCurrent(work) && revision === storyRevisionRef.current) setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[pageId]; return n; });
+        finishSymbolWork(work);
+      }
     }, [storyPages, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Quick Boards actions ───────────────────────────────────────────────
-    var genFtCell = useCallback(async function (which) {
-      var label = which === 'first' ? ftFirstLabel : ftThenLabel;
-      if (!label.trim() || !onCallImagen) return;
-      which === 'first' ? setFtFirstLoading(true) : setFtThenLoading(true);
-      try {
-        var prompt = buildSymbolPrompt(label, '', globalStyle, avatarRef ? avatarDesc : '');
-        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
-        which === 'first' ? setFtFirstImage(img) : setFtThenImage(img);
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { which === 'first' ? setFtFirstLoading(false) : setFtThenLoading(false); }
-    }, [ftFirstLabel, ftThenLabel, globalStyle, avatarRef, avatarDesc, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+     // Associate every quick-board image with its initiating profile, target, and label.
+     var quickBoardImageSnapshotRef = useRef(null);
+     quickBoardImageSnapshotRef.current = {
+       first: { label: ftFirstLabel, image: ftFirstImage }, then: { label: ftThenLabel, image: ftThenImage },
+       token: { label: tokenRewardLabel, image: tokenRewardImage },
+       cb: cbItems, cm: cmItems, sn: snItems, am: amItems, bc: bcItems, tw: twItems
+     };
+     var quickBoardImageJobsRef = useRef({});
+     var quickBoardPreviousLabelsRef = useRef(null);
+     function quickBoardImageKey(target) { return target.type + ':' + (target.which || target.id || 'reward'); }
+     function quickBoardImageRecord(target) {
+       var snapshot = quickBoardImageSnapshotRef.current;
+       if (target.type === 'ft') return snapshot[target.which] || null;
+       if (target.type === 'token') return snapshot.token;
+       return (snapshot[target.type] || []).find(function (item) { return item.id === target.id; }) || null;
+     }
+     function setQuickBoardImageLoading(target, loading) {
+       if (target.type === 'ft') { (target.which === 'first' ? setFtFirstLoading : setFtThenLoading)(loading); return; }
+       if (target.type === 'token') { setTokenRewardLoading(loading); return; }
+       var setter = { cb: setCbLoading, cm: setCmLoading, sn: setSnLoading, am: setAmLoading, bc: setBcLoading, tw: setTwLoading }[target.type];
+       if (setter) setter(function (prev) {
+         if (!!prev[target.id] === loading) return prev;
+         var next = Object.assign({}, prev); if (loading) next[target.id] = true; else delete next[target.id]; return next;
+       });
+     }
+     function writeQuickBoardImage(target, image, expectedLabel) {
+       var record = quickBoardImageRecord(target);
+       if (!record || String(record.label || '') !== expectedLabel) return false;
+       if (target.type === 'ft') { (target.which === 'first' ? setFtFirstImage : setFtThenImage)(image); return true; }
+       if (target.type === 'token') { setTokenRewardImage(image); return true; }
+       var setter = { cb: setCbItems, cm: setCmItems, sn: setSnItems, am: setAmItems, bc: setBcItems, tw: setTwItems }[target.type];
+       if (!setter) return false;
+       setter(function (prev) {
+         return prev.map(function (item) {
+           return item.id === target.id && String(item.label || '') === expectedLabel && item.image !== image
+             ? Object.assign({}, item, { image: image }) : item;
+         });
+       });
+       return true;
+     }
+     function quickBoardImageWorkIsCurrent(work) {
+       var record = work && quickBoardImageRecord(work.target);
+       return !!record && symbolWorkIsCurrent(work) && quickBoardImageJobsRef.current[work.key] === work
+         && String(record.label || '') === work.label;
+     }
+     function startQuickBoardImageWork(target, replacePending) {
+       var record = quickBoardImageRecord(target);
+       if (!record || !isOpen) return null;
+       var key = quickBoardImageKey(target);
+       var previous = quickBoardImageJobsRef.current[key];
+       if (previous && quickBoardImageWorkIsCurrent(previous) && !replacePending) return null;
+       var work = { key: key, target: Object.assign({}, target), label: String(record.label || ''),
+         epoch: symbolWorkRef.current.epoch, profileId: activeProfileIdRef.current };
+       quickBoardImageJobsRef.current[key] = work; setQuickBoardImageLoading(target, true); return work;
+     }
+     function finishQuickBoardImageWork(work) {
+       if (!work || quickBoardImageJobsRef.current[work.key] !== work) return;
+       delete quickBoardImageJobsRef.current[work.key]; setQuickBoardImageLoading(work.target, false);
+     }
+     useEffect(function () {
+       if (draftApplyingRef.current || draftHydratedProfile !== activeProfileId) return;
+       Object.keys(quickBoardImageJobsRef.current).forEach(function (key) {
+         var work = quickBoardImageJobsRef.current[key];
+         if (!quickBoardImageWorkIsCurrent(work)) finishQuickBoardImageWork(work);
+       });
+       var targets = [{ type: 'ft', which: 'first' }, { type: 'ft', which: 'then' }, { type: 'token' }];
+       ['cb', 'cm', 'sn', 'am', 'bc', 'tw'].forEach(function (type) {
+         (quickBoardImageSnapshotRef.current[type] || []).forEach(function (item) { targets.push({ type: type, id: item.id }); });
+       });
+       var labels = {};
+       targets.forEach(function (target) {
+         var record = quickBoardImageRecord(target); if (!record) return;
+         var key = quickBoardImageKey(target); var label = String(record.label || ''); labels[key] = label;
+         if (quickBoardPreviousLabelsRef.current && Object.prototype.hasOwnProperty.call(quickBoardPreviousLabelsRef.current, key)
+           && quickBoardPreviousLabelsRef.current[key] !== label && record.image) writeQuickBoardImage(target, null, label);
+       });
+       quickBoardPreviousLabelsRef.current = labels;
+     });
+     useEffect(function () {
+       setQbUploadTarget(null);
+       return function () { quickBoardImageJobsRef.current = {}; };
+     }, [activeProfileId, isOpen]);
+     useEffect(function () {
+       setFtFirstLoading(false); setFtThenLoading(false); setTokenRewardLoading(false);
+       setCbLoading({}); setCmLoading({}); setSnLoading({}); setAmLoading({}); setBcLoading({}); setTwLoading({});
+     }, [activeProfileId, isOpen]);
 
-    var genChoiceItem = useCallback(async function (id) {
-      var item = cbItems.find(function (it) { return it.id === id; });
-      if (!item || !item.label.trim() || !onCallImagen) return;
-      setCbLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      try {
-        var prompt = buildSymbolPrompt(item.label, '', globalStyle, avatarRef ? avatarDesc : '');
-        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
-        setCbItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setCbLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [cbItems, globalStyle, avatarRef, avatarDesc, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+     async function generateQuickBoardImage(target, description, personalized) {
+       var record = quickBoardImageRecord(target);
+       if (!record || !String(record.label || '').trim() || !onCallImagen) return;
+       var work = startQuickBoardImageWork(target, false); if (!work) return;
+       try {
+         var prompt = buildSymbolPrompt(work.label, description || '', globalStyle, personalized && avatarRef ? avatarDesc : '');
+         var image = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, personalized ? avatarRef : null, 400);
+         if (quickBoardImageWorkIsCurrent(work)) writeQuickBoardImage(work.target, image, work.label);
+       } catch (error) {
+         if (quickBoardImageWorkIsCurrent(work) && addToast) addToast('Could not create the image for ' + work.label + '. Please try again.', 'error');
+       } finally { finishQuickBoardImageWork(work); }
+     }
+     async function generateQuickBoardImageBatch(type) {
+       if (!onCallImagen) return;
+       var items = (quickBoardImageSnapshotRef.current[type] || []).filter(function (item) { return !item.image && String(item.label || '').trim(); });
+       var works = [];
+       items = items.filter(function (item) {
+         var work = startQuickBoardImageWork({ type: type, id: item.id }, false);
+         if (work) works.push(work); return !!work;
+       });
+       if (!works.length) return;
+       try {
+         var batch = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, null, function () {
+           return works.some(quickBoardImageWorkIsCurrent);
+         });
+         var active = works.filter(quickBoardImageWorkIsCurrent); var ready = 0;
+         active.forEach(function (work) {
+           var result = batch.results.find(function (item) { return item.id === work.target.id; });
+           if (result && result.image && writeQuickBoardImage(work.target, result.image, work.label)) ready += 1;
+         });
+         if (active.length && addToast) addToast('Generated ' + ready + ' of ' + active.length + ' images.'
+           + (ready < active.length ? ' Retry the remaining images when ready.' : ''), ready < active.length ? 'error' : 'success');
+       } catch (error) {
+         if (works.some(quickBoardImageWorkIsCurrent) && addToast) addToast('Could not finish these images. Please try again.', 'error');
+       } finally { works.forEach(finishQuickBoardImageWork); }
+     }
+     var genFtCell = function (which) { return generateQuickBoardImage({ type: 'ft', which: which }, '', true); };
+     var genChoiceItem = function (id) { return generateQuickBoardImage({ type: 'cb', id: id }, '', true); };
+     var genTokenReward = function () { return generateQuickBoardImage({ type: 'token' }, 'a reward or prize', false); };
+     var selectChoice = useCallback(function (id) {
+       setCbSelected(id); var item = cbItems.find(function (it) { return it.id === id; }); if (item && item.label) speakCell(item.label);
+     }, [cbItems, speakCell]);
+     var handleQbUpload = useCallback(function (ev) {
+       var file = ev.target.files && ev.target.files[0]; ev.target.value = '';
+       if (!file || !qbUploadTarget) return;
+       var work = startQuickBoardImageWork(qbUploadTarget, true); setQbUploadTarget(null); if (!work) return;
+       var reader = new FileReader();
+       reader.onload = function (event) {
+         if (quickBoardImageWorkIsCurrent(work)) writeQuickBoardImage(work.target, event.target.result, work.label);
+         finishQuickBoardImageWork(work);
+       };
+       reader.onerror = function () {
+         if (quickBoardImageWorkIsCurrent(work) && addToast) addToast('Could not read this image. Please choose it again.', 'error');
+         finishQuickBoardImageWork(work);
+       };
+       reader.onabort = function () { finishQuickBoardImageWork(work); };
+       try { reader.readAsDataURL(file); } catch (error) { reader.onerror(); }
+     }, [qbUploadTarget, addToast]);
+     var genAmItem = function (id) { return generateQuickBoardImage({ type: 'am', id: id }, 'a child asking a question, speech bubble, communication initiation, simple AAC-style symbol', false); };
+     var genAllAmItems = function () { return generateQuickBoardImageBatch('am'); };
+     var genBcItem = function (id) { return generateQuickBoardImage({ type: 'bc', id: id }, 'body part for medical communication with a child, simple clear anatomy AAC-style symbol, white background', false); };
+     var genAllBcItems = function () { return generateQuickBoardImageBatch('bc'); };
+     var genTwItem = function (id) { return generateQuickBoardImage({ type: 'tw', id: id }, 'visual schedule transition warning for children, timer or activity change concept, simple AAC-style symbol', false); };
+     var genAllTwItems = function () { return generateQuickBoardImageBatch('tw'); };
+     var genCmItem = function (id) { return generateQuickBoardImage({ type: 'cm', id: id }, 'a calming self-regulation strategy for children, peaceful and soothing scene', false); };
+     var genAllCmItems = function () { return generateQuickBoardImageBatch('cm'); };
+     var genSnItem = function (id) { return generateQuickBoardImage({ type: 'sn', id: id }, 'a sensory regulation need for a child with sensory sensitivities, clear and simple AAC-style symbol', false); };
+     var genAllSnItems = function () { return generateQuickBoardImageBatch('sn'); };
 
-    var genTokenReward = useCallback(async function () {
-      if (!tokenRewardLabel.trim() || !onCallImagen) return;
-      setTokenRewardLoading(true);
-      try {
-        var prompt = buildSymbolPrompt(tokenRewardLabel, 'a reward or prize', globalStyle, '');
-        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
-        setTokenRewardImage(img);
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setTokenRewardLoading(false); }
-    }, [tokenRewardLabel, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
-    var selectChoice = useCallback(function (id) {
-      setCbSelected(id);
-      var item = cbItems.find(function (it) { return it.id === id; });
-      if (item && item.label) speakCell(item.label);
-    }, [cbItems, speakCell]);
-
-    var handleQbUpload = useCallback(function (ev) {
-      var file = ev.target.files && ev.target.files[0];
-      if (!file || !qbUploadTarget) return;
-      var reader = new FileReader();
-      reader.onload = function (e2) {
-        var img = e2.target.result;
-        if (qbUploadTarget.type === 'ft') {
-          qbUploadTarget.which === 'first' ? setFtFirstImage(img) : setFtThenImage(img);
-        } else if (qbUploadTarget.type === 'cb') {
-          setCbItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
-        } else if (qbUploadTarget.type === 'token') {
-          setTokenRewardImage(img);
-        } else if (qbUploadTarget.type === 'cm') {
-          setCmItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
-        } else if (qbUploadTarget.type === 'sn') {
-          setSnItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
-        } else if (qbUploadTarget.type === 'am') {
-          setAmItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
-        } else if (qbUploadTarget.type === 'bc') {
-          setBcItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
-        } else if (qbUploadTarget.type === 'tw') {
-          setTwItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
-        }
-      };
-      reader.readAsDataURL(file);
-      ev.target.value = ''; setQbUploadTarget(null);
-    }, [qbUploadTarget]);
-
-    // ── Ask Me Board actions ───────────────────────────────────────────────
-    var genAmItem = useCallback(async function (id) {
-      var item = amItems.find(function (it) { return it.id === id; });
-      if (!item || !onCallImagen) return;
-      setAmLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      try {
-        var img = await genWithRetry(buildSymbolPrompt(item.label, 'a child asking a question, speech bubble, communication initiation, simple AAC-style symbol', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
-        setAmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setAmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [amItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    var genAllAmItems = useCallback(async function () {
-      var items = amItems.filter(function (it) { return !it.image; });
-      if (!items.length || !onCallImagen) return;
-      var loadMap = {}; items.forEach(function (i) { loadMap[i.id] = true; });
-      setAmLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setAmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
-      setAmItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
-      setAmLoading({});
-      addToast && addToast(t('toasts.ask_me_board_images_ready'), 'success');
-    }, [amItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    // ── Body Check actions ─────────────────────────────────────────────────
-    var genBcItem = useCallback(async function (id) {
-      var item = bcItems.find(function (it) { return it.id === id; });
-      if (!item || !onCallImagen) return;
-      setBcLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      try {
-        var img = await genWithRetry(buildSymbolPrompt(item.label, 'body part for medical communication with a child, simple clear anatomy AAC-style symbol, white background', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
-        setBcItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setBcLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [bcItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    var genAllBcItems = useCallback(async function () {
-      var items = bcItems.filter(function (it) { return !it.image; });
-      if (!items.length || !onCallImagen) return;
-      var loadMap = {}; items.forEach(function (i) { loadMap[i.id] = true; });
-      setBcLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setBcLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
-      setBcItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
-      setBcLoading({});
-      addToast && addToast(t('toasts.body_check_images_ready'), 'success');
-    }, [bcItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    // ── Transition Warning actions ─────────────────────────────────────────
-    var genTwItem = useCallback(async function (id) {
-      var item = twItems.find(function (it) { return it.id === id; });
-      if (!item || !onCallImagen) return;
-      setTwLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      try {
-        var img = await genWithRetry(buildSymbolPrompt(item.label, 'visual schedule transition warning for children, timer or activity change concept, simple AAC-style symbol', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
-        setTwItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setTwLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [twItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    var genAllTwItems = useCallback(async function () {
-      var items = twItems.filter(function (it) { return !it.image; });
-      if (!items.length || !onCallImagen) return;
-      var loadMap = {}; items.forEach(function (i) { loadMap[i.id] = true; });
-      setTwLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setTwLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
-      setTwItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
-      setTwLoading({});
-      addToast && addToast(t('toasts.transition_warning_images_ready'), 'success');
-    }, [twItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    // ── Calming Corner actions ─────────────────────────────────────────────
-    var genCmItem = useCallback(async function (id) {
-      var item = cmItems.find(function (it) { return it.id === id; });
-      if (!item || !onCallImagen) return;
-      setCmLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      try {
-        var prompt = buildSymbolPrompt(item.label, 'a calming self-regulation strategy for children, peaceful and soothing scene', globalStyle, '');
-        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
-        setCmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setCmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [cmItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    var genAllCmItems = useCallback(async function () {
-      var items = cmItems.filter(function (it) { return !it.image; });
-      if (!items.length || !onCallImagen) return;
-      var loadMap = {};
-      items.forEach(function (i) { loadMap[i.id] = true; });
-      setCmLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var batchOut = await batchGenerate(
-        items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle,
-        function (id) { setCmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-      );
-      setCmItems(function (prev) {
-        var map = {};
-        batchOut.results.forEach(function (r) { map[r.id] = r; });
-        return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
-      });
-      setCmLoading({});
-      addToast && addToast(t('toasts.calming_corner_images_ready'), 'success');
-    }, [cmItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    // ── Sensory Needs actions ──────────────────────────────────────────────
-    var genSnItem = useCallback(async function (id) {
-      var item = snItems.find(function (it) { return it.id === id; });
-      if (!item || !onCallImagen) return;
-      setSnLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      try {
-        var prompt = buildSymbolPrompt(item.label, 'a sensory regulation need for a child with sensory sensitivities, clear and simple AAC-style symbol', globalStyle, '');
-        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
-        setSnItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
-      finally { setSnLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-    }, [snItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
-
-    var genAllSnItems = useCallback(async function () {
-      var items = snItems.filter(function (it) { return !it.image; });
-      if (!items.length || !onCallImagen) return;
-      var loadMap = {};
-      items.forEach(function (i) { loadMap[i.id] = true; });
-      setSnLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var batchOut = await batchGenerate(
-        items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle,
-        function (id) { setSnLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
-      );
-      setSnItems(function (prev) {
-        var map = {};
-        batchOut.results.forEach(function (r) { map[r.id] = r; });
-        return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
-      });
-      setSnLoading({});
-      addToast && addToast(t('toasts.sensory_needs_images_ready'), 'success');
-    }, [snItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Styles ─────────────────────────────────────────────────────────────
     var PURPLE = '#7c3aed'; var DARK_PURPLE = '#5b21b6'; var LIGHT_PURPLE = '#ede9fe';
@@ -5785,14 +6955,22 @@
       var active = tab === t.id;
       return e('button', {
         key: t.id, onClick: function () { setTab(t.id); },
-        role: 'tab',
+        role: 'tab', id: 'ss-tab-' + t.id, 'aria-controls': 'ss-studio-panel',
         'aria-selected': active ? 'true' : 'false',
         'aria-label': t.label + ' tab',
         tabIndex: active ? 0 : -1,
         onKeyDown: function (ev) {
           var idx = TABS.findIndex(function (x) { return x.id === t.id; });
-          if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { ev.preventDefault(); var next = TABS[(idx + 1) % TABS.length]; setTab(next.id); }
-          if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { ev.preventDefault(); var prev = TABS[(idx - 1 + TABS.length) % TABS.length]; setTab(prev.id); }
+          var target = null;
+          if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') target = TABS[(idx + 1) % TABS.length];
+          if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') target = TABS[(idx - 1 + TABS.length) % TABS.length];
+          if (ev.key === 'Home') target = TABS[0];
+          if (ev.key === 'End') target = TABS[TABS.length - 1];
+          if (target) {
+            ev.preventDefault(); requestedTabFocusRef.current = target.id; setTab(target.id);
+            var nextTab = document.getElementById('ss-tab-' + target.id);
+            if (nextTab) nextTab.focus();
+          }
         },
         style: { flex: 1, padding: '6px 4px', borderRadius: '7px', border: 'none', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#fff', fontWeight: active ? 700 : 500, fontSize: '11px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', boxShadow: active ? '0 1px 4px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.15s' }
       },
@@ -5845,6 +7023,40 @@
     var _questCorrectCount = useState(0); var questCorrectCount = _questCorrectCount[0]; var setQuestCorrectCount = _questCorrectCount[1];
     var _questInput = useState(''); var questInput = _questInput[0]; var setQuestInput = _questInput[1];
     var _questBoardPos = useState(0); var questBoardPos = _questBoardPos[0]; var setQuestBoardPos = _questBoardPos[1];
+    // Memory state stays in the stable hook list across tabs, modes, and visibility.
+    var _memCards = useState([]); var memCards = _memCards[0]; var setMemCards = _memCards[1];
+    var _memFlipped = useState([]); var memFlipped = _memFlipped[0]; var setMemFlipped = _memFlipped[1];
+    var _memMatched = useState([]); var memMatched = _memMatched[0]; var setMemMatched = _memMatched[1];
+    var _memMoves = useState(0); var memMoves = _memMoves[0]; var setMemMoves = _memMoves[1];
+    var questTimerRef = useRef(null);
+    var questEpochRef = useRef(0);
+    var questAnswerLockedRef = useRef(false);
+    function cancelQuestTimer() {
+      questEpochRef.current += 1;
+      if (questTimerRef.current) clearTimeout(questTimerRef.current);
+      questTimerRef.current = null;
+      questAnswerLockedRef.current = false;
+    }
+    function scheduleQuestAction(action, delay) {
+      if (questTimerRef.current) clearTimeout(questTimerRef.current);
+      var epoch = ++questEpochRef.current;
+      questTimerRef.current = setTimeout(function () {
+        if (epoch !== questEpochRef.current) return;
+        questTimerRef.current = null;
+        action();
+      }, delay);
+    }
+    useEffect(function () {
+      cancelQuestTimer();
+      setQuestMode('menu'); setQuestTarget(null); setQuestOptions([]); setQuestFeedback(null);
+      setMemCards([]); setMemFlipped([]); setMemMatched([]); setMemMoves(0);
+      return cancelQuestTimer;
+    }, [activeProfileId, tab, isOpen]);
+    useEffect(function () {
+      setQuestScore(0); setQuestBoardPos(0); setQuestTotal(0); setQuestCorrectCount(0);
+      setQuestBest(0); setQuestStreak(0); setQuestRound(0);
+    }, [activeProfileId]);
+
 
     // ── Symbol Search state ──
     var STORAGE_SEARCH_STATS = 'alloSymbolSearchStats';
@@ -6291,7 +7503,33 @@
       setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
     }
 
+    function uniqueQuestWords(pool) {
+      var seenIds = Object.create(null), seenLabels = Object.create(null);
+      return pool.filter(function (item) {
+        var label = normalizeSymbolLabel(item && item.label);
+        if (!item || !item.id || !label || seenIds[item.id] || seenLabels[label]) return false;
+        seenIds[item.id] = true; seenLabels[label] = true;
+        return true;
+      });
+    }
+    function initializeMemory(pool) {
+      cancelQuestTimer();
+      var cards = [];
+      pool.slice(0, 6).forEach(function (sym, index) {
+        cards.push({ id: 'img-' + index, pairId: index, type: 'image', content: sym.image, label: sym.label });
+        cards.push({ id: 'txt-' + index, pairId: index, type: 'text', content: sym.label, label: sym.label });
+      });
+      for (var i = cards.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
+      }
+      setMemCards(cards); setMemFlipped([]); setMemMatched([]); setMemMoves(0);
+    }
     function questPickRound(mode, pool) {
+      questAnswerLockedRef.current = false;
+      setQuestTarget(null); setQuestOptions([]); setQuestFeedback(null);
+      // Visual variants of one word must not become competing answers.
+      pool = uniqueQuestWords(pool);
       if (pool.length < 2) return;
 
       // ── Category mode: target's category is the asked-about category;
@@ -6355,11 +7593,14 @@
       } else {
         target = pool[Math.floor(Math.random() * pool.length)];
       }
-      var opts = [target];
-      while (opts.length < Math.min(4, pool.length)) {
-        var r = pool[Math.floor(Math.random() * pool.length)];
-        if (!opts.find(function (o) { return o.id === r.id; })) opts.push(r);
+      // Shuffle a finite list so duplicate imported IDs or a repeated random
+      // value cannot trap the game in an unbounded retry loop.
+      var distractors = pool.filter(function (item) { return item.id !== target.id; });
+      for (var di = distractors.length - 1; di > 0; di--) {
+        var dj = Math.floor(Math.random() * (di + 1));
+        var dt = distractors[di]; distractors[di] = distractors[dj]; distractors[dj] = dt;
       }
+      var opts = [target].concat(distractors.slice(0, 3));
       for (var i = opts.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
         var tmp = opts[i]; opts[i] = opts[j]; opts[j] = tmp;
@@ -6372,7 +7613,8 @@
     }
 
     function questCheckAnswer(picked) {
-      if (!questTarget) return;
+      if (!questTarget || questAnswerLockedRef.current) return;
+      questAnswerLockedRef.current = true;
       var correct = picked.id === questTarget.id;
       setQuestTotal(function (t) { return t + 1; });
       // Record familiarity for target and (if wrong) picked symbol
@@ -6388,16 +7630,21 @@
         setQuestCorrectCount(function (c) { return c + 1; });
         setQuestBoardPos(function (p) { return p + 1; });
         setQuestFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
-        setTimeout(function () { questPickRound(questMode, gallery.filter(function (g) { return g.image; })); }, 1200);
+        scheduleQuestAction(function () { questPickRound(questMode, gallery.filter(function (g) { return g.image; })); }, 1200);
       } else {
         setQuestStreak(0);
         setQuestFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". The answer is "' + questTarget.label + '".' });
-        setTimeout(function () { questPickRound(questMode, gallery.filter(function (g) { return g.image; })); }, 2500);
+        scheduleQuestAction(function () { questPickRound(questMode, gallery.filter(function (g) { return g.image; })); }, 2500);
       }
     }
 
     function renderQuestTab() {
-      var pool = gallery.filter(function (g) { return g.image; });
+      var pool = uniqueQuestWords(gallery.filter(function (g) { return g.image; }));
+      var categoryReady = pool.some(function (item) {
+        return item.category && item.category !== 'other' && pool.some(function (other) {
+          return other.id !== item.id && other.category !== item.category;
+        });
+      });
       var GAME_MODES = [
         { id: 'imgToLabel', icon: '🖼️', label: 'See Image → Pick Label', desc: 'See the symbol image and choose the correct label' },
         { id: 'labelToImg', icon: '🏷️', label: 'See Label → Pick Image', desc: 'Read the label and find the matching symbol' },
@@ -6413,7 +7660,7 @@
         return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
           e('div', { style: { fontSize: '48px' } }, '🎮'),
           e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Quest'),
-          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbol Bank tab first, then come back to play games that teach you the symbols!')
+          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Add at least 3 different words with pictures in the Symbol Bank tab first, then come back to play games that teach you the symbols!')
         );
       }
 
@@ -6429,7 +7676,7 @@
             e('div', { style: { height: '12px', background: '#e5e7eb', borderRadius: '6px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: pctDone + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a78bfa)', borderRadius: '6px', transition: 'width 0.5s' } })
             ),
-            questBoardPos >= pathLen && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 700, color: '#059669' } }, '🏆 Quest Complete! You mastered all symbols!')
+            questBoardPos >= pathLen && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 700, color: '#059669' } }, '🏆 Quest Complete! You finished the practice path!')
           ),
           // Stats
           questTotal > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
@@ -6451,10 +7698,15 @@
             GAME_MODES.map(function (gm) {
               return e('button', {
                 key: gm.id,
+                disabled: gm.id === 'category' && !categoryReady,
+                'aria-describedby': gm.id === 'category' && !categoryReady ? 'ss-quest-category-help' : undefined,
                 onClick: function () {
+                  if (gm.id === 'category' && !categoryReady) return;
+                  cancelQuestTimer();
                   setQuestMode(gm.id);
-                  setQuestRound(0); setQuestStreak(0);
-                  questPickRound(gm.id, pool);
+                  setQuestRound(0); setQuestStreak(0); setQuestFeedback(null);
+                  if (gm.id === 'memory') initializeMemory(pool);
+                  else questPickRound(gm.id, pool);
                 },
                 'aria-label': gm.label + ' game mode', style: { padding: '16px 12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.15s, box-shadow 0.15s' },
                 onMouseOver: function (ev) { ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.15)'; },
@@ -6466,6 +7718,7 @@
               );
             })
           ),
+          !categoryReady && e('p', { id: 'ss-quest-category-help', style: { fontSize: '12px', color: '#475569', maxWidth: '400px', margin: 0 } }, 'Category Quiz needs symbols from at least two different categories, including an action, describing word, or thing. Edit symbol categories in the Symbol Bank to enable it.'),
           // Reset progress
           questTotal > 0 && e('button', {
             onClick: function () { setQuestScore(0); setQuestBoardPos(0); setQuestTotal(0); setQuestCorrectCount(0); setQuestBest(0); },
@@ -6475,7 +7728,7 @@
       }
 
       // Active game screen
-      var backBtn = e('button', { onClick: function () { setQuestMode('menu'); }, 'aria-label': 'Back', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
+      var backBtn = e('button', { onClick: function () { cancelQuestTimer(); setQuestMode('menu'); setQuestFeedback(null); }, 'aria-label': 'Back', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
       var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + questScore + ', Round: ' + questRound + ', Progress: ' + questBoardPos + ' of ' + pathLen, style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
         e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + questScore),
         e('span', null, '🎯 Round ' + questRound),
@@ -6535,6 +7788,7 @@
       // ── Category mode (audio/SR-friendly: no images required) ──
       if (questMode === 'category') {
         var CAT_LABELS = {
+          emotions: 'an emotion word', classroom: 'a classroom word', 'daily living': 'a daily living word', food: 'a food word', social: 'a social word', actions: 'an action word', places: 'a place word', objects: 'an object word',
           verb: 'an action word',
           adjective: 'a feeling or describing word',
           noun: 'a thing',
@@ -6569,7 +7823,8 @@
       // ── Spelling mode ──
       if (questMode === 'spelling') {
         var checkSpelling = function () {
-          if (!questTarget) return;
+          if (!questTarget || questAnswerLockedRef.current || !questInput.trim()) return;
+          questAnswerLockedRef.current = true;
           var correct = questInput.trim().toLowerCase() === questTarget.label.trim().toLowerCase();
           setQuestTotal(function (t) { return t + 1; });
           recordFamiliarity(questTarget.label, correct ? 'quest-correct' : 'quest-wrong');
@@ -6581,11 +7836,11 @@
             setQuestCorrectCount(function (c) { return c + 1; });
             setQuestBoardPos(function (p) { return p + 1; });
             setQuestFeedback({ ok: true, msg: '✅ Perfect spelling! +15' });
-            setTimeout(function () { questPickRound('spelling', pool); }, 1200);
+            scheduleQuestAction(function () { questPickRound('spelling', pool); }, 1200);
           } else {
             setQuestStreak(0);
             setQuestFeedback({ ok: false, msg: '❌ It\'s spelled "' + questTarget.label + '"' });
-            setTimeout(function () { questPickRound('spelling', pool); }, 2500);
+            scheduleQuestAction(function () { questPickRound('spelling', pool); }, 2500);
           }
         };
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
@@ -6614,24 +7869,6 @@
       // ── Memory match mode ──
       if (questMode === 'memory') {
         var memPool = pool.slice(0, 6);
-        var _memCards = useState([]); var memCards = _memCards[0]; var setMemCards = _memCards[1];
-        var _memFlipped = useState([]); var memFlipped = _memFlipped[0]; var setMemFlipped = _memFlipped[1];
-        var _memMatched = useState([]); var memMatched = _memMatched[0]; var setMemMatched = _memMatched[1];
-        var _memMoves = useState(0); var memMoves = _memMoves[0]; var setMemMoves = _memMoves[1];
-
-        var initMemory = function () {
-          var cards = [];
-          memPool.forEach(function (sym, i) {
-            cards.push({ id: 'img-' + i, pairId: i, type: 'image', content: sym.image, label: sym.label });
-            cards.push({ id: 'txt-' + i, pairId: i, type: 'text', content: sym.label, label: sym.label });
-          });
-          for (var i = cards.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
-          }
-          setMemCards(cards); setMemFlipped([]); setMemMatched([]); setMemMoves(0);
-        };
-        if (memCards.length === 0 && memPool.length >= 2) initMemory();
 
         var flipCard = function (idx) {
           if (memFlipped.length >= 2 || memFlipped.includes(idx) || memMatched.includes(memCards[idx].pairId)) return;
@@ -6643,9 +7880,9 @@
               setMemMatched(function (prev) { return prev.concat([memCards[nf[0]].pairId]); });
               setQuestScore(function (s) { return s + 20; });
               setQuestBoardPos(function (p) { return p + 1; });
-              setTimeout(function () { setMemFlipped([]); }, 400);
+              scheduleQuestAction(function () { setMemFlipped([]); }, 400);
             } else {
-              setTimeout(function () { setMemFlipped([]); }, 1200);
+              scheduleQuestAction(function () { setMemFlipped([]); }, 1200);
             }
           }
         };
@@ -6659,14 +7896,15 @@
             ? e('div', { style: { textAlign: 'center', padding: '20px' } },
                 e('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🏆'),
                 e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#059669' } }, 'All matched in ' + memMoves + ' moves!'),
-                e('button', { onClick: function () { initMemory(); }, 'aria-label': 'Play Again', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
+                e('button', { onClick: function () { initializeMemory(pool); }, 'aria-label': 'Play Again', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
               )
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', maxWidth: '400px' } },
                 memCards.map(function (card, idx) {
                   var isUp = memFlipped.includes(idx) || memMatched.includes(card.pairId);
                   return e('button', {
                     key: card.id, onClick: function () { flipCard(idx); },
-                    'aria-label': 'Memory card ' + (idx + 1),
+                    'aria-label': 'Memory card ' + (idx + 1) + (isUp ? ': ' + card.label + ', ' + card.type + (memMatched.includes(card.pairId) ? ', matched' : '') : ', face down'),
+                    disabled: memMatched.includes(card.pairId),
                     style: { aspectRatio: '1', border: '2px solid ' + (isUp ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: isUp ? '#fff' : LIGHT_PURPLE, cursor: isUp ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', transition: 'all 0.2s', opacity: memMatched.includes(card.pairId) ? 0.5 : 1 }
                   },
                     isUp
@@ -7728,8 +8966,10 @@
             var growingImgs = withImages.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && !coreReady.some(function (c) { return c.key === w.key; }); });
             var boardPool = coreReady.concat(growingImgs).slice(0, 12);
             var newWords = boardPool.map(function (w) { return { id: uid(), label: w.displayLabel, category: w.category, description: '', image: w.image }; });
+            resetBoardEditingIdentity(); boardDraftEpochRef.current += 1; setBoardPages(null); setActivePageIdx(0);
             setBoardWords(newWords);
             setBoardTitle((activeProfile.codename || activeProfile.name || 'Student') + '\'s Garden Board');
+            setBoardTopic('Garden Board');
             setBoardCols(Math.min(4, Math.ceil(Math.sqrt(newWords.length))));
             setTab('board');
             addToast && addToast(t('toasts.garden_board_created_with') + newWords.length + ' words!', 'success');
@@ -8439,8 +9679,8 @@
               e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '12px' } },
                 tokens.map(function (idx) {
                   var earned = idx < tokenEarned;
-                  return e('div', {
-                    key: idx,
+                  return e('button', {
+                    key: idx, type: 'button', 'aria-label': 'Token ' + (idx + 1) + ' of ' + tokenTotal, 'aria-pressed': earned,
                     onClick: function () { setTokenEarned(function (prev) { return prev === idx + 1 ? idx : idx + 1; }); },
                     style: { width: 52, height: 52, borderRadius: '50%', border: '3px solid ' + (earned ? '#f59e0b' : '#d1d5db'), background: earned ? '#fef3c7' : '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px', cursor: 'pointer', transition: 'all 0.15s', boxShadow: earned ? '0 2px 6px rgba(245,158,11,0.4)' : 'none' }
                   }, earned ? '⭐' : e('span', { style: { color: '#d1d5db', fontSize: '20px' } }, '○'));
@@ -8624,7 +9864,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Help students communicate pain level and location without words'),
-            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, 'aria-label': 'Pain Scale u2014 tap to select', style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
+            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, 'aria-label': 'Generate all body part images', style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
           ),
           // Pain scale
           e('div', { id: 'ss-pq-bodycheck', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' } },
@@ -8699,9 +9939,9 @@
               ),
               e('div', { style: { fontWeight: 800, fontSize: '20px', color: '#312e81', textAlign: 'center' } }, currentItem.label),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '10px', marginTop: '4px' } },
-                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, 'aria-label': 'u2190 Prev', style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, 'aria-label': 'Previous transition step', style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
                 e('button', { onClick: function () { speakCell(currentItem.label); }, 'aria-label': 'Speak aloud', style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
-                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, 'aria-label': 'Next u2192', style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, 'aria-label': 'Next transition step', style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
               )
             ),
             // All steps grid
@@ -8722,7 +9962,7 @@
                   ),
                   e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Task walk step label' }),
                   e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
-                    e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'u2728', style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'Generate image for transition step ' + (idx + 1), style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
                     e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'Upload photo', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                   )
                 );
@@ -8893,7 +10133,7 @@
 
     // ── Shared left column ─────────────────────────────────────────────────
     function renderSharedLeft() {
-      return e('div', { style: S.leftCol },
+      return e('div', { id: 'ss-profile-settings', className: 'ss-settings', 'data-expanded': showSetup ? 'true' : 'false', style: S.leftCol },
         // Student Profiles panel
         e('div', { style: S.card },
           e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
@@ -8929,7 +10169,7 @@
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { name: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
             }, placeholder: 'e.g. Marcus (never leaves this device)', 'aria-label': 'Display name - local only', style: Object.assign({}, S.input, { marginBottom: '2px' }) }),
-            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '0 0 6px' } }, 'Used in Social Stories & prints. Never exported or synced.'),
+            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '0 0 6px' } }, 'Used in Social Stories and prints. Included in manual backups; not cloud sync.'),
             e('label', { style: S.lbl }, 'Codename (used for tracking)'),
             e('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' } },
               e('select', {
@@ -9474,7 +10714,18 @@
     // add the chosen one to the gallery. CC BY-SA attribution shown + carried.
     function renderMulberryPicker() {
       return e('div', {
+        ref: mulberryDialogRef, tabIndex: -1,
         role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Find a validated Mulberry symbol',
+        onKeyDown: function (ev) {
+          if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); setMulberryOpen(false); return; }
+          if (ev.key !== 'Tab') return;
+          ev.stopPropagation();
+          var controls = Array.prototype.slice.call(ev.currentTarget.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]'));
+          var first = controls[0]; var last = controls[controls.length - 1];
+          if (!first) { ev.preventDefault(); ev.currentTarget.focus(); return; }
+          if (ev.shiftKey && (document.activeElement === first || controls.indexOf(document.activeElement) < 0)) { ev.preventDefault(); last.focus(); }
+          else if (!ev.shiftKey && (document.activeElement === last || controls.indexOf(document.activeElement) < 0)) { ev.preventDefault(); first.focus(); }
+        },
         onClick: function () { setMulberryOpen(false); },
         style: { position: 'fixed', inset: 0, zIndex: 2147483000, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }
       },
@@ -9546,9 +10797,10 @@
         return true;
       });
       var isLoading = Object.keys(symLoading).length > 0;
-      return e('div', { style: { display: 'flex', gap: '14px', padding: '16px', flex: 1, overflow: 'hidden' } },
+      return e('div', { className: 'ss-symbols-workspace', style: { display: 'flex', gap: '14px', padding: '16px', flex: 1, overflow: 'hidden' } },
         // Input panel
-        e('div', { style: { width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px' } },
+        e('div', { className: 'ss-symbol-creator', style: { width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px' } },
+          symbolSaveError && e('div', { role: 'alert', style: { padding: '10px', border: '1px solid #b45309', borderRadius: '8px', background: '#fffbeb', color: '#78350f', fontSize: '12px', lineHeight: 1.5 } }, 'Changes are only available in this session. Device storage may be full. Download a backup before closing.'),
           // Mode toggle
           e('div', { style: { display: 'flex', gap: '3px', background: '#f3f4f6', borderRadius: '8px', padding: '3px' } },
             ['single', 'batch'].map(function (m) {
@@ -9636,7 +10888,7 @@
                 e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️')
               ),
               e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
-                e('input', { type: 'text', disabled: !!selectedItem.locked, value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: selectedItem.locked ? '🔒 Locked - unlock to edit' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
+                e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) { ev.preventDefault(); if (selectedItem.locked) createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); else refineSymbol(selectedItem.id, symRefine[selectedItem.id]); } }, placeholder: selectedItem.locked ? 'Describe a new variant; the original stays locked' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
                 e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '✏️ Apply'),
                 e('button', { onClick: function () { createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id], 'aria-label': 'Save refinement as a new variant of ' + selectedItem.label, style: S.btn('#ede9fe', PURPLE, !symRefine[selectedItem.id] || !!symLoading[selectedItem.id]) }, '✨ New Variant')
               ),
@@ -9647,7 +10899,7 @@
               ),
               e('label', { style: Object.assign({}, S.lbl, { display: 'block', marginBottom: '7px' }) },
                 'Search aliases',
-                e('input', { type: 'text', value: (selectedItem.aliases || []).join(', '), onChange: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, placeholder: 'restroom, toilet, washroom', 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
+                e('input', { type: 'text', key: selectedItem.id, value: Object.prototype.hasOwnProperty.call(symAliasDraft, selectedItem.id) ? symAliasDraft[selectedItem.id] : (selectedItem.aliases || []).join(', '), onChange: function (ev) { var value = ev.target.value; setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); next[selectedItem.id] = value; return next; }); }, onBlur: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); ev.currentTarget.blur(); } }, placeholder: 'restroom, toilet, washroom', 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
               ),
               e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
                 'Review note',
@@ -9662,19 +10914,19 @@
             )
           ),
           // Gallery grid
-          e('div', { style: { flex: 1, overflowY: 'auto' } },
+          e('div', { className: 'ss-symbol-browser', style: { flex: 1, overflowY: 'auto' } },
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Symbol Bank (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
+                e('span', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Symbol Bank (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
                 e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols in the Symbol Bank', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
-                e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, 'aria-label': symShowFavs ? 'Show all symbols' : 'Show favorite symbols only', style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
+                e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, 'aria-pressed': symShowFavs, 'aria-label': symShowFavs ? 'Show all symbols' : 'Show favorite symbols only', style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
               ),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 [['', 'All'], ['noun', 'Nouns'], ['verb', 'Verbs'], ['adjective', 'Adjectives'], ['other', 'Other']].map(function (pair) {
                   var cat = pair[0]; var lbl = pair[1];
                   var active = symCatFilter === cat;
                   return e('button', {
-                    key: cat, 'aria-label': 'Filter by ' + (lbl || 'all categories'),
+                    key: cat, 'aria-pressed': active, 'aria-label': 'Filter by ' + (lbl || 'all categories'),
                     onClick: function () { setSymCatFilter(cat); },
                     style: { padding: '2px 8px', border: '1px solid ' + (active ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#6b7280', fontSize: '10px', cursor: 'pointer', fontWeight: active ? 700 : 400 }
                   }, lbl);
@@ -9688,7 +10940,7 @@
                   return e('button', {
                     key: status || 'all-review',
                     onClick: function () { setSymReviewFilter(status); },
-                    'aria-label': 'Filter Symbol Bank review status by ' + label,
+                    'aria-pressed': active, 'aria-label': 'Filter Symbol Bank review status by ' + label,
                     style: { padding: '2px 8px', border: '1px solid ' + (active ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#6b7280', fontSize: '10px', cursor: 'pointer', fontWeight: active ? 700 : 400 }
                   }, label);
                 })
@@ -9716,7 +10968,7 @@
                     );
                   })
                 )
-              : e('div', { style: { textAlign: 'center', color: '#6b7280', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Generate your first symbol using the panel on the left.' : (symShowFavs ? 'No favorite symbols yet — click ⭐ on any card.' : 'No symbols match "' + symFilter + '"'))
+              : e('div', { style: { textAlign: 'center', color: '#6b7280', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Create your first symbol with Generate or Find validated symbol.' : e(React.Fragment, null, e('p', null, 'No symbols match the current search and filters.'), e('button', { onClick: function () { setSymFilter(''); setSymCatFilter(''); setSymReviewFilter(''); setSymShowFavs(false); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Clear filters')))
           )
         )
       );
@@ -9725,6 +10977,10 @@
     // ── Board Builder tab ──────────────────────────────────────────────────
     function renderBoardTab() {
       var hasImages = boardWords.some(function (w) { return w.image; });
+      var hasBoardContent = (boardPages || [{ words: boardWords }]).some(function (page, index) {
+        var words = boardPages && index === activePageIdx ? boardWords : page.words || [];
+        return words.some(function (word) { return !!vocalLabelForCell(word) || !!word.image; });
+      });
       var isLoading = Object.keys(boardLoading).length > 0 || boardGenerating;
       var announceBoardReorder = function (message) {
         if (!ssLiveRef.current) return;
@@ -9827,7 +11083,7 @@
         })(),
         // Controls row
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
-          e('div', { style: { flex: 1, minWidth: '200px' } },
+          e('div', { className: 'ss-board-topic', style: { flex: 1, minWidth: '200px' } },
             e('label', { style: S.lbl }, 'Topic'),
             e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: 'e.g. morning routine, feelings, playground', 'aria-label': 'Board topic', style: S.input, autoFocus: true })
           ),
@@ -9861,9 +11117,10 @@
               value: boardLang,
               onChange: function (ev) {
                 var lang = ev.target.value;
+                cancelBoardTranslation(); boardTranslationContextRef.current.language = lang;
                 setBoardLang(lang); store(STORAGE_BOARD_LANG, lang);
                 if (lang !== 'en' && boardWords.length > 0) {
-                  translateBoardLabels(boardWords, lang).then(function (translated) { setBoardWords(translated); });
+                  translateBoardLabels(boardWords, lang);
                 } else if (lang === 'en' && boardWords.length > 0) {
                   setBoardWords(function (prev) { return prev.map(function (w) { return w.originalLabel ? Object.assign({}, w, { label: w.originalLabel, translatedLabel: undefined, originalLabel: undefined }) : w; }); });
                 }
@@ -9873,7 +11130,7 @@
             },
               LANG_OPTIONS.map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); })
             ),
-            translating && e('span', { style: { fontSize: '10px', color: PURPLE } }, '⏳')
+            translating && e('span', { role: 'status', 'aria-label': 'Translating board labels', style: { fontSize: '10px', color: PURPLE } }, '⏳')
           ),
           e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, 'aria-label': 'From Sentence', style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
           e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': 'From Symbol Bank', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from the Symbol Bank directly to the board' }, '🖼️ From Symbol Bank'),
@@ -9916,14 +11173,16 @@
             e('button', { type: 'button', onClick: addPage, title: 'Add a new page', 'aria-label': 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', padding: 0, color: '#92400e', fontSize: '15px', fontWeight: 700, cursor: 'pointer' } }, '+'),
             boardPages.length > 1 && e('button', { type: 'button', onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', 'aria-label': 'Delete current board page', style: { background: 'none', border: '1px solid transparent', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', color: '#b91c1c', fontSize: '14px', cursor: 'pointer', padding: 0 } }, '✕')
           ),
-          hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
-            e('button', { onClick: saveBoard, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
+          hasBoardContent && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+            e('button', { onClick: saveBoard, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, editingBoardId ? '💾 Save changes' : '💾 Save'),
+            editingBoardId && e('button', { onClick: function () { saveBoard(true); }, 'aria-label': 'Save board as a copy', style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
             e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': 'Print…', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
           savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': 'Toggle saved boards gallery', style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
           e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file' }, '📥 Import Board'),
           e('input', { type: 'file', accept: '.json,.obf,.obz', ref: importBoardRef, style: { display: 'none' }, onChange: importBoardFile })
         ),
+        deletedBoardPage && deletedBoardPage.profileId === activeProfileId && deletedBoardPage.epoch === boardDraftEpochRef.current && e('div', { role: 'status', style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '8px 12px', background: '#fffbeb', color: '#78350f', borderRadius: '8px' } }, 'Page removed: ' + deletedBoardPage.page.title, e('button', { type: 'button', onClick: undoDeletedBoardPage, 'aria-label': 'Undo page deletion', style: S.btn('#fef3c7', '#78350f', false) }, 'Undo')),
         // Saved boards panel
         showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', paddingTop: '6px' } },
           // Profile filter chips
@@ -9969,8 +11228,8 @@
                   // Action buttons row
                   e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                     e('button', { onClick: function () { loadBoard(b); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
-                    collectBoardSpeechCells(b).some(function (cell) { return cell.image; }) && e('button', {
-                      onClick: function (ev) { ensureBoardSpeechEntry(b); useOpenerRef.current = ev.currentTarget; predEpochRef.current += 1; setUseBoardId(b.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
+                    collectBoardSpeechCells(b).length > 0 && e('button', {
+                      onClick: function (ev) { ensureBoardSpeechEntry(b); useOpenerRef.current = ev.currentTarget; predEpochRef.current += 1; setUseBoardId(b.id); setStrip([]); setCommLog([]); setStripSpeaking(false); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
                       title: 'Use this board: tap symbols to speak and build messages', 'aria-label': 'Use board in AAC mode',
                       style: S.btn('#eff6ff', '#1d4ed8', false)
                     }, '\u25b6 Use'),
@@ -9981,7 +11240,7 @@
                       'aria-label': 'Prepare saved speech for ' + (b.title || 'this board'),
                       style: S.btn('#e0f2fe', '#0369a1', speechPreparing)
                     }, speechPreparing ? 'Saving...' : '🔊 Prepare'),
-                    collectBoardSpeechCells(b).some(function (cell) { return cell.image; }) && e('button', {
+                    collectBoardSpeechCells(b).length > 0 && e('button', {
                       onClick: function () { ensureBoardSpeechEntry(b); scanOpenerRef.current = b.id; setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
                       'data-scan-board-id': b.id,
                       title: 'Partner-assisted single-switch scanning mode', 'aria-label': 'Start scanning mode',
@@ -10324,7 +11583,8 @@
           ),
           schedItems.length > 0 && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             e('button', { onClick: resetSchedule, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
-            e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
+            e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, editingScheduleId ? '💾 Save changes' : '💾 Save'),
+            editingScheduleId && e('button', { onClick: function () { saveSchedule(true); }, 'aria-label': 'Save sequence as a copy', style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
             e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
           ),
           savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': 'Toggle saved sequences', style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
@@ -10424,11 +11684,12 @@
     // ── Social Stories tab ─────────────────────────────────────────────────
     function renderStoriesTab() {
       var currentPage = storyPages[storyCurrent] || null;
+      var editingCurrentPage = !!(storyTextEdit && currentPage && storyTextEdit.pageId === currentPage.id && storyTextEdit.profileId === activeProfileId && storyTextEdit.revision === storyRevisionRef.current);
       var hasStory = storyPages.length > 0;
       var isIllustrating = Object.keys(storyIllustrating).length > 0;
-      return e('div', { style: { display: 'flex', flex: 1, overflow: 'hidden', gap: '0' } },
+      return e('div', { className: 'ss-stories-workspace', style: { display: 'flex', flex: 1, overflow: 'hidden', gap: '0' } },
         // Left: inputs
-        e('div', { style: { width: '240px', flexShrink: 0, borderRight: '1px solid #e5e7eb', padding: '16px', overflowY: 'auto', background: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '10px' } },
+        e('div', { className: 'ss-story-editor ss-no-print', style: { width: '240px', flexShrink: 0, borderRight: '1px solid #e5e7eb', padding: '16px', overflowY: 'auto', background: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '10px' } },
           e('div', null,
             e('label', { style: S.lbl }, 'Student Name'),
             e('input', { type: 'text', value: storyStudentName, onChange: function (ev) { setStoryStudentName(ev.target.value); }, placeholder: 'e.g. Marcus', 'aria-label': 'Student name for social story', style: S.input })
@@ -10472,6 +11733,8 @@
             e('p', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '6px', padding: '4px 8px', margin: '4px 0 0' } }, 'Story and image prompts are sent to a cloud AI (Google Gemini / Imagen). Do not enter real student names, diagnoses, or other identifying details (FERPA).')
           ),
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
+          storyError && e('div', { role: 'alert', style: { fontSize: '12px', padding: '10px', border: '1px solid #fecaca', borderRadius: '8px', background: '#fff1f2', color: '#991b1b' } }, storyError),
+          storyGenerating && e('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '12px', color: '#5b21b6' } }, storyProgress.total ? ('Illustrations ' + storyProgress.ready + ' of ' + storyProgress.total) : 'Writing your story...'),
           e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
           hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
             e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
@@ -10479,35 +11742,47 @@
         ),
         // Right: story viewer
         hasStory
-          ? e('div', { id: 'ss-py', style: { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' } },
+          ? e('div', { id: 'ss-py', className: 'ss-story-viewer', style: { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' } },
               // Page navigation
               e('div', { className: 'ss-no-print', style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
-                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, 'aria-label': 'Previous story page', disabled: storyCurrent === 0, 'aria-label': 'Prev', style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
+                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, 'aria-label': 'Previous story page', disabled: storyCurrent === 0, style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
                 e('span', { style: { fontWeight: 600, fontSize: '13px', color: '#374151' } }, 'Page ' + (storyCurrent + 1) + ' of ' + storyPages.length),
-                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, 'aria-label': 'Next', style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
-                currentPage && e('button', { onClick: function () { speakPage(currentPage.text); }, 'aria-label': storySpeaking ? 'Stop reading aloud' : 'Read this page aloud', style: S.btn('#dcfce7', '#166534', false) }, storySpeaking ? '⏹ Stop' : '🔊 Read Aloud'),
+                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, 'aria-label': 'Next story page', style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
+                currentPage && e('button', { onClick: function () { speakPage(currentPage.text); }, disabled: editingCurrentPage, 'aria-label': storySpeaking ? 'Stop reading aloud' : 'Read this page aloud', style: S.btn('#dcfce7', '#166534', editingCurrentPage) }, storySpeaking ? '⏹ Stop' : '🔊 Read Aloud'),
+                currentPage && !editingCurrentPage && e('button', { type: 'button', ref: storyTextEditButtonRef, onClick: function () { beginStoryTextEdit(currentPage); }, 'aria-label': 'Edit text for story page ' + (storyCurrent + 1), style: S.btn(LIGHT_PURPLE, PURPLE, false) }, '✏️ Edit text'),
                 currentPage && e('button', { onClick: function () { regenPageIllustration(currentPage.id); }, disabled: !!storyIllustrating[currentPage.id], 'aria-label': 'Regenerate illustration for this page', style: S.btn(LIGHT_PURPLE, PURPLE, !!storyIllustrating[currentPage.id]) }, storyIllustrating[currentPage.id] ? '⏳' : '🔄 Regen Image'),
               ),
               // All pages for print, single page for screen
               e('div', { className: 'ss-no-print' },
-                currentPage && e('div', { style: { display: 'flex', gap: '24px', alignItems: 'flex-start', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' } },
+                currentPage && e('div', { className: 'ss-story-page', style: { display: 'flex', gap: '24px', alignItems: 'flex-start', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' } },
                   storyIllustrating[currentPage.id]
                     ? e('div', { style: { width: 240, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', borderRadius: '10px', border: '1px dashed #d1d5db', flexShrink: 0 } }, spinner(40))
                     : currentPage.image
                       ? e('img', { src: currentPage.image, alt: 'Page ' + (storyCurrent + 1), style: { width: 240, height: 240, objectFit: 'contain', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 } })
                       : e('div', { style: { width: 240, height: 240, background: '#f9fafb', borderRadius: '10px', border: '1px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '🖼️'),
-                  e('div', { style: { flex: 1 } },
-                    e('p', { style: { fontSize: '18px', lineHeight: 1.7, color: '#1f2937', fontFamily: 'Georgia, serif', margin: 0 } }, currentPage.text)
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    editingCurrentPage
+                      ? e('form', { onSubmit: function (ev) { ev.preventDefault(); saveStoryPageText(); }, style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                          e('label', { htmlFor: 'ss-story-page-text', style: S.lbl }, 'Text for page ' + (storyCurrent + 1)),
+                          e('textarea', { id: 'ss-story-page-text', value: storyTextEdit.text, autoFocus: true, maxLength: 2000, rows: 7, 'aria-label': 'Story page text', 'aria-invalid': !!storyTextEditError, 'aria-describedby': 'ss-story-page-text-help' + (storyTextEditError ? ' ss-story-page-text-error' : ''), onChange: function (ev) { var text = ev.target.value.slice(0, 2000); setStoryTextEdit(function (edit) { return edit ? Object.assign({}, edit, { text: text }) : null; }); setStoryTextEditError(''); }, style: Object.assign({}, S.textarea, { width: '100%', fontSize: '16px', lineHeight: 1.6, minHeight: '160px' }) }),
+                          e('div', { id: 'ss-story-page-text-help', style: { fontSize: '12px', color: '#6b7280' } }, storyTextEdit.text.length + ' / 2000 characters. Changes apply when you save.'),
+                          storyTextEditError && e('div', { id: 'ss-story-page-text-error', role: 'alert', style: { fontSize: '13px', color: '#b91c1c' } }, storyTextEditError),
+                          e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                            e('button', { type: 'submit', 'aria-label': 'Save story page text', style: S.btn(PURPLE, '#fff', false) }, 'Save text'),
+                            e('button', { type: 'button', onClick: cancelStoryTextEdit, 'aria-label': 'Cancel story text edit', style: S.btn('#f3f4f6', '#374151', false) }, 'Cancel')
+                          )
+                        )
+                      : e('p', { style: { fontSize: '18px', lineHeight: 1.7, color: '#1f2937', fontFamily: 'Georgia, serif', margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, currentPage.text)
                   )
                 )
               ),
               // Print view — all pages
-              e('div', { style: { display: 'none' } },
+              e('div', { className: 'ss-story-print-pages', style: { display: 'none' } },
                 storyPages.map(function (page, idx) {
                   return e('div', { key: page.id, style: { pageBreakAfter: idx < storyPages.length - 1 ? 'always' : 'auto', padding: '20px', display: 'flex', gap: '20px', alignItems: 'flex-start', minHeight: '180px' } },
                     page.image && e('img', { src: page.image, alt: '', style: { width: 160, height: 160, objectFit: 'contain', borderRadius: '8px', flexShrink: 0, border: '1px solid #e5e7eb' } }),
                     e('div', { style: { flex: 1, display: 'flex', alignItems: 'center' } },
-                      e('p', { style: { fontSize: '16px', lineHeight: 1.8, fontFamily: 'Georgia, serif', color: '#111', margin: 0 } }, page.text)
+                      e('p', { style: { fontSize: '16px', lineHeight: 1.8, fontFamily: 'Georgia, serif', color: '#111', margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, page.text)
                     )
                   );
                 })
@@ -10515,7 +11790,7 @@
               // Page thumbnails
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' } },
                 storyPages.map(function (page, idx) {
-                  return e('div', { key: page.id, onClick: function () { setStoryCurrent(idx); }, style: { cursor: 'pointer', borderRadius: '8px', border: idx === storyCurrent ? '2px solid ' + PURPLE : '2px solid #e5e7eb', padding: '6px', background: idx === storyCurrent ? LIGHT_PURPLE : '#fff', width: '70px', textAlign: 'center' } },
+                  return e('button', { key: page.id, type: 'button', onClick: function () { setStoryCurrent(idx); }, 'aria-label': 'Go to story page ' + (idx + 1), 'aria-current': idx === storyCurrent ? 'page' : undefined, style: { cursor: 'pointer', borderRadius: '8px', border: idx === storyCurrent ? '2px solid ' + PURPLE : '2px solid #e5e7eb', padding: '6px', background: idx === storyCurrent ? LIGHT_PURPLE : '#fff', width: '70px', textAlign: 'center' } },
                     page.image
                       ? e('img', { src: page.image, alt: '', style: { width: '58px', height: '58px', objectFit: 'contain', borderRadius: '5px', background: '#fafafa' } })
                       : e('div', { style: { width: '58px', height: '58px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', background: '#f9fafb', borderRadius: '5px' } }, storyIllustrating[page.id] ? spinner(20) : '📄'),
@@ -10578,7 +11853,7 @@
           onChange: importVisualPack
         }),
         e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0, flexWrap: 'wrap' } },
-          e('div', { style: { flex: 1, minWidth: '220px' } },
+          e('div', { className: 'ss-pack-create-field', style: { flex: 1, minWidth: '220px' } },
             e('label', { style: S.lbl }, 'New Visual Pack Name'),
             e('input', {
               type: 'text',
@@ -10597,8 +11872,8 @@
             style: S.btn('#e0f2fe', '#075985', false)
           }, 'Import Pack')
         ),
-        e('div', { style: { display: 'flex', gap: '14px', flex: 1, minHeight: 0, overflow: 'hidden' } },
-          e('div', { style: { width: '240px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
+        e('div', { className: 'ss-pack-workspace', style: { display: 'flex', gap: '14px', flex: 1, minHeight: 0, overflow: 'hidden' } },
+          e('div', { className: 'ss-pack-list', style: { width: '240px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
             books.length === 0
               ? e('div', { style: { color: '#6b7280', fontSize: '13px', padding: '20px 4px', textAlign: 'center', lineHeight: 1.6 } }, 'No Visual Packs yet. Create one or import a shareable pack.')
               : books.map(function (book) {
@@ -10636,7 +11911,7 @@
                 })
           ),
           activeBook
-            ? e('div', { style: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', paddingRight: '4px' } },
+            ? e('div', { className: 'ss-pack-details', style: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', paddingRight: '4px' } },
                 e('section', { 'aria-labelledby': 'ss-pack-heading', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
                   e('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start', flexWrap: 'wrap' } },
                     e('div', { style: { flex: 1, minWidth: '240px' } },
@@ -10699,7 +11974,7 @@
                                   useOpenerRef.current = event.currentTarget;
                                   predEpochRef.current += 1;
                                   ensureBoardSpeechEntry(board);
-                                  setUseBoardId(board.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]);
+                                  setUseBoardId(board.id); setStrip([]); setCommLog([]); setStripSpeaking(false); setShowCommLog(false); setUsePageIdx(0); setPredictions([]);
                                 },
                                 disabled: cells.length === 0,
                                 style: S.btn('#eff6ff', '#1d4ed8', cells.length === 0)
@@ -10807,6 +12082,9 @@
     }
     // ── Main render ────────────────────────────────────────────────────────
 
+    // Run all hooks before the closed-dialog return.
+    if (!isOpen) return null;
+
     // ── Direct-use AAC overlay ────────────────────────────────────────────
     // Session debrief overlay — shows for 5 seconds after exiting AAC mode
     if (sessionDebrief && !useBoardId) {
@@ -10846,7 +12124,7 @@
       var usePageData = usePages ? usePages[safeUsePageIdx] : useBoard;
       var allUseCells = collectBoardSpeechCells(useBoard);
       var useCells = allUseCells.filter(function (cell) {
-        return cell.image && (!usePages || cell._speechPageIndex === safeUsePageIdx);
+        return !usePages || cell._speechPageIndex === safeUsePageIdx;
       });
       var useSpeechStatus = boardSpeechStatus(useBoard, allUseCells);
       var exitUse = function () {
@@ -10932,7 +12210,7 @@
           priority: 'interactive',
           reason: 'symbol-studio-aac-phrase',
           onDone: done
-        }).then(function (url) { if (!url) done(); }).catch(done);
+        }).catch(done);
       };
       var tapCell = function (cell) {
         var spokenLabel = vocalLabelForCell(cell);
@@ -11149,7 +12427,7 @@
           // Cell grid
           e('div', { role: 'grid', 'aria-label': 'Communication board symbols', style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
             useCells.length === 0
-              ? e('p', { style: { color: '#94a3b8', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'No generated symbols yet — go to Board Builder and generate images first.')
+              ? e('p', { style: { color: '#94a3b8', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'This board has no words yet. Add words in Board Builder to begin communicating.')
               : useCells.map(function (cell, idx) {
                   // Garden-aware cell: border color reflects vocabulary growth level
                   var cellKey = cell.label.trim().toLowerCase();
@@ -11194,7 +12472,7 @@
                     onTouchStart: function (ev) { ev.currentTarget.style.transform = 'scale(0.93)'; ev.currentTarget.style.background = '#293548'; },
                     onTouchEnd: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; tapCell(cell); ev.preventDefault(); },
                   },
-                    e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px', pointerEvents: 'none' } }),
+                    cell.image && e('img', { src: cell.image, alt: '', style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px', pointerEvents: 'none' } }),
                     e('span', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '14px', textAlign: 'center', lineHeight: 1.3, pointerEvents: 'none' } },
                       cell.translatedLabel || cell.label,
                       cell.translatedLabel && cell.originalLabel && e('span', { style: { display: 'block', fontSize: '11px', fontWeight: 400, color: '#94a3b8' } }, cell.originalLabel)
@@ -11233,7 +12511,7 @@
     // ── Partner-assisted scanning overlay ────────────────────────────────
     if (scanBoardId) {
       var scanBoard = savedBoards.find(function (b) { return b.id === scanBoardId; });
-      var scanCells = scanBoard ? collectBoardSpeechCells(scanBoard).filter(function (cell) { return cell.image; }) : [];
+      var scanCells = scanBoard ? collectBoardSpeechCells(scanBoard) : [];
       var safeIdx = scanCells.length ? scanIndex % scanCells.length : 0;
       var exitScan = function () { setScanBoardId(null); setScanIndex(0); setScanPaused(false); setScanManual(false); };
       var activateCell = function (i) {
@@ -11251,7 +12529,9 @@
           var controls = Array.prototype.filter.call(
             ev.currentTarget.querySelectorAll('button:not([disabled]), select:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'),
             function (el) {
-              if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+              if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+              var ancestor = el.parentElement;
+              while (ancestor && ancestor !== ev.currentTarget) { if (window.getComputedStyle(ancestor).display === 'none') return false; ancestor = ancestor.parentElement; }
               var computed = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(el) : null;
               return !computed || (computed.display !== 'none' && computed.visibility !== 'hidden');
             }
@@ -11350,7 +12630,7 @@
                 minWidth: 0,
               }
             },
-              e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' } }),
+              cell.image && e('img', { src: cell.image, alt: '', style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' } }),
               e('span', { style: { color: isHighlighted ? '#facc15' : '#cbd5e1', fontWeight: 700, fontSize: '14px', textAlign: 'center' } }, vocalLabelForCell(cell)),
               scanBoard && scanBoard.pages && e('span', { style: { color: '#94a3b8', fontSize: '10px' } }, cell._speechPageTitle)
             );
@@ -11368,7 +12648,9 @@
       var focusable = Array.prototype.filter.call(
         modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
         function (el) {
-          if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+          if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+          var ancestor = el.parentElement;
+          while (ancestor && ancestor !== modal) { if (window.getComputedStyle(ancestor).display === 'none') return false; ancestor = ancestor.parentElement; }
           var computed = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(el) : null;
           return !computed || (computed.display !== 'none' && computed.visibility !== 'hidden');
         }
@@ -11392,12 +12674,12 @@
       style: S.overlay,
       onClick: function (ev) { if (ev.target === ev.currentTarget) onClose && onClose(); },
       role: 'presentation',
-      className: 'ss-focus-visible ss-modal-root ss-theme-' + ssTheme
+      className: 'ss-focus-visible ss-modal-root ss-theme-' + ssTheme + (tab === 'stories' ? ' ss-print-story' : '')
     },
       // Spinner keyframes
       e('style', null, '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}'),
       e('div', {
-        style: S.modal,
+        className: 'ss-main-modal', style: S.modal,
         onClick: function (ev) { ev.stopPropagation(); },
         ref: modalRef,
         tabIndex: -1,
@@ -11409,7 +12691,7 @@
       },
         e('div', { ref: ssLiveRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } }),
         // Header
-        e('div', { style: S.header },
+        e('div', { className: 'ss-header', style: S.header },
           e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
               e('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🎨'),
@@ -11421,21 +12703,28 @@
             e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close Symbol Studio' }, '×')
           ),
           // Tab bar
-          e('div', { style: S.tabBar, role: 'tablist', 'aria-label': 'Studio sections' }, TABS.map(tabBtn))
+          e('div', { className: 'ss-tabs', style: S.tabBar, role: 'tablist', 'aria-label': 'Studio sections' }, TABS.map(tabBtn))
         ),
         // Body
-        e('div', { style: S.body, role: 'tabpanel', 'aria-label': tab + ' panel' },
+        e('div', { className: 'ss-body', style: S.body, role: 'tabpanel', id: 'ss-studio-panel', 'aria-labelledby': 'ss-tab-' + tab },
+          e('button', { className: 'ss-setup-toggle', 'aria-expanded': showSetup, 'aria-controls': 'ss-profile-settings', onClick: function () { setShowSetup(!showSetup); } }, e('span', null, 'Profile & settings · ' + (activeProfile.name || 'Student')), e('span', null, showSetup ? 'Hide' : 'Show')),
           renderSharedLeft(),
-          e('div', { style: S.rightCol },
-            tab === 'symbols' && renderSymbolsTab(),
-            tab === 'board' && renderBoardTab(),
-            tab === 'schedule' && renderScheduleTab(),
-            tab === 'stories' && renderStoriesTab(),
-            tab === 'quickboards' && renderQuickBoardsTab(),
-            tab === 'books' && renderBooksTab(),
-            tab === 'quest' && renderQuestTab(),
-            tab === 'search' && renderSearchTab(),
-            tab === 'garden' && renderGardenTab()
+          e('div', { className: 'ss-workspace', style: S.rightCol },
+            renderStudioDraftStatus(),
+            e('div', { className: 'ss-draft-editor', style: { display: 'contents' },
+              inert: draftHydratedProfile !== activeProfileId ? '' : undefined,
+              'aria-busy': draftHydratedProfile !== activeProfileId ? 'true' : undefined
+            },
+              tab === 'symbols' && renderSymbolsTab(),
+              tab === 'board' && renderBoardTab(),
+              tab === 'schedule' && renderScheduleTab(),
+              tab === 'stories' && renderStoriesTab(),
+              tab === 'quickboards' && renderQuickBoardsTab(),
+              tab === 'books' && renderBooksTab(),
+              tab === 'quest' && renderQuestTab(),
+              tab === 'search' && renderSearchTab(),
+              tab === 'garden' && renderGardenTab()
+            )
           )
         ),
         mulberryOpen && renderMulberryPicker()
@@ -11446,6 +12735,8 @@
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SymbolStudio = SymbolStudio;
   window.AlloModules.SymbolStudioInternals = {
+    createSymbolStudioDraftStore: createSymbolStudioDraftStore,
+    normalizeSymbolStudioDraftPayload: normalizeSymbolStudioDraftPayload,
     normalizeSymbolLabel: normalizeSymbolLabel,
     normalizeBankAsset: normalizeBankAsset,
     normalizeBank: normalizeBank,

@@ -117,7 +117,64 @@ function AdventureEpisodeSettings({ state, onChange, t, locked = false, id = 'ad
   </AdventureSettingsSurface>;
 }
 
+function adventureSetupSummaryParts(props) {
+  const state = props.adventureState || {};
+  const label = (key, fallback) => adventureSetupText(props.t, key, fallback);
+  const mode = props.adventureInputMode || 'choice';
+  const experience = mode === 'system' ? label('profile_systems', 'Systems Challenge')
+    : mode === 'debate' ? label('profile_debate', 'Evidence Debate')
+    : props.isSocialStoryMode ? label('profile_social', 'Social Practice')
+    : state.learningProfile === 'guided' ? label('profile_guided', 'Guided Story')
+    : label('adventure.mode_choice', 'Standard Adventure Mode');
+  const limit = adventureSetupLimit(state);
+  const language = props.adventureLanguageMode || 'English';
+  let languageLabel = language;
+  if (language.includes(' + English')) {
+    const source = language.replace(' + English', '');
+    const content = source === 'All' ? (props.selectedLanguages || []).filter(value => value !== 'English').join(', ') : source;
+    // Match Adventure's existing gloss policy, including its English fallback.
+    let target = 'English';
+    const contentLanguage = source === 'All' ? '' : source;
+    if (typeof props.resolveTranslationPolicy === 'function' && props.currentUiLanguage) {
+      try {
+        const policy = props.resolveTranslationPolicy(props.translationMode, contentLanguage, props.currentUiLanguage);
+        if (policy?.enabled && policy.target) target = policy.target;
+        else if (!contentLanguage && String(props.translationMode) !== 'off') target = props.currentUiLanguage;
+      } catch (_) { /* Older hosts retain Adventure's English fallback. */ }
+    }
+    languageLabel = content + ' · ' + target + ' ' + label('translation', 'translation');
+  }
+  return [experience, props.isSocialStoryMode && props.socialStoryFocus?.trim(),
+    limit == null ? label('open', 'Open-ended') : limit + ' ' + label('decisions', 'decisions'),
+    props.adventureFreeResponseEnabled ? label('response_written', 'Write or dictate')
+      : (state.choiceCount || 6) + ' ' + label('suggested_choices', 'suggested choices'),
+    languageLabel, label('final_challenge', 'Final challenge') + ': ' + label(state.enableAutoClimax ? 'common.on' : 'common.off', state.enableAutoClimax ? 'On' : 'Off')
+  ].filter(Boolean);
+}
+
+function AdventureSetupSummary(props) {
+  const label = adventureSetupText(props.t, 'setup_summary', 'Setup summary');
+  return <AdventureSettingsSurface theme={props.theme} compact={props.compact}>
+    <div className="as-summary" role="region" aria-label={label}>
+      <strong>{label}: </strong>{adventureSetupSummaryParts(props).join(' · ')}
+    </div>
+  </AdventureSettingsSurface>;
+}
+
 function AdventureSetupFields(props) {
+  const fixed = !props.isTeacherMode && props.studentProjectSettings?.adventurePermissions?.lockAllSettings;
+  return <AdventureSettingsSurface theme={props.theme} compact={props.compact}>
+    {!props.hideSummary && <AdventureSetupSummary {...props} />}
+    {fixed ? <>
+      <p className="as-notice">{adventureSetupText(props.t, 'student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.')}</p>
+      <details><summary>{adventureSetupText(props.t, 'view_teacher_settings', 'View teacher settings')}</summary>
+        <AdventureSetupEditor {...props} hideNotice />
+      </details>
+    </> : <AdventureSetupEditor {...props} />}
+  </AdventureSettingsSurface>;
+}
+
+function AdventureSetupEditor(props) {
   const state = props.adventureState || {};
   const settings = props.studentProjectSettings || {};
   const permissions = settings.adventurePermissions || {};
@@ -134,6 +191,13 @@ function AdventureSetupFields(props) {
       {options.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
     </select>{help && <span className="as-help" id={id + '-' + key + '-help'}>{help}</span>}
   </label>;
+  const modeGuide = props.adventureInputMode === 'debate'
+    ? label('mode_debate_guide', 'Choose a position first. Then support your argument with lesson evidence and consider another perspective.')
+    : props.adventureInputMode === 'system'
+      ? label('mode_system_guide', 'Change a policy or part of a system, then compare its effects and resource tradeoffs.')
+      : props.isSocialStoryMode
+        ? label('mode_social_guide', 'Practise what you could say or do, with room for boundaries, different perspectives, and repair.')
+        : label('mode_story_guide', 'Explore a story through decisions that use ideas from the lesson.');
   const modes = [['choice', label('adventure.mode_choice', 'Standard Adventure Mode')], ['debate', label('adventure.mode_debate', 'Debate')], ['system', label('adventure.mode_system', 'Systems simulation')]];
   const languages = Array.from(new Set((props.selectedLanguages || []).filter(lang => lang !== 'English')));
   const languageOptions = [['English', label('adventure.lang_options.english_only', 'English only')], ...languages.flatMap(lang => [[lang, lang], [lang + ' + English', lang + ' · ' + label('with_translation', 'with translation')]])];
@@ -156,13 +220,13 @@ function AdventureSetupFields(props) {
   const limit = adventureSetupLimit(state);
   const onOff = value => label(value ? 'common.on' : 'common.off', value ? 'On' : 'Off');
   return <AdventureSettingsSurface theme={props.theme} compact={props.compact}>
-    {!props.isTeacherMode && <p className="as-notice">{permissions.lockAllSettings
+    {!props.isTeacherMode && !props.hideNotice && <p className="as-notice">{permissions.lockAllSettings
       ? label('student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.')
       : label('student_edit_hint', 'You can adjust the settings your teacher allows. Unavailable controls are set by your teacher.')}</p>}
     <section className="as-box" aria-labelledby={id + '-essential-heading'}>
       <h3 id={id + '-essential-heading'} className="as-title">{label('essential_setup', 'Essential setup')}</h3>
       <div className="as-grid">
-        {field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch')}
+        {field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch', modeGuide)}
         {languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), props.adventureLanguageMode || 'English', 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.'))}
         <label className="as-field" htmlFor={id + '-response'}>{label('response_format', 'Student responses')}
           <select aria-label={label('response_format', 'Student responses')} id={id + '-response'} className="as-control" value={props.adventureFreeResponseEnabled ? 'written' : 'choice'} disabled={locked('freeResponse') || typeof props.setAdventureFreeResponseEnabled !== 'function'} onChange={e => change('setAdventureFreeResponseEnabled', e.target.value === 'written', 'freeResponse')}>
@@ -184,9 +248,10 @@ function AdventureSetupFields(props) {
             </select>
           </label>
           {resourceMode === 'manual' && <div>
+            <p className="as-help">{label('resources_manual_hint', 'Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.')}</p>
             {(state.systemResources || []).map((resource, index) => <div className="as-resource" key={index}>
               <div className="as-grid">{[['name', label('resource_name', 'Resource name'), 'text'], ['quantity', label('resource_quantity', 'Starting value'), 'number'], ['unit', label('resource_unit', 'Unit'), 'text']].map(([key, title, type]) => <label className="as-field" key={key} htmlFor={id + '-resource-' + index + '-' + key}>{title} {index + 1}
-                <input id={id + '-resource-' + index + '-' + key} className="as-control" type={type} min={type === 'number' ? 0 : undefined} value={resource[key] ?? ''} disabled={locked()} onChange={e => { const value = type === 'number' ? Math.max(0, Number(e.target.value) || 0) : e.target.value; editResources(rows => rows.map((row, i) => i === index ? { ...row, [key]: value } : row)); }} />
+                <input id={id + '-resource-' + index + '-' + key} className="as-control" type={type} min={type === 'number' ? 0 : undefined} step={type === 'number' ? 'any' : undefined} max={type === 'number' && /^(%|percent|percentage)$/i.test(String(resource.unit || '').trim()) ? 100 : undefined} value={resource[key] ?? ''} disabled={locked()} onChange={e => { const value = type === 'number' ? Math.min(/^(%|percent|percentage)$/i.test(String(resource.unit || '').trim()) ? 100 : Infinity, Math.max(0, Number(e.target.value) || 0)) : e.target.value; editResources(rows => rows.map((row, i) => i === index ? { ...row, [key]: value } : row)); }} />
               </label>)}</div>
               <button type="button" className="as-button" style={{ marginTop: 10 }} disabled={locked()} onClick={() => editResources(rows => rows.filter((_, i) => i !== index))}>{label('remove_resource', 'Remove resource')} {index + 1}</button>
             </div>)}
@@ -195,7 +260,7 @@ function AdventureSetupFields(props) {
         </>}
       </div>}
     </section>
-    {supports && <AdventureSettingSection title={label('learning_supports', 'Learning supports')} summary={label('reading_practice', 'Reading practice') + ': ' + onOff(props.adventureFluencyEnabled)}>
+    {supports && <AdventureSettingSection title={label('learning_supports', 'Learning supports')} summary={[typeof props.setAdventureAutoRead === 'function' && label('auto_read_short', 'Auto-read') + ': ' + onOff(props.adventureAutoRead), label('microphone_practice', 'Microphone practice') + ': ' + onOff(props.adventureFluencyEnabled), props.adventureFreeResponseEnabled && label('adventure.typing_pace_label', 'Typing pace') + ': ' + onOff(props.adventureTypingPaceEnabled)].filter(Boolean).join(' · ')}>
       {typeof props.setAdventureAutoRead === 'function' && <label className="as-check"><input type="checkbox" checked={!!props.adventureAutoRead} disabled={locked()} onChange={e => { change('setAdventureAutoRead', e.target.checked); if (!e.target.checked && typeof props.stopPlayback === 'function') props.stopPlayback(); }} />{label('auto_read_setup', 'Read each scene automatically')}</label>}
       {toggle('adventureFluencyEnabled', 'setAdventureFluencyEnabled', label('adventure.fluency_setting_label', 'Scene reading practice'), label('adventure.fluency_setting_desc', 'Offer an optional microphone button for practising the current passage.'))}
       {props.adventureFreeResponseEnabled && toggle('adventureTypingPaceEnabled', 'setAdventureTypingPaceEnabled', label('adventure.typing_pace_label', 'Typing pace'), label('adventure.typing_pace_desc', 'Descriptive pace and word count for written responses. Never affects points or grades.'))}
@@ -227,12 +292,7 @@ function AdventureSetupFields(props) {
       {permissionToggle('lockAllSettings', label('adventure.lock_settings_label', 'Lock student settings'), label('adventure.lock_settings_desc', 'Keep the adventure setup fixed for students.'))}
       {permissionToggle('allowCloudImageStorage', label('adventure.allow_cloud_storage_label', 'Allow cloud image storage'), label('adventure.allow_cloud_storage_desc', 'Allow students to store generated images online.'))}
     </AdventureSettingSection>}
-    <div className="as-summary" role="region" aria-label={label('setup_summary', 'Setup summary')}>
-      <strong>{label('setup_summary', 'Setup summary')}: </strong>{modes.find(option => option[0] === props.adventureInputMode)?.[1] || modes[0][1]}{' · '}
-      {limit == null ? label('open', 'Open-ended') : limit + ' ' + label('decisions', 'decisions')}{' · '}
-      {props.adventureFreeResponseEnabled ? label('response_written', 'Write or dictate') : (state.choiceCount || 6) + ' ' + label('suggested_choices', 'suggested choices')}{' · '}
-      {languageOptions.find(option => option[0] === props.adventureLanguageMode)?.[1] || props.adventureLanguageMode || languageOptions[0][1]}
-    </div>
+
   </AdventureSettingsSurface>;
 }
 

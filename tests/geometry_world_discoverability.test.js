@@ -86,9 +86,11 @@ describe('first-block guidance never touches the world', () => {
     expect(engine.aimAtBuildArea()).toBe(true);
     const after = engine.camera.getWorldDirection(new THREE.Vector3());
     expect(after.y).toBeLessThan(-0.3); // now pitched down
-    // yaw kept: still facing -z
+    // Still facing forward, with a small turn toward the center of the
+    // clear ground cell instead of the ambiguous boundary at X=2 and Z=-1.
+    const centeredDirection = new THREE.Vector3(0.5, -2, -2.5).normalize();
     expect(after.z).toBeLessThan(0);
-    expect(Math.abs(after.x)).toBeLessThan(0.05);
+    expect(after.dot(centeredDirection)).toBeCloseTo(1, 7);
     // camera did not move, no block appeared, and the look euler follows the camera
     expect(engine.camera.position.toArray()).toEqual(pos.toArray());
     expect(Object.keys(engine.blocks)).toHaveLength(0);

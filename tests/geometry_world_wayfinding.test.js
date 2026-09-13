@@ -158,8 +158,8 @@ describe('Geometry World wayfinding wiring', () => {
     });
 
     it(`documents L for students and for screen readers — ${p}`, () => {
-      expect(src).toContain("'L'), 'Say where characters are',");
-      expect(src).toContain('L says where the characters are and who still has a question');
+      expect(src).toContain("'L'), 'Directions to tracked or nearby guides',");
+      expect(src).toContain('L gives directions to your tracked guide, or nearby characters when nothing is tracked');
     });
   });
 });

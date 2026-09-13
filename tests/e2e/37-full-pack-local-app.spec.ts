@@ -1,6 +1,30 @@
 import { test, expect, Page } from '@playwright/test';
 import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
 import { bootAlloFlow } from './helpers';
+
+// The lightweight local app server intentionally omits the CSS build. Render the
+// current view with the app's base stylesheet and freshly compiled view utilities.
+async function prepareFullPackReview(page: Page) {
+  if (!page.url().includes('127.0.0.1')) return;
+  const requireFromApp = createRequire(path.resolve('desktop/web-app/package.json'));
+  const cssDir = path.resolve('desktop/web-app/public/app/static/css');
+  const baseCss = fs.readdirSync(cssDir).find(file => /^main.*\.css$/.test(file));
+  if (baseCss) await page.addStyleTag({ path: path.join(cssDir, baseCss) });
+  const css = await requireFromApp('postcss')([requireFromApp('tailwindcss')({
+    content: [{ raw: fs.readFileSync('view_full_pack_run_source.jsx', 'utf8'), extension: 'jsx' }],
+    corePlugins: { preflight: false },
+  })]).process('@tailwind utilities;', { from: undefined });
+  await page.addStyleTag({ content: css.css });
+  // Restored panels can render while the app's remaining modules are still loading.
+  // Await the real generation code before exercising edits or diagnostic exports.
+  for (const [key, file] of [['GenerationMatrix', 'generation_matrix_module.js'], ['GenerationHelpers', 'generation_helpers_module.js']]) {
+    if (!await page.evaluate(key => Boolean((window as any).AlloModules?.[key]), key)) {
+      await page.addScriptTag({ url: '/' + file });
+    }
+  }
+}
 
 const STORE_KEY = 'alloflow-full-pack-run-v1';
 const BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1';
@@ -122,12 +146,24 @@ const expectPrivateDiagnostic = (serialized: string, secrets: string[]) => {
   for (const secret of secrets) expect(serialized).not.toContain(secret);
 };
 
-test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and exports privately', async ({ page }) => {
+test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and exports privately', async ({ page }, testInfo) => {
   await seedEnvelope(page, readyEnvelope());
   await bootAlloFlow(page, 'full');
   const panel = page.getByTestId('full-pack-review-panel');
   await expect(panel).toBeVisible({ timeout: 120000 });
-  await expect(page.getByTestId('full-pack-capacity')).toContainText('gemini · gemini-test');
+  await prepareFullPackReview(page);
+  const capacityDetails = page.getByTestId('full-pack-capacity');
+  const supportDetails = page.getByTestId('full-pack-troubleshooting');
+  await expect(capacityDetails).not.toHaveAttribute('open');
+  await expect(supportDetails).not.toHaveAttribute('open');
+  await expect(page.getByTestId('full-pack-options')).not.toHaveAttribute('open');
+  await expect(page.getByTestId('full-pack-copy-diagnostics')).toBeHidden();
+  await expect(capacityDetails.locator('summary')).toContainText('~2 minutes');
+  await expect(panel.getByText('Included resources', { exact: true })).toBeVisible();
+  await capacityDetails.locator('summary').focus();
+  await capacityDetails.locator('summary').press('Enter');
+  await expect(capacityDetails).toHaveAttribute('open');
+  await expect(capacityDetails).toContainText('gemini · gemini-test');
   await expect(page.getByTestId('full-pack-capacity')).toContainText('provider defaults');
   await expect(page.getByTestId('full-pack-sticky-actions')).toBeVisible();
   const toggle = page.getByTestId('full-pack-toggle-completed');
@@ -147,6 +183,9 @@ test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and ex
   const secrets = ['SENTINEL_SOURCE_FINGERPRINT', 'SENTINEL_UI_ID', 'SENTINEL_DIRECTIVE', 'SENTINEL_STUDENT_INTEREST', 'SENTINEL_ROSTER_SIGNATURE', 'SENTINEL_GROUP_ID', 'SENTINEL_STUDENT_NAME', 'SENTINEL_RESOURCE_KEY', 'SENTINEL_RESOURCE_ID', 'SENTINEL_API_KEY'];
   await expect.poll(() => page.evaluate(key => localStorage.getItem(key) || '', STORE_KEY)).not.toContain('SENTINEL_API_KEY');
 
+  await supportDetails.locator('summary').focus();
+  await supportDetails.locator('summary').press('Space');
+  await expect(supportDetails).toHaveAttribute('open');
   const copiedReport = await captureDiagnosticCopy(page, 'full-pack-copy-diagnostics');
   expectPrivateDiagnostic(copiedReport, secrets);
   expect(JSON.parse(copiedReport)).toMatchObject({ reportVersion: 2, status: 'ready' });
@@ -158,6 +197,16 @@ test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and ex
   const report = fs.readFileSync(downloadedPath!, 'utf8');
   expectPrivateDiagnostic(report, secrets);
   expect(JSON.parse(report)).toMatchObject({ reportVersion: 2, status: 'ready' });
+  await capacityDetails.locator('summary').click();
+  await supportDetails.locator('summary').click();
+  await panel.screenshot({ path: testInfo.outputPath('full-pack-overview.png') });
+  // Exercise the sidebar itself at a phone-sized width without changing the app's navigation mode.
+  await page.locator('#tour-tool-fullpack').evaluate(element => { element.style.width = '300px'; element.style.maxWidth = '100%'; });
+  expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 2)).toBe(true);
+  await page.getByTestId('full-pack-text-access-summary').locator('summary').click();
+  await expect(page.getByTestId('full-pack-adapted-policy')).toBeVisible();
+  expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 2)).toBe(true);
+  await panel.screenshot({ path: testInfo.outputPath('full-pack-narrow-expanded.png') });
 });
 
 test.describe('local unreleased Full Pack editor', () => {
@@ -179,7 +228,11 @@ test.describe('local unreleased Full Pack editor', () => {
 
   const panel = page.getByTestId('full-pack-review-panel');
   await expect(panel).toBeVisible({ timeout: 120000 });
-  await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('primary/source text remains available');
+  await prepareFullPackReview(page);
+  const textAccess = panel.getByTestId('full-pack-text-access-summary');
+  await expect(textAccess).not.toHaveAttribute('open');
+  await textAccess.locator('summary').click();
+  await expect(textAccess).toContainText('The source text remains available');
   const exactCells = panel.getByTestId('full-pack-generation-cells').first();
   await expect(exactCells).toContainText('5th Grade · English');
   await expect(exactCells).toContainText('Reuse');
@@ -188,10 +241,10 @@ test.describe('local unreleased Full Pack editor', () => {
   await expect(panel.getByRole('progressbar')).toHaveCount(0);
   await expect(panel.getByTestId('full-pack-row-generation-impact').first()).not.toHaveAttribute('aria-live');
 
-  const policy = panel.getByTestId('full-pack-primary-policy');
+  const policy = panel.getByTestId('full-pack-adapted-policy');
   await policy.focus();
   await expect(policy).toBeFocused();
-  await policy.selectOption('educator-directed');
+  await policy.selectOption('include');
   await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(3);
   await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('1 supplemental Adapted Text companion');
 
@@ -201,6 +254,7 @@ test.describe('local unreleased Full Pack editor', () => {
   await quizDirective.fill('Use evidence from two different paragraphs.');
   await panel.locator('[data-testid="full-pack-move-down"][data-resource-key="SENTINEL_UI_ID_QUIZ"]').click();
 
+  await panel.getByTestId('full-pack-add-options').locator('summary').click();
   await panel.getByTestId('full-pack-add-resource-select').selectOption('glossary');
   await panel.getByTestId('full-pack-add-resource').click();
   await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(4);
@@ -215,7 +269,7 @@ test.describe('local unreleased Full Pack editor', () => {
   }, STORE_KEY)).toEqual([
     { type: 'image', directive: 'SENTINEL_DIRECTIVE_IMAGE' },
     { type: 'quiz', directive: 'Use evidence from two different paragraphs.' },
-    { type: 'simplified', directive: '' },
+    { type: 'simplified', directive: 'Create a supplemental Adapted Text while keeping the analyzed primary text available.' },
     { type: 'outline', directive: '' },
   ]);
   });
@@ -264,6 +318,7 @@ test('actual Full Pack sidebar migrates v1 and demotes running and retrying work
   await bootAlloFlow(page, 'full');
   const panel = page.getByTestId('full-pack-review-panel');
   await expect(panel).toBeVisible({ timeout: 120000 });
+  await prepareFullPackReview(page);
   await expect(panel.getByText('Interrupted', { exact: true }).first()).toBeVisible();
   const safeFailure = panel.getByTestId('full-pack-failure-reason').first();
   await expect(safeFailure).toContainText('Transient provider or network failure');
@@ -296,6 +351,13 @@ test('actual Blueprint restore explains failures safely and copies and downloads
   await expect.poll(() => page.evaluate(key => localStorage.getItem(key) || '', BLUEPRINT_STORE_KEY)).not.toContain('SENTINEL_BLUEPRINT_API_KEY');
 
   const secrets = ['SENTINEL_BLUEPRINT_API_KEY', 'SENTINEL_BLUEPRINT_STUDENT', 'SENTINEL_BLUEPRINT_UI_ID', 'SENTINEL_BLUEPRINT_DIRECTIVE'];
+  const support = card.getByTestId('bp-troubleshooting');
+  await expect(support).not.toHaveAttribute('open');
+  await expect(card.getByTestId('bp-copy-diagnostics')).toBeHidden();
+  await expect(card.getByTestId('bp-generation-matrix-summary')).not.toHaveAttribute('open');
+  await expect(card.getByTestId('bp-row-details').first()).not.toHaveAttribute('open');
+  await support.locator('summary').focus();
+  await support.locator('summary').press('Enter');
   const copiedReport = await captureDiagnosticCopy(page, 'bp-copy-diagnostics');
   expectPrivateDiagnostic(copiedReport, secrets);
   expect(JSON.parse(copiedReport)).toMatchObject({

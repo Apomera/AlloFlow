@@ -53,9 +53,9 @@ describe('Circuit Lab SVG alternatives', () => {
     );
   });
 
-  it('gives all fifteen SVG declarations an explicit image role and name', () => {
+  it('gives all twenty SVG declarations an explicit image role and name', () => {
     const declarations = [...source.matchAll(/h\('svg', \{([^}]*)\}/g)];
-    expect(declarations).toHaveLength(15);
+    expect(declarations).toHaveLength(20);
     for (const declaration of declarations) {
       expect(declaration[1]).toContain("role: 'img'");
       expect(declaration[1]).toContain("'aria-label':");

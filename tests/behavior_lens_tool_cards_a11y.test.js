@@ -11,9 +11,10 @@ describe('BehaviorLens hub tool-card accessibility', () => {
   const end = source.indexOf('const dismissWelcome = () =>', start);
   const card = source.slice(start, end);
 
-  it('uses a labelled and described non-interactive card group', () => {
+  it('uses a labelled native article with correctly ordered headings', () => {
     expect(card).toContain("return h('article', {");
-    expect(card).toContain("role: 'group'");
+    expect(card).not.toContain("role: 'group'");
+    expect(card).toContain("h('h3', { id: titleId");
     expect(card).toContain("'aria-labelledby': titleId");
     expect(card).toContain("'aria-describedby': descriptionId");
     expect(card).toContain('id: titleId');
@@ -36,7 +37,8 @@ describe('BehaviorLens hub tool-card accessibility', () => {
     expect(card).toContain('w-8 h-8 min-w-8 min-h-8');
     expect(card).toContain('min-h-11');
     expect(card).toContain('focus-visible:outline');
-    expect(card).toContain("Unavailable until required data is selected");
+    expect(card).toContain("behaviorLensToolPrerequisite(tool.id, selectedStudent, abcEntries.length)");
+    expect(card).toContain("prerequisite || 'Add observations to use this tool'");
   });
 
   it('keeps the deploy mirror identical', () => {

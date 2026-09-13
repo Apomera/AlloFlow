@@ -16,6 +16,19 @@ on:
       - "tests/active_content_scan_completeness.test.js"
       - "tests/mcp_driver_scripted_e2e.test.js"
       - "tests/mcp_agent_bridge_e2e.test.js"
+      - "tests/mcp_agent_bridge_restart_e2e.test.js"
+      - "tests/mcp_agent_bridge_terminal_modes_e2e.test.js"
+      - "tests/remediation_visibility_selector_recovery.test.js"
+      - "tests/doc_pipeline_inherited_contrast.test.js"
+      - "tests/doc_pipeline_placeholder_audit_payload.test.js"
+      - "tests/aifix_chunk_boundary_whitespace.test.js"
+      - "tests/doc_pipeline_focus_wrap_browser.test.js"
+      - "tests/static_crop_cleanup.test.js"
+      - "tests/generated_baseline_language.test.js"
+      - "tests/doc_pipeline_title_attributes.test.js"
+      - "tests/semantic_list_marker_coverage.test.js"
+      - "tests/mcp_content_coverage.test.js"
+      - "tests/mcp_narration_languages.test.js"
       - "tests/mcp_remediation_stdio_smoke.test.js"
       - "tests/roundtrip_coverage_gate.test.js"
       - "tests/remediation_evidence_invariants_20260723.test.js"
@@ -36,6 +49,19 @@ on:
       - "tests/active_content_scan_completeness.test.js"
       - "tests/mcp_driver_scripted_e2e.test.js"
       - "tests/mcp_agent_bridge_e2e.test.js"
+      - "tests/mcp_agent_bridge_restart_e2e.test.js"
+      - "tests/mcp_agent_bridge_terminal_modes_e2e.test.js"
+      - "tests/remediation_visibility_selector_recovery.test.js"
+      - "tests/doc_pipeline_inherited_contrast.test.js"
+      - "tests/doc_pipeline_placeholder_audit_payload.test.js"
+      - "tests/aifix_chunk_boundary_whitespace.test.js"
+      - "tests/doc_pipeline_focus_wrap_browser.test.js"
+      - "tests/static_crop_cleanup.test.js"
+      - "tests/generated_baseline_language.test.js"
+      - "tests/doc_pipeline_title_attributes.test.js"
+      - "tests/semantic_list_marker_coverage.test.js"
+      - "tests/mcp_content_coverage.test.js"
+      - "tests/mcp_narration_languages.test.js"
       - "tests/mcp_remediation_stdio_smoke.test.js"
       - "tests/roundtrip_coverage_gate.test.js"
       - "tests/remediation_evidence_invariants_20260723.test.js"
@@ -92,6 +118,19 @@ jobs:
           tests/active_content_scan_completeness.test.js
           tests/mcp_driver_scripted_e2e.test.js
           tests/mcp_agent_bridge_e2e.test.js
+          tests/mcp_agent_bridge_restart_e2e.test.js
+          tests/mcp_agent_bridge_terminal_modes_e2e.test.js
+          tests/remediation_visibility_selector_recovery.test.js
+          tests/doc_pipeline_inherited_contrast.test.js
+          tests/doc_pipeline_placeholder_audit_payload.test.js
+          tests/aifix_chunk_boundary_whitespace.test.js
+          tests/doc_pipeline_focus_wrap_browser.test.js
+          tests/static_crop_cleanup.test.js
+          tests/generated_baseline_language.test.js
+          tests/doc_pipeline_title_attributes.test.js
+          tests/semantic_list_marker_coverage.test.js
+          tests/mcp_content_coverage.test.js
+          tests/mcp_narration_languages.test.js
           tests/mcp_remediation_stdio_smoke.test.js
           tests/roundtrip_coverage_gate.test.js
           tests/remediation_evidence_invariants_20260723.test.js

@@ -24,15 +24,27 @@ const getAdventurePacing = (state = {}) => {
         prepareFinalChallenge: !!state.enableAutoClimax && !state.climax?.isActive && limit !== null && turn === limit - 1 };
 };
 
+const buildAdventureChoiceInstruction = deps => {
+    const count = Math.max(2, Math.min(6, Math.round(Number(deps.adventureState?.choiceCount) || 6)));
+    const focus = deps.isSocialStoryMode
+        ? 'Include different plausible social approaches, such as setting a boundary, taking space, asking for help, clarifying a misunderstanding, or repairing a relationship. Respect more than one reasonable response.'
+        : deps.adventureInputMode === 'system'
+            ? 'Offer different feasible changes and tradeoffs. Let the learner compare immediate effects, possible later effects, and resource costs.'
+            : 'Offer different plausible approaches that use the lesson. Let the learner compare evidence, ask for help, or try a different strategy.';
+    return 'Provide ' + count + ' meaningful choices. ' + focus + ' Keep options brief. Do not force an obviously harmful or absurd distractor, or require a bad-option quota.';
+};
+
 const buildAdventureModeInstruction = (deps, opening = false) => {
     const state = deps.adventureState || {};
     const count = Math.max(2, Math.min(6, Math.round(Number(state.choiceCount) || 6)));
     const parts = [
         'LEARNING: Use the supplied lesson evidence. Treat simulation quantities as scenario estimates, not measured or scientifically validated values.',
         'Reading difficulty follows the audience setting. Game difficulty changes energy costs and XP, not the accuracy of a learner\'s ideas.',
-        deps.adventureFreeResponseEnabled
+        opening && deps.adventureInputMode === 'debate'
+            ? 'POSITION SELECTION: Begin with three distinct, defensible positions as options, even when later responses will be written. Ask the learner to choose a position first; the response-format setting applies after this setup step.'
+            : deps.adventureFreeResponseEnabled
             ? 'Offer a specific decision to write or dictate. Invite a short explanation; accept concise, relevant responses.'
-            : 'This choice count overrides earlier option quotas: provide ' + count + ' meaningful choices. Include plausible tradeoffs and different approaches; do not force an obviously harmful or absurd distractor. Keep options brief.'
+            : buildAdventureChoiceInstruction(deps)
     ];
     if (deps.isAdventureStoryMode) parts.push('PEACEFUL MODE applies to every scene, including the opening and finale: use exploration, mysteries, negotiation or puzzles; avoid combat, intense danger, frightening imagery and urgent/chase sound cues.');
     if (deps.isSocialStoryMode) parts.push('SOCIAL PRACTICE: Focus on ' + String(deps.socialStoryFocus || 'perspective-taking').slice(0, 300) + '. Recognize boundaries, asking for help, different interpretations and more than one reasonable response. Offer repair and trying again without shaming. Do not assume agreement, eye contact or compliance is the goal.');
@@ -50,10 +62,11 @@ const buildAdventureModeInstruction = (deps, opening = false) => {
     return '\n' + parts.join('\n');
 };
 
-const normalizeAdventureScene = (scene, deps) => {
+const normalizeAdventureScene = (scene, deps, opening = false) => {
     if (!scene || typeof scene !== 'object') return;
     const count = Math.max(2, Math.min(6, Math.round(Number(deps.adventureState?.choiceCount) || 6)));
-    if (Array.isArray(scene.options)) scene.options = deps.adventureFreeResponseEnabled ? [] : scene.options.slice(0, count);
+    const debatePositions = opening && deps.adventureInputMode === 'debate';
+    if (Array.isArray(scene.options)) scene.options = deps.adventureFreeResponseEnabled && !debatePositions ? [] : scene.options.slice(0, debatePositions ? 3 : count);
     if (deps.isAdventureStoryMode && scene.soundParams && typeof scene.soundParams === 'object') {
         scene.soundParams = { ...scene.soundParams, atmosphere: 'Calm', intensity: Math.min(0.35, Math.max(0, Number(scene.soundParams.intensity) || 0.2)), motion: 'Still' };
     }
@@ -168,8 +181,10 @@ const scheduleAdventureEstablishingShot = ({ prompt, callImagen, setAdventureSta
   return request;
 };
 
+let adventureLaunchInFlight = false;
 const executeStartAdventure = async (contextOverride = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, universalImageStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true) return;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] executeStartAdventure fired"); } catch(_) {}
     const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
     const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
@@ -179,6 +194,8 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
         addToast(t('adventure.no_text_error'), "error");
         return;
     }
+    cancelAdventureEstablishingShot();
+    window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
     stopPlayback();
     lastReadTurnRef.current = 0;
     setGenerationStep('Initializing simulation parameters...');
@@ -252,15 +269,18 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
     lastReadTurnRef.current = 0;
     setAdventureTextInput('');
     addToast(adventureInputMode === 'debate' ? t('adventure.status_messages.initiating_debate') : t('adventure.status_messages.starting'), "info");
+    adventureLaunchInFlight = true;
+    let openingActive = true;
     try {
       if (adventureInputMode !== 'debate' && adventureInputMode !== 'system') {
-          detectClimaxArchetype(sourceText, adventureCustomInstructions).then(archetype => {
+          Promise.resolve(detectClimaxArchetype(sourceText, adventureCustomInstructions)).then(archetype => {
+              if (!openingActive || !archetype) return;
               debugLog("Adventure Archetype Detected:", archetype);
               setAdventureState(prev => ({
                   ...prev,
                   climax: { ...prev.climax, archetype: archetype }
               }));
-          });
+          }).catch(error => { if (openingActive) warnLog("Adventure finale detection failed", error); });
       }
       const keyTerms = getAdventureGlossaryTerms(history, adventureLanguageMode);
       const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
@@ -291,8 +311,8 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           ? `FOCUS: Social Story Mode (SEL). The narrative MUST focus on social-emotional learning, conflict resolution, and understanding perspectives. ${socialStoryFocus ? `CORE THEME: The story must specifically address the skill/concept of: "${socialStoryFocus}".` : ''} Scenarios should be realistic or metaphorical but centered on social dynamics.`
           : "";
       const interactionInstruction = adventureFreeResponseEnabled
-          ? "INTERACTION: Free Text. The student will type their own response. Return an empty 'options' array: []. CRITICAL: The opening scene MUST END with a concrete, unresolved problem or decision the student must respond to (a direct question, an obstacle, an urgent situation) — never end on pure description; the last 1-2 sentences present the challenge."
-          : "INTERACTION: Multiple Choice. Provide 6 distinct options.";
+          ? "INTERACTION: Free Text. The student will type their own response. Return an empty 'options' array: []. CRITICAL: The opening scene MUST END with a concrete, unresolved problem or decision the student must respond to (a question, a puzzle, or a practical decision) — never end on pure description; the last 1-2 sentences present the challenge."
+          : buildAdventureChoiceInstruction(deps);
       const jsonOptionsExample = adventureFreeResponseEnabled
           ? "[]"
           : `["Choice 1", "Choice 2", "Choice 3", "Choice 4", "Choice 5", "Choice 6"]`;
@@ -343,12 +363,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
             - "Inventory" = Active Policies, Technologies, or Key Assets.
             CRITICAL: Initialize system variables with realistic starting values (e.g. Trust: 50%, Budget: 1000) instead of 0 if appropriate for the scenario.
             CRITICAL: Do NOT include numeric values like "Energy: 100" or "Stability: 100%" in the narrative text. These are displayed in the game UI.
-            ${!adventureFreeResponseEnabled ? `CRITICAL: Provide exactly 6 distinct policy choices or macro-actions:
-            - 1 Optimal Systemic Solution (High Sustainability)
-            - 2 Standard/Status Quo Actions
-            - 1 Neutral/Wait Action
-            - 1 Short-term Fix with Long-term Cost (Risk)
-            - 1 Systemic Failure/Collapse Choice (Bad)` : ''}
+            ${!adventureFreeResponseEnabled ? buildAdventureChoiceInstruction(deps) : ''}
             Return ONLY JSON:
             {
               "text": "You are [Role]. [Describe the situation and context]...nn**Alert:** [Event Description]...",
@@ -396,17 +411,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
             - The story should be engaging but educational.
             - If defined, use the student interests as a narrative vehicle (e.g. explain physics using soccer metaphors).
             - CRITICAL: Do NOT list the choices in the 'text' narrative. Only describe the situation. The choices will be displayed as buttons.
-            ${!adventureFreeResponseEnabled ? (isSocialStoryMode ? `CRITICAL: Provide exactly 4-6 distinct choices reflecting different social approaches:
-            - 1 Cooperative/Prosocial Choice
-            - 1 Assertive/Boundary-Setting Choice
-            - 1 Passive/Avoidant Choice
-            - 1 Aggressive/Impulsive Choice (to show consequences)
-            - 1 Creative/Alternative Solution` : `CRITICAL: Provide exactly 6 distinct choices for what to do next, randomly ordered:
-            - 1 Very Strong/Smart Option (Demonstrates mastery)
-            - 2 Mildly Good Options (Acceptable but standard)
-            - 1 Neutral Option (Irrelevant or passive)
-            - 1 Risky Option (High reward/high failure chance)
-            - 1 Bad Option (Shows misunderstanding)`) : ''}
+            ${!adventureFreeResponseEnabled ? buildAdventureChoiceInstruction(deps) : ''}
             Return ONLY JSON:
             {
               "text": "You are [Role]. [Describe the situation]... What do you do?",
@@ -474,7 +479,10 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
       }
       let initialSystemResources = [];
       if (adventureInputMode === 'system' && enableFactionResources !== false && factionResourceMode === 'manual') {
-          initialSystemResources = (adventureState.systemResources || []).slice(0, 24).map(resource => ({ ...resource }));
+          const normalizeResources = window.AlloModules?.AdventureSessionHandlers?.applyAdventureSystemUpdate;
+          initialSystemResources = typeof normalizeResources === 'function'
+              ? normalizeResources(adventureState.systemResources, null, { enabled: true, mode: 'manual' })
+              : (adventureState.systemResources || []).slice(0, 24).map(resource => ({ ...resource }));
       } else if (enableFactionResources !== false && adventureInputMode === 'system' && sceneData.systemStateUpdate && sceneData.systemStateUpdate.add) {
           const rawAdd = sceneData.systemStateUpdate.add;
           const resourcesToAdd = Array.isArray(rawAdd) ? rawAdd : [rawAdd];
@@ -493,7 +501,8 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           const resNames = initialSystemResources.map(r => `${r.name} (${r.quantity}${r.unit})`).join(', ');
           addToast(`Initial State: ${resNames}`, "success");
       }
-      normalizeAdventureScene(sceneData, deps);
+      normalizeAdventureScene(sceneData, deps, true);
+      if (adventureInputMode === 'debate' && !adventureFreeResponseEnabled && !sceneData.options?.length) throw new Error('Debate opening did not include position choices.');
       let sceneCharacters = [];
       if (adventureConsistentCharacters) {
           if (Array.isArray(sceneData.characters) && sceneData.characters.length > 0) {
@@ -571,8 +580,8 @@ Opening scene: ${sceneText.substring(0, 1200)}
         xpToNextLevel: startingXpToNext,
         sceneImage: null,
         sceneImagePreview: null,
-        isImageLoading: true,
-        imagePolishStage: 'generating',
+        isImageLoading: sceneCharacters.length === 0,
+        imagePolishStage: sceneCharacters.length > 0 ? null : 'generating',
         loadingStage: sceneCharacters.length > 0 ? 'Preparing cast review…' : 'Painting scene art…',
         inventory: [...prev.inventory, ...initialInventory],
         systemResources: initialSystemResources,
@@ -581,20 +590,8 @@ Opening scene: ${sceneText.substring(0, 1200)}
         characters: sceneCharacters,
         isReviewingCharacters: sceneCharacters.length > 0,
       }));
-      if (adventureConsistentCharacters && sceneCharacters.length > 0) {
-          const establishingStyle = adventureArtStyle === 'custom' && adventureCustomArtStyle
-              ? `Art style: ${adventureCustomArtStyle}.`
-              : (adventureArtStyle === 'universal'
-                  ? (String(universalImageStyle || '').trim() ? `Art style: ${String(universalImageStyle).trim()}.` : '')
-                  : (adventureArtStyle && adventureArtStyle !== 'auto' ? `Art style: ${adventureArtStyle}.` : ''));
-          const establishingPrompt = `Wide establishing shot introducing this setting: ${String(sceneData.text || '').substring(0, 600)}. Scenic environment only, absolutely no people, no characters, no text. ${establishingStyle}`;
-          scheduleAdventureEstablishingShot({
-              prompt: establishingPrompt,
-              callImagen,
-              setAdventureState,
-              warnLog,
-          });
-      }
+      // Cast confirmation owns the opening illustration. A temporary setting
+      // here used a second provider request before the real scene art.
       const newAdventureItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           type: 'adventure',
@@ -635,16 +632,18 @@ Opening scene: ${sceneText.substring(0, 1200)}
     } catch (error) {
       warnLog("Adventure Start Error:", error);
       addToast(t('toasts.adventure_start_failed'), "error");
-      setAdventureState(prev => ({ ...prev, isLoading: false, loadingStage: null }));
+      setAdventureState(prev => adventureState.currentScene ? { ...adventureState, isLoading: false, loadingStage: null } : { ...prev, isLoading: false, loadingStage: null, isShopOpen: false, isReviewingCharacters: false });
+    } finally {
+      openingActive = false;
+      adventureLaunchInFlight = false;
     }
 };
 
-const handleStartAdventure = (deps) => {
+let adventureRestartPromptPending = false;
+const handleStartAdventure = async (deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true || adventureRestartPromptPending) return false;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
-      if (alloBotRef.current) {
-          alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
-      }
       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
       const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
           ? latestAnalysis.data.originalText
@@ -653,15 +652,52 @@ const handleStartAdventure = (deps) => {
           addToast(t('adventure.no_text_error'), "error");
           return;
       }
+      if (adventureState.currentScene || adventureState.history?.length) {
+          const label = (key, fallback) => { const value = t('adventure.learning_settings.' + key); return value && value !== 'adventure.learning_settings.' + key ? value : fallback; };
+          adventureRestartPromptPending = true;
+          try {
+              const message = label('restart_confirm', 'Start over? Your current story and decisions will be cleared, and new adventure setup will open.');
+              const confirmed = window.AlloFlowUX?.confirm
+                  ? await window.AlloFlowUX.confirm(message, { title: label('restart_title', 'Start over'), confirmText: label('restart_confirm_button', 'Open new adventure setup'), cancelText: label('restart_cancel', 'Keep my story') })
+                  : typeof window.confirm === 'function' && window.confirm(message);
+              if (!confirmed) return false;
+          } catch (error) {
+              warnLog("Adventure restart confirmation failed", error);
+              return false;
+          } finally { adventureRestartPromptPending = false; }
+      }
+      if (alloBotRef.current) {
+          alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+      }
+      cancelAdventureEstablishingShot();
+      window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
+      stopPlayback();
+      setFailedAdventureAction(null);
+      setPendingAdventureUpdate(null);
+      setShowDice(false);
+      setDiceResult(null);
+      setAdventureTextInput('');
       setActiveView('adventure');
       setAdventureState(prev => ({
           ...prev,
           history: [],
           currentScene: null,
-          isLoading: false
+          isLoading: false,
+          isGameOver: false,
+          isImmersiveMode: false,
+          canStartSequel: false,
+          isShopOpen: false,
+          isReviewingCharacters: false,
+          sceneImage: null,
+          sceneImagePreview: null,
+          isImageLoading: false,
+          loadingStage: null,
+          pendingChoice: null,
+          climax: { ...prev.climax, isActive: false }
       }));
       setShowNewGameSetup(true);
       setHasSavedAdventure(false);
+      return true;
 };
 
 const handleResumeAdventure = async (deps) => {
@@ -669,6 +705,7 @@ const handleResumeAdventure = async (deps) => {
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleResumeAdventure fired"); } catch(_) {}
       setIsResumingAdventure(true);
       try {
+          window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
           const savedRecord = await storageDB.get('allo_adventure_save');
           if (!savedRecord) {
               addToast(t('toasts.no_save_file'), "error");
@@ -772,6 +809,7 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
         return;
     }
     SafetyContentChecker.aiCheck(currentInput, 'adventure', apiKey, handleAiSafetyFlag);
+    window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
     lastTurnSnapshot.current = structuredClone(adventureState);
     stopPlayback();
     setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: currentInput, loadingStage: 'Interpreting your response…' }));
@@ -829,28 +867,14 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
           }
           const socialStoryInstruction = isSocialStoryMode
               ? `FOCUS: Social Story Mode. Continue the narrative focusing on "${socialStoryFocus || 'Social Skills'}". Evaluate the user's choice: "${currentInput}" based on its social impact. Show the consequences (positive or negative) on relationships and feelings.
-                 CRITICAL: The options generated must represent different social approaches (e.g., Aggressive, Passive, Assertive/Prosocial, Cooperative).`
+                 Recognize boundaries, asking for help, different interpretations, and opportunities for repair.`
               : "";
-          const optionsInstruction = !adventureFreeResponseEnabled ? (isSocialStoryMode ? `
-            CRITICAL: Provide exactly 4-6 distinct choices reflecting different social approaches:
-            - 1 Cooperative/Prosocial Choice
-            - 1 Assertive/Boundary-Setting Choice
-            - 1 Passive/Avoidant Choice
-            - 1 Aggressive/Impulsive Choice (to show consequences)
-            - 1 Creative/Alternative Solution
-          ` : `
-            CRITICAL: Provide exactly 6 distinct choices for the NEXT scene options, randomly ordered:
-            - 1 Very Strong/Smart Option (Demonstrates mastery)
-            - 2 Mildly Good Options (Acceptable but standard)
-            - 1 Neutral Option (Irrelevant or passive)
-            - 1 Mildly Bad Option (Minor misconception or risky)
-            - 1 Very Bad Option (Major misconception or failure)
-          `) : `
+          const optionsInstruction = !adventureFreeResponseEnabled ? buildAdventureChoiceInstruction(deps) : `
             CRITICAL (FREE-RESPONSE MODE): DRIVE THE STORY FORWARD every turn.
             After showing the consequence of the student's action, the scene MUST END with a NEW
             concrete, unresolved problem, obstacle, or decision that demands the student's next
-            action — a direct question from a character, a danger closing in, a device or clue that
-            must be dealt with, a choice that cannot be postponed. Make it specific enough that the
+            action — a direct question from a character, a discovery to explore, or a practical
+            choice about what to try next. Make it specific enough that the
             student knows exactly what they are responding to.
             NEVER end on pure reaction, praise, calm resolution, or summary — the last 1-2 sentences
             must present the new challenge. Return an empty 'options' array: []
@@ -1181,6 +1205,7 @@ const handleAdventureChoice = async (choice, deps) => {
     }
     stopPlayback();
     playAdventureEventSound('decision_select');
+    window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
     lastTurnSnapshot.current = structuredClone(adventureState);
     setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: normalizedChoice, loadingStage: 'Considering your choice…' }));
     let archivedImageId = null;
@@ -1237,19 +1262,9 @@ const handleAdventureChoice = async (choice, deps) => {
           ? "TONE: Story Time Mode (Family Friendly). Continue with exploration, mystery, and puzzles. Avoid combat or intense danger."
           : "";
       const socialStoryInstruction = isSocialStoryMode
-          ? `SOCIAL STORY MODE: Continue focusing on "${socialStoryFocus || 'Social Skills'}". Show realistic emotional and relationship consequences, and keep choices grounded in cooperative, assertive, passive, impulsive, and creative social approaches.`
+          ? `SOCIAL STORY MODE: Continue focusing on "${socialStoryFocus || 'Social Skills'}". Show realistic emotional and relationship consequences, and offer plausible responses involving boundaries, asking for help, different perspectives, and repair.`
           : "";
-      const optionsInstruction = !adventureFreeResponseEnabled ? (isSocialStoryMode ? `
-        CRITICAL: Provide 4-6 distinct social choices, including cooperative/prosocial,
-        assertive/boundary-setting, passive/avoidant, impulsive/aggressive, and creative alternatives.
-      ` : `
-        CRITICAL: Provide exactly 6 distinct choices for the NEXT scene options, randomly ordered:
-        - 1 Very Strong/Smart Option (Demonstrates mastery)
-        - 2 Mildly Good Options (Acceptable but standard)
-        - 1 Neutral Option (Irrelevant or passive)
-        - 1 Mildly Bad Option (Minor misconception or risky)
-        - 1 Very Bad Option (Major misconception or failure)
-      `) : '';
+      const optionsInstruction = !adventureFreeResponseEnabled ? buildAdventureChoiceInstruction(deps) : '';
       const jsonOptionsExample = adventureFreeResponseEnabled ? "[]" : `["Choice 1", "Choice 2", "Choice 3", "Choice 4", "Choice 5", "Choice 6"]`;
       const chanceRoll = adventureChanceMode ? Math.floor(Math.random() * 20) + 1 : null;
       const rollModifier = adventureState.activeRollModifier || 0;
@@ -1519,6 +1534,7 @@ const handleGuidingHand = async (item, deps) => {
     return false;
   }
 
+  window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
   const safeSnapshot = typeof structuredClone === 'function'
     ? structuredClone(adventureState)
     : JSON.parse(JSON.stringify(adventureState));
@@ -1659,6 +1675,9 @@ Return ONLY valid JSON:
         voiceMap: { ...(prev.voiceMap || {}), ...(parsed.voices || {}) },
         currentHint: null,
         sceneImage: null,
+        sceneImagePreview: null,
+        imagePolishStage: 'generating',
+        loadingStage: 'Painting scene art…',
         isImageLoading: true,
         isLoading: false,
         isGameOver: false

@@ -175,3 +175,23 @@ describe('Machine Lab: camera limits', () => {
     expect(text).toContain('machineZoom: MACHINE_HOME.zoom');
   });
 });
+
+
+describe('Machine Lab: dedicated drum inspection camera',()=>{
+  for(const band of ['k2','g35','g68','g912'])it('provides a named native preset at '+band,()=>{
+    const html=renderTool('machineLab',state({view:'machines',bench:'windlass',bandOverride:band}));
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const button=doc.querySelector('button[aria-label="Show the drum and lifting rope"]');
+    expect(button).not.toBeNull();expect(button.type).toBe('button');expect(button.textContent).toBe('Drum');
+    expect(button.getAttribute('aria-pressed')).toBe('false');expect(button.title).toContain('oblique side view');
+  });
+  for(const [rotY,rotX,zoom,selected] of [[72,16,1.18,true],[71,16,1.18,false],[72,15,1.18,false],[72,16,1,false]])it('reflects the camera preset at '+[rotY,rotX,zoom].join('/'),()=>{
+    const html=renderTool('machineLab',state({view:'machines',bench:'windlass',shopRotY:rotY,shopRotX:rotX,shopZoom:zoom}));
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    expect(doc.querySelector('button[aria-label="Show the drum and lifting rope"]').getAttribute('aria-pressed')).toBe(String(selected));
+  });
+  it('keeps the drum preset scoped to the wheel-and-axle workshop',()=>{
+    for(const bench of ['lever','pulley','ramp','wedge','screw'])expect(renderTool('machineLab',state({view:'machines',bench}))).not.toContain('Show the drum and lifting rope');
+    expect(renderTool('machineLab',state({view:'build',bench:'windlass'}))).not.toContain('Show the drum and lifting rope');
+  });
+});

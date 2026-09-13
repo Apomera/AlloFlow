@@ -61,9 +61,15 @@ describe('Symbol Studio visual schedule polish', () => {
   });
 
   it('normalizes loaded schedules and reports storage failures truthfully', () => {
-    expect(source).toContain('sched && Array.isArray(sched.items) ? sched.items : []');
+    expect(source).toContain("if (!sched || typeof sched !== 'object') return");
+    expect(source).toContain('Array.isArray(sched.items) ? sched.items : []');
     expect(source).toContain("'Unlabeled step ' + (index + 1)");
-    expect(source.indexOf('var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated)')).toBeLessThan(source.indexOf('setSavedSchedules(updated)', source.indexOf('var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated)')));
+    const saveStart = source.indexOf('var saveSchedule = useCallback');
+    const saveEnd = source.indexOf('var resetSchedule = useCallback', saveStart);
+    const save = source.slice(saveStart, saveEnd);
+    const storageWrite = save.indexOf('store(scopedKey(STORAGE_SCHEDULES), updated)');
+    expect(storageWrite).toBeGreaterThanOrEqual(0);
+    expect(storageWrite).toBeLessThan(save.indexOf('setSavedSchedules(updated)'));
     expect(source).toContain('notifyVisualSupportsUpdated()');
     expect(source).toContain('Could not save the sequence - device storage is full.');
   });

@@ -65,7 +65,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
         <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
             <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={14} className="text-amber-500 fill-current" />
-                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('persona.golden_thread') || 'Golden Thread'}</h5>
+                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('blueprint.lesson_focus') || 'Lesson focus'}</h5>
                 {isEditing && <span className="text-[10px] text-amber-700 italic ml-auto">{t('persona.edits_apply_before_generation') || 'Edits apply before generation'}</span>}
             </div>
             <div className="mb-2">
@@ -84,6 +84,11 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                     eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</p>
                 )}
             </div>
+            <details data-testid="bp-lesson-focus-details" open={isEditing} className="group/focus border-t border-amber-200 pt-1">
+              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden">
+                {t('blueprint.concepts_and_vocabulary') || 'Concepts and vocabulary'}
+                <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/focus:rotate-180" />
+              </summary>
             <div className="mb-2">
                 <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">{t('persona.core_concepts') || 'Core Concepts'}</p>
                 <div className="flex flex-wrap gap-1 items-center">
@@ -154,6 +159,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                     {!isEditing && terms.length === 0 && <span className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</span>}
                 </div>
             </div>
+            </details>
         </div>
     );
 };
@@ -485,9 +491,9 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       imageGenerationStyle: 'image style', imageAspectRatio: 'image aspect ratio',
   }[field] || String(field || '').replace(/([A-Z])/g, ' $1').trim());
   return (
-    <div data-help-key="blueprint_card_panel" className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-indigo-50">
-        <div className="flex items-center gap-3">
+    <div data-help-key="blueprint_card_panel" className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-sm w-full min-w-0 max-w-2xl">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-3 pb-3 border-b border-indigo-50">
+        <div className="flex min-w-0 flex-1 basis-56 items-start gap-3">
             <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
                 <Sparkles size={18} />
             </div>
@@ -496,7 +502,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                     {t('blueprint.header')} {isEditing ? `(${t('common.edit')})` : ""}
                 </h4>
                 <p className="text-xs text-slate-600">
-                    {isEditing ? (t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')) : t('blueprint.review_instruction')}
+                    {isEditing ? (t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')) : isRunning ? (t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.') : (t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.')}
                 </p>
             </div>
         </div>
@@ -504,41 +510,17 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             iterates its own snapshot), but it makes the board LIE — a removed
             row's status vanishes while its resource still generates, and added
             rows render as never-run under a "running" banner. */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
         {hasFailureDiagnostics && typeof onOpenErrorLog === 'function' && (
             <button
                 type="button"
                 data-testid="bp-open-error-log"
                 onClick={onOpenErrorLog}
-                className="p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
+                className="inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
                 title={t('blueprint.open_error_log') || 'Open error log'}
                 aria-label={t('blueprint.open_error_log') || 'Open error log'}
             >
-                <AlertTriangle size={14} aria-hidden="true" />
-            </button>
-        )}
-        {run && typeof onCopyDiagnostics === 'function' && (
-            <button
-                type="button"
-                data-testid="bp-copy-diagnostics"
-                onClick={onCopyDiagnostics}
-                className="p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                title={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
-                aria-label={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
-            >
-                <Copy size={14} aria-hidden="true" />
-            </button>
-        )}
-        {run && typeof onDownloadDiagnostics === 'function' && (
-            <button
-                type="button"
-                data-testid="bp-download-diagnostics"
-                onClick={onDownloadDiagnostics}
-                className="p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                title={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
-                aria-label={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
-            >
-                <Download size={14} aria-hidden="true" />
+                <AlertTriangle size={14} aria-hidden="true" /><span>{t('blueprint.open_error_log') || 'Open error log'}</span>
             </button>
         )}
         <button
@@ -568,8 +550,8 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               )}
           </div>
       )}
-      <div data-testid="bp-generation-matrix-summary" role="status" aria-live="polite" className="mb-3 rounded-lg border border-sky-200 bg-sky-50 p-2.5 text-[11px] leading-relaxed text-sky-950">
-          <div className="font-bold">{t('blueprint.generation_impact') || 'Generation impact'}</div>
+      <div data-testid="bp-plan-overview" className="mb-3 text-xs leading-relaxed text-slate-700">
+          <p className="font-bold text-slate-800">{items.length} {t('blueprint.resources_in_plan') || 'resources in this plan'}</p>
           <div className="mt-0.5">
               <span className="font-semibold">{t('blueprint.audience') || 'Audience'}:</span>{' '}
               {blueprintGrades.length ? blueprintGrades.join(', ') : (blueprintSettings.gradeLevel || config?.instructionalContext?.instructionalGrade || t('fullpack.current_grade') || 'Current grade')}
@@ -577,6 +559,15 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               <span className="font-semibold">{t('blueprint.output_languages') || 'Output languages'}:</span>{' '}
               {(blueprintLanguages.length ? blueprintLanguages : configuredLanguages).join(', ')}
           </div>
+      </div>
+      <details data-testid="bp-generation-matrix-summary" open={blueprintAdaptedPolicy === 'prohibited'} className="group/plan-details mb-3 rounded-lg border border-slate-200 text-xs leading-relaxed text-slate-700">
+        <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+          {t('blueprint.plan_details') || 'Generation and text settings'}
+          <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/plan-details:rotate-180" />
+        </summary>
+        <div className="border-t border-slate-200 p-2.5">
+          <p className="mb-2">{t('blueprint.details_help') || 'Check how source text, reading levels, languages, and existing resources will be used.'}</p>
+          <div className="font-bold">{t('blueprint.generation_impact') || 'Generation impact'}</div>
           <div className="mt-1" data-testid="bp-text-access-summary">
               <span className="font-semibold">{t('blueprint.primary_text_access') || 'Source text'}:</span>{' '}
               {blueprintPrimaryAccess === 'required'
@@ -609,7 +600,8 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                       : ''}
               </div>
           )}
-      </div>
+        </div>
+      </details>
       {run?.settingsStale && (
           <div data-testid="bp-settings-stale-notice" role="status" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950">
               <span className="font-bold">{t('blueprint.reviewed_settings_used') || 'Reviewed settings are being used.'}</span>{' '}
@@ -684,7 +676,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                             <button type="button" onClick={() => handleMoveItem(idx, -1)} disabled={idx === 0} className="w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" aria-label={t('blueprint.move_up_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} up`}><ChevronUp size={16} aria-hidden="true" /></button>
                             <button type="button" onClick={() => handleMoveItem(idx, 1)} disabled={idx === items.length - 1} className="w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" aria-label={t('blueprint.move_down_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} down`}><ChevronDown size={16} aria-hidden="true" /></button>
                         </div>
-                        <div className="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="min-w-0 flex-grow grid grid-cols-1 gap-2">
                             <div className="col-span-1">
                                 <select aria-label={t('common.selection')}
                                     value={item.type}
@@ -712,12 +704,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                     </p>
                                 )}
                             </div>
-                            <div className="col-span-2">
-                                <input aria-label={t('common.enter_item')}
-                                    type="text"
+                            <div className="col-span-1">
+                                <textarea aria-label={(t('fullpack.instruction') || 'Instruction') + ': ' + getToolLabel(item.type)}
+                                    rows={2}
                                     value={item.directive}
                                     onChange={(e) => handleDirectiveChange(idx, e.target.value)}
-                                    className="w-full text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic"
+                                    className="w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic"
                                     placeholder={t('blueprint.placeholder_instruction')}
                                 />
                             </div>
@@ -742,7 +734,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             </button>
           </>
       ) : (
-          <div data-help-key="blueprint_resource_list_review" className="space-y-3 mb-6">
+          <div data-help-key="blueprint_resource_list_review" className="space-y-3 mb-4">
               {items.map((item, idx) => {
                   // Per-resource visual identity comes from the ONE existing
                   // registry (_ALLO_STATION_STYLES in the host, mirrored to
@@ -857,7 +849,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                       >
                           {_st ? <span aria-hidden="true">{_st.icon}</span> : (idx + 1)}
                       </div>
-                      <div className="flex-grow">
+                      <div className="min-w-0 flex-grow break-words">
                           <span
                               className="text-xs font-bold px-2 py-0.5 rounded border uppercase tracking-wider inline-flex items-center gap-1 w-fit mb-1"
                               // WCAG 1.4.3: the station registry's `stroke` is a
@@ -909,11 +901,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   aria-controls={`bp-desc-${item.id}`}
                                   data-testid="bp-desc-toggle"
                                   data-help-key="blueprint_resource_desc_toggle"
-                                  className="ml-1 text-[10px] font-bold w-4 h-4 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                  className="ml-1 inline-flex min-h-8 items-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                                   title={t('blueprint.what_is_this') || 'What does this resource do?'}
                                   aria-label={`${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`}
                               >
-                                  ?
+                                  {t('blueprint.about_resource') || 'About'}
                               </button>
                           )}
                           {/* Rebuild ONE row. Only offered once a run has
@@ -951,11 +943,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                               <button
                                   type="button"
                                   data-testid="bp-rebuild-btn"
+                                  disabled={!!isRunning}
                                   data-help-key="blueprint_rebuild_step_btn"
                                   onClick={() => onRebuildStep(item.id)}
                                   title={t('blueprint.rebuild_step') || 'Rebuild just this step'}
                                   aria-label={`${t('blueprint.rebuild_step') || 'Rebuild just this step'}: ${getToolLabel(item.type)}`}
-                                  className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
+                                  className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                   {t('blueprint.rebuild_step_short') || 'Rebuild'}
                               </button>
@@ -987,6 +980,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                           <p className="text-sm text-slate-700 leading-relaxed italic">
                               "{item.directive || "No specific instructions."}"
                           </p>
+                          <details data-testid="bp-row-details" className="group/row-details mt-1">
+                            <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                              {t('blueprint.row_details') || 'Generation details'}
+                              <ChevronDown size={13} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/row-details:rotate-180" />
+                            </summary>
                           <p
                               data-testid="bp-row-generation-impact"
                               data-resource-key={item.id}
@@ -999,6 +997,10 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}`
                                   : (t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.')}
                           </p>
+                            {_runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && <ul className="mt-1 space-y-1 break-all text-[10px] text-slate-500">
+                              {_runtimeVariants.map((variant, index) => variant && (variant.artifactId || variant.resourceId) ? <li key={variant.generationIdentity || index}>{t('blueprint.artifact_id') || 'Artifact'}: {variant.artifactId || variant.resourceId}</li> : null)}
+                            </ul>}
+                          </details>
                           {(_runtimeVariants.length > 1 || _failedRuntimeVariants.length > 0 || _missingRuntimeVariants.length > 0) && (
                               <div data-testid="bp-variant-results" className="mt-2 rounded border border-slate-200 bg-white p-2">
                                   <div className="mb-1 text-[10px] font-bold text-slate-700">
@@ -1038,8 +1040,6 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                                                   ? (t('blueprint.status_interrupted') || 'Interrupted')
                                                                   : (t('blueprint.status_failed') || 'Failed')))}</span>
                                                       <span>{audience}</span>
-                                                      <span className="uppercase opacity-75">{variant && variant.action || 'generate'}</span>
-                                                      {artifactId && <span className="break-all opacity-75">{t('blueprint.artifact_id') || 'Artifact'}: {artifactId}</span>}
                                                       {isSuccessful && typeof onPreviewStep === 'function' && (
                                                           <button
                                                               type="button"
@@ -1077,6 +1077,32 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               )}
           </div>
       )}
+      <div className="flex gap-3 pt-3 border-t border-slate-100">
+          <button
+              type="button"
+              data-help-key="blueprint_cancel_btn"
+              disabled={!!isRunning}
+              aria-label={t('common.cancel')}
+            onClick={onCancel}
+            className="flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {t('blueprint.cancel')}
+          </button>
+          {/* Disabled during a run. The mutex already rejects a second run
+              safely (and now sits above the config setters), but a live-looking
+              Generate that only produces a toast still reads as broken. The
+              label changes too, so the state is visible without hovering. */}
+          <button
+              type="button"
+              data-help-key="blueprint_generate_pack_btn"
+              aria-label={isRunning ? (t('blueprint.status_running') || 'Building...') : (matrixRetryPending ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning') : (t('blueprint.generate_resources') || 'Generate resources'))}
+            disabled={!!isRunning || items.length === 0}
+            onClick={onConfirm}
+            className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Sparkles size={14} className="text-yellow-700 fill-current"/> {isRunning ? (t('blueprint.status_running') || 'Building...') : (matrixRetryPending ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning') : (t('blueprint.generate_resources') || 'Generate resources'))}
+          </button>
+      </div>
       {/* Save as template + the directive review.
           A template keeps the PATTERN and drops this lesson's content. The
           structure (which tools, in what order) is always portable. Directives
@@ -1166,31 +1192,41 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
           )}
         </div>
       )}
-      <div className="flex gap-3 pt-3 border-t border-slate-100">
-          <button
-              type="button"
-              data-help-key="blueprint_cancel_btn"
-              aria-label={t('common.cancel')}
-            onClick={onCancel}
-            className="flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            {t('blueprint.cancel')}
-          </button>
-          {/* Disabled during a run. The mutex already rejects a second run
-              safely (and now sits above the config setters), but a live-looking
-              Generate that only produces a toast still reads as broken. The
-              label changes too, so the state is visible without hovering. */}
-          <button
-              type="button"
-              data-help-key="blueprint_generate_pack_btn"
-              aria-label={isRunning ? (t('blueprint.status_running') || 'Building...') : (matrixRetryPending ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning') : t('common.generate'))}
-            disabled={!!isRunning}
-            onClick={onConfirm}
-            className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
-          >
-            <Sparkles size={14} className="text-yellow-700 fill-current"/> {isRunning ? (t('blueprint.status_running') || 'Building...') : (matrixRetryPending ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning') : t('blueprint.generate'))}
-          </button>
-      </div>
+      {run && (typeof onCopyDiagnostics === 'function' || typeof onDownloadDiagnostics === 'function') && (
+        <details data-testid="bp-troubleshooting" className="group/support mt-3 border-t border-slate-200 text-xs text-slate-600">
+          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+            {t('fullpack.troubleshooting') || 'Troubleshooting'}
+            <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/support:rotate-180" />
+          </summary>
+          <p className="my-2 leading-relaxed">{t('fullpack.troubleshooting_help') || 'Technical details for investigating a generation problem.'}</p>
+          <div className="flex flex-wrap gap-2">
+        {run && typeof onCopyDiagnostics === 'function' && (
+            <button
+                type="button"
+                data-testid="bp-copy-diagnostics"
+                onClick={onCopyDiagnostics}
+                className="inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                title={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
+                aria-label={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
+            >
+                <Copy size={14} aria-hidden="true" />{t('fullpack.copy_diagnostics') || 'Copy diagnostics'}
+            </button>
+        )}
+        {run && typeof onDownloadDiagnostics === 'function' && (
+            <button
+                type="button"
+                data-testid="bp-download-diagnostics"
+                onClick={onDownloadDiagnostics}
+                className="inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                title={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
+                aria-label={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
+            >
+                <Download size={14} aria-hidden="true" />{t('fullpack.download_report') || 'Download report'}
+            </button>
+        )}
+          </div>
+        </details>
+      )}
     </div>
   );
 });

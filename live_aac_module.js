@@ -378,7 +378,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     const result = Array.isArray(value) ? [] : {};
     cache.set(value, result);
     Object.entries(value).forEach(([key, nested]) => {
-      if (!(active && key === 'sourceExcerpt')) result[key] = stripAppliedSources(nested, active, seen);
+      if (!(active && ['sourceExcerpt', 'qualityReview'].includes(key))) result[key] = stripAppliedSources(nested, active, seen);
     });
     return result;
   };
@@ -434,44 +434,63 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   } catch (_) {}
   // The shared Firestore sanitizer must stay conservative because session
   // documents have a strict size ceiling. Mailbox/P2P packs are already
-  // chunked, so restore only the quiz media fields that the existing visual
-  // quiz model owns. Fail closed to HTTPS or non-SVG base64 images, and keep
-  // enough headroom for the mailbox host's 8 MB assembled-pack ceiling.
-  if (item.type === 'quiz' && Array.isArray(item?.data?.questions) && Array.isArray(cleaned?.data?.questions)) {
-    let remainingQuizImageChars = 5 * 1024 * 1024;
-    const safeQuizImageSource = value => {
-      if (typeof value !== 'string') return null;
-      const source = value.trim();
-      if (!source || source.length > remainingQuizImageChars) return null;
-      const isHttps = source.length <= 4096 && /^https:\/\/[^\s]+$/i.test(source);
-      const isSafeInline = /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(source);
-      if (!isHttps && !isSafeInline) return null;
-      remainingQuizImageChars -= source.length;
-      return source;
+  // chunked, so restore the instructional image fields after sanitization.
+  // This includes single pictures, glossary/timeline illustrations, visual
+  // panels and quiz choices, including those inside lesson resources. Use
+  // one image budget per resource and leave audio/privacy gates intact.
+  let remainingImageChars = 5 * 1024 * 1024;
+  const safePackImageSource = value => {
+    if (typeof value !== 'string') return null;
+    const original = value.trim();
+    if (!original) return null;
+    if (typeof deps.onImageSource === 'function') deps.onImageSource(original);
+    const source = deps.imageOverrides?.get(original) || original;
+    const omitted = reason => {
+      if (typeof deps.onImageOmitted === 'function') deps.onImageOmitted(reason);
+      return null;
     };
-    item.data.questions.forEach((sourceQuestion, questionIndex) => {
-      const packedQuestion = cleaned.data.questions[questionIndex];
-      if (!sourceQuestion || !packedQuestion || typeof packedQuestion !== 'object') return;
-      packedQuestion.imageUrl = safeQuizImageSource(sourceQuestion.imageUrl);
-      if (Array.isArray(sourceQuestion.optionImageUrls)) {
-        packedQuestion.optionImageUrls = sourceQuestion.optionImageUrls.map(safeQuizImageSource);
-      }
-    });
-  }
+    if (source.length > remainingImageChars) return omitted('too-large');
+    const isHttps = source.length <= 4096 && /^https:\/\/[^\s]+$/i.test(source);
+    const isSafeInline = /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(source);
+    if (!isHttps && !isSafeInline) return omitted('unsupported');
+    remainingImageChars -= source.length;
+    return source;
+  };
+  const restorePackImages = (source, target, seen = new WeakSet()) => {
+    if (!source || !target || typeof source !== 'object' || typeof target !== 'object' || seen.has(target)) return;
+    seen.add(target);
+    // Only image leaves may be restored. Never recreate a removed parent
+    // such as a recording, original-image backup, or private evidence.
+    for (const key of ['image', 'imageUrl']) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = safePackImageSource(source[key]);
+    }
+    if (Array.isArray(source.optionImageUrls) && Array.isArray(target.optionImageUrls)) {
+      target.optionImageUrls = source.optionImageUrls.map(safePackImageSource);
+    }
+    // Animated visual panels need their still frames for pause/step and
+    // reduced-motion viewing as well as the composed GIF in imageUrl.
+    if (Array.isArray(source.frames) && Array.isArray(target.frames) && typeof source.imageUrl === 'string') {
+      target.frames = source.frames.map(safePackImageSource);
+    }
+    Object.keys(target).forEach(key => restorePackImages(source[key], target[key], seen));
+  };
+  restorePackImages(item, cleaned);
   // Memory Aid cards carry one visual each and the description that names it.
   // Restore both together through the module's shared deliverable predicate,
   // so a student never receives a description of a picture that was dropped.
   if (item.type === 'memory-aid' && Array.isArray(item?.data?.cards) && Array.isArray(cleaned?.data?.cards)) {
     const memoryAidRules = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules || null;
-    let remainingMemoryAidChars = 5 * 1024 * 1024;
     const safeMemoryAidImageSource = value => {
       if (typeof value !== 'string') return null;
       const source = value.trim();
-      if (!source || source.length > remainingMemoryAidChars) return null;
+      if (!source) return null;
       const deliverable = memoryAidRules && typeof memoryAidRules.isDeliverableVisual === 'function' ? memoryAidRules.isDeliverableVisual(source) : source.length <= 4096 && /^https:\/\/[^\s]+$/i.test(source) || /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(source);
-      if (!deliverable) return null;
-      remainingMemoryAidChars -= source.length;
-      return source;
+      if (!deliverable) {
+        if (typeof deps.onImageSource === 'function') deps.onImageSource(source);
+        if (typeof deps.onImageOmitted === 'function') deps.onImageOmitted('unsupported');
+        return null;
+      }
+      return safePackImageSource(source);
     };
     item.data.cards.forEach((sourceCard, cardIndex) => {
       const packedCard = cleaned.data.cards[cardIndex];
@@ -553,6 +572,248 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     ...safe
   } = cleaned || {};
   return stripUndefined(safe);
+};
+
+// Mailbox media preparation is separate from the synchronous privacy serializer.
+// Only inline still pictures are resized; remote URLs are never fetched here,
+// and animated GIFs retain their animation. Teacher originals are not modified.
+const _alloResizeMailboxImage = (source, maxChars, options = {}) => new Promise(resolve => {
+  const ImageClass = options.Image || (typeof Image === 'function' ? Image : null);
+  const createCanvas = options.createCanvas || (() => document.createElement('canvas'));
+  if (!ImageClass || !/^data:image\/(?:png|jpe?g|webp|avif);base64,/i.test(source) || source.length > 20 * 1024 * 1024) return resolve(null);
+  const image = new ImageClass();
+  let done = false;
+  const finish = value => {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    image.onload = image.onerror = null;
+    resolve(value);
+  };
+  const timer = setTimeout(() => finish(null), 8000);
+  image.onerror = () => finish(null);
+  image.onload = () => {
+    try {
+      const width = image.naturalWidth,
+        height = image.naturalHeight;
+      if (!width || !height || width * height > 40000000) return finish(null);
+      for (const [edge, quality] of [[1600, 0.85], [1200, 0.78], [800, 0.72], [480, 0.65]]) {
+        const scale = Math.min(1, edge / Math.max(width, height));
+        const canvas = createCanvas();
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) break;
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const result = canvas.toDataURL('image/webp', quality);
+        if (/^data:image\/(?:webp|png);base64,/i.test(result) && result.length <= maxChars && result.length < source.length) return finish(result);
+      }
+    } catch (_) {}
+    finish(null);
+  };
+  image.src = source;
+});
+function _alloValidMailboxImageDelivery(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = ['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'];
+  var keys = Object.keys(value);
+  if (keys.length !== 8 || keys.some(function (key) {
+    return allowed.indexOf(key) < 0;
+  })) return false;
+  if (value.version !== 1 || typeof value.resourceId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(value.resourceId)) return false;
+  if (['loading', 'ready', 'failed'].indexOf(value.status) < 0) return false;
+  var validCount = function (n, max) {
+    return typeof n === 'number' && isFinite(n) && Math.floor(n) === n && n >= 0 && n <= max;
+  };
+  if (!validCount(value.total, 100000) || value.total < 1 || !validCount(value.loaded, value.total) || !validCount(value.omitted, value.total - value.loaded)) return false;
+  if (value.status === 'ready' && value.loaded !== value.total) return false;
+  return validCount(value.assignmentAt, 999999999999999) && validCount(value.at, 999999999999999) && value.at > 0;
+}
+const _alloNormalizeMailboxImageDelivery = value => _alloValidMailboxImageDelivery(value) ? {
+  ...value
+} : null;
+const _alloMailboxImageFailure = ({
+  ready,
+  total,
+  omitted = 0
+}) => {
+  const missing = Math.max(0, total - ready - omitted);
+  const omittedText = omitted ? omitted + (omitted === 1 ? ' image was' : ' images were') + ' not included in the teacher pack. Ask your teacher to replace or resize ' + (omitted === 1 ? 'it.' : 'them.') : '';
+  const missingText = missing ? missing + (missing === 1 ? ' image could' : ' images could') + ' not load. Check your connection, then retry.' : '';
+  return {
+    retry: missing > 0,
+    text: [missingText, omittedText].filter(Boolean).join(' ')
+  };
+};
+const _alloPrepareMailboxResource = async (item, deps = {}) => {
+  const sources = [];
+  const base = _alloSerializeResourceForStudentPack(item, {
+    ...deps,
+    onImageSource: source => sources.push(source)
+  });
+  if (!base) return {
+    resource: null,
+    report: {
+      total: 0,
+      omitted: 0,
+      resized: 0
+    }
+  };
+  const overrides = new Map();
+  const inline = sources.filter(source => /^data:image\//i.test(source));
+  const totalChars = inline.reduce((total, source) => total + source.length, 0);
+  const fairShare = Math.max(1024, Math.floor(4.8 * 1024 * 1024 / Math.max(1, inline.length)));
+  const targetChars = totalChars > 5 * 1024 * 1024 ? Math.min(750 * 1024, fairShare) : 750 * 1024;
+  const resize = deps.resizeImage || _alloResizeMailboxImage;
+  for (const source of new Set(inline)) {
+    if (source.length <= targetChars) continue;
+    try {
+      const resized = await resize(source, targetChars);
+      if (typeof resized === 'string' && resized.length < source.length) overrides.set(source, resized);
+    } catch (_) {/* keep the source; the serializer reports any omission */}
+  }
+  const report = {
+    total: sources.length,
+    omitted: 0,
+    resized: sources.filter(source => overrides.has(source)).length,
+    tooLarge: 0,
+    unsupported: 0
+  };
+  const resource = _alloSerializeResourceForStudentPack(item, {
+    ...deps,
+    imageOverrides: overrides,
+    onImageOmitted: reason => {
+      report.omitted += 1;
+      if (reason === 'too-large') report.tooLarge += 1;else report.unsupported += 1;
+    }
+  });
+  if (resource && report.total) resource.mailboxImageReport = {
+    version: 1,
+    ...report
+  };
+  return {
+    resource,
+    report
+  };
+};
+const _alloMailboxResourceImages = resource => {
+  const sources = new Set();
+  const seen = new WeakSet();
+  const add = value => {
+    if (typeof value === 'string' && /^(?:https:\/\/|data:image\/)/i.test(value)) sources.add(value);
+  };
+  const visit = value => {
+    if (!value || typeof value !== 'object' || seen.has(value)) return;
+    seen.add(value);
+    for (const key of ['image', 'imageUrl', 'visualImage']) add(value[key]);
+    if (Array.isArray(value.optionImageUrls)) value.optionImageUrls.forEach(add);
+    if (typeof value.imageUrl === 'string' && Array.isArray(value.frames)) value.frames.forEach(add);
+    Object.keys(value).forEach(key => {
+      if (!/^(?:originalImage|karaokeAudio|karaokeStudentAudio|audioRecording|recording|practiceAttempts|retrievalAttempts)$/.test(key)) visit(value[key]);
+    });
+  };
+  visit(resource);
+  const omitted = Math.max(0, Math.min(10000, Math.trunc(Number(resource?.mailboxImageReport?.omitted) || 0)));
+  const list = [...sources];
+  // A compact signature keeps React effects stable when non-image resource
+  // fields change, without putting image data in roster receipts or logs.
+  let hash = 2166136261;
+  list.forEach(source => {
+    for (let i = 0; i < source.length; i += 1) hash = Math.imul(hash ^ source.charCodeAt(i), 16777619);
+  });
+  return {
+    sources: list,
+    omitted,
+    key: String(resource?.id || '') + ':' + (hash >>> 0).toString(36) + ':' + omitted
+  };
+};
+const _alloLoadMailboxImage = (source, signal) => new Promise(resolve => {
+  if (typeof Image !== 'function' || signal?.aborted) return resolve(false);
+  const image = new Image();
+  let done = false;
+  const finish = ready => {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    image.onload = image.onerror = null;
+    signal?.removeEventListener('abort', abort);
+    if (!ready) image.removeAttribute('src');
+    resolve(ready);
+  };
+  const abort = () => finish(false);
+  const timer = setTimeout(() => finish(false), 12000);
+  signal?.addEventListener('abort', abort, {
+    once: true
+  });
+  image.onload = () => finish(image.naturalWidth > 0 && image.naturalHeight > 0);
+  image.onerror = () => finish(false);
+  image.src = source;
+});
+const _alloCheckMailboxImages = async (manifest, options = {}) => {
+  const sources = manifest.sources || [];
+  const omitted = manifest.omitted || 0;
+  const total = sources.length + omitted;
+  let next = 0,
+    ready = 0;
+  const load = options.loadImage || _alloLoadMailboxImage;
+  const snapshot = status => ({
+    status,
+    ready,
+    total,
+    omitted
+  });
+  options.onProgress?.(snapshot(total ? 'loading' : 'idle'));
+  await Promise.all(Array.from({
+    length: Math.min(3, sources.length)
+  }, async () => {
+    while (next < sources.length && !options.signal?.aborted) {
+      const source = sources[next++];
+      try {
+        if (await load(source, options.signal)) ready += 1;
+      } catch (_) {}
+      if (!options.signal?.aborted) options.onProgress?.(snapshot('loading'));
+    }
+  }));
+  return snapshot(!total ? 'idle' : ready === total ? 'ready' : 'failed');
+};
+const _alloUseMailboxImageDelivery = ({
+  resource,
+  enabled,
+  sessionKey,
+  assignmentAt,
+  retryEpoch
+}) => {
+  const manifest = React.useMemo(() => _alloMailboxResourceImages(enabled ? resource : null), [resource, enabled]);
+  const key = enabled ? [sessionKey, manifest.key, assignmentAt || 0, retryEpoch || 0].join('|') : '';
+  const [state, setState] = useState({
+    key: '',
+    status: 'idle',
+    ready: 0,
+    total: 0,
+    omitted: 0
+  });
+  useEffect(() => {
+    if (!enabled) return undefined;
+    const controller = new AbortController();
+    const update = value => {
+      if (!controller.signal.aborted) setState({
+        ...value,
+        key
+      });
+    };
+    _alloCheckMailboxImages(manifest, {
+      signal: controller.signal,
+      onProgress: update
+    }).then(update);
+    return () => controller.abort();
+  }, [key]);
+  return state.key === key ? state : {
+    key,
+    status: enabled && (manifest.sources.length || manifest.omitted) ? 'loading' : 'idle',
+    ready: 0,
+    total: manifest.sources.length + manifest.omitted,
+    omitted: manifest.omitted
+  };
 };
 const LiveAacBoardDialog = ({
   payload,
@@ -871,6 +1132,191 @@ const LiveAacBoardDialog = ({
     }
   }, "Press Enter or Space to choose the highlighted symbol."))));
 };
+const MailboxImageDeliveryMonitor = ({
+  resource,
+  enabled,
+  sessionKey,
+  assignmentAt,
+  onReceipt,
+  receiveError,
+  onRetryResource
+}) => {
+  const [retryEpoch, setRetryEpoch] = useState(0);
+  const state = _alloUseMailboxImageDelivery({
+    resource,
+    enabled,
+    sessionKey,
+    assignmentAt,
+    retryEpoch
+  });
+  const receiptRef = useRef(onReceipt);
+  const receiptQueue = useRef(Promise.resolve());
+  receiptRef.current = onReceipt;
+  const completed = state.status === 'loading' ? 0 : state.ready;
+  useEffect(() => {
+    if (!enabled || !resource?.id || !state.total) return undefined;
+    let cancelled = false,
+      timer;
+    const publish = async attempt => {
+      try {
+        const work = receiptQueue.current.catch(() => {}).then(() => {
+          if (!cancelled) return receiptRef.current?.({
+            resourceId: resource.id,
+            status: state.status,
+            ready: completed,
+            total: state.total,
+            omitted: state.omitted,
+            assignmentAt: Number(assignmentAt) || 0
+          });
+        });
+        receiptQueue.current = work;
+        await work;
+      } catch (_) {
+        if (!cancelled && attempt < 3) timer = setTimeout(() => publish(attempt + 1), 600 * attempt);
+      }
+    };
+    publish(1);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [enabled, state.key, state.status, completed, state.total, state.omitted]);
+  if (!enabled || !receiveError && (state.status === 'idle' || state.status === 'ready')) return null;
+  const failed = receiveError || state.status === 'failed';
+  const failure = _alloMailboxImageFailure(state);
+  return /*#__PURE__*/React.createElement("div", {
+    role: failed ? 'alert' : 'status',
+    "aria-live": "polite",
+    className: "no-print",
+    style: {
+      position: 'fixed',
+      bottom: 92,
+      left: 12,
+      zIndex: 145,
+      width: 'min(430px, calc(100vw - 24px))',
+      boxSizing: 'border-box',
+      padding: 12,
+      borderRadius: 10,
+      border: '1px solid ' + (failed ? '#be123c' : '#0369a1'),
+      background: failed ? '#fff1f2' : '#f0f9ff',
+      color: failed ? '#881337' : '#075985',
+      fontSize: 14
+    }
+  }, /*#__PURE__*/React.createElement("span", null, receiveError ? 'A class resource could not be opened. Retry to download it again.' : failed ? failure.text : 'Loading class images: ' + state.ready + ' of ' + state.total + '.'), (receiveError || failed && failure.retry) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      if (receiveError) onRetryResource?.();
+      setRetryEpoch(value => value + 1);
+    },
+    style: {
+      minHeight: 44,
+      marginTop: 8,
+      padding: '8px 12px',
+      display: 'block',
+      border: '1px solid #9f1239',
+      borderRadius: 6,
+      background: 'white',
+      color: '#881337',
+      fontWeight: 700
+    }
+  }, receiveError ? 'Retry resource' : 'Retry images'));
+};
+const _alloMailboxImageReceiptState = ({
+  entry,
+  resourceId,
+  resourceAt,
+  now = Date.now(),
+  mailboxVersion = 23
+}) => {
+  if (mailboxVersion < 23) return {
+    status: 'unavailable',
+    label: mailboxVersion ? 'Image status needs a mailbox update' : 'Image status unavailable',
+    retry: false
+  };
+  const receipt = _alloNormalizeMailboxImageDelivery(entry?.imageDelivery);
+  const id = String(resourceId || '').trim().replace(/[^A-Za-z0-9:_-]/g, '-').slice(0, 160);
+  if (!id || !receipt || receipt.resourceId !== id || receipt.assignmentAt !== (Number(resourceAt) || 0)) return {
+    status: 'waiting',
+    label: 'Images: awaiting device',
+    retry: true
+  };
+  if (receipt.status === 'loading' && now - receipt.at > 30000) return {
+    status: 'waiting',
+    label: 'Images: no recent response',
+    retry: true
+  };
+  if (receipt.status === 'ready') return {
+    status: 'ready',
+    label: 'Images loaded ' + receipt.loaded + '/' + receipt.total,
+    retry: false
+  };
+  if (receipt.status === 'loading') return {
+    status: 'loading',
+    label: 'Images loading',
+    retry: false
+  };
+  const missing = receipt.total - receipt.loaded - receipt.omitted;
+  const omittedLabel = receipt.omitted ? receipt.omitted + ' omitted: replace or resize in the pack' : '';
+  return {
+    status: 'failed',
+    label: [missing ? 'Images missing ' + missing + '/' + receipt.total : '', omittedLabel].filter(Boolean).join('. '),
+    retry: missing > 0
+  };
+};
+const MailboxImageStatus = ({
+  entry,
+  resourceId,
+  resourceAt,
+  now,
+  onRetry,
+  mailboxVersion
+}) => {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const status = _alloMailboxImageReceiptState({
+    entry,
+    resourceId,
+    resourceAt,
+    now,
+    mailboxVersion
+  });
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'inline-flex',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 4,
+      fontSize: 12,
+      color: status.status === 'ready' ? '#166534' : status.status === 'failed' ? '#9f1239' : '#075985'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, status.label), status.retry && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: busy,
+    "aria-label": 'Retry images for ' + (entry?.name || 'student'),
+    onClick: async () => {
+      setBusy(true);
+      setError('');
+      try {
+        await onRetry();
+      } catch (_) {
+        setError('Could not resend. Try again.');
+      } finally {
+        setBusy(false);
+      }
+    },
+    style: {
+      minHeight: 44,
+      padding: '4px 8px',
+      background: 'white',
+      color: '#075985',
+      border: '1px solid #0369a1',
+      borderRadius: 6,
+      fontWeight: 700
+    }
+  }, busy ? 'Resending images…' : 'Retry images'), error && /*#__PURE__*/React.createElement("span", {
+    role: "alert"
+  }, error));
+};
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.LiveAac = {
   normalizePortable: _alloNormalizePortableAacBoardPackage,
@@ -884,6 +1330,16 @@ window.AlloModules.LiveAac = {
   locale: _alloAacLocale,
   timestamp: _alloAacTimestamp,
   serializeResourceForStudentPack: _alloSerializeResourceForStudentPack,
+  normalizeMailboxImageDelivery: _alloNormalizeMailboxImageDelivery,
+  mailboxImageFailure: _alloMailboxImageFailure,
+  prepareMailboxResource: _alloPrepareMailboxResource,
+  resizeMailboxImage: _alloResizeMailboxImage,
+  mailboxResourceImages: _alloMailboxResourceImages,
+  checkMailboxImages: _alloCheckMailboxImages,
+  useMailboxImageDelivery: _alloUseMailboxImageDelivery,
+  mailboxImageReceiptState: _alloMailboxImageReceiptState,
+  MailboxImageDeliveryMonitor,
+  MailboxImageStatus,
   LiveAacBoardDialog
 };
 console.log('[CDN] LiveAac loaded');

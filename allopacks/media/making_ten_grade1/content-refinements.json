@@ -1,0 +1,308 @@
+[
+  {
+    "resourceId": "mn-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nSome sums are hard. But there is a trick. If you can make a ten first, the rest is easy.\n\n1. Read **Ten Is a Friendly Number** with a grown-up or a partner.\n2. Learn the words in **Number Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **Ways to Make Ten** chart.\n4. Sort the cards in **Makes Ten or Not?**\n5. Try **Ten Problems** with counters.\n6. Take **Number Check** — say each answer out loud first.\n7. Lock it in with **Remember the Partners**.\n8. Read **Number Questions Kids Ask**.\n9. Finish with **Investigation: The Ten Frame Hunt**.\n\nYour job this week: find ten of something at home and show two ways to split it. 🔟\n\nPicture panels: Find and split ten; Fill the empty spaces; Make a ten first; Another way to make ten. Pictures have no printed labels. Count each object once. Captions explain how to read before-and-after pictures. Use counters, drawings, spoken answers or supported pointing. Educator review is pending.",
+    "to": "**Due:** (your teacher will tell you)\n\nMaking a ten can help you add. Use counters, pictures or fingers if they work for you. Take the time you need.\n\n1. Read **Ten Is a Friendly Number** with a grown-up or a partner.\n2. Learn the words in **Number Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **Ways to Make Ten** chart.\n4. Sort the cards in **Makes Ten or Not?**\n5. Try **Make-Ten Problems** with counters.\n6. Take **Number Check** — say, point to or show each answer first.\n7. Lock it in with **Remember the Partners**.\n8. Read **Number Questions Kids Ask**.\n9. Finish with **Investigation: The Ten Frame Hunt**.\n\nYour job this week: find ten of something at home and show two ways to split it. 🔟\n\nPicture panels: Find and split ten; Fill the empty spaces; Make a ten first; Another way to make ten. Pictures have no printed labels. Count each object once. Captions explain how to read before-and-after pictures. Use counters, drawings, spoken answers or supported pointing. Educator review is pending."
+  },
+  {
+    "resourceId": "mn-reading",
+    "path": "data",
+    "from": "## Ten Is a Friendly Number\n\nHold up your hands. You have **ten** fingers. Ten is easy to see. Ten is easy to **count**. That is why we like it.\n\nEvery number has a **partner** that makes ten. Six and four are partners. Seven and three are partners. Five and five are partners too. Those pairs are called **bonds**.\n\nNow here is the trick.\n\nTry 8 + 5. That one feels hard. But look what happens if you make a ten first.\n\nEight needs two more to be ten. So **break** the five into 2 and 3. Give the 2 to the eight. Now you have 10 and 3 **left**. And 10 + 3 is 13. Easy.\n\nYou did not change the answer. You just moved a little bit across. The **sum** is still the same.\n\nTry another one. 9 + 6. Nine needs one more. Break the six into 1 and 5. That makes 10 and 5. So the answer is 15.\n\nSome sums are already easy. A **double** like 6 + 6 is one you can just know. So is any sum with a 1 in it.\n\nWhen you meet a hard one, ask yourself a question. Can I make a ten?\n\nThe more you know your partners, the faster this gets. Soon you will not even stop to think.",
+    "to": "## Ten Is a Friendly Number\n\nLook at a ten frame. It has two rows of five spaces. Fill each space with one counter. Now you have **ten**!\n\nEach whole number from zero to ten has a **partner** that makes ten. Six and four are partners. Seven and three are partners. Five and five are partners too. Ten and zero make ten: one group can be empty.\n\nA number **bond** shows a whole and its parts. Here, our whole is ten.\n\nTry 8 + 5 with counters. Eight needs two more to be ten. **Break** the five into two and three. Move the two to the eight. Now you have ten and three **left**. Ten and three make thirteen.\n\nYou moved counters between groups. You did not add any new counters or take any away. The **sum** stays the same.\n\nTry 9 + 6. Nine needs one more. Break six into one and five. Move one to the nine. Ten and five make fifteen.\n\nYou can also count on or use a **double**, like 6 + 6. Different ways can help. Use counters, drawings or fingers if they work for you. Take the time you need.\n\nCan you show one way to make ten?"
+  },
+  {
+    "resourceId": "mn-glossary",
+    "path": "data.0.def",
+    "from": "The number of fingers on two hands.",
+    "to": "The number after nine; two groups of five make ten."
+  },
+  {
+    "resourceId": "mn-glossary",
+    "path": "data.3.def",
+    "from": "The number you need to reach ten.",
+    "to": "In this lesson, the whole number that joins another to make ten."
+  },
+  {
+    "resourceId": "mn-glossary",
+    "path": "data.4.def",
+    "from": "A pair of numbers that make ten.",
+    "to": "A way to show a whole number and its parts; here the whole is ten."
+  },
+  {
+    "resourceId": "mn-glossary",
+    "path": "data.8.def",
+    "from": "To say numbers in order to find how many.",
+    "to": "To match one number word to each object; the last word tells how many."
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "9 and 1",
+    "to": "9 and 1; also 10 and 0"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Look at the bigger number",
+    "to": "For 8 + 5, start with eight"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.1.bullets.1",
+    "from": "Ask what it needs to make ten",
+    "to": "Eight needs two to make ten"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "Break the other number and give it over",
+    "to": "Split five into two and three; move two"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.2.label",
+    "from": "THEN IT IS EASY",
+    "to": "TEN AND SOME MORE"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.3.label",
+    "from": "ONES YOU CAN JUST KNOW",
+    "to": "OTHER WAYS TO ADD"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "Any sum with a 1 in it",
+    "to": "Count on, including when adding one"
+  },
+  {
+    "resourceId": "mn-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "Save the trick for the hard ones",
+    "to": "Choose a way you can explain"
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Every number has a partner that makes ten. Six and four are partners. Eight needs two more to be ten. So break the five into 2 and 3.",
+    "to": "Each whole number from zero to ten has a partner that makes ten. Eight needs two more. Split five into two and three."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.target",
+    "from": "Your hands already hold every partner for ten",
+    "to": "A ten frame shows partners for ten"
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "You have ten fingers on two hands.",
+    "to": "A ten frame has two rows of five spaces."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Every number has a partner that makes ten.",
+    "to": "Each whole number from zero to ten has a whole-number partner that makes ten."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Hold up ten fingers. Fold down six. Look at what is still up. That is four. Six and four are partners.",
+    "to": "Fill six spaces in a ten frame. Four spaces are empty. Six and four make ten. Add one counter to each empty space to check."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Your hands are always with you and they always hold ten. Folding some down shows the partner without any counting.",
+    "to": "Filled spaces show one part. Empty spaces show how many more are needed. You can count or recognize the groups."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "I folded down ____. I can still see ____.",
+    "to": "I filled ____ spaces. ____ spaces are empty."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Hold up ten fingers.",
+    "to": "Use a ten frame with two rows of five spaces."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Fold some down.",
+    "to": "Fill some spaces with one counter each."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Say what is left up.",
+    "to": "Count the empty spaces to find the partner."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.studentPrompt",
+    "from": "Show me two partners on your hands.",
+    "to": "Show two partners with counters, a drawing or fingers if helpful."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.reasoningPrompt",
+    "from": "How do your hands help you find a partner fast?",
+    "to": "How does your picture show the two parts of ten?"
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "Hold up your hands. You have ten fingers. Ten is easy to see.",
+    "to": "A ten frame has two rows of five spaces. Together, that is ten."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.1.essentialFacts.0",
+    "from": "Look at the bigger number first.",
+    "to": "For these examples, choose an addend below ten to fill to ten."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Say it in three beats. LOOK. NEED. GIVE. Look at the big number. Ask what it needs. Give it that much from the other one.",
+    "to": "LOOK, NEED, MOVE. Look at eight. It needs two. Split five into two and three, then move two to eight. Ten and three make thirteen."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.1.reasoningPrompt",
+    "from": "Why do you look at the bigger number first?",
+    "to": "Why might starting with eight help in 8 + 5? Could you show another way?"
+  },
+  {
+    "resourceId": "mn-sort",
+    "path": "data.categories.0.label",
+    "from": "These two make TEN",
+    "to": "MAKES TEN"
+  },
+  {
+    "resourceId": "mn-sort",
+    "path": "data.categories.1.label",
+    "from": "These two do NOT make ten",
+    "to": "NOT TEN"
+  },
+  {
+    "resourceId": "mn-math",
+    "path": "title",
+    "from": "Ten Problems",
+    "to": "Make-Ten Problems"
+  },
+  {
+    "resourceId": "mn-math",
+    "path": "data.problems.3.steps.0.explanation",
+    "from": "Hold up ten fingers.",
+    "to": "Put six counters into a ten frame."
+  },
+  {
+    "resourceId": "mn-math",
+    "path": "data.problems.3.steps.1.explanation",
+    "from": "Fold down 6 of them.",
+    "to": "Count the empty spaces. There are four."
+  },
+  {
+    "resourceId": "mn-math",
+    "path": "data.problems.3.steps.2.explanation",
+    "from": "Count what is still up. There are 4. So 6 and 4 are partners.",
+    "to": "Fill those four spaces. Six and four make ten."
+  },
+  {
+    "resourceId": "mn-faq",
+    "path": "data.0.question",
+    "from": "Why is ten so special? ✋",
+    "to": "Why does a ten frame help?"
+  },
+  {
+    "resourceId": "mn-faq",
+    "path": "data.0.answer",
+    "from": "Mostly because we have ten fingers. People counted on their hands for a very long time. So we built our numbers around ten.",
+    "to": "Two rows of five make ten. The spaces help you see how many you have and how many more you need."
+  },
+  {
+    "resourceId": "mn-faq",
+    "path": "data.1.answer",
+    "from": "Yes! Fingers are a real tool. The trick is faster once you know it. But counting is never cheating.",
+    "to": "Yes. You can use fingers, counters, drawings or a ten frame. Choose a tool that works for you. Counting helps you explain your thinking."
+  },
+  {
+    "resourceId": "mn-faq",
+    "path": "data.3.answer",
+    "from": "Hold up ten fingers. Fold down the number you have. What is still up is the partner. Your hands remember for you.",
+    "to": "Fill a ten frame with the number you have. Count the empty spaces. That tells how many more will make ten."
+  },
+  {
+    "resourceId": "mn-faq",
+    "path": "data.5.answer",
+    "from": "No. Save it for the hard ones. If you already know the answer, just say it.",
+    "to": "No. You can count on, use doubles or make a ten. Choose a way that helps you, and show how it works."
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.context",
+    "from": "Your class has counters, blocks, buttons and a ten frame mat. You may also use small things you find, as long as you can hold them all in two hands.",
+    "to": "Use ten teacher-provided counters, blocks or picture tokens and a ten frame. Move them, point while a partner moves them, or use a digital version."
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "You have ten fingers on two hands.",
+    "to": "A ten frame has two rows of five spaces."
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Every number has a partner that makes ten.",
+    "to": "Each whole number from zero to ten has a partner that makes ten."
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.openQuestions.1",
+    "from": "Is 6 and 4 the same as 4 and 6?",
+    "to": "Do 6 and 4 and 4 and 6 give the same total? What changes about the groups?"
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.constraints.1",
+    "from": "Two piles each time",
+    "to": "Two groups each time; one group may be empty"
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.constraints.2",
+    "from": "Count out loud with a partner",
+    "to": "Count, point, draw or explain with a partner"
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.supports.frameChoices.2",
+    "from": "Ten buttons",
+    "to": "Ten picture tokens"
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.supports.frameChoices.3",
+    "from": "Ten things I found",
+    "to": "Ten digital counters"
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.coachHint",
+    "from": "Ten things. Two piles. Move one at a time.",
+    "to": "Keep ten in total. Move one at a time. If left and right count as different, there are eleven pairs from 0 and 10 through 10 and 0. Ignoring order gives six pairs. One group can be empty."
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Every number has a partner that makes ten. Six and four are partners.",
+    "to": "Each whole number from zero to ten has a partner that makes ten. Moving counters between groups keeps the total the same."
+  }
+]

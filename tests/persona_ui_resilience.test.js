@@ -187,8 +187,10 @@ describe('Persona interview UI resilience', () => {
   });
 
   it('does not submit free responses while an IME composition is being confirmed', () => {
-    const imeGuard = "e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229";
-    expect(viewSource.split(imeGuard).length - 1).toBe(2);
+    const imeGuard = "e.key === 'Enter' && !e.shiftKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229";
+    expect(viewSource.split(imeGuard).length - 1).toBe(1);
+    expect(viewSource).toContain('renderPersonaComposer(true)');
+    expect(viewSource).toContain('renderPersonaComposer(false)');
   });
 
   it('bounds generated summary and feedback rendering while preserving an old summary during refresh', () => {

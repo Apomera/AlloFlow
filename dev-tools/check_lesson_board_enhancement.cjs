@@ -1,0 +1,53 @@
+const fs = require('fs'), path = require('path'), http = require('http'), { execFileSync } = require('child_process'), { chromium } = require('playwright'), { expect } = require('@playwright/test');
+const { makeBoard } = require('./fixtures/lesson_board.cjs');
+const out = path.resolve('reports/lesson-board-enhancement-2026-09-12'); fs.mkdirSync(out, { recursive: true });
+execFileSync(process.execPath, ['_build_lesson_board_module.js'], { stdio: 'inherit' });
+const board = { ...makeBoard(), goal: 'expedition' };
+const boardStyles = fs.readFileSync('lesson_board_ui.jsx', 'utf8').match(/return <style>\{`([\s\S]*?)`\}<\/style>/)[1];
+const html = '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lesson board play verification</title><style>body{margin:0;background:#f6f7fc}main{max-width:1150px;padding:18px;margin:auto}</style></head><body><main id="root" class="lb"></main></body></html>';
+(async () => {
+  const server = http.createServer((request, response) => { response.writeHead(200, { 'Content-Type': 'text/html' }); response.end(html); }); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const browser = await chromium.launch({ headless: true }), results = [], errors = [];
+  try {
+    for (const width of [1280, 390, 320]) {
+      const context = await browser.newContext({ viewport: { width, height: 960 } }), page = await context.newPage(); page.on('pageerror', error => errors.push({ width, message: error.message }));
+      const setup = async () => {
+        await page.addScriptTag({ path: 'desktop/web-app/node_modules/react/umd/react.development.js' }); await page.addScriptTag({ path: 'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js' }); await page.addScriptTag({ path: 'lesson_board_module.js' }); await page.addStyleTag({ content: boardStyles });
+        await page.evaluate(board => { window.fixtureBoard = board; window.fixtureRoot = ReactDOM.createRoot(document.getElementById('root')); fixtureRoot.render(React.createElement(AlloModules.LessonBoardSolo, { board, appId: 'board-enhancement-qa', user: { uid: 'solo' }, t: key => key, onClose() {} })); }, board);
+        await expect(page.locator('[data-board-map]')).toBeVisible();
+      };
+      await page.goto('http://127.0.0.1:' + server.address().port); await setup();
+      const scan = async label => {
+        await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') }); const violations = await page.evaluate(async () => (await axe.run(document.querySelector('.lb'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } })).violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => node.target) })));
+        expect(violations, width + ' ' + label).toEqual([]); const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1 || [...document.querySelectorAll('.lb,.lb-current,.lb-tabletop,.lb-panel')].some(node => node.scrollWidth > node.clientWidth + 1)); expect(overflow, width + ' ' + label + ' overflow').toBe(false); return { label, violations, overflow };
+      };
+      const scans = []; await expect(page.locator('[data-board-mission]')).toContainText('0/8'); await page.locator('[data-board-planner] > summary').click(); await page.locator('[data-planner-goal]').selectOption('research'); await expect(page.locator('[data-board-planner]')).toContainText('Resources still needed'); scans.push(await scan('map and project planner')); await page.screenshot({ path: path.join(out, width + '-map-planner.png'), fullPage: true });
+      await page.locator('[data-planner-location="heater"]').click(); await page.locator('[data-board-move="heater"]').click(); await expect(page.locator('[data-location="heater"]')).toHaveAttribute('aria-current', 'step');
+      await page.locator('[data-board-choice]').selectOption('0'); await page.locator('[data-board-submit]').click(); await expect(page.locator('[data-board-retry]')).toBeVisible(); await page.locator('[data-board-retry]').click(); await expect(page.locator('[data-board-choice]')).toHaveValue('');
+      await page.locator('[data-board-choice]').selectOption('1'); await page.locator('[data-board-submit]').click(); await expect(page.locator('[data-board-answer-review]')).toContainText('Your response: Evaporation'); await expect(page.locator('[data-board-rewards]')).toContainText('+2'); scans.push(await scan('retry feedback')); await page.screenshot({ path: path.join(out, width + '-feedback.png'), fullPage: true });
+      await page.locator('[data-board-next]').click(); await expect(page.locator('[data-board-move]')).not.toHaveAttribute('data-board-move', 'heater');
+      await page.locator('[data-location="cloud"]').click(); await page.locator('[data-board-move="cloud"]').click(); await page.locator('[data-board-control="0"]').selectOption('1'); await page.getByRole('button', { name: 'Location list', exact: true }).click();
+      await page.reload(); await setup(); await expect(page.locator('[data-board-control="0"]')).toHaveValue('1'); await expect(page.locator('[data-board-map]')).toHaveAttribute('data-view', 'list');
+      await page.locator('[data-board-control="1"]').selectOption('0'); await page.locator('[data-board-submit]').click(); await page.locator('[data-board-next]').click();
+      await page.locator('[data-project="bridge"]').click(); await page.locator('[data-board-move="bridge"]').click(); await expect(page.locator('[data-board-shortcut="bridge"]')).toBeVisible(); await page.locator('[data-board-next]').click();
+      await page.getByRole('button', { name: 'Board view', exact: true }).click();
+      // Every remaining location is answered through its visible production form.
+      for (const id of ['river', 'rain', 'lake', 'sequence', 'cooler', 'weather']) {
+        const node = board.locations.find(item => item.id === id); await page.locator('[data-location="' + id + '"]').click(); await page.locator('[data-board-move="' + id + '"]').click();
+        if (node.kind === 'choice') await page.locator('[data-board-choice]').selectOption(String(node.answer));
+        else if (node.kind === 'settings') for (let index = 0; index < node.controls.length; index++) await page.locator('[data-board-control="' + index + '"]').selectOption(String(node.controls[index].answer));
+        else for (let index = 0; index < node.order.length; index++) { const item = node.order[index]; while (await page.locator('[data-board-up]').evaluateAll((nodes, id) => nodes.findIndex(node => node.dataset.boardUp === String(id)), item) > index) { const button = page.locator('[data-board-up="' + item + '"]'); await button.focus(); await page.keyboard.press('Enter'); await expect(button).toBeFocused(); } }
+        if (id === 'sequence') { await page.evaluate(() => document.documentElement.classList.add('dark')); scans.push(await scan('dark ordering activity')); await page.screenshot({ path: path.join(out, width + '-order-dark.png'), fullPage: true }); await page.evaluate(() => document.documentElement.classList.remove('dark')); }
+        await page.locator('[data-board-submit]').click(); if (id !== 'weather') await page.locator('[data-board-next]').click();
+        if (id === 'rain') { await page.locator('[data-project="research"]').click(); await page.locator('[data-board-move="research"]').click(); await page.locator('[data-board-next]').click(); }
+      }
+      await expect(page.locator('[data-board-final-move]')).toContainText('Weather laboratory'); await expect(page.locator('[data-board-final-move] [data-board-answer-review]')).toContainText('Your response'); await expect(page.locator('[data-board-final-move] [data-board-rewards]')).toContainText('+3'); await expect(page.getByRole('heading', { name: 'Your board is complete', exact: true })).toBeVisible(); await expect(page.locator('[data-journal-location]')).toHaveCount(8); await expect(page.locator('[data-personal-learning]')).toContainText('Improved after review');
+      const saved = await page.evaluate(() => JSON.stringify(Object.fromEntries(Object.entries(localStorage)))); await page.locator('[data-board-practice] > summary').click(); await page.locator('[data-practice-location]').selectOption('cloud'); await page.locator('[data-practice-evidence] > summary').click(); await expect(page.locator('[data-practice-evidence]')).toContainText(board.locations.find(node => node.id === 'cloud').sourceQuote); await page.locator('[data-practice-activity] [data-board-control="0"]').selectOption('1'); await page.locator('[data-practice-activity] [data-board-control="1"]').selectOption('0'); await page.locator('[data-practice-check]').click(); await expect(page.locator('[data-practice-result]')).toContainText('Your reasoning fits'); expect(await page.evaluate(() => JSON.stringify(Object.fromEntries(Object.entries(localStorage))))).toBe(saved);
+      scans.push(await scan('completed journal and independent practice')); await page.screenshot({ path: path.join(out, width + '-journal-practice.png'), fullPage: true });
+      if (width === 320) { await page.evaluate(() => document.querySelector('.lb').style.fontSize = '200%'); scans.push(await scan('200 percent text')); await page.evaluate(() => document.querySelector('.lb').style.fontSize = ''); await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' }); scans.push(await scan('forced colors')); }
+      results.push({ width, passed: true, scans, reloadDraft: true, keyboardOrder: true, independentPracticeNoWrites: true }); await context.close();
+    }
+    expect(errors).toEqual([]); for (const name of ['failure.json', 'failure-1280.png', 'failure-390.png', 'failure-320.png']) { const file = path.join(out, name); if (fs.existsSync(file)) fs.unlinkSync(file); } fs.writeFileSync(path.join(out, 'verification.json'), JSON.stringify({ passed: true, provider: 'No AI or external calls. Authored fixture played through production controls.', results, errors }, null, 2)); console.log(JSON.stringify({ passed: true, widths: results.map(item => item.width), out }));
+  } catch (error) { for (const context of browser.contexts()) for (const page of context.pages()) await page.screenshot({ path: path.join(out, 'failure-' + page.viewportSize().width + '.png'), fullPage: true }).catch(() => {}); fs.writeFileSync(path.join(out, 'failure.json'), JSON.stringify({ message: error.stack, errors, results }, null, 2)); throw error; }
+  finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

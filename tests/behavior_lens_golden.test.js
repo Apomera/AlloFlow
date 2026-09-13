@@ -260,9 +260,9 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     expect(MODULE_SRC).toMatch(/const\s+\[includeAi,\s*setIncludeAi\]\s*=\s*useState\(false\)/);
   });
 
-  it('destructive actions use the accessible confirmation service (7 sites)', () => {
+  it('destructive and recording-exit actions use the accessible confirmation service (9 sites)', () => {
     const confirmations = (MODULE_SRC.match(/await askBehaviorLensConfirmation\(/g) || []).length;
-    expect(confirmations).toBe(7);
+    expect(confirmations).toBe(9);
     expect(MODULE_SRC).not.toMatch(/(?<![\w.])(?:window\.)?confirm\s*\(/);
   });
 

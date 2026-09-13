@@ -1,6 +1,74 @@
 (function() {
 'use strict';
 if (window.AlloModules && window.AlloModules.GlossaryHelpersModule) { console.log('[CDN] GlossaryHelpersModule already loaded, skipping'); return; }
+// An async edit belongs to one resource and one entry, never an array index
+// or a matching word in whichever glossary happens to be visible at completion.
+function beginGlossaryTask(deps, index, fields = [], channel = 'entry', resourceOverride = null) {
+    const origin = resourceOverride || deps.generatedContent;
+    if (!origin || origin.type !== 'glossary' || !Array.isArray(origin.data)) return null;
+    const entry = index == null ? null : origin.data[index];
+    if (index != null && !entry) return null;
+    const entryId = entry && (entry.entryId || entry.glossaryEntryId || entry.id);
+    const entryKey = entryId ? (entry.entryId || entry.glossaryEntryId ? 'entry:' : 'id:') + entryId : 'index:' + index;
+    const registry = deps.glossaryTaskRegistry;
+    const key = JSON.stringify([origin.id, channel, entryKey]);
+    const controller = new AbortController();
+    const token = { controller, channel, entryKey, resourceId: origin.id, invocationId: deps.generatedContent?.id };
+    if (registry) {
+        const previous = registry.get(key);
+        if (previous) previous.controller.abort();
+        registry.set(key, token);
+    }
+    const current = () => !controller.signal.aborted && (!registry || registry.get(key) === token);
+    const live = () => typeof deps.getGlossaryLive === 'function' ? deps.getGlossaryLive() : { resource: origin };
+    const sameResource = resource => resource && resource.type === 'glossary' && resource.id === origin.id && Array.isArray(resource.data);
+    const locate = resource => {
+        if (!sameResource(resource)) return -1;
+        if (index == null) return 0;
+        return resource.data.findIndex(item => item && (entryId
+            ? String(item.entryId || item.glossaryEntryId || item.id || '') === String(entryId)
+            : item === entry));
+    };
+    const matches = resource => {
+        const at = locate(resource);
+        return at >= 0 && (index == null || fields.every(field => JSON.stringify(resource.data[at][field]) === JSON.stringify(entry[field])));
+    };
+    const latest = () => {
+        const state = live();
+        return sameResource(state.resource) ? state.resource : (state.history || []).find(sameResource);
+    };
+    const displayed = () => current() && sameResource(live().resource);
+    const visible = () => displayed() && (!live().activeView || live().activeView === 'glossary');
+    const isCurrent = () => current() && matches(latest());
+    const apply = (resource, update) => {
+        if (!current() || !matches(resource)) return resource;
+        if (index == null) return update(resource);
+        const at = locate(resource), data = resource.data.slice();
+        data[at] = { ...data[at], ...update(data[at]) };
+        return { ...resource, data };
+    };
+    return {
+        signal: controller.signal, entryKey, resourceId: origin.id, visible, isCurrent, isOwner: current,
+        commit(update) {
+            if (!isCurrent()) return false;
+            // Separate pure functional updates preserve independent edits in both
+            // stores. Never call one React setter from inside another updater.
+            deps.setGeneratedContent(previous => apply(previous, update));
+            deps.setHistory(previous => previous.map(resource => apply(resource, update)));
+            return true;
+        },
+        busy(setter, value) {
+            if (displayed()) setter(previous => ({ ...previous, [entryKey]: value }));
+        },
+        finish() {
+            // Keep the token valid for queued React updaters; a subsequent task
+            // supersedes it. Removing it here would discard a batched commit.
+            token.finished = true;
+        },
+        cancel() { controller.abort(); }
+    };
+}
+
 // glossary_helpers_source.jsx - Phase G.1 of CDN modularization.
 // applyAIConfig + handleGenerateTermEtymology lifted out of AlloFlowANTI.txt
 // 2026-04-25 using the (args, deps) shim pattern.
@@ -154,9 +222,12 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
   const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
   try { if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] handleGenerateTermEtymology fired"); } catch(_) {}
     if (!generatedContent || generatedContent.type !== 'glossary') return;
-    setIsGeneratingEtymology(prev => ({ ...prev, [index]: true }));
+    const task = beginGlossaryTask(deps, index, ['term', 'def', 'etymology', 'roots', 'etymologyByLang'], 'etymology');
+    if (!task) return;
+    task.busy(setIsGeneratingEtymology, true);
     const hangGuard = setTimeout(() => {
-        setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
+        task.busy(setIsGeneratingEtymology, false);
+        task.cancel();
         warnLog("Etymology hang guard tripped for:", term);
     }, 45000); // two sequential calls on the multilingual path (generate + locale repair)
     try {
@@ -212,7 +283,8 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
            "meaningByLang":{"English":"light","Spanish":"luz","French":"lumière"}}
           Every root object MUST carry BOTH langByLocale and meaningByLang, each with an entry for EVERY language in [${targetLanguages.join(', ')}] — English included. Omitting one makes the app print English inside a non-English column.
         `;
-        const raw = await callGemini(prompt, true);
+        const raw = await callGemini(prompt, true, false, null, null, task.signal);
+        if (!task.isCurrent()) return;
         const stripped = (raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
         let etymologyByLang = {};
         let roots = [];
@@ -296,7 +368,8 @@ ${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin l
                       - "meaning" = a natural translation of the English meaning, 1-4 words, no quotes, no explanation: "to keep or watch" → "guardar o vigilar" in Spanish.
                       - Never translate the root morpheme itself, and never return English text for a non-English language.
                     `;
-                    const rawFix = await callGemini(repairPrompt, true);
+                    const rawFix = await callGemini(repairPrompt, true, false, null, null, task.signal);
+                    if (!task.isCurrent()) return;
                     const strippedFix = (rawFix || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
                     const fixed = JSON.parse(strippedFix);
                     if (fixed && typeof fixed === 'object') {
@@ -332,41 +405,29 @@ ${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin l
         // leveledTextLanguage stored e.g. Spanish prose in the field read as English.
         const primaryProse = etymologyByLang['English'] || etymologyByLang[leveledTextLanguage]
             || etymologyByLang[Object.keys(etymologyByLang)[0]] || '';
+        if (!task.isCurrent()) return;
         if (!primaryProse || primaryProse === 'NONE') {
-            addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
+            if (task.visible()) addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
             return;
         }
-        setGeneratedContent(prev => {
-            if (!prev || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
-            const liveIdx = prev.data.findIndex(d => d && d.term === term);
-            if (liveIdx === -1) {
-                warnLog("Term no longer exists, discarding etymology for:", term);
-                return prev;
-            }
-            const newData = [...prev.data];
-            newData[liveIdx] = {
-                ...newData[liveIdx],
-                etymology: primaryProse, // legacy single-string field
-                etymologyByLang, // new per-language map
-                roots: roots.length ? roots : undefined,
-            };
-            const updated = { ...prev, data: newData };
-            setHistory(h => h.map(item => item.id === prev.id ? updated : item));
-            return updated;
-        });
+        const committed = task.commit(() => ({ etymology: primaryProse, etymologyByLang, roots: roots.length ? roots : undefined }));
+        if (!committed || !task.visible()) return;
         addToast(t('glossary.actions.etymology_generated') || "Word roots added.", "success");
     } catch (e) {
+        if (!task.isCurrent() || !task.visible()) return;
         warnLog("Etymology generation failed:", e);
         addToast(t('glossary.actions.etymology_failed') || "Couldn't generate word roots right now.", "error");
     } finally {
         clearTimeout(hangGuard);
-        setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
+        task.finish();
+        task.busy(setIsGeneratingEtymology, false);
     }
 };
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.GlossaryHelpers = {
   applyAIConfig,
+  beginGlossaryTask,
   handleGenerateTermEtymology,
 };
 

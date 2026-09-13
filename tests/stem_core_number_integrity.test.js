@@ -20,12 +20,12 @@ function numberlineChecker(answer, challenge) {
     'range', 'challenge', 'answer', 'streak', 'bestStreak', 'score',
     'roundingSolved', 'fractionSolved', 'negativeSolved', 'placeSolved',
     'challengeTypesUsed', '_n', 'upd', 'sfxCorrect', 'sfxWrong', 'sfxStreak',
-    'announceToSR', 'awardXP', 'checkBadges',
+    'announceToSR', 'awardXP', 'checkBadges', 't',
     numberlineSource.slice(start, end) + '\nreturn checkAnswer;'
   )(
     { min: 0, max: 20 }, challenge, answer, 0, 0, { correct: 0, total: 0 },
     0, 0, 0, 0, { identify: true }, {}, (patch) => patches.push(patch),
-    noop, noop, noop, noop, awardXP, noop
+    noop, noop, noop, noop, awardXP, noop, (_key, fallback) => fallback
   );
   return { checker, patches, awardXP };
 }

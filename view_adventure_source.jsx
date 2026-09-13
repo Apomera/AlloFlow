@@ -105,7 +105,7 @@ function AdventureEpisodeRecap({ state, t, theme, immersive = false, mode, socia
   const prompt = prompts[profile];
   const busy = !!(isProcessing || state.isLoading);
   const buttonClass = 'min-h-11 rounded-xl border border-[var(--av-control)] px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 text-[var(--av-ink)] bg-[var(--av-wash)] hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed';
-  return <section data-adventure-recap aria-label={label('title', 'Episode recap')} style={adventureVisualTokens(theme, immersive)}
+  return <section data-adventure-recap tabIndex={-1} aria-label={label('title', 'Episode recap')} style={adventureVisualTokens(theme, immersive)}
     className="w-full max-w-4xl rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] bg-[var(--av-surface)] p-4 sm:p-6 text-[var(--av-ink)] shadow-[var(--av-shadow)] min-w-0 [overflow-wrap:anywhere] space-y-4">
     <div className="flex items-start gap-3">
       <AdventureProfileMark profile={profile} className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 text-[var(--av-accent)]" />
@@ -212,13 +212,13 @@ function AdventureLearningProfiles(props) {
   const accents = { guided: ['#047857', '#a7f3d0', '#ecfdf5'], debate: ['#0369a1', '#7dd3fc', '#f0f9ff'], systems: ['#92400e', '#fcd34d', '#fffbeb'], social: ['#6d28d9', '#c4b5fd', '#f5f3ff'] };
   if (!props.isTeacherMode || typeof setAdventureState !== 'function') return null;
   const profiles = [
-    { id: 'guided', title: 'Guided Story', detail: '12 decisions · 3 choices · peaceful exploration', mode: 'choice', free: false, peaceful: true, social: false, difficulty: 'Story', turns: 12, choices: 3 },
-    { id: 'debate', title: 'Evidence Debate', detail: '12 decisions · write or dictate · compare evidence', mode: 'debate', free: true, peaceful: true, social: false, difficulty: 'Normal', turns: 12, choices: 3 },
-    { id: 'systems', title: 'Systems Challenge', detail: '20 decisions · 4 choices · resource tradeoffs', mode: 'system', free: false, peaceful: true, social: false, difficulty: 'Normal', turns: 20, choices: 4 },
-    { id: 'social', title: 'Social Practice', detail: '12 decisions · 4 choices · perspectives and repair', mode: 'choice', free: false, peaceful: true, social: true, difficulty: 'Story', turns: 12, choices: 4 }
+    { id: 'guided', title: 'Guided Story', goal: 'Explore a story using ideas from your lesson.', detail: '12 decisions · 3 choices · peaceful exploration', mode: 'choice', free: false, peaceful: true, social: false, difficulty: 'Story', turns: 12, choices: 3 },
+    { id: 'debate', title: 'Evidence Debate', goal: 'Choose a position, then support it with evidence.', detail: '12 decisions · write or dictate · compare evidence', mode: 'debate', free: true, peaceful: true, social: false, difficulty: 'Normal', turns: 12, choices: 3 },
+    { id: 'systems', title: 'Systems Challenge', goal: 'Test changes and compare their resource tradeoffs.', detail: '20 decisions · 4 choices · resource tradeoffs', mode: 'system', free: false, peaceful: true, social: false, difficulty: 'Normal', turns: 20, choices: 4 },
+    { id: 'social', title: 'Social Practice', goal: 'Practise perspectives, boundaries, and repair.', detail: '12 decisions · 4 choices · perspectives and repair', mode: 'choice', free: false, peaceful: true, social: true, difficulty: 'Story', turns: 12, choices: 4 }
   ];
   const apply = profile => {
-    if (state.isLoading || state.currentScene) return;
+    if (state.isLoading || props.isProcessing || state.currentScene) return;
     props.setAdventureInputMode(profile.mode);
     props.setAdventureDifficulty(profile.difficulty);
     props.setAdventureFreeResponseEnabled(profile.free);
@@ -238,10 +238,11 @@ function AdventureLearningProfiles(props) {
         const active = state.learningProfile === profile.id && props.adventureInputMode === profile.mode && props.adventureFreeResponseEnabled === profile.free && props.adventureDifficulty === profile.difficulty && !props.adventureChanceMode && props.isAdventureStoryMode === profile.peaceful && props.isSocialStoryMode === profile.social && state.episodeTurnLimit === profile.turns && state.enableAutoClimax && state.choiceCount === profile.choices && !!props.enableFactionResources === (profile.mode === 'system');
         const colors = accents[profile.id];
         const accent = contrast ? '#fde047' : colors[dark ? 1 : 0];
-        return <button type="button" key={profile.id} aria-pressed={state.learningProfile === profile.id} disabled={state.isLoading || !!state.currentScene} onClick={() => apply(profile)} style={{ '--av-profile': accent, borderColor: active ? accent : undefined, backgroundColor: active ? (dark ? 'var(--av-wash)' : colors[2]) : 'var(--av-surface)' }} className="group relative min-h-24 min-w-0 flex items-center gap-3 rounded-2xl border-2 border-[var(--av-line)] p-3 sm:p-4 text-left hover:border-[var(--av-profile)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 transition-[border-color,box-shadow] motion-reduce:transition-none disabled:opacity-50">
+        return <button type="button" key={profile.id} aria-pressed={state.learningProfile === profile.id} disabled={state.isLoading || props.isProcessing || !!state.currentScene} onClick={() => apply(profile)} style={{ '--av-profile': accent, borderColor: active ? accent : undefined, backgroundColor: active ? (dark ? 'var(--av-wash)' : colors[2]) : 'var(--av-surface)' }} className="group relative min-h-24 min-w-0 flex items-center gap-3 rounded-2xl border-2 border-[var(--av-line)] p-3 sm:p-4 text-left hover:border-[var(--av-profile)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 transition-[border-color,box-shadow] motion-reduce:transition-none disabled:opacity-50">
           <span style={{ color: accent }} className="shrink-0"><AdventureProfileMark profile={profile.id} className="w-12 h-12 sm:w-14 sm:h-14"/></span>
           <span className="block min-w-0 pr-2">
             <span className="block text-sm font-bold leading-snug">{adventureSettingsText(t, 'profile_' + profile.id, profile.title)}</span>
+            <span className="block mt-1.5 text-xs leading-relaxed text-[var(--av-ink)]">{adventureSettingsText(t, 'profile_' + profile.id + '_goal', profile.goal)}</span>
             <span className="block mt-1.5 text-xs leading-relaxed text-[var(--av-muted)]">{adventureSettingsText(t, 'profile_' + profile.id + '_detail', profile.detail)}</span>
           </span>
           {state.learningProfile === profile.id && !active && <span className="block text-xs font-semibold text-[var(--av-muted)]">{adventureSettingsText(t, 'customized', 'Customized')}</span>}
@@ -249,6 +250,23 @@ function AdventureLearningProfiles(props) {
         </button>;
       })}
     </div>
+  </section>;
+}
+
+function AdventureResourceSummary({ resources, t }) {
+  const items = (Array.isArray(resources) ? resources : []).filter(Boolean);
+  const label = (key, fallback) => adventureSettingsText(t, key, fallback);
+  const rows = values => <dl className="flex flex-wrap gap-2 min-w-0">{values.map((resource, index) =>
+    <div key={resource.name + '-' + index} className="min-w-0 max-w-full bg-[var(--av-wash)] border border-[var(--av-line)] rounded-xl px-2.5 py-2 flex flex-wrap items-baseline gap-1.5 text-xs [overflow-wrap:anywhere]">
+      <dt className="min-w-0 text-[var(--av-muted)]"><span aria-hidden="true">{resource.icon || '📦'} </span><span>{resource.name}</span></dt>
+      <dd className="text-[var(--av-ink)] font-bold tabular-nums">{resource.quantity}{resource.unit && <span className="text-[var(--av-muted)] font-normal ml-0.5">{resource.unit}</span>}</dd>
+    </div>)}</dl>;
+  return <section data-adventure-resources aria-label={label('resources_heading', 'Resources')} className="w-full pt-2 border-t border-[var(--av-line)] min-w-0">
+    {rows(items.slice(0, 5))}
+    {items.length > 5 && <details className="mt-2">
+      <summary className="min-h-11 py-3 cursor-pointer rounded-lg text-xs font-semibold text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]">{label('more_resources', 'More resources')} ({items.length - 5})</summary>
+      {rows(items.slice(5))}
+    </details>}
   </section>;
 }
 
@@ -724,6 +742,7 @@ function AdventureView(props) {
   var isDictationMode = props.isDictationMode;
   var adventureTextInput = props.adventureTextInput;
   var adventureInputMode = props.adventureInputMode;
+  var isSocialStoryMode = props.isSocialStoryMode;
   var adventureArtStyle = props.adventureArtStyle;
   var adventureCustomArtStyle = props.adventureCustomArtStyle;
   var universalImageStyle = props.universalImageStyle;
@@ -836,6 +855,28 @@ function AdventureView(props) {
   var ClimaxProgressBar = props.ClimaxProgressBar;
   var ConfettiExplosion = props.ConfettiExplosion;
   var InventoryGrid = props.InventoryGrid;
+  var flowRef = React.useRef(null);
+  var priorSceneRef = React.useRef(adventureState.currentScene);
+  var priorEndingRef = React.useRef(adventureState.isGameOver);
+  var [statusToolsOpen, setStatusToolsOpen] = React.useState(adventureInputMode === 'system' || adventureInputMode === 'debate');
+  React.useEffect(() => { setStatusToolsOpen(adventureInputMode === 'system' || adventureInputMode === 'debate'); }, [adventureInputMode]);
+  // Own scrolling here: the host used to jump past the new scene to the bottom.
+  React.useEffect(() => {
+    const newReadingPoint = priorSceneRef.current !== adventureState.currentScene || (!priorEndingRef.current && adventureState.isGameOver);
+    priorSceneRef.current = adventureState.currentScene;
+    priorEndingRef.current = adventureState.isGameOver;
+    if (adventureState.isImmersiveMode) return;
+    const frame = requestAnimationFrame(() => {
+      const flow = flowRef.current;
+      if (!flow) return;
+      const target = flow.querySelector(adventureState.isGameOver ? '[data-adventure-recap]' : failedAdventureAction ? '[data-adventure-turn-recovery]' : adventureState.isLoading ? '[data-adventure-turn-status]' : '[data-adventure-current-scene]');
+      flow.scrollTop = target ? Math.max(0, target.getBoundingClientRect().top - flow.getBoundingClientRect().top + flow.scrollTop - 16) : 0;
+      if (newReadingPoint && target && !adventureState.isLoading && document.activeElement?.closest('[data-adventure-actions]')) {
+        target.focus({ preventScroll: true });
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [adventureState.currentScene, adventureState.isGameOver, adventureState.isLoading, adventureState.isImmersiveMode, failedAdventureAction]);
   var ledgerDialogRef = React.useRef(null);
   var inventoryDialogRef = React.useRef(null);
   useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
@@ -855,21 +896,34 @@ function AdventureView(props) {
       : typingPace.wpm + ' ' + (t('adventure.typing_pace_wpm') || 'WPM') + ' \u00B7 ' + typingPace.wordCount + ' ' + (typingPace.wordCount === 1 ? 'word' : 'words');
     return <div role="status" aria-live="off" className={(isDark ? 'border-white/20 bg-black/40 text-white/80' : 'border-indigo-200 bg-indigo-50 text-indigo-900') + ' w-fit rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums'}>{text}</div>;
   };
+  var isDebateSetup = adventureInputMode === 'debate' && adventureState.debatePhase === 'setup';
+  var hasDebatePositions = isDebateSetup && Array.isArray(adventureState.currentScene?.options) && adventureState.currentScene.options.length > 0;
+  var usesWrittenResponse = adventureFreeResponseEnabled && !hasDebatePositions;
+  var renderDebateSetupGuide = function () {
+    if (!isDebateSetup) return null;
+    return <p data-adventure-debate-setup className="text-sm leading-relaxed text-[var(--av-muted)]">{hasDebatePositions
+      ? adventureSettingsText(t, 'debate_choose_position', 'First, choose a position to explore. You can revise it as you consider the evidence.')
+      : adventureSettingsText(t, 'debate_write_position', 'Start by stating the position you want to explore and one reason for it.')}</p>;
+  };
   var renderAdventureComposer = function (immersive) {
     var inputId = 'adventure-response-' + (immersive ? 'immersive' : 'standard');
     var isDebate = adventureInputMode === 'debate';
-    var guidance = isDebate
+    var guidance = isDebateSetup
+      ? adventureSettingsText(t, 'debate_write_position', 'Start by stating the position you want to explore and one reason for it.')
+      : isDebate
       ? adventureSettingsText(t, 'response_debate_guide', 'State your claim and connect it to evidence from the scene.')
       : adventureInputMode === 'system'
         ? adventureSettingsText(t, 'response_system_guide', 'Propose a change, then explain the outcome you expect.')
-        : adventureSettingsText(t, 'response_action_guide', 'Describe what you want to do and why.');
+        : isSocialStoryMode
+          ? adventureSettingsText(t, 'response_social_guide', 'What could you say or do? Consider your needs, the other person’s perspective, and any boundaries or support you need.')
+          : adventureSettingsText(t, 'response_action_guide', 'Describe what you want to do and why.');
     return <section data-adventure-composer aria-labelledby={inputId + '-label'} style={adventureVisualTokens(theme, immersive)}
       className="min-w-0 rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-3 sm:p-4 text-[var(--av-ink)] shadow-[var(--av-shadow)]">
       <div className="mb-3 flex items-start gap-3">
         <span aria-hidden="true" className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] text-[var(--av-accent)]"><Pencil size={18} /></span>
         <div className="min-w-0">
           <label id={inputId + '-label'} htmlFor={inputId} className="block text-sm font-black leading-relaxed">
-            {isDebate ? adventureSettingsText(t, 'response_argument_label', 'Your argument') : adventureSettingsText(t, 'response_action_label', 'Your next action')}
+            {isDebateSetup ? adventureSettingsText(t, 'response_position_label', 'Your position') : isDebate ? adventureSettingsText(t, 'response_argument_label', 'Your argument') : isSocialStoryMode ? adventureSettingsText(t, 'response_social_label', 'What could you say or do?') : adventureSettingsText(t, 'response_action_label', 'Your next action')}
           </label>
           <p id={inputId + '-guide'} className="m-0 mt-1 text-xs leading-relaxed text-[var(--av-muted)]">{guidance}</p>
         </div>
@@ -1092,7 +1146,7 @@ function AdventureView(props) {
                       retryLabel={t('adventure.error.retry')}
                       onRetry={handleAdventureCrashRecovery}
                   >
-                  <div className="h-full flex flex-col gap-3 relative">
+                  <div data-adventure-view className="h-full min-h-0 flex flex-col gap-3 relative">
                       <ClimaxProgressBar climaxState={adventureState.climax} />
                       <AdventureAmbience
                           sceneText={adventureState.currentScene?.text}
@@ -1147,7 +1201,7 @@ function AdventureView(props) {
                             </div>
                         </div>
                       )}
-                      <div data-adventure-header role="region" aria-label={adventureSettingsText(t, 'header_controls', 'Adventure controls')} style={{ ...adventureVisualTokens(theme), backgroundImage: theme === 'contrast' ? 'none' : 'linear-gradient(120deg, var(--av-wash), var(--av-surface) 70%)' }} className={`rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] [@media(max-height:740px)]:max-h-[28vh] overflow-y-auto overscroll-contain ${adventureState.isImmersiveMode || !adventureState.currentScene ? 'hidden' : ''}`}>
+                      <div data-adventure-header role="region" aria-label={adventureSettingsText(t, 'header_controls', 'Adventure controls')} style={{ ...adventureVisualTokens(theme), backgroundImage: theme === 'contrast' ? 'none' : 'linear-gradient(120deg, var(--av-wash), var(--av-surface) 70%)' }} className={`rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] overflow-y-auto overscroll-contain ${adventureState.isImmersiveMode || !adventureState.currentScene ? 'hidden' : ''}`}>
                         {adventureEffects.levelUp && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]">
                                 <div aria-hidden="true"><ConfettiExplosion /></div>
@@ -1156,9 +1210,61 @@ function AdventureView(props) {
                                 </div>
                             </div>
                         )}
+
+                                <h3 className="w-full font-bold text-base sm:text-lg tracking-tight flex items-center gap-2.5 min-w-0"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-950 border border-teal-700 shadow-sm"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/></span><span className="min-w-0 [overflow-wrap:anywhere]">{t('adventure.title')}</span></h3>
+                        <div data-adventure-toolbar className="grid grid-cols-3 items-stretch gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-3" role="group" aria-label={adventureSettingsText(t, 'header_tools', 'Story tools')}>
+                            <button type="button"
+                                aria-label={t('adventure.ledger_tooltip')}
+                                onClick={handleSetShowLedgerToTrue}
+                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]"
+                                title={t('adventure.ledger_tooltip')}
+                            >
+                                <BookOpen size={14} className="fill-current" aria-hidden="true"/>
+                                <span className="inline">{t('adventure.log_button')}</span>
+                            </button>
+                            <button type="button"
+                                aria-label={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
+                                aria-pressed={adventureState.isImmersiveMode}
+                                onClick={handleToggleAdventureImmersive}
+                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
+                                title={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
+                            >
+                                <Monitor size={14} aria-hidden="true"/>
+                                <span className="inline">{adventureState.isImmersiveMode ? t('adventure.view_standard') : t('adventure.view_immersive')}</span>
+                            </button>
+                            <button type="button"
+                                aria-label={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
+                                aria-pressed={adventureAutoRead}
+                                data-help-key="adventure_immersive_autoread"
+                                onClick={() => {
+                                    const newState = !adventureAutoRead;
+                                    setAdventureAutoRead(newState);
+                                    if (!newState) stopPlayback();
+                                }}
+                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${adventureAutoRead ? 'bg-[var(--av-wash)] text-[var(--av-ink)] border-[var(--av-accent)] ring-1 ring-[var(--av-accent)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
+                                title={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
+                            >
+                                {adventureAutoRead ? <Volume2 size={14} className="fill-current animate-pulse motion-reduce:animate-none" aria-hidden="true"/> : <VolumeX size={14} aria-hidden="true"/>}
+                                <span className="inline">{t('adventure.auto_read_status_label')}: {adventureAutoRead ? t('common.on') : t('common.off')}</span>
+                            </button>
+                            {adventureFluencyEnabled && adventureState.currentScene && (
+                                <button type="button"
+                                    aria-label={t('adventure.fluency_title') || 'Practice reading this scene'}
+                                    aria-haspopup="dialog"
+                                    data-help-key="adventure_scene_reading_practice"
+                                    onClick={() => { stopPlayback(); setAdventureFluencyOpen(true); }}
+                                    className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-rose-800 text-rose-100 border-rose-500 hover:bg-rose-700"
+                                    title={t('adventure.fluency_title') || 'Practice reading this scene'}
+                                >
+                                    <Mic size={14} aria-hidden="true"/>
+                                    <span className="inline">{t('adventure.fluency_button_short') || 'Reading practice'}</span>
+                                </button>
+                            )}
+                        </div>
+                        <details data-adventure-status-tools open={statusToolsOpen} onToggle={event => setStatusToolsOpen(event.currentTarget.open)} className="min-w-0 text-[var(--av-ink)]">
+                          <summary className="min-h-11 cursor-pointer rounded-xl px-2 py-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]">{adventureSettingsText(t, 'status_tools', 'Story status & more tools')}</summary>
                         <div className="text-[var(--av-ink)] min-w-0 relative z-10">
                             <div tabIndex={0} role="group" aria-label={adventureSettingsText(t, 'story_status', 'Adventure status')} className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--av-focus)]">
-                                <h3 className="w-full font-bold text-base sm:text-lg tracking-tight flex items-center gap-2.5 min-w-0"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-950 border border-teal-700 shadow-sm"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/></span><span className="min-w-0 [overflow-wrap:anywhere]">{t('adventure.title')}</span></h3>
                                 {adventureInputMode === 'system' && (
                                     <div className="bg-[var(--av-wash)] text-[var(--av-ink)] border border-[var(--av-line)] px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5">
                                         <span aria-hidden="true">🏛️</span> {t('adventure.system_simulation')}
@@ -1232,21 +1338,7 @@ function AdventureView(props) {
                                     onSelect={handleSelectInventoryItem}
                                 />
                                 {adventureInputMode === 'system' && enableFactionResources && (adventureState.systemResources || []).length > 0 && (
-                                    <div className="w-full flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--av-line)]">
-                                        {adventureState.systemResources.slice(0, 5).map((resource, idx) => (
-                                            <div
-                                                key={`fr-${idx}`}
-                                                className="min-w-0 max-w-full bg-[var(--av-wash)] border border-[var(--av-line)] rounded-xl px-2.5 py-2 flex flex-wrap items-center gap-1.5 text-xs [overflow-wrap:anywhere]"
-                                                title={`${resource.name}: ${resource.quantity}${resource.unit || ''}`}
-                                            >
-                                                <span aria-hidden="true">{resource.icon || '📦'}</span>
-                                                <span className="min-w-0 text-[var(--av-muted)]">{resource.name}</span><span className="text-[var(--av-ink)] font-bold tabular-nums">{resource.quantity}{resource.unit ? <span className="text-[var(--av-muted)] font-normal ml-0.5">{resource.unit}</span> : ''}</span>
-                                            </div>
-                                        ))}
-                                        {adventureState.systemResources.length > 5 && (
-                                            <span className="text-[var(--av-muted)] text-xs">+{adventureState.systemResources.length - 5}</span>
-                                        )}
-                                    </div>
+                                    <AdventureResourceSummary resources={adventureState.systemResources} t={t} />
                                 )}
                             </div>
                             {adventureInputMode === 'debate' && (
@@ -1275,8 +1367,7 @@ function AdventureView(props) {
                             )}
                             <p className="text-xs leading-relaxed text-[var(--av-muted)] mt-2">{t('adventure.explore_hint')}</p>
                         </div>
-                        <div data-adventure-toolbar className="flex flex-wrap items-center gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-3" role="group" aria-label={adventureSettingsText(t, 'header_tools', 'Story tools')}>
-                            {AdventureAudioControls && <AdventureAudioControls soundEnabled={soundEnabled} t={t} />}
+<div className="flex flex-wrap gap-2 mt-3">                            {AdventureAudioControls && <AdventureAudioControls soundEnabled={soundEnabled} t={t} />}
                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && (
                                 <button type="button"
                                     data-help-key="adventure_edit_options" onClick={handleStartOptionEdit}
@@ -1304,53 +1395,6 @@ function AdventureView(props) {
                                     <span className="hidden xl:inline">{sessionData?.democracy?.isActive ? t('adventure.democracy_on') : t('adventure.democracy_off')}</span>
                                 </button>
                             )}
-                            <button type="button"
-                                aria-label={t('adventure.ledger_tooltip')}
-                                onClick={handleSetShowLedgerToTrue}
-                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]"
-                                title={t('adventure.ledger_tooltip')}
-                            >
-                                <BookOpen size={14} className="fill-current" aria-hidden="true"/>
-                                <span className="hidden sm:inline">{t('adventure.log_button')}</span>
-                            </button>
-                            <button type="button"
-                                aria-label={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
-                                aria-pressed={adventureState.isImmersiveMode}
-                                onClick={handleToggleAdventureImmersive}
-                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
-                                title={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
-                            >
-                                <Monitor size={14} aria-hidden="true"/>
-                                <span className="hidden sm:inline">{adventureState.isImmersiveMode ? t('adventure.view_standard') : t('adventure.view_immersive')}</span>
-                            </button>
-                            <button type="button"
-                                aria-label={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
-                                aria-pressed={adventureAutoRead}
-                                data-help-key="adventure_immersive_autoread"
-                                onClick={() => {
-                                    const newState = !adventureAutoRead;
-                                    setAdventureAutoRead(newState);
-                                    if (!newState) stopPlayback();
-                                }}
-                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${adventureAutoRead ? 'bg-[var(--av-wash)] text-[var(--av-ink)] border-[var(--av-accent)] ring-1 ring-[var(--av-accent)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
-                                title={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
-                            >
-                                {adventureAutoRead ? <Volume2 size={14} className="fill-current animate-pulse motion-reduce:animate-none" aria-hidden="true"/> : <VolumeX size={14} aria-hidden="true"/>}
-                                <span className="hidden sm:inline">{t('adventure.auto_read_status_label')}: {adventureAutoRead ? t('common.on') : t('common.off')}</span>
-                            </button>
-                            {adventureFluencyEnabled && adventureState.currentScene && (
-                                <button type="button"
-                                    aria-label={t('adventure.fluency_title') || 'Practice reading this scene'}
-                                    aria-haspopup="dialog"
-                                    data-help-key="adventure_scene_reading_practice"
-                                    onClick={() => { stopPlayback(); setAdventureFluencyOpen(true); }}
-                                    className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-rose-800 text-rose-100 border-rose-500 hover:bg-rose-700"
-                                    title={t('adventure.fluency_title') || 'Practice reading this scene'}
-                                >
-                                    <Mic size={14} aria-hidden="true"/>
-                                    <span className="hidden sm:inline">{t('adventure.fluency_button_short') || 'Reading practice'}</span>
-                                </button>
-                            )}
                             {!isZenMode && (
                             <button type="button"
                                 aria-label={t('adventure.maximize_tooltip')}
@@ -1363,16 +1407,18 @@ function AdventureView(props) {
                             </button>
                             )}
                             <button type="button" aria-label={t('common.start_new_adventure')}
-                                data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+                                data-help-key="adventure_start_btn" onClick={handleStartAdventure} disabled={adventureState.isLoading || isProcessing}
                                 className="min-w-11 min-h-11 flex items-center gap-2 bg-[var(--av-surface)] text-[var(--av-ink)] border border-[var(--av-control)] px-3 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--av-wash)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
                             >
                                 <RefreshCw size={14} className={adventureState.isLoading ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden="true" /> {t('adventure.restart')}
                             </button>
-                        </div>
+</div>
+                        </details>
                     </div>
                     <div data-adventure-canvas style={adventureVisualTokens(theme)} className="flex-grow min-h-0 bg-[var(--av-wash)] rounded-3xl border border-[var(--av-line)] shadow-inner overflow-hidden flex flex-col relative">
+                        <div data-adventure-flow ref={node => { flowRef.current = node; if (adventureScrollRef) adventureScrollRef.current = node; }} className={adventureState.isImmersiveMode ? 'contents' : 'flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar'}>
                         {!adventureState.isImmersiveMode ? (
-                        <div ref={adventureScrollRef} className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+                        <div data-adventure-story className="p-4 sm:p-6 space-y-6">
                             {!adventureState.currentScene && adventureState.history.length === 0 && !adventureState.isLoading && (
                                 <div className="min-h-full flex flex-col items-center py-4 sm:py-10 animate-in fade-in zoom-in duration-300 motion-reduce:animate-none">
                                     {hasSavedAdventure && !showNewGameSetup ? (
@@ -1418,14 +1464,13 @@ function AdventureView(props) {
                                                     <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wide sm:tracking-widest flex items-center justify-center gap-2">
                                                         <MapIcon size={24} aria-hidden="true"/> {t('adventure.title')}
                                                     </h2>
-                                                    <p className="text-white text-sm font-medium mt-2 leading-relaxed">{t('adventure.setup_subtitle')}</p>
+                                                    <p className="text-white text-sm font-medium mt-2 leading-relaxed">{!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? adventureSettingsText(t, 'ready_title', 'Your adventure is ready') : t('adventure.setup_subtitle')}</p>
                                                 </div>
                                             </div>
                                             <div className="p-4 sm:p-6">
-                                                <AdventureLearningProfiles {...props}/>
-                                                <AdventureSetupFields {...props}/>
-                                            </div>
-                                            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-center">
+                                                {props.sourceTopic && <p className="mb-3 text-sm font-semibold" style={adventureVisualTokens(theme)}>{props.sourceTopic}</p>}
+                                                <AdventureSetupSummary {...props}/>
+                                            <div className="py-4 mb-4 flex justify-center">
                                                 <button type="button"
                                                     aria-label={t('adventure.start')}
                                                     onClick={() => executeStartAdventure()}
@@ -1435,6 +1480,9 @@ function AdventureView(props) {
                                                     <Sparkles size={20} className="animate-pulse motion-reduce:animate-none" aria-hidden="true"/>
                                                     {t('adventure.start')}
                                                 </button>
+                                            </div>
+                                                <AdventureLearningProfiles {...props}/>
+                                                <AdventureSetupFields {...props} hideSummary/>
                                             </div>
                                         </div>
                                     )}
@@ -1448,10 +1496,15 @@ function AdventureView(props) {
                             ))}
                             {!failedAdventureAction && <AdventureTurnStatus state={adventureState} t={t} theme={theme} />}
                             {adventureState.currentScene && (
-                                <div role="region" aria-labelledby="adventure-current-scene-heading" className="flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none">
+                                <div role="region" data-adventure-current-scene tabIndex={-1} aria-labelledby="adventure-current-scene-heading" className="flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none">
                                     <div style={adventureVisualTokens(theme)} className="w-full max-w-4xl bg-[var(--av-surface)] p-4 sm:p-6 rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] shadow-[var(--av-shadow)] relative min-w-0">
                                         <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                                             <h4 id="adventure-current-scene-heading" className="text-xs font-bold text-[var(--av-accent)] uppercase tracking-wider flex items-center gap-2"><Flag size={12} aria-hidden="true"/> {t('adventure.current_scene')}</h4>
+                                            {!adventureState.isGameOver && !adventureState.isLoading && <button type="button" data-adventure-jump-to-actions
+                                              className="min-h-11 px-3 py-2 text-xs font-semibold rounded-xl border border-[var(--av-control)] text-[var(--av-ink)] bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]"
+                                              onClick={() => { const target = flowRef.current?.querySelector('[data-adventure-actions="standard"]'); if (target) { flowRef.current.scrollTop += target.getBoundingClientRect().top - flowRef.current.getBoundingClientRect().top; target.focus({ preventScroll: true }); } }}>
+                                              {usesWrittenResponse ? adventureSettingsText(t, 'jump_to_response', 'Write a response ↓') : adventureSettingsText(t, 'jump_to_choices', 'Go to choices ↓')}
+                                            </button>}
                                             {(adventureState.sceneImage || adventureState.sceneImagePreview) && (
                                                 <div data-adventure-image-controls className="flex flex-wrap items-center gap-2 w-full sm:w-auto min-w-0">
                                                     <label className="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-3 text-[var(--av-muted)]">
@@ -1470,6 +1523,7 @@ function AdventureView(props) {
                                                 </div>
                                             )}
                                         </div>
+                                        {(adventureState.sceneImage || adventureState.sceneImagePreview) ? (
                                         <div data-adventure-illustration className="mb-5 rounded-2xl overflow-hidden bg-[var(--av-wash)] border border-[var(--av-line)] shadow-inner relative group transition-all duration-300 motion-reduce:transition-none" style={{ minHeight: adventureImageSize + 'px' }}>
                                             {(adventureState.sceneImage || adventureState.sceneImagePreview) ? (
                                                 <>
@@ -1505,6 +1559,7 @@ function AdventureView(props) {
                                                 </div>
                                             )}
                                         </div>
+                                        ) : adventureState.isImageLoading ? <p role="status" className="mb-3 text-xs text-[var(--av-muted)]">{adventureState.loadingStage && <span>{adventureState.loadingStage} </span>}{adventureSettingsText(t, 'illustration_loading', 'Creating an illustration. You can start reading now.')}</p> : null}
                                         <div data-adventure-prose className="prose prose-sm text-[var(--av-ink)] font-medium font-serif text-base leading-relaxed max-w-[68ch] mx-auto [overflow-wrap:anywhere]">
                                             <div className="space-y-4" onPointerEnter={() => { if (prewarmAdventureAudio && adventureState.currentScene) prewarmAdventureAudio(adventureState.currentScene.text, adventureState.currentScene.voices); }}>
                                                 {(() => {
@@ -1611,7 +1666,7 @@ function AdventureView(props) {
                                 {theme !== 'contrast' && (
                                     <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none"></div>
                                 )}
-                                <div className="absolute top-4 left-3 right-3 sm:left-4 sm:right-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-start z-20">
+                                <div className="absolute top-4 left-3 right-3 sm:left-4 sm:right-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-start z-40">
                                     <div className="flex flex-col gap-2 min-w-0">
                                         <div className="bg-black/60 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold w-fit max-w-full break-words shadow-sm">
                                             {t('common.level_abbrev')} {adventureState.level}
@@ -1712,14 +1767,14 @@ function AdventureView(props) {
                                                 <Backpack size={16} aria-hidden="true" />
                                             </button>
                                             {showImmersiveInventory && (
-                                                <div id="adventure-immersive-inventory" role="region" aria-label={t('adventure.inventory')} className="absolute top-full right-0 mt-2 w-56 bg-black/80 backdrop-blur-md border border-white/40 rounded-xl p-2 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none">
+                                                <div id="adventure-immersive-inventory" role="region" aria-label={t('adventure.inventory')} className="absolute top-full right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] max-h-[65vh] overflow-y-auto overscroll-contain bg-black/80 backdrop-blur-md border border-white/40 rounded-xl p-2 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none">
                                                     {adventureInputMode === 'system' && enableFactionResources && (
                                                         <div className="border-b border-amber-500/30 pb-2">
                                                             <div className="text-[11px] font-bold text-amber-200 uppercase tracking-wide mb-1 flex items-center gap-1">
                                                                 <span aria-hidden="true">📊</span> {t('adventure.system_state')}
                                                             </div>
                                                             {(adventureState.systemResources || []).length > 0 ? (
-                                                                <div className="grid grid-cols-2 gap-1">
+                                                                <div className="grid grid-cols-1 gap-1 min-w-0">
                                                                     {adventureState.systemResources.map((resource, idx) => (
                                                                         <div
                                                                             key={`${resource.name}-${idx}`}
@@ -1727,8 +1782,8 @@ function AdventureView(props) {
                                                                             title={`${resource.name}: ${resource.quantity}${resource.unit || ''} (${resource.type || 'strategic'})`}
                                                                         >
                                                                             <span className="text-sm" aria-hidden="true">{resource.icon || '📊'}</span>
-                                                                            <div className="flex flex-col leading-none">
-                                                                                <span className="text-[11px] text-amber-200/80 truncate max-w-[60px]">{resource.name}</span>
+                                                                            <div className="flex flex-col leading-relaxed min-w-0 [overflow-wrap:anywhere]">
+                                                                                <span className="text-xs text-amber-100">{resource.name}</span>
                                                                                 <span className="text-xs text-amber-200 font-bold">{resource.quantity}{resource.unit && <span className="text-amber-400/70 font-normal ml-0.5 text-[11px]">{resource.unit}</span>}</span>
                                                                             </div>
                                                                         </div>
@@ -1800,13 +1855,14 @@ function AdventureView(props) {
                                             <div data-adventure-actions="immersive" role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme, true)} className="max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
                                                 {adventureState.currentScene && <AdventureDecisionProgress state={adventureState} t={t} theme={theme} immersive />}
                                                 {!failedAdventureAction && <AdventureTurnStatus state={adventureState} t={t} theme={theme} immersive />}
+                                                {!adventureState.isGameOver && !failedAdventureAction && renderDebateSetupGuide()}
                                                 {adventureState.isGameOver ? (
                                                     <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={isTeacherMode || !activeSessionCode} immersive />
                                                 ) : failedAdventureAction ? (
                                                     <AdventureTurnRecovery t={t} theme={theme} immersive loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} />
                                                 ) : (
                                                     adventureState.currentScene && (
-                                                        adventureFreeResponseEnabled ? (
+                                                        usesWrittenResponse ? (
                                                             <div className="flex flex-col gap-3">
                                                                 {!isTeacherMode && activeSessionCode ? (
                                                                     <div role="status" className="rounded-xl border border-indigo-300 bg-indigo-950/80 p-4 text-sm text-indigo-100">
@@ -1841,7 +1897,7 @@ function AdventureView(props) {
                                                                     const isTable = (p) => p.trim().startsWith('|') || p.includes('\n|');
                                                                     const textSentenceCount = mainTextParagraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p)).length;
                                                                     return adventureState.currentScene.options.map((opt, idx) => {
-                                                                        const isDemocracy = democracyActive;
+                                                                        const isDemocracy = democracyActive && !isDebateSetup;
                                                                         const optionValue = normalizeAdventureVoteOption(opt);
                                                                         const voteCount = isTeacherMode ? Object.values(democracyVotes).filter(v => String(v).trim() === optionValue).length : 0;
                                                                         const percent = isTeacherMode && democracyTotalVotes > 0 ? Math.round((voteCount / democracyTotalVotes) * 100) : 0;
@@ -1950,18 +2006,12 @@ function AdventureView(props) {
                                 )}
                             </div>
                         )}
-                        {!adventureState.isImmersiveMode && (
-                        <div data-adventure-actions="standard" role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme)} className="p-4 bg-[var(--av-surface)] border-t border-[var(--av-line)] shrink-0 max-h-[45vh] sm:max-h-[50vh] overflow-y-auto overscroll-contain">
+                        {!adventureState.isImmersiveMode && (adventureState.currentScene || adventureState.isLoading) && (
+                        <div data-adventure-actions="standard" tabIndex={-1} role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme)} className="p-4 bg-[var(--av-surface)] border-t border-[var(--av-line)] shrink-0">
                             {adventureState.currentScene && <AdventureDecisionProgress state={adventureState} t={t} theme={theme} />}
                             {adventureState.currentScene && !adventureState.isGameOver ? (
                                 <div className="space-y-3">
-                                    {adventureInputMode === 'debate' && adventureState.debatePhase === 'setup' && (
-                                        <div className="text-center mb-2 animate-in motion-reduce:animate-none slide-in-from-top-2">
-                                             <span className="bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-teal-200 shadow-sm flex items-center justify-center gap-2 w-fit mx-auto">
-                                                <Scale size={12} /> {t('adventure.debate_stance')}
-                                             </span>
-                                        </div>
-                                    )}
+                                    {renderDebateSetupGuide()}
                                     {failedAdventureAction ? (
                                         <AdventureTurnRecovery t={t} theme={theme} loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} />
                                     ) : isEditingOptions ? (
@@ -2012,7 +2062,7 @@ function AdventureView(props) {
                                                 </button>
                                             </div>
                                         </div>
-                                    ) : (!adventureFreeResponseEnabled || (adventureInputMode === 'debate' && adventureState.debatePhase === 'setup')) ? (
+                                    ) : (!usesWrittenResponse) ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {renderDemocracyStatus(false)}
                                             {(() => {
@@ -2071,12 +2121,13 @@ function AdventureView(props) {
                                     )}
                                 </div>
                             ) : (
-                                <div className="text-center text-xs text-slate-600 italic">
-                                    {adventureState.isGameOver ? t('adventure.status.reset_prompt') : t('adventure.status.waiting')}
+                                <div className="text-center text-xs text-[var(--av-muted)]">
+                                    {adventureState.isGameOver ? adventureSettingsText(t, 'ending_guidance', 'Review your journey above and choose what to do next.') : adventureState.isLoading ? t('adventure.status.waiting') : null}
                                 </div>
                             )}
                         </div>
                         )}
+                        </div>
                     </div>
                     <AdventureFluencyPractice
                         open={adventureFluencyOpen}

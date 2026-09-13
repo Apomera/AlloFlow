@@ -1,0 +1,47 @@
+# Anatomy guided-tour refinements
+
+This pass refreshes all ten Guided Tours, covering 42 teaching steps and 40 recap questions per complete traversal of the tour catalog. The active web source and desktop mirror contain identical changes.
+
+## Scientific content
+
+Each step now has a concise, authored explanation and a direct OpenStax Anatomy and Physiology 2e reference. The 42 steps link to 30 distinct sections. The [content and source index](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/tours.json) records the structure ID, narration, recall clue, and source slug for each step.
+
+- The skull tour distinguishes sutures from the movable jaw. The spine explanation distinguishes the usual 24 separate adult vertebrae from fused sacral and coccygeal segments. Rib mobility includes joints and costal cartilage. See [skull anatomy](https://openstax.org/books/anatomy-and-physiology-2e/pages/7-2-the-skull), [vertebral column](https://openstax.org/books/anatomy-and-physiology-2e/pages/7-3-the-vertebral-column), and [thoracic cage](https://openstax.org/books/anatomy-and-physiology-2e/pages/7-4-the-thoracic-cage).
+- Muscle explanations describe specific actions, including the diaphragm during inhalation and relaxation, the different deltoid fibers, rectus femoris at the hip, and gastrocnemius at both knee and ankle. See [breathing mechanics](https://openstax.org/books/anatomy-and-physiology-2e/pages/22-3-the-process-of-breathing) and [lower-limb muscles](https://openstax.org/books/anatomy-and-physiology-2e/pages/11-6-appendicular-muscles-of-the-pelvic-girdle-and-lower-limbs).
+- Heart chambers, coronary supply, and carotid branches are distinguished. Brain and cerebral cortex descriptions separate the whole organ from its cortical layer. The vagus explanation includes incoming sensory information. See [heart anatomy](https://openstax.org/books/anatomy-and-physiology-2e/pages/19-1-heart-anatomy), [circulatory pathways](https://openstax.org/books/anatomy-and-physiology-2e/pages/20-5-circulatory-pathways), and [central nervous system](https://openstax.org/books/anatomy-and-physiology-2e/pages/13-2-the-central-nervous-system).
+- The lymphatic tour distinguishes blood filtration in the spleen from lymph filtration in nodes; thymus content covers T-cell maturation and selection. Platelets are identified as cell fragments. See [lymphatic and immune anatomy](https://openstax.org/books/anatomy-and-physiology-2e/pages/21-1-anatomy-of-the-lymphatic-and-immune-systems) and [blood-cell production](https://openstax.org/books/anatomy-and-physiology-2e/pages/18-2-production-of-the-formed-elements).
+- Kidney narration explains filtration, reabsorption, and secretion while retaining blood cells in the circulation. Liver narration distinguishes bile's fat-dispersing role from enzymatic digestion. Skin explanations replace an absolute waterproof barrier and a fixed renewal interval with more accurate descriptions. See [kidney microanatomy](https://openstax.org/books/anatomy-and-physiology-2e/pages/25-4-microscopic-anatomy-of-the-kidney), [digestive accessory organs](https://openstax.org/books/anatomy-and-physiology-2e/pages/23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder), and [skin layers](https://openstax.org/books/anatomy-and-physiology-2e/pages/5-1-layers-of-the-skin).
+- Endocrine explanations distinguish pituitary lobe functions, adrenal cortex from medulla, and pancreatic islet cell types. The adrenal step identifies its marker as the whole gland. See [pituitary and hypothalamus](https://openstax.org/books/anatomy-and-physiology-2e/pages/17-3-the-pituitary-gland-and-hypothalamus), [adrenal glands](https://openstax.org/books/anatomy-and-physiology-2e/pages/17-6-the-adrenal-glands), and [endocrine pancreas](https://openstax.org/books/anatomy-and-physiology-2e/pages/17-9-the-endocrine-pancreas).
+- Reproductive explanations cover seminiferous tubules, the endometrium, oocytes and variable ovulatory cycles, and placental exchange between normally separate circulations. Current second-edition source URLs use [testicular](https://openstax.org/books/anatomy-and-physiology-2e/pages/27-1-anatomy-and-physiology-of-the-testicular-reproductive-system) and [ovarian](https://openstax.org/books/anatomy-and-physiology-2e/pages/27-2-anatomy-and-physiology-of-the-ovarian-reproductive-system) terminology. Placental content links to [embryonic development](https://openstax.org/books/anatomy-and-physiology-2e/pages/28-2-embryonic-development).
+
+## Learning and navigation
+
+The recap uses authored location or function clues in place of mechanically hiding structure names in narration. Each tour selects four questions from its steps; every step has an authored clue available. Submitted answers reveal the structure, the full teaching explanation, and its source. A missed answer offers a direct return to the relevant teaching step and marker. Completion language describes successful matching without claiming mastery.
+
+Tour identity is stored separately from the diagram's collection. Visiting the thyroid from the endocrine tour now opens the organ diagram while keeping the endocrine lesson, step list, and recap. Previously this transition silently changed the lesson to the organ tour.
+
+Native tour and step selectors support direct navigation. Phone layouts place the lesson before the diagram. Marker and return controls move keyboard focus between them. Read-aloud uses the current narration. Controls have at least 44-pixel height, visible focus, and 16-pixel select text. Arabic answer text aligns to the reading direction, and score fractions keep their intended number order.
+
+All 90 newly introduced strings and 16 previously untranslated tour/recap labels now have French, Latin American Spanish, and Arabic text in both distributions: 106 validated strings across six catalogs. Recap instructions describe the new activity. Step, feedback, and completion screens were checked in dark mode.
+
+## Progress reliability
+
+Recap answers are versioned and bound to their tour. Old-format answers, answers for another tour, and invalid saved option values are ignored. Accepted answers update from the latest state, preventing rapid answers from losing each other or duplicate submissions from adding counts. Shared structure aliases use the same confidence level, timestamp, and canonical retrieval evidence.
+
+A wrong answer marks its target for practice. Reopening a recap begins another attempt; earlier confidence and retrieval history remain. Completing or skipping the recap retains the existing tour-completion behavior. These recognition questions complement the separate pathway concept checks introduced in the preceding pass.
+
+## Verification
+
+- **698/698 tests passed across 40 anatomy test files.** The 36 added tests cover all tours in both distributions, authored clues, sources and read-aloud, duplicate and rapid answers, stale handlers, malformed saved state, alias evidence, navigation, and completion. Existing source-shape assertions were updated for the new timestamp implementation; behavioral checks confirm alias timestamps and unchanged timestamps on duplicate submissions.
+- Browser verification traversed all **42 steps** and answered all **40 selected recap questions**. It exercised incorrect feedback and return-to-step in all ten tours, as well as the endocrine/thyroid cross-collection transition.
+- Keyboard checks covered recap opening and answering, native step navigation, diagram focus, and return focus. The sampled 1280-, 390-, and 320-pixel layouts had no horizontal page overflow.
+- **20 scoped axe scans: zero violations and zero incomplete results.** Scans covered desktop recaps, phone steps and feedback, three translated recaps, and Arabic dark-theme step, feedback, and completion states. No browser JavaScript errors were recorded. These checks apply to the tour panel, not the whole application.
+- Source syntax, translation keys, English fallbacks, placeholder parity, and both distribution copies passed validation. Git whitespace checks passed for the changed tracked files.
+
+Final source SHA-256: `57e5c6683fcd9c1f7fcbe8b84a6a301596ad6c21edcedf5a72de11ee68bd419a`.
+
+[Full test results](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/full-tests.json) · [Browser results](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/browser-results.json) · [Content and translation validation](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/validation-summary.json)
+
+[Phone tour step](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/phone-390-step.png) · [Endocrine thyroid step](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/desktop-thyroid-step.png) · [Arabic dark-theme recap](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-tour-refinements-2026-09-12/phone-arabic-dark-complete.png)
+
+The diagrams remain teaching schematics. The tour text is introductory and has not undergone independent specialist review, learner-cohort evaluation, or reading-level validation across age bands. The translation checks establish coverage and rendering, not independent linguistic certification. This pass verifies the changed tour content; other existing modes and catalog claims still have opportunities for further review.

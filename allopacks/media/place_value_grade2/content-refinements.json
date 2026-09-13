@@ -1,0 +1,146 @@
+[
+  {
+    "resourceId": "tn-reading",
+    "path": "data",
+    "from": "## Ten Is a Bundle\n\nCount out 24 straws one at a time. Now count them again by tens. Ten. Twenty. Then four more.\n\nThe second way is faster. It is also the whole secret of how we write numbers.\n\nA **digit** is one of the ten symbols: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9. There are only ten of them. So how do we write big numbers? We give each digit a place. The place tells you its **value**.\n\nLook at 245. The 5 sits in the **ones** place. It means five single things. The 4 sits in the **tens** place. It does not mean four. It means four **bundles** of ten, which is forty. The 2 sits in the **hundreds** place. It means two bundles of one hundred.\n\nSo 245 is 200 + 40 + 5. Written that way, it is in **expanded** form.\n\nHere is the surprising part. The digit 2 can mean two. It can mean twenty. It can mean two hundred. Same symbol, different place. In math, where you stand changes what you are worth.\n\nWhat about **zero**? In 305 there are no tens at all. The zero holds that place open. Without it you would write 35, and that is a different number.\n\nSometimes you end up with ten of something in one place. Then you **regroup**. Trade ten ones for one ten. Trade ten tens for one hundred. That trade is how adding works once numbers get big.\n\nTo **compare** 245 and 254, start at the left. The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens. So 254 is the bigger number.",
+    "to": "## Ten Is a Bundle\n\nCount out 24 straws one at a time. Now count them again by tens. Ten. Twenty. Then four more.\n\nThe second way is faster. It is also the whole secret of how we write numbers.\n\nA **digit** is one of the ten symbols: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9. There are only ten of them. So how do we write big numbers? We give each digit a place. The place tells you its **value**.\n\nLook at 245. The 5 sits in the **ones** place. It means five single things. The 4 sits in the **tens** place. It does not mean four. It means four **bundles** of ten, which is forty. The 2 sits in the **hundreds** place. It means two bundles of one hundred.\n\nSo 245 is 200 + 40 + 5. Written that way, it is in **expanded** form.\n\nHere is the surprising part. The digit 2 can mean two. It can mean twenty. It can mean two hundred. Same symbol, different place. For a digit, its place changes the value it represents.\n\nWhat about **zero**? In the usual hundreds-tens-ones form of 305, the tens digit is zero. You can also regroup 305 as 30 tens and 5 ones. The zero holds that place open. Without it you would write 35, and that is a different number.\n\nSometimes you end up with ten of something in one place. Then you **regroup**. Trade ten ones for one ten. Trade ten tens for one hundred. That trade is how adding works once numbers get big.\n\nTo **compare** 245 and 254, start at the left. The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens. So 254 is the bigger number."
+  },
+  {
+    "resourceId": "tn-glossary",
+    "path": "data.1.def",
+    "from": "The place at the far right. It counts single things.",
+    "to": "In a whole number, the rightmost place; it counts single units."
+  },
+  {
+    "resourceId": "tn-glossary",
+    "path": "data.9.def",
+    "from": "A digit that holds a place open when nothing is in it.",
+    "to": "The number zero means none; the digit 0 can mark a place with no groups in the usual form."
+  },
+  {
+    "resourceId": "tn-anchor",
+    "path": "data.sections.0.label",
+    "from": "ONES · the right-hand place",
+    "to": "ONES"
+  },
+  {
+    "resourceId": "tn-anchor",
+    "path": "data.sections.1.label",
+    "from": "TENS · one step left",
+    "to": "TENS"
+  },
+  {
+    "resourceId": "tn-anchor",
+    "path": "data.sections.2.label",
+    "from": "HUNDREDS · one more step left",
+    "to": "HUNDREDS"
+  },
+  {
+    "resourceId": "tn-anchor",
+    "path": "data.sections.2.bullets.2",
+    "from": "A box holding ten bundles",
+    "to": "Two hundred flats, each with 100 small squares"
+  },
+  {
+    "resourceId": "tn-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "Compare: start at the LEFT and work right",
+    "to": "Compare: align the same places, then work from the greatest place"
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "The ones place is at the far right and counts single things.",
+    "to": "For these whole numbers, ones is the rightmost place."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.essentialFacts.3",
+    "from": "The same digit is worth more the farther left it sits.",
+    "to": "Each place to the left has ten times the unit value; a zero digit still represents zero."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Three fingers, right to left. Pinky is ones. Ring finger is tens. Middle finger is hundreds. Read a number onto your fingers and each one gets ten times bigger as you move left.",
+    "to": "Draw three columns: hundreds on the left, tens in the middle, ones on the right. Put a hundred flat, ten rod and single square in the matching columns. Read 245 as two hundreds, four tens and five ones."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Your hand already goes right to left in a fixed order. That order is the same order the places go, so the fingers hold the sequence for you.",
+    "to": "Columns keep places aligned without depending on which hand you use or how it faces. Blocks connect each place to its unit value."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "Right finger: ____. Next finger: ____. Next finger: ____.",
+    "to": "Left column: ____. Middle: ____. Right: ____."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Put one on each finger.",
+    "to": "Draw three columns or point to a place-value mat."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Read 245 onto your fingers.",
+    "to": "Show 245 in the columns."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.0.coachPrompts.0",
+    "from": "Which finger holds the digit that is worth the most?",
+    "to": "Which column holds the greatest place value?"
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "BIG SIDE FIRST. The left side holds the biggest places, so you look there first. If the left digits tie, take one step right and look again.",
+    "to": "ALIGN, THEN COMPARE. Line up ones with ones, tens with tens and hundreds with hundreds. Compare the greatest place first, moving right only when digits tie."
+  },
+  {
+    "resourceId": "tn-memory",
+    "path": "data.cards.1.mapping",
+    "from": "The phrase points at the side of the page, and the side of the page is exactly where the answer usually is, so the words tell you where to put your eyes.",
+    "to": "Alignment matters when numbers have different numbers of digits: 99 has zero hundreds, so it is smaller than 100."
+  },
+  {
+    "resourceId": "tn-faq",
+    "path": "data.0.answer",
+    "from": "Nothing in math forces ten. We picked it, and most people think it is because we have ten fingers. Computers bundle by two instead, and their numbers work just fine.",
+    "to": "Base ten groups units by tens. Other number systems use different bases, such as base two. Our lesson uses base ten throughout."
+  },
+  {
+    "resourceId": "tn-faq",
+    "path": "data.1.answer",
+    "from": "Yes. It means none, and it also does the job of holding a place open. That second job is why 305 is not 35. Zero took a very long time for people to invent.",
+    "to": "Yes. Zero can mean no objects, and the digit 0 also keeps place values clear. In 305 it marks zero tens in the usual place-value form, so the number is different from 35."
+  },
+  {
+    "resourceId": "tn-faq",
+    "path": "data.4.answer",
+    "from": "Because the left place is worth the most. If one number has more hundreds, nothing in the tens or ones can catch up. It saves you looking at the rest.",
+    "to": "Align equal places first. For whole numbers, compare the greatest place where they differ. For example, 99 has no hundreds and 100 has one, so 100 is greater even though its first digit is smaller."
+  },
+  {
+    "resourceId": "tn-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Pick a number with a zero in it if you dare. The zero is the part first graders find hardest.",
+    "to": "Try a number with a zero. Show the empty place clearly and check that its column matches the digit."
+  },
+  {
+    "resourceId": "tn-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "She drew an empty box in the tens spot with a dotted line around it, and wrote a small nothing here inside. Her buddy pointed at it first and asked about it.",
+    "to": "She drew an empty box in the ONES column of 230, with two hundred flats and three ten rods in the other columns. Her buddy noticed the empty ones place first."
+  },
+  {
+    "resourceId": "tn-challenge",
+    "path": "data.coachHint",
+    "from": "One number. Three ways. Test it on a real kid.",
+    "to": "For 230, the ones place is empty; the tens digit is three. One number, three matching representations."
+  }
+]

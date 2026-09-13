@@ -2363,8 +2363,38 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
               ? "This project file contains a student's voice recording (an Oral Fluency read-aloud, a karaoke practice recording, and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?"
               : "This project file includes SEL activity data, which can contain a student's reflections, journal entries, or safety plan — identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?";
           const _spokenPrivacyConfirmed = !!(interactionOptions && interactionOptions.privacyConfirmed === true);
-          const _ok = _spokenPrivacyConfirmed || ((typeof window !== 'undefined' && typeof window.confirm === 'function') ? window.confirm(_msg) : true);
-          if (!_ok) { try { addToast(t('toasts.save_cancelled') || 'Save cancelled.', 'info'); } catch (_) {} return { ok: false, cancelled: true, reason: 'privacy-declined', narration: 'Save cancelled. The project remains open.' }; }
+          // Field report 2026-09-11: "Save keeps cancelling, no clear error." This prompt went through raw
+          // window.confirm(); the sandboxed Canvas iframe returns false from it INSTANTLY with no dialog, so
+          // any project holding a voice recording or SEL data was reported as "Save cancelled." with nothing
+          // to see. Route through the in-app dialog (window.AlloFlowUX.confirm, Canvas-safe) first; if only
+          // the native dialog exists, a `false` that comes back in under 50 ms was suppressed, not declined,
+          // and is reported as such. Every outcome is logged so the next field log names the route and reason.
+          const _privacyKind = _hasVoice ? 'voice-recording' : 'sel-data';
+          const _confirmPrivacy = async () => {
+              if (_spokenPrivacyConfirmed) return { ok: true, route: 'spoken', ms: 0 };
+              const _ux = (typeof window !== 'undefined') && window.AlloFlowUX;
+              const _t0 = Date.now();
+              if (_ux && typeof _ux.confirm === 'function') {
+                  try {
+                      const _r = await _ux.confirm(_msg, { title: t('modals.save_project.title') || 'Save project', confirmText: 'Save anyway', tone: 'warning' });
+                      return { ok: !!_r, route: 'in-app', ms: Date.now() - _t0 };
+                  } catch (_e) {
+                      try { warnLog('[SaveFile] in-app privacy confirm threw; falling back to the native dialog', _e && _e.message); } catch (__) {}
+                  }
+              }
+              if (typeof window === 'undefined' || typeof window.confirm !== 'function') return { ok: true, route: 'no-dialog', ms: 0 };
+              let _native = false;
+              try { _native = !!window.confirm(_msg); } catch (_e) { return { ok: false, route: 'native-threw', ms: Date.now() - _t0, suppressed: true }; }
+              const _ms = Date.now() - _t0;
+              return { ok: _native, route: 'native', ms: _ms, suppressed: !_native && _ms < 50 };
+          };
+          const _decision = await _confirmPrivacy();
+          try { warnLog('[SaveFile] privacy confirm — ' + _privacyKind + ' via ' + _decision.route + ' → ' + (_decision.ok ? 'confirmed' : 'declined') + ' in ' + _decision.ms + 'ms' + (_decision.suppressed ? ' (dialog SUPPRESSED by the host — not a user choice)' : '') + ' [saveType=' + saveType + ', canvas=' + (!!_isCanvasEnv) + ', bytes=' + dataStr.length + ']'); } catch (_) {}
+          if (!_decision.ok) {
+              const _suppressedMsg = 'The browser blocked the privacy confirmation dialog, so the file was not saved. Reload and try again, or save from the Canvas "open in new tab" view.';
+              try { addToast(_decision.suppressed ? _suppressedMsg : (t('toasts.save_cancelled') || 'Save cancelled.'), _decision.suppressed ? 'error' : 'info'); } catch (_) {}
+              return { ok: false, cancelled: !_decision.suppressed, reason: _decision.suppressed ? 'privacy-dialog-suppressed' : 'privacy-declined', privacyKind: _privacyKind, dialogRoute: _decision.route, narration: _decision.suppressed ? _suppressedMsg : 'Save cancelled. The project remains open.' };
+          }
           if (!/CONFIDENTIAL/i.test(outName)) {
               const _dot = outName.lastIndexOf('.');
               outName = _dot > 0 ? outName.slice(0, _dot) + '_CONFIDENTIAL' + outName.slice(_dot) : outName + '_CONFIDENTIAL';
@@ -2392,9 +2422,16 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
       link.href = url;
       link.download = outName;
       document.body.appendChild(link);
-      link.click();
+      let _clickErr = null;
+      try { link.click(); } catch (_e) { _clickErr = _e; }
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      try { warnLog('[SaveFile] download ' + (_clickErr ? 'click THREW: ' + (_clickErr.message || _clickErr) : 'handed to the browser') + ' — ' + outName + ' (' + dataStr.length + ' chars, saveType=' + saveType + ', canvas=' + (!!_isCanvasEnv) + ', encrypted=' + /\.enc(\.|$)/i.test(outName) + ')'); } catch (_) {}
+      if (_clickErr) {
+          const _dlMsg = 'The browser refused to start the download (' + (_clickErr.message || _clickErr) + '). Nothing was saved.';
+          try { addToast(_dlMsg, 'error'); } catch (_) {}
+          return { ok: false, reason: 'download-blocked', narration: _dlMsg };
+      }
       addToast(`Project saved as ${outName}`, "success");
       setLastJsonFileSave(Date.now());
       setIsSaveActionPulsing(false);

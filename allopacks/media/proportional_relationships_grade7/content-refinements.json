@@ -1,0 +1,284 @@
+[
+  {
+    "resourceId": "pr-reading",
+    "path": "data",
+    "from": "## When Doubling One Doubles the Other\n\nHere is a relationship you already understand. If one taco costs 3 dollars, then 2 tacos cost 6, and 4 tacos cost 12. Double the tacos, double the price. That is a **proportional relationship**, and this year you learn to recognize it anywhere and use it like a tool.\n\nTwo quantities are proportional when they always change by the same factor. Multiply one by any number and the other multiplies by the same number. The price of tacos is proportional to the count of tacos. The distance a car travels at steady speed is proportional to the time. The amount of flour in a recipe is proportional to the number of batches.\n\nEvery proportional relationship hides one special number called the **constant of proportionality**. You find it by dividing: output divided by input. For the tacos, 3 divided by 1 is 3, 6 divided by 2 is 3, 12 divided by 4 is 3. Same answer every time. That 3 is the constant, and it is really just the unit rate wearing a fancier name: 3 dollars per taco. Each pair of numbers is a **ratio** — dollars compared with tacos — and in a proportional relationship every one of those ratios boils down to the same value.\n\nThat single number is powerful. Once you have it, you can **predict** ANY value you have not measured. Want the cost of 9 tacos? Multiply 9 by the constant 3 to get 27. You never need a new calculation method, just that one number.\n\nHere is the test that settles every question: divide output by input for each pair. If you get the same answer every time, the relationship is proportional and that answer is your constant. If the answers differ, it is not proportional, no matter how neat the numbers look.\n\nThat test matters because some relationships fool you. Imagine a pool being filled that already had 10 gallons in it before you started, then gains 5 gallons a minute. After 1 minute: 15 gallons. After 2 minutes: 20. The numbers rise steadily, but divide and you get 15, then 10, then less. Not the same. Not proportional. That starting 10 gallons breaks it. Proportional relationships must pass through zero: zero input, zero output. Zero tacos cost zero dollars.\n\nThere is one more reason this idea is worth mastering. On a graph, every proportional relationship is a **straight line through the origin**, and the constant of proportionality sets its **steepness**. So the same idea shows up three ways at once: as a **table** where output over input is constant, as an **equation** y equals kx, and as a straight line through zero. Learn to move between those three and you have most of middle-school math in your hands.",
+    "to": "## When Doubling One Doubles the Other\n\nImagine every taco costs $3, with no fees or discounts. One costs $3, two cost $6, four cost $12. The cost is **proportional** to the number bought under those assumptions.\n\nA proportional model has the rule **y = kx**. Here x is the input, y the output, and k the **constant of proportionality**. For tacos, k is $3 per taco. At every nonzero input, y divided by x equals 3. When x is zero, the rule gives y = 0; do not calculate 0 divided by 0.\n\nThe same multiplier connects the quantities throughout the model's domain. Scaling an input by a factor scales the output by that factor, as long as both inputs are allowed. Whole taco counts are whole numbers; their graph is a set of points on a line. A continuous quantity may fill the line or a segment.\n\nTo check an exact table, divide y by x for every nonzero x. Check any zero-input row separately: its output must be zero. Matching ratios show that the listed pairs fit a proportional rule. A few matching pairs alone do not prove an unobserved relationship will always follow it.\n\nWith the fixed-price assumption, nine tacos cost 9 times 3, or $27. A fee, discount or change in product would require checking the model again. For real measurements, small differences in ratios may reflect uncertainty or rounding. Report the range tested and whether a proportional model is a reasonable approximation.\n\nA pool that already contains ten gallons and gains five per minute follows y = 5x + 10 while filling steadily and before it reaches capacity. At zero minutes it has ten gallons. It is not proportional to elapsed time. The amount ADDED since the start can be proportional, so define your output carefully.\n\nOn equally interpreted coordinate axes, y = kx lies on a straight nonvertical line through the **origin**, (0,0). Passing through the origin alone is not enough; curved graphs can do that too. The value k is the numerical slope, calculated from units on the axes. Changing the display scales changes the apparent angle, not the underlying rate.\n\nA table, equation and graph can describe the same model. Name the input, output, units, constant and allowed values. Then explain which assumptions make your prediction reasonable."
+  },
+  {
+    "resourceId": "pr-glossary",
+    "path": "data.2.def",
+    "from": "The fixed number you multiply the input by — output divided by input.",
+    "to": "The multiplier k in y = kx; for a nonzero input it equals output divided by input."
+  },
+  {
+    "resourceId": "pr-glossary",
+    "path": "data.9.def",
+    "from": "To use a known constant or pattern to find a value you have not measured yet.",
+    "to": "Use a stated model to estimate an unmeasured value within its assumptions and domain."
+  },
+  {
+    "resourceId": "pr-glossary",
+    "path": "data.11.def",
+    "from": "How quickly a line rises — set by the constant of proportionality.",
+    "to": "Slope describes change in output per input unit; the displayed angle also depends on axis scales."
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "Divide output by input for each pair",
+    "to": "For nonzero x, divide output by input"
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.0.bullets.1",
+    "from": "Same answer every time = proportional",
+    "to": "Matching ratios: listed pairs fit y = kx"
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "Different answers = NOT proportional",
+    "to": "At x = 0, check y = 0 without dividing"
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "One number predicts every value",
+    "to": "Predict within the model assumptions and allowed inputs"
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.2.bullets.2",
+    "from": "A starting amount breaks proportionality",
+    "to": "A nonzero value at x = 0 breaks proportionality"
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Table: output over input is constant",
+    "to": "Table: constant y/x for nonzero x"
+  },
+  {
+    "resourceId": "pr-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "Graph: straight line through the origin",
+    "to": "Graph: points on a nonvertical line through the origin"
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Divide output by input for each pair. If you get the same answer every time, the relationship is proportional and that answer is your constant. Proportional relationships must pass through zero. The same idea shows up three ways: a table where output over input is constant, an equation y = kx, and a straight line through the origin.",
+    "to": "Check y/x only for nonzero x. Any zero-input row must have zero output. Matching exact pairs fit a proportional model; predictions beyond them require assumptions."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.target",
+    "from": "The test: output divided by input is the same for every pair",
+    "to": "Test exact table entries without dividing by zero"
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Divide output by input for each pair in the table.",
+    "to": "Divide output by input for each nonzero input."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "If every answer is the same, the relationship is proportional and that answer is the constant of proportionality.",
+    "to": "If all those ratios match and any zero-input row has zero output, the listed pairs fit a proportional model."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "If the answers differ, it is not proportional, no matter how neat the numbers look.",
+    "to": "For measured data, assess uncertainty before interpreting small ratio differences."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Divide each pair, out over in; same number every time? Proportional wins.",
+    "to": "NONZERO: divide. ZERO: inspect. MATCH: a model fits. Then check whether the situation supports that model beyond the table."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.mapping",
+    "from": "The rhyme is the test in order: the operation (out over in), the check (same every time), and the verdict. Saying it makes you actually divide instead of eyeballing.",
+    "to": "The cue separates nonzero inputs from zero and separates a fit to listed pairs from a universal claim."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "Divide each pair, ____ over ____; same number every time? ____.",
+    "to": "For nonzero inputs ____. At zero ____. The data fit ____."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "On a graph, a proportional relationship is a straight line through the origin (0, 0).",
+    "to": "A proportional function has points on a nonvertical straight line through the origin; a zero point alone is insufficient."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.1.mapping",
+    "from": "The keyword head start names the exact thing that breaks proportionality (a starting amount), and 'zero in, zero out' is the origin rule in four words.",
+    "to": "A nonzero zero-input amount rules out proportionality. A zero amount passes only one necessary check, not the whole test."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.2.essentialFacts.0",
+    "from": "Table: output over input is the same in every row.",
+    "to": "Table: y/x agrees in every nonzero-input row; check zero separately."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.2.essentialFacts.2",
+    "from": "Graph: a straight line through the origin whose steepness is k.",
+    "to": "Graph: y = kx lies on a straight nonvertical line through the origin; domain may restrict it to points or a segment."
+  },
+  {
+    "resourceId": "pr-math",
+    "path": "data.problems.4.steps.2.explanation",
+    "from": "It rises by 3 each step but started at 8, not 0 — a starting amount breaks proportionality.",
+    "to": "The pairs fit y = 3x + 5. At x = 0 the model gives 5, not zero. The first listed output 8 occurs at x = 1 and is not the intercept."
+  },
+  {
+    "resourceId": "pr-sort",
+    "path": "data.items.4.content",
+    "from": "A line through the origin on a graph",
+    "to": "Points on a nonvertical straight line through the origin"
+  },
+  {
+    "resourceId": "pr-sort",
+    "path": "data.items.8.content",
+    "from": "Distance at a steady 60 miles per hour",
+    "to": "Distance traveled from the start at a constant 60 miles per hour"
+  },
+  {
+    "resourceId": "pr-quiz",
+    "path": "data.questions.0.question",
+    "from": "What is the test for whether a relationship is proportional?",
+    "to": "Which checks show that every row of an exact table fits a proportional model?"
+  },
+  {
+    "resourceId": "pr-quiz",
+    "path": "data.questions.0.options.3",
+    "from": "Output divided by input is the same for every pair",
+    "to": "Equal y/x for nonzero x; any x = 0 row must have y = 0"
+  },
+  {
+    "resourceId": "pr-quiz",
+    "path": "data.questions.0.correctAnswer",
+    "from": "Output divided by input is the same for every pair",
+    "to": "Equal y/x for nonzero x; any x = 0 row must have y = 0"
+  },
+  {
+    "resourceId": "pr-quiz",
+    "path": "data.questions.2.question",
+    "from": "A proportional relationship, graphed, always looks like what?",
+    "to": "A proportional function with positive constant and all real inputs has which graph?"
+  },
+  {
+    "resourceId": "pr-quiz",
+    "path": "data.questions.2.options.1",
+    "from": "A straight line passing through the origin (0, 0)",
+    "to": "A rising straight line through the origin (0, 0)"
+  },
+  {
+    "resourceId": "pr-quiz",
+    "path": "data.questions.2.correctAnswer",
+    "from": "A straight line passing through the origin (0, 0)",
+    "to": "A rising straight line through the origin (0, 0)"
+  },
+  {
+    "resourceId": "pr-faq",
+    "path": "data.0.answer",
+    "from": "Yes — they are the same number. 'Constant of proportionality' is the version used with equations and graphs; 'unit rate' is the version used with shopping and cooking. One idea, two names for two contexts.",
+    "to": "For a proportional relationship, k is the unit rate with the chosen output-per-input order. Reversing the order changes the number and units."
+  },
+  {
+    "resourceId": "pr-faq",
+    "path": "data.1.answer",
+    "from": "Because proportional means zero input gives zero output. Zero tacos cost zero dollars. If a graph crosses the y-axis anywhere but the origin, something extra (a fee, a head start) has been added, and that breaks proportionality.",
+    "to": "The rule y = kx gives zero output when x is zero. But a zero point alone does not prove proportionality; the same k must work throughout the domain."
+  },
+  {
+    "resourceId": "pr-faq",
+    "path": "data.2.answer",
+    "from": "The +b is a starting amount. y = kx is proportional (through the origin); y = kx + b is linear but NOT proportional. You will study the second kind, called linear relationships, very soon.",
+    "to": "In y = kx + b, b is the output at x = 0. The rule is proportional when b = 0; a nonzero b makes it nonproportional."
+  },
+  {
+    "resourceId": "pr-faq",
+    "path": "data.3.answer",
+    "from": "Yes. If the constant is a fraction like 0.5, then y is always half of x — still proportional, still a straight line through the origin, just a gentler slope. The line still rises; a constant below 1 only makes it climb more slowly.",
+    "to": "Yes. For 0 < k < 1, the line rises more slowly in numerical units than y = x. A negative k also is below 1, but gives a falling line. Axis scales affect the visible angle."
+  },
+  {
+    "resourceId": "pr-faq",
+    "path": "data.4.answer",
+    "from": "Pick any two rows and divide output by input. Do it for a couple more. If you keep getting the same number, it is proportional and that number is your constant. If not, it is not.",
+    "to": "For an exact table, check every nonzero-input ratio and inspect zero-input rows separately. Matching rows fit a proportional rule; measured data need uncertainty checks and do not prove behavior outside the tested range."
+  },
+  {
+    "resourceId": "pr-faq",
+    "path": "data.5.answer",
+    "from": "Currency exchange, scaling recipes, unit conversions, speed and distance, pay rates, mixing ratios, and reading almost any graph. Proportional reasoning is one of the most reused ideas in all of math.",
+    "to": "Proportional models help with fixed unit prices, scaling and conversions. Fees, changing rates, limits and different definitions of the quantities can make a model inappropriate."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.instructions",
+    "from": "Find a real relationship that people treat as proportional, collect at least five data pairs, run the same-answer test, and report whether it truly is, where it breaks, and what the constant means.",
+    "to": "Collect at least five real data pairs and assess whether a proportional model fits the measured range. Check nonzero ratios, zero behavior, units and measurement uncertainty. Do not claim to prove behavior outside your observations."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Collect real pairs before deciding anything. Then divide output by input for every pair. Look at that column of answers, not at the shape of the graph.",
+    "to": "Record data with units and resolution. Compute y/x only when x is nonzero. Inspect a zero-input value separately if available, then check a graph and the context."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "Two quantities are proportional when output divided by input is the same for every pair; that number is the constant of proportionality.",
+    "to": "A proportional rule has one k with y = kx. The ratio y/x is used only when x is nonzero."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "A proportional relationship graphs as a straight line through the origin.",
+    "to": "Proportional model points lie on a nonvertical line through the origin; available inputs may be discrete."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.brief.criteria.1",
+    "from": "Output divided by input is computed for every pair and shown in a column",
+    "to": "Compute y/x for each nonzero input; mark zero-input ratios undefined and inspect y separately"
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.brief.criteria.2",
+    "from": "A clear verdict: proportional, not proportional, or proportional only within a range. If it breaks, name the break point.",
+    "to": "State whether the model fits approximately or exactly in the measured range, with uncertainty and limits"
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "He recorded five rides, divided fare by miles, and got 4.50, 3.25, 2.90, 2.70, 2.60. The answers were not the same, so he checked the receipt and found a $3 base fare. Fare minus the base fare divided by miles was constant at about $2.50 per mile.",
+    "to": "He used an illustrative fare rule y = 2.50x + 3 and distances of 1, 2, 3, 4 and 6 miles. Costs were $5.50, $8, $10.50, $13 and $18. The ratios vary, but subtracting the $3 base fare before dividing gives $2.50 per mile each time. These are model numbers, not actual taxi receipts."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.coachHint",
+    "from": "Do not trust the straight-looking line. Trust the column of divisions. Same number every time, or it is not proportional.",
+    "to": "Never divide by zero. Compare all nonzero ratios, assess measurement uncertainty, check the origin condition and limit the conclusion to the tested range."
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Here is the test that settles every question: divide output by input for each pair. If you get the same answer every time, the relationship is proportional and that answer is your constant. If the answers differ, it is not proportional, no matter how neat the numbers look.",
+    "to": "A proportional model has y = kx. Test nonzero ratios and zero behavior separately, and state what observations can and cannot establish."
+  }
+]

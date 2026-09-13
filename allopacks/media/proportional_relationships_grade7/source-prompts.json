@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "proportional_relationships_grade7",
+    "key": "tacos",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Editorial colored-pencil and soft clay study. Three distinct tacos in a neat row on one plain ceramic plate. No text, numbers, currency or decorations resembling additional tacos. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-tacos.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-feb298df-79cf-4954-a83f-1c470f4c1538.png",
+    "alt": "Three tacos with different fillings sit together on a plain plate.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "proportional_relationships_grade7",
+    "key": "tank",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Editorial colored-pencil and soft clay study. One transparent rectangular water tank partially filled with blue water, shown simply in side view with a short inlet pipe above. No graduations, no numbers, no arrows, no flow graph. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-tank.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3375fe0d-cca4-4d46-a3d7-fdd8023bdc61.png",
+    "alt": "Water pours from a pipe into a partially filled transparent rectangular tank.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

@@ -430,15 +430,16 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
     try {
       localStorage.clear();
       localStorage.setItem('bl_onboarded', '1');
-      localStorage.setItem('behaviorLens_abc_Eagle', JSON.stringify([{
-        timestamp: '2026-07-28T12:00:00.000Z',
+      localStorage.setItem('bl_student_roster', JSON.stringify([{ id: 'review-eagle', name: 'Eagle' }]));
+      localStorage.setItem('behaviorLens_workspace_review-eagle', JSON.stringify({ version: 4, student: 'Eagle', abcEntries: [{
+        timestamp: new Date().toISOString(),
         antecedent: 'Transition',
         behavior: 'Leaves seat',
         consequence: 'Break',
         intensity: 2,
         duration: 15,
         phase: 'Baseline'
-      }]));
+      }] }));
 
       await React.act(async () => {
         root.render(React.createElement(

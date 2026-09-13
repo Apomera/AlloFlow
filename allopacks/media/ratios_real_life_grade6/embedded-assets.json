@@ -1,0 +1,272 @@
+[
+  {
+    "id": "rtx-term-1",
+    "kind": "term",
+    "file": "rtx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 2 units; a coral bar below represents 3 units on the same scale.",
+    "altHash": "img-427-fbe109bf"
+  },
+  {
+    "id": "rtx-term-2",
+    "kind": "term",
+    "file": "rtx-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bars share a left baseline; the coral lower bar is slightly longer than the teal upper bar.",
+    "altHash": "img-3nr-58dd056c"
+  },
+  {
+    "id": "rtx-term-3",
+    "kind": "term",
+    "file": "rtx-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bars share a left baseline; the coral lower bar is slightly longer than the teal upper bar.",
+    "altHash": "img-3nr-58dd056c"
+  },
+  {
+    "id": "rtx-term-4",
+    "kind": "term",
+    "file": "rtx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 4 units; a coral bar below represents 6 units on the same scale.",
+    "altHash": "img-4gz-243a41a7"
+  },
+  {
+    "id": "rtx-term-5",
+    "kind": "term",
+    "file": "rtx-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small rectangle and a rectangle twice as wide and twice as tall sit apart.",
+    "altHash": "img-417-9199e0c6"
+  },
+  {
+    "id": "rtx-term-6",
+    "kind": "term",
+    "file": "rtx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 6 units; a coral bar below represents 9 units on the same scale.",
+    "altHash": "img-507-d90a05d1"
+  },
+  {
+    "id": "rtx-term-7",
+    "kind": "term",
+    "file": "rtx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bars share a left baseline; the coral lower bar is slightly longer than the teal upper bar.",
+    "altHash": "img-3nr-58dd056c"
+  },
+  {
+    "id": "rtx-term-8",
+    "kind": "term",
+    "file": "rtx-term-8.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Two cups with mounded flour sit beside three cups containing milk.",
+    "altHash": "img-4h3-33bfb801"
+  },
+  {
+    "id": "rtx-term-9",
+    "kind": "term",
+    "file": "rtx-term-9.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A smaller teal cereal carton and a larger coral carton have grain-and-bowl pictures but no printed prices.",
+    "altHash": "img-ban-9cf22b67"
+  },
+  {
+    "id": "rtx-term-10",
+    "kind": "term",
+    "file": "rtx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal-length segments have four equal intervals above and eight equal intervals below.",
+    "altHash": "img-6g3-fb1edead"
+  },
+  {
+    "id": "rtx-anchor-1",
+    "kind": "anchor",
+    "file": "rtx-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 3 units; a coral bar below represents 4 units on the same scale.",
+    "altHash": "img-447-a81ad7ff"
+  },
+  {
+    "id": "rtx-anchor-2",
+    "kind": "anchor",
+    "file": "rtx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bars share a left baseline; the coral lower bar is slightly longer than the teal upper bar.",
+    "altHash": "img-3nr-58dd056c"
+  },
+  {
+    "id": "rtx-anchor-3",
+    "kind": "anchor",
+    "file": "rtx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small rectangle and a rectangle twice as wide and twice as tall sit apart.",
+    "altHash": "img-417-9199e0c6"
+  },
+  {
+    "id": "rtx-anchor-4",
+    "kind": "anchor",
+    "file": "rtx-anchor-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A smaller teal cereal carton and a larger coral carton have grain-and-bowl pictures but no printed prices.",
+    "altHash": "img-8mf-f38a1a47"
+  },
+  {
+    "id": "rtx-sort-1",
+    "kind": "sort",
+    "file": "rtx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 4 units; a coral bar below represents 6 units on the same scale.",
+    "altHash": "img-4gz-243a41a7"
+  },
+  {
+    "id": "rtx-sort-2",
+    "kind": "sort",
+    "file": "rtx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 6 units; a coral bar below represents 9 units on the same scale.",
+    "altHash": "img-507-d90a05d1"
+  },
+  {
+    "id": "rtx-sort-3",
+    "kind": "sort",
+    "file": "rtx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 3 units; a coral bar below represents 4 units on the same scale.",
+    "altHash": "img-447-a81ad7ff"
+  },
+  {
+    "id": "rtx-sort-4",
+    "kind": "sort",
+    "file": "rtx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 20 units; a coral bar below represents 30 units on the same scale.",
+    "altHash": "img-7pb-372e2001"
+  },
+  {
+    "id": "rtx-sort-5",
+    "kind": "sort",
+    "file": "rtx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 2 units; a coral bar below represents 4 units on the same scale.",
+    "altHash": "img-40n-dece9507"
+  },
+  {
+    "id": "rtx-sort-6",
+    "kind": "sort",
+    "file": "rtx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 10 units; a coral bar below represents 15 units on the same scale.",
+    "altHash": "img-5qv-98a8c9d0"
+  },
+  {
+    "id": "rtx-sort-7",
+    "kind": "sort",
+    "file": "rtx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 4 units; a coral bar below represents 5 units on the same scale.",
+    "altHash": "img-4h3-0a8a2c47"
+  },
+  {
+    "id": "rtx-sort-8",
+    "kind": "sort",
+    "file": "rtx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 1 units; a coral bar below represents 1.5 units on the same scale.",
+    "altHash": "img-3yz-196e68b3"
+  },
+  {
+    "id": "rtx-lesson-1",
+    "kind": "lesson",
+    "file": "rtx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A smaller teal cereal carton and a larger coral carton have grain-and-bowl pictures but no printed prices.",
+    "altHash": "img-qmn-252fb475"
+  },
+  {
+    "id": "rtx-lesson-2",
+    "kind": "lesson",
+    "file": "rtx-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 2 units; a coral bar below represents 3 units on the same scale.",
+    "altHash": "img-427-fbe109bf"
+  },
+  {
+    "id": "rtx-lesson-3",
+    "kind": "lesson",
+    "file": "rtx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 4 units; a coral bar below represents 6 units on the same scale.",
+    "altHash": "img-4gz-243a41a7"
+  },
+  {
+    "id": "rtx-lesson-4",
+    "kind": "lesson",
+    "file": "rtx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A teal bar represents 6 units; a coral bar below represents 9 units on the same scale.",
+    "altHash": "img-507-d90a05d1"
+  },
+  {
+    "id": "rtx-lesson-5",
+    "kind": "lesson",
+    "file": "rtx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two bars share a left baseline; the coral lower bar is slightly longer than the teal upper bar.",
+    "altHash": "img-3nr-58dd056c"
+  },
+  {
+    "id": "rtx-lesson-6",
+    "kind": "lesson",
+    "file": "rtx-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two cups with mounded flour sit beside three cups containing milk.",
+    "altHash": "img-arz-e4dfcc70"
+  },
+  {
+    "id": "rtx-lesson-7",
+    "kind": "lesson",
+    "file": "rtx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small rectangle and a rectangle twice as wide and twice as tall sit apart.",
+    "altHash": "img-417-9199e0c6"
+  },
+  {
+    "id": "rtx-lesson-8",
+    "kind": "lesson",
+    "file": "rtx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two equal-length segments have four equal intervals above and eight equal intervals below.",
+    "altHash": "img-6g3-fb1edead"
+  }
+]

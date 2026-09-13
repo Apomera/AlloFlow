@@ -674,6 +674,7 @@ var createContentEngine = function(deps) {
   var currentAudioRef = { current: null };
   var _phonicsReqId = 0;
   var _definitionReqId = 0;
+  var _revisionReqId = 0;
   _bindState = function() {
     var s = _s();
     inputText = s.inputText; gradeLevel = s.gradeLevel;
@@ -2122,14 +2123,27 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   const handleReviseSelection = async (action, customInstruction = '') => {
       if (!selectionMenu || !selectionMenu.text) return;
       const originalText = selectionMenu.text;
+      const selectedLanguage = selectionMenu.language;
       if (action === 'custom-input') {
           setIsCustomReviseOpen(true);
           return;
       }
+      const requestId = ++_revisionReqId;
+      const resourceId = generatedContent?.id;
+      const resourceText = generatedContent?.data;
+      const requestIsCurrent = () => {
+          const current = deps.getState();
+          return requestId === _revisionReqId && current.generatedContent?.id === resourceId && current.generatedContent?.data === resourceText;
+      };
+      const updateRequest = updater => {
+          if (!requestIsCurrent()) return;
+          setRevisionData(prev => prev && prev.requestId === requestId ? updater(prev) : prev);
+      };
       setSelectionMenu(null);
       setIsCustomReviseOpen(false);
       setRevisionData({
           type: action,
+          requestId,
           original: originalText,
           result: null,
           x: selectionMenu.x,
@@ -2170,6 +2184,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                 }
                `;
                const jsonStr = await callGemini(prompt, true);
+               if (!requestIsCurrent()) return;
                try {
                    const data = JSON.parse(cleanJson(jsonStr));
                    const restoredPrimary = _restoreCitations(data.primaryRevision, originalText);
@@ -2187,7 +2202,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                        _preserveOriginalRevisionForCitations(originalText);
                        return;
                    }
-                   setRevisionData(prev => ({
+                   updateRequest(prev => ({
                        ...prev,
                        result: restoredPrimary,
                        replacements: restoredReplacements
@@ -2199,7 +2214,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                }
           }
           let prompt;
-          const outputLang = revisionLanguage === 'All Selected Languages' ? 'English' : revisionLanguage;
+          const explanationLanguage = action === 'explain' && selectedLanguage ? selectedLanguage : revisionLanguage;
+          const outputLang = explanationLanguage === 'All Selected Languages' ? 'English' : explanationLanguage;
           const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
           // Shared preservation rules injected into Revise/Simplify prompts so
           // Gemini keeps citation chips like [⁽1⁾](url) and markdown structure
@@ -2247,7 +2263,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               `;
           } else {
               prompt = `
-                Explain the meaning of this phrase for a ${gradeLevel} student.
+                Explain the meaning of this phrase for a ${revisionGrade} student.
                 Provide a short, clear explanation or definition.
                 Context Topic: ${sourceTopic || "General"}.
                 Phrase: "${originalText}",
@@ -2261,6 +2277,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               `;
           }
           const result = await callGemini(prompt);
+          if (!requestIsCurrent()) return;
           // Safety net: if Gemini still dropped citation wrappers and emitted
           // bare URLs that were cited in the original, re-wrap them as [⁽N⁾](url).
           const restoredResult = _restoreCitations(result, originalText);
@@ -2269,13 +2286,14 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               _preserveOriginalRevisionForCitations(originalText);
               return;
           }
-          setRevisionData(prev => ({
+          updateRequest(prev => ({
               ...prev,
               result: restoredResult
           }));
       } catch (err) {
+          if (!requestIsCurrent()) return;
           warnLog("Unhandled error:", err);
-          setRevisionData(null);
+          updateRequest(() => null);
           addToast(t('toasts.revision_failed'), "error");
       } finally {
       }
@@ -2335,7 +2353,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       } finally {
       }
   };
-  const handlePhonicsClick = async (rawWord, e = null) => {
+  const handlePhonicsClick = async (rawWord, e = null, options = {}) => {
       // Use a Unicode property class so non-Latin scripts (Cyrillic, Greek, Arabic, Hebrew,
       // Han, Hiragana/Katakana, Hangul, Devanagari, etc.) survive the character scrub.
       // Previously the regex was /[^a-zA-ZÀ-ÿ0-9-\s]/g which kept only Latin + Latin-Extended-A,
@@ -2354,7 +2372,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       // Resolve the active content language. "All Selected Languages" is a UI pseudo-value
       // that means "generate in every selected language"; for phonics of a specific word,
       // fall back to English as the analysis language in that ambiguous case.
-      const selectedWordLanguage = e?.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage;
+      const selectedWordLanguage = options.language || e?.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage;
       const _phLang = (selectedWordLanguage && selectedWordLanguage !== 'All Selected Languages')
           ? selectedWordLanguage : 'English';
       // Authoritative pronunciation alongside the AI phonics: real recording (dict.audio)
@@ -2392,8 +2410,11 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
               ...prev,
               data: data,
+              language: _phLang,
               isLoading: false
           } : prev));
+          // Adapted reading offers explicit, cancellable pronunciation in its popup.
+          if (options.audioPlayback === 'reader') return;
           try {
               // Pass the active language so callTTS can (a) swap Kokoro for a multilingual
               // Gemini voice when content is non-English, and (b) include a language-hint
@@ -2519,6 +2540,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       }
   };
   const closeRevision = () => {
+      ++_revisionReqId;
       setRevisionData(null);
       setSelectionMenu(null);
       setIsCustomReviseOpen(false);

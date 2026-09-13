@@ -14,14 +14,18 @@ export function identity(prefix = 'room') {
   return prefix + '_' + (cryptoApi?.randomUUID ? cryptoApi.randomUUID().replace(/-/g, '') : Date.now().toString(36) + Math.random().toString(36).slice(2));
 }
 export function sourceText(input, content) {
-  if (typeof input === 'string' && input.trim()) return input.trim().slice(0, 12000);
+  const lesson = typeof input === 'string' ? input.trim().slice(0, 12000) : '';
+  if (lesson.length >= 40) return lesson;
   const data = content?.data || {};
-  return (Array.isArray(data.questions) ? data.questions : []).filter(q => q && typeof q === 'object').map(q => {
+  const assessment = (Array.isArray(data.questions) ? data.questions : []).filter(q => q && typeof q === 'object').map(q => {
     const options = Array.isArray(q.options) ? q.options : [];
     const keyedIndex = Number.isInteger(q.correctIndex) ? q.correctIndex : typeof q.correctAnswer === 'number' && Number.isInteger(q.correctAnswer) ? q.correctAnswer : -1;
     const answer = keyedIndex >= 0 && keyedIndex < options.length ? options[keyedIndex] : q.correctAnswer;
     return [typeof (q.question || q.prompt) === 'string' ? 'Prompt: ' + (q.question || q.prompt) : '', options.length ? 'Choices (including distractors): ' + options.filter(v => typeof v === 'string').join(' | ') : '', typeof answer === 'string' ? 'Answer key: ' + answer : '', typeof q.explanation === 'string' ? 'Explanation: ' + q.explanation : ''].filter(Boolean).join('\n');
   }).join('\n\n').slice(0, 12000);
+  // Topic-only generation leaves inputText short even after a full assessment
+  // exists. Use its keyed content instead of disabling both game generators.
+  return [lesson, assessment].filter(Boolean).join('\n\n').slice(0, 12000);
 }
 export function validateRoom(room, source) {
   const errors = [];

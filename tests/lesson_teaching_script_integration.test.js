@@ -20,7 +20,7 @@ function actualHost(overrides = {}) {
   const scope = {
     React: { useState: value => [value === 'loading' ? 'ready' : value, vi.fn()], useRef: value => ({ current: value }), useEffect: effect => effects.push(effect) },
     history: [plan, material], generatedContent: plan, isTeacherMode: true, isParentMode: false, isIndependentMode: false,
-    appId: 'app', selectedProfileId: 'teacher', user: { uid: 'user' }, ai,
+    appId: 'app', selectedProfileId: 'teacher', user: { uid: 'user' }, canvasRecoveryCurrentIdRef: { current: 'workspace-1' }, ai,
     _isCanvasEnv: false, _aiConfig: { backend: 'gemini', apiKey: 'test-key' }, activeView: 'lesson-plan',
     leveledTextLanguage: 'English', targetStandards: [], WebSearchProvider: { search: vi.fn() },
     handleRestoreView: vi.fn(), onUpdateResource: (id, updater) => { const item = scope.history.find(entry => entry.id === id); const next = updater(item); if (next === item) return false; mutations.push(next); return true; },
@@ -66,6 +66,23 @@ describe('actual teaching-script app integration', () => {
       expect(h.ai.generateText).not.toHaveBeenCalled();
       expect(h.mutations).toHaveLength(0);
     }
+  });
+
+  it('isolates script ownership across teachers, profiles, and restored workspaces', async () => {
+    const h = actualHost();
+    const baseline = h.handlers.teachingScriptStateRef.current.actorKey;
+    for (const overrides of [
+      { appId: 'another-app' }, { user: { uid: 'another-teacher' } },
+      { selectedProfileId: 'another-profile' }, { canvasRecoveryCurrentIdRef: { current: 'another-workspace' } }
+    ]) expect(actualHost(overrides).handlers.teachingScriptStateRef.current.actorKey).not.toBe(baseline);
+    expect(actualHost().handlers.teachingScriptStateRef.current.actorKey).toBe(baseline);
+    let complete;
+    h.ai.generateText.mockImplementationOnce(() => new Promise(resolve => { complete = resolve; }));
+    const pending = h.handlers.onGenerateTeachingScript(settings);
+    h.handlers.teachingScriptStateRef.current = { ...h.handlers.teachingScriptStateRef.current, actorKey: actualHost({ canvasRecoveryCurrentIdRef: { current: 'another-workspace' } }).handlers.teachingScriptStateRef.current.actorKey };
+    complete(response);
+    expect((await pending).ok).toBe(false);
+    expect(h.mutations).toHaveLength(0);
   });
 
   it('keeps material navigation inside the scoped teacher resources', () => {

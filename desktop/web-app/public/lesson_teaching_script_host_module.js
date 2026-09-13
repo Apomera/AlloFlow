@@ -14,8 +14,10 @@
     const scopeValue = value => typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
     const scope = item => Object.fromEntries(scopeKeys.map(key => [key, [item?.[key], item?.config?.[key], key === 'sourceArtifactId' && ['analysis', 'source'].includes(item?.type) ? idOf(item) : null].map(scopeValue).find(Boolean) || '']));
     const planScope = scope(plan);
+    const hasTeachingText = coreModule()?.hasTeachingMaterialText;
     return array(history).filter(item => {
       if (!item || !idOf(item) || !TYPES.has(item.type) || idOf(item) === idOf(plan) || item.isStudentWork || item.config?.isStudentWork || item.studentId || item.submissionId) return false;
+      if (typeof hasTeachingText === 'function' && !hasTeachingText(item)) return false;
       const itemScope = scope(item);
       for (const key of scopeKeys) {
         if (planScope[key] && itemScope[key] && planScope[key] !== itemScope[key]) return false;
@@ -28,7 +30,8 @@
   }
   function canonicalPlan(state, planId) {
     // A deleted history entry must not be resurrected from a stale active view.
-    return array(state.history).find(item => idOf(item) === String(planId) && item.type === 'lesson-plan') || null;
+    const matches = array(state.history).filter(item => idOf(item) === String(planId));
+    return matches.length === 1 && matches[0].type === 'lesson-plan' ? matches[0] : null;
   }
   /* Reviewable defaults come from the saved plan itself (its recorded grade, language, standard, title, objectives
    * and phases) plus its scoped materials. The current workspace only supplies a language fallback, never a grade
@@ -49,6 +52,21 @@
       suggestedDuration: { ...context.suggestedDuration },
       gradeOptions: core.GRADES.slice(), subjectOptions: core.SUBJECTS.map(id => ({ id, label: core.SUBJECT_LABELS[id] || id })), scopes: JSON.parse(JSON.stringify(core.SCOPES)),
     };
+  }
+  // Settle cancellation even when a loader or provider ignores AbortSignal.
+  function waitForRun(promise, signal) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (callback, value) => {
+        if (settled) return;
+        settled = true; signal.removeEventListener('abort', onAbort); callback(value);
+      };
+      const onAbort = () => finish(reject, Object.assign(new Error('Script generation cancelled.'), { name: 'AbortError' }));
+      // Attach both handlers before checking cancellation, including late failures.
+      Promise.resolve(promise).then(value => finish(resolve, value), error => finish(reject, error));
+      signal.addEventListener('abort', onAbort, { once: true });
+      if (signal.aborted) onAbort();
+    });
   }
   function createController(deps) {
     const runs = new Map();
@@ -100,13 +118,13 @@
         if (snapshot.settings.researchEnabled) {
           report(id, { busy: true, stage: 'research' });
           if (typeof deps.ensureResearch === 'function') {
-            try { await deps.ensureResearch(); }
+            try { await waitForRun(deps.ensureResearch(), run.controller.signal); }
             catch (_) { ensureCurrent(); throw new Error('Research tools could not be loaded. Retry, or turn off research to create an unresearched script.'); }
             ensureCurrent();
           }
           if (!research()?.collect || typeof deps.read !== 'function') throw new Error('Research is unavailable. Retry, or explicitly turn off research to create an unresearched script.');
           // Only the reviewed lesson context reaches the research adapter; materials and learner data never do.
-          evidence = await research().collect({ grade: snapshot.settings.grade, subject: snapshot.settings.subject, topic: snapshot.settings.topic, goal: snapshot.settings.goal, standard: snapshot.settings.standard, signal: run.controller.signal }, { search: deps.search, read: deps.read });
+          evidence = await waitForRun(research().collect({ grade: snapshot.settings.grade, subject: snapshot.settings.subject, topic: snapshot.settings.topic, goal: snapshot.settings.goal, standard: snapshot.settings.standard, signal: run.controller.signal }, { search: deps.search, read: deps.read }), run.controller.signal);
           ensureCurrent();
           if (evidence?.status !== 'retrieved' || !array(evidence.sources).some(source => array(source.recommendations).length)) {
             const why = array(evidence?.warnings).filter(value => typeof value === 'string').join(' ');
@@ -116,12 +134,12 @@
         ensureCurrent();
         report(id, { busy: true, stage: 'generating' });
         const prompt = core().buildScriptPrompt(snapshot, evidence);
-        let raw = await deps.callText(prompt, run.controller.signal);
+        let raw = await waitForRun(deps.callText(prompt, run.controller.signal), run.controller.signal);
         ensureCurrent();
         let result = core().normalizeScript(raw, snapshot, evidence);
         if (!result.ok) {
           report(id, { busy: true, stage: 'validating' });
-          raw = await deps.callText(prompt + '\n\nThe previous attempt failed validation. Return a fresh complete JSON object addressing these checks: ' + JSON.stringify(result.errors), run.controller.signal);
+          raw = await waitForRun(deps.callText(prompt + '\n\nThe previous attempt failed validation. Return a fresh complete JSON object addressing these checks: ' + JSON.stringify(result.errors), run.controller.signal), run.controller.signal);
           ensureCurrent();
           result = core().normalizeScript(raw, snapshot, evidence);
         }
@@ -145,11 +163,13 @@
         if (runs.get(id) === run) runs.delete(id);
       }
     }
-    function saveEdits(planId, versionId, steps) {
+    function saveEdits(planId, versionId, steps, expectedSteps) {
       const state = deps.getState(), plan = canonicalPlan(state, planId);
       if (disposed || !allowed(state) || !plan) return { ok: false, error: 'Open the saved plan in teacher mode to save edits.' };
+      const matchesExpected = previous => expectedSteps === undefined || (Array.isArray(expectedSteps) && JSON.stringify(array(previous.data?.teachingScripts).find(version => version?.id === versionId)?.steps) === JSON.stringify(expectedSteps));
+      if (!matchesExpected(plan)) return { ok: false, error: 'This script changed while you were editing. Keep your draft and reopen the latest version before saving.' };
       if (!core()?.updateVersion || core().updateVersion(plan, versionId, steps) === plan) return { ok: false, error: 'Check every step, its references, and the total duration before saving.' };
-      const accepted = deps.updateResource(String(planId), previous => core().updateVersion(previous, versionId, steps));
+      const accepted = deps.updateResource(String(planId), previous => matchesExpected(previous) ? core().updateVersion(previous, versionId, steps) : previous);
       return accepted ? { ok: true } : { ok: false, error: 'These edits could not be added to the plan. Keep your draft and try again.' };
     }
     return { generate, cancel, saveEdits, dispose() { disposed = true; [...runs.keys()].forEach(cancel); } };

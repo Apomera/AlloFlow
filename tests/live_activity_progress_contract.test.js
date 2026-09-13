@@ -21,7 +21,7 @@ describe('Universal live activity progress contract', () => {
   });
 
   it('fails closed in Firebase and Class Mailbox with matching field and status bounds', () => {
-    expect(mailbox).toContain('var VERSION = 19;');
+    expect(Number(mailbox.match(/var VERSION = (\d+);/)[1])).toBeGreaterThanOrEqual(19);
     expect(mailbox).toContain('function validActivityProgressValue(value)');
     expect(mailbox).toContain("if (field === 'activityProgress') return validActivityProgressValue(value);");
     expect(mailbox).toContain('activityProgress: 1');

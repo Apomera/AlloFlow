@@ -40,7 +40,8 @@ beforeEach(() => { resetStemLab(); });
 describe('Anatomy review scheduling', () => {
   it.each(ANATOMY_PATHS)('stamps every confidence write with a time in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
-    expect(source).toContain("return { _structureConfidence: nextConfidence, _confidenceAt: stampConfidence(structureId) };");
+    expect(source).toContain("nextConfidence[id]=nextLevel;nextAt[id]=now;");
+    expect(source).toContain("return {_structureConfidence:nextConfidence,_confidenceAt:nextAt,_retrievalEvidence:nextEvidence};");
     expect(source).toContain("{ _structureConfidence: nextConfidence, _confidenceAt: stampConfidence(structureId) }");
     expect(source).toContain('var ANATOMY_REVIEW_DUE_DAYS = { learning: 2, mastered: 7 };');
   });

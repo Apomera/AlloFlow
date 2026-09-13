@@ -185,7 +185,9 @@ describe('H. 3-band assessment + unified scales + honest report framing (2026-07
   });
   for (const [name, s] of [['source', VIEW_SRC], ['module', VIEW_MOD]]) {
     it(`view ${name}: climax setup explainer is present`, () => {
-      expect(s).toMatch(/climax\.setup_hint|adds a final challenge that tests what the story taught/);
+      const settings = name === 'source' ? read('view_adventure_settings_source.jsx') : s;
+      expect(settings).toContain('The final challenge fits inside a set episode.');
+      expect(settings).toContain('Include a final challenge');
     });
   }
 });

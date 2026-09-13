@@ -32,7 +32,7 @@ function makeRuntime(options = {}) {
   const toasts = [];
   const warnings = [];
   const storageDB = {
-    get: async (key) => values.get(key),
+    get: async (key, readOptions) => options.getBehavior ? options.getBehavior(key, readOptions, values) : values.get(key),
     set: async (key, value) => {
       if (typeof options.beforeSet === 'function') await options.beforeSet(key, value);
       if (typeof options.setBehavior === 'function') {
@@ -67,7 +67,7 @@ function makeRuntime(options = {}) {
     '_withTimeout', 'CustomEvent',
     source.slice(runtimeStart, runtimeEnd) +
       '\nreturn {' +
-      ' saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, saveStatus: _saveBatchStatus,' +
+      ' load: _loadActiveBatch, saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, saveStatus: _saveBatchStatus,' +
       ' commitBoundary: _commitBatchCheckpointBoundary, startRoot: _startBatchCheckpointRoot, clearActive: _clearActiveBatch, statusKeyFor: _batchStatusKeyFor,' +
       ' resultKeyFor: _batchResultKeyFor, degraded: function () { return _batchCheckpointDegraded; }' +
       ' };'
@@ -307,4 +307,27 @@ describe('post-file batch checkpoint boundaries', () => {
     expect(source).toContain('batch_checkpoint_atomic_lock_unavailable');
     expect(source).toContain('_clearActiveBatch(_batchId, _batchRootWriteId)');
   });
+});
+
+
+it('restores failed files and their retry policy even when no files remain pending', async () => {
+  const r = makeRuntime();
+  const files = [{ ...makeFile('bad', 'failed'), error: 'Invalid PDF', failureKind: 'invalid-file', autoRetryable: false, retryAdvice: 'Replace the source' }];
+  const root = await saveRoot(r, 'batch_retained_failed', files);
+  await r.api.commitBoundary({ files, batchId: 'batch_retained_failed', startWrite: root });
+  const saved = await r.api.load({ throwOnError: true });
+  expect(saved).toMatchObject({ _incompleteCount: 1, _failedCount: 1, _pendingCount: 0 });
+  expect(saved.files[0]).toMatchObject({ status: 'failed', failureKind: 'invalid-file', autoRetryable: false, retryAdvice: 'Replace the source' });
+});
+
+
+it('strict discovery propagates result-storage errors instead of silently re-queuing completed work', async () => {
+  let deny = false;
+  const r = makeRuntime({ getBehavior: (key, options, values) => { if (deny && key.includes('batch_result')) { if (options?.throwOnError) throw new Error('Result storage unavailable'); return null; } return values.get(key); } });
+  const files = [makeFile('completed')];
+  const root = await saveRoot(r, 'batch_strict_result', files);
+  await r.api.commitBoundary({ files, batchId: 'batch_strict_result', startWrite: root });
+  deny = true;
+  await expect(r.api.load({ throwOnError: true })).rejects.toThrow('Result storage unavailable');
+  expect((await r.api.load()).files[0].status).toBe('pending');
 });

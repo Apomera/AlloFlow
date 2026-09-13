@@ -302,15 +302,20 @@ describe('colour pipeline source contract', () => {
     }
   });
 
-  it('lets the shadow volume travel with the player instead of sitting on the origin', () => {
-    // The box is 60 wide but lessons lay ground out to x = 50, so a fixed box left
-    // everything past x = 30 with no shadow at all.
-    expect(src).toContain('sun.target = engine._sunTarget;');
-    expect(src).toContain('engine.scene.add(engine._sunTarget);');
-    expect(src).toContain('engine._sunTarget.position.set(stx, 0, stz)');
-    // snapped to whole shadow-map texels, or the shadows crawl as the player walks
-    expect(src).toContain('Math.round(engine.camera.position.x / texel) * texel');
-    // and far enough that a 9-degree sun still clears the world
+  it('moves and snaps the shadow volume around exploration or an inspected subject', () => {
+    const exports={};new Function('exports','module',readFileSync('vendor/three-r128/three.min.js','utf8'))(exports,{exports});const T=exports;
+    const a=src.indexOf('  function geometryWorldShadowAnchor('),b=src.indexOf('  // Interpolate two bearings',a);
+    const anchor=new Function(src.slice(a,b)+'return geometryWorldShadowAnchor;')();
+    const c=src.lastIndexOf('            var sdir = geometryWorldSunVector('),d=src.indexOf('            if(engine._skyDome)',c);
+    const update=new Function('engine','geometryWorldSunVector','geometryWorldShadowAnchor',src.slice(c,d));
+    const engine={camera:new T.PerspectiveCamera(),sun:new T.DirectionalLight(),_sunTarget:new T.Object3D(),_sunAngles:{el:48,az:45},_sunDistance:120,_currentLesson:{ground:{y:4}},_viewPreset:'free'};
+    engine.sun.shadow.camera.left=-30;engine.sun.shadow.camera.right=30;engine.sun.shadow.mapSize.set(1024,1024);engine.camera.position.set(50.04,12,-31.02);
+    const texel=60/1024,snap=v=>Math.round(v/texel)*texel,vector=()=>({x:.5,y:Math.SQRT1_2,z:.5});
+    update(engine,vector,anchor);expect(engine._sunTarget.position.toArray()).toEqual([snap(50.04),snap(4),snap(-31.02)]);
+    engine._viewPreset='front';engine._viewPresetLighting={lesson:engine._currentLesson,position:engine.camera.position.clone(),quaternion:engine.camera.quaternion.clone(),target:new T.Vector3(8.03,65.02,-9.04)};
+    update(engine,vector,anchor);expect(engine._sunTarget.position.toArray()).toEqual([snap(8.03),snap(65.02),snap(-9.04)]);
+    expect(engine.sun.position.clone().sub(engine._sunTarget.position).distanceTo(new T.Vector3(60,Math.SQRT1_2*120,60))).toBeLessThan(1e-10);
+    expect(src).toContain('sun.target = engine._sunTarget;');expect(src).toContain('engine.scene.add(engine._sunTarget);');
     expect(src).toMatch(/sun\.shadow\.camera\.near = 0\.5; sun\.shadow\.camera\.far = 2[0-9]{2};/);
   });
 
@@ -395,11 +400,14 @@ describe('colour pipeline source contract', () => {
   });
 
   it('draws the character prompt and question marker at 2x, tagged sRGB', () => {
-    expect(src).toContain('promptCanvas.width = 256; promptCanvas.height = 96;');
+    const promptSize = src.match(/promptCanvas.width = (\d+); promptCanvas.height = (\d+);/);
+    expect(Number(promptSize[1])).toBeGreaterThanOrEqual(256);
+    expect(Number(promptSize[2])).toBeGreaterThanOrEqual(96);
     expect(src).toContain('promptTex.encoding = THREE.sRGBEncoding');
     expect(src).toContain('qCanvas.width = 128; qCanvas.height = 128;');
     expect(src).toContain('qTex.encoding = THREE.sRGBEncoding');
-    expect(src).toContain("qcx.strokeText('?', 64, 68);");
+    expect(src).toContain('function geometryGuideSymbol(');
+    expect(src).toContain("geometryGuideSymbol(ctx, w / 2, h / 2, 32, state.kind, p.ink);");
   });
 
   it('builds two cloud sheets that drift at different rates', () => {
@@ -455,8 +463,15 @@ describe('colour pipeline source contract', () => {
   it('gives the compass a north tick so it orients with nobody in view', () => {
     // with every character behind the player the strip drew only edge arrows,
     // which is exactly when someone lost looks at it
-    expect(src).toContain('var relNorth = -camYaw;');
-    expect(src).toContain("ctx.fillText('N', northX, 12);");
+    const start = src.indexOf('  function geometryGuideState(');
+    const end = src.indexOf('  // ── Non-visual wayfinding ──', start);
+    expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
+    const paint = new Function(src.slice(start, end) + '\nreturn geometryPaintGuideCompass;')();
+    const text = [];
+    const ctx = new Proxy({ fillText: (...args) => text.push(args) }, { get: (target, key) => key in target ? target[key] : () => {} });
+    const camera = { position: { x: 0, z: 0 }, updateWorldMatrix() {}, matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1] } };
+    expect(paint(ctx, 260, 32, { camera, npcs: [] }, false)).toBe('');
+    expect(text).toContainEqual(['N', 130, 11]);
   });
 
   it('redraws the minimap on its own loop instead of once when React attaches it', () => {

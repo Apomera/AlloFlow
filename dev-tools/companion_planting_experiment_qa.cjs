@@ -25,7 +25,7 @@ const out = path.join(root, 'reports/companion-planting-enhancement');
       const R = window.React, h = R.createElement, noop = () => {};
       const icons = new Proxy({}, { get: () => () => h('span', { 'aria-hidden': true }) });
       function App() {
-        const [data, setData] = R.useState({ companionPlanting: { gardenMode: 'community', communityGarden: {} } });
+        const [data, setData] = R.useState({ companionPlanting: { gardenMode: 'community', communityGarden: { playView: 'workshop' } } });
         window.cpData = data;
         window.cpSetData = setData;
         return window.StemLab._registry.companionPlanting.render({
@@ -182,7 +182,7 @@ const out = path.join(root, 'reports/companion-planting-enhancement');
     for (const viewport of [{ width: 1280, height: 1000 }, { width: 320, height: 844 }]) {
       await page.setViewportSize(viewport);
       await canvas.scrollIntoViewIfNeeded();
-      await page.waitForFunction(() => window.__cgCanvasEl.width === window.__cgCanvasEl.offsetWidth * 2 && Number(window.__cgCanvasEl.dataset.gardenRenderWidth) === window.__cgCanvasEl.width);
+      await page.waitForFunction(width => { const el = window.__cgCanvasEl; return window.innerWidth === width && el.offsetWidth <= width && Math.abs(el.offsetHeight - Math.max(360, Math.min(580, width * .48))) <= 1 && el.width === el.offsetWidth * 2 && el.height === Math.max(760, el.offsetHeight * 2) && Number(el.dataset.gardenRenderWidth) === el.width && Number(el.dataset.gardenRenderHeight) === el.height; }, viewport.width);
       for (let plot = 0; plot < 16; plot++) {
         const position = await canvas.evaluate((el, index) => {
           const box = el.getBoundingClientRect(), w = Number(el.dataset.gardenTileWidth), h = Number(el.dataset.gardenTileHeight);

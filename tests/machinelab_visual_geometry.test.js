@@ -808,3 +808,78 @@ describe('Machine Lab: visible wheel-and-drum coupling',()=>{
     s.data.demoId=0;s.tick(2500);expect(d.drumRotor.rotation.z).toBe(0);
   });
 });
+
+
+describe('Machine Lab: fixed starting outlines',()=>{
+  for(const [kind,params] of [['lever',{}],['pulley',{segments:6}],['windlass',{}],['ramp',{}],['wedge',{}],['screw',{}],['lever',{effortArm:0.2,loadArm:4}],['lever',{effortArm:4,loadArm:0.2}],['ramp',{length:4,height:4}],['wedge',{length:0.1,thickness:0.4}],['screw',{pitch:0.01}]])it('holds the original load geometry through motion: '+kind+' '+JSON.stringify(params),()=>{
+    const s=scene(kind,params),d=s.mlDemo;const outlines=d.startOutlines;
+    expect(outlines).toHaveLength(kind==='wedge'?2:1);
+    expect(outlines.every(o=>!o.visible)).toBe(true);
+    s.data.demoId=0;s.data.motionProgress=0;s.data.startOutline=true;s.tick(3000);s.model.updateMatrixWorld(true);
+    const loads=kind==='lever'?[d.leverLoad]:kind==='pulley'?[d.pulleyLoad]:kind==='windlass'?[d.load]:kind==='ramp'?[d.motion]:kind==='wedge'?d.woodHalves:[d.pressLoad];
+    for(const [i,o] of outlines.entries()){
+      const expected=loads[i].geometry.boundingBox||new THREE.Box3().setFromBufferAttribute(loads[i].geometry.attributes.position);
+      const actual=new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position);
+      const start=expected.clone().applyMatrix4(loads[i].matrixWorld);
+      for(const axis of ['x','y','z']){expect(actual.min[axis]).toBeCloseTo(start.min[axis],5);expect(actual.max[axis]).toBeCloseTo(start.max[axis],5);}
+      expect(o.material.isLineDashedMaterial).toBe(true);expect(o.geometry.attributes.lineDistance.count).toBe(o.geometry.attributes.position.count);
+      expect(o.parent).toBe(s.model);expect(o.visible).toBe(false);
+    }
+    const positions=outlines.map(o=>Array.from(o.geometry.attributes.position.array));
+    for(const p of [0.25,0.5,1]){
+      s.data.motionProgress=p;s.tick(4000);s.model.updateMatrixWorld(true);
+      outlines.forEach((o,i)=>{expect(o.visible).toBe(true);expect(Array.from(o.geometry.attributes.position.array)).toEqual(positions[i]);});
+    }
+    s.data.startOutline=false;s.tick(5000);expect(outlines.every(o=>!o.visible)).toBe(true);
+    s.data.startOutline=true;s.data.motionProgress=0;s.tick(6000);expect(outlines.every(o=>!o.visible)).toBe(true);
+  });
+});
+
+
+describe('Machine Lab: matching-point comparison links',()=>{
+  for(const [kind,params] of [['lever',{}],['pulley',{segments:6}],['windlass',{}],['ramp',{length:4,height:1}],['wedge',{}],['screw',{}],['lever',{effortArm:0.2,loadArm:4}],['ramp',{length:4,height:4}],['wedge',{length:0.1,thickness:0.4}],['screw',{pitch:0.01}]])it('tracks matching load points without moving the reference: '+kind+' '+JSON.stringify(params),()=>{
+    const s=scene(kind,params),d=s.mlDemo;expect(d.startLinks).toHaveLength(kind==='wedge'?2:1);
+    const refs=d.startLinks.map(r=>({start:r.startPoint.clone(),line:r.line.geometry,marker:r.endMark.geometry}));
+    s.data.demoId=0;s.data.startOutline=true;
+    for(const progress of [0,0.25,0.5,1]){
+      s.data.motionProgress=progress;s.tick(3000);s.model.updateMatrixWorld(true);
+      d.startLinks.forEach((r,i)=>{
+        expect(r.group.visible).toBe(progress>0);expect(r.startPoint.equals(refs[i].start)).toBe(true);expect(r.startMark.position.equals(refs[i].start)).toBe(true);
+        expect(r.line.geometry).toBe(refs[i].line);expect(r.endMark.geometry).toBe(refs[i].marker);
+        if(progress===0)return;
+        const actual=r.localPoint.clone().applyMatrix4(r.load.matrixWorld);const delta=r.endMark.position.clone().sub(r.startPoint);
+        expect(r.endMark.position.distanceTo(actual)).toBeLessThan(1e-8);expect(r.endHalo.position.distanceTo(actual)).toBeLessThan(1e-8);expect(r.endMark.renderOrder).toBeGreaterThan(r.endHalo.renderOrder);
+        const vertices=r.line.geometry.attributes.position;
+        for(const [axis,get] of [['x','getX'],['y','getY'],['z','getZ']]){expect(vertices[get](0)).toBeCloseTo(refs[i].start[axis],5);expect(vertices[get](1)).toBeCloseTo(actual[axis],5);}
+        if(kind==='ramp')expect(delta.length()).toBeCloseTo(1.45*progress,8);
+        if(kind==='pulley')expect(delta.y).toBeCloseTo(d.pulleyLift*progress,8);
+        if(kind==='windlass')expect(delta.y).toBeCloseTo(0.72*progress,8);
+        if(kind==='screw')expect(delta.y).toBeCloseTo(-d.screwTravel*progress,8);
+        if(kind==='wedge')expect(Math.abs(delta.x)).toBeCloseTo(d.wedgeTravel*d.wedgeHalf/d.wedgeLength*progress,8);
+      });
+    }
+    s.data.startOutline=false;s.tick(4000);expect(d.startLinks.every(r=>!r.group.visible)).toBe(true);
+    s.data.startOutline=true;s.data.motionProgress=0;s.tick(5000);expect(d.startLinks.every(r=>!r.group.visible)).toBe(true);
+  });
+  it('keeps comparison markers steady with reduced motion',()=>{
+    const s=scene('screw',{},true);s.data.startOutline=true;s.tick(1400);const points=s.mlDemo.startLinks.map(r=>r.endMark.position.clone());
+    s.tick(1800);s.mlDemo.startLinks.forEach((r,i)=>{expect(r.group.visible).toBe(true);expect(r.endMark.position.equals(points[i])).toBe(true);});
+  });
+});
+
+
+describe('Machine Lab: slow demonstration timing',()=>{
+  for(const kind of ['lever','pulley','windlass','ramp','wedge','screw'])it('plays the same '+kind+' geometry three times slower',()=>{
+    const normal=scene(kind,{ma:4}),slow=scene(kind,{ma:4});
+    normal.data.demoId=slow.data.demoId=2;normal.data.demoDuration=2200;slow.data.demoDuration=6600;normal.tick(3000);slow.tick(3000);
+    function pose(s){const d=s.mlDemo;return [d.motion.position.x,d.motion.position.y,d.motion.position.z,d.motion.rotation.x,d.motion.rotation.y,d.motion.rotation.z,d.effortDot.position.x,d.loadDot.position.x,d.pressLoad?.scale.y||0,d.splitLeft?.position.x||0];}
+    for(const phase of [0,0.125,0.25,0.5,0.75,1]){normal.tick(3000+2200*phase);slow.tick(3000+6600*phase);pose(normal).forEach((v,i)=>expect(pose(slow)[i]).toBeCloseTo(v,8));}
+    normal.data.demoId=slow.data.demoId=0;normal.data.motionProgress=slow.data.motionProgress=0.5;normal.tick(10000);slow.tick(10000);expect(pose(normal)).toEqual(pose(slow));
+  });
+  for(const osReduced of [false,true])it('honors an explicit motion-off preference with OS reduction '+osReduced,()=>{
+    const s=scene('windlass',{},osReduced);s.data.reduced=true;s.data.demoDuration=6600;s.tick(1500);const angle=s.mlDemo.motion.rotation.z;s.tick(2000);expect(angle).toBeCloseTo(2*Math.PI,8);expect(s.mlDemo.motion.rotation.z).toBe(angle);
+  });
+  it('honors explicit motion-on when OS reduction is enabled',()=>{
+    const s=scene('lever',{},true);s.data.reduced=false;s.data.demoDuration=6600;s.data.demoId=2;s.tick(3000);const start=s.mlDemo.motion.rotation.z;s.tick(4500);expect(s.mlDemo.motion.rotation.z).toBeGreaterThan(start);
+  });
+});

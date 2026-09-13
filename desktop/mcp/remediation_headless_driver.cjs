@@ -1083,7 +1083,7 @@ function createDriver(options) {
       // it was invisible too: the form-field count above had to be chased with a
       // throwaway diagnostic because of it.
       // All of these are low-volume, decision-bearing lines — not per-element chatter.
-      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[PDF Det\]|\[Tesseract\]|\[Throttle\]|\[Auto-fix\]|\[WCAG Sanitizer\]|\[Legend repair\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
+      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[PDF Det\]|\[Tesseract\]|\[Throttle\]|\[Auto-fix\]|\[aiFixChunked:[^\]]+\] rejected |\[WCAG Sanitizer\]|\[Legend repair\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
       else if (process.env.ALLOFLOW_MCP_VERBOSE === '1') rlog('console: ' + t.slice(0, 300));
     });
     // Web Crypto is unavailable in Chromium's opaque `about:blank` context. The canonical
@@ -1097,7 +1097,8 @@ function createDriver(options) {
     const bridgeCall = (kind, prompt, parts) => trackTransport(async () => {
       try {
         if (runOpts.signal && runOpts.signal.aborted) throw Object.assign(new Error('Run cancelled'), { isAbort: true });
-        const text = await modelBridge({ kind, prompt: String(prompt), parts });
+        // A silent client must not keep deadline cleanup waiting on its unanswered request.
+        const text = await abortablePromise(modelBridge({ kind, prompt: String(prompt), parts }), runOpts.signal);
         if (typeof text !== 'string' || !text.length) throw new Error('agent bridge returned an empty reply');
         return { ok: true, text };
       } catch (e) {

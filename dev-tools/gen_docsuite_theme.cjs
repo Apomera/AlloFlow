@@ -208,6 +208,7 @@ const VARIANT_SEL = {
   'focus-visible':  { self: ':focus-visible' },
   'focus-within':   { self: ':focus-within' },
   active:           { self: ':active' },
+  enabled:          { self: ':enabled' },
   disabled:         { self: ':disabled' },
   checked:          { self: ':checked' },
   'group-hover':    { ancestor: '.group:hover ' },

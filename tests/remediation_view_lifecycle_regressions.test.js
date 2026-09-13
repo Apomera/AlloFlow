@@ -19,7 +19,7 @@ describe('remediation view async document ownership', () => {
     // _remediationBusy replaced bare pdfFixLoading here on 2026-07-26 — same operands plus the
     // pipeline's own live-run lock, so a lost flag write can no longer let the modal be closed
     // out from under an active run.
-    expect(view).toContain('const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;');
+    expect(view).toContain('const _modalWorkBusy = batchActionBusy || oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy || _auxiliaryWorkBusy;');
     expect(view).toContain('disabled={_modalWorkBusy}');
   });
 
@@ -39,7 +39,7 @@ describe('remediation view async document ownership', () => {
   it('allows deterministic transcript and Office audits when only Gemini is missing', () => {
     expect(view).toContain("_auditMissingDependencies.every((name) => name === 'GeminiAPI')");
     expect(view).toContain("pendingPdfBase64.slice(0, 23) === 'QUxMT1RSQU5TQ1JJUFQ6djE'");
-    expect(view.match(/disabled=\{pdfAuditLoading \|\| !_auditInputReady\}/g)?.length).toBe(2);
+    expect(view.match(/disabled=\{_modalDismissBusy \|\| !_auditInputReady\}/g)?.length).toBe(2);
   });
 
   it('web remediation clears stale PDF bytes and exits the chooser on success', () => {
@@ -105,7 +105,7 @@ describe('owned batch intake and readiness', () => {
     expect(view).toContain('const accepted = _alloBatchPreflight(descriptors, []);');
     expect(view).toContain('actualSize > _BATCH_EFFECTIVE_MAX_FILE_BYTES || actualBytes + actualSize > _BATCH_EFFECTIVE_MAX_TOTAL_BYTES');
     expect(view).toContain("if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function')");
-    expect(view).toContain('disabled={batchIngesting || remediationReady === false}');
+    expect(view).toContain('disabled={_modalDismissBusy || remediationReady === false}');
     expect(view).toContain('await Promise.resolve(runPdfBatchRemediation({ resumeQueue');
     expect(view).toContain('Batch resume could not start:');
   });
@@ -117,7 +117,9 @@ describe('owned batch intake and readiness', () => {
   it('keeps incomplete batch work honest and resumable', () => {
     expect(view).toContain("pdfBatchSummary.status === 'paused-quota' ? 'Batch Paused at AI Quota'");
     expect(view).toContain("pdfBatchSummary.status === 'stopped' ? 'Batch Processing Stopped'");
-    expect(view).toContain('(!pdfBatchSummary || _batchSummaryIncomplete)');
+    // All rows remain visible after completion too, so failed files can be retried.
+    expect(view).toContain('{pdfBatchQueue.length > 0 && (');
+    expect(view).toContain('id="pdf-workspace-batch"');
     expect(view).toContain('Resume Pending ({_batchSummaryPending})');
     expect(view).toContain("_batchSummaryIncomplete ? 'Download Processed (ZIP)' : 'Download All (ZIP)'");
     expect(view).toContain('Pending batch files could not resume:');
@@ -144,7 +146,12 @@ describe('owned batch intake and readiness', () => {
     const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
     const runNewBatch = new AsyncFunction(
       '_batchSummaryIncomplete', 'pdfBatchSummary', '_docPipeline', 'addToast',
-      '_cancelBatchIngest', 'setPdfBatchQueue', 'setPdfBatchSummary', extracted[1],
+      '_cancelBatchIngest', 'setPdfBatchQueue', 'setPdfBatchSummary', `
+      const _batchActionBusyRef = { current: false };
+      const _modalHasActiveWork = () => false, pdfAuditLoading = false;
+      const capturePdfDocumentIntakeEpoch = () => 4, isPdfDocumentIntakeCurrent = () => true;
+      const setBatchActionBusy = () => {};
+      ` + extracted[1],
     );
     const discardedIds = [];
     const cleared = [];

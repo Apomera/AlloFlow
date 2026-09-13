@@ -1236,7 +1236,7 @@ describe('Memory Aid Studio interaction integrity', () => {
   it('explains feedback readiness and repairs legacy hidden requirements in the rendered view', async () => {
     await renderMemoryAid({ ...baseData, reflectionLevel: 'none', reasoningRequired: true });
     expect(host.querySelector('[aria-label^="Reasoning for"]')).toBeNull();
-    const feedbackButton = Array.from(host.querySelectorAll('button')).find(button => button.textContent.includes('strengths-first AI feedback'));
+    const feedbackButton = Array.from(host.querySelectorAll('button')).find(button => button.textContent.includes('Check my connection'));
     const help = host.querySelector('#' + feedbackButton.getAttribute('aria-describedby'));
     expect(help.textContent).toContain('An explanation is optional');
     expect(feedbackButton.disabled).toBe(false);
@@ -2198,7 +2198,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     };
     await renderMemoryAid(resourceA, sharedProps);
     let feedbackButton = Array.from(host.querySelectorAll('button'))
-      .find(item => item.textContent === 'Get strengths-first AI feedback');
+      .find(item => item.textContent === 'Check my connection');
     expect(feedbackButton).toBeTruthy();
     await act(async () => feedbackButton.click());
     expect(callGemini).toHaveBeenCalledTimes(1);
@@ -2232,7 +2232,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(host.textContent).not.toContain('RESOURCE A ONLY');
 
     feedbackButton = Array.from(host.querySelectorAll('button'))
-      .find(item => item.textContent === 'Get strengths-first AI feedback');
+      .find(item => item.textContent === 'Check my connection');
     await act(async () => feedbackButton.click());
     expect(callGemini).toHaveBeenCalledTimes(2);
     const editedResourceB = {
@@ -2254,7 +2254,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     });
     expect(handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards')).toHaveLength(writesBeforeSecondResolution);
     expect(host.textContent).not.toContain('STALE RESOURCE B DRAFT');
-    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Get strengths-first AI feedback')?.disabled).toBe(false);
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Check my connection')?.disabled).toBe(false);
     expect(addToast.mock.calls.filter(call => call[1] === 'success')).toHaveLength(0);
   });
 
@@ -2273,7 +2273,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     const sharedProps = { callGemini, handleNoteUpdate, addToast, activeProfileId: 'policy-learner' };
     await renderMemoryAid(optionalPolicy, sharedProps);
     const feedbackButton = Array.from(host.querySelectorAll('button'))
-      .find(item => item.textContent === 'Get strengths-first AI feedback');
+      .find(item => item.textContent === 'Check my connection');
     await act(async () => feedbackButton.click());
     expect(callGemini).toHaveBeenCalledTimes(1);
 
@@ -2292,7 +2292,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     });
     expect(handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards')).toHaveLength(writesBeforeResolution);
     expect(host.textContent).not.toContain('STALE OPTIONAL-POLICY FEEDBACK');
-    const currentFeedbackButton = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Get strengths-first AI feedback');
+    const currentFeedbackButton = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Check my connection');
     expect(currentFeedbackButton.disabled).toBe(false);
     expect(host.querySelector('#' + currentFeedbackButton.getAttribute('aria-describedby')).textContent)
       .toContain('Explain how your aid connects');
@@ -2356,7 +2356,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     const listen = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Listen to this card');
     await act(async () => listen.click());
     const feedbackButton = Array.from(host.querySelectorAll('button'))
-      .find(item => item.textContent === 'Get strengths-first AI feedback');
+      .find(item => item.textContent === 'Check my connection');
     await act(async () => feedbackButton.click());
     const writesBeforeUnmount = handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards').length;
     await act(async () => root.unmount());

@@ -3,165 +3,79 @@
 // handleGeneratePOSData, handleMasteryGrading, formatInteractiveText,
 // handleCheckLevel.
 
-const handleQuickAddGlossary = async (rawWord, skipTip = false, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, isLineFocusMode, clozeInstanceSet, glossaryDefinitionLevel, glossaryImageStyle, universalImageStyle, newGlossaryTerm, isAutoFillMode, isShowMeMode, autoRemoveWords, creativeMode, enableEmojiInline, useEmojis, isAnalyzingPos, focusMode, latestGlossary, toFocusText, alloBotRef, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setNewGlossaryTerm, setClozeInstanceSet, setGlossaryHealthIssues, setIsCheckingGlossaryHealth, setMasteryResult, setIsGradingMastery, setIsCheckingLevel, setLevelCheckResult, setIsGeneratingPOS, setIsAnalyzingPos, setIsAddingTerm, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, highlightGlossaryTerms, repairGeneratedText, getReadableContent, extractSourceTextForProcessing, calculateReadability, countWords, playSound, handleScoreUpdate, getDefaultTitle, parseTaggedContent, chunkText, _stripForImmersive, validateDraftQuality, RELEVANCE_GATE_PROMPT, ClozeInput, MathSymbol } = deps;
-  try { if (window._DEBUG_PHASE_N) console.log("[PhaseN] handleQuickAddGlossary fired"); } catch(_) {}
-      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
-      if (!word || word.length < 2) return;
-      setIsAddingTerm(true);
-      addToast(t('glossary.actions.defining_term', { term: word }), "info");
-      try {
-          let prompt = '';
-          if (selectedLanguages.length > 0) {
-              prompt = `
-                Analyze the input term "${word}".
-                1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
-                2. Provide a simple English definition for the term for a ${gradeLevel} student.
-                3. Categorize as "Academic" (General Tier 2) or "Domain-Specific" (Topic Tier 3).
-                4. Provide translations into: ${selectedLanguages.join(', ')}.
-                ${useEmojis ? 'Include a relevant emoji.' : 'Do not use emojis.'}
-                CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
-                Format: "Translated Term: Translated Definition",
-                Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" } }
-              `;
-          } else {
-              prompt = `
-                Analyze the input term "${word}".
-                1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
-                2. Provide a simple English definition for the term for a ${gradeLevel} student.
-                3. Categorize as "Academic" (General Tier 2) or "Domain-Specific" (Topic Tier 3).
-                ${useEmojis ? 'Include a relevant emoji.' : 'Do not use emojis.'}
-                Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }
-              `;
-          }
-          const result = await callGemini(prompt, true);
-          const newTermItem = JSON.parse(cleanJson(result));
-          try {
-              addToast(t('glossary.actions.generating_icon_term', { term: word }), "info");
-              const effectiveGlossaryStyle = String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim();
-              const styleInstruction = effectiveGlossaryStyle ? `Style: ${effectiveGlossaryStyle}.` : 'Simple, clear, flat vector art style.';
-              const imgPrompt = `Icon style illustration of "${newTermItem.term}" (Context: ${newTermItem.def}). ${styleInstruction} White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
-              let imageUrl = await callImagen(imgPrompt);
-              if (autoRemoveWords) {
-                  try {
-                      addToast(t('visuals.actions.auto_remove_toast'), "info");
-                      const rawBase64 = imageUrl.split(',')[1];
-                      const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                      imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
-                  } catch (editErr) {
-                      warnLog("Auto-remove text failed for quick add term:", newTermItem.term, editErr);
-                  }
-              }
-              newTermItem.image = imageUrl;
-          } catch (imgErr) {
-              warnLog("Auto-image generation failed for quick add term:", newTermItem.term, imgErr);
-              addToast(t('visuals.actions.auto_remove_fail'), "warning");
-          }
-          setHistory(prevHistory => {
-              const newHistory = [...prevHistory];
-              let glossaryIndex = -1;
-              for (let i = newHistory.length - 1; i >= 0; i--) {
-                  if (newHistory[i].type === 'glossary') {
-                      glossaryIndex = i;
-                      break;
-                  }
-              }
-              if (glossaryIndex !== -1) {
-                  const existingItem = newHistory[glossaryIndex];
-                  const updatedData = [...existingItem.data, newTermItem];
-                  const updatedItem = { ...existingItem, data: updatedData };
-                  newHistory[glossaryIndex] = updatedItem;
-                  if (generatedContent && generatedContent.id === existingItem.id) {
-                      setGeneratedContent(updatedItem);
-                  }
-              } else {
-                  const newItem = {
-                      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                      type: 'glossary',
-                      data: [newTermItem],
-                      meta: `1 Term (Quick Add)`,
-                      title: 'Glossary',
-                      timestamp: new Date()
-                  };
-                  newHistory.push(newItem);
-              }
-              return newHistory;
-          });
-          addToast(t('glossary.actions.added_term', { term: word }), "success");
-      } catch (err) {
-          warnLog("Unhandled error:", err);
-          addToast(t('glossary.actions.add_failed'), "error");
-      } finally {
-          setIsAddingTerm(false);
-      }
+// Capture the destination before requesting text or images. Quick Add from a
+// reader uses the latest glossary at that moment, never one created meanwhile.
+const addGlossaryTerm = async (rawWord, deps, quick = false) => {
+    const { generatedContent, history, gradeLevel, selectedLanguages, useEmojis,
+        callGemini, cleanJson, callImagen, callGeminiImageEdit, autoRemoveWords,
+        glossaryImageStyle, universalImageStyle, setHistory,
+        setIsAddingTerm, setNewGlossaryTerm, addToast, t, warnLog } = deps;
+    const word = String(rawWord || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
+    if (!word || (!quick && generatedContent?.type !== 'glossary')) return false;
+    const origin = generatedContent?.type === 'glossary' ? generatedContent
+        : [...(history || [])].reverse().find(resource => resource?.type === 'glossary');
+    const begin = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask;
+    if (origin && !begin) throw new Error('Glossary helpers are not loaded. Reload and retry.');
+    const task = origin ? begin(deps, null, [], 'add:' + word.toLocaleLowerCase(), origin) : null;
+    const invocationId = generatedContent?.id;
+    const visible = () => typeof deps.getGlossaryLive !== 'function' || deps.getGlossaryLive().resource?.id === invocationId;
+    const current = () => !task || task.isCurrent();
+    setIsAddingTerm(true);
+    try {
+        const languages = Array.isArray(selectedLanguages) ? selectedLanguages : [];
+        const prompt = [
+            'Analyze the input term ' + JSON.stringify(word) + '.',
+            '1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".',
+            '2. Provide a simple English definition for a ' + gradeLevel + ' student.',
+            '3. Categorize as "Academic" (General Tier 2) or "Domain-Specific" (Topic Tier 3).',
+            languages.length ? '4. Provide translations into: ' + languages.join(', ') + '. Include both the translated TERM and DEFINITION as "Translated Term: Translated Definition".' : '',
+            useEmojis ? 'Include a relevant emoji in a separate emoji field, never in the term.' : 'Do not use emojis.',
+            'Return ONLY a JSON object: { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific"' + (languages.length ? ', "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }' : '') + ' }'
+        ].join('\n');
+        const result = await callGemini(prompt, true, false, null, null, task?.signal);
+        if (!current()) return false;
+        const newTermItem = JSON.parse(cleanJson(result));
+        if (!newTermItem || typeof newTermItem.term !== 'string' || !newTermItem.term.trim() || typeof newTermItem.def !== 'string' || !newTermItem.def.trim()) throw new Error('The glossary term or definition was empty.');
+        if (window.AlloModules.createGlossaryEntryId) newTermItem.entryId = window.AlloModules.createGlossaryEntryId();
+        try {
+            if (visible()) addToast(t('glossary.actions.generating_icon_new'), 'info');
+            const style = String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim();
+            const prompt = 'Icon style illustration of ' + JSON.stringify(newTermItem.term) + ' (Context: ' + newTermItem.def + '). ' + (style ? 'Style: ' + style + '.' : 'Simple, clear, flat vector art style.') + ' White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.';
+            let image = await callImagen(prompt, undefined, undefined, { signal: task?.signal });
+            if (!current()) return false;
+            if (autoRemoveWords && image) {
+                try {
+                    image = await callGeminiImageEdit('Remove all text, labels, letters, and words from the image. Keep the illustration clean.', image.split(',')[1], undefined, undefined, null, { signal: task?.signal });
+                } catch (error) { if (!current()) return false; warnLog('Auto-remove text failed for new term:', error); }
+            }
+            if (image) newTermItem.image = image;
+        } catch (error) { if (!current()) return false; warnLog('Auto-image generation failed for new term:', error); }
+        if (!current()) return false;
+        if (task) {
+            if (!task.commit(resource => ({ ...resource, data: [...resource.data, newTermItem] }))) return false;
+        } else {
+            setHistory(previous => [...previous, {
+                id: 'glossary-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2),
+                type: 'glossary', data: [newTermItem], meta: '1 Term (Quick Add)', title: 'Glossary', timestamp: new Date()
+            }]);
+        }
+        if (visible()) {
+            if (!quick) setNewGlossaryTerm(previous => previous === rawWord ? '' : previous);
+            addToast(t('glossary.actions.added_term', { term: newTermItem.term }), 'success');
+        }
+        return true;
+    } catch (error) {
+        if (current() && visible()) { warnLog('Glossary add failed:', error); addToast(t('glossary.actions.add_failed'), 'error'); }
+        return false;
+    } finally {
+        task?.finish();
+        const pendingAdd = deps.glossaryTaskRegistry && [...deps.glossaryTaskRegistry.values()].some(token =>
+            !token.finished && !token.controller.signal.aborted && token.invocationId === invocationId && token.channel.startsWith('add:'));
+        if (visible() && (!task || task.isOwner()) && !pendingAdd) setIsAddingTerm(false);
+    }
 };
-
-const handleAddGlossaryTerm = async (deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, isLineFocusMode, clozeInstanceSet, glossaryDefinitionLevel, glossaryImageStyle, universalImageStyle, newGlossaryTerm, isAutoFillMode, isShowMeMode, autoRemoveWords, creativeMode, enableEmojiInline, useEmojis, isAnalyzingPos, focusMode, latestGlossary, toFocusText, alloBotRef, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setNewGlossaryTerm, setClozeInstanceSet, setGlossaryHealthIssues, setIsCheckingGlossaryHealth, setMasteryResult, setIsGradingMastery, setIsCheckingLevel, setLevelCheckResult, setIsGeneratingPOS, setIsAnalyzingPos, setIsAddingTerm, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, highlightGlossaryTerms, repairGeneratedText, getReadableContent, extractSourceTextForProcessing, calculateReadability, countWords, playSound, handleScoreUpdate, getDefaultTitle, parseTaggedContent, chunkText, _stripForImmersive, validateDraftQuality, RELEVANCE_GATE_PROMPT, ClozeInput, MathSymbol } = deps;
-  try { if (window._DEBUG_PHASE_N) console.log("[PhaseN] handleAddGlossaryTerm fired"); } catch(_) {}
-      if (!newGlossaryTerm.trim()) return;
-      if (!generatedContent || generatedContent.type !== 'glossary') return;
-      setIsAddingTerm(true);
-      try {
-          let prompt = '';
-          if (selectedLanguages.length > 0) {
-              prompt = `
-                Analyze the input term "${newGlossaryTerm}".
-                1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
-                2. Provide a simple English definition for the term for a ${gradeLevel} student.
-                3. Categorize as "Academic" (General Tier 2) or "Domain-Specific" (Topic Tier 3).
-                4. Provide translations into: ${selectedLanguages.join(', ')}.
-                ${useEmojis ? 'Include a relevant emoji.' : 'Do not use emojis.'}
-                CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
-                Format: "Translated Term: Translated Definition",
-                Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" } }
-              `;
-          } else {
-              prompt = `
-                Analyze the input term "${newGlossaryTerm}".
-                1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
-                2. Provide a simple English definition for the term for a ${gradeLevel} student.
-                3. Categorize as "Academic" (General Tier 2) or "Domain-Specific" (Topic Tier 3).
-                ${useEmojis ? 'Include a relevant emoji.' : 'Do not use emojis.'}
-                Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }
-              `;
-          }
-          const result = await callGemini(prompt, true);
-          const newTermItem = JSON.parse(cleanJson(result));
-          try {
-              addToast(t('glossary.actions.generating_icon_new'), "info");
-              const effectiveGlossaryStyle = String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim();
-              const styleInstruction = effectiveGlossaryStyle ? `Style: ${effectiveGlossaryStyle}.` : 'Simple, clear, flat vector art style.';
-              const imgPrompt = `Icon style illustration of "${newTermItem.term}" (Context: ${newTermItem.def}). ${styleInstruction} White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
-              let imageUrl = await callImagen(imgPrompt);
-              if (autoRemoveWords) {
-                  try {
-                      addToast(t('visuals.actions.auto_remove_toast'), "info");
-                      const rawBase64 = imageUrl.split(',')[1];
-                      const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                      imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
-                  } catch (editErr) {
-                      warnLog("Auto-remove text failed for new term:", newTermItem.term, editErr);
-                  }
-              }
-              newTermItem.image = imageUrl;
-          } catch (imgErr) {
-              warnLog("Auto-image generation failed for new term:", newTermItem.term, imgErr);
-              addToast(t('visuals.actions.auto_remove_fail'), "warning");
-          }
-          const newData = [...generatedContent?.data, newTermItem];
-          const updatedContent = { ...generatedContent, data: newData };
-          setGeneratedContent(updatedContent);
-          setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-          setNewGlossaryTerm('');
-          addToast(t('glossary.actions.added_term', { term: newTermItem.term }), "success");
-      } catch (err) {
-          warnLog("Unhandled error:", err);
-          addToast(t('glossary.actions.add_failed'), "error");
-      } finally {
-          setIsAddingTerm(false);
-      }
-};
+const handleQuickAddGlossary = async (rawWord, skipTip = false, deps) => addGlossaryTerm(rawWord, deps, true);
+const handleAddGlossaryTerm = async deps => addGlossaryTerm(deps.newGlossaryTerm, deps);
 
 const handleGeneratePOSData = async (deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, isLineFocusMode, clozeInstanceSet, glossaryDefinitionLevel, glossaryImageStyle, newGlossaryTerm, isAutoFillMode, isShowMeMode, autoRemoveWords, creativeMode, enableEmojiInline, useEmojis, isAnalyzingPos, focusMode, latestGlossary, toFocusText, alloBotRef, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setNewGlossaryTerm, setClozeInstanceSet, setGlossaryHealthIssues, setIsCheckingGlossaryHealth, setMasteryResult, setIsGradingMastery, setIsCheckingLevel, setLevelCheckResult, setIsGeneratingPOS, setIsAnalyzingPos, setIsAddingTerm, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, highlightGlossaryTerms, repairGeneratedText, getReadableContent, extractSourceTextForProcessing, calculateReadability, countWords, playSound, handleScoreUpdate, getDefaultTitle, parseTaggedContent, chunkText, _stripForImmersive, validateDraftQuality, RELEVANCE_GATE_PROMPT, ClozeInput, MathSymbol } = deps;

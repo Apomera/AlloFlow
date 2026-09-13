@@ -1,0 +1,136 @@
+// Real-host motion-inspection review. Uses the same vendored renderer as ml_scene_shots.
+const fs=require('fs'),path=require('path'),vm=require('vm');
+let source=fs.readFileSync(path.join(__dirname,'ml_scene_shots.cjs'),'utf8');
+source=source.slice(0,source.indexOf('  const manifest = [];'));
+source=source.replace("const OUT = process.argv[2] || '.';","const OUT = path.resolve(process.argv[2] || '.');");
+source=source.replace('deviceScaleFactor: 2','deviceScaleFactor: 1');
+source=source.replace("const tool = read('stem_lab/stem_tool_machinelab.js');","const tool = read('stem_lab/stem_tool_machinelab.js').replace('build: buildSimpleMachineScene','build: function(THREE,S,m){buildSimpleMachineScene(THREE,S,m);window.__qaShop=S;}');");
+source+=String.raw`
+  const manifest=[],checks=[];let overflow=false;
+  const theme={dark:DARK||CONTRAST,contrast:CONTRAST,band:BAND};
+  const bay=pg.locator('.ml-shop-bay'),inspector=pg.locator('.ml-shop-inspector');
+  async function checkPose(progress){
+    const previewValid=await pg.evaluate(()=>{
+      const d=window.__qaShop.mlDemo;
+      return [...document.querySelectorAll('[data-ml-stroke-preview]')].every(svg=>{
+        const p=Number(svg.dataset.mlStrokePreview);
+        const e=Number(svg.querySelector('[data-ml-preview-marker="effort"]').dataset.distance);
+        const l=Number(svg.querySelector('[data-ml-preview-marker="load"]').dataset.distance);
+        return Math.abs(e-(d.effortEndX-d.effortStartX)/6.1*100*p)<1e-7 && Math.abs(l-(d.loadEndX-d.loadStartX)/6.1*100*p)<1e-7;
+      });
+    });
+    if(!previewValid)errors.push('Distance previews disagree with the 3D scene');
+    const aligned=await pg.locator('[data-ml-stroke-preview]').evaluateAll(nodes=>{const ys=nodes.map(n=>n.getBoundingClientRect().y);return ys.length===3&&Math.max(...ys)-Math.min(...ys)<1;});
+    if(!aligned)errors.push('Distance preview rows are not aligned');
+    await bay.scrollIntoViewIfNeeded();
+    await pg.waitForFunction(p=>{
+      const s=window.__qaShop,d=s&&s.mlDemo;
+      return d && s.data.static && s.data.motionProgress===p && Math.abs(d.effortDot.position.x-(d.effortStartX+(d.effortEndX-d.effortStartX)*p))<1e-8;
+    },progress,{timeout:15000}).catch(async error=>{
+      console.log('Pose timeout',JSON.stringify(await pg.evaluate(p=>{
+        const s=window.__qaShop,d=s&&s.mlDemo;const bay=document.querySelector('.ml-shop-bay');
+        return {requested:p,data:s&&s.data,marker:d&&d.effortDot.position.x,expected:d&&d.effortStartX+(d.effortEndX-d.effortStartX)*p,bay:bay&&bay.getBoundingClientRect().toJSON(),scrollY,viewport:innerHeight,slider:document.querySelector('#ml-shop-stroke').value,focus:document.activeElement?.outerHTML};
+      },progress)));
+      await pg.screenshot({path:path.join(OUT,'pose-timeout.png')});throw error;
+    });
+    await pg.waitForFunction(p=>{
+      const s=window.__qaShop,expected=!!s.data.startOutline&&p>0;
+      return s.mlDemo.startOutlines.every(o=>o.visible===expected)&&s.mlDemo.startLinks.every(r=>{
+        if(r.group.visible!==expected)return false;if(!expected)return true;
+        const actual=r.localPoint.clone().applyMatrix4(r.load.matrixWorld).applyMatrix4(r.modelInverse);
+        const vertices=r.line.geometry.attributes.position;
+        return r.startMark.position.distanceTo(r.startPoint)<1e-8&&r.endMark.position.distanceTo(actual)<1e-8&&Math.abs(vertices.getY(1)-actual.y)<1e-5;
+      });
+    },progress,{timeout:15000});
+  }
+  async function mount(bench,extra={}){
+    await pg.evaluate(([s,o])=>window.__mount(s,o),[S({view:'machines',bench,pulleySegments:6,...extra}),theme]);
+    await bay.scrollIntoViewIfNeeded();await pg.waitForTimeout(350);
+  }
+  const discovery=pg.locator('.ml-shop-discovery');
+  async function solveClue(bench,extra={}){
+    await mount(bench,extra);
+    await pg.evaluate(()=>{window.__qaBeforeScene=window.__qaShop.model;});
+    const answer=discovery.locator('details');
+    if(await answer.evaluate(x=>x.open))errors.push('Answer open before investigation: '+bench);
+    await discovery.getByRole('button',{name:'Inspect the clue',exact:true}).press('Enter');
+    await pg.waitForFunction(()=>document.activeElement?.id==='ml-shop-stroke');
+    const focusedVisible=await inspector.getByRole('slider').evaluate(x=>{const r=x.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
+    if(!focusedVisible)errors.push('Focused slider is offscreen: '+bench);
+    await checkPose(0.5);
+    const valid=await pg.evaluate(()=>window.__qaShop.model===window.__qaBeforeScene && window.__qaShop.data.focusMechanism && !window.__qaShop.mlDemo.room.visible);
+    if(!valid)errors.push('Clue setup rebuilt model or failed to focus: '+bench);
+    await inspector.getByRole('button',{name:'Return to clue',exact:true}).press('Enter');
+    const returned=await discovery.locator('summary').evaluate(x=>x===document.activeElement);
+    if(!returned||await answer.evaluate(x=>x.open))errors.push('Return failed or revealed answer prematurely: '+bench);
+    await pg.keyboard.press('Enter');
+    if(!await answer.evaluate(x=>x.open))errors.push('Keyboard reveal failed: '+bench);
+    await inspector.getByRole('slider').press('End');await checkPose(1);
+    if(!await answer.evaluate(x=>x.open))errors.push('Answer closed on scrub: '+bench);
+    const toggle=inspector.getByRole('checkbox',{name:'Show starting outline',exact:true});
+    await toggle.press('Space');await checkPose(1);
+    await pg.waitForFunction(()=>window.__qaShop.data.startOutline&&window.__qaShop.mlDemo.startOutlines.every(o=>o.visible));
+    const initial=await pg.evaluate(()=>window.__qaShop.mlDemo.startOutlines.map(o=>Array.from(o.geometry.attributes.position.array)));
+    await inspector.getByRole('button',{name:'Start',exact:true}).click();await checkPose(0);
+    await inspector.getByRole('button',{name:'Halfway',exact:true}).click();await checkPose(0.5);
+    await inspector.getByRole('button',{name:'Full stroke',exact:true}).click();await checkPose(1);
+    const frozen=await pg.evaluate(before=>window.__qaShop.model===window.__qaBeforeScene&&window.__qaShop.mlDemo.startOutlines.every((o,i)=>JSON.stringify(Array.from(o.geometry.attributes.position.array))===JSON.stringify(before[i])),initial);
+    if(!frozen)errors.push('Starting outline moved or toggling rebuilt the scene');
+    await toggle.press('Space');await checkPose(1);await pg.waitForFunction(()=>!window.__qaShop.data.startOutline&&window.__qaShop.mlDemo.startOutlines.every(o=>!o.visible));
+    await toggle.press('Space');await checkPose(1);await pg.waitForFunction(()=>window.__qaShop.data.startOutline&&window.__qaShop.mlDemo.startOutlines.every(o=>o.visible));
+  }
+  for(const bench of ['lever','pulley','windlass','ramp','wedge','screw']){
+    await solveClue(bench);const label='discovery-'+bench;
+    await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,label+'.png')});manifest.push(label);
+    await pg.getByRole('button',{name:/^Next station:/}).click();await bay.scrollIntoViewIfNeeded();
+    await pg.waitForFunction(()=>window.__qaShop.data.motionProgress===null);
+    if(await discovery.locator('details').evaluate(x=>x.open))errors.push('Answer remained open on station change');
+    if(await pg.locator('.ml-shop-clue-reminder').count())errors.push('Clue reminder leaked to next station');
+  }
+  for(const [label,bench,extra] of [['equal-lever','lever',{leverEffortArm:2,leverLoadArm:2}],['reverse-lever','lever',{leverEffortArm:0.2,leverLoadArm:4}],['vertical-ramp','ramp',{rampLength:4,rampHeight:4}]]){
+    await solveClue(bench,extra);await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,label+'.png')});manifest.push(label);
+  }
+  for(const width of [390,320])for(const bench of ['lever','pulley','windlass','ramp','wedge','screw']){
+    await pg.setViewportSize({width,height:1400});await solveClue(bench);
+    await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,'mobile-'+bench+'-'+width+'.png')});
+    overflow=overflow||await pg.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
+    checks.push('Keyboard setup/reveal/scrub: '+bench+' '+width);
+  }
+  await pg.setViewportSize({width:320,height:740});await solveClue('pulley');
+  await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,'short-phone.png')});checks.push('Short phone keeps focused slider visible');
+  await mount('lever',{shopStartOutline:true});await pg.getByRole('button',{name:/^Run the three-dimensional/}).click();
+  await pg.waitForFunction(()=>window.__qaShop.data.demoId>0&&window.__qaShop.mlDemo.startOutlines.every(o=>o.visible));
+  checks.push('Starting outline remains visible during playback');
+  const runVisible=await bay.evaluate(n=>{const r=n.getBoundingClientRect();return document.activeElement===n&&r.top>=0&&r.bottom<=innerHeight;});
+  if(!runVisible)errors.push('Run did not focus and reveal the scene on a short phone');
+  await discovery.getByRole('button',{name:'Inspect the clue',exact:true}).click();
+  await pg.waitForFunction(()=>document.activeElement?.id==='ml-shop-stroke'&&!document.activeElement.disabled);await checkPose(0.5);
+  checks.push('Inspect stops playback and focuses the enabled slider');
+  await pg.emulateMedia({reducedMotion:'reduce'});await mount('windlass',{shopStartOutline:true});
+  await inspector.getByRole('button',{name:'Halfway',exact:true}).click();await checkPose(0.5);
+  await discovery.getByRole('button',{name:'Inspect the clue',exact:true}).click();await checkPose(0.5);
+  const before=await pg.evaluate(()=>window.__qaShop.mlDemo.drumRotor.rotation.z);
+  await pg.waitForTimeout(300);const after=await pg.evaluate(()=>window.__qaShop.mlDemo.drumRotor.rotation.z);
+  if(before!==after || Math.abs(after-Math.PI)>1e-8)errors.push('Reduced-motion inspection drifted');
+  await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,'reduced-motion-windlass.png')});
+  checks.push('Reduced motion holds half stroke');
+  const timerSafe=await pg.evaluate(()=>{
+    const original=window.setTimeout,timers=[];
+    window.setTimeout=function(fn,delay){if(delay===2300){timers.push(fn);return -1;}return original.apply(this,arguments);};
+    try{
+      const run=()=>document.querySelector('button[aria-label^="Run the three-dimensional"]').click();
+      const half=()=>[...document.querySelectorAll('.ml-shop-inspector button')].find(b=>b.textContent==='Halfway').click();
+      run();half();run();if(timers.length!==2)return false;
+      timers[0]();const stillRunning=document.querySelector('#ml-shop-stroke').disabled;
+      timers[1]();return stillRunning&&!document.querySelector('#ml-shop-stroke').disabled;
+    }finally{window.setTimeout=original;}
+  });
+  if(!timerSafe)errors.push('Old demo timer interrupted newer run');
+  checks.push('Old timer cannot interrupt newer run');
+  await pg.getByRole('button',{name:/^Next station:/}).click();await bay.scrollIntoViewIfNeeded();
+  await pg.waitForFunction(()=>window.__qaShop.data.motionProgress===null&&window.__qaShop.data.demoId===0&&window.__qaShop.mlDemo.effortDot.position.x===window.__qaShop.mlDemo.effortStartX);
+  checks.push('Next station starts at rest');
+  fs.writeFileSync(path.join(OUT,'results.json'),JSON.stringify({ready,errors,overflow,shots:manifest,checks},null,2));
+  await b.close();if(errors.length||overflow)process.exitCode=1;
+})();`;
+vm.runInThisContext('(function(require){'+source+'\n})',{filename:__filename})(require);

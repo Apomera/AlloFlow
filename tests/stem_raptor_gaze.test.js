@@ -46,3 +46,16 @@ describe('Raptor iris surface',()=>{
     for(const attribute of Object.values(g.attributes))expect(Array.from(attribute.array).every(Number.isFinite)).toBe(true);g.dispose();
   });
 });
+
+const surround=Function('THREE','return ('+body('createRaptorEyeSurroundGeometry')+')')(THREE);
+describe('Attached eye surrounds',()=>{
+  for(const owl of [false,true])it('keeps the iris opening clear with outward-facing finite rims: '+owl,()=>{
+    const g=surround(owl,0x927451),p=g.attributes.position,ids=g.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();expect(p.count).toBe(198);
+    for(const attribute of Object.values(g.attributes))expect(Array.from(attribute.array).every(Number.isFinite)).toBe(true);
+    for(const side of [-1,1]){const normal=new THREE.Vector3(side*(owl?0.115:0.181),0.054,owl?0.18:0.135).normalize(),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),normal).invert(),base=side<0?0:99;
+      for(let i=0;i<99;i++){a.fromBufferAttribute(p,base+i).addScaledVector(normal,-(owl?0.226:0.2205)).applyQuaternion(q);expect(Math.hypot(a.x/0.036,a.y/0.028)).toBeGreaterThan(0.99999);}
+    }
+    for(let i=0;i<ids.length;i+=3){a.fromBufferAttribute(p,ids[i]);b.fromBufferAttribute(p,ids[i+1]);c.fromBufferAttribute(p,ids[i+2]);const center=a.clone().add(b).add(c);expect(b.sub(a).cross(c.sub(a)).dot(center)).toBeGreaterThan(0);}
+    g.dispose();
+  });
+});

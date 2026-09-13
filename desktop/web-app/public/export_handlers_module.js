@@ -2985,48 +2985,53 @@
     return context;
   };
 
-  // ── handleCopyToClipboard ────────────────────────────────────────
-  // Serializes the currently-displayed lesson plan to plain text and
-  // pushes it to the clipboard. Toasts success / failure either way.
+  // Normalize an export copy only; saved lesson data and other languages stay intact.
+  const prepareLessonPlanExport = plan => {
+    if (!plan || plan.type !== 'lesson-plan' || !plan.data || typeof plan.data !== 'object') return null;
+    const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(text).filter(Boolean).join('\n') : value && typeof value === 'object' ? text(value.en || value.text || value.description || value.title || value.label || value.name || value.item) : '';
+    const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).filter(value => value != null);
+    const data = { ...plan.data };
+    ['essentialQuestion', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].forEach(key => { data[key] = text(data[key]); });
+    ['objectives', 'materialsNeeded', 'assessmentIdeas'].forEach(key => { data[key] = list(data[key]).map(text).filter(Boolean); });
+    data.extensions = list(data.extensions).map(item => typeof item === 'object' ? { ...item, title: text(item.title || item.name), description: text(item.description || item.text || item.en), guide: text(item.guide) } : text(item)).filter(item => typeof item === 'string' ? item.trim() : item.title || item.description || item.guide);
+    if (!data.extensions.length) delete data.extensions;
+    data.activities = list(data.activities).map(item => typeof item === 'object' ? { ...item, title: text(item.title || item.name), description: text(item.description || item.text), duration: text(item.duration) } : { title: text(item) });
+    const config = plan.config || {};
+    return {
+      resource: { ...plan, data },
+      topic: text(config.sourceTopic || config.topic || plan.sourceTopic || plan.title || data.title || data.essentialQuestion),
+      grade: text(config.gradeLevel ?? config.grade ?? plan.targetGradeLevel ?? plan.instructionalText?.complexity?.requestedGrade ?? plan.gradeLevel ?? plan.grade)
+    };
+  };
+  // Copy the same saved lesson sections shown in the plan view.
   const handleCopyToClipboard = async (deps) => {
-    const { generatedContent, sourceTopic, gradeLevel, addToast, t, warnLog } = deps || {};
+    const { generatedContent, addToast, t, warnLog, isParentMode, isIndependentMode } = deps || {};
+    const tr = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return typeof value === 'string' && value && value !== key ? value : fallback; };
     try {
-      if (!generatedContent || !generatedContent.data) {
-        if (addToast && t) addToast(t('toasts.nothing_to_copy'), 'warning');
-        return;
+      const prepared = prepareLessonPlanExport(generatedContent);
+      if (!prepared) {
+        if (addToast) addToast(tr('toasts.nothing_to_copy', 'Nothing to copy yet.'), 'warning');
+        return false;
       }
-      const data = generatedContent.data;
-      let textContent = (t ? t('lesson_plan.header_title') : 'Lesson Plan') + '\n';
-      textContent += (t ? t('lesson_plan.topic_label') : 'Topic') + ': ' + (sourceTopic || 'General') + '\n';
-      textContent += (t ? t('lesson_plan.grade_label') : 'Grade') + ': ' + gradeLevel + '\n';
-      if (data.objectives && data.objectives.length > 0) {
-        textContent += (t ? t('lesson_plan.objectives_header') : 'Objectives') + ':\n';
-        data.objectives.forEach(function(obj, i) { textContent += (i + 1) + '. ' + obj + '\n'; });
-        textContent += '\n';
-      }
-      if (data.materialsNeeded && data.materialsNeeded.length > 0) {
-        textContent += (t ? t('lesson_plan.materials_header') : 'Materials') + ':\n';
-        data.materialsNeeded.forEach(function(mat) { textContent += '• ' + mat + '\n'; });
-        textContent += '\n';
-      }
-      if (data.activities && data.activities.length > 0) {
-        textContent += (t ? t('lesson_plan.activities_header') : 'Activities') + ':\n';
-        data.activities.forEach(function(act, i) {
-          textContent += (i + 1) + '. ' + (act.title || act.name || 'Activity') + '\n';
-          if (act.description) textContent += '   ' + act.description + '\n';
-          if (act.duration) textContent += '   Duration: ' + act.duration + '\n';
-        });
-        textContent += '\n';
-      }
-      if (data.assessmentIdeas && data.assessmentIdeas.length > 0) {
-        textContent += (t ? t('lesson_plan.assessment_header') : 'Assessment') + ':\n';
-        data.assessmentIdeas.forEach(function(idea) { textContent += '• ' + idea + '\n'; });
-      }
-      await navigator.clipboard.writeText(textContent);
-      if (addToast && t) addToast(t('toasts.copied_to_clipboard'), 'success');
+      const data = prepared.resource.data;
+      const mode = isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher';
+      const lines = [tr('lesson_plan.header_title', 'Lesson Plan'), tr('lesson_plan.topic_label', 'Topic') + ': ' + (prepared.topic || tr('lesson_plan.grade_not_recorded', 'Not recorded')), tr('lesson_plan.grade_label', 'Grade') + ': ' + (prepared.grade || tr('lesson_plan.grade_not_recorded', 'Not recorded')), ''];
+      const section = (label, content) => { if (content) lines.push(label + ':', content, ''); };
+      const numbered = values => values.map((value, index) => (index + 1) + '. ' + value).join('\n');
+      section(tr('lesson_plan.materials_header', 'Materials Needed'), data.materialsNeeded.map(value => '• ' + value).join('\n'));
+      section(tr('lesson_headers.' + mode + '.essentialQuestion', 'Essential Question'), data.essentialQuestion);
+      section(tr('lesson_headers.' + mode + '.objectives', 'Objectives'), numbered(data.objectives));
+      for (const [key, fallback] of [['hook','Hook'],['directInstruction','Direct Instruction'],['guidedPractice','Guided Practice'],['independentPractice','Independent Practice'],['closure','Closure & Assessment']]) section(tr('lesson_headers.' + mode + '.' + key, fallback), data[key]);
+      section(tr('lesson_plan.activities_header', 'Activities'), data.activities.map((activity, index) => [(index + 1) + '. ' + (activity.title || tr('lesson_plan.activities_header', 'Activity')), activity.description, activity.duration].filter(Boolean).join('\n')).join('\n\n'));
+      section(tr('lesson_plan.assessment_header', 'Assessment'), data.assessmentIdeas.map(value => '• ' + value).join('\n'));
+      section(tr('lesson_headers.extensions_header', 'Extensions'), (data.extensions || []).map((extension, index) => typeof extension === 'string' ? (index + 1) + '. ' + extension : [(index + 1) + '. ' + (extension.title || tr('lesson_headers.extension_idea_fallback', 'Extension Idea')), extension.description, extension.guide ? tr('lesson_headers.teacher_guide_header', 'Teacher Guide') + ':\n' + extension.guide : ''].filter(Boolean).join('\n')).join('\n\n'));
+      await navigator.clipboard.writeText(lines.join('\n').trim() + '\n');
+      if (addToast) addToast(tr('toasts.copied_to_clipboard', 'Copied to clipboard.'), 'success');
+      return true;
     } catch (err) {
       if (typeof warnLog === 'function') warnLog('Copy to clipboard failed:', err);
-      if (addToast && t) addToast(t('toasts.copy_failed'), 'error');
+      if (addToast) addToast(tr('toasts.copy_failed', 'Could not copy to clipboard.'), 'error');
+      return false;
     }
   };
 
@@ -3056,6 +3061,7 @@
     karaokeProcess: _alloKaraokeProcess,
     getTextAccessSummary: _alloTextAccessSummary,
     getLessonContext,
+    prepareLessonPlanExport,
     handleCopyToClipboard
   };
   window.AlloModules.ExportHandlersModule = true;

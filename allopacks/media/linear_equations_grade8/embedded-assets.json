@@ -1,0 +1,299 @@
+[
+  {
+    "id": "lex-term-1",
+    "kind": "term",
+    "file": "lex-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 2; 0 red points are marked.",
+    "altHash": "img-gmf-853a9ecd"
+  },
+  {
+    "id": "lex-term-2",
+    "kind": "term",
+    "file": "lex-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 2 red points are marked.",
+    "altHash": "img-gv3-a8c6f406"
+  },
+  {
+    "id": "lex-term-3",
+    "kind": "term",
+    "file": "lex-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 10; 1 red points are marked.",
+    "altHash": "img-g7r-f4e2a090"
+  },
+  {
+    "id": "lex-term-4",
+    "kind": "term",
+    "file": "lex-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 2 red points are marked.",
+    "altHash": "img-gv3-a8c6f406"
+  },
+  {
+    "id": "lex-term-5",
+    "kind": "term",
+    "file": "lex-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 2 red points are marked.",
+    "altHash": "img-gv3-a8c6f406"
+  },
+  {
+    "id": "lex-term-6",
+    "kind": "term",
+    "file": "lex-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 2 red points are marked.",
+    "altHash": "img-gv3-a8c6f406"
+  },
+  {
+    "id": "lex-term-7",
+    "kind": "term",
+    "file": "lex-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "lex-term-8",
+    "kind": "term",
+    "file": "lex-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at -3; 0 red points are marked.",
+    "altHash": "img-enb-db1653de"
+  },
+  {
+    "id": "lex-term-9",
+    "kind": "term",
+    "file": "lex-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 2; 0 red points are marked.",
+    "altHash": "img-gmf-853a9ecd"
+  },
+  {
+    "id": "lex-term-10",
+    "kind": "term",
+    "file": "lex-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A falling teal graph line crosses the vertical axis at 100; 0 red points are marked.",
+    "altHash": "img-fjr-9f7e4f9a"
+  },
+  {
+    "id": "lex-term-11",
+    "kind": "term",
+    "file": "lex-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A horizontal teal graph line crosses the vertical axis at 7; 0 red points are marked.",
+    "altHash": "img-8bj-5042c0ad"
+  },
+  {
+    "id": "lex-term-12",
+    "kind": "term",
+    "file": "lex-term-12.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A smartphone with a blank screen stands beside a stack of gold tokens.",
+    "altHash": "img-5ej-9fb5c28a"
+  },
+  {
+    "id": "lex-anchor-1",
+    "kind": "anchor",
+    "file": "lex-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 2 red points are marked.",
+    "altHash": "img-gv3-a8c6f406"
+  },
+  {
+    "id": "lex-anchor-2",
+    "kind": "anchor",
+    "file": "lex-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 10; 1 red points are marked.",
+    "altHash": "img-g7r-f4e2a090"
+  },
+  {
+    "id": "lex-anchor-3",
+    "kind": "anchor",
+    "file": "lex-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A falling teal graph line crosses the vertical axis at 100; 0 red points are marked.",
+    "altHash": "img-fjr-9f7e4f9a"
+  },
+  {
+    "id": "lex-anchor-4",
+    "kind": "anchor",
+    "file": "lex-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A steep teal line from the origin crosses a shallower coral line; a gold dot marks the intersection.",
+    "altHash": "img-lin-3c6c9145"
+  },
+  {
+    "id": "lex-sort-1",
+    "kind": "sort",
+    "file": "lex-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 2; 0 red points are marked.",
+    "altHash": "img-gmf-853a9ecd"
+  },
+  {
+    "id": "lex-sort-2",
+    "kind": "sort",
+    "file": "lex-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A falling teal graph line crosses the vertical axis at 100; 0 red points are marked.",
+    "altHash": "img-fjr-9f7e4f9a"
+  },
+  {
+    "id": "lex-sort-3",
+    "kind": "sort",
+    "file": "lex-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A horizontal teal graph line crosses the vertical axis at 7; 0 red points are marked.",
+    "altHash": "img-8bj-5042c0ad"
+  },
+  {
+    "id": "lex-sort-4",
+    "kind": "sort",
+    "file": "lex-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 0; 0 red points are marked.",
+    "altHash": "img-g7z-0a16b5e3"
+  },
+  {
+    "id": "lex-sort-5",
+    "kind": "sort",
+    "file": "lex-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A falling teal graph line crosses the vertical axis at 10; 0 red points are marked.",
+    "altHash": "img-fjr-9f7e4f9a"
+  },
+  {
+    "id": "lex-sort-6",
+    "kind": "sort",
+    "file": "lex-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A falling teal graph line crosses the vertical axis at 100; 0 red points are marked.",
+    "altHash": "img-fjr-9f7e4f9a"
+  },
+  {
+    "id": "lex-sort-7",
+    "kind": "sort",
+    "file": "lex-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at -3; 0 red points are marked.",
+    "altHash": "img-enb-db1653de"
+  },
+  {
+    "id": "lex-sort-8",
+    "kind": "sort",
+    "file": "lex-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A horizontal teal graph line crosses the vertical axis at 4; 0 red points are marked.",
+    "altHash": "img-85n-afc0a368"
+  },
+  {
+    "id": "lex-sort-9",
+    "kind": "sort",
+    "file": "lex-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 2; 0 red points are marked.",
+    "altHash": "img-ggv-b53be42a"
+  },
+  {
+    "id": "lex-lesson-1",
+    "kind": "lesson",
+    "file": "lex-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A smartphone with a blank screen stands beside a stack of gold tokens.",
+    "altHash": "img-f57-62b37e49"
+  },
+  {
+    "id": "lex-lesson-2",
+    "kind": "lesson",
+    "file": "lex-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 4; 2 red points are marked.",
+    "altHash": "img-gv3-a8c6f406"
+  },
+  {
+    "id": "lex-lesson-3",
+    "kind": "lesson",
+    "file": "lex-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A rising teal graph line crosses the vertical axis at 2; 0 red points are marked.",
+    "altHash": "img-gmf-853a9ecd"
+  },
+  {
+    "id": "lex-lesson-4",
+    "kind": "lesson",
+    "file": "lex-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A falling teal graph line crosses the vertical axis at 100; 0 red points are marked.",
+    "altHash": "img-fjr-9f7e4f9a"
+  },
+  {
+    "id": "lex-lesson-5",
+    "kind": "lesson",
+    "file": "lex-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two unlit ivory candles of different heights stand in separate shallow holders.",
+    "altHash": "img-bd3-a7c98813"
+  },
+  {
+    "id": "lex-lesson-6",
+    "kind": "lesson",
+    "file": "lex-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A horizontal teal graph line crosses the vertical axis at 7; 0 red points are marked.",
+    "altHash": "img-8bj-5042c0ad"
+  },
+  {
+    "id": "lex-lesson-7",
+    "kind": "lesson",
+    "file": "lex-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Two rising lines have the same inclination, with the coral line above the teal line.",
+    "altHash": "img-kgn-109dbb1b"
+  },
+  {
+    "id": "lex-lesson-8",
+    "kind": "lesson",
+    "file": "lex-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A steep teal line from the origin crosses a shallower coral line; a gold dot marks the intersection.",
+    "altHash": "img-lin-3c6c9145"
+  }
+]

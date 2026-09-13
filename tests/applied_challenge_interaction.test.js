@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -64,6 +64,8 @@ beforeAll(() => {
   AppliedChallengeView = window.AlloModules.AppliedChallengeView;
 });
 
+beforeEach(() => sessionStorage.clear());
+
 afterEach(() => {
   if (root) {
     act(() => root.unmount());
@@ -94,10 +96,12 @@ async function renderChallenge(options = {}) {
       generatedContent,
       handleNoteUpdate,
       isTeacherMode: options.teacher === true,
+      learnerReadOnly: options.teacher === true,
       isProcessing: false,
-      callGemini: options.callGemini || null,
+      callGemini: options.recreateProvider && options.callGemini ? (...args) => options.callGemini(...args) : options.callGemini || null,
       addToast: (message, kind) => toasts.push({ message, kind }),
       gradeLevel: '8th Grade',
+      activeProfileId: options.profile, previewMode: options.preview === true,
     });
   }
   host = document.createElement('div');
@@ -107,6 +111,7 @@ async function renderChallenge(options = {}) {
     root.render(React.createElement(Harness));
     await Promise.resolve();
   });
+  if (!options.teacher && !options.focus && Array.from(host.querySelectorAll('button')).some(button => button.textContent === 'Show all steps')) await clickButton('Show all steps');
 }
 
 async function replaceChallenge(id, data) {
@@ -144,6 +149,37 @@ async function clickButton(label) {
 }
 
 describe('Applied Challenge Studio interactions', () => {
+  it('links a chosen fact without writing student reasoning and focuses the new row', async () => {
+    await renderChallenge();
+    await clickButton('Connect to my evidence');
+    expect(latest.data.evidenceLedger).toHaveLength(1);
+    expect(latest.data.evidenceLedger[0]).toMatchObject({ claim: '', evidence: '', status: 'needs-check' });
+    expect(latest.data.evidenceLedger[0].factId).toMatch(/^fact-/);
+    expect(document.activeElement.id).toBe('aps-ledger-claim-' + latest.data.evidenceLedger[0].id);
+    await clickButton('Connect to my evidence');
+    expect(latest.data.evidenceLedger).toHaveLength(1);
+    const revised = window.AlloModules.AppliedChallenge.normalize(latest.data);
+    const oldRevision = revised.evidenceLedger[0].factRevision;
+    revised.brief.lockedLessonFacts[0] = 'Water movement depends on the height difference.';
+    await replaceChallenge('challenge-1', revised);
+    expect(host.querySelector('[aria-label="Evidence row 1 source fact"]').value).toBe('');
+    expect(host.textContent).toContain('This source fact changed or was removed.');
+    await clickButton('Connect to my evidence');
+    expect(latest.data.evidenceLedger).toHaveLength(1);
+    expect(latest.data.evidenceLedger[0].factRevision).not.toBe(oldRevision);
+  });
+
+  it('brings evidence and detailed checks into the review and returns focus to an edit', async () => {
+    const value=baseData();value.workspace={...value.workspace,questionAccepted:true,artifactUrl:'https://example.org/model',artifactDescription:'My model explains the two options.'};
+    value.evidenceLedger=[{id:'review-row',claim:'LEDGER CLAIM SENTINEL',evidence:'LEDGER SUPPORT SENTINEL',tradeoff:'A limit'}];
+    value.validationCycles=[{id:'review-check',source:'self',plan:{testQuestion:'PLAN SENTINEL'},observation:{evidence:'OBSERVATION SENTINEL'},decision:{action:'keep',reasoning:'DECISION SENTINEL'}}];
+    await renderChallenge({data:value});await clickButton('5.');await clickButton('Review my response');
+    expect(document.activeElement.id).toBe('aps-review-heading');
+    for(const text of ['LEDGER CLAIM SENTINEL','LEDGER SUPPORT SENTINEL','PLAN SENTINEL','OBSERVATION SENTINEL','DECISION SENTINEL','My model explains the two options.'])expect(host.textContent).toContain(text);
+    expect(host.textContent).not.toContain('Add a written response, or a link');
+    await clickButton('Edit Build');expect(document.activeElement.id).toBe('applied-workspace-response');
+  });
+
   it('has no serious or critical structural accessibility violations', async () => {
     await renderChallenge();
     const results = await axe.run(host, { rules: {
@@ -155,14 +191,31 @@ describe('Applied Challenge Studio interactions', () => {
     expect(serious).toEqual([]);
   });
 
-  it('persists workspace edits, clears stale coaching, and updates sections started', async () => {
+  it('persists workspace edits, retains earlier feedback, and counts learner work', async () => {
     await renderChallenge();
     const response = host.querySelector('#applied-workspace-response');
     await typeInto(response, 'Recommend a feasibility study before choosing a site.');
     expect(latest.data.workspace.response).toContain('feasibility study');
     expect(latest.data.coachHint).toBe('');
-    expect(latest.data.feedback).toBeNull();
-    expect(host.textContent).toContain('2 of 10 sections started');
+    expect(latest.data.feedback.strength).toBe('An earlier strength');
+    expect(host.textContent).toContain('1 of 10 sections started');
+  });
+
+  it('refreshes the artifact link when saved work is restored for the same resource', async () => {
+    await renderChallenge();
+    const updated = baseData(); updated.workspace.artifactUrl = 'https://example.org/restored-work';
+    await replaceChallenge('challenge-1', updated);
+    expect(host.querySelector('input[type="url"]').value).toBe('https://example.org/restored-work');
+  });
+
+  it('treats a first criteria note as current before the learner chooses a rating', async () => {
+    await renderChallenge();
+    const field = Array.from(host.querySelectorAll('textarea')).find(node => (node.getAttribute('aria-label') || '').includes('Criterion 1 evidence note'));
+    expect(field).toBeTruthy();
+    await typeInto(field, 'My draft compares the two possibilities.');
+    const entry = Object.values(latest.data.criteriaCheck)[0];
+    expect(entry).toMatchObject({ rating: 'pending', needsReview: false, note: 'My draft compares the two possibilities.' });
+    expect(entry.revision).toBeTruthy();
   });
 
   it('adds, labels, persists, summarizes, and removes evidence ledger rows', async () => {
@@ -170,7 +223,7 @@ describe('Applied Challenge Studio interactions', () => {
     await clickButton('Add evidence row');
     expect(latest.data.evidenceLedger).toHaveLength(1);
     expect(latest.data.coachHint).toBe('');
-    expect(latest.data.feedback).toBeNull();
+    expect(latest.data.feedback.strength).toBe('An earlier strength');
 
     await typeInto(host.querySelector('[aria-label="Evidence row 1 claim, option, or position"]'), 'A gravity-fed route is worth testing.');
     await typeInto(host.querySelector('[aria-label="Evidence row 1 evidence or lesson connection"]'), 'The lesson explains that gravity moves water downhill.');
@@ -183,7 +236,7 @@ describe('Applied Challenge Studio interactions', () => {
       status: 'assumption',
       tradeoff: 'The local slope has not been measured.',
     });
-    expect(host.textContent).toContain('1 of 1 rows have both a claim and support');
+    expect(host.textContent).toContain('1 of 1 rows have a claim and written evidence notes');
     expect(host.textContent).toContain('1 assumption');
 
     const verifiedOption = host.querySelector('[aria-label="Evidence row 1 status"] option[value="verified"]');
@@ -243,7 +296,7 @@ describe('Applied Challenge Studio interactions', () => {
     const originalResponse = latest.data.workspace.response;
     await clickButton('Start my own check');
     expect(latest.data.validationCycles).toHaveLength(1);
-    expect(latest.data.feedback).toBeNull();
+    expect(latest.data.feedback.strength).toBe('An earlier strength');
 
     await typeInto(host.querySelector('[aria-label="Check 1 test question"]'), 'Can the pilot satisfy the access criterion within the staffing limit?');
     await typeInto(host.querySelector('[aria-label="Check 1 change threshold"]'), 'Revise if one required shift remains uncovered.');
@@ -383,5 +436,124 @@ describe('Applied Challenge Studio interactions', () => {
     expect(latest.data.feedback).toBeNull();
     // Navigating away abandons the request; do not announce another resource's result.
     expect(toasts).toEqual([]);
+  });
+});
+
+
+describe('Applied challenge recovery and task review interactions', () => {
+  it('restores deleted evidence and checks in order without losing later edits', async () => {
+    const value=baseData();value.workspace.response='My recommendation';
+    value.evidenceLedger=[{id:'r1',claim:'First claim',evidence:'First evidence'},{id:'r2',claim:'Second claim'}];
+    value.validationCycles=[{id:'c1',source:'self',plan:{testQuestion:'Original check?'},observation:{evidence:'My observation'},decision:{action:'revise',reasoning:'My reasoning'}}];
+    await renderChallenge({data:value});
+    await clickButton('Remove evidence row 1');expect(document.activeElement.id).toBe('aps-undo');
+    await typeInto(host.querySelector('[aria-label="Evidence row 1 claim, option, or position"]'),'Later edit to second claim');
+    await clickButton('Remove check 1');
+    await clickButton('Undo last change');expect(latest.data.validationCycles[0]).toMatchObject({id:'c1',observation:{evidence:'My observation'},decision:{reasoning:'My reasoning'}});
+    await clickButton('Undo last change');expect(latest.data.evidenceLedger.map(row=>row.claim)).toEqual(['First claim','Later edit to second claim']);
+    expect(document.activeElement.id).toBe('aps-ledger-claim-r1');
+    expect(JSON.stringify(latest.data)).not.toContain('recoveryEntries');
+  });
+  it('restores a replaced custom question but protects newer writing', async () => {
+    const value=baseData();value.workspace.workingQuestion='My custom question?';value.workspace.questionAccepted=true;
+    await renderChallenge({data:value});await clickButton('Replace with suggested question');
+    await clickButton('Undo last change');expect(latest.data.workspace.workingQuestion).toBe('My custom question?');
+    expect(document.activeElement.id).toBe('applied-workspace-workingQuestion');
+    await clickButton('Replace with suggested question');await typeInto(host.querySelector('#applied-workspace-workingQuestion'),'A newer question?');
+    await clickButton('Undo last change');expect(latest.data.workspace.workingQuestion).toBe('A newer question?');
+    expect(host.textContent).toContain('Your question has changed again.');expect(host.textContent).toContain('My custom question?');
+  });
+  it('clears recovery on resource switches and does not overwrite full ledgers', async () => {
+    const value=baseData();value.evidenceLedger=[{id:'old',claim:'Old claim'}];await renderChallenge({data:value});await clickButton('Remove evidence row 1');
+    const full={...latest.data,evidenceLedger:Array.from({length:12},(_,i)=>({id:'new'+i,claim:'Claim '+i}))};await replaceChallenge('challenge-1',full);
+    await clickButton('Undo last change');expect(latest.data.evidenceLedger).toHaveLength(12);expect(host.textContent).toContain('There is no room');
+    await replaceChallenge('other-resource',baseData());expect([...host.querySelectorAll('button')].some(b=>b.textContent==='Undo last change')).toBe(false);
+  });
+  it('caps session recovery at ten changes', async () => {
+    const value=baseData();value.evidenceLedger=Array.from({length:12},(_,i)=>({id:'r'+i,claim:'Claim '+i}));await renderChallenge({data:value});
+    for(let i=0;i<11;i++)await clickButton('Remove evidence row 1');
+    expect(host.textContent).toContain('10 recent changes available');
+    for(let i=0;i<10;i++)await clickButton('Undo last change');
+    expect(latest.data.evidenceLedger).toHaveLength(11);expect(latest.data.evidenceLedger.some(row=>row.id==='r0')).toBe(false);
+  });
+  it('saves complete feedback coverage and includes late evidence in the actual request', async () => {
+    const value=baseData();value.workspace.response='My own response';value.evidenceLedger=Array.from({length:12},(_,i)=>({id:'r'+i,claim:'Claim '+i,evidence:'EVIDENCE-'+i}));
+    const callGemini=vi.fn(async()=>JSON.stringify({strength:'Complete review',status:'developing'}));await renderChallenge({data:value,callGemini});
+    await clickButton('Get strengths-first AI feedback');expect(callGemini.mock.calls[0][0]).toContain('EVIDENCE-11');
+    expect(latest.data.feedback.coverage).toMatchObject({evidenceRows:12,shortenedFields:0});expect(host.textContent).toContain('12 evidence rows');
+  });
+  const qualityReply=()=>({checks:Object.fromEntries(['lessonUse','alternatives','feasibility'].map(key=>[key,{status:'revise',reason:'Inspect the task wording.',nextStep:'Make the criterion more specific.'}]))});
+  it('lets teachers review task quality without touching student work or verifying source facts', async () => {
+    const value=baseData();value.workspace.response='PRIVATE-LEARNER';value.sourceExcerpt='Gravity moves water downhill.';
+    const callGemini=vi.fn(async()=>JSON.stringify(qualityReply()));await renderChallenge({teacher:true,data:value,callGemini,recreateProvider:true});
+    await clickButton('Get AI task review');expect(callGemini).toHaveBeenCalledTimes(1);expect(callGemini.mock.calls[0][0]).not.toContain('PRIVATE-LEARNER');
+    expect(host.textContent).toContain('Task review saved.');expect(latest.data.qualityReview.checks.lessonUse.status).toBe('revise');expect(latest.data.workspace.response).toBe('PRIVATE-LEARNER');expect(latest.data.brief.factVerified).not.toBe(true);
+    await replaceChallenge('challenge-1',{...latest.data,plan:{availableTime:'10 minutes'}});expect(host.textContent).toContain('This review is for an earlier task.');
+  });
+  it('rejects quality reviews for changed tasks, resource switches and invalid AI output', async () => {
+    let resolveReview;const callGemini=vi.fn(()=>new Promise(resolve=>{resolveReview=resolve;}));await renderChallenge({teacher:true,callGemini});
+    await clickButton('Get AI task review');await replaceChallenge('challenge-1',{...latest.data,plan:{availableTime:'5 minutes'}});
+    await act(async()=>resolveReview(JSON.stringify(qualityReply())));expect(latest.data.qualityReview).toBeUndefined();expect(host.textContent).toContain('The task changed during review.');
+    await clickButton('Get AI task review');await replaceChallenge('new-task',baseData());await act(async()=>resolveReview(JSON.stringify(qualityReply())));expect(latest.data.qualityReview).toBeUndefined();
+    await clickButton('Get AI task review');await act(async()=>resolveReview('nonsense'));expect(latest.data.qualityReview).toBeUndefined();expect(host.textContent).toContain('could not be completed');
+  });
+});
+
+
+describe('Applied challenge start, resume and feedback editing',()=>{
+  it('keeps the optional suggested question collapsed and offers a direct writing shortcut',async()=>{
+    const value=baseData();value.workspace={};await renderChallenge({data:value,focus:true});
+    expect(host.querySelector('#aps-question-suggestion').open).toBe(false);
+    expect(host.querySelector('#applied-workspace-workingQuestion').value).toBe('');
+    await clickButton('Start writing');expect(document.activeElement.id).toBe('applied-workspace-workingQuestion');
+    expect(latest.data.workspace).toEqual({});
+    host.querySelector('#aps-question-suggestion').open=true;await clickButton('Use this question');
+    expect(latest.data.workspace.questionAccepted).toBe(true);expect(host.querySelector('#aps-question-suggestion').open).toBe(false);
+  });
+  it('returns to the saved step and preserves the review view across remounts',async()=>{
+    const value=baseData();value.workspace.response='My draft';const key='allo-applied-focus:'+JSON.stringify(['session','challenge-1']);
+    sessionStorage.setItem(key,JSON.stringify({phase:'response',focus:true,review:false}));
+    await renderChallenge({data:value,focus:true});await clickButton('Continue in Build');
+    expect(document.activeElement.id).toBe('applied-workspace-response');
+    await clickButton('5. Reflect');await clickButton('Review my response');
+    expect(JSON.parse(sessionStorage.getItem(key)).review).toBe(true);
+    await act(async()=>root.unmount());root=null;host.remove();
+    await renderChallenge({data:value,focus:true});expect(host.querySelector('#aps-review-heading')).toBeTruthy();
+    await clickButton('Go to my review');expect(document.activeElement.id).toBe('aps-review-heading');
+  });
+  it('isolates review preferences by profile and excludes teacher preview',async()=>{
+    const key='allo-applied-focus:'+JSON.stringify(['profile-a','challenge-1']);sessionStorage.setItem(key,JSON.stringify({phase:'response',focus:true,review:true}));
+    await renderChallenge({focus:true,profile:'profile-b'});expect(host.querySelector('#aps-review-heading')).toBeNull();expect(host.querySelector('#applied-workspace-workingQuestion')).toBeTruthy();
+    await act(async()=>root.unmount());root=null;host.remove();
+    await renderChallenge({focus:true,profile:'profile-a',preview:true});expect(host.querySelector('#aps-review-heading')).toBeNull();
+    await clickButton('3. Build');expect(JSON.parse(sessionStorage.getItem(key))).toMatchObject({phase:'response',review:true});
+  });
+  it('recovers from malformed view preferences without changing writing',async()=>{
+    sessionStorage.setItem('allo-applied-focus:'+JSON.stringify(['session','challenge-1']),'{bad json');
+    await renderChallenge({focus:true});expect(host.querySelector('#applied-workspace-workingQuestion')).toBeTruthy();expect(latest.data.workspace.workingQuestion).toBe(baseData().workspace.workingQuestion);
+  });
+  it('keeps the AI next step beside the learner draft without copying it into the response',async()=>{
+    const H=window.AlloModules.AppliedChallenge._testing;const value=H.normalizeAppliedChallengeData(baseData());
+    value.workspace.response='My original response';value.feedback.nextStep='Compare the evidence for your second option.';
+    value.feedback.resourceId='challenge-1';value.feedback.gradeLevel='8th Grade';
+    value.feedback.contextFingerprint=H.appliedChallengeHashText(H.appliedChallengeRequestFingerprint(value,'feedback',{resourceId:'challenge-1',gradeLevel:'8th Grade'}));
+    await renderChallenge({data:value});await clickButton('Edit my response with this feedback');
+    expect(document.activeElement.id).toBe('applied-workspace-response');expect(latest.data.workspace.response).toBe('My original response');
+    expect(host.querySelector('[aria-label="Feedback beside my draft"]').textContent).toContain('Next step to consider');
+    await typeInto(host.querySelector('#applied-workspace-response'),'My own revised comparison');
+    expect(host.querySelector('[aria-label="Feedback beside my draft"]').textContent).toContain('Next step from earlier feedback');
+    await clickButton('Return to feedback');expect(document.activeElement.id).toBe('aps-feedback-heading');expect(latest.data.workspace.response).toBe('My own revised comparison');
+  });
+  it('focuses the linked-work explanation when revising an artifact response',async()=>{
+    const value=baseData();value.workspace={...value.workspace,response:'',artifactUrl:'https://example.org/model',artifactDescription:'My own model explanation.'};
+    await renderChallenge({data:value});await clickButton('Edit my response with this feedback');
+    const input=host.querySelector('#applied-artifact-description');expect(document.activeElement).toBe(input);expect(input.closest('details').open).toBe(true);
+    expect(latest.data.workspace.response).toBe('');expect(input.value).toBe('My own model explanation.');
+    await clickButton('Hide this guidance');expect(host.querySelector('[aria-label="Feedback beside my draft"]')).toBeNull();
+  });
+  it('does not carry revision guidance into a different resource',async()=>{
+    await renderChallenge();await clickButton('Edit my response with this feedback');
+    await replaceChallenge('another-challenge',baseData());await clickButton('3. Build');
+    expect(host.querySelector('[aria-label="Feedback beside my draft"]')).toBeNull();
   });
 });

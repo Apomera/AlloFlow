@@ -2576,7 +2576,7 @@ window.StemLab = window.StemLab || {
                 // Coin palette
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
                   React.createElement("h3", { className: "text-sm font-bold text-amber-800 mb-3" }, "\uD83E\uDE99 " + cur.flag + " " + cur.name + " Coins"),
-                  React.createElement("p", { className: "text-[0.6875rem] text-amber-700 mb-3" }, __alloT('stem.money.click_coins_to_add_them_to_your_counti', "Click coins to add them to your counting board.")),
+                  React.createElement("p", { className: "text-[0.6875rem] text-amber-700 mb-3" }, __alloT('stem.money.counting_board_start', 'Choose a coin or bill to add it to your counting board. With a keyboard, use Tab to choose an item, then Enter or Space to add it.')),
                   React.createElement("div", { className: "flex flex-wrap gap-3 justify-center" },
                     cur.coins.map(function (coin, ci) {
                       return React.createElement("button", { key: ci, onClick: function () {

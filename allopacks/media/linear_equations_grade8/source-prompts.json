@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "linear_equations_grade8",
+    "key": "phone",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Risograph and cut-paper object illustration. One modern smartphone with a completely blank pale screen, beside a plain small stack of identical round gold tokens. No branding, text, numbers or currency symbols. Concept illustration only, not a precise money amount. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-phone.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e99228a3-0e48-483e-b564-cb708ae41bc7.png",
+    "alt": "A smartphone with a blank screen stands beside a stack of gold tokens.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "linear_equations_grade8",
+    "key": "candle",
+    "prompt": "Use case: scientific-educational. Square text-free educational AlloPack artwork. Risograph and cut-paper object illustration. Two unlit ivory candles of the same width, a tall one and a shorter one, on separate simple holders. No flame, smoke, text, rulers or numbers. A conceptual height comparison. Warm ivory background, large legible central composition. Avoid photorealism, people, letters, numbers, watermark, labels and decorative clutter.",
+    "file": "source-candle.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-7c5c715a-a67d-403c-8395-82eafce678a7.png",
+    "alt": "Two unlit ivory candles of different heights stand in separate shallow holders.",
+    "status": "visual-review-passed",
+    "reviewedAt": "2026-09-12"
+  }
+]

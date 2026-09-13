@@ -361,3 +361,110 @@ describe('teaching-script save, edit, and export', () => {
     const invalid={...v,sources:[{...v.sources[0],url:'javascript:alert(1)'}]};expect(api.toPlainText(invalid)).toBe('');
   });
 });
+
+
+describe('teaching-script complete inputs and native quiz guides', () => {
+  it.each([
+    [{ type: 'multi-select', question: 'Choose both phases.', options: ['Solid', 'Liquid', 'Heat'], correctAnswers: ['Solid', 'Liquid'] }, ['Correct selections: Solid', 'Liquid']],
+    [{ type: 'fill-blank', question: 'Water freezes into ___.', expectedFill: 'ice', acceptableAlternatives: ['solid water'] }, ['ice', 'solid water']],
+    [{ type: 'short-answer', question: 'Explain the change.', expectedAnswer: 'The particles lose energy.' }, ['The particles lose energy.']],
+    [{ type: 'self-explanation', question: 'Explain your evidence.', rubric: 'Connect particle motion to temperature.' }, ['Connect particle motion to temperature.']],
+    [{ type: 'sequence-sense', question: 'Order the cycle.', items: ['Evaporation', 'Condensation', 'Precipitation'], presentedOrder: [1, 0, 2], orderingPrinciple: 'Follow the movement of water.' }, ['Evaporation', 'Condensation', 'Precipitation', 'Follow the movement of water.']],
+    [{ type: 'relation-mismatch', question: 'Fix the mismatch.', pairs: [{ left: 'Liquid', right: 'Fills all space' }], wrongPairIndex: 0, correctPartnerForWrong: 'Takes container shape', candidatePartners: ['Takes container shape', 'Fixed shape'] }, ['Liquid', 'Fills all space', 'Takes container shape', 'Fixed shape']],
+    [{ type: 'answer-evidence', question: 'Which process formed the drops?', answerOptions: ['Condensation', 'Evaporation'], correctAnswer: 'Condensation', evidencePrompt: 'Which observation supports it?', evidenceOptions: ['The glass is cold.', 'The glass is tall.'], correctEvidence: 'The glass is cold.' }, ['Evaporation', 'Which observation supports it?', 'The glass is cold.', 'The glass is tall.']],
+    [{ type: 'numeric-response', question: 'At what temperature?', correctValue: 0, tolerance: 0.5, unit: 'C', acceptableUnits: ['Celsius'] }, ['Expected value: 0', 'Tolerance: 0.5', 'Celsius']],
+  ])('captures the teacher answer guide for native $type quiz items', (question, expected) => {
+    const selected = [{ id: 'mixed-quiz', type: 'quiz', data: { questions: [{ ...question, studentAnswer: 'LEARNER_SECRET', response: 'LEARNER_SECRET' }], studentResponses: ['LEARNER_SECRET'] } }];
+    const captured = api.captureInputs(plan(), settings(), selected);
+    const prompt = api.buildScriptPrompt(captured, disabled());
+    for (const phrase of expected) expect(prompt).toContain(phrase);
+    expect(prompt).not.toContain('LEARNER_SECRET');
+  });
+  it('uses the same supported material projection for availability and script inputs', () => {
+    expect(api.hasTeachingMaterialText({ type: 'image', data: { imageUrl: 'photo.png' } })).toBe(false);
+    expect(api.hasTeachingMaterialText({ type: 'simplified', data: '  ' })).toBe(false);
+    expect(api.hasTeachingMaterialText({ type: 'simplified', data: 'Teaching text', isStudentWork: true })).toBe(false);
+    expect(api.hasTeachingMaterialText({ type: 'sentence-frames', data: { mode: 'paragraph', text: 'I can explain ___.' } })).toBe(true);
+    expect(api.hasTeachingMaterialText({ type: 'outline', data: { main: 'Water cycle', branches: [] } })).toBe(true);
+  });
+  it('retains text objects used in teacher-owned chart and glossary fields', () => {
+    const rows = [{ id: 'chart', type: 'anchor-chart', data: { title: { text: 'Water cycle' }, sections: [{ label: { en: 'Changes' }, bullets: [{ text: 'Water evaporates.' }] }], studentResponses: 'LEARNER_SECRET' } }, { id: 'words', type: 'glossary', data: [{ term: { text: 'Condensation' }, def: { en: 'Gas cools into liquid.' }, studentAnswer: 'LEARNER_SECRET' }] }];
+    const captured = api.captureInputs(plan(), settings(), rows);
+    expect(captured.materials[0].text).toContain('Water cycle');
+    expect(captured.materials[0].text).toContain('Changes');
+    expect(captured.materials[1].text).toContain('Condensation');
+    expect(captured.materials[1].text).toContain('Gas cools into liquid.');
+    expect(JSON.stringify(captured)).not.toContain('LEARNER_SECRET');
+  });
+  it('detects teacher edits after the prompt cutoff and in omitted selected materials', () => {
+    const rows = materials();
+    rows[0].data = 'A'.repeat(30000) + 'Original ending';
+    const first = api.captureInputs(plan(), settings(), rows);
+    expect(first.materials[0].text).toHaveLength(24000);
+    rows[0].data = 'A'.repeat(30000) + 'Updated ending';
+    const changedTail = api.captureInputs(plan(), settings(), rows);
+    expect(changedTail.materials).toEqual(first.materials);
+    expect(changedTail.fingerprint).not.toBe(first.fingerprint);
+    rows[1].data.questions[0].question = 'Which represents three quarters?';
+    const changedOmitted = api.captureInputs(plan(), settings(), rows);
+    expect(changedOmitted.materials).toEqual(changedTail.materials);
+    expect(changedOmitted.fingerprint).not.toBe(changedTail.fingerprint);
+    rows[1].data.studentAnswers.secret = 'Another private answer';
+    expect(api.captureInputs(plan(), settings(), rows).fingerprint).toBe(changedOmitted.fingerprint);
+  });
+  it('warns about partial saved plan fields and detects edits outside their prompt limits', () => {
+    const p = plan();
+    p.data.directInstruction = 'A'.repeat(14000) + 'Original final example';
+    p.data.objectives = Array.from({ length: 21 }, (_, index) => 'Objective ' + index);
+    const first = api.captureInputs(p, settings(), materials());
+    expect(first.plan.directInstruction).toHaveLength(12000);
+    expect(first.plan.objectives).toHaveLength(20);
+    expect(first.trace.truncatedPlanFields).toEqual(['objectives', 'directInstruction']);
+    const warnings = api.getInputWarnings(first);
+    expect(warnings.join(' ')).toContain('Learning objectives; Direct instruction');
+    const saved = api.normalizeScript(response(), first, evidence()).version;
+    expect(saved.warnings).toEqual(expect.arrayContaining(warnings));
+    expect(api.toPlainText(saved)).toContain('Only portions of these saved plan fields');
+    p.data.directInstruction = 'A'.repeat(14000) + 'Updated final example';
+    const second = api.captureInputs(p, settings(), materials());
+    expect(second.plan).toEqual(first.plan);
+    expect(second.planFingerprint).not.toBe(first.planFingerprint);
+    expect(second.fingerprint).not.toBe(first.fingerprint);
+  });
+  it('preserves earlier plan fingerprints when all fields fit the prompt limits', () => {
+    const captured = api.captureInputs(plan(), settings(), materials());
+    expect(captured.planFingerprint).toBe(window.AlloModules.ResourceContentFingerprint.fingerprint(captured.plan));
+    expect(api.getInputWarnings(captured)).toEqual([]);
+  });
+  it('rejects excess selected resources instead of silently dropping the tail', () => {
+    const rows = Array.from({ length: 101 }, (_, index) => ({ id: 'material-' + index, type: 'source', data: 'A teaching sentence.' }));
+    const validation = api.validateInputs(api.captureInputs(plan(), settings(), rows));
+    expect(validation.ok).toBe(false);
+    expect(validation.errors.join(' ')).toContain('no more than 100');
+  });
+  it('rejects oversized teaching text instead of silently cutting teacher edits', () => {
+    const v = version(), saved = api.appendVersion(plan(), v);
+    const edited = v.steps.map((item, index) => index ? item : { ...item, teacherSays: 'Full teacher wording. '.repeat(900) });
+    expect(api.updateVersion(saved, v.id, edited)).toBe(saved);
+    const generated = api.normalizeScript({ ...response(), steps: edited }, snapshot(), evidence());
+    expect(generated.ok).toBe(false);
+    expect(generated.errors.join(' ')).toContain('16,000-character limit');
+    expect(saved.data.teachingScripts[0].steps[0].teacherSays).toBe(v.steps[0].teacherSays);
+  });
+});
+
+
+describe('native saved timeline material', () => {
+  it.each(['items', 'legacy-array'])('captures date and event from %s timelines and tracks teacher edits', shape => {
+    const items = [{ date: 'Step 1', event: 'Divide the whole into four equal lengths.', studentResponse: 'LEARNER_SECRET' }];
+    const material = { id: 'sequence', type: 'timeline', data: shape === 'items' ? { items, progressionLabel: 'From the whole to fourths' } : items };
+    const captured = api.captureInputs(plan(), settings(), [material]);
+    expect(api.hasTeachingMaterialText(material)).toBe(true);
+    expect(api.validateInputs(captured).ok).toBe(true);
+    expect(captured.materials[0].text).toContain(items[0].date);
+    expect(captured.materials[0].text).toContain(items[0].event);
+    expect(JSON.stringify(captured)).not.toContain('LEARNER_SECRET');
+    items[0].event = 'Divide the whole into eight equal lengths.';
+    expect(api.captureInputs(plan(), settings(), [material]).fingerprint).not.toBe(captured.fingerprint);
+  });
+});

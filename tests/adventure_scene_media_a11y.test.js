@@ -20,7 +20,7 @@ describe('Adventure scene, artwork, and playback accessibility', () => {
   });
 
   it('names scene regions without creating playback announcement conflicts', () => {
-    expect(source).toContain('role="region" aria-labelledby="adventure-current-scene-heading"');
+    expect(source).toMatch(/role="region"[^>]*aria-labelledby="adventure-current-scene-heading"/);
     expect(source).toContain('id="adventure-current-scene-heading"');
     expect(source).toContain('role="region" aria-label={t(\'adventure.current_scene\')}');
     expect(source).not.toContain('aria-labelledby="adventure-current-scene-heading" aria-live');

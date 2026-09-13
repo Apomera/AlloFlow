@@ -102,3 +102,19 @@ for(const theme of ['light','dark','contrast'])test('shared controls reflow with
     await page.screenshot({path:info.outputPath('shared-'+theme+'-'+width+'.png'),fullPage:true});
   }
 });
+
+
+for (const surface of ['launch', 'sidebar']) {
+  test(surface + ' explains debate setup and accepts decimal resource values', async ({ page }) => {
+    await mount(page, surface, true, {}, 'debate');
+    await expect(page.getByText(/Choose a position first/)).toBeVisible();
+    await page.getByLabel('Interaction mode', { exact: true }).selectOption('system');
+    await page.getByRole('checkbox', { name: /Track resources/ }).check();
+    await page.getByLabel('Starting value 1', { exact: true }).fill('1200.5');
+    expect(await page.getByLabel('Starting value 1', { exact: true }).evaluate((node: HTMLInputElement) => node.validity.stepMismatch)).toBe(false);
+    expect(await page.evaluate(() => (window as any).__setup.state.systemResources[0].quantity)).toBe(1200.5);
+    await page.getByLabel('Unit 1', { exact: true }).fill('%');
+    await page.getByLabel('Starting value 1', { exact: true }).fill('150');
+    await expect(page.getByLabel('Starting value 1', { exact: true })).toHaveValue('100');
+  });
+}

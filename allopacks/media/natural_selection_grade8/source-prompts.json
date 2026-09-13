@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "natural_selection_grade8",
+    "key": "lightmoth",
+    "prompt": "Square educational image for a middle-school AlloPack. Field-guide linocut and colored-pencil illustrations. A single pale peppered moth viewed from above resting with wings spread naturally against mottled pale lichen-covered bark. Speckled cream wings blend with bark; show delicate antennae and six legs subtly, no face. Artistic example not species-identification photograph. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-lightmoth.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-b5693f19-e746-4105-af30-3a5b1fe0faa5.png",
+    "alt": "A pale speckled moth rests with spread wings against pale lichen-covered bark.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "natural_selection_grade8",
+    "key": "darkmoth",
+    "prompt": "Square educational image for a middle-school AlloPack. Field-guide linocut and colored-pencil illustrations. A single dark peppered moth viewed from above resting with wings spread naturally against dark bark. Charcoal wings blend with bark; natural delicate antennae, no face. Artistic example not species-identification photograph. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-darkmoth.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-62767041-4e2d-4383-b74a-599655b23a4b.png",
+    "alt": "A dark speckled moth rests with spread wings against dark bark.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "natural_selection_grade8",
+    "key": "beetles",
+    "prompt": "Square educational image for a middle-school AlloPack. Field-guide linocut and colored-pencil illustrations. A small group of six beetles of the SAME general species-like body form on plain tan ground, naturally varying from pale tan to dark brown. All have six legs and two antennae, no cartoon faces, no predators or death. Illustrate variation within a population, not a sequence or transformation. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-beetles.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-78f40782-57bf-48a3-b863-d8bb6018a2f8.png",
+    "alt": "Six beetles share a similar body form but range from pale tan to dark brown.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "natural_selection_grade8",
+    "key": "snails",
+    "prompt": "Square educational image for a middle-school AlloPack. Field-guide linocut and colored-pencil illustrations. Three land snails of the same species-like form side by side on a neutral stone, their shells showing differing brown and yellow band patterns. All intact, no winner, no trophy, no ranking, no arrows. Field-guide style emphasizes inherited variation as an illustrative example. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-snails.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-5f2927f5-01b2-473d-8633-6c8787e4955e.png",
+    "alt": "Three snails on a rock have shells with differing yellow and brown bands.",
+    "reviewedAt": "2026-09-12"
+  },
+  {
+    "slug": "natural_selection_grade8",
+    "key": "giraffe",
+    "prompt": "Square educational image for a middle-school AlloPack. Field-guide linocut and colored-pencil illustrations. A giraffe standing normally beside an acacia tree, reaching its head naturally toward leaves without any exaggerated stretching or morphing. Include normal legs and ossicones. Field-guide linocut texture and pencil, not photorealistic. No parent-offspring sequence and no taller-after version. Generous margins and clear focal subject. Warm ivory background unless habitat is specified. No text, letters, numbers, labels, watermark, diagrams with annotations, arrows, logos or people. Avoid photographic realism, glossy 3D and anthropomorphic expressions.",
+    "status": "visual-review-passed",
+    "file": "source-giraffe.png",
+    "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-c9d8e678-cf92-4131-bbe0-3088ddbee791.png",
+    "alt": "A giraffe stands beside an acacia tree with its head near the leaves.",
+    "reviewedAt": "2026-09-12"
+  }
+]

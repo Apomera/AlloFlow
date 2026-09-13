@@ -1,0 +1,272 @@
+[
+  {
+    "id": "mix-term-1",
+    "kind": "term",
+    "file": "mix-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open suitcase contains three differently colored rectangular items.",
+    "altHash": "img-5cb-2629f0c0"
+  },
+  {
+    "id": "mix-term-2",
+    "kind": "term",
+    "file": "mix-term-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small gold tag-like rectangle sits beside a larger teal frame.",
+    "altHash": "img-3yv-1e30c3d9"
+  },
+  {
+    "id": "mix-term-3",
+    "kind": "term",
+    "file": "mix-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three smaller gold blocks point toward one larger teal block.",
+    "altHash": "img-9pv-04d715e5"
+  },
+  {
+    "id": "mix-term-4",
+    "kind": "term",
+    "file": "mix-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three smaller gold blocks point toward one larger teal block.",
+    "altHash": "img-9pv-04d715e5"
+  },
+  {
+    "id": "mix-term-5",
+    "kind": "term",
+    "file": "mix-term-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic page leads to three shorter lines.",
+    "altHash": "img-61v-5087650a"
+  },
+  {
+    "id": "mix-term-6",
+    "kind": "term",
+    "file": "mix-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The first of five schematic text lines is highlighted gold.",
+    "altHash": "img-5u7-399feb40"
+  },
+  {
+    "id": "mix-term-7",
+    "kind": "term",
+    "file": "mix-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three solid detail blocks lead toward a dashed outline above them.",
+    "altHash": "img-cbf-2d2156f1"
+  },
+  {
+    "id": "mix-term-8",
+    "kind": "term",
+    "file": "mix-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "One line on a schematic page is highlighted and another is underlined.",
+    "altHash": "img-5p7-48210c6f"
+  },
+  {
+    "id": "mix-term-9",
+    "kind": "term",
+    "file": "mix-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Five simple teal lines sit within one page frame.",
+    "altHash": "img-5s7-04e4d687"
+  },
+  {
+    "id": "mix-term-10",
+    "kind": "term",
+    "file": "mix-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three gold circles fit inside a large frame; a coral square remains outside.",
+    "altHash": "img-87b-fb8ad9a9"
+  },
+  {
+    "id": "mix-anchor-1",
+    "kind": "anchor",
+    "file": "mix-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small gold tag-like rectangle sits beside a larger teal frame.",
+    "altHash": "img-3yv-1e30c3d9"
+  },
+  {
+    "id": "mix-anchor-2",
+    "kind": "anchor",
+    "file": "mix-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "The first of five schematic text lines is highlighted gold.",
+    "altHash": "img-5u7-399feb40"
+  },
+  {
+    "id": "mix-anchor-3",
+    "kind": "anchor",
+    "file": "mix-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic page leads to three shorter lines.",
+    "altHash": "img-61v-5087650a"
+  },
+  {
+    "id": "mix-anchor-4",
+    "kind": "anchor",
+    "file": "mix-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three gold circles fit inside a large frame; a coral square remains outside.",
+    "altHash": "img-87b-fb8ad9a9"
+  },
+  {
+    "id": "mix-sort-1",
+    "kind": "sort",
+    "file": "mix-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic bee flies between two flowers along an arrow.",
+    "altHash": "img-ed3-c4cc3817"
+  },
+  {
+    "id": "mix-sort-2",
+    "kind": "sort",
+    "file": "mix-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Apples, a bowl of blueberries and almonds in opened shells form a still life.",
+    "altHash": "img-n3b-2a4bd1bb"
+  },
+  {
+    "id": "mix-sort-3",
+    "kind": "sort",
+    "file": "mix-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A simplified bee head has two large side eyes and three small eyes on top.",
+    "altHash": "img-c3j-3c6e8aa1"
+  },
+  {
+    "id": "mix-sort-4",
+    "kind": "sort",
+    "file": "mix-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Flowering orchard trees stand beside wooden beehive boxes, with bees near the blossoms.",
+    "altHash": "img-17c7-1cdccafa"
+  },
+  {
+    "id": "mix-sort-5",
+    "kind": "sort",
+    "file": "mix-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A simplified bee has three legs extending from each side of its body.",
+    "altHash": "img-cbj-06439a1a"
+  },
+  {
+    "id": "mix-sort-6",
+    "kind": "sort",
+    "file": "mix-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic bee flies between two flowers along an arrow.",
+    "altHash": "img-ed3-c4cc3817"
+  },
+  {
+    "id": "mix-sort-7",
+    "kind": "sort",
+    "file": "mix-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Seven golden hexagonal wax-cell shapes form a small honeycomb pattern.",
+    "altHash": "img-e4z-e07baef4"
+  },
+  {
+    "id": "mix-sort-8",
+    "kind": "sort",
+    "file": "mix-sort-8.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Apples, a bowl of blueberries and almonds in opened shells form a still life.",
+    "altHash": "img-n3b-2a4bd1bb"
+  },
+  {
+    "id": "mix-lesson-1",
+    "kind": "lesson",
+    "file": "mix-lesson-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An open suitcase contains three differently colored rectangular items.",
+    "altHash": "img-5cb-2629f0c0"
+  },
+  {
+    "id": "mix-lesson-2",
+    "kind": "lesson",
+    "file": "mix-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A small gold tag-like rectangle sits beside a larger teal frame.",
+    "altHash": "img-3yv-1e30c3d9"
+  },
+  {
+    "id": "mix-lesson-3",
+    "kind": "lesson",
+    "file": "mix-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A schematic bee flies between two flowers along an arrow.",
+    "altHash": "img-ed3-c4cc3817"
+  },
+  {
+    "id": "mix-lesson-4",
+    "kind": "lesson",
+    "file": "mix-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three smaller gold blocks point toward one larger teal block.",
+    "altHash": "img-9pv-04d715e5"
+  },
+  {
+    "id": "mix-lesson-5",
+    "kind": "lesson",
+    "file": "mix-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Flowering orchard trees stand beside wooden beehive boxes, with bees near the blossoms.",
+    "altHash": "img-56rb-c6bda4ca"
+  },
+  {
+    "id": "mix-lesson-6",
+    "kind": "lesson",
+    "file": "mix-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Apples, a bowl of blueberries and almonds in opened shells form a still life.",
+    "altHash": "img-2n7n-c3435bce"
+  },
+  {
+    "id": "mix-lesson-7",
+    "kind": "lesson",
+    "file": "mix-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three solid detail blocks lead toward a dashed outline above them.",
+    "altHash": "img-cbf-2d2156f1"
+  },
+  {
+    "id": "mix-lesson-8",
+    "kind": "lesson",
+    "file": "mix-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three gold circles fit inside a large frame; a coral square remains outside.",
+    "altHash": "img-87b-fb8ad9a9"
+  }
+]

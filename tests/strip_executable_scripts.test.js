@@ -13,7 +13,9 @@ const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8
 // ── extract the self-contained, pure helper ──
 const _s = dp.indexOf('function _stripExecutableScripts(html) {');
 const _e = dp.indexOf('\n}', _s) + 2;
-const _stripExecutableScripts = new Function(dp.slice(_s, _e) + '\nreturn _stripExecutableScripts;')();
+const _controlStart = dp.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
+const _controlEnd = dp.indexOf('function _alloSanitizeRemediationHtml', _controlStart);
+const _stripExecutableScripts = new Function(dp.slice(_controlStart, _controlEnd) + dp.slice(_s, _e) + '\nreturn _stripExecutableScripts;')();
 
 describe('_stripExecutableScripts: removes active scripts, keeps data scripts + document content', () => {
   it('removes the embedded "Apply Crop" image-editor widget script', () => {

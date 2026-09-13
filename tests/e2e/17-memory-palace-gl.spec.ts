@@ -54,7 +54,7 @@ const HARNESS = `<!doctype html>
 <script src="/vendor/three-r128/three.min.js"></script>
 <script src="/memory_palace_module.js"></script>
 <script>
-  window.__events = { locus: [], floor: [], errors: [] };
+  window.__events = { locus: [], floor: [], approach: [], errors: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
   window.__mount = function (data, extraOpts) {
     var MP = window.AlloModules.MemoryPalace;
@@ -63,7 +63,8 @@ const HARNESS = `<!doctype html>
       onLocusChange: function (locus, idx, total) {
         window.__events.locus.push({ id: locus && locus.id, label: locus && locus.label, idx: idx, total: total });
       },
-      onFloorPlace: function (spot) { window.__events.floor.push(spot); }
+      onFloorPlace: function (spot) { window.__events.floor.push(spot); },
+      onEmptyLocusApproach: function (locus, near, idx, total, reason) { window.__events.approach.push({id:locus && locus.id,near:near,reason:reason}); }
     }, extraOpts || {});
     window.__handle = MP.render(wrap, data, opts);
     return !!window.__handle;
@@ -813,4 +814,75 @@ test.describe('Memory Palace — real WebGL walk', () => {
     });
   }
 
+});
+
+test('keeps newer art when image loads fail or finish out of order', async ({ page }) => {
+  await mount(page);
+  const result = await page.evaluate(() => {
+    const w = window as any, T = w.THREE, h = w.__handle;
+    let frame: any; w.__lastScene.traverse((o: any) => { if(o.isMesh && o.userData.locusId === 'b0_i0' && o.material?.map) frame=o; });
+    const old = frame.material.map, requests: any[] = [];
+    const original = T.TextureLoader.prototype.load;
+    T.TextureLoader.prototype.load = function(url: string, ok: any, progress: any, fail: any) {
+      const texture = new T.Texture(); let disposed = false; texture.addEventListener('dispose',()=>{disposed=true;});
+      requests.push({url,ok,fail,texture,disposed:()=>disposed}); return texture;
+    };
+    try {
+      h.setLocusImage('b0_i0','broken');
+      const keptDuringLoad=frame.material.map===old; requests[0].fail();
+      const keptOnFailure=frame.material.map===old;
+      h.setLocusImage('b0_i0','older'); h.setLocusImage('b0_i0','newer');
+      requests[2].ok(requests[2].texture); requests[1].ok(requests[1].texture);
+      const newestWins=frame.material.map===requests[2].texture && requests[1].disposed();
+      h.setLocusImage('b0_i0','cleared'); h.clearLocus('b0_i0'); const cleared=frame.material.map;
+      requests[3].ok(requests[3].texture);
+      const clearWins=frame.material.map===cleared && requests[3].disposed();
+      h.setLocusRelief('b0_i0','color-one','depth-one');
+      h.setLocusRelief('b0_i0','color-two','depth-two');
+      const oldDepthDisposed=requests[5].disposed();
+      const replacement=frame.material.map; requests[4].fail();
+      const staleFailureIgnored=frame.material.map===replacement;
+      requests[7].fail();
+      const failedDepthFlat=frame.material.displacementMap===null && frame.material.displacementBias===0;
+      return {keptDuringLoad,keptOnFailure,newestWins,clearWins,oldDepthDisposed,staleFailureIgnored,failedDepthFlat};
+    } finally { T.TextureLoader.prototype.load=original; }
+  });
+  expect(result).toEqual({keptDuringLoad:true,keptOnFailure:true,newestWins:true,clearWins:true,oldDepthDisposed:true,staleFailureIgnored:true,failedDepthFlat:true});
+});
+
+test('isolates failed and empty model loads from replacement sculptures', async ({ page }) => {
+  await mount(page);
+  const result = await page.evaluate(async () => {
+    const w=window as any, T=w.THREE, h=w.__handle, pending:any[]=[];
+    w.AlloModules.GlbLibrary={listCatalog:()=>[{id:'test'}],loadModel:()=>new Promise((resolve,reject)=>pending.push({resolve,reject}))};
+    h.setLocusObject('b0_i0',{glbItem:'test'});
+    h.replaceLocusObject('b0_i0',{glbItem:'test'});
+    pending[0].reject(Error('late old failure')); await Promise.resolve(); await Promise.resolve();
+    const fig=new T.Group();fig.name='replacement-model';fig.add(new T.Mesh(new T.BoxGeometry(1,1,1),new T.MeshBasicMaterial()));
+    pending[1].resolve(fig);await Promise.resolve();await Promise.resolve();
+    const replacementSurvived=!!w.__lastScene.getObjectByName('replacement-model');
+    h.setLocusObject('b0_i1',{glbItem:'test'});pending[2].resolve(null);await Promise.resolve();await Promise.resolve();
+    h.setLocusObject('b0_i1',{glbItem:'test'});
+    const emptyLoadRetry=pending.length===4;
+    pending[3]?.resolve(null);
+    return {replacementSurvived,emptyLoadRetry};
+  });
+  expect(result).toEqual({replacementSurvived:true,emptyLoadRetry:true});
+});
+
+
+test('keeps nearby empty-frame hints on the selected guided stop', async ({ page }) => {
+  await mount(page, {main:'Two stops',branches:[{title:'Room',items:['First fact','Second fact']}]});
+  await page.evaluate(() => (window as any).__handle.goTo(1));
+  await expect.poll(() => page.evaluate(() => (window as any).__events.approach.filter((x:any)=>x.near).at(-1)?.id)).toBe('b0_i0');
+  await page.evaluate(() => (window as any).__handle.goTo(2));
+  await expect.poll(() => page.evaluate(() => (window as any).__events.approach.filter((x:any)=>x.near).at(-1)?.id)).toBe('b0_i1');
+  await page.evaluate(() => {
+    const w=window as any,c=document.createElement('canvas');c.width=16;c.height=16;const g=c.getContext('2d')!;g.fillStyle='red';g.fillRect(0,0,16,16);
+    w.__events.approach=[];w.__handle.setLocusImage('b0_i1',c.toDataURL());
+  });
+  await expect.poll(() => page.evaluate(() => (window as any).__events.approach.some((x:any)=>x.id==='b0_i1' && x.reason==='filled'))).toBe(true);
+  await page.waitForTimeout(350);
+  expect(await page.evaluate(() => (window as any).__events.approach.filter((x:any)=>x.near))).toEqual([]);
+  expect(await page.evaluate(() => (window as any).__events.locus.at(-1).id)).toBe('b0_i1');
 });

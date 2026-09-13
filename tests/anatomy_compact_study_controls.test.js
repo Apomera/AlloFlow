@@ -41,10 +41,10 @@ describe('Anatomy compact study controls', () => {
       for (const id of controls.querySelector('button').getAttribute('aria-controls').split(' ')) expect(root.querySelector(`[id="${id}"]`)).not.toBeNull();
     }
   });
-  it.each(paths)('limits compact controls to Quiz and Cards in %s', file => {
-    for (const _activeTab of ['quiz', 'flashcards', 'explore', 'tour', 'spotter']) {
+  it.each(paths)('offers compact controls for Explore, Quiz, Cards, and Homeostasis in %s', file => {
+    for (const _activeTab of ['quiz', 'flashcards', 'explore', 'homeoHunt', 'tour', 'spotter']) {
       const s = session(file, { _activeTab }); const root = s.html();
-      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards'].includes(_activeTab));
+      expect(!!root.querySelector('[data-anatomy-study-controls]')).toBe(['quiz', 'flashcards', 'explore', 'homeoHunt'].includes(_activeTab));
     }
   });
 });

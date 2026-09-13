@@ -15,8 +15,8 @@
   header { background: var(--navy); color: #fff; padding: 18px 28px; }
   header h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; }
   header p { font-size: 14px; margin: 0; opacity: 0.9; }
-  header .links { font-size: 13px; margin-top: 6px; }
-  header a { color: #cbd5e1; text-decoration: underline; margin-right: 14px; }
+  header .links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13px; margin-top: 6px; }
+  header a { display: inline-flex; align-items: center; min-height: 24px; min-width: 24px; color: #cbd5e1; text-decoration: underline; }
   header a:hover { color: #fff; }
   main { max-width: 1100px; margin: 0 auto; padding: 24px 28px 60px; }
   .filters { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 14px; margin-bottom: 22px; padding: 14px; background: var(--soft); border-radius: 8px; border: 1px solid var(--rule); }

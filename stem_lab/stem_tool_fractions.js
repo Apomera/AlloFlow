@@ -3035,8 +3035,8 @@ window.StemLab = window.StemLab || {
                 }, h('span', { className: 'sr-only' }, (i + 1) + ' of ' + pd));
               })
             ),
-            h('p', { className: 'text-[0.6875rem] text-slate-600 mt-2 mb-0' },
-              'Click the strip to set the numerator directly; use the sliders to change the whole.'
+            h('p', { className: 'text-sm text-slate-600 mt-2 mb-0' },
+              __alloT('stem.fractions.strip_instructions', 'Select a strip section to fill that many parts. You can also use the sliders or number fields. With a keyboard, Tab to a section and press Enter or Space.')
             )
           )
         ),

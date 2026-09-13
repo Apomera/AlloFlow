@@ -58,7 +58,7 @@ describe('Applied Challenge Studio schema', () => {
     expect(data.supports.frameStarter).toContain('two materials');
     expect(data.workspace.response).toContain('layered insulation');
     expect(data.feedback.strength).toBe('Clear application');
-    expect(data.schemaVersion).toBe(6);
+    expect(data.schemaVersion).toBe(7);
     expect(data.brief.factVerified).toBe(false);
     expect(data.evidenceLedger).toEqual([]);
     expect(data.stressTest).toBeNull();
@@ -83,7 +83,7 @@ describe('Applied Challenge Studio schema', () => {
       id: 'shared-id',
       claim: 'Choose the shaded route',
       evidence: 'Lesson connection 0',
-      status: 'verified',
+      status: 'needs-check',
       tradeoff: 'Tradeoff 0',
     });
     expect(data.evidenceLedger[1].id).not.toBe(data.evidenceLedger[0].id);
@@ -202,7 +202,7 @@ describe('Applied Challenge Studio schema', () => {
     const compact = H.appliedChallengeVisiblePhases('compact');
     const standard = H.appliedChallengeVisiblePhases('standard');
     expect(compact.map((phase) => phase.id)).toEqual([
-      'workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'transferReflection',
+      'workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'testReflection', 'revision', 'transferReflection',
     ]);
     expect(standard.length).toBeGreaterThan(compact.length);
   });
@@ -216,7 +216,7 @@ describe('Applied Challenge Studio schema', () => {
         response: 'A draft response',
       },
     });
-    expect(compact).toEqual({ started: 2, total: 6, percentage: 33 });
+    expect(compact).toEqual({ started: 2, total: 8, percentage: 25 });
     const standard = H.appliedChallengeWorkspaceProgress({
       scope: 'standard',
       workspace: {
@@ -436,7 +436,7 @@ describe('Applied Challenge Studio coaching guardrails', () => {
 
   it('requires a framed question and draft before creating a pressure test', () => {
     expect(H.appliedChallengeStressTestReady(base)).toEqual({ ok: true, reason: '' });
-    expect(H.appliedChallengeStressTestReady({ ...base, workspace: { response: '' } }).reason).toContain('draft response');
+    expect(H.appliedChallengeStressTestReady({ ...base, workspace: { workingQuestion: 'My question', response: '' } }).reason).toContain('written response');
     expect(H.appliedChallengeStressTestReady({
       ...base,
       agencyMode: 'student-framed',

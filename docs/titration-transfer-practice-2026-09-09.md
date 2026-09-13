@@ -40,3 +40,7 @@ There are 49 new registered English keys in this pass, including updated next-st
 Changes are local. This verification does not include deployment or a physical-device classroom trial.
 
 Follow-up: [volumetric preparation practice](titration-preparation-practice-2026-09-09.md) now uses this delivered mass for a make-to-volume exercise and a mass-concentration record.
+
+Follow-up: [sample-transfer inspection](titration-transfer-inspection-2026-09-12.md) adds vessel close-ups, automatic sample following, a proportional solid-mass bar, and state-aware wet-boat guidance.
+
+Follow-up: [visual weighing by difference](titration-transfer-mass-difference-2026-09-12.md) lets learners remove the same boat contribution from both dry readings and see that the delivered mass remains unchanged.

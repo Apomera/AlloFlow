@@ -49,7 +49,7 @@ describe('Anatomy structure list text', () => {
   }, 60_000);
 
   it.each(ANATOMY_PATHS)('uses the wording the learner reads everywhere else in %s', (filePath) => {
-    const young = rowText(render(filePath, {}, { gradeLevel: '2' }));
+    const young = rowText(render(filePath, { complexity: 1 }, { gradeLevel: '2' }));
     const older = rowText(render(filePath, {}, OLDER));
     // The skull has an authored K-2 description; the list must use it for a young learner
     // rather than the clinical wording, exactly as the card and flashcards do.
@@ -62,18 +62,22 @@ describe('Anatomy structure list text', () => {
 describe('Anatomy prose truncation', () => {
   // Round 27 (2026-09-03): three prose blocks still cut mid-word with a trailing "...", and the
   // compare card showed clinical wording to young learners unlike every other surface.
-  it.each(ANATOMY_PATHS)('clips the compare card and flashcard clinical text on a boundary in %s', (filePath) => {
+  it.each(ANATOMY_PATHS)('keeps clinical explanations complete while clipping only the function summary in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
     expect(source).not.toContain('compareSel.fn.substring(0, 200)');
     expect(source).not.toContain('compareSel.clinical.substring(0, 150)');
     expect(source).not.toMatch(/\.clinical\.substring\(0, 200\)/);
     expect(source).toContain('clipAtSentence(learnerText(compareSel), 200)');
-    expect(source).toContain('clipAtSentence(compareSel.clinical, 150)');
+    expect(source).not.toContain('clipAtSentence(compareSel.clinical, 150)');
+    const root=render(filePath,{system:'circulatory',selectedStructure:'heart',_compareStructure:'kidneys'},OLDER);
+    const note=root.querySelector('[data-anatomy-clinical-note="kidneys"]');
+    expect(note.querySelector('[data-anatomy-clinical-note-text]').textContent).toContain('A low filtration estimate alone is not an automatic start rule.');
+    expect(note.querySelector('[data-anatomy-clinical-note-source]').href).toContain('kdigo.org');
   });
 
   it.each(ANATOMY_PATHS)('gives the compare card the wording the learner reads elsewhere in %s', (filePath) => {
     const state = { system: 'circulatory', selectedStructure: 'heart', _compareStructure: 'kidneys' };
-    const young = render(filePath, state, { gradeLevel: '2' });
+    const young = render(filePath, { ...state, complexity: 1 }, { gradeLevel: '2' });
     const older = render(filePath, state, OLDER);
     const pick = (root) => root.querySelector('.bg-violet-50.rounded-lg p').textContent;
     expect(pick(young)).toMatch(/filters that clean your blood/i);

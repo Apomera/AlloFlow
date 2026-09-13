@@ -1,0 +1,5 @@
+const {makeBoard,source}=require('./lesson_board.cjs');
+const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=';
+const glossary=()=>({id:'water-glossary',type:'glossary',title:'Water-cycle vocabulary',sourceText:source,config:{language:'English'},data:[{entryId:'evaporation',term:'Evaporation',def:'Liquid water becomes water vapor when heated.',image:png,translations:{French:'Évaporation : passage de l’eau liquide à la vapeur.'}},{entryId:'condensation',term:'Condensation',def:'Water vapor cools and forms liquid droplets.',image:png},{entryId:'collection',term:'Collection',def:'Water gathers in rivers and lakes.',image:png}]});
+const support=()=>({version:1,definitionMode:'available',terms:[{id:'evaporation',term:'Evaporation',def:'Liquid water becomes water vapor when heated.',locations:['heater'],translations:{French:'Évaporation'},imageId:'picture',alt:''}],assets:{picture:png},art:{world:'picture',projects:{bridge:'picture'}}});
+module.exports={makeBoard,source,png,glossary,support};

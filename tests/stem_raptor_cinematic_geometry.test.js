@@ -70,7 +70,8 @@ describe('Raptor refined flight surfaces', () => {
       const left = make(-1, index, 5), right = make(1, index, 5);
       const a = left.attributes.position, b = right.attributes.position;
       expect(a.count).toBe(b.count);
-      expect(Math.abs((a.getX(8) + a.getX(9)) / 2)).toBeGreaterThan(3 * 0.84);
+      expect(a.count).toBe(18);
+      expect(Math.abs((a.getX(a.count-2) + a.getX(a.count-1)) / 2)).toBeGreaterThan(3 * 0.84);
       for (let i = 0; i < a.count; i++) {
         const mirrored = i % 2 ? i - 1 : i + 1;
         expect(a.getX(i)).toBeCloseTo(-b.getX(mirrored), 5);

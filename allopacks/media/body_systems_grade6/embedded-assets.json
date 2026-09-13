@@ -1,0 +1,308 @@
+[
+  {
+    "id": "bix-term-1",
+    "kind": "term",
+    "file": "bix-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Lung, heart, brain and muscle symbols connect through transport and regulation arrows.",
+    "altHash": "img-edf-9b1d5359"
+  },
+  {
+    "id": "bix-term-2",
+    "kind": "term",
+    "file": "bix-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A pale trachea divides into two branching airways within a pair of pink model lungs.",
+    "altHash": "img-9kz-b1f0a5f6"
+  },
+  {
+    "id": "bix-term-3",
+    "kind": "term",
+    "file": "bix-term-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Arrows form a loop from a lower tissue oval through two heart-half symbols and an upper lung symbol.",
+    "altHash": "img-g43-678c1ffa"
+  },
+  {
+    "id": "bix-term-4",
+    "kind": "term",
+    "file": "bix-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A tube enters a pouch, which connects to a coiled lower tube; arrows follow a downward route.",
+    "altHash": "img-bsn-01296a94"
+  },
+  {
+    "id": "bix-term-5",
+    "kind": "term",
+    "file": "bix-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A mauve brain model shows a folded cerebrum, smaller cerebellum and short downward brainstem.",
+    "altHash": "img-8ef-11d7964f"
+  },
+  {
+    "id": "bix-term-6",
+    "kind": "term",
+    "file": "bix-term-6.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "An ivory long-bone model has a narrow shaft and wider rounded ends.",
+    "altHash": "img-2rz-2838ef57"
+  },
+  {
+    "id": "bix-term-7",
+    "kind": "term",
+    "file": "bix-term-7.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Parallel red muscle fibers form a broad middle that tapers into pale tendons at both ends.",
+    "altHash": "img-5n3-7c352fa3"
+  },
+  {
+    "id": "bix-term-8",
+    "kind": "term",
+    "file": "bix-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An air-sac oval lies above a blood-vessel band; paired red spheres point down to blood and a three-sphere group points up toward air.",
+    "altHash": "img-8hb-4f772323"
+  },
+  {
+    "id": "bix-term-9",
+    "kind": "term",
+    "file": "bix-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold dots move from a tan gut space through a folded boundary toward a pink blood vessel.",
+    "altHash": "img-c8f-f0353169"
+  },
+  {
+    "id": "bix-term-10",
+    "kind": "term",
+    "file": "bix-term-10.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A rose-colored heart model has a tapered lower tip and several large vessels emerging at the top.",
+    "altHash": "img-8b7-56956d3a"
+  },
+  {
+    "id": "bix-term-11",
+    "kind": "term",
+    "file": "bix-term-11.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Arrows form a loop from a lower tissue oval through two heart-half symbols and an upper lung symbol.",
+    "altHash": "img-g43-678c1ffa"
+  },
+  {
+    "id": "bix-term-12",
+    "kind": "term",
+    "file": "bix-term-12.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A brain symbol connects by arrows to a vertical spinal-cord bar and then to a red muscle symbol.",
+    "altHash": "img-78r-3d9ba918"
+  },
+  {
+    "id": "bix-anchor-1",
+    "kind": "anchor",
+    "file": "bix-anchor-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold dots move from a tan gut space through a folded boundary toward a pink blood vessel.",
+    "altHash": "img-c8f-f0353169"
+  },
+  {
+    "id": "bix-anchor-2",
+    "kind": "anchor",
+    "file": "bix-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Oxygen pairs and a sugar symbol move down from a blood vessel toward a cell; a carbon-dioxide symbol moves back upward.",
+    "altHash": "img-bmv-14881b5a"
+  },
+  {
+    "id": "bix-anchor-3",
+    "kind": "anchor",
+    "file": "bix-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A brain symbol connects by arrows to a vertical spinal-cord bar and then to a red muscle symbol.",
+    "altHash": "img-78r-3d9ba918"
+  },
+  {
+    "id": "bix-anchor-4",
+    "kind": "anchor",
+    "file": "bix-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Lung, heart, brain and muscle symbols connect through transport and regulation arrows.",
+    "altHash": "img-edf-9b1d5359"
+  },
+  {
+    "id": "bix-sort-1",
+    "kind": "sort",
+    "file": "bix-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An air-sac oval lies above a blood-vessel band; paired red spheres point down to blood and a three-sphere group points up toward air.",
+    "altHash": "img-8hb-4f772323"
+  },
+  {
+    "id": "bix-sort-2",
+    "kind": "sort",
+    "file": "bix-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A rose-colored heart model has a tapered lower tip and several large vessels emerging at the top.",
+    "altHash": "img-6ov-005475b7"
+  },
+  {
+    "id": "bix-sort-3",
+    "kind": "sort",
+    "file": "bix-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A tube enters a pouch, which connects to a coiled lower tube; arrows follow a downward route.",
+    "altHash": "img-bsn-01296a94"
+  },
+  {
+    "id": "bix-sort-4",
+    "kind": "sort",
+    "file": "bix-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An arrow leads from a gold sensory dot to a spinal-cord bar, then another leads to a muscle.",
+    "altHash": "img-6r7-59022357"
+  },
+  {
+    "id": "bix-sort-5",
+    "kind": "sort",
+    "file": "bix-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A pale trachea divides into two branching airways within a pair of pink model lungs.",
+    "altHash": "img-7rf-21e850d3"
+  },
+  {
+    "id": "bix-sort-6",
+    "kind": "sort",
+    "file": "bix-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold dots move from a tan gut space through a folded boundary toward a pink blood vessel.",
+    "altHash": "img-c8f-f0353169"
+  },
+  {
+    "id": "bix-sort-7",
+    "kind": "sort",
+    "file": "bix-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Oxygen pairs and a sugar symbol move down from a blood vessel toward a cell; a carbon-dioxide symbol moves back upward.",
+    "altHash": "img-bmv-14881b5a"
+  },
+  {
+    "id": "bix-sort-8",
+    "kind": "sort",
+    "file": "bix-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Lung, heart, brain and muscle symbols connect through transport and regulation arrows.",
+    "altHash": "img-edf-9b1d5359"
+  },
+  {
+    "id": "bix-sort-9",
+    "kind": "sort",
+    "file": "bix-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Oxygen pairs and a sugar symbol move down from a blood vessel toward a cell; a carbon-dioxide symbol moves back upward.",
+    "altHash": "img-bmv-14881b5a"
+  },
+  {
+    "id": "bix-sort-10",
+    "kind": "sort",
+    "file": "bix-sort-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A brain symbol connects by arrows to a vertical spinal-cord bar and then to a red muscle symbol.",
+    "altHash": "img-78r-3d9ba918"
+  },
+  {
+    "id": "bix-lesson-1",
+    "kind": "lesson",
+    "file": "bix-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A pale trachea divides into two branching airways within a pair of pink model lungs.",
+    "altHash": "img-mpb-415eb2ea"
+  },
+  {
+    "id": "bix-lesson-2",
+    "kind": "lesson",
+    "file": "bix-lesson-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "An air-sac oval lies above a blood-vessel band; paired red spheres point down to blood and a three-sphere group points up toward air.",
+    "altHash": "img-8hb-4f772323"
+  },
+  {
+    "id": "bix-lesson-3",
+    "kind": "lesson",
+    "file": "bix-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Arrows form a loop from a lower tissue oval through two heart-half symbols and an upper lung symbol.",
+    "altHash": "img-g43-678c1ffa"
+  },
+  {
+    "id": "bix-lesson-4",
+    "kind": "lesson",
+    "file": "bix-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Small gold dots move from a tan gut space through a folded boundary toward a pink blood vessel.",
+    "altHash": "img-c8f-f0353169"
+  },
+  {
+    "id": "bix-lesson-5",
+    "kind": "lesson",
+    "file": "bix-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "A brain symbol connects by arrows to a vertical spinal-cord bar and then to a red muscle symbol.",
+    "altHash": "img-78r-3d9ba918"
+  },
+  {
+    "id": "bix-lesson-6",
+    "kind": "lesson",
+    "file": "bix-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Parallel red muscle fibers form a broad middle that tapers into pale tendons at both ends.",
+    "altHash": "img-fqr-bba19221"
+  },
+  {
+    "id": "bix-lesson-7",
+    "kind": "lesson",
+    "file": "bix-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Oxygen pairs and a sugar symbol move down from a blood vessel toward a cell; a carbon-dioxide symbol moves back upward.",
+    "altHash": "img-bmv-14881b5a"
+  },
+  {
+    "id": "bix-lesson-8",
+    "kind": "lesson",
+    "file": "bix-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Lung, heart, brain and muscle symbols connect through transport and regulation arrows.",
+    "altHash": "img-edf-9b1d5359"
+  }
+]

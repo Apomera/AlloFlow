@@ -39,3 +39,7 @@ Run `node reports/chemistry-refinement-2026-09-06/titration-preparation-browser.
 There are 46 new English keys in this pass. Other-language translations remain pending. Source and desktop/public copies are kept identical. These are local changes; no deployment or physical-device classroom trial is included.
 
 Follow-up: [volumetric pipetting practice](titration-aliquot-practice-2026-09-09.md) now takes a 25 mL aliquot from a copy of the prepared solution and records its concentration and calculated solute mass.
+
+Follow-up: [next-addition preview](titration-preparation-preview-2026-09-12.md) now compares coarse and fine model additions with a dashed meniscus and predicted volume, and adds inline overshoot recovery.
+
+Follow-up: [solution volume and concentration comparison](titration-solution-comparison-2026-09-12.md) adds an optional visual exploration of aliquots and whole-sample dilution using the recorded preparation.

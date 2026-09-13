@@ -1,0 +1,281 @@
+[
+  {
+    "id": "tnx-term-1",
+    "kind": "term",
+    "file": "tnx-term-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three columns contain a hundred flat on the left, a ten rod in the middle and one square on the right.",
+    "altHash": "img-9uf-0595f226"
+  },
+  {
+    "id": "tnx-term-2",
+    "kind": "term",
+    "file": "tnx-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Five separate gold straws lie parallel with clear gaps between them.",
+    "altHash": "img-5kn-0acb7ddc"
+  },
+  {
+    "id": "tnx-term-3",
+    "kind": "term",
+    "file": "tnx-term-3.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Ten gold straws lie side by side, held together by a teal band.",
+    "altHash": "img-7jj-22ef4840"
+  },
+  {
+    "id": "tnx-term-4",
+    "kind": "term",
+    "file": "tnx-term-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "1 hundred flats, 0 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-myn-565b26c6"
+  },
+  {
+    "id": "tnx-term-5",
+    "kind": "term",
+    "file": "tnx-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Ten gold straws lie side by side, held together by a teal band.",
+    "altHash": "img-7jj-22ef4840"
+  },
+  {
+    "id": "tnx-term-6",
+    "kind": "term",
+    "file": "tnx-term-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "2 hundred flats, 4 ten rods and 5 single squares are arranged in place-value groups.",
+    "altHash": "img-fb3-f08e3b13"
+  },
+  {
+    "id": "tnx-term-7",
+    "kind": "term",
+    "file": "tnx-term-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten separate squares in two rows of five point to one rod containing ten squares.",
+    "altHash": "img-5xb-65389b83"
+  },
+  {
+    "id": "tnx-term-8",
+    "kind": "term",
+    "file": "tnx-term-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "2 hundred flats, 5 ten rods and 4 single squares are arranged in place-value groups.",
+    "altHash": "img-fw7-90f3fc30"
+  },
+  {
+    "id": "tnx-term-9",
+    "kind": "term",
+    "file": "tnx-term-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "2 hundred flats, 4 ten rods and 5 single squares are arranged in place-value groups.",
+    "altHash": "img-fb3-f08e3b13"
+  },
+  {
+    "id": "tnx-term-10",
+    "kind": "term",
+    "file": "tnx-term-10.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "3 hundred flats, 0 ten rods and 5 single squares are arranged in place-value groups.",
+    "altHash": "img-ggn-3d2d02a9"
+  },
+  {
+    "id": "tnx-anchor-1",
+    "kind": "anchor",
+    "file": "tnx-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Five separate gold straws lie parallel with clear gaps between them.",
+    "altHash": "img-4cb-5949d742"
+  },
+  {
+    "id": "tnx-anchor-2",
+    "kind": "anchor",
+    "file": "tnx-anchor-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 4 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-9vj-bfadcf33"
+  },
+  {
+    "id": "tnx-anchor-3",
+    "kind": "anchor",
+    "file": "tnx-anchor-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "2 hundred flats, 0 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-sk7-b6029006"
+  },
+  {
+    "id": "tnx-anchor-4",
+    "kind": "anchor",
+    "file": "tnx-anchor-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten separate squares in two rows of five point to one rod containing ten squares.",
+    "altHash": "img-5xb-65389b83"
+  },
+  {
+    "id": "tnx-sort-1",
+    "kind": "sort",
+    "file": "tnx-sort-1.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 0 ten rods and 4 single squares are arranged in place-value groups.",
+    "altHash": "img-3qb-e447f443"
+  },
+  {
+    "id": "tnx-sort-2",
+    "kind": "sort",
+    "file": "tnx-sort-2.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 4 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-9vj-bfadcf33"
+  },
+  {
+    "id": "tnx-sort-3",
+    "kind": "sort",
+    "file": "tnx-sort-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "4 hundred flats, 0 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-1azz-3683e7fb"
+  },
+  {
+    "id": "tnx-sort-4",
+    "kind": "sort",
+    "file": "tnx-sort-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 0 ten rods and 4 single squares are arranged in place-value groups.",
+    "altHash": "img-3qb-e447f443"
+  },
+  {
+    "id": "tnx-sort-5",
+    "kind": "sort",
+    "file": "tnx-sort-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 4 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-9vj-bfadcf33"
+  },
+  {
+    "id": "tnx-sort-6",
+    "kind": "sort",
+    "file": "tnx-sort-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "4 hundred flats, 0 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-1azz-3683e7fb"
+  },
+  {
+    "id": "tnx-sort-7",
+    "kind": "sort",
+    "file": "tnx-sort-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 0 ten rods and 4 single squares are arranged in place-value groups.",
+    "altHash": "img-3qb-e447f443"
+  },
+  {
+    "id": "tnx-sort-8",
+    "kind": "sort",
+    "file": "tnx-sort-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "0 hundred flats, 4 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-9vj-bfadcf33"
+  },
+  {
+    "id": "tnx-sort-9",
+    "kind": "sort",
+    "file": "tnx-sort-9.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "4 hundred flats, 0 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-1azz-3683e7fb"
+  },
+  {
+    "id": "tnx-lesson-1",
+    "kind": "lesson",
+    "file": "tnx-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Five separate gold straws lie parallel with clear gaps between them.",
+    "altHash": "img-itr-843100f3"
+  },
+  {
+    "id": "tnx-lesson-2",
+    "kind": "lesson",
+    "file": "tnx-lesson-2.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Ten gold straws lie side by side, held together by a teal band.",
+    "altHash": "img-njv-8c2d5be7"
+  },
+  {
+    "id": "tnx-lesson-3",
+    "kind": "lesson",
+    "file": "tnx-lesson-3.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Three columns contain a hundred flat on the left, a ten rod in the middle and one square on the right.",
+    "altHash": "img-9uf-0595f226"
+  },
+  {
+    "id": "tnx-lesson-4",
+    "kind": "lesson",
+    "file": "tnx-lesson-4.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "2 hundred flats, 4 ten rods and 5 single squares are arranged in place-value groups.",
+    "altHash": "img-fb3-f08e3b13"
+  },
+  {
+    "id": "tnx-lesson-5",
+    "kind": "lesson",
+    "file": "tnx-lesson-5.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "3 hundred flats, 0 ten rods and 5 single squares are arranged in place-value groups.",
+    "altHash": "img-ggn-3d2d02a9"
+  },
+  {
+    "id": "tnx-lesson-6",
+    "kind": "lesson",
+    "file": "tnx-lesson-6.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "Ten separate squares in two rows of five point to one rod containing ten squares.",
+    "altHash": "img-5xb-65389b83"
+  },
+  {
+    "id": "tnx-lesson-7",
+    "kind": "lesson",
+    "file": "tnx-lesson-7.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "2 hundred flats, 5 ten rods and 4 single squares are arranged in place-value groups.",
+    "altHash": "img-fw7-90f3fc30"
+  },
+  {
+    "id": "tnx-lesson-8",
+    "kind": "lesson",
+    "file": "tnx-lesson-8.webp",
+    "width": 1000,
+    "height": 1000,
+    "alt": "1 hundred flats, 0 ten rods and 0 single squares are arranged in place-value groups.",
+    "altHash": "img-myn-565b26c6"
+  }
+]

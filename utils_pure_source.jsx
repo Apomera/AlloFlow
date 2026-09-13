@@ -293,10 +293,13 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
   });
 }
 const storageDB = {
-  get: async (key) => {
+  get: async (key, options) => {
+    const strict = !!(options && options.throwOnError);
     try {
-      if (typeof window === 'undefined') return null;
-      if (!window.idbKeyval) { warnLog("storageDB.get: IDB not yet loaded, returning null for", key); return null; }
+      if (typeof window === 'undefined' || !window.idbKeyval) {
+        if (strict) throw new Error('Device storage is not ready yet.');
+        warnLog('storageDB.get: IDB not yet loaded, returning null for', key); return null;
+      }
       let val = await window.idbKeyval.get(key);
       if ((val === undefined || val === null) && _dsBridgeWanted) {
         // Fresh Canvas session: local IDB is empty but the bridge may hold
@@ -309,6 +312,7 @@ const storageDB = {
           }
         } catch (e) {
           warnLog(`storageDB bridge read failed [${key}]:`, e?.code || e?.message || e);
+          if (strict) throw e;
           val = null;
         }
       }
@@ -324,6 +328,7 @@ const storageDB = {
       return JSON.parse(val);
     } catch (e) {
       warnLog(`storageDB Read Error [${key}]:`, e);
+      if (strict) throw e;
       return null;
     }
   },

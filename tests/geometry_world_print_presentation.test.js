@@ -69,7 +69,7 @@ describe('physical size and mesh review in the Geometry World dock', () => {
     expect([...host.querySelectorAll('.gwe-print-axis strong')].map(el => el.textContent)).toEqual(['75', '50', '62.5']);
     expect([...host.querySelectorAll('.gwe-print-axis[data-over="true"]')].map(el => el.dataset.axis)).toEqual(['width', 'height']);
     expect(host.querySelector('[data-axis="depth"] .gwe-print-axis-note')).toBeNull();
-    expect(host.querySelector('.gwe-assistive-copy').textContent).toContain('width and height exceed the printer bed');
+    expect(host.querySelector('.gwe-print-dimensions[role="status"] .gwe-assistive-copy').textContent).toContain('width and height exceed the printer bed');
     expect(host.querySelector('.gwe-print-scale').textContent).toBe('12.5 mm per block · Bed 50 × 80 × 50 mm');
   });
 

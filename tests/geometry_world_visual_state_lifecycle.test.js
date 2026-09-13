@@ -21,10 +21,13 @@ function fixture(){
   const block=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial());block.position.set(.5,.5,.5);e.blocks['0,0,0']=block;e.scene.add(block);
   e._disposeBlockMesh=m=>m.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material&&!o.material.userData.gwSharedBlockEdge)o.material.dispose();});
   const ctx={toolData:{geometryWorld:{}}},selected={engine:e,measurement:{blocks:[{x:0,y:0,z:0}]}},win={THREE,devicePixelRatio:1,matchMedia(){return{matches:false};}};
-  const doc={pointerLockElement:null,createElement(){return canvas();},getElementById(){return null;}};
+  const doc={pointerLockElement:null,createElement(){return canvas();},getElementById(id){return id==='allo-geometryworld-builder-css'?{}:null;}};
+  // Evaluate the actual complete helper set so Showcase dependencies stay current.
+  win.StemLab={_registry:{geometryWorld:{aliases:[],render(){return null;}}}};
+  const helpers=new Function('window','document',builder+';return window.StemLab.geometryWorldBuilderPure;')(win,doc);
   new Function('THREE','engine','geometryWorldSrgbColor',landscape)(THREE,e,(T,h)=>new T.Color(h).convertSRGBToLinear());
   new Function('engine','resolveGeometryRenderProfile','isMobile','window','navigator','container',quality)(e,profile,false,win,{hardwareConcurrency:8},{clientWidth:800,clientHeight:600});
-  const start=new Function('selectionMeasurement','aimedStudentMeasurement','ENGINE_KEY','window','document','keyFor','patchGeometryState','focusWorldSurface','announce','setTimeout','studioGroundFootprints','studioContactMap',showcase+';return showcaseBuild;')(()=>selected,()=>selected,'test',win,doc,p=>p.x+','+p.y+','+p.z,(_ctx,patch)=>Object.assign(ctx.toolData.geometryWorld,patch),()=>{},()=>{},setTimeout,()=>[],()=>({canvas:canvas(),width:2,depth:2}));
+  const start=new Function('selectionMeasurement','aimedStudentMeasurement','ENGINE_KEY','window','document','keyFor','patchGeometryState','focusWorldSurface','announce','setTimeout','studioGroundFootprints','studioContactMap','creationGeometryBounds','installStudioBackdropColorSync','configureStudioFloorShadow','showcaseCompositionRect','fitShowcaseCamera',showcase+';return showcaseBuild;')(()=>selected,()=>selected,'test',win,doc,p=>p.x+','+p.y+','+p.z,(_ctx,patch)=>Object.assign(ctx.toolData.geometryWorld,patch),()=>{},()=>{},setTimeout,()=>[],()=>({canvas:canvas(),width:2,depth:2}),helpers.creationGeometryBounds,helpers.installStudioBackdropColorSync,helpers.configureStudioFloorShadow,helpers.showcaseCompositionRect,helpers.fitShowcaseCamera);
   const annotations=new Function('engine','window','setTimeout','clearTimeout','setInterval','clearInterval',glow+hide+';return {show:showSelectionGlow,clear:clearSelectionGlow};')(e,win,setTimeout,clearTimeout,setInterval,clearInterval);
   new Function('engine',clear)(e);
   return{e,ctx,start(){start(ctx);},annotations};
