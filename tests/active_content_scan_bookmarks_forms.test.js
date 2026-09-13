@@ -96,7 +96,7 @@ describe('bookmarks (/Outlines)', () => {
     expect(scan({ Outlines: dict({ First: item, Count: 1 }) })).toMatchObject(CLEAN);
 
     let deep = dict({ Title: 'leaf', Dest: 'd' });
-    for (let depth = 0; depth < 130; depth++) deep = dict({ Title: 'level', Dest: 'd', First: deep, Count: 1 });
+    for (let depth = 0; depth < 1100; depth++) deep = dict({ Title: 'level', Dest: 'd', First: deep, Count: 1 });
     expect(scan({ Outlines: dict({ First: deep, Count: 1 }) })).toMatchObject({ complete: false, unexaminedStructures: 1 });
   });
 

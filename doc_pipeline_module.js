@@ -806,8 +806,16 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
     // elements. Walk only those two bounded graphs. Object-identity tracking
     // makes shared resources and malicious cycles safe without scanning every
     // indirect object in the file.
-    var MAX_REACHABLE_OBJECTS = 20000;
-    var MAX_REACHABLE_DEPTH = 128;
+    // Budgets (raised 2026-09-13): the structure tree of a 289-page IRS
+    // instruction booklet holds 81,997 objects and a 134-page USGS report nests
+    // 193 levels deep (arrays and elements each count one level), and both were
+    // reported as unexamined under the old 20,000 / 128 limits. Every object is
+    // visited once, so the object budget bounds linear work and the depth
+    // budget bounds recursion; both stay far below what any engine can handle
+    // while still ending a hostile walk. reports/mcp-scanner-walk-2026-09-13
+    // holds the census.
+    var MAX_REACHABLE_OBJECTS = 400000;
+    var MAX_REACHABLE_DEPTH = 1024;
     var MAX_CONTAINER_ENTRIES = 10000;
     var _newWalkState = function () {
       return {

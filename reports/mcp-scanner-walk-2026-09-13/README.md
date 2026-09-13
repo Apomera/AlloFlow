@@ -37,6 +37,12 @@ The four documents still withheld, with the reason attributed by `attribute-unex
 
 The last two are budget decisions this change deliberately does not touch. Raising `MAX_REACHABLE_DEPTH` and `MAX_REACHABLE_OBJECTS` is a separate, small change; the numbers above are the evidence for it.
 
+## Walk budgets (same day, second commit)
+
+The two budget-limited documents above were the only benign sources still withheld, so the shared walk budgets were raised: `MAX_REACHABLE_OBJECTS` 20,000 -> 400,000 and `MAX_REACHABLE_DEPTH` 128 -> 1,024 (`MAX_CONTAINER_ENTRIES` unchanged at 10,000). Every object is still visited once, so the object budget bounds linear work and the depth budget bounds recursion; both remain far below what any JavaScript engine handles while still ending a hostile walk. The over-depth tests now build 1,100 levels.
+
+`corpus-census-after-budgets.json` repeats the census against the previous commit: deliverable documents 12 / 16 -> **13 / 16**, no object mutated. `figures/usgs-water-cycle.pdf` (depth 193) now passes. `born-digital/irs-i1040-instructions.pdf` remains withheld for its real embedded file and its nested `EmbeddedFiles` name tree, which is correct. The scanner suites stayed at 34 / 34 and `verify:mcpb-ci` at 41 / 41 after the rebuild.
+
 ## Verification
 
 | Gate | Result |

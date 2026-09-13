@@ -298,7 +298,7 @@ describe('active-content scan completeness', () => {
     });
 
     let deepKid = dict({ Type: '/StructElem' });
-    for (let depth = 0; depth < 130; depth++) {
+    for (let depth = 0; depth < 1100; depth++) {
       deepKid = dict({ Type: '/StructElem', K: deepKid });
     }
     const overDepth = scan({
@@ -322,7 +322,8 @@ describe('active-content scan completeness', () => {
       expect(text).toContain("var catalogAssociatedFiles = _resolve(catalog.get(nm('AF')));");
       expect(text).toContain("catch (_) { unexaminedStructures++; return null; }");
       expect(text).toContain("'other-actions': 1, multimedia: 1");
-      expect(text).toContain('var MAX_REACHABLE_OBJECTS = 20000;');
+      expect(text).toContain('var MAX_REACHABLE_OBJECTS = 400000;');
+      expect(text).toContain('var MAX_REACHABLE_DEPTH = 1024;');
       expect(text).toContain("if (subtype === '/Form')");
       expect(text).toContain("var rawStructTree = catalog.get(nm('StructTreeRoot'));");
     }
