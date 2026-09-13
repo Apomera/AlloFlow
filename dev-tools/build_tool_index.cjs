@@ -41,7 +41,14 @@ const CHECK_ONLY = process.argv.includes('--check');
 // These tools retain a hidden StemLab registration only so old saved links can
 // resolve. Their discoverable home is outside STEM, so the STEM capability
 // index must not surface them in search or model routing.
-const NON_STEM_INDEX_IDS = new Set(['diagnosisEligibility']);
+const NON_STEM_INDEX_IDS = new Set([
+  'diagnosisEligibility',
+  // Not a tool: Tool Forge's starter SKELETON is a string literal containing
+  // `registerTool('myTool', …` with template text ("One line on what students
+  // actually do here"), and the harvest read it as a real registration. It was
+  // published on the promo directory and given a /my-tool deep link.
+  'myTool',
+]);
 
 // Caps keep the artifact bounded no matter how verbose a tool becomes.
 const MAX_DESC = 320;      // chars of self-description per tool
