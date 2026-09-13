@@ -1,0 +1,36 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+xxxxxx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_transitions.test.js > Dino Lab smoothly changing skin sections > preserves tapered stations and seam normals at scale 0.1 broad false
+ FAIL  tests/dinolab_3d_transitions.test.js > Dino Lab smoothly changing skin sections > preserves tapered stations and seam normals at scale 0.1 broad true
+ FAIL  tests/dinolab_3d_transitions.test.js > Dino Lab smoothly changing skin sections > preserves tapered stations and seam normals at scale 1 broad false
+ FAIL  tests/dinolab_3d_transitions.test.js > Dino Lab smoothly changing skin sections > preserves tapered stations and seam normals at scale 1 broad true
+ FAIL  tests/dinolab_3d_transitions.test.js > Dino Lab smoothly changing skin sections > preserves tapered stations and seam normals at scale 12 broad false
+ FAIL  tests/dinolab_3d_transitions.test.js > Dino Lab smoothly changing skin sections > preserves tapered stations and seam normals at scale 12 broad true
+AssertionError: expected 7056 to be 14112 // Object.is equality
+
+- Expected
++ Received
+
+- 14112
++ 7056
+
+ ❯ tests/dinolab_3d_transitions.test.js:11:100
+      9|   const points=[0,1,2,3].map(x=>new T.Vector3(x*scale,0,0)),radii=[1,.…
+     10|   const g=dinoSurfaceGeometry(T,points,radii,{smoothProfile:true}),p=g…
+     11|   expect(g.userData.dinoSmoothProfile).toBe(true);expect(p.count).toBe…
+       |                                                                                                    ^
+     12|   for(const attr of ['position','normal','uv'])expect([...g.attributes…
+     13|   for(let station=0;station<4;station++){
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  23:25:49
+   Duration  1.20s (transform 32ms, setup 38ms, import 66ms, tests 29ms, environment 913ms)

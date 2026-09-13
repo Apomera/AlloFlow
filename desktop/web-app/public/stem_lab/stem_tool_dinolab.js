@@ -6264,6 +6264,7 @@ window.StemLab = window.StemLab || {
       normals.setXYZ(first, blend.x, blend.y, blend.z); normals.setXYZ(last, blend.x, blend.y, blend.z);
     }
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoSmoothProfile = !!options.smoothProfile;
     return geometry;
   }
   // Broad cheek relief is part of the head skin, with no overlapping cheek pieces.
@@ -8121,7 +8122,7 @@ window.StemLab = window.StemLab || {
             }
             function addSoftTissueChain(points, radii, mat, cranialShape) {
               if (!props.showBody || !points || points.length < 2) return [];
-              var surfaceGeometry = cranialShape ? dinoCranialGeometry(THREE, points, radii, cranialShape) : dinoSurfaceGeometry(THREE, points, radii);
+              var surfaceGeometry = cranialShape ? dinoCranialGeometry(THREE, points, radii, cranialShape) : dinoSurfaceGeometry(THREE, points, radii, { smoothProfile: true });
               surfaceGeometry.translate(-points[0].x, -points[0].y, -points[0].z);
               var mesh = new THREE.Mesh(surfaceGeometry, mat || bodyMat);
               mesh.position.copy(points[0]);
@@ -8526,12 +8527,20 @@ window.StemLab = window.StemLab || {
               var tailMidB = new THREE.Vector3().copy(hip).lerp(tail, 0.64).add(vec(0, surfaceBodyHeight * postcranialSurface.tailMidCurve, 0));
               var tailTipRadius = Math.max(0.006 * detailScale, ht * 0.005) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailTip;
               var tailRadii = [tailBaseRadius, tailBaseRadius * 0.72, tailBaseRadius * 0.38, tailTipRadius];
-              var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail], tailRadii.map(function (r) { return [r * postcranialSurface.tailHeightScale, r * postcranialSurface.tailDepthScale]; }), bodyMat);
-              if (tailMeshes[0]) tailMeshes[0].userData.dinoRegion = 'tail';
-              var tailSurfaceCurve = new THREE.CatmullRomCurve3([hip, tailMidA, tailMidB, tail], false, 'centripetal');
+              // Bury the proximal cap inside the pelvis and taper it into the tail itself.
+              var tailSkinRoot = hip.clone().lerp(pelvisCenter, 0.30);
+              var tailSkinRadii = tailRadii.map(function (r) { return [r * postcranialSurface.tailHeightScale, r * postcranialSurface.tailDepthScale]; });
+              tailSkinRadii[0] = [Math.min(tailSkinRadii[0][0] * 1.16, surfaceBodyHeight * 0.70 * 0.92), Math.min(tailSkinRadii[0][1] * 1.16, surfaceBodyDepth * 0.76 * 0.92)];
+              var tailMeshes = addSoftTissueChain([tailSkinRoot, tailMidA, tailMidB, tail], tailSkinRadii, bodyMat);
+              if (tailMeshes[0]) {
+                tailMeshes[0].userData.dinoRegion = 'tail';
+                // Keep the established hip pivot for tail motion and attached details.
+                var tailPivotOffset = tailSkinRoot.clone().sub(hip);
+                tailMeshes[0].geometry.translate(tailPivotOffset.x, tailPivotOffset.y, tailPivotOffset.z);
+                tailMeshes[0].position.copy(hip);
+              }
+              var tailSurfaceCurve = new THREE.CatmullRomCurve3([tailSkinRoot, tailMidA, tailMidB, tail], false, 'centripetal');
               var tailContours = addContourGroup(tailMeshes);
-              var tailRootBlend = addEllipsoid(new THREE.Vector3().copy(hip).lerp(tailMidA, 0.24), vec(tailBaseRadius * 1.38, tailBaseRadius * 1.16 * postcranialSurface.tailHeightScale, tailBaseRadius * 1.16 * postcranialSurface.tailDepthScale), bodyMat);
-              addBodyContour(tailRootBlend);
               idleMotion.tailSegments = tailMeshes.map(function (tailSegment, tailIndex) { return { mesh: tailSegment, contour: tailContours[tailIndex] || null, baseRotation: tailSegment.rotation.clone(), phase: tailIndex * 0.46 }; });
               if (tailMeshes.length) {
                 idleMotion.tail = tailMeshes[0];

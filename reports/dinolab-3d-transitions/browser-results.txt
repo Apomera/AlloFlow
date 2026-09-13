@@ -1,0 +1,21 @@
+
+Running 10 tests using 1 worker
+
+(node:32192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dinolab-3d-regional-color.spec.ts:107:5 › tail pattern stays fixed to its moving surface (5.5s)
+  ok  2 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:66:5 › keyboard study selection resets on species change and keeps evidence data intact (11.4s)
+  ok  3 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:76:5 › explicit scan target takes priority while layer changes preserve the study (21.6s)
+  ok  4 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:50:120 › sinosauropteryx has a seated tapered tail transition (38.1s)
+  ok  5 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:50:120 › tyrannosaurus has a seated tapered tail transition (46.8s)
+  ok  6 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:50:120 › brachiosaurus has a seated tapered tail transition (51.3s)
+  ok  7 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:50:120 › triceratops has a seated tapered tail transition (51.9s)
+  ok  8 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:50:120 › microraptor has a seated tapered tail transition (44.0s)
+  ok  9 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:50:120 › spinosaurus has a seated tapered tail transition (47.6s)
+  ok 10 [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts:57:5 › transition stays covered during motion and through phone fossil studies (24.7s)
+
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-transitions.spec.ts (5.1m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  10 passed (5.7m)

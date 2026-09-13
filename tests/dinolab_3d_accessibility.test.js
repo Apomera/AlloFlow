@@ -210,7 +210,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("var torsoRadii = [");
     expect(source).toContain("var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;");
     expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
-    expect(source).toContain('var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail]');
+    expect(source).toContain('var tailMeshes = addSoftTissueChain([tailSkinRoot, tailMidA, tailMidB, tail]');
     expect(source).toContain('idleMotion.tailSegments.forEach(function (tailEntry, tailIndex)');
     expect(source).toContain("readoutChip('Body ' + postcranialSurface.shortLabel");
     expect(source).toContain("'Visible body silhouette: '");

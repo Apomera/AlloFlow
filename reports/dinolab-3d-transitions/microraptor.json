@@ -1,0 +1,22 @@
+{
+  "surfaces": 9,
+  "smooth": 9,
+  "rootCover": 0.003981032396170728,
+  "rootGap": 0.20018469822028287,
+  "tailPivot": [
+    0.108,
+    0.206856,
+    0
+  ],
+  "memory": {
+    "geometries": 347,
+    "textures": 8
+  },
+  "render": {
+    "frame": 21,
+    "calls": 345,
+    "triangles": 120652,
+    "points": 0,
+    "lines": 0
+  }
+}

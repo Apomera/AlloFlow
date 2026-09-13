@@ -1,0 +1,165 @@
+{
+  "date": "2026-09-12",
+  "feature": "Dino Lab smoother body and tail transitions",
+  "status": "implementation-and-validation-complete",
+  "focused": {
+    "passed": 144,
+    "files": 7,
+    "transitions": 6,
+    "geometry": 19,
+    "cranial": 9,
+    "attachments": 8,
+    "shadows": 14,
+    "accessibility": 15,
+    "golden": 73,
+    "log": "focused-results.txt",
+    "snapshotsChanged": false,
+    "initialGeometryRun": {
+      "failed": 6,
+      "reason": "Test doubled expected index count; corrected expectation to 7056",
+      "correctedPassed": 6,
+      "productCorrection": false
+    }
+  },
+  "browser": {
+    "uniquePassed": 10,
+    "shapeVariants": 6,
+    "motionPhoneAndLayers": 1,
+    "existingCameraEvidence": 2,
+    "existingColorMotion": 1,
+    "log": "browser-results.txt",
+    "baselineCapturesExcluded": 2,
+    "repeatedReviewsExcluded": 2,
+    "environment": "Chromium software WebGL, application stylesheet, 390x844 phone viewport emulation"
+  },
+  "preservation": [
+    "Original cross-section station measurements",
+    "Mesh resolution",
+    "Hip animation pivot",
+    "Surface attachment roots",
+    "Tail color coordinates during motion",
+    "Paused mesh transforms",
+    "Saved investigation data",
+    "Fossil skeleton"
+  ],
+  "reviewedImages": [
+    "sinosauropteryx-before.png",
+    "sinosauropteryx-tail.png",
+    "tyrannosaurus-tail.png",
+    "brachiosaurus-body.png",
+    "spinosaurus-tail.png",
+    "sinosauropteryx-mobile.png"
+  ],
+  "integrity": {
+    "syntax": "passed",
+    "scopedWhitespace": "passed",
+    "rendererCopies": "canonical/public/existing ignored app-build match",
+    "sha256": "F8A5D24D143747FA007D8418D165A10B6A15BEFFFBD4B8AEFAC2E257C5BA7286"
+  },
+  "limits": [
+    "Skin regions remain separate meshes for animation",
+    "Counters are from software WebGL, not a hardware frame-rate benchmark",
+    "Phone viewport is emulated"
+  ],
+  "delivery": {
+    "push": false,
+    "deployment": false,
+    "packagedBuild": false
+  },
+  "referenceFrames": [
+    {
+      "species": "sinosauropteryx",
+      "before": {
+        "surfaces": 9,
+        "smooth": 0,
+        "rootCover": 0.009452705071045509,
+        "rootGap": 0.20304828486737228,
+        "tailPivot": [
+          0.132,
+          0.23399999999999999,
+          0
+        ],
+        "memory": {
+          "geometries": 194,
+          "textures": 7
+        },
+        "render": {
+          "frame": 21,
+          "calls": 193,
+          "triangles": 103340,
+          "points": 0,
+          "lines": 0
+        }
+      },
+      "after": {
+        "surfaces": 9,
+        "smooth": 9,
+        "rootCover": 0.008632863343147354,
+        "rootGap": 0.20304811416912052,
+        "tailPivot": [
+          0.132,
+          0.23399999999999999,
+          0
+        ],
+        "memory": {
+          "geometries": 193,
+          "textures": 7
+        },
+        "render": {
+          "frame": 21,
+          "calls": 191,
+          "triangles": 100028,
+          "points": 0,
+          "lines": 0
+        }
+      }
+    },
+    {
+      "species": "tyrannosaurus",
+      "before": {
+        "surfaces": 9,
+        "smooth": 0,
+        "rootCover": 0.000012423954485956623,
+        "rootGap": 0,
+        "tailPivot": [
+          1.476,
+          2.9437200000000003,
+          0
+        ],
+        "memory": {
+          "geometries": 138,
+          "textures": 7
+        },
+        "render": {
+          "frame": 21,
+          "calls": 133,
+          "triangles": 148340,
+          "points": 0,
+          "lines": 0
+        }
+      },
+      "after": {
+        "surfaces": 9,
+        "smooth": 9,
+        "rootCover": 0.010919468143114541,
+        "rootGap": 0,
+        "tailPivot": [
+          1.476,
+          2.9437200000000003,
+          0
+        ],
+        "memory": {
+          "geometries": 137,
+          "textures": 7
+        },
+        "render": {
+          "frame": 21,
+          "calls": 131,
+          "triangles": 145028,
+          "points": 0,
+          "lines": 0
+        }
+      }
+    }
+  ]
+}

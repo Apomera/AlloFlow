@@ -1,0 +1,70 @@
+{
+  "first": {
+    "surfaces": 9,
+    "smooth": 9,
+    "rootCover": 0.008420883173118766,
+    "rootGap": 0.20146811398795597,
+    "tailPivot": [
+      0.132,
+      0.23399999999999999,
+      0
+    ],
+    "memory": {
+      "geometries": 193,
+      "textures": 7
+    },
+    "render": {
+      "frame": 22,
+      "calls": 191,
+      "triangles": 100028,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "moving": {
+    "surfaces": 9,
+    "smooth": 9,
+    "rootCover": 0.008182071686104828,
+    "rootGap": 0.20050909790211935,
+    "tailPivot": [
+      0.132,
+      0.23399999999999999,
+      0
+    ],
+    "memory": {
+      "geometries": 193,
+      "textures": 7
+    },
+    "render": {
+      "frame": 39,
+      "calls": 191,
+      "triangles": 100028,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "back": {
+    "surfaces": 9,
+    "smooth": 9,
+    "rootCover": 0.008182071686104828,
+    "rootGap": 0.20050909790211935,
+    "tailPivot": [
+      0.132,
+      0.23399999999999999,
+      0
+    ],
+    "memory": {
+      "geometries": 160,
+      "textures": 7
+    },
+    "render": {
+      "frame": 128,
+      "calls": 84,
+      "triangles": 41020,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "coordinatesStable": true,
+  "pausedTransformsFrozen": true
+}
