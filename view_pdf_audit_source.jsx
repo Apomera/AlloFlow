@@ -4832,6 +4832,50 @@ function PdfAuditView(props) {
     };
   }, [_structuralFoundations, _foundationFixPreview, pdfFixResult && pdfFixResult.verificationAudit, pdfFixResult && pdfFixResult.axeAudit, pdfFixResult && pdfFixResult.secondEngineAudit]);
   const [_foundationFixState, _setFoundationFixState] = useState(null);
+  // On-demand AI triage of the review queue (2026-09-13). The pipeline runs the same triage
+  // automatically before its final audit on a healthy lane; this button covers throttled runs,
+  // documents over the automatic cap, and a second try. Same commit + re-verify flow as the
+  // foundation fixes below; judgments without a fix are stored as metadata only.
+  const [_triageBusy, setTriageBusy] = useState(false);
+  const _runReviewTriage = async (openFindings) => {
+    const run = _docPipeline && _docPipeline.resolveReviewFindings;
+    const source = pdfFixResultRef && pdfFixResultRef.current;
+    const list = (Array.isArray(openFindings) ? openFindings : []).filter(Boolean).slice(0, 10);
+    if (typeof run !== 'function' || !source || !source.accessibleHtml || !list.length || _triageBusy) return;
+    const operationTicket = _beginRemediationOperation('review-triage');
+    setTriageBusy(true);
+    setPdfFixLoading(true);
+    _setRemediationOperationStep(operationTicket, 'Asking the AI to resolve ' + list.length + ' review finding' + (list.length === 1 ? '' : 's') + '…');
+    try {
+      if (!_remediationOperationSourceIsCurrent(operationTicket)) return;
+      const result = await run(source.accessibleHtml, list, {});
+      if (!_remediationOperationIsCurrent(operationTicket)) return;
+      const summary = {
+        attempted: (result && result.attempted) || 0, applied: (result && result.applied) || 0,
+        keys: (result && result.keys) || [], dispositions: (result && result.dispositions) || [],
+        skipped: (result && result.skipped) || null, resolved: null, remaining: null, onDemand: true, at: new Date().toISOString(),
+      };
+      if (!result || !result.changed) {
+        // Judgments only: metadata-only spread, html untouched, so the revision counter does not
+        // advance (the same rule reviewedFindings follows).
+        setPdfFixResult((prev) => prev ? { ...prev, reviewTriage: summary } : prev);
+        _toastForRemediationOperation(operationTicket, result && result.skipped
+          ? 'The AI pass could not run (' + result.skipped + ').'
+          : 'No fix passed the safety gate; the AI\'s reason is shown next to each finding.', 'info');
+        return;
+      }
+      _setRemediationOperationStep(operationTicket, 'Re-verifying the updated HTML with AI, axe-core, and IBM Equal Access…');
+      if (!_commitHtmlPendingVerification(operationTicket, result.html, { reviewTriage: summary })) return;
+      const recheck = await _reauditAndScore(result.html, null, operationTicket);
+      if (!_remediationOperationIsCurrent(operationTicket) || (recheck && recheck.stale)) return;
+      _toastForRemediationOperation(operationTicket, summary.applied + ' AI fix' + (summary.applied === 1 ? '' : 'es') + ' applied and re-checked; whatever the checkers still flag stays in the list.', recheck && recheck.engineExecutionComplete ? 'success' : 'warning');
+    } catch (error) {
+      _toastForRemediationOperation(operationTicket, 'The AI review pass could not be completed. No unverified change was presented as final.' + (error && error.message ? ' ' + error.message : ''), 'error');
+    } finally {
+      setTriageBusy(false);
+      _finishPdfRemediationOperation(operationTicket);
+    }
+  };
   const _runFoundationFixes = async (foundationIds) => {
     const ids = Array.from(new Set((Array.isArray(foundationIds) ? foundationIds : [foundationIds]).map((id) => String(id || '').trim()).filter(Boolean)));
     const fix = _docPipeline && _docPipeline.fixStructuralFoundations;
@@ -12882,7 +12926,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // moment rounds take over. Events remain the only live source during the FIRST
                     // run, when nothing is committed yet. Deriving from the committed audits also
                     // means this queue and the engine-evidence panels below can never disagree.
-                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '', where: (f && Array.isArray(f.details) ? f.details : []).map((d) => d && d.snippet ? String(d.snippet).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : '').filter(Boolean).slice(0, 3) });
+                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '', details: (f && Array.isArray(f.details)) ? f.details.slice(0, 5) : [], where: (f && Array.isArray(f.details) ? f.details : []).map((d) => d && d.snippet ? String(d.snippet).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : '').filter(Boolean).slice(0, 3) });
                     const _rfEaAudit = pdfFixResult && (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit);
                     const _rfSource = (pdfFixResult && (pdfFixResult.axeAudit || _rfEaAudit))
                       ? { committed: true, findings: [].concat(
@@ -12900,6 +12944,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _rfDone = _rfAll.length - _rfOpen.length;
                     const _rfBucketLabel = { incomplete: (t('pdf_audit.review_queue.bucket_incomplete') || 'needs review'), potential: (t('pdf_audit.review_queue.bucket_potential') || 'potential issue'), manual: (t('pdf_audit.review_queue.bucket_manual') || 'manual check') };
                     const _rfEngineLabel = { axe: 'axe-core', equalAccess: 'Equal Access' };
+                    const _triage = pdfFixResult && pdfFixResult.reviewTriage;
+                    const _triageFor = (f) => (_triage && Array.isArray(_triage.dispositions)) ? _triage.dispositions.find((d) => d && d.key === _rfKey(f)) : null;
+                    const _triageLabel = (d) => !d ? '' : d.action === 'not-an-issue' ? ('AI judged this not an issue: ' + (d.reason || 'no reason given'))
+                      : d.action === 'needs-person' ? ('AI says a person must decide' + (d.reason ? ': ' + d.reason : ''))
+                      : d.applied ? ('AI applied a fix; the checker still flags it' + (d.reason ? ': ' + d.reason : ''))
+                      : ('AI suggested a fix that did not pass the safety gate' + (d.skipReason ? ' (' + d.skipReason + ')' : '') + (d.reason ? ': ' + d.reason : ''));
+                    const _canTriage = typeof (_docPipeline && _docPipeline.resolveReviewFindings) === 'function';
                     const _reviewToWorkbench = (f) => {
                       try { setExpertCommandInput('Review and fix if needed (' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + (_rfBucketLabel[f.bucket] || f.bucket) + ', ' + (f.id || '') + ((f.wcagCriteria || []).length ? ', WCAG ' + f.wcagCriteria.join(', ') : '') + '): ' + (f.description || '')); } catch (_) {}
                       try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
@@ -12910,6 +12961,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-sm font-black text-amber-900 flex-1">🧑‍⚖️ {t('pdf_audit.review_queue.heading') || 'Needs your judgment'} <span aria-live="polite">({_rfOpen.length})</span></h4>
                           <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{_rfSource.committed ? (t('pdf_audit.review_queue.current') || 'current result') : ((t('pdf_audit.review_queue.as_of') || 'as of pass') + ' ' + _rfSource.passNumber)}</span>
+                          {_canTriage && _rfOpen.length > 0 && !_remediationInFlight && (
+                            <button onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-60" title="Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.">{_triageBusy ? 'Asking AI…' : '🤖 Ask AI to resolve'}</button>
+                          )}
                           {_rfDone > 0 && (
                             <button onClick={() => { setReviewDismissed({}); setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev); }} className="text-[10px] font-bold text-slate-600 underline" title={t('pdf_audit.review_queue.reset_title') || 'Bring back the findings you marked as reviewed — also clears the attestations recorded for the report'}>{_rfDone} {t('pdf_audit.review_queue.reviewed') || 'reviewed'} — {t('pdf_audit.review_queue.reset') || 'reset'}</button>
                           )}
@@ -12917,6 +12971,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <p className="text-[11px] text-amber-900">{_remediationInFlight
                           ? (t('pdf_audit.review_queue.explainer') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own.')
                           : (t('pdf_audit.review_queue.explainer_settled') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself.')}</p>
+                        {_triage && (
+                          <p className="text-[11px] text-amber-900" role="status">🤖 {_triage.skipped === 'over-cap'
+                            ? ('The automatic AI pass was skipped: ' + (_triage.found || '') + ' findings exceed its cap of ' + (_triage.cap || 10) + '. "Ask AI to resolve" runs it on the first ' + (_triage.cap || 10) + '.')
+                            : (_triage.skipped
+                              ? ('The AI pass could not run (' + _triage.skipped + ').')
+                              : ('AI attempted ' + _triage.attempted + (_triage.applied ? (', applied ' + _triage.applied + ' fix' + (_triage.applied === 1 ? '' : 'es')) : ', applied no fixes')
+                                + (Number.isFinite(_triage.resolved) ? ('; ' + _triage.resolved + ' no longer flagged after re-check') : '') + '; ' + _rfOpen.length + ' need you.'))}</p>
+                        )}
                         {_rfOpen.length === 0 ? (
                           <p className="text-[11px] font-bold text-emerald-700">✅ {t('pdf_audit.review_queue.all_done') || 'All current review findings handled — new ones will appear here if a later pass surfaces any.'}</p>
                         ) : (
@@ -12933,6 +12995,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   {/* The engine's own snippet of each flagged element (2026-09-13): a person can judge
                                       "is this a quotation" only when shown the text in question. */}
                                   {(f.where || []).length > 0 && <span className="block mt-0.5 font-mono text-[10px] opacity-80">→ {f.where.map((w, wi) => <span key={wi}>{wi > 0 ? ' · ' : ''}“{w}”</span>)}</span>}
+                                  {_triageFor(f) && <span className="block mt-0.5 text-[10px] font-bold text-indigo-900">🤖 {_triageLabel(_triageFor(f))}</span>}
                                   {f.helpUrl && <a href={f.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
                                 </span>
                                 <span className="shrink-0 flex gap-1">

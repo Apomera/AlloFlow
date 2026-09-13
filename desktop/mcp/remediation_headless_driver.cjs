@@ -2133,6 +2133,19 @@ function createDriver(options) {
           // Per-engine audit evidence (AI, axe, Equal Access), compact and bounded, so a report
           // can be read and calibrated without the pipeline's log lines (2026-09-13).
           verification: (0,eval)('('+verificationEvidenceFn+')')(cur),
+          // Review-finding triage outcome (2026-09-13): what the model was offered, what it fixed
+          // under the structure-only gate, and what the engines still flag afterwards.
+          reviewTriage: (cur && cur.reviewTriage && typeof cur.reviewTriage === 'object') ? {
+            attempted: Number.isSafeInteger(cur.reviewTriage.attempted) ? cur.reviewTriage.attempted : null,
+            applied: Number.isSafeInteger(cur.reviewTriage.applied) ? cur.reviewTriage.applied : null,
+            resolved: Number.isSafeInteger(cur.reviewTriage.resolved) ? cur.reviewTriage.resolved : null,
+            remaining: Number.isSafeInteger(cur.reviewTriage.remaining) ? cur.reviewTriage.remaining : null,
+            skipped: cur.reviewTriage.skipped ? String(cur.reviewTriage.skipped).slice(0, 40) : null,
+            dispositions: (Array.isArray(cur.reviewTriage.dispositions) ? cur.reviewTriage.dispositions : []).slice(0, 50).map((d) => ({
+              key: String((d && d.key) || '').slice(0, 200), action: String((d && d.action) || '').slice(0, 20), applied: !!(d && d.applied), stillFlagged: !!(d && d.stillFlagged),
+              reason: String((d && d.reason) || '').slice(0, 300), skipReason: d && d.skipReason ? String(d.skipReason).slice(0, 80) : null,
+            })),
+          } : null,
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
           verificationState: (cur && cur.verificationState) || null,
           verificationHtmlBound: !!(cur && typeof pipeline.isLiveVerificationHtmlBound === 'function' && pipeline.isLiveVerificationHtmlBound(cur, cur.accessibleHtml)),
