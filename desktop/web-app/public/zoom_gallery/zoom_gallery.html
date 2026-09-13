@@ -164,6 +164,10 @@
   .describe #describeBody { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; margin-top: 6px; font-size: 0.78125rem; line-height: 1.55; }
   .describe #describeBody p { margin: 0; }
   .describe .describe-intro { font-size: 0.6875rem; color: var(--dim); margin: 0 0 6px !important; line-height: 1.45; }
+  .scalebar { position: absolute; top: 48px; left: 8px; z-index: 6; font-size: 0.6875rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 5px 9px; max-width: 260px; }
+  .scalebar .line { display: inline-block; height: 0; border-top: 3px solid currentColor; border-left: 2px solid currentColor; border-right: 2px solid currentColor; box-sizing: border-box; width: 80px; padding-top: 5px; vertical-align: middle; margin-right: 6px; }
+  .scalebar .len { font-weight: 700; }
+  .scalebar .view { margin-top: 3px; opacity: 0.9; }
   .zoomread { position: absolute; top: 48px; right: 8px; z-index: 6; font-size: 0.6875rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 3px 8px; }
   .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--chip-fg); font-size: 0.8125rem; z-index: 3; text-align: center; padding: 20px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -211,6 +215,7 @@
       </span>
     </div>
     <div class="zoomread" id="zoomRead" style="display:none" aria-hidden="true"></div>
+    <div class="scalebar" id="scaleBar" style="display:none" role="group" aria-label="Scale of this view" data-s-aria="scale_group"><div><span class="line" id="scaleLine" aria-hidden="true"></span><span class="len" id="scaleLen"></span></div><div class="view" id="scaleView"></div></div>
     <div id="osd"></div>
     <div class="loadmsg" id="loadmsg" style="display:none"></div>
     <div class="credit-line" id="creditLine" style="display:none"></div>
@@ -257,6 +262,9 @@
     pin_summary: "Pin {n}: {x}% across, {y}% down at {z}× zoom",
     pins_heading: "Your pins",
     zoom_readout: "Zoom {z}×",
+    scale_group: "Scale of this view",
+    scale_about: "about",
+    scale_view: "This view is {w} across",
     picker_heading: "Pick an image — each one is a real, openly licensed photograph or artifact. Zoom in close and look for details you'd miss from far away.",
     badge_deep: "true deep zoom",
     badge_photo: "high-res photo",
@@ -751,6 +759,9 @@
       ajaxWithCredentials: false
     });
     viewer.addHandler('zoom', updateZoomReadout);
+    viewer.addHandler('animation', updateScaleBar);
+    viewer.addHandler('open', updateScaleBar);
+    viewer.addHandler('resize', updateScaleBar);
     viewer.addHandler('canvas-click', function (ev) {
       if (!pinMode || !ev.quick || !current) return;
       if (addPinAtViewportPoint(viewer.viewport.pointFromPixel(ev.position))) ev.preventDefaultAction = true;
@@ -805,6 +816,49 @@
       var home = viewer.viewport.getHomeZoom();
       return Math.max(1, Math.round((z / home) * 10) / 10);
     } catch (_) { return 1; }
+  }
+  // ── Scale bar (same data and mapping as the inline tool) ──
+  var scaleBar = document.getElementById('scaleBar'), scaleLine = document.getElementById('scaleLine'), scaleLen = document.getElementById('scaleLen'), scaleView = document.getElementById('scaleView');
+  function fmtLen(m) {
+    var ly = 9.4607e15;
+    var f = function (v) { return v >= 100 ? String(Math.round(v)) : v >= 10 ? (Math.round(v * 10) / 10).toString() : (Math.round(v * 100) / 100).toString(); };
+    var grp = function (v) { var r = Math.round(v); return r >= 10000 ? r.toLocaleString('en-US') : String(r); };
+    if (m >= ly * 0.1) { var lyv = f(m / ly); return lyv + (lyv === '1' ? ' light year' : ' light years'); }
+    if (m >= 1e7) return grp(m / 1e3) + ' km';
+    if (m >= 1e3) return f(m / 1e3) + ' km';
+    if (m >= 1) return f(m) + ' m';
+    if (m >= 1e-2) return f(m * 100) + ' cm';
+    if (m >= 1e-3) return f(m * 1e3) + ' mm';
+    if (m >= 1e-6) return f(m * 1e6) + ' µm';
+    return f(m * 1e9) + ' nm';
+  }
+  function niceBarMetres(metresPerPx) {
+    var ly = 9.4607e15, out = null;
+    var units = metresPerPx * 60 >= ly * 0.1 ? ly : 1;
+    for (var e = -12; e <= 27; e++) {
+      var base = Math.pow(10, e) * units;
+      [1, 2, 5].forEach(function (k) { var L = k * base, px = L / metresPerPx; if (px >= 60 && px <= 180 && (!out || px > out.px)) out = { metres: L, px: px }; });
+    }
+    return out;
+  }
+  function updateScaleBar() {
+    var sc = current && current.scale;
+    if (!viewer || !sc || !viewer.world.getItemAt(0) || !window.OpenSeadragon) { scaleBar.style.display = 'none'; return; }
+    try {
+      var a = viewer.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(0, 0));
+      var b = viewer.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(current.width, 0));
+      var screenPerImage = Math.abs(b.x - a.x) / current.width;
+      if (!(screenPerImage > 0)) { scaleBar.style.display = 'none'; return; }
+      var metresPerScreenPx = (sc.metres / sc.px) / screenPerImage;
+      var bar = niceBarMetres(metresPerScreenPx);
+      if (!bar) { scaleBar.style.display = 'none'; return; }
+      var about = sc.approx ? STR.scale_about + ' ' : '';
+      scaleBar.style.display = 'block';
+      scaleBar.title = sc.basis || '';
+      scaleLine.style.width = Math.round(bar.px) + 'px';
+      scaleLen.textContent = about + fmtLen(bar.metres);
+      scaleView.textContent = fmt(STR.scale_view, { w: about + fmtLen(viewer.viewport.getContainerSize().x * metresPerScreenPx) });
+    } catch (_) { scaleBar.style.display = 'none'; }
   }
   function updateZoomReadout() {
     if (!current) return;
@@ -916,7 +970,7 @@
     loadmsg.textContent = fmt(STR.loading, { name: imgStr(current, 'name') });
     loadmsg.style.display = 'flex';
     creditLine.style.display = 'none';
-    zoomRead.style.display = 'none';
+    zoomRead.style.display = 'none'; scaleBar.style.display = 'none';
     var v = ensureViewer();
     if (!v) {
       loadmsg.textContent = STR.viewer_failed;
@@ -955,7 +1009,7 @@
     picker.style.display = 'block';
     backbar.style.display = 'none';
     creditLine.style.display = 'none';
-    zoomRead.style.display = 'none';
+    zoomRead.style.display = 'none'; scaleBar.style.display = 'none';
     try { if (viewer) viewer.close(); } catch (_) {}
     overlayEls = [];
   }

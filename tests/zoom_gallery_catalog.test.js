@@ -500,7 +500,7 @@ describe('Zoom Gallery scale bar', () => {
     expect(fn).toMatch(/window\.__alloScaleExplorerStart = \{ exp: Math\.log\(w\) \/ Math\.LN10, from: 'zoomGallery' \}/);
     expect(fn).toMatch(/setStemLabTool\('scaleExplorer'\)/);
     // the group is named, carries its basis as a title, and is never a live region
-    expect(toolSrc).toMatch(/role: 'group', 'aria-label': I\('scale_group'\), title: I\('scale_basis_title'\) \+ ': ' \+ current\.scale\.basis/);
+    expect(toolSrc).toMatch(/role: 'group', 'aria-label': W\('scale_group'\), title: I\('scale_basis_title'\) \+ ': ' \+ current\.scale\.basis/);
     expect(toolSrc).not.toMatch(/ref: scaleBarRef[^\n]*aria-live/);
   });
 });
@@ -522,7 +522,7 @@ describe('Zoom Gallery measure tool', () => {
     const fn = toolSrc.slice(toolSrc.indexOf('function measureDistance'), toolSrc.indexOf('function paintMeasure'));
     expect(fn).toMatch(/Math\.hypot\(pts\[1\]\.x - pts\[0\]\.x, pts\[1\]\.y - pts\[0\]\.y\)/);
     expect(fn).toMatch(/px \* \(it\.scale\.metres \/ it\.scale\.px\)/);
-    expect(fn).toMatch(/it\.scale\.approx \? I\('scale_about'\) \+ ' ' : ''/);
+    expect(fn).toMatch(/it\.scale\.approx \? W\('scale_about'\) \+ ' ' : ''/);
   });
   it('paints the overlay imperatively, clears it on a new image, and paints when the open state lands', () => {
     const paint = toolSrc.slice(toolSrc.indexOf('function paintMeasure'), toolSrc.indexOf('function addMeasurePoint'));

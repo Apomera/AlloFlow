@@ -175,6 +175,9 @@
     pin_summary: "Pin {n}: {x}% across, {y}% down at {z}× zoom",
     pins_heading: "Your pins",
     zoom_readout: "Zoom {z}×",
+    scale_group: "Scale of this view",
+    scale_about: "about",
+    scale_view: "This view is {w} across",
     picker_heading: "Pick an image — each one is a real, openly licensed photograph or artifact. Zoom in close and look for details you'd miss from far away.",
     badge_deep: "true deep zoom",
     badge_photo: "high-res photo",
@@ -272,9 +275,6 @@
     link_copied_sr: 'Link to {name} copied.',
     link_failed: 'Copying was blocked here. Select the link and copy it by hand:',
     link_field_aria: 'Link to this image',
-    scale_group: 'Scale of this view',
-    scale_about: 'about',
-    scale_view: 'This view is {w} across',
     scale_open_sx: '⚖️ See this size in Scale Explorer',
     scale_open_sx_title: 'Open Scale Explorer at the width of this view',
     scale_basis_title: 'How this scale was set',
@@ -663,8 +663,8 @@
           visibleMetresRef.current = containerW * metresPerScreenPx;
           box.style.display = 'block';
           scaleLineRef.current.style.width = Math.round(bar.px) + 'px';
-          scaleTextRef.current.textContent = (sc.approx ? I('scale_about') + ' ' : '') + fmtLen(bar.metres);
-          scaleViewRef.current.textContent = I('scale_view', { w: (sc.approx ? I('scale_about') + ' ' : '') + fmtLen(visibleMetresRef.current) });
+          scaleTextRef.current.textContent = (sc.approx ? W('scale_about') + ' ' : '') + fmtLen(bar.metres);
+          scaleViewRef.current.textContent = W('scale_view', { w: (sc.approx ? W('scale_about') + ' ' : '') + fmtLen(visibleMetresRef.current) });
         } catch (_) { box.style.display = 'none'; }
       }
       // The viewer's 'open' fires before the render that puts the bar in the DOM,
@@ -692,7 +692,7 @@
         if (!it || !it.scale || pts.length < 2) return null;
         var px = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
         var m = px * (it.scale.metres / it.scale.px);
-        return (it.scale.approx ? I('scale_about') + ' ' : '') + fmtLen(m);
+        return (it.scale.approx ? W('scale_about') + ' ' : '') + fmtLen(m);
       }
       function chalUnitMetres(unit) { return unit === 'ly' ? 9.4607e15 : 1e3; }
       function chalLockIn() {
@@ -1337,7 +1337,7 @@
             current && imgState === 'open' ? h('div', { 'aria-hidden': 'true', style: Object.assign({}, chipBox, { position: 'absolute', top: 48, right: 8, zIndex: 6, fontSize: '0.6875rem', padding: '3px 8px' }) }, W('zoom_readout', { z: zoomX })) : null,
             // The scale bar. Hidden until the viewer reports a mapping; its text
             // is painted by updateScaleBar, never bound, and it is not live.
-            current && current.scale && imgState === 'open' ? h('div', { ref: scaleBarRef, role: 'group', 'aria-label': I('scale_group'), title: I('scale_basis_title') + ': ' + current.scale.basis,
+            current && current.scale && imgState === 'open' ? h('div', { ref: scaleBarRef, role: 'group', 'aria-label': W('scale_group'), title: I('scale_basis_title') + ': ' + current.scale.basis,
               style: Object.assign({}, chipBox, { position: 'absolute', top: 48, left: 8, zIndex: 6, fontSize: '0.6875rem', padding: '5px 9px', display: 'none', maxWidth: 260 }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                 h('span', { ref: scaleLineRef, 'aria-hidden': 'true', style: { display: 'inline-block', height: 0, borderTop: '3px solid currentColor', borderLeft: '2px solid currentColor', borderRight: '2px solid currentColor', boxSizing: 'border-box', width: 80, paddingTop: 5 } }),
