@@ -2830,7 +2830,24 @@ function createDriver(options) {
         if (typeof r === 'string') return { text: r, method: null, error: null };
         if (!r || typeof r !== 'object') return { text: '', method: null, error: 'extractor returned nothing usable' };
         const text = [r.fullText, r.markdown, r.text].find((v) => typeof v === 'string' && v.length) || '';
-        return { text, method: r.method || null, error: r.error || null, sourceCharCount: r.sourceCharCount, mediaImages: (r.mediaImages || []).length || 0 };
+        // A text layer whose font has no ToUnicode map decodes to control characters and
+        // U+FFFD: thousands of "characters" that no reader can speak. Measure it so the
+        // tool can say so instead of reporting a healthy count (Hebrew UDHR, 2026-09-13).
+        let unmapped = 0, counted = 0;
+        for (let i = 0; i < text.length; i++) {
+          const c = text.charCodeAt(i);
+          if (c === 0x20 || c === 0x0a || c === 0x0d || c === 0x09) continue;
+          counted++;
+          if (c < 0x20 || c === 0xfffd || (c >= 0x7f && c < 0xa0)) unmapped++;
+        }
+        return {
+          text, method: r.method || (kind === '.pdf' ? 'text-layer' : null), error: r.error || null,
+          sourceCharCount: r.sourceCharCount, mediaImages: (r.mediaImages || []).length || 0,
+          pageCount: Number.isFinite(r.pageCount) ? r.pageCount : null,
+          isScanned: typeof r.isScanned === 'boolean' ? r.isScanned : null,
+          pageErrors: Array.isArray(r.pageErrors) ? r.pageErrors.length : null,
+          unmappedGlyphRatio: counted ? Math.round((unmapped / counted) * 1000) / 1000 : null,
+        };
       };
       let raw;
       if (kind === '.docx') raw = await p.extractDocxTextDeterministic(data);

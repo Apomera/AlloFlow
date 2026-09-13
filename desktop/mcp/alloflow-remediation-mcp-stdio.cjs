@@ -3598,6 +3598,9 @@ const OUTPUT_SCHEMAS = {
     input: S_STR, output: S_STR, kind: S_STR, characters: S_NUM,
     method: { type: ['string', 'null'], description: "'failed' means extraction failed, not that the document was empty" },
     error: S_STR, mediaImages: S_NUM, text: S_STR, note: S_STR,
+    pageCount: { type: ['number', 'null'] }, isScanned: { type: ['boolean', 'null'] }, pageErrors: { type: ['number', 'null'] },
+    unmappedGlyphRatio: { type: ['number', 'null'], description: 'Share of non-whitespace characters that are control or replacement characters; a high value means the text layer decodes to unmapped glyph codes' },
+    textLayerUsable: { type: 'boolean', description: 'false when there is no text layer, the page average is scan-like, or the layer is mostly unmapped glyphs; OCR is then required and this tool does not run it' },
   }, ['input', 'kind', 'characters']),
   detect_form_fields: obj({
     input: S_STR, count: S_NUM, unlabelled: S_NUM, blanks: { type: 'array' }, note: S_STR,
@@ -4209,13 +4212,31 @@ const TOOL_HANDLERS = {
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.writeFileSync(dest, out.text, 'utf8');
     }
+    // This tool reads text layers only. A scanned PDF (no layer, or a scan-like page average) and a
+    // layer that decodes to unmapped glyph codes both used to come back as a bare character count
+    // with method null, indistinguishable from an empty document (1954 IRS scan, Hebrew UDHR,
+    // 2026-09-13). Say which it is, and where OCR lives.
+    const junk = typeof out.unmappedGlyphRatio === 'number' && out.unmappedGlyphRatio >= 0.2;
+    const usable = out.method !== 'failed' && out.text.trim().length > 0 && out.isScanned !== true && !junk;
+    const pages = Number.isFinite(out.pageCount) ? out.pageCount + ' page(s)' : 'the document';
+    let note;
+    if (out.method === 'failed') note = 'Extraction FAILED — an empty result here is a failure, not an empty document.';
+    else if (out.kind === 'pdf' && !out.text.trim().length) note = 'No text layer found on ' + pages + ': this looks like a scanned or image-only PDF. This tool does not run OCR; pdf_remediate, pdf_remediate_start and pdf_remediate_agent_start rasterize the pages for the model and do.';
+    else if (out.kind === 'pdf' && junk) note = 'The text layer decodes mostly to unmapped glyph codes (' + Math.round(out.unmappedGlyphRatio * 100) + '% control or replacement characters): the fonts carry no ToUnicode map, so this text is not readable by assistive technology. Treat the PDF as image-only; the remediation tools rasterize the pages for the model and OCR them.';
+    else if (out.kind === 'pdf' && out.isScanned === true) note = 'The text layer averages fewer than 50 characters per non-blank page across ' + pages + ': most of the content is probably in page images. This tool does not run OCR; the remediation tools do.';
+    else if (out.pageErrors) note = out.pageErrors + ' page(s) failed to parse; their text is missing from this result.';
     return {
       input: filePath, output: dest, kind: out.kind,
       characters: out.text.length, method: out.method, error: out.error || undefined,
       mediaImages: out.mediaImages,
+      pageCount: out.pageCount === undefined ? null : out.pageCount,
+      isScanned: out.isScanned === undefined ? null : out.isScanned,
+      pageErrors: out.pageErrors === undefined ? null : out.pageErrors,
+      unmappedGlyphRatio: out.unmappedGlyphRatio === undefined ? null : out.unmappedGlyphRatio,
+      textLayerUsable: usable,
       // Bounded so a 200-page extraction cannot blow the MCP payload; output_path gets it all.
       text: out.text.length > 20000 ? out.text.slice(0, 20000) + '\n…[truncated; pass output_path for the full text]' : out.text,
-      note: out.method === 'failed' ? 'Extraction FAILED — an empty result here is a failure, not an empty document.' : undefined,
+      note,
     };
   },
 
