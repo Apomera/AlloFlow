@@ -677,3 +677,37 @@ describe('Scale Explorer film mode', () => {
     expect(body).toMatch(/if \(au < 1\.05\) return 'the Earth–Sun distance';/);
   });
 });
+
+// 2026-09-13. Two more ways of seeing the ladder: side-by-side tiling for near
+// neighbours in Compare, and a population strip on the scrubber's own axis.
+// Checked in the real host: 8.3 basketballs across a doorway as glyphs, 40 mice
+// across an elephant as cells with the one-step staircase beneath, person vs
+// red blood cell hands off to the staircase alone, person vs doorway reads
+// "nearly the same size"; the strip has 44 columns with 6 empty decades.
+describe('Scale Explorer tiling and population strip', () => {
+  it('tiles only under two powers of ten, glyphs when a copy is wide enough, cells otherwise', () => {
+    expect(src).toMatch(/compare && compare\.ratio >= 1\.02 && compare\.decades < 2 \? tiling\(\) : null/);
+    const fn = src.slice(src.indexOf('function tiling()'), src.indexOf('function staircase()'));
+    expect(fn).toMatch(/var cellW = W \/ ratio;/);
+    expect(fn).toMatch(/var glyph = cellW >= 14;/);
+    expect(fn).toMatch(/if \(frac > 0\.04\)/);            // the part-copy at the end
+    expect(fn).toMatch(/role: 'img', 'aria-label': caption/); // the picture has the sentence as its name
+    expect(fn).toMatch(/ratio < 1\.5\s*\? S\('fit_line_close'/);
+  });
+  it('the population strip shares the scrubber axis, one column per power of ten, and is decorative to readers', () => {
+    const fn = src.slice(src.indexOf('function populationStrip()'), src.indexOf('function itemOptions()'));
+    expect(fn).toMatch(/var lo = Math\.ceil\(MIN_EXP\), hi = Math\.floor\(MAX_EXP\);/);
+    expect(fn).toMatch(/var x = \(\(d - MIN_EXP\) \/ span\) \* 100;/);
+    expect(fn).toMatch(/'aria-hidden': 'true', focusable: 'false'/);
+    expect(fn).toMatch(/onClick: \(function \(n\) \{ return function \(\) \{ stopJourney\(\); goTo\(n\); \}; \}\)\(d\)/);
+    // the ladder really does have empty decades; the strip must not hide them
+    const counts = {};
+    for (const i of ITEMS) { const d = Math.round(Math.log(i.size) / Math.LN10); counts[d] = (counts[d] || 0) + 1; }
+    let empties = 0; for (let d = -16; d <= 27; d++) if (!counts[d]) empties++;
+    expect(empties).toBeGreaterThanOrEqual(4);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['fit_line', 'fit_line_close']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});

@@ -13118,7 +13118,9 @@
       "film_speed": "Speed",
       "film_speed_aria": "Film speed, in powers of ten per second",
       "film_start_in": "Playing the zoom inward. Press space to pause.",
-      "film_start_out": "Playing the zoom outward. Press space to pause."
+      "film_start_out": "Playing the zoom outward. Press space to pause.",
+      "fit_line": "About {n} of {small} fit side by side across {big}.",
+      "fit_line_close": "{big} is only {n} times as wide as {small}: nearly the same size."
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",

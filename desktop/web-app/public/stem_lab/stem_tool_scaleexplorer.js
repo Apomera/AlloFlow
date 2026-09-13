@@ -984,6 +984,43 @@
         }
         return steps;
       }
+      // Side-by-side tiling for near neighbours (under two powers of ten): the
+      // small thing repeated across the width of the big one. "Four basketballs
+      // across a door" is a picture; past about a hundred copies the copies stop
+      // being countable, and the staircase takes over.
+      function tiling() {
+        var ratio = compare.ratio;
+        var W = 300, H = 46, top = 6, barH = 34;
+        var cellW = W / ratio;
+        var whole = Math.floor(ratio + 1e-9), frac = ratio - whole;
+        var kids = [];
+        // the big thing: one bar the full width
+        kids.push(h('rect', { key: 'big', x: 0, y: top, width: W, height: barH, rx: 6, fill: P.selBg, stroke: P.accent, strokeWidth: 1 }));
+        var glyph = cellW >= 14;
+        for (var i = 0; i < whole; i++) {
+          var x = i * cellW;
+          if (glyph) {
+            kids.push(h('text', { key: 'g' + i, x: x + cellW / 2, y: top + barH / 2 + 1, textAnchor: 'middle', dominantBaseline: 'middle', fontSize: Math.min(cellW * 0.85, 26) }, compare.small.emoji));
+          } else {
+            kids.push(h('rect', { key: 'c' + i, x: x + 0.5, y: top + 6, width: Math.max(cellW - 1, 0.6), height: barH - 12, fill: i % 2 ? P.accent : P.ringHot, opacity: 0.85 }));
+          }
+        }
+        if (frac > 0.04) {
+          // the part-copy at the end, drawn as a fraction of a cell
+          var fx = whole * cellW;
+          kids.push(h('rect', { key: 'frac', x: fx + 0.5, y: top + 6, width: Math.max(cellW * frac - 1, 0.6), height: barH - 12, fill: P.dim, opacity: 0.55 }));
+        }
+        var n = ratio < 10 ? Math.round(ratio * 10) / 10 : Math.round(ratio);
+        var caption = ratio < 1.5
+          ? S('fit_line_close', '{big} is only {n} times as wide as {small}: nearly the same size.', { big: itemText(compare.big, 'name'), n: n, small: lowerArticle(itemText(compare.small, 'name')) })
+          : S('fit_line', 'About {n} of {small} fit side by side across {big}.', { n: n, small: lowerArticle(itemText(compare.small, 'name')), big: lowerArticle(itemText(compare.big, 'name')) });
+        return h('div', { style: { marginTop: 4 } },
+          h('div', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 4 } }, caption),
+          h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': caption, style: { display: 'block', overflow: 'visible' } }, kids),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '0.65625rem', color: P.dim } },
+            h('span', null, compare.small.emoji + ' ' + itemText(compare.small, 'name') + ' × ' + n),
+            h('span', null, compare.big.emoji + ' ' + itemText(compare.big, 'name'))));
+      }
       function staircase() {
         var steps = staircaseSteps();
         if (!steps.length) return null;
@@ -1054,6 +1091,33 @@
           { name: lowerArticle(itemText(smallest, 'name')) });
       }
 
+      // Where the ladder is dense and where it is empty, drawn on the scrubber's
+      // own axis: a column per power of ten, as tall as the number of things at
+      // that size. Human scale is crowded; between the Sun and the nearest star
+      // there is almost nothing, and that emptiness is itself a fact about the
+      // universe. Decorative for the screen reader (the ladder already lists
+      // everything); a click on a column goes there.
+      var decadeCounts = React.useMemo(function () {
+        var counts = {};
+        sorted.forEach(function (i) { var d = Math.round(log10(i.size)); counts[d] = (counts[d] || 0) + 1; });
+        return counts;
+      }, [sorted]);
+      function populationStrip() {
+        var lo = Math.ceil(MIN_EXP), hi = Math.floor(MAX_EXP);
+        var span = MAX_EXP - MIN_EXP;
+        var max = 1; Object.keys(decadeCounts).forEach(function (k) { if (decadeCounts[k] > max) max = decadeCounts[k]; });
+        var cols = [];
+        for (var d = lo; d <= hi; d++) {
+          var c = decadeCounts[d] || 0;
+          var x = ((d - MIN_EXP) / span) * 100;
+          var w = (1 / span) * 100;
+          cols.push(h('rect', { key: d, x: x - w / 2 + '%', y: 18 - Math.round((c / max) * 16), width: w * 0.8 + '%', height: c ? Math.round((c / max) * 16) : 1,
+            fill: c ? P.accent : P.line, opacity: c ? 0.9 : 0.6, rx: 0.5, style: { cursor: 'pointer' },
+            onClick: (function (n) { return function () { stopJourney(); goTo(n); }; })(d) }));
+        }
+        return h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 100 18', preserveAspectRatio: 'none',
+          style: { display: 'block', width: '100%', height: 18, marginTop: 6, overflow: 'visible' } }, cols);
+      }
       function itemOptions() {
         return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + lengthText(i.size)); });
       }
@@ -1088,6 +1152,7 @@
             edge ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent, fontSize: '0.78125rem' }) }, '🛑 ' + edge) : null,
             h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } },
               S('scrub_label', 'Where you are, across all 44 powers of ten'),
+              populationStrip(),
               h('input', { type: 'range', ref: scrubRef, min: MIN_EXP, max: MAX_EXP, step: 0.1, defaultValue: exp,
                 'aria-label': S('scrub_aria', 'Scale position, in powers of ten'),
                 'aria-valuetext': viewLineFor(exp),
@@ -1187,6 +1252,7 @@
                   h('select', { ref: cmpSecondRef, value: cmpB, onChange: function (e) { setCmpB(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
                 h('button', { type: 'button', style: goBtn, onClick: runCompare }, S('cmp_go', 'Compare them')),
                 compare ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent }) }, compareSentence()) : null,
+                compare && compare.ratio >= 1.02 && compare.decades < 2 ? tiling() : null,
                 compare && compare.decades >= 1 ? staircase() : null)),
 
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
