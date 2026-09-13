@@ -176,6 +176,12 @@ function _alloUsableAxeAudit(audit) {
     && Number.isFinite(audit.totalViolations)
     && audit.totalViolations >= 0);
 }
+// A headless host (the MCP driver's Chromium page) has no interactive UI: prompts that wait for a
+// click must resolve at once instead of waiting out their deadline. The driver stamps the flag
+// before pipeline creation; the app never sets it.
+function _alloHeadlessHost() {
+  try { return typeof window !== 'undefined' && window.__alloHeadlessHost === true; } catch (_) { return false; }
+}
 function _alloLiveAbortSignalOrNull(signal) {
   return signal && signal.aborted !== true ? signal : null;
 }
@@ -28777,7 +28783,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             var r = parseInt(c.slice(1,3), 16), g = parseInt(c.slice(3,5), 16), b = parseInt(c.slice(5,7), 16);
             return Math.max(r,g,b) - Math.min(r,g,b) < 30;
           });
-          if (_isGrayscale && _colors.length >= 2) {
+          if (_isGrayscale && _colors.length >= 2 && _alloHeadlessHost()) {
+            // Headless host: no palette card exists and nobody can click one, so the 20 s
+            // countdown below was pure waiting (agent-bridge Form 1040 run, 2026-09-13: +25.8s
+            // to +45.8s). Keeping the original styling is exactly what the timeout would decide.
+            _pipeLog('Style', 'Detected boring/grayscale palette — headless host, keeping original styling (no palette prompt to answer)');
+          } else if (_isGrayscale && _colors.length >= 2) {
             _pipeLog('Style', 'Detected boring/grayscale palette — offering theme suggestion');
             // Emit event for UI to show theme suggestion prompt
             try {

@@ -878,6 +878,150 @@ async function geminiCallWithFallback(opts) {
   return first;
 }
 
+// ── Provider transport (Node side) ───────────────────────────────────────────
+// ALLOFLOW_MCP_MODEL_BACKEND picks who answers the pipeline's model calls when no agent
+// bridge is attached: 'gemini' (the default — the transport above, unchanged) or one of the
+// app's other AIProvider backends: claude, openai, ollama, lmstudio, localai, custom. The
+// provider module is the one the app ships, required here in Node. Envelopes match the
+// Gemini transport exactly, so doc_pipeline's retry/degradation taxonomy applies unchanged.
+// Key VALUES are never logged or returned; only their source label is.
+const PROVIDER_BACKENDS = ['claude', 'openai', 'ollama', 'lmstudio', 'localai', 'custom'];
+const PROVIDER_DEFAULT_MODELS = { claude: 'claude-sonnet-5' };
+const PROVIDER_KEY_ENV = { claude: 'ANTHROPIC_API_KEY', openai: 'OPENAI_API_KEY' };
+
+function resolveModelTransportConfig(env) {
+  const source = env || process.env;
+  const backend = String(source.ALLOFLOW_MCP_MODEL_BACKEND || 'gemini').trim().toLowerCase();
+  if (!backend || backend === 'gemini') return { backend: 'gemini' };
+  if (PROVIDER_BACKENDS.indexOf(backend) === -1) {
+    throw new Error('ALLOFLOW_MCP_MODEL_BACKEND must be one of gemini, ' + PROVIDER_BACKENDS.join(', ') + ' (got "' + backend + '").');
+  }
+  let key = String(source.ALLOFLOW_MCP_MODEL_KEY || '').trim();
+  let keySource = key ? 'env:ALLOFLOW_MCP_MODEL_KEY' : 'none';
+  const providerEnv = PROVIDER_KEY_ENV[backend];
+  if (!key && providerEnv && source[providerEnv]) {
+    key = String(source[providerEnv]).trim();
+    keySource = 'env:' + providerEnv;
+  }
+  const cloud = backend === 'claude' || backend === 'openai';
+  if (cloud && !key) {
+    throw new Error('ALLOFLOW_MCP_MODEL_BACKEND=' + backend + ' needs a key: set ALLOFLOW_MCP_MODEL_KEY' + (providerEnv ? ' (or ' + providerEnv + ')' : '') + '.');
+  }
+  const model = String(source.ALLOFLOW_MCP_MODEL_NAME || PROVIDER_DEFAULT_MODELS[backend] || '').trim();
+  if (!model) {
+    throw new Error('ALLOFLOW_MCP_MODEL_BACKEND=' + backend + ' needs ALLOFLOW_MCP_MODEL_NAME (the model tag the server should run).');
+  }
+  const visionModel = String(source.ALLOFLOW_MCP_VISION_MODEL || '').trim() || model;
+  const baseUrl = String(source.ALLOFLOW_MCP_MODEL_BASE || '').trim() || null;
+  return { backend, key, keySource, model, visionModel, baseUrl, cloud };
+}
+
+let _providerModule = null;
+function loadProviderModule() {
+  if (_providerModule) return _providerModule;
+  // A repo checkout serves the module from the root; a packaged bundle ships it in assets/.
+  const candidates = [path.join(ASSETS_ROOT, 'ai_backend_module.js'), path.join(REPO_ROOT, 'ai_backend_module.js')];
+  const file = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!file) throw new Error('ai_backend_module.js not found (looked in ' + candidates.join(', ') + ').');
+  const loaded = require(file);
+  if (!loaded || typeof loaded.AIProvider !== 'function') throw new Error('ai_backend_module.js did not export AIProvider.');
+  _providerModule = loaded;
+  return loaded;
+}
+
+// The page hands over Gemini-shaped parts; images ride as inline_data (or inlineData).
+function providerImagesFromParts(parts) {
+  return (Array.isArray(parts) ? parts : []).map((part) => {
+    const inline = part && (part.inline_data || part.inlineData);
+    if (!inline || !inline.data) return null;
+    return { data: String(inline.data), mimeType: String(inline.mime_type || inline.mimeType || 'image/png') };
+  }).filter(Boolean);
+}
+
+function createProviderTransport(config, options) {
+  const opts = options || {};
+  const log = typeof opts.log === 'function' ? opts.log : defaultLog;
+  const fetchImpl = typeof opts.fetch === 'function' ? opts.fetch : fetch;
+  const { AIProvider } = loadProviderModule();
+  // A non-2xx response surfaces as an error carrying status and body, so the classifier
+  // the Gemini transport uses decides quota / auth / config / transient for every provider.
+  const fetchWithRetry = async (url, init) => {
+    const res = await fetchImpl(url, init);
+    if (!res || !res.ok) {
+      const bodyText = res ? await res.text().catch(() => '') : '';
+      throw Object.assign(new Error('HTTP ' + (res ? res.status : 0)), { httpStatus: res ? res.status : 0, bodyText, headers: res ? res.headers : null });
+    }
+    return res;
+  };
+  const providerConfig = {
+    backend: config.backend,
+    apiKey: config.key || '',
+    models: { default: config.model, vision: config.visionModel || config.model },
+    fetchWithRetry,
+    debugLog: () => {},
+    warnLog: (...args) => log(args.map((value) => String(value)).join(' ')),
+  };
+  if (config.baseUrl) providerConfig.baseUrl = config.baseUrl;
+  const ai = new AIProvider(providerConfig);
+  const visionModel = config.visionModel || config.model;
+  const label = config.backend + ' / ' + config.model + (visionModel !== config.model ? ' (vision: ' + visionModel + ')' : '');
+
+  async function call(request) {
+    const { kind, prompt, parts, signal } = request;
+    const state = request.transportState || null;
+    if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
+    return withTransportGate(state, signal, async () => {
+      if (state && state.throttled) {
+        if (state.retryBudgetRemaining <= 0) {
+          return {
+            ok: false,
+            error: {
+              message: 'API_QUOTA_EXHAUSTED', code: 'model_throttled', isQuota: true,
+              retryAfterMs: state.retryAfterMs, retryBudgetExhausted: true,
+              classification: { kind: 'quota', perMinute: true, perDay: false },
+            },
+          };
+        }
+        state.retryBudgetRemaining -= 1;
+        try {
+          await abortableDelay(Math.max(0, (state.notBeforeAt || 0) - Date.now()), signal);
+        } catch (_) {
+          return { ok: false, error: abortEnvelope() };
+        }
+      }
+      try {
+        const images = providerImagesFromParts(parts);
+        const reply = images.length
+          ? await ai.analyzeImages(String(prompt), images, { signal })
+          : await ai.generateText(String(prompt), { signal });
+        const text = typeof reply === 'string' ? reply : String((reply && reply.text) || '');
+        if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
+        if (state) { state.throttled = false; state.retryAfterMs = null; state.notBeforeAt = 0; }
+        if (!text) log(label + ' returned an empty reply (kind=' + kind + ')');
+        return { ok: true, text };
+      } catch (e) {
+        if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
+        if (e && e.httpStatus) {
+          const error = classifyHttpFailure(e.httpStatus, e.bodyText, e.headers);
+          if (state && error.code === 'model_throttled') {
+            const delay = Number.isFinite(error.retryAfterMs) ? error.retryAfterMs : 2500;
+            state.throttled = true;
+            state.retryAfterMs = delay;
+            state.notBeforeAt = Math.max(state.notBeforeAt || 0, Date.now() + delay);
+            error.retryBudgetExhausted = state.retryBudgetRemaining <= 0;
+          }
+          return { ok: false, error };
+        }
+        return {
+          ok: false,
+          error: { message: 'Network error calling ' + config.backend + ': ' + ((e && e.message) || 'fetch failed'), classification: { kind: 'transient' } },
+        };
+      }
+    });
+  }
+  return { call, label, backend: config.backend, model: config.model, visionModel };
+}
+
 // ── Driver ──────────────────────────────────────────────────────────────────
 
 function createDriver(options) {
@@ -1053,8 +1197,13 @@ function createDriver(options) {
     // — the prompts (which carry document-derived content) go to the client conversation.
     const modelBridge = typeof runOpts.modelBridge === 'function' ? runOpts.modelBridge : null;
     let apiKey = null;
+    let providerTransport = null;
+    const transportConfig = modelBridge ? null : resolveModelTransportConfig();
     if (modelBridge) {
       log('model transport: agent bridge — the MCP client\'s model answers pipeline calls (no Gemini key, no Gemini egress)');
+    } else if (transportConfig.backend !== 'gemini') {
+      providerTransport = createProviderTransport(transportConfig, { log });
+      log('model transport: ' + providerTransport.label + (transportConfig.cloud ? ' (key from ' + transportConfig.keySource + ')' : ' (local endpoint, no key required)'));
     } else {
       const resolved = resolveGeminiApiKey();
       apiKey = resolved.key;
@@ -1139,6 +1288,7 @@ function createDriver(options) {
     await page.exposeFunction('__mcpGeminiText', async (prompt) => {
       const parts = [{ text: String(prompt) }];
       if (modelBridge) return bridgeCall('text', prompt, parts);
+      if (providerTransport) return trackTransport(() => providerTransport.call({ kind: 'text', prompt, parts, signal: runOpts.signal, transportState }));
       return trackTransport(() => geminiCallWithFallback({
         apiKey, model: DEFAULT_MODEL, parts, log: rlog,
         signal: runOpts.signal, transportState,
@@ -1157,6 +1307,7 @@ function createDriver(options) {
         )
         : [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }];
       if (modelBridge) return bridgeCall('vision', visionPrompt, parts);
+      if (providerTransport) return trackTransport(() => providerTransport.call({ kind: 'vision', prompt: visionPrompt, parts, signal: runOpts.signal, transportState }));
       return trackTransport(() => geminiCallWithFallback({
         apiKey, model: DEFAULT_MODEL, log: rlog, parts,
         signal: runOpts.signal, transportState,
@@ -1179,6 +1330,9 @@ function createDriver(options) {
       const w = window;
       // Host-state slot the OCR path reads (language picker parity).
       w.__docPipelineState = { pdfOcrLanguage: cfg.ocrLanguage || '', pdfDocumentEpoch: cfg.documentEpoch };
+      // This page has no interactive UI. Pipeline prompts that wait for a click (the palette
+      // card's 20 s countdown) resolve immediately instead of waiting out their deadline.
+      w.__alloHeadlessHost = true;
       if (cfg.hostTransportProfile) {
         // Declare the transport's latency character to the pipeline (supported host knob, not a
         // fork). Agent bridge: the "model" is a conversational client that reads a 15–20KB
@@ -1283,7 +1437,19 @@ function createDriver(options) {
   // bridge: rendering needs its own page, and calling back into the browser from a handler the
   // page is already awaiting is how you get a deadlock.
   async function prepareVisionMode(runOpts) {
-    if (runOpts.visionMode !== 'images') return runOpts;
+    let visionMode = runOpts.visionMode;
+    // A provider other than Gemini answers the document audit from rendered pages: only Gemini
+    // accepts a whole PDF as an inline part, so image mode is forced (and logged) rather than
+    // sending the other providers a blob they would reject.
+    if (visionMode !== 'images' && !runOpts.modelBridge && /\.pdf$/i.test(runOpts.fileName || '')) {
+      const transport = resolveModelTransportConfig();
+      if (transport.backend !== 'gemini') {
+        (runOpts.onLog || log)('vision mode forced to "images": ' + transport.backend + ' receives rendered pages, not inline PDFs');
+        visionMode = 'images';
+        runOpts = Object.assign({}, runOpts, { visionMode });
+      }
+    }
+    if (visionMode !== 'images') return runOpts;
     if (!/\.pdf$/i.test(runOpts.fileName || '')) {
       (runOpts.onLog || log)('vision mode "images" ignored — page rendering applies to PDFs only');
       return runOpts;
@@ -3064,6 +3230,9 @@ module.exports = {
   classifyHttpFailure,
   providerRetryAfterMs,
   geminiGenerate,
+  resolveModelTransportConfig,
+  createProviderTransport,
+  PROVIDER_BACKENDS,
   resolveGeminiApiKey,
   verifyGeminiApiKey,
   resolveChromium,
