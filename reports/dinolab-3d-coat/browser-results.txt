@@ -1,0 +1,21 @@
+
+Running 10 tests using 1 worker
+
+(node:45192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:44:119 › anchiornis coat follows the existing surface coverage (50.5s)
+  ok  2 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:44:119 › microraptor coat follows the existing surface coverage (43.3s)
+  ok  3 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:44:119 › sinosauropteryx coat follows the existing surface coverage (55.9s)
+  ok  4 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:44:119 › yutyrannus coat follows the existing surface coverage (47.7s)
+  ok  5 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:44:119 › psittacosaurus coat follows the existing surface coverage (1.3m)
+  ok  6 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:44:119 › tyrannosaurus coat follows the existing surface coverage (1.5m)
+  ok  7 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:67:5 › coat opacity and fossil return preserve geometry intent on a phone (1.2m)
+  ok  8 [chromium] › tests\e2e\dinolab-3d-coat.spec.ts:81:5 › coat fibers follow breathing and tail motion and freeze when paused (36.2s)
+  ok  9 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:66:5 › keyboard study selection resets on species change and keeps evidence data intact (17.7s)
+  ok 10 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:76:5 › explicit scan target takes priority while layer changes preserve the study (34.9s)
+
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-coat.spec.ts (7.9m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  10 passed (8.9m)

@@ -1,0 +1,79 @@
+{
+  "first": {
+    "coats": 104,
+    "fibers": 728,
+    "triangles": 29120,
+    "owners": {
+      "torso": 64,
+      "neck": 18,
+      "tail": 22
+    },
+    "bristles": 0,
+    "rootGap": 0.20000013688474555,
+    "materials": [
+      {
+        "id": "730B3362-2F96-4465-A4CD-1BC94FF68B98",
+        "color": [
+          0.14702726648767014,
+          0.16202937562896222,
+          0.17788841597328695
+        ],
+        "vertexColors": true,
+        "map": null,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true
+      }
+    ],
+    "memory": {
+      "geometries": 370,
+      "textures": 8
+    },
+    "render": {
+      "frame": 20,
+      "calls": 369,
+      "triangles": 126780,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "recreated": {
+    "coats": 104,
+    "fibers": 728,
+    "triangles": 29120,
+    "owners": {
+      "torso": 64,
+      "neck": 18,
+      "tail": 22
+    },
+    "bristles": 0,
+    "rootGap": 0.20000013688474555,
+    "materials": [
+      {
+        "id": "BBB015EF-3357-4019-9C73-569B67A20236",
+        "color": [
+          0.14702726648767014,
+          0.16202937562896222,
+          0.17788841597328695
+        ],
+        "vertexColors": true,
+        "map": null,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true
+      }
+    ],
+    "memory": {
+      "geometries": 370,
+      "textures": 8
+    },
+    "render": {
+      "frame": 82,
+      "calls": 359,
+      "triangles": 126108,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "disposed": true
+}

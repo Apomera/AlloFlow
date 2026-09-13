@@ -1,0 +1,38 @@
+{
+  "coats": 106,
+  "fibers": 742,
+  "triangles": 29680,
+  "owners": {
+    "torso": 66,
+    "neck": 18,
+    "tail": 22
+  },
+  "bristles": 0,
+  "rootGap": 0.2000001379922902,
+  "materials": [
+    {
+      "id": "7AD4A085-1A93-485B-BB73-DF8F69241AFE",
+      "color": [
+        0.1878207722902346,
+        0.11953842797895521,
+        0.06847816983662762
+      ],
+      "vertexColors": true,
+      "map": null,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true
+    }
+  ],
+  "memory": {
+    "geometries": 206,
+    "textures": 7
+  },
+  "render": {
+    "frame": 21,
+    "calls": 203,
+    "triangles": 108892,
+    "points": 0,
+    "lines": 0
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "coats": 0,
+  "fibers": 0,
+  "triangles": 0,
+  "owners": {},
+  "bristles": 0,
+  "rootGap": 0.20000013688474555,
+  "materials": [],
+  "memory": {
+    "geometries": 370,
+    "textures": 8
+  },
+  "render": {
+    "frame": 21,
+    "calls": 369,
+    "triangles": 99844,
+    "points": 0,
+    "lines": 0
+  }
+}

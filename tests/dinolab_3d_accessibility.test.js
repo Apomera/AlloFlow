@@ -523,7 +523,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('exceptional direct skin and bristle preservation');
     expect(source).toContain('var filamentMat = THREE.MeshStandardMaterial');
     expect(source).toContain('var featherVaneMat = THREE.MeshStandardMaterial');
-    expect(source).toContain('function addIntegumentFilament(base, tip, radius)');
+    expect(source).toContain('function addIntegumentFilament(base, tip, radius, clustered)');
     expect(source).toContain('function addFeatherVane(base, tip, width, spreadAxis, tract)');
     expect(source).toContain('if (surfaceHypothesis.dorsalBristles)');
     expect(source).toContain('if (surfaceHypothesis.tailFan)');

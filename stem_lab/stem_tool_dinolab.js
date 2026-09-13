@@ -6393,6 +6393,52 @@ window.StemLab = window.StemLab || {
     var normal = new THREE.Vector3().crossVectors(across, along).normalize();
     return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, along, normal));
   }
+  // Seven swept fibers share one mesh and a root pivot; no extra texture or draw call.
+  function dinoFilamentGeometry(THREE, length, radius, seed) {
+    var positions = [], colors = [], indices = [], strands = 7, rings = 5, sides = 4;
+    var random = mulberry32(seed >>> 0);
+    for (var strand = 0; strand < strands; strand++) {
+      var angle = strand * 2.39996323 + random() * 0.35;
+      var spread = radius * 1.6 * Math.sqrt(strand / (strands - 1));
+      var rootX = Math.cos(angle) * spread, rootZ = Math.sin(angle) * spread;
+      var height = length * (strand === 0 ? 1 : 0.70 + random() * 0.28);
+      var bendX = Math.cos(angle) * length * 0.16, bendZ = Math.sin(angle) * length * 0.16;
+      var start = positions.length / 3;
+      for (var ring = 0; ring < rings; ring++) {
+        var t = ring / rings, taper = radius * 0.27 * Math.pow(1 - t, 0.72);
+        var center = new THREE.Vector3(rootX + bendX * t * t, height * t, rootZ + bendZ * t * t);
+        var along = new THREE.Vector3(2 * bendX * t, height, 2 * bendZ * t).normalize();
+        var across = new THREE.Vector3().crossVectors(along, new THREE.Vector3(0, 0, 1)).normalize();
+        var normal = new THREE.Vector3().crossVectors(across, along).normalize();
+        for (var side = 0; side < sides; side++) {
+          var a = side / sides * Math.PI * 2;
+          var point = center.clone().addScaledVector(across, Math.cos(a) * taper).addScaledVector(normal, Math.sin(a) * taper);
+          positions.push(point.x, point.y, point.z);
+          var shade = 0.72 + t * 0.24; colors.push(shade, shade, shade);
+          if (ring < rings - 1) {
+            var n = start + ring * sides + side, next = start + ring * sides + (side + 1) % sides;
+            indices.push(n, n + sides, next, next, n + sides, next + sides);
+          }
+        }
+      }
+      var tip = positions.length / 3;
+      positions.push(rootX + bendX, height, rootZ + bendZ); colors.push(1, 1, 1);
+      var base = positions.length / 3;
+      positions.push(rootX, 0, rootZ); colors.push(0.72, 0.72, 0.72);
+      for (var cap = 0; cap < sides; cap++) {
+        var last = start + (rings - 1) * sides;
+        indices.push(last + cap, tip, last + (cap + 1) % sides);
+        indices.push(start + cap, start + (cap + 1) % sides, base);
+      }
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox();
+    geometry.parameters = { length: length, radius: radius, strands: strands };
+    return geometry;
+  }
+
   // Curved, asymmetric feather vane with a root pivot and tapered tip.
   function dinoFeatherGeometry(THREE, length, width) {
     var positions = [], uvs = [], indices = [], rows = 20, columns = 4;
@@ -7782,6 +7828,12 @@ window.StemLab = window.StemLab || {
             // Palette swatches are sRGB, like the skin canvas; lighting operates in linear color.
             filamentMat.color.convertSRGBToLinear();
             featherVaneMat.color.convertSRGBToLinear();
+            var coatMat = null;
+            if (props.showBody && surfaceHypothesis.filamentCoverage > 0) {
+              coatMat = filamentMat.clone();
+              coatMat.color.set(bodyColor).convertSRGBToLinear();
+              coatMat.vertexColors = true;
+            }
             // A shared, restrained barb pattern follows each vane's own UVs.
             if (props.showBody && (surfaceHypothesis.wingFeathers || surfaceHypothesis.hindWingFeathers || surfaceHypothesis.tailFan || surfaceHypothesis.tailFrond)) {
               var featherCanvas = document.createElement('canvas');
@@ -7808,7 +7860,7 @@ window.StemLab = window.StemLab || {
                 featherVaneMat.map = featherTexture;
               }
             }
-            activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
+            activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, coat: coatMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             activeMaterialSet.callout = anatomyCalloutMat;
             var crestMat = null;
             if (props.showBody && integument.pattern === 'white-banded' && surfaceHypothesis.filamentCoverage > 0) {
@@ -8147,16 +8199,17 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
-            function addIntegumentFilament(base, tip, radius) {
+            function addIntegumentFilament(base, tip, radius, clustered) {
               if (!props.showBody) return null;
               var dir = new THREE.Vector3().subVectors(tip, base);
               var dist = dir.length();
               if (!dist) return null;
-              var filamentGeometry = new THREE.ConeGeometry(radius, dist, 7);
-              filamentGeometry.translate(0, dist * 0.5, 0);
-              var mesh = new THREE.Mesh(filamentGeometry, filamentMat);
+              var filamentGeometry = clustered ? dinoFilamentGeometry(THREE, dist, radius, integumentSeed + idleMotion.feathers.length * 131) : new THREE.ConeGeometry(radius, dist, 7);
+              if (!clustered) filamentGeometry.translate(0, dist * 0.5, 0);
+              var mesh = new THREE.Mesh(filamentGeometry, clustered ? coatMat : filamentMat);
               mesh.position.copy(base);
               mesh.userData.dinoFeature = 'filament';
+              mesh.userData.filamentStyle = clustered ? 'coat' : 'bristle';
               mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
               mesh.castShadow = true;
               mesh.renderOrder = 11;
@@ -8574,7 +8627,7 @@ window.StemLab = window.StemLab || {
                   var coatAngle = -1.24 + integumentRng() * 2.48;
                   var coatLength = Math.max(0.035 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.82) * (0.72 + surfaceHypothesis.filamentCoverage * 0.44);
                   addSeatedFilament(bodyShell, shoulder.clone().lerp(hip, coatT), vec(0, Math.cos(coatAngle), Math.sin(coatAngle)),
-                    coatLength, Math.max(0.004 * detailScale, ht * 0.0017), Math.max(0.006 * detailScale, len * 0.0035));
+                    coatLength, Math.max(0.004 * detailScale, ht * 0.0017), Math.max(0.006 * detailScale, len * 0.0035), true);
                 }
                 for (var neckFilamentIndex = 0; neckFilamentIndex < 18; neckFilamentIndex++) {
                   var neckFilamentT = (neckFilamentIndex + 0.45) / 18.5;
@@ -8582,7 +8635,7 @@ window.StemLab = window.StemLab || {
                   var neckSide = neckFilamentIndex % 2 ? 1 : -1;
                   addSeatedFilament(neckMeshes[0], neckCenter, vec(0, 0.7, neckSide),
                     Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55),
-                    Math.max(0.004 * detailScale, ht * 0.0016), Math.max(0.008 * detailScale, len * 0.003));
+                    Math.max(0.004 * detailScale, ht * 0.0016), Math.max(0.008 * detailScale, len * 0.003), true);
                 }
                 for (var tailFilamentIndex = 0; tailFilamentIndex < 22; tailFilamentIndex++) {
                   var tailFilamentT = 0.08 + tailFilamentIndex / 25;
@@ -8590,7 +8643,7 @@ window.StemLab = window.StemLab || {
                   var tailCoatSide = tailFilamentIndex % 2 ? 1 : -1;
                   addSeatedFilament(tailMeshes[0], tailCoatCenter, vec(0, 1, tailCoatSide * 0.55),
                     Math.max(0.028 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.46),
-                    Math.max(0.0035 * detailScale, ht * 0.0014), Math.max(0.008 * detailScale, len * 0.003));
+                    Math.max(0.0035 * detailScale, ht * 0.0014), Math.max(0.008 * detailScale, len * 0.003), true);
                 }
               }
               if (crestMat) {
@@ -9397,12 +9450,12 @@ window.StemLab = window.StemLab || {
               scale.userData.dinoFeature = 'surface-scale';
               bindSurfaceDetail(scale, surface, anchor);
             }
-            function addSeatedFilament(surface, center, outward, length, radius, sweep) {
+            function addSeatedFilament(surface, center, outward, length, radius, sweep, clustered) {
               var anchor = surfaceAnchor(surface, center, outward);
               if (!anchor) return;
               var root = anchor.point.clone().addScaledVector(anchor.normal, -radius * 0.20);
               var tip = root.clone().addScaledVector(anchor.normal, length).add(vec(sweep, 0, 0));
-              return bindSurfaceDetail(addIntegumentFilament(root, tip, radius), surface, anchor);
+              return bindSurfaceDetail(addIntegumentFilament(root, tip, radius, clustered), surface, anchor);
             }
 
             function addSeatedFeather(surface, center, outward, direction, width, spread, tract) {
@@ -10403,6 +10456,12 @@ window.StemLab = window.StemLab || {
             materials.airSac.opacity = Math.min(0.34, 0.09 + alpha * 0.34);
             materials.keratin.opacity = opaqueSurface ? 1 : Math.min(0.94, 0.58 + alpha * 0.48);
             materials.filament.opacity = opaqueSurface ? 1 : Math.min(0.90, 0.44 + alpha * 0.58);
+            if (materials.coat) {
+              materials.coat.opacity = materials.filament.opacity;
+              materials.coat.transparent = !opaqueSurface;
+              materials.coat.depthWrite = opaqueSurface;
+              materials.coat.needsUpdate = true;
+            }
             materials.feather.opacity = opaqueSurface ? 1 : Math.min(0.92, 0.48 + alpha * 0.60);
             if (materials.crest) {
               materials.crest.opacity = materials.feather.opacity;

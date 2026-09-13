@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-12",
+  "feature": "Dino Lab filament-coat refinement",
+  "status": "implementation-and-validation-complete",
+  "focused": {
+    "uniquePassed": 138,
+    "files": 6,
+    "coat": 11,
+    "plumage": 14,
+    "regionalColor": 11,
+    "shadows": 14,
+    "accessibility": 15,
+    "golden": 73,
+    "initial": {
+      "passed": 137,
+      "failed": 1,
+      "reason": "Existing source assertion expected old filament-helper signature",
+      "log": "focused-initial-excerpt.txt"
+    },
+    "correction": "Updated only the helper-signature assertion",
+    "rerun": {
+      "passed": 15,
+      "files": 1,
+      "log": "accessibility-results.txt"
+    },
+    "snapshotsChanged": false
+  },
+  "browser": {
+    "uniquePassed": 10,
+    "species": 6,
+    "lifecycleAndPhone": 1,
+    "motionAndPause": 1,
+    "existingCameraRegressions": 2,
+    "log": "browser-results.txt",
+    "repeatedReviewExcluded": true,
+    "oldRendererBaselineExcluded": true,
+    "environment": "Chromium software WebGL with application stylesheet; 390x844 phone viewport emulation"
+  },
+  "geometry": {
+    "strandsPerCluster": 7,
+    "verticesPerCluster": 154,
+    "trianglesPerCluster": 280,
+    "closedFibers": true,
+    "seededRecreation": true
+  },
+  "referenceFrame": {
+    "species": "Anchiornis",
+    "beforeRevision": "946099850",
+    "before": {
+      "drawCalls": 369,
+      "geometries": 370,
+      "textures": 8,
+      "triangles": 99844
+    },
+    "after": {
+      "drawCalls": 369,
+      "geometries": 370,
+      "textures": 8,
+      "triangles": 126780
+    },
+    "addedTriangles": 26936
+  },
+  "preservation": [
+    "Existing coverage hypotheses",
+    "Distinct dorsal bristles",
+    "Wing vanes and skin palettes",
+    "Surface attachment roots",
+    "Saved investigation data",
+    "Opacity transitions",
+    "Paused coat transforms"
+  ],
+  "integrity": {
+    "syntax": "passed",
+    "scopedWhitespace": "passed",
+    "rendererCopies": "canonical/public/existing ignored app-build match",
+    "sha256": "01AEC66BE6893350CF8E876C6E5FDBBF7F7884281F7953BB8B12625009DF8117"
+  },
+  "reviewedImages": [
+    "anchiornis-before.png",
+    "anchiornis-body.png",
+    "sinosauropteryx-tail.png",
+    "yutyrannus-detail.png",
+    "psittacosaurus-tail.png",
+    "anchiornis-mobile.png"
+  ],
+  "limits": [
+    "Sampled instructional filament coverage",
+    "Emulated phone viewport",
+    "Resource object counts and triangle counts are not a hardware performance benchmark"
+  ],
+  "delivery": {
+    "push": false,
+    "deployment": false,
+    "packagedBuild": false
+  }
+}

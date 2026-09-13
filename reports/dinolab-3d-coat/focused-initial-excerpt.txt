@@ -1,0 +1,36 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+x·········································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'function addIntegumentFilament(base, …'
+
+- Expected
++ Received
+
+- function addIntegumentFilament(base, tip, radius)
++ /**
++  * stem_tool_dinolab.js — Dino Lab (Paleontology Studio)
++  *
++  * An interactive paleontology lab for exploring dinosaurs and the science
++  * behind them. Tabs: Explore, Timeline, Sites, Compare, 3D Field Station,
++  * Dig Site, Classify, Extinction, Anatomy, Records, Quiz, Field Notes,
+[Full-source assertion diff omitted from this excerpt.]
+ ❯ tests/dinolab_3d_accessibility.test.js:526:20
+    524|     expect(source).toContain('var filamentMat = THREE.MeshStandardMate…
+    525|     expect(source).toContain('var featherVaneMat = THREE.MeshStandardM…
+    526|     expect(source).toContain('function addIntegumentFilament(base, tip…
+       |                    ^
+    527|     expect(source).toContain('function addFeatherVane(base, tip, width…
+    528|     expect(source).toContain('if (surfaceHypothesis.dorsalBristles)');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 137 passed (138)
+   Start at  23:03:33
+   Duration  51.02s (transform 296ms, setup 206ms, import 958ms, tests 36.96s, environment 10.97s)
