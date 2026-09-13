@@ -1,0 +1,133 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+······xxxxxxxxx····························································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/dinolab_3d_accessibility.test.js:666:3
+    664|     host.remove();
+    665|   });
+    666|   it('lets keyboard users enter and revisit available Field Station wo…
+       |   ^
+    667|     const api = setupDinoLab();
+    668|     const host = document.createElement('div');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:792:24
+    790|     await api.React.act(async () => { render(); });
+    791|     const resume = host.querySelector('button[aria-label="Resume Dino …
+    792|     expect(resume).not.toBeNull();
+       |                        ^
+    793|     await api.React.act(async () => { resume?.click(); });
+    794|     expect(lastPatch?.tab).toBe('field3d');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > copies a readable investigation summary from the share disclosure
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:846:23
+    844|     await api.React.act(async () => { render(); });
+    845|     const share = host.querySelector('details.dinolab-investigation-sh…
+    846|     expect(share).not.toBeNull();
+       |                       ^
+    847|     const copy = host.querySelector('button[aria-label="Copy Dino Lab …
+    848|     expect(copy).not.toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:878:26
+    876|     await api.React.act(async () => { render(); });
+    877|     const shoulder = host.querySelector('button[aria-label="Focus Shou…
+    878|     expect(shoulder).not.toBeNull();
+       |                          ^
+    879|     await api.React.act(async () => { shoulder?.click(); });
+    880|     expect(lastPatch?.field3dScanTargetIdx).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+AssertionError: expected undefined to be 'false' // Object.is equality
+
+- Expected:
+"false"
+
++ Received:
+undefined
+
+ ❯ tests/dinolab_3d_accessibility.test.js:917:52
+    915|     const lifeView = [...host.querySelectorAll('button')].find(button …
+    916|     expect(lifeView).not.toBeNull();
+    917|     expect(lifeView?.getAttribute('aria-pressed')).toBe('false');
+       |                                                    ^
+    918|     await api.React.act(async () => { lifeView?.click(); });
+    919|     expect(lastPatch).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:960:29
+    958|     await api.React.act(async () => { render(); });
+    959|     const firstCanvas = host.querySelector('canvas[aria-roledescriptio…
+    960|     expect(firstCanvas).not.toBeNull();
+       |                             ^
+    961|
+    962|     data = { ...data, field3dChallengeIdx: 1 };
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > renders the Field Station without automated structural WCAG A/AA axe violations
+Error: Test timed out in 180000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/dinolab_3d_accessibility.test.js:1009:3
+    1007|   });
+    1008|
+    1009|   it('renders the Field Station without automated structural WCAG A/AA…
+       |   ^
+    1010|     setupDinoLab();
+    1011|     document.body.innerHTML = renderTab('field3d');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > renders the Dig Site without automated structural WCAG A/AA axe violations
+Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run.
+ ❯ assert node_modules/axe-core/axe.js:7423:15
+ ❯ Object.run4 [as run] node_modules/axe-core/axe.js:29804:9
+ ❯ tests/dinolab_3d_accessibility.test.js:1024:31
+    1022|     document.body.innerHTML = renderTab('dig');
+    1023|     const panel = document.getElementById('dinopanel') || document.bod…
+    1024|     const results = await axe.run(panel, {
+       |                               ^
+    1025|       runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a',…
+    1026|       rules: { 'color-contrast': { enabled: false } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > renders Quiz, Classify, Map, and Compare without automated structural WCAG A/AA axe violations
+Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run.
+ ❯ assert node_modules/axe-core/axe.js:7423:15
+ ❯ Object.run4 [as run] node_modules/axe-core/axe.js:29804:9
+ ❯ tests/dinolab_3d_accessibility.test.js:1035:33
+    1033|       document.body.innerHTML = renderTab(tab);
+    1034|       const panel = document.getElementById('dinopanel') || document.b…
+    1035|       const results = await axe.run(panel, {
+       |                                 ^
+    1036|         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a…
+    1037|         rules: { 'color-contrast': { enabled: false } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  9 failed | 130 passed (139)
+   Start at  21:34:38
+   Duration  448.49s (transform 2.36s, setup 782ms, import 4.59s, tests 381.87s, environment 12.11s)

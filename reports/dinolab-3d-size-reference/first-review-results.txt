@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:25604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:87 › anchiornis has calibrated rotating size references (48.9s)
+
+
+  1) [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:87 › anchiornis has calibrated rotating size references
+
+    TimeoutError: locator.focus: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.dinolab-3d-canvas canvas')[22m
+
+
+      54 |   const result=await inspect(page);check(result);expect(result.visible).toBe(true);expect(result.labels.length).toBeGreaterThanOrEqual(2);
+      55 |   await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/'+species+'-size.png'});
+    > 56 |   const canvas=page.locator('.dinolab-3d-canvas canvas');await canvas.focus();await page.keyboard.press('ArrowRight');await settle(page);
+         |                                                                       ^
+      57 |   const rotated=await inspect(page);check(rotated);expect(rotated.rotation).not.toBe(result.rotation);
+      58 |   for(const region of ['head','body','tail']){await page.getByRole('button',{name:'Study '+region+' details',exact:true}).click();await settle(page);expect((await inspect(page,region)).visible).toBe(false);}
+      59 |   await canvas.focus();await page.keyboard.press('Home');await settle(page);const home=await inspect(page,'full');check(home);expect(home.visible).toBe(true);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-size-reference.spec.ts:56:71
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-size-reference\first-review\dinolab-3d-size-reference--79bbb-ed-rotating-size-references-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-size-reference\first-review\dinolab-3d-size-reference--79bbb-ed-rotating-size-references-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-size-reference\first-review\dinolab-3d-size-reference--79bbb-ed-rotating-size-references-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:87 › anchiornis has calibrated rotating size references

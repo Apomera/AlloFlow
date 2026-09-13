@@ -1,0 +1,18 @@
+
+Running 7 tests using 1 worker
+
+(node:36116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:100 › anchiornis has calibrated rotating size references (44.9s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:100 › microraptor has calibrated rotating size references (41.7s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:100 › tyrannosaurus has calibrated rotating size references (1.1m)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:100 › brachiosaurus has calibrated rotating size references (56.9s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:49:100 › mosasaurus has calibrated rotating size references (1.6m)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:65:5 › phone reference fits human comparison and hides interval labels (31.1s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:78:5 › size study separates the fossil tray and resets when reference layers disappear (35.2s)
+
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts (6.2m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  7 passed (7.1m)

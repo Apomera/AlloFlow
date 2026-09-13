@@ -167,7 +167,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard')`);
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary')`);
     expect(source).toContain("var cameraTargetIsEvidence = !!(cameraStudy === 'full' && scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);");
-    expect(source).toContain("var targetForView = cameraStudy === 'full' && trayVisible ? overviewCenter.clone() : cameraTarget.clone();");
+    expect(source).toContain("var targetForView = fullOverview ? overviewCenter.clone() : cameraTarget.clone();");
     expect(source).toContain("camera.position.set(targetForView.x, targetForView.y");
     expect(source).toContain('camera.lookAt(targetForView);');
     expect(source).toContain("Target ' + (cameraStudy !== 'full' ? cap(cameraStudy) + ' study' : (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model'))");
@@ -192,8 +192,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('renderer = rendererRef.current;');
     expect(source).toContain('rendererRef.current = renderer;');
     expect(source).toContain('var mountedScene = sceneRef.current;');
-    expect(source).toContain('var measurementIntervalLabels = [];');
-    expect(source).toContain('label.visible = w >= 560');
+    expect(source).toContain("measurementGuides.name = 'dinolab-size-reference';");
+    expect(source).toContain("mode === 'all' && width >= 560");
     expect(source).toContain("className: 'dinolab-3d-canvas'");
     expect(source).toContain('function reconstructionProfileFor(dn)');
     expect(source).toContain('function cranialSurfaceProfileFor(dn)');
@@ -249,9 +249,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var armShell = addSoftTissueChain([armStart');
     expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
     expect(source).toContain('(parent || model).add(sprite);');
-    expect(source).toContain("addTextLabel(rt + ' m'");
-    expect(source).toContain('addTextLabel(fmtLength(dn.lengthM)');
-    expect(source).toContain('addTextLabel(fmtLength(dn.heightM)');
+    expect(source).toContain('function referenceLabel(tick, position, color, axis)');
+    expect(source).toContain('dinoMeasurementTicks(dn.lengthM)');
+    expect(source).toContain('dinoMeasurementTicks(dn.heightM)');
     expect(source).toContain('3D evidence view updated. Camera view preserved.');
     expect(source).toContain("touchAction: 'none'");
     expect(source).toContain("'Species anatomy cues'");
@@ -272,7 +272,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'Survey compass'");
     expect(source).toContain('var heightGuideMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });');
     expect(source).toContain("'Height guide'");
-    expect(source).toContain('one-meter ticks');
+    expect(source).toContain('adaptive centimetre or metre ticks');
     expect(source).toContain('var intersectionObserver = null;');
     expect(source).toContain("document.addEventListener('visibilitychange', visibilityChanged)");
     expect(source).toContain('new window.IntersectionObserver(function (entries)');

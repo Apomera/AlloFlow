@@ -1,0 +1,451 @@
+{
+  "result": {
+    "guides": true,
+    "visible": true,
+    "parent": "dinolab-specimen",
+    "length": {
+      "span": 12.3,
+      "worldSpan": 12.3,
+      "start": [
+        -5.475041459349518,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "end": [
+        6.824958540650483,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "geometry": 12.3,
+      "ticks": [
+        0,
+        5,
+        10,
+        12.3
+      ]
+    },
+    "height": {
+      "span": 3.7,
+      "worldSpan": 3.7,
+      "start": [
+        -6.336041459349517,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "end": [
+        -6.336041459349517,
+        3.73198,
+        -2.2763954169282856
+      ],
+      "geometry": 3.7,
+      "ticks": [
+        0,
+        1,
+        2,
+        3,
+        3.7
+      ]
+    },
+    "lengthScale": {
+      "span": 12.3,
+      "step": 5,
+      "unit": "m",
+      "ticks": [
+        {
+          "meters": 0,
+          "label": "0 m",
+          "endpoint": true
+        },
+        {
+          "meters": 5,
+          "label": "5 m",
+          "endpoint": false
+        },
+        {
+          "meters": 10,
+          "label": "10 m",
+          "endpoint": false
+        },
+        {
+          "meters": 12.3,
+          "label": "12.3 m",
+          "endpoint": true
+        }
+      ]
+    },
+    "heightScale": {
+      "span": 3.7,
+      "step": 1,
+      "unit": "m",
+      "ticks": [
+        {
+          "meters": 0,
+          "label": "0 m",
+          "endpoint": true
+        },
+        {
+          "meters": 1,
+          "label": "1 m",
+          "endpoint": false
+        },
+        {
+          "meters": 2,
+          "label": "2 m",
+          "endpoint": false
+        },
+        {
+          "meters": 3,
+          "label": "3 m",
+          "endpoint": false
+        },
+        {
+          "meters": 3.7,
+          "label": "3.7 m",
+          "endpoint": true
+        }
+      ]
+    },
+    "labels": [
+      {
+        "text": "0 m",
+        "axis": "length",
+        "endpoint": true
+      },
+      {
+        "text": "12.3 m",
+        "axis": "length",
+        "endpoint": true
+      },
+      {
+        "text": "0 m",
+        "axis": "height",
+        "endpoint": true
+      },
+      {
+        "text": "3.7 m",
+        "axis": "height",
+        "endpoint": true
+      }
+    ],
+    "surveyVisible": false,
+    "outside": 0,
+    "invalid": 0,
+    "rotation": 0,
+    "human": false,
+    "bounds": {
+      "min": [
+        -7.320041459349517,
+        -0.29940793731689425,
+        -3.2603954169282856
+      ],
+      "max": [
+        7.144624455871459,
+        4.226884966694641,
+        1.3538954169282857
+      ]
+    },
+    "memory": {
+      "geometries": 176,
+      "textures": 14
+    },
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  "rotated": {
+    "guides": true,
+    "visible": true,
+    "parent": "dinolab-specimen",
+    "length": {
+      "span": 12.3,
+      "worldSpan": 12.3,
+      "start": [
+        -5.475041459349518,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "end": [
+        6.824958540650483,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "geometry": 12.3,
+      "ticks": [
+        0,
+        5,
+        10,
+        12.3
+      ]
+    },
+    "height": {
+      "span": 3.7,
+      "worldSpan": 3.7,
+      "start": [
+        -6.336041459349517,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "end": [
+        -6.336041459349517,
+        3.73198,
+        -2.2763954169282856
+      ],
+      "geometry": 3.7,
+      "ticks": [
+        0,
+        1,
+        2,
+        3,
+        3.7
+      ]
+    },
+    "lengthScale": {
+      "span": 12.3,
+      "step": 5,
+      "unit": "m",
+      "ticks": [
+        {
+          "meters": 0,
+          "label": "0 m",
+          "endpoint": true
+        },
+        {
+          "meters": 5,
+          "label": "5 m",
+          "endpoint": false
+        },
+        {
+          "meters": 10,
+          "label": "10 m",
+          "endpoint": false
+        },
+        {
+          "meters": 12.3,
+          "label": "12.3 m",
+          "endpoint": true
+        }
+      ]
+    },
+    "heightScale": {
+      "span": 3.7,
+      "step": 1,
+      "unit": "m",
+      "ticks": [
+        {
+          "meters": 0,
+          "label": "0 m",
+          "endpoint": true
+        },
+        {
+          "meters": 1,
+          "label": "1 m",
+          "endpoint": false
+        },
+        {
+          "meters": 2,
+          "label": "2 m",
+          "endpoint": false
+        },
+        {
+          "meters": 3,
+          "label": "3 m",
+          "endpoint": false
+        },
+        {
+          "meters": 3.7,
+          "label": "3.7 m",
+          "endpoint": true
+        }
+      ]
+    },
+    "labels": [
+      {
+        "text": "0 m",
+        "axis": "length",
+        "endpoint": true
+      },
+      {
+        "text": "12.3 m",
+        "axis": "length",
+        "endpoint": true
+      },
+      {
+        "text": "3.7 m",
+        "axis": "height",
+        "endpoint": true
+      }
+    ],
+    "surveyVisible": false,
+    "outside": 0,
+    "invalid": 0,
+    "rotation": 0.2617993877991494,
+    "human": false,
+    "bounds": {
+      "min": [
+        -7.320041459349517,
+        -0.29940793731689425,
+        -3.2603954169282856
+      ],
+      "max": [
+        7.144624455871459,
+        4.226884966694641,
+        1.3538954169282857
+      ]
+    },
+    "memory": {
+      "geometries": 176,
+      "textures": 14
+    },
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  "home": {
+    "guides": true,
+    "visible": true,
+    "parent": "dinolab-specimen",
+    "length": {
+      "span": 12.3,
+      "worldSpan": 12.299999999999999,
+      "start": [
+        -5.475041459349518,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "end": [
+        6.824958540650483,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "geometry": 12.3,
+      "ticks": [
+        0,
+        5,
+        10,
+        12.3
+      ]
+    },
+    "height": {
+      "span": 3.7,
+      "worldSpan": 3.7,
+      "start": [
+        -6.336041459349517,
+        0.03198,
+        -2.2763954169282856
+      ],
+      "end": [
+        -6.336041459349517,
+        3.73198,
+        -2.2763954169282856
+      ],
+      "geometry": 3.7,
+      "ticks": [
+        0,
+        1,
+        2,
+        3,
+        3.7
+      ]
+    },
+    "lengthScale": {
+      "span": 12.3,
+      "step": 5,
+      "unit": "m",
+      "ticks": [
+        {
+          "meters": 0,
+          "label": "0 m",
+          "endpoint": true
+        },
+        {
+          "meters": 5,
+          "label": "5 m",
+          "endpoint": false
+        },
+        {
+          "meters": 10,
+          "label": "10 m",
+          "endpoint": false
+        },
+        {
+          "meters": 12.3,
+          "label": "12.3 m",
+          "endpoint": true
+        }
+      ]
+    },
+    "heightScale": {
+      "span": 3.7,
+      "step": 1,
+      "unit": "m",
+      "ticks": [
+        {
+          "meters": 0,
+          "label": "0 m",
+          "endpoint": true
+        },
+        {
+          "meters": 1,
+          "label": "1 m",
+          "endpoint": false
+        },
+        {
+          "meters": 2,
+          "label": "2 m",
+          "endpoint": false
+        },
+        {
+          "meters": 3,
+          "label": "3 m",
+          "endpoint": false
+        },
+        {
+          "meters": 3.7,
+          "label": "3.7 m",
+          "endpoint": true
+        }
+      ]
+    },
+    "labels": [
+      {
+        "text": "0 m",
+        "axis": "length",
+        "endpoint": true
+      },
+      {
+        "text": "12.3 m",
+        "axis": "length",
+        "endpoint": true
+      },
+      {
+        "text": "3.7 m",
+        "axis": "height",
+        "endpoint": true
+      }
+    ],
+    "surveyVisible": true,
+    "outside": 0,
+    "invalid": 0,
+    "rotation": 0.35,
+    "human": false,
+    "bounds": {
+      "min": [
+        -7.320041459349517,
+        -0.29940793731689425,
+        -3.2603954169282856
+      ],
+      "max": [
+        7.144624455871459,
+        4.226884966694641,
+        1.3538954169282857
+      ]
+    },
+    "memory": {
+      "geometries": 176,
+      "textures": 14
+    },
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  }
+}

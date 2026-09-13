@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-12",
+  "focusedChecksPassed": 139,
+  "focusedFiles": 6,
+  "focusedCoverage": {
+    "ticks": 12,
+    "geometry": 19,
+    "studies": 6,
+    "shadows": 14,
+    "accessibility": 15,
+    "golden": 73
+  },
+  "browserScenariosPassed": 10,
+  "newBrowserScenarios": 8,
+  "existingCameraScenarios": 2,
+  "initialFocused": {
+    "passed": 135,
+    "failed": 4
+  },
+  "broadFinalFocused": {
+    "passed": 130,
+    "failed": 9,
+    "remainingFile": "accessibility",
+    "firstFailure": "30-second workflow timeout followed by DOM failures; later axe timeout and active-run errors"
+  },
+  "isolatedAccessibility": {
+    "passed": 15,
+    "failed": 0,
+    "pool": "threads",
+    "defaultTimeoutMs": 120000
+  },
+  "initialBrowserPassed": 7,
+  "phoneAndCameraRegressionsPassed": 4,
+  "finalPhoneRechecksPassed": 2,
+  "snapshotsUpdated": 1,
+  "moduleCopies": 3,
+  "moduleSha256": "4A951DE0A0195D1D4A5E125910E9795187751F2F53A8BD31873026F99C321EA6",
+  "species": [
+    "anchiornis",
+    "microraptor",
+    "tyrannosaurus",
+    "brachiosaurus",
+    "mosasaurus"
+  ],
+  "phoneWidths": [
+    320,
+    390
+  ],
+  "missingHeightOmitted": true,
+  "savedInvestigationPreserved": true,
+  "hookBypassUsed": false,
+  "pushed": false,
+  "deployed": false,
+  "hardwarePerformanceBenchmarked": false,
+  "previousCommitBlockerCleared": true
+}

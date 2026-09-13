@@ -6203,6 +6203,22 @@ window.StemLab = window.StemLab || {
   }
 
   // Continuous elliptical skin lofts, independent of the fossil skeleton.
+  // A bounded 1-2-5 scale, including the exact estimate once at the endpoint.
+  function dinoMeasurementTicks(span) {
+    span = Number(span);
+    if (!(span > 0) || !isFinite(span)) return null;
+    var raw = span / 6, magnitude = Math.pow(10, Math.floor(Math.log10(raw)));
+    var fraction = raw / magnitude;
+    var step = (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * magnitude;
+    var unit = span < 1 ? 'cm' : 'm', factor = unit === 'cm' ? 100 : 1;
+    var values = [0];
+    for (var i = 1; i * step < span - span * 1e-10; i++) values.push(Number((i * step).toPrecision(12)));
+    values.push(span);
+    return { span: span, step: step, unit: unit, ticks: values.map(function (meters, index) {
+      return { meters: meters, label: Number((meters * factor).toPrecision(10)) + ' ' + unit, endpoint: index === 0 || index === values.length - 1 };
+    }) };
+  }
+
   function dinoSurfaceGeometry(THREE, points, radii, options) {
     var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
     options = options || {};
@@ -8084,7 +8100,7 @@ window.StemLab = window.StemLab || {
               mesh.position.copy(a).add(b).multiplyScalar(0.5);
               mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
               mesh.renderOrder = 2;
-              scene.add(mesh);
+              surveyDecorations.add(mesh);
               return mesh;
             }
             function addAccentCone(base, tip, radius, mat) {
@@ -8186,11 +8202,10 @@ window.StemLab = window.StemLab || {
               mesh.scale.set(sx, 0.012, sz);
               mesh.rotation.y = rot || 0;
               mesh.receiveShadow = true;
-              scene.add(mesh);
+              surveyDecorations.add(mesh);
               return mesh;
             }
 
-            var measurementIntervalLabels = [];
             var sceneLabels = [];
             function addTextLabel(text, pos, color, scaleFactor, parent) {
               var labelCanvas = document.createElement('canvas');
@@ -8237,6 +8252,9 @@ window.StemLab = window.StemLab || {
             var bodyDepth = Math.max(0.050 * detailScale, bodyHeight * (isTheropod ? 0.92 : 1.08)) * reconstructionProfile.bodyDepth * reconstructionProfile.hipFullness;
             var evidenceAnchorPoints = { skull: head, shoulder: shoulder, hip: hip };
 
+            var surveyDecorations = new THREE.Group();
+            surveyDecorations.name = 'dinolab-survey-decorations';
+            scene.add(surveyDecorations);
             if (props.showEvidence) {
               var footprintMat = new THREE.MeshPhongMaterial({ color: 0x2b3a4f, transparent: true, opacity: 0.78, shininess: 4 });
               for (var fp = 0; fp < 7; fp++) {
@@ -8244,36 +8262,6 @@ window.StemLab = window.StemLab || {
                 var fz = (fp % 2 ? -1 : 1) * Math.max(0.46 * detailScale, bodyDepth * 1.35);
                 addGroundOval(fx, fz, Math.max(0.11 * detailScale, len * 0.020), Math.max(0.18 * detailScale, len * 0.035), footprintMat, -0.22 + fp * 0.06);
               }
-            }
-            if (props.showEvidence || props.showHuman) {
-            var rulerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-            var rulerZ = Math.max(1.05, bodyDepth * 2.45);
-            var rulerR = Math.max(0.012 * detailScale, ht * 0.004);
-            addSceneCylinder(vec(snout.x, 0.05, rulerZ), vec(tail.x, 0.05, rulerZ), rulerR, rulerMat);
-            addSceneCylinder(vec(snout.x, 0.05, rulerZ - 0.22), vec(snout.x, 0.05, rulerZ + 0.22), rulerR, rulerMat);
-            addSceneCylinder(vec(tail.x, 0.05, rulerZ - 0.22), vec(tail.x, 0.05, rulerZ + 0.22), rulerR, rulerMat);
-            var rulerSpan = Math.max(0.1 * detailScale, tail.x - snout.x);
-            var rulerTicks = Math.min(40, Math.max(1, Math.floor(rulerSpan)));
-            for (var rt = 0; rt <= rulerTicks; rt++) {
-              var tickX = snout.x + Math.min(rulerSpan, rt);
-              var tickHalf = rt % 5 === 0 ? 0.20 : 0.11;
-              addSceneCylinder(vec(tickX, 0.052, rulerZ - tickHalf), vec(tickX, 0.052, rulerZ + tickHalf), Math.max(0.008 * detailScale, rulerR * 0.66), rulerMat);
-              if (rt % 5 === 0) measurementIntervalLabels.push(addTextLabel(rt + ' m', vec(tickX, Math.max(0.20 * detailScale, ht * 0.025), rulerZ + Math.max(0.36 * detailScale, bodyDepth * 0.45)), '#38bdf8', 0.46, scene));
-            }
-            addTextLabel(fmtLength(dn.lengthM), vec(tail.x, Math.max(0.20 * detailScale, ht * 0.025), rulerZ - Math.max(0.42 * detailScale, bodyDepth * 0.50)), '#38bdf8', 0.52, scene);
-            var heightGuideMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-            var heightGuideX = snout.x - Math.max(0.42 * detailScale, len * 0.035);
-            var heightGuideZ = -Math.max(1.0, bodyDepth * 2.2);
-            var heightGuideTop = Math.max(0.5 * detailScale, ht);
-            addSceneCylinder(vec(heightGuideX, 0.04, heightGuideZ), vec(heightGuideX, heightGuideTop, heightGuideZ), Math.max(0.010 * detailScale, rulerR * 0.82), heightGuideMat);
-            var heightTicks = Math.min(30, Math.max(1, Math.ceil(heightGuideTop)));
-            for (var htick = 0; htick <= heightTicks; htick++) {
-              var tickY = Math.min(heightGuideTop, htick);
-              var heightTickHalf = htick % 5 === 0 ? 0.24 : 0.13;
-              addSceneCylinder(vec(heightGuideX - heightTickHalf, tickY, heightGuideZ), vec(heightGuideX + heightTickHalf, tickY, heightGuideZ), Math.max(0.008 * detailScale, rulerR * 0.64), heightGuideMat);
-              if (htick % 5 === 0) measurementIntervalLabels.push(addTextLabel(htick + ' m', vec(heightGuideX - Math.max(0.52 * detailScale, len * 0.035), tickY, heightGuideZ), '#facc15', 0.44, scene));
-            }
-            addTextLabel(fmtLength(dn.heightM), vec(heightGuideX + Math.max(0.65 * detailScale, len * 0.045), heightGuideTop, heightGuideZ), '#facc15', 0.50, scene);
             }
             if (props.showEvidence) {
             var surveyPostMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 24 });
@@ -8296,7 +8284,7 @@ window.StemLab = window.StemLab || {
             var compassRing = new THREE.Mesh(new THREE.TorusGeometry(compassRadius, Math.max(0.010 * detailScale, ht * 0.003), 8, 36), surveyRopeMat);
             compassRing.position.copy(compassCenter);
             compassRing.rotation.x = Math.PI / 2;
-            scene.add(compassRing);
+            surveyDecorations.add(compassRing);
             var compassNorth = vec(compassCenter.x, compassCenter.y, compassCenter.z - compassRadius * 1.55);
             addSceneCylinder(compassCenter, compassNorth, Math.max(0.012 * detailScale, ht * 0.0035), surveyRopeMat);
             addSceneCylinder(compassNorth, vec(compassNorth.x - compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012 * detailScale, ht * 0.0035), surveyRopeMat);
@@ -9642,6 +9630,7 @@ window.StemLab = window.StemLab || {
               model.add(ring);
               if (active) assemblyPulse = ring;
             }
+            var evidenceDisplayStart = model.children.length;
             var assemblyTray = null;
             var assemblyTrayBounds = null;
             function createAssemblyTray(pieces) {
@@ -9885,6 +9874,7 @@ window.StemLab = window.StemLab || {
                 }
               });
             }
+            var evidenceDisplayParts = model.children.slice(evidenceDisplayStart).filter(function (part) { return part !== assemblyTray; });
             if (props.showHuman) {
               var hx = len * 0.56;
               var human = new THREE.Group();
@@ -9907,11 +9897,73 @@ window.StemLab = window.StemLab || {
               model.add(human);
             }
 
+            var measurementGuides = null;
+            var sizeBounds = null;
+            if (props.showEvidence || props.showHuman) {
+              measurementGuides = new THREE.Group();
+              measurementGuides.name = 'dinolab-size-reference';
+              model.add(measurementGuides);
+              var rulerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+              var heightGuideMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+              var referenceLength = dinoMeasurementTicks(dn.lengthM);
+              var referenceHeight = dinoMeasurementTicks(dn.heightM);
+              var rulerRadius = Math.min(len * 0.0013, ht * 0.005);
+              var tickHalf = len * 0.012;
+              var rulerY = studio ? rulerRadius * 2 : 0.065;
+              var rulerZ = specimenBounds.min.z - len * 0.10;
+              var rulerStart = (specimenBounds.min.x + specimenBounds.max.x - (referenceLength ? referenceLength.span : 0)) / 2;
+              var heightX = Math.min(specimenBounds.min.x, rulerStart) - len * 0.07;
+              function referenceLine(name, a, b, material, radius) {
+                var part = addModelCylinder(a, b, radius || rulerRadius, material, 8);
+                measurementGuides.add(part); part.name = name;
+                part.userData.dinoReferenceStart = a.toArray(); part.userData.dinoReferenceEnd = b.toArray();
+                return part;
+              }
+              function referenceLabel(tick, position, color, axis) {
+                var label = addTextLabel(tick.label, position, color, tick.endpoint ? 0.52 : 0.44, measurementGuides);
+                if (label) { label.userData.dinoMeasurement = axis; label.userData.dinoMeasurementEndpoint = tick.endpoint; label.userData.dinoMeasurementMeters = tick.meters; }
+              }
+              if (referenceLength) {
+              referenceLine('size-length-baseline', vec(rulerStart, rulerY, rulerZ), vec(rulerStart + referenceLength.span, rulerY, rulerZ), rulerMat);
+              referenceLength.ticks.forEach(function (tick) {
+                var x = rulerStart + tick.meters, half = tickHalf * (tick.endpoint ? 1.5 : 1);
+                var part = referenceLine('size-length-tick', vec(x, rulerY, rulerZ - half), vec(x, rulerY, rulerZ + half), rulerMat, rulerRadius * 0.8);
+                part.userData.dinoMeters = tick.meters;
+                referenceLabel(tick, vec(x, rulerY + ht * 0.025, rulerZ - len * 0.055), '#38bdf8', 'length');
+              });
+              }
+              if (referenceHeight) {
+              referenceLine('size-height-baseline', vec(heightX, rulerY, rulerZ), vec(heightX, rulerY + referenceHeight.span, rulerZ), heightGuideMat);
+              referenceHeight.ticks.forEach(function (tick) {
+                var y = rulerY + tick.meters, half = tickHalf * (tick.endpoint ? 1.5 : 1);
+                var part = referenceLine('size-height-tick', vec(heightX - half, y, rulerZ), vec(heightX + half, y, rulerZ), heightGuideMat, rulerRadius * 0.8);
+                part.userData.dinoMeters = tick.meters;
+                referenceLabel(tick, vec(heightX - len * 0.055, y, rulerZ), '#facc15', 'height');
+              });
+              }
+              measurementGuides.userData.dinoLength = referenceLength;
+              measurementGuides.userData.dinoHeight = referenceHeight;
+              // Fit guide geometry and label anchors; sprite sizes are screen-relative.
+              sizeBounds = specimenBounds.clone();
+              model.updateMatrixWorld(true);
+              measurementGuides.traverse(function (part) {
+                if (part.isMesh) {
+                  if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+                  sizeBounds.union(part.geometry.boundingBox.clone().applyMatrix4(part.matrixWorld));
+                } else if (part.isSprite) sizeBounds.expandByPoint(part.getWorldPosition(new THREE.Vector3()));
+              });
+              sizeBounds.expandByScalar(len * 0.025);
+            }
+
             if (props.showHuman && human) {
               human.updateMatrixWorld(true);
               specimenBounds.union(new THREE.Box3().setFromObject(human));
             }
             var overviewBounds = specimenBounds.clone();
+            if (sizeBounds) {
+              sizeBounds.union(specimenBounds); overviewBounds.union(sizeBounds); studyBounds.size = sizeBounds;
+              model.userData.studyBounds.size = { min: sizeBounds.min.toArray(), max: sizeBounds.max.toArray() };
+            }
             if (assemblyTray) {
               model.updateMatrixWorld(true);
               assemblyTrayBounds = new THREE.Box3().setFromObject(assemblyTray);
@@ -9963,14 +10015,18 @@ window.StemLab = window.StemLab || {
             function updateCameraView() {
               var trayVisible = !!assemblyTray && (cameraStudy === 'tray' || (cameraStudy === 'full' && !cameraTargetIsEvidence));
               if (assemblyTray) assemblyTray.visible = trayVisible;
-              var viewHalf = cameraStudy === 'full' ? (trayVisible ? overviewHalf : modelHalf) : studyBounds[cameraStudy].getSize(new THREE.Vector3()).multiplyScalar(0.5);
+              var fullOverview = cameraStudy === 'full' && !cameraTargetIsEvidence;
+              if (measurementGuides) measurementGuides.visible = cameraStudy === 'size' || fullOverview;
+              surveyDecorations.visible = cameraStudy !== 'size';
+              evidenceDisplayParts.forEach(function (part) { part.visible = cameraStudy !== 'size'; });
+              var viewHalf = cameraStudy === 'full' ? (fullOverview ? overviewHalf : modelHalf) : studyBounds[cameraStudy].getSize(new THREE.Vector3()).multiplyScalar(0.5);
               var rotatedWidth = Math.abs(Math.cos(yaw)) * viewHalf.x + Math.abs(Math.sin(yaw)) * viewHalf.z;
               var rotatedDepth = Math.abs(Math.sin(yaw)) * viewHalf.x + Math.abs(Math.cos(yaw)) * viewHalf.z;
               var verticalSpan = viewHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
               var depthSpan = viewHalf.y * Math.sin(pitch) + rotatedDepth * Math.cos(pitch);
               var fitDistance = dinoFrameDistance(rotatedWidth, verticalSpan, depthSpan, camera.fov, camera.aspect);
               var distance = Math.max(cameraStudy === 'full' ? 0.4 : 0.015, fitDistance) * zoom * (cameraTargetIsEvidence ? 0.76 : 1);
-              var targetForView = cameraStudy === 'full' && trayVisible ? overviewCenter.clone() : cameraTarget.clone();
+              var targetForView = fullOverview ? overviewCenter.clone() : cameraTarget.clone();
               targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
               camera.position.set(targetForView.x, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
               camera.near = Math.max(cameraStudy === 'full' ? 0.005 : 0.0001, distance / 500);
@@ -10011,6 +10067,7 @@ window.StemLab = window.StemLab || {
               var candidates = sceneLabels.slice().sort(function (a, b) {
                 function priority(label) {
                   var text = label.userData.dinoLabel;
+                  if (label.userData.dinoMeasurementEndpoint) return cameraStudy === 'size' ? (label.userData.dinoMeasurementMeters > 0 ? -2 : -1) : 2;
                   if (text.toLowerCase().replace(/ done$/, '') === scanTargetId) return 0;
                   if (/^(Skull|Shoulder|Hip)( done)?$/.test(text)) return 1;
                   if (/^(Claim:|Placed|Assemble)/.test(text)) return 2;
@@ -10023,6 +10080,9 @@ window.StemLab = window.StemLab || {
                 var keyLabel = /^(Skull|Shoulder|Hip)( done)?$|^(Claim:|Placed|Assemble)/.test(text);
                 var measurement = /^\d.* (m|cm)$/.test(text);
                 label.visible = mode !== 'off' && (mode === 'all' || keyLabel || (props.showHuman && measurement && label.userData.labelScale >= 0.5));
+                if (label.userData.dinoMeasurement) {
+                  label.visible = measurementGuides.visible && mode !== 'off' && (label.userData.dinoMeasurementEndpoint || (mode === 'all' && width >= 560));
+                } else if (cameraStudy === 'size') label.visible = false;
                 if (!label.visible) return;
                 var world = label.getWorldPosition(new THREE.Vector3()), projected = world.clone().project(camera);
                 var view = world.clone().applyMatrix4(camera.matrixWorldInverse);
@@ -10033,7 +10093,7 @@ window.StemLab = window.StemLab || {
                 label.scale.set(worldHeight * (256 / 96), worldHeight, 1);
                 var x = (projected.x + 1) * width / 2, y = (1 - projected.y) * height / 2;
                 var rect = { left: x - pxWidth / 2 - 3, right: x + pxWidth / 2 + 3, top: y - pxHeight / 2 - 3, bottom: y + pxHeight / 2 + 3 };
-                if (rect.left < 8 || rect.right > width - 8 || rect.top < 68 || rect.bottom > height - 72 ||
+                if (rect.left < 8 || rect.right > width - 8 || rect.top < 68 || rect.bottom > height - (cameraStudy === 'size' ? 12 : 72) ||
                   occupied.some(function (r) { return rect.left < r.right && rect.right > r.left && rect.top < r.bottom && rect.bottom > r.top; })) {
                   label.visible = false; return;
                 }
@@ -10048,7 +10108,6 @@ window.StemLab = window.StemLab || {
               camera.updateProjectionMatrix();
               renderer.setSize(w, h, false);
               updateCameraView();
-              measurementIntervalLabels.forEach(function (label) { if (label) label.visible = w >= 560; });
             }
             resize();
             if (window.ResizeObserver) {
@@ -10282,7 +10341,9 @@ window.StemLab = window.StemLab || {
           setCameraPreset(null);
           yawRef.current.study = region;
           setStudyView({ speciesId: props.species.id, region: region });
-          if (cameraControlRef.current) cameraControlRef.current(region === 'tray' ? 0 : yawRef.current.value, region === 'tray' ? 0.95 : yawRef.current.pitch, 1, region === 'tray' ? 'Fossil tray selected. Use the assembly tools to place each fossil.' : cap(region) + ' study selected. Drag to rotate this region.', region);
+          var referenceView = region === 'tray' || region === 'size';
+          var message = region === 'tray' ? 'Fossil tray selected. Use the assembly tools to place each fossil.' : region === 'size' ? 'Size reference selected. Bars show available catalog size estimates.' : cap(region) + ' study selected. Drag to rotate this region.';
+          if (cameraControlRef.current) cameraControlRef.current(referenceView ? 0 : yawRef.current.value, region === 'tray' ? 0.95 : region === 'size' ? 0.22 : yawRef.current.pitch, 1, message, region);
         }
         function applyBodyOpacityValue(nextOpacity, announce) {
           nextOpacity = Math.max(10, Math.min(100, Number(nextOpacity) || 28));
@@ -10383,9 +10444,9 @@ var evidenceRoute = [
             el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45, maxWidth: 280 } }, 'Drag to orbit. Use the wheel or Page Up/Page Down to zoom. Start with the amber ' + (props.scanLabel || 'evidence') + ' target.'),
             el('button', { type: 'button', onClick: props.onOrientationDismiss, 'aria-label': __alloT('stem.dinolab.a11y_dismiss_3d_viewer_orientation_tips', 'Dismiss 3D viewer orientation tips'), style: { marginTop: 8, padding: '6px 9px', borderRadius: 7, border: '1px solid #5eead4', background: 'rgba(20,184,166,0.16)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Got it')
           ) : null,
-          el('button', { type: 'button', className: 'dinolab-fit-model', onClick: function () { applyCameraPreset('reset'); }, style: { position: 'absolute', left: 12, bottom: 52, padding: '8px 12px', borderRadius: 9, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fit_model', 'Fit whole animal')),
-          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
-          el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
+          el('button', { type: 'button', className: 'dinolab-fit-model', onClick: function () { applyCameraPreset('reset'); }, style: { position: activeStudy === 'size' ? 'static' : 'absolute', left: 12, bottom: activeStudy === 'size' ? 0 : 52, marginTop: activeStudy === 'size' ? 8 : 0, padding: '8px 12px', borderRadius: 9, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fit_model', 'Fit whole animal')),
+          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: activeStudy === 'size' ? 'static' : 'absolute', right: activeStudy === 'size' ? 0 : 10, bottom: activeStudy === 'size' ? 0 : 56, margin: activeStudy === 'size' ? '8px 10px 0' : 0, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
+          el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: activeStudy === 'size' ? 'static' : 'absolute', left: activeStudy === 'size' ? 0 : 10, bottom: activeStudy === 'size' ? 0 : 10, right: activeStudy === 'size' ? 0 : 10, margin: activeStudy === 'size' ? '8px 10px 10px' : 0, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
           el('div', { className: 'dinolab-study-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.study_details', 'Study details'), style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 7, marginTop: 10, maxWidth: 560 } },
             el('span', { style: { color: T.soft, fontSize: 12, fontWeight: 800, gridColumn: '1 / -1' } }, __alloT('stem.dinolab.study_details', 'Study details')),
@@ -10398,6 +10459,11 @@ var evidenceRoute = [
                 style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
             })
           ),
+          props.showEvidence || props.showHuman ?
+            el('div', { className: 'dinolab-size-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+              el('button', { type: 'button', onClick: function () { applyStudyView('size'); }, 'aria-label': 'Study size reference', 'aria-pressed': activeStudy === 'size' ? 'true' : 'false',
+                style: { padding: '9px 12px', minHeight: 44, borderRadius: 8, border: '1px solid ' + T.border, background: activeStudy === 'size' ? '#0f766e' : T.deeper, color: activeStudy === 'size' ? '#ffffff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.size_reference', 'Size reference')),
+              el('span', { style: { flex: '1 1 240px', fontSize: 11.5, color: T.soft, lineHeight: 1.5 } }, (props.species.lengthM > 0 ? 'Estimated length ' + fmtLength(props.species.lengthM) + ' (cyan)' : 'Length not listed') + (props.species.heightM > 0 ? ' · height ' + fmtLength(props.species.heightM) + ' (gold).' : ' · height not listed.') + ' Reference bars show catalog estimates; the modeled pose can differ.')) : null,
           props.showEvidence && props.assemblyUnlocked && (props.assemblyPlacedCount || 0) < (props.assemblyTotal || 0) ?
             el('div', { className: 'dinolab-tray-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
               el('button', { type: 'button', onClick: function () { applyStudyView('tray'); }, 'aria-label': 'Study fossil tray', 'aria-pressed': activeStudy === 'tray' ? 'true' : 'false',
@@ -11120,8 +11186,8 @@ var evidenceRoute = [
           keyItem('#f59e0b', 'Scan focus', 'Amber ring pulses around the current evidence target.'),
           keyItem('#0f172a', 'Anchor label', 'Floating labels identify skull, shoulder, and hip evidence points.'),
           keyItem('#94a3b8', 'Human scale', 'Gray figure keeps size estimates concrete.'),
-          keyItem('#38bdf8', 'Length guide', 'Cyan floor line spans snout to tail with one-meter ticks, five-meter labels, and the full estimated length.'),
-          keyItem('#facc15', 'Height guide', 'Gold vertical staff marks estimated standing height with one-meter ticks, five-meter labels, and the full estimated height.'),
+          keyItem('#38bdf8', 'Length guide', 'Cyan reference bar shows the catalog length estimate with adaptive centimetre or metre ticks. It rotates with the animal; the modeled pose can differ from this estimate.'),
+          keyItem('#facc15', 'Height guide', 'Gold reference bar shows the catalog height estimate with adaptive ticks. Size reference frames both bars and the enabled human comparison; close-up studies hide the bars.'),
           keyItem('#f59e0b', 'Survey compass', 'Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid.')
         ], { marginBottom: 12 });
         var challengePanel = panel([

@@ -231,9 +231,9 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Visible layers: skeleton proxy, body outline, human scale, evidence markers/);
     expect(html).toMatch(/Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view/);
     expect(html).toMatch(/Height guide/);
-    expect(html).toMatch(/Gold vertical staff marks estimated standing height with one-meter ticks/);
-    expect(html).toMatch(/five-meter labels, and the full estimated length/);
-    expect(html).toMatch(/five-meter labels, and the full estimated height/);
+    expect(html).toMatch(/Gold reference bar shows the catalog height estimate with adaptive ticks/);
+    expect(html).toMatch(/catalog length estimate with adaptive centimetre or metre ticks/);
+    expect(html).toMatch(/close-up studies hide the bars/);
     expect(html).toMatch(/Survey compass/);
     expect(html).toMatch(/data-dinolab-evidence-strip="true"/);
     expect(html).toMatch(/Evidence context/);

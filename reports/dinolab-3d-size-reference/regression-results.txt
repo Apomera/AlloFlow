@@ -1,0 +1,13 @@
+
+Running 4 tests using 1 worker
+
+(node:44972) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44972) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:65:5 › phone reference fits human comparison and hides interval labels (49.0s)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-size-reference.spec.ts:95:5 › label preferences and habitat keep a readable phone size reference (1.0m)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:66:5 › keyboard study selection resets on species change and keeps evidence data intact (21.5s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:76:5 › explicit scan target takes priority while layer changes preserve the study (1.1m)
+
+  4 passed (3.9m)

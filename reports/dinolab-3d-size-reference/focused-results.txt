@@ -1,0 +1,116 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+x····································x···················x···············································································x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'addTextLabel(rt + \' m\''
+
+- Expected
++ Received
+
+- addTextLabel(rt + ' m'
+[Redundant full-renderer source dump omitted; expected expression and failure location retained.]
+
+ ❯ tests/dinolab_3d_accessibility.test.js:252:20
+    250|     expect(source).toContain('function addTextLabel(text, pos, color, …
+    251|     expect(source).toContain('(parent || model).add(sprite);');
+    252|     expect(source).toContain("addTextLabel(rt + ' m'");
+       |                    ^
+    253|     expect(source).toContain('addTextLabel(fmtLength(dn.lengthM)');
+    254|     expect(source).toContain('addTextLabel(fmtLength(dn.heightM)');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/dinolab_3d_size_reference.test.js > Dino Lab calibrated reference ticks > supports every catalog length and height without duplicate or excessive ticks
+AssertionError: mosasaurus:heightM: expected null not to be null
+ ❯ tests/dinolab_3d_size_reference.test.js:29:52
+     27|     for(const species of DINOS) for(const field of ['lengthM','heightM…
+     28|       const result = dinoMeasurementTicks(species[field]);
+     29|       expect(result, species.id + ':' + field).not.toBeNull();
+       |                                                    ^
+     30|       expect(result.ticks.at(-1).meters).toBe(species[field]);
+     31|       expect(new Set(result.ticks.map(t => t.meters)).size).toBe(resul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/dino_lab_golden.test.js > Dino Lab — render per tab (golden master) > renders the field3d tab (snapshot)
+Error: Snapshot `Dino Lab — render per tab (golden master) > renders the field3d tab (snapshot) 1` mismatched
+
+- Expected
++ Received
+
+@@ -508,10 +508,14 @@
+  <button type="button" aria-label="Study whole animal" aria-pressed="true" style="padding:8px 12px;border-radius:8px;border:1px solid #0f766e;background:#0f766e;color:#ffffff;cursor:pointer;font-size:12px;font-weight:800">Whole animal</button>
+  <button type="button" aria-label="Study head details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Head</button>
+  <button type="button" aria-label="Study body details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Body</button>
+  <button type="button" aria-label="Study tail details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Tail</button>
+  </div>
++ <div class="dinolab-size-controls" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">
++ <button type="button" aria-label="Study size reference" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:800;cursor:pointer">Size reference</button>
++ <span style="flex:1 1 240px;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5">Estimated length 12.3 m (cyan) · height 3.7 m (gold). Reference bars show catalog estimates; the modeled pose can differ.</span>
++ </div>
+  <div class="dinolab-motion-controls" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">
+  <button type="button" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:800;cursor:pointer">Pause motion</button>
+  <span role="status" aria-live="polite" style="flex:1 1 220px;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Pause breathing, feather movement, and auto spin.</span>
+  </div>
+  <div class="dinolab-3d-evidence-route" role="list" aria-label="Evidence route" style="display:grid;grid-template-columns:100px repeat(3,minmax(0,1fr)) minmax(140px,1.2fr);gap:7px;align-items:center;margin-top:8px;padding:8px;border-radius:10px;background:rgba(15,23,42,0.82);border:1px solid rgba(245,158,11,0.48);box-shadow:0 10px 24px rgba(0,0,0,0.24);z-index:3">
+@@ -1229,19 +1233,19 @@
+  <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+  <span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#38bdf8;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+  </span>
+  <span>
+  <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Length guide</span>
+- <span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Cyan floor line spans snout to tail with one-meter ticks, five-meter labels, and the full estimated length.</span>
++ <span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Cyan reference bar shows the catalog length estimate with adaptive centimetre or metre ticks. It rotates with the animal; the modeled pose can differ from this estimate.</span>
+  </span>
+  </div>
+  <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+  <span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#facc15;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+  </span>
+  <span>
+  <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Height guide</span>
+- <span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Gold vertical staff marks estimated standing height with one-meter ticks, five-meter labels, and the full estimated height.</span>
++ <span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Gold reference bar shows the catalog height estimate with adaptive ticks. Size reference frames both bars and the enabled human comparison; close-up studies hide the bars.</span>
+  </span>
+  </div>
+  <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+  <span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#f59e0b;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+  </span>
+
+ ❯ tests/dino_lab_golden.test.js:123:30
+    121|   TABS.forEach(tab => {
+    122|     it(`renders the ${tab} tab (snapshot)`, () => {
+    123|       expect(renderTab(tab)).toMatchSnapshot();
+       |                              ^
+    124|     });
+    125|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/dino_lab_golden.test.js > Dino Lab — render invariants (the science a student actually sees) > the 3D Field Station explains reconstruction layers and uncertainty
+AssertionError: expected '<div class="dinolab-root" style="min-…' to match /Gold vertical staff marks estimated s…/
+
+- Expected:
+/Gold vertical staff marks estimated standing height with one-meter ticks/
+
+[Redundant rendered HTML dump omitted; expected wording and failure location retained.]
+
+ ❯ tests/dino_lab_golden.test.js:234:18
+    232|     expect(html).toMatch(/Keyboard controls: Left and Right Arrow or A…
+    233|     expect(html).toMatch(/Height guide/);
+    234|     expect(html).toMatch(/Gold vertical staff marks estimated standing…
+       |                  ^
+    235|     expect(html).toMatch(/five-meter labels, and the full estimated le…
+    236|     expect(html).toMatch(/five-meter labels, and the full estimated he…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+  Snapshots  1 failed
+ Test Files  3 failed | 3 passed (6)
+      Tests  4 failed | 135 passed (139)
+   Start at  21:13:00
+   Duration  30.29s (transform 299ms, setup 130ms, import 650ms, tests 22.90s, environment 5.27s)
