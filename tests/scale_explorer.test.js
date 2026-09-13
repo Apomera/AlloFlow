@@ -563,3 +563,69 @@ describe('Scale Explorer compare follows the thing in focus', () => {
     }
   });
 });
+
+// 2026-09-13. Three ways of SHOWING an order of magnitude rather than stating it:
+// nested ÷10 / ÷100 frames inside the focused object with a guide to the axis
+// tick one decade left; the ×10 staircase under a comparison; and scientific
+// notation beside the friendly unit. Seen in the real host before these pins.
+describe('Scale Explorer shows orders of magnitude, not just names them', () => {
+  function lift(name, until) {
+    const a = src.indexOf('function ' + name + '(');
+    const b = src.indexOf('function ' + until + '(', a);
+    if (a < 0 || b < 0) throw new Error('could not lift ' + name);
+    return src.slice(a, b);
+  }
+  it('writes scientific notation with two significant figures and a real superscript exponent', () => {
+    const ctx = { SUPERSCRIPT: { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' } };
+    vm.runInNewContext(lift('sup', 'sciNotation') + lift('sciNotation', 'bigCount') + '\nthis.sci = sciNotation;', ctx);
+    expect(ctx.sci(7.5e-6)).toBe('7.5 × 10⁻⁶ m');
+    expect(ctx.sci(1.7)).toBe('1.7 × 10⁰ m');
+    expect(ctx.sci(1.3e7)).toBe('1.3 × 10⁷ m');
+    expect(ctx.sci(9.96e6), 'rounds up across the decade').toBe('1 × 10⁷ m');
+    expect(ctx.sci(0)).toBe('');
+  });
+
+  it('the staircase is one chip per whole decade, with a real neighbour as the example or a bare step', () => {
+    const sorted = ITEMS.slice().sort((a, b) => b.size - a.size);
+    const by = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+    const log10 = (v) => Math.log(v) / Math.LN10;
+    const mk = (small, big) => ({ small: by[small], big: by[big], decades: log10(by[big].size / by[small].size) });
+    const body = src.slice(src.indexOf('function staircaseSteps'), src.indexOf('function staircase()'));
+    const run = (compare) => { const ctx = { compare, sorted, log10, Math }; vm.runInNewContext(body + '\nthis.steps = staircaseSteps();', ctx); return ctx.steps; };
+    const s1 = run(mk('human', 'earth'));
+    expect(s1.length).toBe(6); // 6.87 decades -> six whole steps, the rest is the last arrow
+    expect(s1.map((st) => st.item && st.item.id)).toEqual(['trex', 'pyramid', null, 'everest', 'chicxulub', 'reef']);
+    // the bare step is drawn at exactly 10^k times the small thing
+    expect(s1[2].size).toBeCloseTo(1.7e3, 6);
+    // endpoints are never used as their own example
+    for (const st of s1) if (st.item) expect(['human', 'earth']).not.toContain(st.item.id);
+    expect(run(mk('proton', 'universe')).length).toBe(41); // 43 chips in the UI = 41 steps + the two endpoints
+    expect(run(mk('human', 'door')).length).toBe(0); // under one decade: sentence only
+  });
+
+  it('nested frames are drawn for the focus only, backed for legibility, with a guide to one tick left', () => {
+    const block = src.slice(src.indexOf('// Nested decade frames.'), src.indexOf('// Labels are a second pass'));
+    expect(block).toMatch(/if \(isFocus && c\.dia >= 60\)/);
+    expect(block).toMatch(/var fs = side \/ Math\.pow\(10, f\);/);
+    expect(block).toMatch(/strokeStyle = P\.stage; g\.lineWidth = 4;/); // backing stroke under the dash
+    expect(block).toMatch(/var gx = fx - pxPerDecade;/);              // the guide lands one decade LEFT
+    expect(block).toMatch(/g\.lineTo\(gx, axisY - 6\)/);
+  });
+
+  it('the notation toggle reaches the card, the ladder, the selects and the stage, and persists', () => {
+    expect(src).toMatch(/function lengthText\(m\) \{ return sci \? humanLength\(m\) \+ ' · ' \+ sciNotation\(m\) : humanLength\(m\); \}/);
+    expect(src).toMatch(/\{ len: lengthText\(focused\.size\)/);
+    expect(src).toMatch(/itemText\(i, 'name'\) \+ ' — ' \+ lengthText\(i\.size\)/);
+    expect(src).toMatch(/sciRef\.current \? sciNotation\(lo\.size\) : humanLength\(lo\.size\)/);
+    expect(src).toMatch(/updateSlice\(function \(cur\) \{ cur\.sci = on; \}\)/);
+    expect(src).toMatch(/React\.useEffect\(function \(\) \{ draw\(\); \}, \[theme, focusId, uiLang, sci\]\)/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['sci_toggle', 'stair_caption', 'stair_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+
+  it('the stage no longer stretches to a long side panel', () => {
+    expect(src).toMatch(/minHeight: 'min\(56vh, 420px\)', maxHeight: 'max\(420px, 78vh\)'/);
+  });
+});

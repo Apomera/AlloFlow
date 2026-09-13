@@ -267,6 +267,18 @@
   function powerLabel(n) {
     return '10' + String(n).split('').map(function (ch) { return SUPERSCRIPT[ch] || ch; }).join('') + ' m';
   }
+  function sup(n) { return String(n).split('').map(function (ch) { return SUPERSCRIPT[ch] || ch; }).join(''); }
+  // Scientific notation, two significant figures: 7.5 × 10⁻⁶ m. The exponent
+  // IS the order of magnitude, and it is how the idea is examined, so the tool
+  // can show it beside the friendly unit on request.
+  function sciNotation(m) {
+    if (!(m > 0)) return '';
+    var e = Math.floor(Math.log(m) / Math.LN10);
+    var mant = m / Math.pow(10, e);
+    var r = Math.round(mant * 10) / 10;
+    if (r >= 10) { r = 1; e += 1; }
+    return (r % 1 === 0 ? String(r) : r.toFixed(1)) + ' × 10' + sup(e) + ' m';
+  }
 
   // Big counts in words. "93 billion light years" is a number a person can hold;
   // "93013423528 light years" is a wall of digits that teaches nothing.
@@ -375,6 +387,11 @@
       var journeyRef = React.useRef(null);
       var journeyDirRef = React.useRef(0);
       var _showLadder = React.useState(true); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
+      var _sci = React.useState(!!slice.sci); var sci = _sci[0], setSci = _sci[1];
+      var sciRef = React.useRef(sci); sciRef.current = sci;
+      // One place decides how a length is written, so the card, the ladder, the
+      // selects and the stage never disagree.
+      function lengthText(m) { return sci ? humanLength(m) + ' · ' + sciNotation(m) : humanLength(m); }
       var _pair = React.useState({ big: 'earth', small: 'human' }); var pair = _pair[0], setPair = _pair[1];
       var _guess = React.useState(''); var guess = _guess[0], setGuess = _guess[1];
       var _revealed = React.useState(false); var revealed = _revealed[0], setRevealed = _revealed[1];
@@ -614,6 +631,54 @@
 
           if (c.dia >= 30) c.wantsLabel = true;
           g.globalAlpha = 1;
+
+          // Nested decade frames. The ring ten times WIDER than the focus is off
+          // the stage by construction (the focus fills ~42% of the shorter side),
+          // so the frames nest inward: the focus, a square a tenth as wide inside
+          // it, and a hundredth inside that. Each step left on the axis below is
+          // one of these squares. Drawn only for the focus, only when legible.
+          if (isFocus && c.dia >= 60) {
+            var side = c.dia, fx = c.x, fy = c.y;
+            g.save();
+            g.font = '700 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+            g.textAlign = 'left'; g.textBaseline = 'middle';
+            for (var f = 1; f <= 2; f++) {
+              var fs = side / Math.pow(10, f);
+              if (fs < 6) break;
+              g.globalAlpha = 1;
+              // A dark backing under the frame keeps the dashed edge visible over
+              // the emoji's own colours (the Earth is mostly green and blue).
+              g.setLineDash([]);
+              g.strokeStyle = P.stage; g.lineWidth = 4;
+              g.strokeRect(fx - fs / 2, fy - fs / 2, fs, fs);
+              g.setLineDash([5, 3]);
+              g.strokeStyle = P.ringHot; g.lineWidth = f === 1 ? 2 : 1.5;
+              g.strokeRect(fx - fs / 2, fy - fs / 2, fs, fs);
+              if (fs >= 18) {
+                var tag = '÷' + (f === 1 ? '10' : '100');
+                var tw = g.measureText(tag).width;
+                var tx0 = fx + fs / 2 + 6, ty0 = fy - fs / 2 + 7;
+                g.setLineDash([]);
+                g.fillStyle = P.stage; g.globalAlpha = 0.85;
+                g.fillRect(tx0 - 3, ty0 - 8, tw + 6, 16);
+                g.globalAlpha = 1; g.fillStyle = P.ringHot;
+                g.fillText(tag, tx0, ty0);
+              }
+            }
+            // The guide: from the bottom of the ÷10 square down to the axis, one
+            // tick to the LEFT of the focus. That is the whole lesson in one line:
+            // a tenth of the width is one step left on the axis.
+            var s10 = side / 10;
+            if (s10 >= 6) {
+              var gx = fx - pxPerDecade;
+              g.setLineDash([3, 4]); g.strokeStyle = P.ringHot; g.lineWidth = 1; g.globalAlpha = 0.9;
+              g.beginPath(); g.moveTo(fx, fy + s10 / 2); g.lineTo(gx, axisY - 6); g.stroke();
+              g.setLineDash([]);
+              g.beginPath(); g.arc(gx, axisY, 3.5, 0, Math.PI * 2); g.fillStyle = P.ringHot; g.fill();
+            }
+            g.restore();
+            g.globalAlpha = 1;
+          }
         }
 
         // Labels are a second pass, run NEAREST first. In one pass the focused
@@ -647,7 +712,7 @@
           g.fillText(nm, lx, ly);
           g.font = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif';
           g.fillStyle = P.stageDim;
-          g.fillText(humanLength(lo.size), lx, ly + 13);
+          g.fillText(sciRef.current ? sciNotation(lo.size) : humanLength(lo.size), lx, ly + 13);
         }
         g.globalAlpha = 1;
         g.textBaseline = 'middle';
@@ -673,7 +738,7 @@
           clearTimeout(linkTimerRef.current);
         };
       }, []);
-      React.useEffect(function () { draw(); }, [theme, focusId, uiLang]);
+      React.useEffect(function () { draw(); }, [theme, focusId, uiLang, sci]);
 
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
@@ -801,6 +866,59 @@
         updateSlice(function (cur) { cur.compareCount = (cur.compareCount || 0) + 1; });
         say(compareSentence());
       }
+      // The ×10 staircase: the ratio as a chain of tens, each step carrying a
+      // real object at that decade. "5.36 powers of ten" is a number; five
+      // visible steps from a person up to the Earth, each ten times the last,
+      // is the idea. Steps are the whole decades; the remainder is said in words.
+      function staircaseSteps() {
+        if (!compare) return [];
+        var whole = Math.floor(compare.decades);
+        var steps = [];
+        for (var k = 1; k <= whole; k++) {
+          var target = log10(compare.small.size) + k;
+          var best = null, bestD = Infinity;
+          for (var i = 0; i < sorted.length; i++) {
+            var it = sorted[i];
+            if (it.id === compare.small.id || it.id === compare.big.id) continue;
+            var d = Math.abs(log10(it.size) - target);
+            if (d < bestD) { bestD = d; best = it; }
+          }
+          // Only a real neighbour counts as an example; past the ends of the
+          // ladder the step is drawn bare so the chain still adds up.
+          steps.push({ k: k, item: bestD <= 0.5 ? best : null, size: Math.pow(10, target) });
+        }
+        return steps;
+      }
+      function staircase() {
+        var steps = staircaseSteps();
+        if (!steps.length) return null;
+        var rem = compare.decades - steps.length;
+        var chip = function (key, emoji, label, sub, strong) {
+          return h('li', { key: key, style: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: 54, padding: '4px 6px', borderRadius: 8, background: strong ? P.selBg : 'transparent', color: strong ? P.selFg : P.text, border: '1px solid ' + (strong ? P.accent : P.line), fontSize: '0.65625rem', lineHeight: 1.25, textAlign: 'center' } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '1.125rem' } }, emoji),
+            h('span', { style: { fontWeight: strong ? 700 : 500 } }, label),
+            sub ? h('span', { style: { color: strong ? P.selFg : P.dim, opacity: strong ? 0.85 : 1 } }, sub) : null);
+        };
+        var arrow = function (key, text) {
+          return h('li', { key: key, 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center', color: P.accent, fontWeight: 700, fontSize: '0.75rem', padding: '0 2px' } }, text);
+        };
+        var kids = [chip('s0', compare.small.emoji, itemText(compare.small, 'name'), lengthText(compare.small.size), true)];
+        steps.forEach(function (st) {
+          kids.push(arrow('a' + st.k, '×10 →'));
+          kids.push(st.item
+            ? chip('c' + st.k, st.item.emoji, itemText(st.item, 'name'), lengthText(st.item.size), false)
+            : chip('c' + st.k, '·', humanLength(st.size), null, false));
+        });
+        if (rem >= 0.05) kids.push(arrow('ar', '×' + round2(Math.pow(10, rem)) + ' →'));
+        else kids.push(arrow('ar', '→'));
+        kids.push(chip('sN', compare.big.emoji, itemText(compare.big, 'name'), lengthText(compare.big.size), true));
+        return h('div', { style: { marginTop: 4 } },
+          h('div', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 4 } },
+            S('stair_caption', '{n} steps of ten from {small} to {big}. Each arrow is one power of ten; each chip is something that size.',
+              { n: steps.length, small: lowerArticle(itemText(compare.small, 'name')), big: lowerArticle(itemText(compare.big, 'name')) })),
+          h('ol', { 'aria-label': S('stair_aria', 'Steps of ten from {small} to {big}', { small: itemText(compare.small, 'name'), big: itemText(compare.big, 'name') }),
+            style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' } }, kids));
+      }
       function compareSentence() {
         if (!compare) return '';
         var bigName = itemText(compare.big, 'name');
@@ -842,7 +960,7 @@
       }
 
       function itemOptions() {
-        return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + humanLength(i.size)); });
+        return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + lengthText(i.size)); });
       }
 
       return h('div', { ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
@@ -864,7 +982,7 @@
 
           // ── Stage ──
           h('div', { style: { flex: '1 1 520px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
-            h('div', { style: { position: 'relative', flex: '1 1 auto', minHeight: 'min(56vh, 420px)', borderRadius: 12, border: '1px solid ' + P.line, overflow: 'hidden', background: P.stage } },
+            h('div', { style: { position: 'relative', flex: '1 1 auto', minHeight: 'min(56vh, 420px)', maxHeight: 'max(420px, 78vh)', borderRadius: 12, border: '1px solid ' + P.line, overflow: 'hidden', background: P.stage } },
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale.'),
                 'aria-describedby': descId,
@@ -905,7 +1023,7 @@
               h('div', { style: card },
                 h('div', { style: { fontWeight: 700, marginBottom: 2 } }, focused.emoji + ' ' + itemText(focused, 'name')),
                 h('div', { style: { color: P.dim, fontSize: '0.75rem', marginBottom: 6 } },
-                  S('size_line', '{len} {dim}', { len: humanLength(focused.size), dim: S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim) })),
+                  S('size_line', '{len} {dim}', { len: lengthText(focused.size), dim: S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim) })),
                 h('p', { style: { margin: 0 } }, itemText(focused, 'describe')),
                 focused.note ? h('p', { style: { margin: '6px 0 0', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, '⚖️ ' + itemText(focused, 'note')) : null,
                 h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
@@ -953,7 +1071,12 @@
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } }, S('cmp_b', 'Second thing'),
                   h('select', { ref: cmpSecondRef, value: cmpB, onChange: function (e) { setCmpB(e.target.value); }, style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) }, itemOptions())),
                 h('button', { type: 'button', style: goBtn, onClick: runCompare }, S('cmp_go', 'Compare them')),
-                compare ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent }) }, compareSentence()) : null)),
+                compare ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent }) }, compareSentence()) : null,
+                compare && compare.decades >= 1 ? staircase() : null)),
+
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim, cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: sci, onChange: function (e) { var on = !!e.target.checked; setSci(on); updateSlice(function (cur) { cur.sci = on; }); } }),
+              S('sci_toggle', 'Also show sizes in scientific notation (the exponent is the power of ten)')),
 
             // The scale ladder: the complete non-visual path through the tool.
             h('div', { style: { minHeight: 0, display: 'flex', flexDirection: 'column' } },
@@ -967,7 +1090,7 @@
                       'aria-current': on ? 'true' : undefined,
                       style: { display: 'block', width: '100%', textAlign: 'left', border: 'none', borderBottom: '1px solid ' + P.line, background: on ? P.selBg : P.panel, color: on ? P.selFg : P.text, padding: '6px 9px', fontSize: '0.75rem', cursor: 'pointer', font: 'inherit' } },
                       h('span', { style: { fontWeight: on ? 700 : 500 } }, i.emoji + ' ' + itemText(i, 'name')),
-                      h('span', { style: { color: on ? P.selFg : P.dim, float: 'right', fontSize: '0.6875rem' } }, humanLength(i.size))));
+                      h('span', { style: { color: on ? P.selFg : P.dim, float: 'right', fontSize: '0.6875rem' } }, lengthText(i.size))));
                 })))
           )
         ),

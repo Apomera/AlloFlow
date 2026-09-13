@@ -13102,7 +13102,10 @@
       "to_big": "🌌 Biggest",
       "to_human": "🧍 Human scale",
       "to_small": "🔴 Smallest",
-      "view_line": "You are looking at things about {len} across ({p})."
+      "view_line": "You are looking at things about {len} across ({p}).",
+      "sci_toggle": "Also show sizes in scientific notation (the exponent is the power of ten)",
+      "stair_aria": "Steps of ten from {small} to {big}",
+      "stair_caption": "{n} steps of ten from {small} to {big}. Each arrow is one power of ten; each chip is something that size."
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",
