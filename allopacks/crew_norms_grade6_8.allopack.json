@@ -1,0 +1,576 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 1: Norms We Can Name and Keep",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_norms_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effectively); EL Education Crew (Crew Launch: norms and expectations); Maine DOE PBIS Tier 1 (teaching expected behaviors in context)"
+  },
+  "sourceTopic": "Crew norms and cooperative participation",
+  "history": [
+    {
+      "id": "cn-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 1: Norms We Can Name and Keep",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Respect. \"I am a respectful member of the King community.\"\n\nThis week your Crew decides how it wants to treat each other, and writes it down in words you can check.\n\n1. Read **Norms We Can Name and Keep** (10 minutes, together or on your own).\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Rule or Norm?** chart open while you work.\n4. Sort the cards in **Rule, Norm, or Just Polite?**\n5. Take the short quiz. It asks what makes a norm a norm.\n6. Open the SEL Hub from Learning Tools and choose [Crew Protocols](#sel-hub/crewProtocols?station=sel_station_crew_launch_norms). Plan one protocol your Crew will use this week, with a way to pass.\n7. Use the **Sentence Frames** to draft two norms for your Crew.\n8. Lock the idea in with **Remember the Three Parts**.\n9. Finish with the **Decide Challenge: Our Crew Norms**, where the Crew votes on its top four.\n\nYour commitment: this week, notice one moment in any class where you kept a Crew norm without being reminded. Bring it back to Crew. 🤝\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cn-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "cn-glossary"
+          },
+          {
+            "id": "cn-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cn-goal-manual",
+            "label": "I kept one Crew norm in another class this week without being reminded, and I can say which one",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cn-reading",
+      "type": "simplified",
+      "title": "Norms We Can Name and Keep",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Norms We Can Name and Keep\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nA **Crew** is a small group of people who agree to look out for each other. That agreement does not happen by accident. It happens when the group names, out loud, how it wants to treat each other, and then keeps checking whether it is doing that. Those named agreements are called **norms**.\n\nA norm is not a **rule** from a poster. A rule is something an adult gives you. A norm is something the group chooses together and can explain in its own words. \"Be respectful\" is a rule. \"We wait until someone finishes before we answer\" is a norm, because you can see it happening or not happening.\n\nHere is a moment from a fictional Crew. On the second day, Amara starts to **share** about her weekend and two people begin a side conversation. Amara stops mid-sentence. Nobody is trying to be mean. But the Crew has not yet decided what it does when someone is talking. The Crew leader, Mr. Okafor, does not lecture. He asks, \"What do we want to happen when someone is sharing?\" The group builds a norm together: one voice at a time, and a small hand **signal** if you need to add something. The next day, when the side talk starts again, a student taps the signal. The talking stops. Nobody had to be told.\n\nGood norms have three parts. They are **specific**, so you can tell whether they happened. They are shared, so everyone helped choose them. And they are **revisited**, so the group can change them when they stop working. A norm that nobody remembers is not a norm. It is a poster.\n\nNorms protect **participation**, too. Some people speak easily. Some need time to think. Some would rather write or draw than talk. A Crew that only rewards fast talkers is not a respectful Crew, even if everyone is being polite. So strong norms include a way to **pass**, a way to think first, and a way to join later. A pass is not a refusal. It is a signal that you are still part of the circle.\n\nWorking **cooperatively** is the first respect behavior in the King HOWLs. Cooperation is not the same as agreeing. It means you can disagree and still keep the norms. It means the group's work gets done and nobody got run over while it happened.\n\nThis week, your Crew will name its norms. The test of a norm is not whether it sounds nice. The test is whether you can catch yourself keeping it on Thursday.",
+      "meta": "6th-8th Grade • Leveled reading • ~440 words"
+    },
+    {
+      "id": "cn-glossary",
+      "type": "glossary",
+      "title": "Crew Norm Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Norm",
+          "def": "An agreement a group chooses together about how to treat each other, written so you can tell whether it happened.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Rule",
+          "def": "An expectation given to a group by someone in charge.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Specific",
+          "def": "Clear enough that you can see it happening or not happening.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Shared",
+          "def": "Chosen with everyone, not handed down.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Revisit",
+          "def": "To come back to something and check whether it still works.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Pass",
+          "def": "A signal that you are still part of the circle but choose not to speak this turn.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Cooperate",
+          "def": "To work with others toward a shared goal, even when you disagree.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Participation",
+          "def": "Taking part. In a Crew, it can be speaking, listening, writing, or drawing.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Signal",
+          "def": "A small, agreed action, like a hand sign, that carries a message without words.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "6th-8th Grade • 10 terms • Tiered"
+    },
+    {
+      "id": "cn-anchor",
+      "type": "anchor-chart",
+      "title": "Rule or Norm?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "RULE OR NORM?",
+        "sections": [
+          {
+            "label": "A RULE",
+            "bullets": [
+              "Comes from someone in charge",
+              "Is the same for every group",
+              "Example: Be respectful"
+            ],
+            "iconPrompt": "a clipboard with an empty checklist"
+          },
+          {
+            "label": "A NORM",
+            "bullets": [
+              "Comes from the group",
+              "Can be seen happening or not",
+              "Example: One voice at a time, hand signal to add"
+            ],
+            "iconPrompt": "a circle of chairs with one raised hand"
+          },
+          {
+            "label": "THREE PARTS OF A GOOD NORM",
+            "bullets": [
+              "Specific: you can catch it",
+              "Shared: everyone helped choose it",
+              "Revisited: the group checks it"
+            ],
+            "iconPrompt": "three connected puzzle pieces"
+          },
+          {
+            "label": "NORMS PROTECT PARTICIPATION",
+            "bullets": [
+              "A way to pass",
+              "A way to think first",
+              "A way to join later"
+            ],
+            "iconPrompt": "an open door with a small welcome mat"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cn-sort",
+      "type": "concept-sort",
+      "title": "Rule, Norm, or Just Polite?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cn-rule",
+            "label": "RULE (given by an adult)",
+            "color": "bg-slate-500"
+          },
+          {
+            "id": "cn-norm",
+            "label": "NORM (chosen by the group, checkable)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cn-vague",
+            "label": "TOO VAGUE TO CHECK",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cn-i1",
+            "content": "No phones out during Crew.",
+            "categoryId": "cn-rule"
+          },
+          {
+            "id": "cn-i2",
+            "content": "We wait until the speaker finishes before we respond.",
+            "categoryId": "cn-norm"
+          },
+          {
+            "id": "cn-i3",
+            "content": "Be nice.",
+            "categoryId": "cn-vague"
+          },
+          {
+            "id": "cn-i4",
+            "content": "Anyone can say \"pass\" and we move on without comments.",
+            "categoryId": "cn-norm"
+          },
+          {
+            "id": "cn-i5",
+            "content": "Crew meets at 8:05 in room 12.",
+            "categoryId": "cn-rule"
+          },
+          {
+            "id": "cn-i6",
+            "content": "Have a good attitude.",
+            "categoryId": "cn-vague"
+          },
+          {
+            "id": "cn-i7",
+            "content": "We give ten seconds of think time before anyone answers.",
+            "categoryId": "cn-norm"
+          },
+          {
+            "id": "cn-i8",
+            "content": "Students must sign in on the attendance sheet.",
+            "categoryId": "cn-rule"
+          },
+          {
+            "id": "cn-i9",
+            "content": "Respect everyone.",
+            "categoryId": "cn-vague"
+          },
+          {
+            "id": "cn-i10",
+            "content": "What is shared in Crew stays in Crew unless someone is unsafe.",
+            "categoryId": "cn-norm"
+          }
+        ]
+      },
+      "meta": "3 categories • 10 cards"
+    },
+    {
+      "id": "cn-quiz",
+      "type": "quiz",
+      "title": "What Makes a Norm a Norm?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "A Crew writes \"Be respectful\" on its poster. Why is this not yet a norm?",
+            "options": [
+              "Because respect is not important in a Crew",
+              "Because you cannot see whether it happened or not",
+              "Because it was written on a poster instead of a screen",
+              "Because it was chosen by students and not a teacher"
+            ],
+            "correctAnswer": "Because you cannot see whether it happened or not",
+            "conceptLabel": "norms are specific"
+          },
+          {
+            "type": "mcq",
+            "question": "In the reading, what did Mr. Okafor do when side talk interrupted Amara?",
+            "options": [
+              "He asked the group what it wanted to happen when someone shares",
+              "He moved the two talkers to a different Crew for the week",
+              "He told the group the rule about talking and moved on",
+              "He asked Amara to speak louder so everyone could hear"
+            ],
+            "correctAnswer": "He asked the group what it wanted to happen when someone shares",
+            "conceptLabel": "norms are shared"
+          },
+          {
+            "type": "mcq",
+            "question": "A student says \"pass\" during a share round. What does that mean in a Crew with strong norms?",
+            "options": [
+              "The student is refusing to be part of the Crew today",
+              "The student is in trouble and the leader will follow up",
+              "The student is still in the circle but chooses not to speak this turn",
+              "The student has to share twice in the next round to make up for it"
+            ],
+            "correctAnswer": "The student is still in the circle but chooses not to speak this turn",
+            "conceptLabel": "pass protects participation"
+          },
+          {
+            "type": "mcq",
+            "question": "Which statement about cooperation matches the reading?",
+            "options": [
+              "Cooperating means agreeing with the group so the work gets done",
+              "Cooperating means the loudest person makes the decision quickly",
+              "Cooperating means keeping quiet so there is no disagreement",
+              "Cooperating means you can disagree and still keep the norms"
+            ],
+            "correctAnswer": "Cooperating means you can disagree and still keep the norms",
+            "conceptLabel": "cooperation is not agreement"
+          },
+          {
+            "type": "mcq",
+            "question": "A norm has been on the wall since September and nobody remembers it. What does the reading say the Crew should do?",
+            "options": [
+              "Replace it with a rule from the handbook so it carries weight",
+              "Revisit it as a group and change it if it stopped working",
+              "Leave it up, because norms should never be changed once set",
+              "Have the Crew leader decide privately whether to keep it"
+            ],
+            "correctAnswer": "Revisit it as a group and change it if it stopped working",
+            "conceptLabel": "norms are revisited"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Rewrite \"Be a good listener\" so that it passes the specific part of the three-part test.",
+            "expectedAnswer": "Any visible action, for example: We wait until the speaker finishes before we respond, or We look at the person who is sharing.",
+            "conceptLabel": "norms are specific"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which of your Crew norms would be easiest for you to keep on a hard day? Which would be hardest? Why?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cn-frames",
+      "type": "sentence-frames",
+      "title": "Draft a Norm",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "When someone is sharing, we ____."
+          },
+          {
+            "text": "If I need to add something, I ____ instead of interrupting."
+          },
+          {
+            "text": "A person can pass by ____, and the Crew responds by ____."
+          },
+          {
+            "text": "We know this norm is working when we see ____."
+          },
+          {
+            "text": "If this norm stops working, we will ____."
+          },
+          {
+            "text": "This norm shows respect because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Specific | Sounds nice but cannot be seen | Names one visible action | Names the action and what it looks like when it fails |\n| Shared | Written alone | Discussed with a partner | Discussed by the Crew and voted on |\n| Protects participation | No way to pass or think | Includes a pass or think time | Includes pass, think time, and a way to join later |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cn-faq",
+      "type": "faq",
+      "title": "Norm Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What if someone keeps breaking a norm?",
+          "answer": "First, the Crew revisits it. Sometimes the norm is unclear or does not fit. If it is clear and still broken, the Crew leader handles it privately. Norms are not a reason to call someone out in the circle."
+        },
+        {
+          "question": "Can we change a norm in the middle of the year?",
+          "answer": "Yes. That is the \"revisited\" part. Norms that cannot change stop being the group's and start being a poster."
+        },
+        {
+          "question": "Is passing a way to get out of Crew?",
+          "answer": "No. Passing means you are choosing not to speak this turn. You are still listening and still in the circle. Passing every single time is worth a private conversation with your Crew leader, not a comment from the group."
+        },
+        {
+          "question": "Do we need a norm for everything?",
+          "answer": "No. Four or five that the Crew actually remembers beat fifteen that nobody does."
+        },
+        {
+          "question": "How is this connected to my HOWL grade?",
+          "answer": "The Respect HOWL says you work cooperatively with others. Keeping a norm in a class where nobody is reminding you is what that looks like. Your teachers score HOWLs; Crew is where you practice them."
+        }
+      ],
+      "meta": "5 questions"
+    },
+    {
+      "id": "cn-memory",
+      "type": "memory-aid",
+      "title": "Remember the Three Parts",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Three Parts",
+        "instructions": "Each card locks in one idea from Norms We Can Name and Keep. Look at the example aid, make it your own, and tell how it helps you check a norm.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Good norms have three parts. They are specific, so you can tell whether they happened. They are shared, so everyone helped choose them. And they are revisited, so the group can change them when they stop working. A pass is not a refusal. It is a signal that you are still part of the circle.",
+        "lessonRef": {
+          "resourceId": "cn-reading",
+          "title": "Norms We Can Name and Keep"
+        },
+        "cards": [
+          {
+            "id": "cn-ma-ssr",
+            "target": "The three parts of a good norm: specific, shared, revisited",
+            "essentialFacts": [
+              "They are specific, so you can tell whether they happened.",
+              "They are shared, so everyone helped choose them.",
+              "They are revisited, so the group can change them when they stop working."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "S-S-R: See it, Share it, Revisit it. If you can See it happen, everyone Shared in choosing it, and you Revisit it when it fails, it is a norm.",
+            "mapping": "See stands for specific (you can see it happen). Share stands for shared (chosen together). Revisit stands for revisited (checked and changed).",
+            "scaffoldStarter": "S is for ____. S is for ____. R is for ____.",
+            "scaffoldSteps": [
+              "Write the three words from the reading.",
+              "Pick one action verb for each.",
+              "Say the three verbs in order out loud."
+            ],
+            "coachPrompts": [
+              "Which of the three parts is missing from \"Be nice\"?"
+            ],
+            "studentPrompt": "Make your own three-letter hook for specific, shared, revisited.",
+            "reasoningPrompt": "How does your hook help you decide whether a sentence on the wall is a norm or a poster?",
+            "hookFact": {
+              "text": "A norm that nobody remembers is not a norm. It is a poster.",
+              "sourceTitle": "Norms We Can Name and Keep (this lesson)"
+            }
+          },
+          {
+            "id": "cn-ma-pass",
+            "target": "A pass is not a refusal; it is a signal that you are still in the circle",
+            "essentialFacts": [
+              "A pass is not a refusal.",
+              "It is a signal that you are still part of the circle."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "PASS = still PRESENT. The two words start the same way. Passing keeps you present; it just skips your turn to talk.",
+            "mapping": "Pass links to present through the shared first letter, so the word itself reminds you that passing does not remove you from the circle.",
+            "scaffoldStarter": "Pass means I am still ____.",
+            "scaffoldSteps": [
+              "Write the word pass.",
+              "Find a word that means \"still here\" that starts the same way.",
+              "Say them together as a pair."
+            ],
+            "coachPrompts": [
+              "What would a Crew look like where passing felt like being in trouble?"
+            ],
+            "studentPrompt": "Make your own word pair for pass.",
+            "reasoningPrompt": "How does your pair help you treat a classmate who passes?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • three parts, pass"
+    },
+    {
+      "id": "cn-challenge",
+      "type": "applied-challenge",
+      "title": "Decide Challenge: Our Crew Norms",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Our Crew Norms",
+        "instructions": "Your Crew has a list of draft norms from the sentence frames. Decide together which four to adopt for the trimester, using the three-part test, and write them so a new Crew member could keep them on day one.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The HOWL behavior is working cooperatively with others. Choosing norms as a group is cooperation in practice: the Crew has to disagree, test each draft against the three parts, and still reach a decision everyone can keep.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "Your Crew has eight to twelve draft norms written by different members. Some overlap. Some are really rules. Some cannot be checked. The Crew can carry four into the trimester.",
+          "role": "Crew members deciding together",
+          "audience": "Your own Crew, and a student who joins King mid-year and reads the norms on their first day",
+          "drivingQuestion": "Which four norms should our Crew adopt, and how do we know each one passes the three-part test?",
+          "seedDirection": "Before voting, test each draft: can you see it happen, did the group help choose it, and could you revisit it? Cut or rewrite anything that fails, then vote.",
+          "lockedLessonFacts": [
+            "A norm is an agreement the group chooses together and can explain in its own words.",
+            "Good norms are specific, shared, and revisited.",
+            "Strong norms include a way to pass, a way to think first, and a way to join later.",
+            "Cooperation is not the same as agreeing; you can disagree and still keep the norms."
+          ],
+          "openQuestions": [
+            "Which drafts are really rules from an adult?",
+            "Which two drafts say the same thing and can be merged?",
+            "What is our pass signal?",
+            "When will we revisit these?"
+          ],
+          "stakeholders": [
+            "Quiet Crew members who need think time",
+            "Crew members who speak easily",
+            "The Crew leader",
+            "A student who joins mid-year"
+          ],
+          "criteria": [
+            "Each adopted norm passes all three parts of the test",
+            "At least one norm protects participation with a pass or think time",
+            "The final four are written in words a new student could keep on day one",
+            "The decision record shows one disagreement and how the Crew settled it",
+            "Uses at least three glossary words in the record"
+          ],
+          "constraints": [
+            "Exactly four norms",
+            "Each norm is one sentence",
+            "Every Crew member votes or passes",
+            "The Crew sets a revisit date within four weeks"
+          ],
+          "deliverable": "A one-page Crew norms card with four norms, the pass signal, and the revisit date, plus a short decision record of what was cut and why.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional Crew had a draft that said \"Be supportive.\"",
+            "move": "They tested it: nobody could say what it looked like. One member rewrote it as \"When someone shares something hard, we respond before we change the subject.\" It passed the test and got the most votes.",
+            "whyItHelps": "It shows that a vague draft is not thrown out; it is made specific so the Crew can catch itself keeping it."
+          },
+          "frameStarter": "We adopted \"____\" because it is specific (we can see ____), shared (____ helped write it), and we will revisit it on ____.",
+          "frameChoices": [
+            "We cut \"____\" because ____.",
+            "We merged \"____\" and \"____\" into \"____.\"",
+            "Our pass signal is ____."
+          ],
+          "coachPrompts": [
+            "Which norm would a new student have the hardest time understanding?",
+            "Is there a norm on your list that only works for people who like to talk?"
+          ]
+        },
+        "coachHint": "If the Crew gets stuck on wording, ask what it would look like on video. If you could not point to it on video, it is not specific yet.",
+        "sourceExcerpt": "Good norms have three parts. They are specific, so you can tell whether they happened. They are shared, so everyone helped choose them. And they are revisited, so the group can change them when they stop working.",
+        "lessonRef": {
+          "resourceId": "cn-reading",
+          "title": "Norms We Can Name and Keep"
+        }
+      },
+      "meta": "6th-8th Grade • Decide brief • four norms, one card"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_norms",
+      "name": "Crew station: Week 1: Norms We Can Name and Keep",
+      "tools": [
+        "crewProtocols"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 1: Norms We Can Name and Keep pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_norms_time",
+          "type": "timeSpent",
+          "toolId": "crewProtocols",
+          "label": "Spend 5 minutes in Crew Protocols",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_norms_check",
+          "type": "manualComplete",
+          "toolId": "crewProtocols",
+          "label": "I kept one Crew norm in another class this week without being reminded, and I can say which one",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

@@ -23,6 +23,15 @@ Either a raw ARRAY of resource items, or (preferred):
 `allopack` block is producer metadata — ignored by today's loader, load-bearing for the
 community catalog.
 
+**`selStations` (optional, added 2026-09-13).** A pack may carry SEL Stations, the same records
+the SEL Hub's Station Builder saves: `{ "id", "name", "tools": [toolId], "teacherNote", "quests": [{ "qid", "type": "xpThreshold"|"timeSpent"|"freeResponse"|"manualComplete", "toolId", "label", "params": { "minutes"?|"threshold"?|"minChars"? } }], "createdAt", "source" }`.
+The loader already installs `rawData.selStations` (misc_handlers `handleLoadProject`), so after
+Load Project the station lists under **SEL Stations** in the History panel beside STEM stations and
+opens the hub filtered to its tools with quest tracking. This is the pack-level pathway into the hub;
+the inline `#sel-hub/<toolId>` link (above) is the text-level one. Use both: the station holds the
+time and the self-check, the link takes the student to the right tool from the sentence that
+names it. Every `toolId` must be registered; `tests/sel_hub_tool_links.test.js` checks it.
+
 ## Resource item envelope
 
 ```json
@@ -90,6 +99,26 @@ Objective: `{ "id", "label", "kind": "xp"|"game"|"manual", "amount"? (xp), "game
 `gameType` ∈ crossword | wordScramble | memory | matching | bingo (+ timelineGame,
 conceptSortGame, syntaxScramble, vennDiagram, causeEffectSort). XP is a **delta** from the
 student's first view. `softGate: true` = friendly finish-goals-first nudge; nothing ever locks.
+
+**Linking to an SEL Hub tool (2026-09-13).** Name a Hub tool in the body as a plain markdown link whose
+target is `#sel-hub/<toolId>`: `Open [Emotion Zones](#sel-hub/zones) and do the one-word check-in.`
+The `toolId` is the id the tool registers with (`registerTool('zones', …)` in `sel_hub/sel_tool_*.js`);
+`#sel-hub` alone opens the tool grid. The click is handled by `sel_hub_module.js`
+(`window.SelHub.toolLinks`): it opens the hub at that tool instead of following the href, waits for
+a tool that has not registered yet, and tells the student when an id does not exist. Any rendered
+markdown can carry the link (FAQ answers, notes), not only directions. Use the student-facing label
+as the link text. `tests/sel_hub_tool_links.test.js` checks every `#sel-hub/` link in `allopacks/`
+against the registered ids, so a typo fails there rather than in a classroom.
+
+**Starting the pack's station from the same link.** Add `?station=<stationId>` to name a station the
+pack carries in `selStations`: `[Emotion Zones](#sel-hub/zones?station=sel_station_crew_launch_zones)`.
+The click opens the tool and starts that station, so the student sees the station's steps and
+reflection above the tool instead of having to find it in the History panel. `#sel-hub?station=<id>`
+starts the station in the tool grid. The id is explicit and must match a station the project holds
+(the pack's own, or one the teacher built); nothing is guessed from tool membership, because
+stations from earlier packs stay on the device. A link to a station the project does not carry opens
+the tool and tells the student to load the pack. The same test checks that every `?station=` in a
+pack names a station in that pack and that the linked tool belongs to it.
 
 ### `image`
 Prefer **slots over payloads**: author an image SHOT-LIST (see the flagship's IMAGES.md) with

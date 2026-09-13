@@ -492,6 +492,117 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
   });
 
 
+  it('seeds the chamber at the setpoint and models the pump, the divider and kinetic energy (pure functions)', () => {
+    const pure = window.__alloParticleLabPure;
+    expect(pure).toBeDefined();
+    // A chamber seeded at 300 K read 239 K until the slider was touched: the seed drew speeds from a uniform band.
+    for (const [count, preset, temperature, massB] of [[64, 'gas', 300, 1], [48, 'liquid', 120, 1], [80, 'diffusion', 500, 2.5], [96, 'solid', 40, 1]]) {
+      const seeded = pure.makeParticles(count, preset, temperature, 2048, massB);
+      expect(Math.abs(pure.metrics(seeded, 0, 11, 1, massB).temperature - temperature)).toBeLessThanOrEqual(1);
+    }
+    const settings = { preset: 'gas', boxSize: 12, particleDiameter: 0.58, attraction: 0, gravity: 0, massRatioB: 1, membrane: false, permeability: 0, membraneSelectivity: 'both' };
+    // The pump: A enters through the left wall heading inward, B through the right, both settling until a wall hit.
+    const pumpedA = pure.makePumpedParticles(8, settings, 300, 5, 0), pumpedB = pure.makePumpedParticles(8, settings, 300, 5, 1);
+    expect(pumpedA.every((p) => p.x < -5 && p.vx > 0 && p.settling && p.type === 0)).toBe(true);
+    expect(pumpedB.every((p) => p.x > 5 && p.vx < 0 && p.settling && p.type === 1)).toBe(true);
+    expect(Math.abs(pure.metrics(pumpedA, 0, 12, 1, 1).temperature - 300)).toBeLessThan(120); // drawn for the chamber temperature
+    // The first wall hit ends settling and adds no impulse; the next one counts.
+    const settling = [{ x: 5.7, y: 0, z: 0, vx: 3, vy: 0, vz: 0, type: 0, settling: true, freeFlights: [] }];
+    expect(pure.advanceParticles(settling, settings, 1 / 60).impulse).toBe(0);
+    expect(settling[0].settling).toBe(false);
+    settling[0].x = 5.7; settling[0].vx = 3;
+    expect(pure.advanceParticles(settling, settings, 1 / 60).impulse).toBeGreaterThan(0);
+    // A divider (a membrane at 0% permeability) reflects without transport events or selectivity samples.
+    const divided = [{ x: -0.05, y: 0, z: 0, vx: 4, vy: 0, vz: 0, type: 0, freeFlights: [] }];
+    const crossing = pure.advanceParticles(divided, { ...settings, preset: 'diffusion', membrane: true, permeability: 0 }, 1 / 60);
+    expect(divided[0].x).toBeLessThan(0);
+    expect(divided[0].vx).toBeLessThan(0);
+    expect(crossing.membraneBlocked).toBe(0);
+    expect(crossing.events).toEqual([]);
+    // Kinetic energy: the mean of one half m v squared is T / 80 in these units when every mass is 1.
+    const gas = pure.makeParticles(64, 'gas', 400, 7, 1);
+    expect(Math.abs(pure.energyDistribution(gas, 1, 12).all.mean - 400 / 80)).toBeLessThan(0.05);
+  });
+
+  it('explains an unavailable pump instead of disabling it, and offers species B only for transport presets', async () => {
+    const group = () => host.querySelector('[role="group"][aria-label="Pump and lid"]');
+    expect(group()).not.toBeNull();
+    expect(buttonByText(group(), '➕ Pump in 8 A')).toBeDefined();
+    expect(buttonByText(group(), '➕ Pump in 8 B')).toBeUndefined(); // the gas preset has one species
+    expect(buttonByText(group(), '↖ Release 8').getAttribute('aria-disabled')).toBeNull();
+    const solid = Array.from(host.querySelectorAll('#particle-preset-row button')).find((button) => button.textContent.includes('Solid'));
+    await act(async () => { solid.click(); await settle(); });
+    const pump = buttonByText(group(), '➕ Pump in 8 A');
+    expect(pump.getAttribute('aria-disabled')).toBe('true');
+    expect(pump.disabled).toBe(false); // reachable, so the reason in its name can be read
+    expect(pump.getAttribute('aria-label')).toContain('unavailable in the solid preset');
+    const diffusion = Array.from(host.querySelectorAll('#particle-preset-row button')).find((button) => button.textContent.includes('Diffusion'));
+    await act(async () => { diffusion.click(); await settle(); });
+    expect(buttonByText(group(), '➕ Pump in 8 B')).toBeDefined();
+  });
+
+  it('starts the diffusion preset behind a divider and names the control accordingly', async () => {
+    const diffusion = Array.from(host.querySelectorAll('#particle-preset-row button')).find((button) => button.textContent.includes('Diffusion'));
+    await act(async () => { diffusion.click(); await settle(); });
+    const advanced = host.querySelector('#particle-advanced-conditions');
+    expect(advanced.textContent).toContain('Divider in place');
+    expect(host.querySelector('input[aria-label="Membrane permeability"]').value).toBe('0');
+    const remove = buttonByText(advanced, 'Remove divider');
+    expect(remove).toBeDefined();
+    await act(async () => { remove.click(); await settle(); });
+    expect(buttonByText(advanced, 'Insert divider')).toBeDefined();
+    expect(advanced.textContent).toContain('Open chamber');
+  });
+
+  it('offers a flat 2D view that persists and yields to a 3D camera shot', async () => {
+    const cameraGroup = host.querySelector('[role="group"][aria-label="Camera views"]');
+    const flat = buttonByText(cameraGroup, 'Flat 2D');
+    expect(flat.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => { flat.click(); await settle(); });
+    expect(flat.getAttribute('aria-pressed')).toBe('true');
+    expect(persisted().viewMode).toBe('flat');
+    expect(host.textContent).toContain('View Flat 2D');
+    await act(async () => { buttonByText(cameraGroup, 'Top').click(); await settle(); });
+    expect(flat.getAttribute('aria-pressed')).toBe('false');
+    expect(persisted().viewMode).toBe('orbit');
+  });
+
+  it('renders a kinetic energy histogram next to the speed chart, paired by species for transport presets', async () => {
+    expect(host.querySelector('svg[aria-label^="Histogram of kinetic energy per particle"]')).not.toBeNull();
+    const diffusion = Array.from(host.querySelectorAll('#particle-preset-row button')).find((button) => button.textContent.includes('Diffusion'));
+    await act(async () => { diffusion.click(); await settle(); });
+    expect(host.querySelector('svg[aria-label^="Paired histogram of kinetic energy per particle"]')).not.toBeNull();
+    expect(host.textContent).toContain('share one mean kinetic energy');
+  });
+
+  it('keeps audio cues off and says so when the browser has no AudioContext', async () => {
+    // jsdom has no Web Audio; a real browser starts the context from this gesture. Either way the control must
+    // never latch on without sound, and the reason must be announced.
+    const announcements = [];
+    resetStemLab();
+    const config = loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+    const Component = () => {
+      const [toolData, setToolData] = React.useState({ particleLab3d: {} });
+      const ctx = makeCtx({ toolData, setToolData, announceToSR: (message) => announcements.push(message) });
+      return config.render(ctx);
+    };
+    const localHost = document.createElement('div');
+    document.body.appendChild(localHost);
+    const localRoot = ReactDOMClient.createRoot(localHost);
+    try {
+      await act(async () => { localRoot.render(React.createElement(Component)); await settle(); });
+      const audio = Array.from(localHost.querySelectorAll('button')).find((button) => button.textContent.includes('Audio cues'));
+      expect(audio.getAttribute('aria-pressed')).toBe('false');
+      await act(async () => { audio.click(); await settle(); });
+      expect(audio.getAttribute('aria-pressed')).toBe('false');
+      expect(announcements.some((message) => /Audio cues are unavailable/.test(message))).toBe(true);
+    } finally {
+      act(() => localRoot.unmount());
+      localHost.remove();
+      resetStemLab();
+    }
+  });
+
   it('saves a continuous slider once after the drag settles, while the tool state follows every tick', async () => {
     const slider = host.querySelector('input[type="range"][aria-label="Interparticle attraction strength"]');
     expect(slider).not.toBeNull();

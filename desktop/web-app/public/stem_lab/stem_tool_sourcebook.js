@@ -4607,6 +4607,71 @@
     }).then(function (record) { request.finish(); return record; }, function (error) { request.finish(); throw error; });
   }
 
+  // The four Commons-hosted profiles and Commons itself share one imageinfo
+  // endpoint that accepts up to 50 titles per query, so a restored board is
+  // verified in a couple of round trips instead of one serial request per record.
+  var COMMONS_REVALIDATION_BATCH_SIZE = 50;
+
+  function isCommonsFamilyProvider(provider) {
+    return provider === 'Wikimedia Commons' || !!COMMONS_PROVIDER_PROFILES[provider];
+  }
+
+  function commonsRevalidationTitle(raw) {
+    var match = String(raw && raw.sourceUrl || '').match(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:([^?#]+)$/);
+    if (!match) return '';
+    var title;
+    try { title = 'File:' + decodeURIComponent(match[1]).replace(/_/g, ' '); } catch (_) { return ''; }
+    return title && title.length <= 260 && title.indexOf('|') === -1 ? title : '';
+  }
+
+  // Compare the fresh source-owned record against the saved claims. The local
+  // id is kept so notes and preparation stay attached; every catalog claim is
+  // replaced. The record stays `live` because it is still an external provider
+  // record: saving it must store the asset and "More from" must stay offered.
+  function refreshedCatalogAsset(raw, fresh) {
+    if (!fresh || !sameCatalogIdentity(raw, fresh) || raw.rightsType !== fresh.rightsType
+      || String(raw.licenseUrl || '') !== String(fresh.licenseUrl || '')) {
+      throw new Error('A saved source has changed its image identity or reuse rights. Find it again in its collection.');
+    }
+    return portableAsset(Object.assign({}, fresh, { id: raw.id, live: true,
+      recommended: raw.recommended === true, recommendationSource: raw.recommendationSource }));
+  }
+
+  function catalogVerificationOutcome(raw, task) {
+    return task.then(function (fresh) { return { asset: refreshedCatalogAsset(raw, fresh) }; }).catch(function (error) { return { error: error }; });
+  }
+
+  // One imageinfo query for a batch of same-provider Commons records. Pages come
+  // back in the API's own order, so each saved record is matched by the
+  // description URL the API itself issued when the record was first fetched.
+  function revalidateCommonsAssetBatch(provider, entries, options) {
+    var profile = COMMONS_PROVIDER_PROFILES[provider];
+    var url = COMMONS_API + '?action=query&format=json&formatversion=2&origin=*&prop=imageinfo' + (profile ? '%7Ccategories' : '')
+      + '&titles=' + encodeURIComponent(entries.map(function (entry) { return entry.title; }).join('|'))
+      + '&iiprop=url%7Cextmetadata%7Csize%7Cmediatype&iiurlwidth=900&iiextmetadatalanguage=en'
+      + (profile ? '&cllimit=max&clcategories=' + encodeURIComponent('Category:' + profile.category) : '');
+    var task = COMMONS_SEARCH_QUEUE.then(function () { return fetchCatalogRecord(url, options); });
+    COMMONS_SEARCH_QUEUE = task.then(function () {}, function () {});
+    return task.then(function (payload) {
+      var pages = payload && payload.query && Array.isArray(payload.query.pages) ? payload.query.pages : [];
+      var pageBySource = Object.create(null);
+      pages.forEach(function (page) {
+        var info = page && Array.isArray(page.imageinfo) ? page.imageinfo[0] : null;
+        var source = info ? safeHttpsUrl(info.descriptionurl) : '';
+        if (!source || pageBySource[source]) return;
+        if (profile && (!Array.isArray(page.categories) || !page.categories.some(function (category) { return category && category.title === 'Category:' + profile.category; }))) return;
+        pageBySource[source] = page;
+      });
+      return Promise.all(entries.map(function (entry) {
+        var page = pageBySource[String(entry.raw.sourceUrl || '')];
+        var fresh = page ? commonsItemFromPage(page, '', entry.raw.kind) : null;
+        return catalogVerificationOutcome(entry.raw, Promise.resolve(fresh ? Object.assign({}, fresh, { provider: provider }) : null));
+      }));
+    }, function (error) {
+      return entries.map(function () { return { error: error }; });
+    });
+  }
+
   // Build every endpoint from a bounded identifier and a fixed provider origin.
   function revalidateCatalogAsset(raw, options) {
     var curated = curatedSourcebookAsset(raw);
@@ -4620,26 +4685,13 @@
     var match;
     var task;
     var read = function (url) { return fetchCatalogRecord(url, options); };
-    if (provider === 'Wikimedia Commons' || COMMONS_PROVIDER_PROFILES[provider]) {
-      match = source.match(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:([^?#]+)$/);
-      if (match) {
-        var title;
-        try { title = 'File:' + decodeURIComponent(match[1]).replace(/_/g, ' '); } catch (_) { title = ''; }
-        if (title && title.length <= 260) {
-          var url = COMMONS_API + '?action=query&format=json&formatversion=2&origin=*&prop=imageinfo&titles=' + encodeURIComponent(title)
-            + '&iiprop=url%7Cextmetadata%7Csize%7Cmediatype&iiurlwidth=900&iiextmetadatalanguage=en';
-          var profile = COMMONS_PROVIDER_PROFILES[provider];
-          if (profile) url = url.replace('prop=imageinfo&', 'prop=imageinfo%7Ccategories&') + '&cllimit=max&clcategories=' + encodeURIComponent('Category:' + profile.category);
-          task = COMMONS_SEARCH_QUEUE.then(function () { return read(url); });
-          COMMONS_SEARCH_QUEUE = task.then(function () {}, function () {});
-          task = task.then(function (payload) {
-            var pages = payload && payload.query && payload.query.pages;
-            var page = Array.isArray(pages) && pages.length === 1 ? pages[0] : null;
-            if (profile && (!page || !Array.isArray(page.categories) || !page.categories.some(function (category) { return category.title === 'Category:' + profile.category; }))) return null;
-            var fresh = page ? commonsItemFromPage(page, '', raw.kind) : null;
-            return fresh ? Object.assign({}, fresh, { provider: provider }) : null;
-          });
-        }
+    if (isCommonsFamilyProvider(provider)) {
+      var title = commonsRevalidationTitle(raw);
+      if (title) {
+        return revalidateCommonsAssetBatch(provider, [{ raw: raw, title: title }], options).then(function (outcomes) {
+          if (outcomes[0].error) throw outcomes[0].error;
+          return outcomes[0].asset;
+        });
       }
     } else if (provider === 'The Met Open Access') {
       match = source.match(/^https:\/\/(?:www\.)?metmuseum\.org\/art\/collection\/search\/(\d{1,12})\/?$/);
@@ -4672,29 +4724,59 @@
       if (match) task = read(OPENVERSE_API + '/images/' + match[1] + '/').then(function (record) { return openverseItemFromRecord(record, '', raw.kind); });
     }
     if (!task) return Promise.reject(new Error('This saved asset has no verifiable source identity. Find it again in its collection.'));
-    return task.then(function (fresh) {
-      if (!fresh || !sameCatalogIdentity(raw, fresh) || raw.rightsType !== fresh.rightsType
-        || String(raw.licenseUrl || '') !== String(fresh.licenseUrl || '')) {
-        throw new Error('A saved source has changed its image identity or reuse rights. Find it again in its collection.');
+    return task.then(function (fresh) { return refreshedCatalogAsset(raw, fresh); });
+  }
+
+  // Verify every catalog record and report each outcome in input order as
+  // `{ asset }` or `{ error }`. Commons-family records travel in batches of
+  // fifty per provider through the shared Commons queue; the rest keep their
+  // per-record endpoints at a concurrency of two.
+  function revalidateCatalogOutcomes(items, options) {
+    var list = Array.isArray(items) ? items : [];
+    var outcomes = new Array(list.length);
+    var singles = [];
+    var batches = Object.create(null);
+    list.forEach(function (item, index) {
+      var provider = String(item && item.provider || '');
+      var title = isCommonsFamilyProvider(provider) && isCatalogSourcebookAsset(item) && !curatedSourcebookAsset(item)
+        && sourcebookImportedDomainAllowed(provider, item.sourceUrl, item.imageUrl, item.downloadUrl) ? commonsRevalidationTitle(item) : '';
+      if (!title) { singles.push(index); return; }
+      (batches[provider] = batches[provider] || []).push({ index: index, raw: item, title: title });
+    });
+    var work = [mapWithConcurrency(singles, 2, function (index) {
+      return revalidateCatalogAsset(list[index], options).then(function (asset) { outcomes[index] = { asset: asset }; }, function (error) { outcomes[index] = { error: error }; });
+    })];
+    Object.keys(batches).forEach(function (provider) {
+      var entries = batches[provider];
+      for (var offset = 0; offset < entries.length; offset += COMMONS_REVALIDATION_BATCH_SIZE) {
+        (function (chunk) {
+          work.push(revalidateCommonsAssetBatch(provider, chunk, options).then(function (results) {
+            chunk.forEach(function (entry, position) { outcomes[entry.index] = results[position]; });
+          }));
+        })(entries.slice(offset, offset + COMMONS_REVALIDATION_BATCH_SIZE));
       }
-      // Keep the local key for existing notes and preparation, replace catalog claims.
-      return portableAsset(Object.assign({}, fresh, { id: raw.id, live: false,
-        recommended: raw.recommended === true, recommendationSource: raw.recommendationSource }));
+    });
+    return Promise.all(work).then(function () {
+      return outcomes.map(function (outcome) { return outcome || { error: new Error('Source verification failed.') }; });
     });
   }
 
   function revalidateCatalogAssets(items, options) {
-    return mapWithConcurrency(items, 2, function (item) {
-      return revalidateCatalogAsset(item, options).then(function (asset) { return { asset: asset }; }, function (error) { return { error: error }; });
-    }).then(function (outcomes) {
-      var failure = outcomes.filter(function (outcome) { return !outcome || outcome.error; })[0];
-      if (failure) throw (failure.error || new Error('Source verification failed.'));
+    return revalidateCatalogOutcomes(items, options).then(function (outcomes) {
+      var failure = outcomes.filter(function (outcome) { return outcome.error; })[0];
+      if (failure) throw failure.error;
       return outcomes.map(function (outcome) { return outcome.asset; });
     });
   }
   // END SOURCEBOOK HELPER: catalog-verification
 
+  // Verify every serialized external record against its own source. Atomic by
+  // default (an import is accepted whole or not at all); with `options.partial`
+  // the result is `{ assets, failures }` so a restored board can keep every
+  // record that still verifies and report the ones that no longer do.
   function revalidateImportedSourceVerifiedAssets(assets, options) {
+    var opts = options || {};
+    var partial = opts.partial === true;
     var candidates = Array.isArray(assets) ? assets : [];
     var rijksCandidates = [];
     var smkCandidates = [];
@@ -4709,94 +4791,113 @@
       else catalogCandidates.push(item);
     });
     var objectNumbers = smkCandidates.map(smkObjectNumberFromAsset);
-    if (objectNumbers.some(function (value) { return !value; })) {
+    if (objectNumbers.some(function (value) { return !value; }) && !partial) {
       return Promise.reject(new Error('An SMK Open asset is missing a trustworthy object number.'));
     }
-    var smkVerification = smkCandidates.length
-      ? fetchSmkArtworksByObjectNumbers(objectNumbers, options)
-      : Promise.resolve([]);
+    // In partial mode a provider-wide failure (its API is down) only empties
+    // that provider's fresh list, so each of its records is reported individually.
+    function tolerant(promise) {
+      return partial ? promise.then(function (list) { return list; }, function (error) { return { failed: error }; }) : promise;
+    }
+    var smkVerification = smkCandidates.length && objectNumbers.every(Boolean)
+      ? tolerant(fetchSmkArtworksByObjectNumbers(objectNumbers, opts))
+      : Promise.resolve(smkCandidates.length ? { failed: new Error('An SMK Open asset is missing a trustworthy object number.') } : []);
     var yaleVerification = yaleCandidates.length
-      ? fetchYaleAssetsByIdentities(yaleCandidates, options)
+      ? tolerant(fetchYaleAssetsByIdentities(yaleCandidates, opts))
       : Promise.resolve([]);
     var museumsVictoriaVerification = museumsVictoriaCandidates.length
-      ? fetchMuseumsVictoriaAssetsByIdentities(museumsVictoriaCandidates, options)
+      ? tolerant(fetchMuseumsVictoriaAssetsByIdentities(museumsVictoriaCandidates, opts))
       : Promise.resolve([]);
     var rijksVerification = rijksCandidates.length
-      ? fetchRijksAssetsByIdentities(rijksCandidates, options)
+      ? tolerant(fetchRijksAssetsByIdentities(rijksCandidates, opts))
       : Promise.resolve([]);
 
-    return Promise.all([rijksVerification, smkVerification, yaleVerification, museumsVictoriaVerification, revalidateCatalogAssets(catalogCandidates, options)]).then(function (verifiedGroups) {
-      var freshRijksItems = verifiedGroups[0];
-      var freshSmkItems = verifiedGroups[1];
-      var freshYaleItems = verifiedGroups[2];
-      var freshMuseumsVictoriaItems = verifiedGroups[3];
+    return Promise.all([rijksVerification, smkVerification, yaleVerification, museumsVictoriaVerification, revalidateCatalogOutcomes(catalogCandidates, opts)]).then(function (verifiedGroups) {
+      function freshList(group) { return Array.isArray(group) ? group : []; }
+      function groupFailure(group) { return group && !Array.isArray(group) && group.failed ? group.failed : null; }
+      var freshRijksItems = freshList(verifiedGroups[0]);
+      var freshSmkItems = freshList(verifiedGroups[1]);
+      var freshYaleItems = freshList(verifiedGroups[2]);
+      var freshMuseumsVictoriaItems = freshList(verifiedGroups[3]);
+      var catalogOutcomes = verifiedGroups[4];
+      if (!partial) {
+        var catalogFailure = catalogOutcomes.filter(function (outcome) { return outcome.error; })[0];
+        if (catalogFailure) throw catalogFailure.error;
+      }
       var rijksCursor = 0;
       var smkCursor = 0;
       var yaleCursor = 0;
       var museumsVictoriaCursor = 0;
       var catalogCursor = 0;
       var seenIds = {};
-      return candidates.map(function (candidate) {
+      var failures = [];
+      function carried(candidate, fresh) {
+        return Object.assign({}, fresh, {
+          recommended: candidate.recommended === true,
+          recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
+        });
+      }
+      function refreshOne(candidate) {
         var refreshed = candidate;
         if (isSerializedRijksAsset(candidate)) {
           var freshRijks = freshRijksItems[rijksCursor++];
-          if (!freshRijks
-            || candidate.licenseUrl !== freshRijks.licenseUrl
+          if (!freshRijks) throw groupFailure(verifiedGroups[0]) || new Error('A Rijksmuseum image has changed identity or rights since it was saved.');
+          if (candidate.licenseUrl !== freshRijks.licenseUrl
             || candidate.rightsType !== freshRijks.rightsType
             || !sourceVerifiedAssetIdentityMatches(candidate, freshRijks)) {
             throw new Error('A Rijksmuseum image has changed identity or rights since it was saved.');
           }
-          refreshed = portableAsset(Object.assign({}, freshRijks, {
-            recommended: candidate.recommended === true,
-            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
-          }));
+          refreshed = portableAsset(carried(candidate, freshRijks));
           if (!refreshed) throw new Error('A Rijksmuseum image could not be normalized after verification.');
         } else if (isSerializedMuseumsVictoriaAsset(candidate)) {
           var freshMuseumsVictoria = freshMuseumsVictoriaItems[museumsVictoriaCursor++];
-          if (!freshMuseumsVictoria
-            || candidate.licenseUrl !== freshMuseumsVictoria.licenseUrl
+          if (!freshMuseumsVictoria) throw groupFailure(verifiedGroups[3]) || new Error('A Museums Victoria image has changed identity or rights since it was saved.');
+          if (candidate.licenseUrl !== freshMuseumsVictoria.licenseUrl
             || candidate.rightsType !== freshMuseumsVictoria.rightsType
             || !sourceVerifiedAssetIdentityMatches(candidate, freshMuseumsVictoria)) {
             throw new Error('A Museums Victoria image has changed identity or rights since it was saved.');
           }
-          refreshed = portableAsset(Object.assign({}, freshMuseumsVictoria, {
-            recommended: candidate.recommended === true,
-            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
-          }));
+          refreshed = portableAsset(carried(candidate, freshMuseumsVictoria));
           if (!refreshed) throw new Error('A Museums Victoria image could not be normalized after verification.');
         } else if (isSerializedYaleAsset(candidate)) {
           var freshYale = freshYaleItems[yaleCursor++];
-          if (!freshYale
-            || candidate.licenseUrl !== freshYale.licenseUrl
+          if (!freshYale) throw groupFailure(verifiedGroups[2]) || new Error('A Yale Gallery record has changed identity or rights since it was saved.');
+          if (candidate.licenseUrl !== freshYale.licenseUrl
             || candidate.rightsType !== freshYale.rightsType
             || !sourceVerifiedAssetIdentityMatches(candidate, freshYale)) {
             throw new Error('A Yale Gallery record has changed identity or rights since it was saved.');
           }
-          refreshed = portableAsset(Object.assign({}, freshYale, {
-            recommended: candidate.recommended === true,
-            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
-          }));
+          refreshed = portableAsset(carried(candidate, freshYale));
           if (!refreshed) throw new Error('A Yale Gallery record could not be normalized after verification.');
         } else if (isSerializedSmkAsset(candidate)) {
           var freshSmk = freshSmkItems[smkCursor++];
-          if (!freshSmk || candidate.licenseUrl !== freshSmk.licenseUrl || candidate.rightsType !== freshSmk.rightsType) {
+          if (!freshSmk) throw groupFailure(verifiedGroups[1]) || new Error('An SMK Open record has changed rights since it was saved.');
+          if (candidate.licenseUrl !== freshSmk.licenseUrl || candidate.rightsType !== freshSmk.rightsType) {
             throw new Error('An SMK Open record has changed rights since it was saved.');
           }
           if (candidate.providerRecordId && candidate.providerRecordId !== freshSmk.providerRecordId) {
             throw new Error('An SMK Open object number now resolves to a different record.');
           }
-          refreshed = portableAsset(Object.assign({}, freshSmk, {
-            recommended: candidate.recommended === true,
-            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
-          }));
+          refreshed = portableAsset(carried(candidate, freshSmk));
           if (!refreshed) throw new Error('An SMK Open record could not be normalized after verification.');
         } else {
-          refreshed = verifiedGroups[4][catalogCursor++];
+          var outcome = catalogOutcomes[catalogCursor++];
+          if (outcome.error) throw outcome.error;
+          refreshed = outcome.asset;
         }
         if (seenIds[refreshed.id]) throw new Error('Verified Sourcebook assets contain duplicate records.');
         seenIds[refreshed.id] = true;
         return refreshed;
-      });
+      }
+      var kept = [];
+      var refreshedAssets = candidates.map(function (candidate, index) {
+        try { var refreshed = refreshOne(candidate); kept.push(index); return refreshed; } catch (error) {
+          if (!partial) throw error;
+          failures.push({ index: index, id: String(candidate && candidate.id || ''), title: String(candidate && candidate.title || ''), reason: String(error && error.message || 'This source could not be verified.') });
+          return null;
+        }
+      }).filter(Boolean);
+      return partial ? { assets: refreshedAssets, failures: failures, kept: kept } : refreshedAssets;
     });
   }
 
@@ -4804,15 +4905,23 @@
   function revalidateImportedSmkAssets(assets, options) {
     return revalidateImportedSourceVerifiedAssets(assets, options);
   }
+  // A saved board is restored record by record: a renamed file or one
+  // unreachable source record no longer discards every other verified result.
+  // The records that could not be re-verified come back in `dropped` so the
+  // board can say what was left out; the restore only fails when nothing survives.
   function revalidateLiveSession(session, options) {
     var opts = options || {};
     var candidate = normalizeLiveSessionCandidate(session, opts.nowValue);
     if (!candidate) return Promise.reject(new Error('The saved Sourcebook session is invalid or expired.'));
-    return revalidateImportedSmkAssets(candidate.results, opts).then(function (results) {
-      if (results.some(function (item) { return !allowedByRightsScope(item, candidate.rightsScope); })) {
-        throw new Error('A refreshed source-verified record is outside the saved rights scope.');
-      }
-      return Object.assign({}, candidate, { results: results });
+    return revalidateImportedSourceVerifiedAssets(candidate.results, Object.assign({}, opts, { partial: true })).then(function (outcome) {
+      var dropped = outcome.failures.map(function (failure) { return { id: failure.id, title: failure.title, reason: failure.reason }; });
+      var results = outcome.assets.filter(function (item) {
+        if (allowedByRightsScope(item, candidate.rightsScope)) return true;
+        dropped.push({ id: item.id, title: item.title, reason: 'A refreshed source-verified record is outside the saved rights scope.' });
+        return false;
+      });
+      if (!results.length) throw new Error(dropped.length ? dropped[0].reason : 'No saved result could be verified.');
+      return Object.assign({}, candidate, { results: results, dropped: dropped });
     });
   }
 
@@ -4848,14 +4957,19 @@
     if (!candidate || candidate.assets.length !== keys.length) {
       return Promise.reject(new Error('Saved source-verified assets could not be parsed safely.'));
     }
-    return revalidateImportedSmkAssets(candidate.assets, options || {}).then(function (freshItems) {
+    var opts = options || {};
+    return revalidateImportedSmkAssets(candidate.assets, opts).then(function (outcome) {
+      var partial = opts.partial === true;
+      var freshItems = partial ? outcome.assets : outcome;
       var assets = {};
       var idMap = {};
-      freshItems.forEach(function (item, index) {
+      var errors = {};
+      freshItems.forEach(function (item, position) {
         assets[item.id] = item;
-        idMap[keys[index]] = item.id;
+        idMap[keys[partial ? outcome.kept[position] : position]] = item.id;
       });
-      return { assets: assets, idMap: idMap };
+      if (partial) outcome.failures.forEach(function (failure) { errors[keys[failure.index]] = failure.reason; });
+      return partial ? { assets: assets, idMap: idMap, errors: errors } : { assets: assets, idMap: idMap };
     });
   }
 
@@ -4893,8 +5007,11 @@
       });
     }
     if (opts.individual) return individually();
-    return revalidateSavedSmkAssets(source, opts).then(function (result) {
-      return { assets: result.assets, idMap: result.idMap, errors: {} };
+    // One partial pass verifies every record and reports the failures by id, so a
+    // palette with one stale record no longer costs a second full round of requests.
+    return revalidateSavedSmkAssets(source, Object.assign({}, opts, { partial: true })).then(function (result) {
+      throwIfSourcebookAborted(opts.signal);
+      return { assets: result.assets, idMap: result.idMap, errors: result.errors || {} };
     }, function (error) {
       if (opts.signal && opts.signal.aborted) throw error;
       return individually();
@@ -7032,8 +7149,13 @@
       var h = React.createElement;
       var capability = sourcebookCapabilityMode(ctx);
       var rootState = (ctx.toolData && ctx.toolData.sourcebook) || {};
-      var storedLiveSessionCandidate = normalizeLiveSessionCandidate(rootState.liveSession);
-      var storedLiveSession = normalizeLiveSession(rootState.liveSession);
+      // Validating a serialized session re-parses every result's URLs and
+      // identity; it only changes with the persisted value, not per keystroke.
+      var storedLiveSessionState = React.useMemo(function () {
+        return { candidate: normalizeLiveSessionCandidate(rootState.liveSession), session: normalizeLiveSession(rootState.liveSession) };
+      }, [rootState.liveSession]);
+      var storedLiveSessionCandidate = storedLiveSessionState.candidate;
+      var storedLiveSession = storedLiveSessionState.session;
       var storedSmkLiveSession = !storedLiveSession && storedLiveSessionCandidate && serializedAssetsContainSmk(storedLiveSessionCandidate.results)
         ? storedLiveSessionCandidate : null;
       var storedSessionContext = storedLiveSession || storedSmkLiveSession;
@@ -7064,7 +7186,7 @@
       var storedKind = storedSessionContext ? storedSessionContext.kind : (rootState.kind || 'All');
       var storedProvider = storedSessionContext ? storedSessionContext.provider : (rootState.provider || 'All');
       var storedRightsScope = storedSessionContext ? storedSessionContext.rightsScope : (RIGHTS_SCOPES[rootState.rightsScope] ? rootState.rightsScope : 'pd');
-      var storedTitle = rootState.paletteTitle || 'My source palette';
+      var storedTitle = rootState.paletteTitle || __alloT('stem.sourcebook.default_palette_title', 'My source palette');
       var storedAutoCurate = rootState.autoCurate !== false;
       var storedVisualReview = rootState.visualReview !== false;
       var storedPaletteTarget = storedSessionContext ? storedSessionContext.paletteTarget : normalizePaletteTarget(rootState.paletteTarget);
@@ -7172,7 +7294,7 @@
       var setLiveStatus = _liveStatusState[1];
       var _liveMessageState = React.useState(storedLiveSession
         ? 'Restored ' + storedLiveSession.results.length + ' rights-verified results from your recent Sourcebook session.'
-        : (storedSmkLiveSession ? 'Verifying saved source records before restoring this board...' : ''));
+        : (storedSmkLiveSession ? __alloT('stem.sourcebook.msg_verifying_saved_source_records_before_restoring_this', 'Verifying saved source records before restoring this board...') : ''));
       var liveMessage = _liveMessageState[0];
       var setLiveMessage = _liveMessageState[1];
       var _providerProgressState = React.useState({});
@@ -7248,25 +7370,29 @@
       var _savedSmkVerificationState = React.useState(rawSavedSmkKeys.length ? 'loading' : 'idle');
       var savedSmkVerificationStatus = _savedSmkVerificationState[0];
       var setSavedSmkVerificationStatus = _savedSmkVerificationState[1];
-      var _savedSmkMessageState = React.useState(rawSavedSmkKeys.length ? 'Checking saved source-verified assets before showing them...' : '');
+      var _savedSmkMessageState = React.useState(rawSavedSmkKeys.length ? __alloT('stem.sourcebook.msg_checking_saved_source_verified_assets', 'Checking saved source-verified assets before showing them...') : '');
       var savedSmkMessage = _savedSmkMessageState[0];
       var setSavedSmkMessage = _savedSmkMessageState[1];
       var _savedVerificationRetryState = React.useState(0);
       var savedVerificationRetry = _savedVerificationRetryState[0];
       var setSavedVerificationRetry = _savedVerificationRetryState[1];
-      var savedAssets = {};
-      Object.keys(rawSavedAssets).forEach(function (id) {
-        var raw = rawSavedAssets[id];
-        var safePortable = normalizePersistedNonSmkAsset(raw);
-        if (safePortable) savedAssets[id] = safePortable;
-      });
-      Object.keys(verifiedSavedSmkAssets).forEach(function (id) {
-        var raw = rawSavedAssets[id];
-        var verified = verifiedSavedSmkAssets[id];
-        if (sourceVerifiedAssetIdentityMatches(raw, verified)) {
-          savedAssets[id] = verified;
-        }
-      });
+      var savedAssetsState = React.useMemo(function () {
+        var visible = {};
+        Object.keys(rawSavedAssets).forEach(function (id) {
+          var raw = rawSavedAssets[id];
+          var safePortable = normalizePersistedNonSmkAsset(raw);
+          if (safePortable) visible[id] = safePortable;
+        });
+        Object.keys(verifiedSavedSmkAssets).forEach(function (id) {
+          var raw = rawSavedAssets[id];
+          var verified = verifiedSavedSmkAssets[id];
+          if (sourceVerifiedAssetIdentityMatches(raw, verified)) {
+            visible[id] = verified;
+          }
+        });
+        return { assets: visible, list: Object.keys(visible).map(function (id) { return portableAsset(visible[id]); }).filter(Boolean) };
+      }, [rawSavedAssets, verifiedSavedSmkAssets]);
+      var savedAssets = savedAssetsState.assets;
       var liveRequestRef = React.useRef(0);
       var liveAbortRef = React.useRef(null);
       var trustedLiveSessionSignatureRef = React.useRef('');
@@ -7396,10 +7522,25 @@
           setDiscoveryNote(restored.discoveryNote);
           setLiveResults(restored.results);
           setLiveStatus('ready');
-          setLiveMessage(__alloTn('stem.sourcebook.msg_restored_results', restored.results.length, 'Restored {count} result after checking every rights-sensitive record against its current source record.', 'Restored {count} results after checking every rights-sensitive record against its current source record.'));
+          var dropped = Array.isArray(restored.dropped) ? restored.dropped : [];
+          setLiveMessage(dropped.length
+            ? __alloTn('stem.sourcebook.msg_restored_results_dropped', dropped.length, 'Restored {restored} results. {count} saved record could not be re-verified at its source and was left out: {titles}.', 'Restored {restored} results. {count} saved records could not be re-verified at their source and were left out: {titles}.', {
+              restored: restored.results.length,
+              titles: dropped.slice(0, 3).map(function (entry) { return entry.title || entry.id; }).join(', ') + (dropped.length > 3 ? '…' : '')
+            })
+            : __alloTn('stem.sourcebook.msg_restored_results', restored.results.length, 'Restored {count} result after checking every rights-sensitive record against its current source record.', 'Restored {count} results after checking every rights-sensitive record against its current source record.'));
           setProviderProgress({});
           finishLiveRequest(liveRequest.id);
-          announce(__alloT('stem.sourcebook.msg_saved_sourcebook_results_verified_and_restored', 'Saved Sourcebook results verified and restored'));
+          // Persist the pruned board so a record that no longer verifies is not
+          // requested again on every mount for the rest of the session's week.
+          if (dropped.length) persistLiveBoard(restored.results, {
+            query: restored.query, kind: restored.kind, provider: restored.provider, rightsScope: restored.rightsScope,
+            page: restored.page, canLoadMore: restored.canLoadMore, paletteTarget: restored.paletteTarget,
+            discoveryPlan: restored.discoveryPlan, discoveryNote: restored.discoveryNote
+          });
+          announce(dropped.length
+            ? __alloTn('stem.sourcebook.msg_saved_results_restored_partially', dropped.length, 'Saved Sourcebook results restored; {count} record was left out', 'Saved Sourcebook results restored; {count} records were left out')
+            : __alloT('stem.sourcebook.msg_saved_sourcebook_results_verified_and_restored', 'Saved Sourcebook results verified and restored'));
         }).catch(function (error) {
           if (liveRequestRef.current !== liveRequest.id) return;
           finishLiveRequest(liveRequest.id);
@@ -7444,7 +7585,7 @@
         }
         if (trustedSavedSmkSignatureRef.current === savedSmkSignature && !retryIds) {
           setSavedSourceErrors({}); setSavedSmkVerificationStatus('ready');
-          setSavedSmkMessage('Saved source-verified assets are trusted for this live session.');
+          setSavedSmkMessage(__alloT('stem.sourcebook.msg_saved_assets_trusted_this_session', 'Saved source-verified assets are trusted for this live session.'));
           return undefined;
         }
         var subset = rawSavedAssets;
@@ -7457,7 +7598,7 @@
         savedSmkAbortRef.current = { id: requestId, controller: controller };
         setVerifiedSavedSmkAssets(baseAssets); setSavedSourceErrors(baseErrors);
         setSavedSmkVerificationStatus('loading');
-        setSavedSmkMessage('Checking saved source-verified assets before showing them...');
+        setSavedSmkMessage(__alloT('stem.sourcebook.msg_checking_saved_source_verified_assets', 'Checking saved source-verified assets before showing them...'));
         recoverSavedSourceAssets(subset, { signal: controller ? controller.signal : null, individual: !!(retained && retryIds) }).then(function (verified) {
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
@@ -7496,7 +7637,7 @@
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
           setSavedSmkVerificationStatus(Object.keys(baseAssets).length ? 'partial' : 'error');
-          setSavedSmkMessage('Saved source verification could not finish. ' + String(error && error.message || 'Retry when the connection is available.'));
+          setSavedSmkMessage(__alloTf('stem.sourcebook.msg_saved_verification_could_not_finish', 'Saved source verification could not finish. {reason}', { reason: String(error && error.message || __alloT('stem.sourcebook.msg_retry_when_connection_available', 'Retry when the connection is available.')) }));
         });
         return function () {
           if (savedSmkAbortRef.current && savedSmkAbortRef.current.id === requestId) {
@@ -7609,7 +7750,7 @@
           if (referenceBoardOperationRef.current !== operation) return;
           if (latestReferenceBoardSignatureRef.current !== signature) { cancelReferenceBoard('changed'); return; }
           setReferenceBoardDownloads({ signature: signature, pages: pages, total: boardItems.length });
-          if (pages.length === 1 && !downloadDataUrlFile(pages[0].dataUrl, pages[0].filename)) throw new Error('The board could not be saved. Use the download link to retry.');
+          if (pages.length === 1 && !downloadDataUrlFile(pages[0].dataUrl, pages[0].filename)) throw new Error(__alloT('stem.sourcebook.msg_board_could_not_be_saved', 'The board could not be saved. Use the download link to retry.'));
           var message = __alloTf('stem.sourcebook.reference_boards_ready', '{count} images are ready across {pages} reference board pages. Each page has its own download link.', { count: boardItems.length, pages: pages.length });
           toast(message, 'success'); announce(message);
         }).catch(function (error) {
@@ -7651,6 +7792,85 @@
         patch(next);
       }
 
+      // Data labels below are English ids in module scope (logic and persisted state
+      // compare them); they are translated only here, at the point of display.
+      var KIND_LABEL_KEYS = {
+        'All': ['stem.sourcebook.kind_all', 'All'],
+        'Maps': ['stem.sourcebook.kind_maps', 'Maps'],
+        'Textures': ['stem.sourcebook.kind_textures', 'Textures'],
+        'Patterns': ['stem.sourcebook.kind_patterns', 'Patterns'],
+        'Blueprints': ['stem.sourcebook.kind_blueprints', 'Blueprints'],
+        'Science': ['stem.sourcebook.kind_science', 'Science'],
+        'Botanical': ['stem.sourcebook.kind_botanical', 'Botanical'],
+        'Archival': ['stem.sourcebook.kind_archival', 'Archival'],
+        'Figures': ['stem.sourcebook.kind_figures', 'Figures'],
+        'Landscapes': ['stem.sourcebook.kind_landscapes', 'Landscapes'],
+        'Visual assets': ['stem.sourcebook.kind_visual_assets', 'Visual assets']
+      };
+      var RIGHTS_SHORT_KEYS = {
+        pd: ['stem.sourcebook.rights_short_pd', 'Public domain'],
+        cc0: ['stem.sourcebook.rights_short_cc0', 'CC0'],
+        ccby: ['stem.sourcebook.rights_short_ccby', 'CC BY']
+      };
+      var USAGE_INTENT_KEYS = {
+        auto: { label: ['stem.sourcebook.intent_auto_label', 'Sourcebook suggestion'], shortLabel: ['stem.sourcebook.intent_auto_short', 'Suggested'], description: ['stem.sourcebook.intent_auto_description', 'Choose a role from the asset type and current preparation.'] },
+        flexible: { label: ['stem.sourcebook.intent_flexible_label', 'Flexible asset'], shortLabel: ['stem.sourcebook.intent_flexible_short', 'Flexible'], description: ['stem.sourcebook.intent_flexible_description', 'Keep this asset open for several possible placements.'] },
+        background: { label: ['stem.sourcebook.intent_background_label', 'Page background'], shortLabel: ['stem.sourcebook.intent_background_short', 'Background'], description: ['stem.sourcebook.intent_background_description', 'Place behind other page content as a supporting visual field.'] },
+        focal: { label: ['stem.sourcebook.intent_focal_label', 'Main visual'], shortLabel: ['stem.sourcebook.intent_focal_short', 'Main visual'], description: ['stem.sourcebook.intent_focal_description', 'Use as the primary image or artwork on a page.'] },
+        reference: { label: ['stem.sourcebook.intent_reference_label', 'Diagram or reference'], shortLabel: ['stem.sourcebook.intent_reference_short', 'Reference'], description: ['stem.sourcebook.intent_reference_description', 'Support explanation, close reading, labeling, or discussion.'] },
+        texture: { label: ['stem.sourcebook.intent_texture_label', 'Texture or pattern'], shortLabel: ['stem.sourcebook.intent_texture_short', 'Texture'], description: ['stem.sourcebook.intent_texture_description', 'Repeat or layer as a visual texture or pattern.'] },
+        accent: { label: ['stem.sourcebook.intent_accent_label', 'Accent or header'], shortLabel: ['stem.sourcebook.intent_accent_short', 'Accent'], description: ['stem.sourcebook.intent_accent_description', 'Use as a smaller detail, divider, border, or header strip.'] }
+      };
+      var USAGE_PLAN_KEYS = {
+        balanced: { label: ['stem.sourcebook.plan_balanced_label', 'Balanced set'], buttonLabel: ['stem.sourcebook.plan_balanced_button', 'Balance roles'], sourceLabel: ['stem.sourcebook.plan_balanced_source', 'Sourcebook balanced-set plan'], description: ['stem.sourcebook.plan_balanced_description', 'Build a varied general-purpose set with a main visual, reference, background, texture, and accent as space allows.'] },
+        education: { label: ['stem.sourcebook.plan_education_label', 'Educational set'], buttonLabel: ['stem.sourcebook.plan_education_button', 'Plan for teaching'], sourceLabel: ['stem.sourcebook.plan_education_source', 'Sourcebook educational-set plan'], description: ['stem.sourcebook.plan_education_description', 'Prioritize explanatory references, a clear main visual, and supporting background and header assets.'] },
+        artwork: { label: ['stem.sourcebook.plan_artwork_label', 'Artwork set'], buttonLabel: ['stem.sourcebook.plan_artwork_button', 'Plan for artwork'], sourceLabel: ['stem.sourcebook.plan_artwork_source', 'Sourcebook artwork-set plan'], description: ['stem.sourcebook.plan_artwork_description', 'Prioritize a focal image, tactile textures, a background field, and accents for creative composition.'] },
+        study: { label: ['stem.sourcebook.plan_study_label', 'Study set'], buttonLabel: ['stem.sourcebook.plan_study_button', 'Plan a study set'], sourceLabel: ['stem.sourcebook.plan_study_source', 'Sourcebook study-set plan'], description: ['stem.sourcebook.plan_study_description', 'For drawing and painting practice: a main image to copy, a second for values and colour, a structural reference, and a setting or background for context.'] }
+      };
+      var MATCH_LABEL_KEYS = {
+        'Strong match': ['stem.sourcebook.match_strong', 'Strong match'],
+        'Related match': ['stem.sourcebook.match_related', 'Related match'],
+        'Broad result': ['stem.sourcebook.match_broad', 'Broad result']
+      };
+      var READINESS_LABEL_KEYS = {
+        'Print ready': ['stem.sourcebook.readiness_print_ready', 'Print ready'],
+        'Usable resolution': ['stem.sourcebook.readiness_usable_resolution', 'Usable resolution'],
+        'Some upscaling': ['stem.sourcebook.readiness_some_upscaling', 'Some upscaling'],
+        'Low resolution': ['stem.sourcebook.readiness_low_resolution', 'Low resolution'],
+        'Check full-size file': ['stem.sourcebook.readiness_check_full_size_file', 'Check full-size file'],
+        'Preview supports output': ['stem.sourcebook.readiness_preview_supports_output', 'Preview supports output'],
+        'Resolution pending': ['stem.sourcebook.readiness_resolution_pending', 'Resolution pending']
+      };
+      var INTENT_SOURCE_LABEL_KEYS = {
+        'Sourcebook suggestion': ['stem.sourcebook.intent_source_sourcebook_suggestion', 'Sourcebook suggestion'],
+        'user planned': ['stem.sourcebook.intent_source_user_planned', 'user planned']
+      };
+      function labelFromKeys(table, value) { var entry = table[value]; return entry ? __alloT(entry[0], entry[1]) : String(value == null ? '' : value); }
+      function kindLabel(value) { return labelFromKeys(KIND_LABEL_KEYS, value); }
+      function rightsShortLabel(item) { var entry = item && RIGHTS_SHORT_KEYS[item.rightsType]; return entry ? __alloT(entry[0], entry[1]) : String(item && item.rightsShort || ''); }
+      function matchLabel(value) { return labelFromKeys(MATCH_LABEL_KEYS, value); }
+      function readinessLabel(readiness) { return labelFromKeys(READINESS_LABEL_KEYS, readiness && readiness.label); }
+      function intentField(intentId, field, fallback) { var entry = USAGE_INTENT_KEYS[intentId] && USAGE_INTENT_KEYS[intentId][field]; return entry ? __alloT(entry[0], entry[1]) : String(fallback == null ? '' : fallback); }
+      function planField(planId, field, fallback) { var entry = USAGE_PLAN_KEYS[planId] && USAGE_PLAN_KEYS[planId][field]; return entry ? __alloT(entry[0], entry[1]) : String(fallback == null ? '' : fallback); }
+      function intentSourceLabel(intent) {
+        if (intent && intent.planId) return planField(intent.planId, 'sourceLabel', intent.sourceLabel);
+        return labelFromKeys(INTENT_SOURCE_LABEL_KEYS, intent && intent.sourceLabel);
+      }
+
+      // recommendationSource is persisted as a stable English id; the pill
+      // translates it at display time so saved sessions stay language-neutral.
+      var RECOMMENDATION_SOURCE_KEYS = {
+        'Gemini visual pick': ['stem.sourcebook.recommendation_source_gemini_visual_pick', 'Gemini visual pick'],
+        'Gemini metadata pick': ['stem.sourcebook.recommendation_source_gemini_metadata_pick', 'Gemini metadata pick'],
+        'Metadata-ranked pick': ['stem.sourcebook.recommendation_source_metadata_ranked_pick', 'Metadata-ranked pick'],
+        'Kept by you': ['stem.sourcebook.recommendation_source_kept_by_you', 'Kept by you']
+      };
+      function recommendationSourceLabel(value) {
+        var entry = RECOMMENDATION_SOURCE_KEYS[value];
+        if (entry) return __alloT(entry[0], entry[1]);
+        return value || __alloT('stem.sourcebook.recommended', 'Recommended');
+      }
+
       function trustCurrentSavedSmkAssets(nextAssets) {
         var pending = savedSmkAbortRef.current;
         if (pending && pending.controller && typeof pending.controller.abort === 'function') pending.controller.abort();
@@ -7670,7 +7890,7 @@
         if (needsCatalogCheck) setSavedVerificationRetry(function (value) { return value + 1; });
         setVerifiedSavedSmkAssets(trusted);
         setSavedSmkVerificationStatus(needsCatalogCheck ? 'loading' : (Object.keys(trusted).length ? 'ready' : 'idle'));
-        setSavedSmkMessage(Object.keys(trusted).length ? 'Saved source-verified assets are trusted for this live session.' : '');
+        setSavedSmkMessage(Object.keys(trusted).length ? __alloT('stem.sourcebook.msg_saved_assets_trusted_this_session', 'Saved source-verified assets are trusted for this live session.') : '');
       }
 
       function persistLiveBoard(items, overrides) {
@@ -7751,14 +7971,13 @@
         if (typeof ctx.addToast === 'function') ctx.addToast(message, type || 'info');
       }
 
-      function copyText(value) {
-        var text = String(value || '');
-        if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
-          return window.navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; });
-        }
+      // The Gemini Canvas host refuses navigator.clipboard by permissions policy,
+      // so a rejected writeText must fall through to execCommand instead of
+      // reporting failure; the shell publishes window.alloCopyText for this.
+      function legacyCopyText(text) {
         try {
           var field = document.createElement('textarea');
-          field.setAttribute('aria-label', 'Temporary field for copying sourcebook text');
+          field.setAttribute('aria-label', __alloT('stem.sourcebook.aria_temporary_copy_field', 'Temporary field for copying Sourcebook text'));
           field.value = text;
           field.setAttribute('readonly', 'readonly');
           field.style.position = 'fixed';
@@ -7767,10 +7986,23 @@
           field.select();
           var copied = document.execCommand('copy');
           document.body.removeChild(field);
-          return Promise.resolve(!!copied);
+          return !!copied;
         } catch (_) {
-          return Promise.resolve(false);
+          return false;
         }
+      }
+
+      function copyText(value) {
+        var text = String(value || '');
+        if (typeof window.alloCopyText === 'function') {
+          try {
+            return Promise.resolve(window.alloCopyText(text)).then(function (ok) { return ok !== false; }, function () { return legacyCopyText(text); });
+          } catch (_) { /* fall through to the local strategies */ }
+        }
+        if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
+          return window.navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopyText(text); });
+        }
+        return Promise.resolve(legacyCopyText(text));
       }
 
       function createPaletteUndoSnapshot() {
@@ -8102,7 +8334,7 @@
           announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_automatic_placement', 'Role search results are ready; automatic placement paused because undo was unavailable'));
           return 0;
         }
-        var roleLabel = (USAGE_INTENTS[roleId] || USAGE_INTENTS.flexible).shortLabel.toLowerCase();
+        var roleLabel = intentField(USAGE_INTENTS[roleId] ? roleId : 'flexible', 'shortLabel', (USAGE_INTENTS[roleId] || USAGE_INTENTS.flexible).shortLabel).toLowerCase();
         if (requestedMode === 'replace') {
           var replacementResult = applyPaletteRoleReplacements(nextCollection, requestedReplaceIds.slice(0, additions.length), additions.map(function (item) { return item.id; }));
           if (!replacementResult.changed) {
@@ -8183,7 +8415,7 @@
 
       function requestDiscoveryPlan(value, requestedKind) {
         var fallback = buildDiscoveryPlan(value, requestedKind, paletteTarget);
-        var prompt = 'You are Sourcebook, a visual-source research assistant. Turn the user request into 3 short, distinct collection-search queries for Wikimedia Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum of Art, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse. Focus on concrete visual vocabulary, medium, era, subject, and printable usefulness. Do not guess licensing; the app enforces rights separately. The user wants exactly ' + fallback.paletteSize + ' recommendations. Return ONLY JSON: {"queries":["...","...","..."],"paletteSize":' + fallback.paletteSize + ',"reason":"one short sentence"}. User request: ' + JSON.stringify(fallback.query) + '. Material type: ' + JSON.stringify(fallback.kind) + '.';
+        var prompt = 'You are Sourcebook, a visual-source research assistant. Turn the user request into 3 short, distinct collection-search queries for Wikimedia Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum of Art, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse. Focus on concrete visual vocabulary, medium, era, subject, and printable usefulness. Write every query in English whatever language the request uses, because these collections are catalogued in English; keep the reason in the language of the request. Do not guess licensing; the app enforces rights separately. The user wants exactly ' + fallback.paletteSize + ' recommendations. Return ONLY JSON: {"queries":["...","...","..."],"paletteSize":' + fallback.paletteSize + ',"reason":"one short sentence"}. User request: ' + JSON.stringify(fallback.query) + '. Material type: ' + JSON.stringify(fallback.kind) + '.';
         var request;
         try {
           if (typeof ctx.generateText === 'function') request = ctx.generateText(prompt, { jsonMode: true });
@@ -8199,7 +8431,7 @@
         var eligibleItems = automaticCurationCandidates(items, plan.query, plan.kind);
         var fallbackReason = eligibleItems.length
           ? plan.reason
-          : 'No result has enough matching catalog metadata for automatic selection yet; broad discoveries remain available on the board.';
+          : __alloT('stem.sourcebook.note_no_result_has_enough_metadata', 'No result has enough matching catalog metadata for automatic selection yet; broad discoveries remain available on the board.');
         var fallback = { items: selectDiscoveryPalette(eligibleItems, plan.paletteSize, plan.query, plan.kind), reason: fallbackReason, aiUsed: false, visionUsed: false };
         if (!eligibleItems.length) return Promise.resolve(fallback);
         var candidates = eligibleItems.slice(0, 32).map(function (item) {
@@ -8340,7 +8572,7 @@
             var canSearchMore = result.items.length > 0 || (Array.isArray(result.plan.queries) && result.plan.queries.length > 1);
             setCanLoadMore(canSearchMore);
             var matchQuality = summarizeMatchQuality(result.items, result.plan.query, result.plan.kind);
-            var nextDiscoveryNote = (curation.visionUsed ? 'Gemini visual review: ' : (curation.aiUsed ? 'Gemini metadata review: ' : 'Deterministic metadata ranking: ')) + (curation.reason || result.plan.reason);
+            var nextDiscoveryNote = (curation.visionUsed ? __alloT('stem.sourcebook.note_gemini_visual_review', 'Gemini visual review: ') : (curation.aiUsed ? __alloT('stem.sourcebook.note_gemini_metadata_review', 'Gemini metadata review: ') : __alloT('stem.sourcebook.note_deterministic_metadata_ranking', 'Deterministic metadata ranking: '))) + (curation.reason || result.plan.reason);
             var selectedNote = curation.items.length
               ? __alloTn('stem.sourcebook.msg_matches_selected', curation.items.length, '{count} metadata-supported match was selected {tail}', '{count} metadata-supported matches were selected {tail}', { tail: curation.visionUsed ? __alloT('stem.sourcebook.msg_after_visual_review', 'after visual review.') : __alloT('stem.sourcebook.msg_for_a_starter_palette', 'for a starter palette.') })
               : __alloT('stem.sourcebook.msg_no_result_auto_selected', 'No result was auto-selected because none had matching catalog metadata.');
@@ -8574,11 +8806,11 @@
           }
         });
         if (action.mode === 'replace') {
-          toast(__alloTn('stem.sourcebook.msg_finding_replacement_assets', action.count, 'Finding {count} rights-verified {role} asset to replace overrepresented material without growing your {goal}-asset palette. Undo will be available.', 'Finding {count} rights-verified {role} assets to replace overrepresented material without growing your {goal}-asset palette. Undo will be available.', { role: group.shortLabel.toLowerCase(), goal: action.goal }), 'info');
-          announce(__alloTf('stem.sourcebook.msg_searching_role_replacement', 'Searching public collections for a reversible {role} role replacement', { role: group.shortLabel.toLowerCase() }));
+          toast(__alloTn('stem.sourcebook.msg_finding_replacement_assets', action.count, 'Finding {count} rights-verified {role} asset to replace overrepresented material without growing your {goal}-asset palette. Undo will be available.', 'Finding {count} rights-verified {role} assets to replace overrepresented material without growing your {goal}-asset palette. Undo will be available.', { role: intentField(group.id, 'shortLabel', group.shortLabel).toLowerCase(), goal: action.goal }), 'info');
+          announce(__alloTf('stem.sourcebook.msg_searching_role_replacement', 'Searching public collections for a reversible {role} role replacement', { role: intentField(group.id, 'shortLabel', group.shortLabel).toLowerCase() }));
         } else {
-          toast(__alloTn('stem.sourcebook.msg_finding_role_assets', action.count, 'Finding and adding up to {count} rights-verified {role} asset within your {goal}-asset goal.', 'Finding and adding up to {count} rights-verified {role} assets within your {goal}-asset goal.', { role: group.shortLabel.toLowerCase(), goal: action.goal }), 'info');
-          announce(__alloTf('stem.sourcebook.msg_searching_role_fill', 'Searching public collections to fill the {role} visual-set role within the palette goal', { role: group.shortLabel.toLowerCase() }));
+          toast(__alloTn('stem.sourcebook.msg_finding_role_assets', action.count, 'Finding and adding up to {count} rights-verified {role} asset within your {goal}-asset goal.', 'Finding and adding up to {count} rights-verified {role} assets within your {goal}-asset goal.', { role: intentField(group.id, 'shortLabel', group.shortLabel).toLowerCase(), goal: action.goal }), 'info');
+          announce(__alloTf('stem.sourcebook.msg_searching_role_fill', 'Searching public collections to fill the {role} visual-set role within the palette goal', { role: intentField(group.id, 'shortLabel', group.shortLabel).toLowerCase() }));
         }
       }
 
@@ -8671,7 +8903,7 @@
         var plan = Object.assign({}, discoveryPlan || buildDiscoveryPlan(query, kind, paletteTarget), { paletteSize: paletteTarget });
         if (directive) {
           plan.query = (String(query || plan.query || '') + '. Refine the selection: ' + directive).slice(0, 420);
-          plan.reason = 'User refinement: ' + directive;
+          plan.reason = __alloTf('stem.sourcebook.note_user_refinement', 'User refinement: {directive}', { directive: directive });
         }
         var candidates = rankDiscoveryResults(liveResults, plan.query, plan.kind, 48);
         var pinnedItems = liveResults.filter(function (item) { return pinnedRecommendationIds.indexOf(item.id) !== -1 && allowedByRightsScope(item, rightsScope); });
@@ -8698,7 +8930,7 @@
             setActiveId(decorated[0].id);
             patch({ activeId: decorated[0].id });
           }
-          var nextDiscoveryNote = (curation.visionUsed ? 'Gemini visual review: ' : (curation.aiUsed ? 'Gemini metadata review: ' : 'Deterministic metadata ranking: ')) + (curation.reason || plan.reason) + (directive ? ' Requested refinement: “' + directive + '”.' : '');
+          var nextDiscoveryNote = (curation.visionUsed ? __alloT('stem.sourcebook.note_gemini_visual_review', 'Gemini visual review: ') : (curation.aiUsed ? __alloT('stem.sourcebook.note_gemini_metadata_review', 'Gemini metadata review: ') : __alloT('stem.sourcebook.note_deterministic_metadata_ranking', 'Deterministic metadata ranking: '))) + (curation.reason || plan.reason) + (directive ? __alloTf('stem.sourcebook.note_requested_refinement', ' Requested refinement: “{directive}”.', { directive: directive }) : '');
           setDiscoveryNote(nextDiscoveryNote);
           setRefinementDraft('');
           setLiveStatus('ready');
@@ -8961,7 +9193,7 @@
           next[id] = Object.assign({}, normalizedPreparation(next[id]), { usageIntent: normalizedIntent, usagePlan: '' });
         });
         patch({ preparation: next, paletteUndo: createPaletteUndoSnapshot() });
-        var intentLabel = USAGE_INTENTS[normalizedIntent].label;
+        var intentLabel = intentField(normalizedIntent, 'label', USAGE_INTENTS[normalizedIntent].label);
         var scope = targetIds.length === collection.length ? __alloT('stem.sourcebook.msg_every_palette_asset', 'Every palette asset') : __alloTn('stem.sourcebook.msg_selected_assets_scope', targetIds.length, '{count} selected asset', '{count} selected assets');
         toast(__alloTf('stem.sourcebook.msg_scope_will_use_intent', '{scope} will use {intent}.', { scope: scope, intent: intentLabel.toLowerCase() }), 'success');
         announce(__alloTf('stem.sourcebook.msg_scope_planned_as', '{scope} planned as {intent}', { scope: scope, intent: intentLabel }));
@@ -9020,15 +9252,15 @@
           if (latestSingleSourceSignatureRef.current !== operation.signature) { cancelSingleSourceAction('changed'); return; }
           if (action === 'handoff') {
             var artwork = buildPageDesignerArtwork(item, prep, receipt);
-            if (!artwork) throw new Error('The prepared asset did not pass the Sourcebook handoff checks.');
+            if (!artwork) throw new Error(__alloT('stem.sourcebook.msg_prepared_asset_failed_handoff_checks', 'The prepared asset did not pass the Sourcebook handoff checks.'));
             return ctx.onUseArtwork(artwork, 'page-designer');
           }
-          if (!downloadSourcePackage(item, prep, receipt)) throw new Error('This browser could not save the source package.');
+          if (!downloadSourcePackage(item, prep, receipt)) throw new Error(__alloT('stem.sourcebook.msg_browser_could_not_save_source_package', 'This browser could not save the source package.'));
           bumpQuestCounter('packagesSaved');
           toast(__alloT('stem.sourcebook.msg_source_package_downloaded_with_the_prepared_image', 'Source package downloaded with the prepared image, credit, license, and source record.'), 'success');
         }).catch(function (error) {
           if (singleSourceOperationRef.current !== operation || (error && error.name === 'AbortError')) return;
-          toast(String(error && error.message || 'The source image could not be prepared.'), 'error');
+          toast(String(error && error.message || __alloT('stem.sourcebook.msg_source_image_could_not_be_prepared', 'The source image could not be prepared.')), 'error');
         }).then(function () {
           if (singleSourceOperationRef.current !== operation) return;
           singleSourceOperationRef.current = null; setHandoffId(''); setPackageId('');
@@ -9090,13 +9322,13 @@
             var names = failed.slice(0, 3).map(function (item) { return String(item.title || item.id).slice(0, 180); }).join('; ');
             throw new Error(__alloTf('stem.sourcebook.package_images_failed', 'Could not prepare {count} of {total} images: {names}. Retry these images or remove them from your selection; no incomplete package was downloaded.', { count: failed.length, total: items.length, names: names }));
           }
-          if (!downloadPalettePackage(items, preparation, storedTitle, preparedImages)) throw new Error('This browser could not save the palette package.');
+          if (!downloadPalettePackage(items, preparation, storedTitle, preparedImages)) throw new Error(__alloT('stem.sourcebook.msg_browser_could_not_save_palette_package', 'This browser could not save the palette package.'));
           bumpQuestCounter('packagesSaved');
           toast(__alloT('stem.sourcebook.msg_palette_package_downloaded_with_prepared_images_credits', 'Palette package downloaded with prepared images, credits, licenses, and source records.'), 'success');
           announce(__alloT('stem.sourcebook.msg_sourcebook_palette_package_downloaded', 'Sourcebook palette package downloaded'));
         }).catch(function (error) {
           if (palettePackageOperationRef.current !== operation || (error && error.name === 'AbortError')) return;
-          var message = error && error.message ? error.message : 'The palette package could not be prepared.';
+          var message = error && error.message ? error.message : __alloT('stem.sourcebook.msg_palette_package_could_not_be_prepared', 'The palette package could not be prepared.');
           toast(message + ' Your saved palette remains available.', 'error');
           announce(__alloT('stem.sourcebook.msg_could_not_download_the_sourcebook_palette_package', 'Could not download the Sourcebook palette package'));
         }).then(function () {
@@ -9201,7 +9433,7 @@
       }
 
       var results = searchMaterials(query, kind, provider, rightsScope);
-      var savedAssetList = Object.keys(savedAssets).map(function (id) { return portableAsset(savedAssets[id]); }).filter(Boolean);
+      var savedAssetList = savedAssetsState.list;
       var allAssets = mergeAssets(MATERIALS, liveResults.concat(savedAssetList));
       var comparisonEligibleById = Object.create(null);
       allAssets.forEach(function (item) {
@@ -9514,7 +9746,7 @@
         activateFirstLoadedResult(next);
         announce(value === 'All'
           ? __alloT('stem.sourcebook.msg_showing_every_kind', 'Showing every visual type in the selected loaded collections')
-          : __alloTn('stem.sourcebook.msg_showing_results_of_kind', next.length, 'Showing {count} loaded {kind} result', 'Showing {count} loaded {kind} results', { kind: value.toLowerCase() }));
+          : __alloTn('stem.sourcebook.msg_showing_results_of_kind', next.length, 'Showing {count} loaded {kind} result', 'Showing {count} loaded {kind} results', { kind: kindLabel(value).toLowerCase() }));
       }
 
       function chooseLoadedRights(value) {
@@ -9621,7 +9853,7 @@
         var fallback = 'linear-gradient(145deg,' + item.accent[0] + ',' + item.accent[1] + ')';
         return h('div', {
           className: 'relative overflow-hidden bg-[#e8ece7] ' + (onFocusPoint ? 'cursor-crosshair' : ''),
-          title: onFocusPoint ? 'Click to move crop focal point' : undefined,
+          title: onFocusPoint ? __alloT('stem.sourcebook.title_click_to_move_crop_focal_point', 'Click to move crop focal point') : undefined,
           onClick: onFocusPoint ? function (event) {
             var rect = event.currentTarget.getBoundingClientRect();
             if (!rect.width || !rect.height) return;
@@ -9676,10 +9908,10 @@
           style: { left: Number((prep && prep.x) || 50) + '%', top: Number((prep && prep.y) || 50) + '%' }
         }), h('span', {
           'aria-hidden': 'true', className: 'pointer-events-none absolute left-3 bottom-2 max-w-[70%] truncate text-[0.625rem] font-black uppercase tracking-[.14em] px-2 py-1 rounded-full bg-white/90 text-[#29483f] shadow-sm'
-        }, (cardPresentation ? cardPresentation.mark + ' · ' : '') + item.kind), cardPresentation && h('span', {
+        }, (cardPresentation ? cardPresentation.mark + ' · ' : '') + kindLabel(item.kind)), cardPresentation && h('span', {
           'aria-hidden': 'true', 'data-sourcebook-card-rights': item.rightsType,
           className: 'pointer-events-none absolute right-3 top-2 max-w-[58%] truncate rounded-full bg-emerald-100/95 px-2 py-1 text-[0.625rem] font-black text-emerald-950 shadow-sm'
-        }, '✓ ' + item.rightsShort));
+        }, __alloTf('stem.sourcebook.card_rights_verified_check', '✓ {rights}', { rights: rightsShortLabel(item) })));
       }
 
       function inspectSourcebookItem(item) {
@@ -9744,32 +9976,32 @@
             h('span', {
               className: 'rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-950',
               'data-sourcebook-card-reuse': item.rightsType
-            }, 'Reuse: ' + item.rightsShort),
+            }, __alloTf('stem.sourcebook.card_reuse', 'Reuse: {rights}', { rights: rightsShortLabel(item) })),
             h('span', {
               className: 'rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-950',
               'data-sourcebook-card-print': cardReadiness.status,
               title: cardReadiness.note
-            }, (cardReadiness.dimensionSource === 'catalog' ? 'Print estimate: ' : 'Print: ') + cardReadiness.label)
+            }, cardReadiness.dimensionSource === 'catalog' ? __alloTf('stem.sourcebook.card_print_estimate', 'Print estimate: {label}', { label: readinessLabel(cardReadiness) }) : __alloTf('stem.sourcebook.card_print', 'Print: {label}', { label: readinessLabel(cardReadiness) }))
           ),
           item.provider === MUSEUMS_VICTORIA_PROVIDER && h('p', {
             'data-sourcebook-cultural-context': 'card',
             className: 'mt-2 inline-flex rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[0.625rem] font-black text-amber-950',
             title: __alloT('stem.sourcebook.review_the_source_record_for_cultural_', 'Review the source record for cultural context and any community guidance before reuse.')
           }, __alloT('stem.sourcebook.review_context_source_record', 'Review context · source record')),
-          item.recommended && h('p', { className: 'mt-2 inline-flex rounded-full bg-[#183b32] px-2.5 py-1 text-[0.6875rem] font-black uppercase tracking-[.1em] text-white' }, item.recommendationSource || 'Recommended'),
+          item.recommended && h('p', { className: 'mt-2 inline-flex rounded-full bg-[#183b32] px-2.5 py-1 text-[0.6875rem] font-black uppercase tracking-[.1em] text-white' }, recommendationSourceLabel(item.recommendationSource)),
           showingCollection && h('p', {
             className: 'mt-2 ml-1 inline-flex rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (cardAccessibility.status === 'suggested' ? 'bg-amber-100 text-amber-950' : (cardAccessibility.status === 'decorative' ? 'bg-sky-100 text-sky-950' : 'bg-emerald-100 text-emerald-950')),
             'data-sourcebook-card-accessibility': cardAccessibility.status
-          }, cardAccessibility.status === 'suggested' ? 'Alt text - review suggestion' : (cardAccessibility.status === 'decorative' ? 'Accessibility - decorative' : (cardAccessibility.source === 'user-edited' ? 'Alt text - user-edited' : 'Alt text - confirmed'))),
+          }, cardAccessibility.status === 'suggested' ? __alloT('stem.sourcebook.card_alt_text_review_suggestion', 'Alt text - review suggestion') : (cardAccessibility.status === 'decorative' ? __alloT('stem.sourcebook.card_accessibility_decorative', 'Accessibility - decorative') : (cardAccessibility.source === 'user-edited' ? __alloT('stem.sourcebook.card_alt_text_user_edited', 'Alt text - user-edited') : __alloT('stem.sourcebook.card_alt_text_confirmed', 'Alt text - confirmed')))),
           showingCollection && h('p', {
             className: 'mt-2 ml-1 inline-flex rounded-full bg-violet-100 px-2.5 py-1 text-[0.625rem] font-black text-violet-950',
             'data-sourcebook-card-usage-intent': cardUsageIntent.id,
-            title: cardUsageIntent.description
-          }, (cardUsageIntent.suggested ? 'Suggested · ' : '') + cardUsageIntent.shortLabel),
+            title: intentField(cardUsageIntent.id, 'description', cardUsageIntent.description)
+          }, (cardUsageIntent.suggested ? __alloT('stem.sourcebook.card_usage_suggested_prefix', 'Suggested · ') : '') + intentField(cardUsageIntent.id, 'shortLabel', cardUsageIntent.shortLabel)),
           match && !item.recommended && h('p', {
             className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (match.label === 'Strong match' ? 'bg-emerald-100 text-emerald-950' : (match.label === 'Related match' ? 'bg-sky-100 text-sky-950' : 'bg-slate-100 text-slate-700')),
-            title: match.matches.length ? 'Matched source metadata: ' + match.matches.join(', ') : 'This broader result is retained for visual exploration'
-          }, match.label + (match.matches.length ? ' · ' + match.matches.slice(0, 2).join(', ') : '')),
+            title: match.matches.length ? __alloTf('stem.sourcebook.title_matched_source_metadata', 'Matched source metadata: {matches}', { matches: match.matches.join(', ') }) : __alloT('stem.sourcebook.title_broader_result_retained', 'This broader result is retained for visual exploration')
+          }, matchLabel(match.label) + (match.matches.length ? ' · ' + match.matches.slice(0, 2).join(', ') : '')),
           boardView === 'research' && h('p', { className: 'mt-3 text-xs leading-relaxed text-[#40564e]' }, item.description)
         ),
         h('div', { className: 'flex flex-wrap gap-2 px-4 pb-4' },
@@ -9777,18 +10009,18 @@
             type: 'button', disabled: palettePackageBusy, onClick: function () { toggleSaved(item); },
             'aria-pressed': saved,
             'aria-label': showingCollection || saved
-              ? 'Remove ' + item.title + ' from the Sourcebook palette'
-              : 'Save ' + item.title + ' to the Sourcebook palette',
+              ? __alloTf('stem.sourcebook.aria_remove_from_sourcebook_palette', 'Remove {title} from the Sourcebook palette', { title: item.title })
+              : __alloTf('stem.sourcebook.aria_save_to_sourcebook_palette', 'Save {title} to the Sourcebook palette', { title: item.title }),
             className: 'flex-1 min-h-[42px] rounded-xl text-xs font-black border ' + (saved ? 'bg-[#183b32] text-white border-[#183b32]' : 'bg-[#eef5f1] text-[#244c40] border-[#b6cec4] hover:bg-[#e2eee9]')
-          }, showingCollection ? 'Remove' : (saved ? '✓ Saved' : '+ Save to palette')),
+          }, showingCollection ? __alloT('stem.sourcebook.card_remove', 'Remove') : (saved ? __alloT('stem.sourcebook.card_saved_check', '✓ Saved') : __alloT('stem.sourcebook.card_save_to_palette', '+ Save to palette'))),
           !showingCollection && h('button', {
             type: 'button', onClick: function () { toggleComparison(item); },
             'aria-pressed': comparing ? 'true' : 'false',
-            'aria-label': comparing ? 'Remove ' + item.title + ' from comparison' : 'Add ' + item.title + ' to comparison',
+            'aria-label': comparing ? __alloTf('stem.sourcebook.aria_remove_from_comparison', 'Remove {title} from comparison', { title: item.title }) : __alloTf('stem.sourcebook.aria_add_to_comparison', 'Add {title} to comparison', { title: item.title }),
             'data-sourcebook-compare-toggle': item.id,
             className: 'flex-1 min-h-[42px] rounded-xl border text-xs font-black ' + (comparing ? 'border-sky-700 bg-sky-700 text-white' : 'border-sky-200 bg-sky-50 text-sky-950 hover:bg-sky-100'),
-            title: comparing ? 'Remove this asset from the comparison shortlist' : 'Add this asset to a local comparison shortlist'
-          }, comparing ? 'Comparing' : '+ Compare'),
+            title: comparing ? __alloT('stem.sourcebook.title_remove_from_comparison_shortlist', 'Remove this asset from the comparison shortlist') : __alloT('stem.sourcebook.title_add_to_comparison_shortlist', 'Add this asset to a local comparison shortlist')
+          }, comparing ? __alloT('stem.sourcebook.card_comparing', 'Comparing') : __alloT('stem.sourcebook.card_compare', '+ Compare')),
           showingCollection && h('button', {
             type: 'button', disabled: palettePackageBusy || paletteIndex <= 0, onClick: function () { movePaletteItem(item.id, -1); },
             className: 'min-h-[42px] px-3 rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] disabled:opacity-35',
@@ -9825,7 +10057,7 @@
           imageRecoveryControls(item),
           h('div', { className: 'p-5 space-y-4' },
             h('div', null,
-              h('p', { className: 'text-[0.625rem] uppercase tracking-[.2em] font-black text-[#5a6b5c]' }, item.provider + ' · ' + item.kind),
+              h('p', { className: 'text-[0.625rem] uppercase tracking-[.2em] font-black text-[#5a6b5c]' }, item.provider + ' · ' + kindLabel(item.kind)),
               h('h2', { className: 'font-serif text-2xl font-black text-[#19372e] mt-1 leading-tight' }, item.title),
               h('p', { className: 'text-xs text-[#596b63] mt-2' }, item.creator + ' · ' + item.year + (item.medium ? ' · ' + item.medium : ''))
             ),
@@ -9838,19 +10070,19 @@
                 type: 'button', onClick: function () { findSimilarAcrossCollections(item); }, disabled: searchActive,
                 className: 'min-h-[42px] w-full rounded-xl border border-[#2f6b59] bg-white px-3 text-xs font-black text-[#204b3e] hover:bg-[#f6fbf8] disabled:cursor-wait disabled:opacity-50',
                 title: __alloT('stem.sourcebook.build_a_focused_query_from_this_source', 'Build a focused query from this source’s title and metadata, then search every live collection')
-              }, searchActive ? 'Search in progress…' : 'Find related across collections')
+              }, searchActive ? __alloT('stem.sourcebook.search_in_progress_ellipsis', 'Search in progress…') : __alloT('stem.sourcebook.find_related_across_collections', 'Find related across collections'))
             ),
             h('section', { className: 'rounded-2xl border border-[#c7d2cc] bg-white p-4', 'aria-labelledby': 'sourcebook-print-readiness-title' },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('h3', { id: 'sourcebook-print-readiness-title', className: 'font-black text-sm text-[#243e35]' }, __alloT('stem.sourcebook.print_readiness', 'Print readiness')),
-                h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + readinessBadgeClasses(readiness) }, readiness.label)
+                h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + readinessBadgeClasses(readiness) }, readinessLabel(readiness))
               ),
               readiness.width
                 ? h('div', { className: 'mt-3 space-y-1 text-[0.6875rem] font-bold leading-relaxed text-[#50645c]' },
                     h('p', null, readiness.width + ' x ' + readiness.height + ' px - ' + (readiness.dimensionSource === 'iiif-prepared' ? 'verified IIIF prepared-rendition dimensions' : (readiness.dimensionSource === 'catalog' ? 'catalog dimensions (preparation estimate)' : 'loaded preview measurement'))),
                     h('p', null, readiness.print300 + (readiness.print300cm ? ' · ' + readiness.print300cm : '')),
                     h('p', null, readiness.print150 + (readiness.print150cm ? ' · ' + readiness.print150cm : '')),
-                    activePrep.mode !== 'fit' && h('p', null, 'Prepared output: ' + readiness.outputLabel + (readiness.upscale > 1.05 ? ' - ' + readiness.upscale + 'x enlargement' : ' - no material enlargement'))
+                    activePrep.mode !== 'fit' && h('p', null, __alloTf('stem.sourcebook.prepared_output_line', 'Prepared output: {output}{enlargement}', { output: readiness.outputLabel, enlargement: readiness.upscale > 1.05 ? __alloTf('stem.sourcebook.prepared_output_enlargement', ' - {factor}x enlargement', { factor: readiness.upscale }) : __alloT('stem.sourcebook.prepared_output_no_enlargement', ' - no material enlargement') }))
                   )
                 : h('p', { className: 'mt-3 text-[0.6875rem] font-bold leading-relaxed text-[#50645c]' }, __alloT('stem.sourcebook.pixel_dimensions_are_not_present_in_th', 'Pixel dimensions are not present in this catalog record yet.')),
               h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-[#50645c]' }, readiness.note),
@@ -9858,7 +10090,7 @@
                 type: 'button', disabled: searchActive, onClick: function () { findSharperAlternative(item); },
                 className: 'mt-3 min-h-[42px] w-full rounded-xl border border-amber-500 bg-amber-50 px-3 text-xs font-black text-amber-950 hover:bg-amber-100 disabled:cursor-wait disabled:opacity-50',
                 title: __alloT('stem.sourcebook.search_every_live_collection_for_a_rel', 'Search every live collection for a related result with stronger verified pixel dimensions')
-              }, searchActive ? 'Search in progress...' : 'Find a sharper alternative')
+              }, searchActive ? __alloT('stem.sourcebook.search_in_progress', 'Search in progress...') : __alloT('stem.sourcebook.find_a_sharper_alternative', 'Find a sharper alternative'))
             ),
             h('section', { className: 'rounded-2xl bg-white border border-[#c8d4ce] p-4', 'aria-labelledby': 'sourcebook-swatches-title', 'data-sourcebook-swatches': item.id },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
@@ -9931,11 +10163,11 @@
                     className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-500 bg-white px-3 text-xs font-bold text-[#30264f]',
                     'aria-label': __alloT('stem.sourcebook.intended_use_for_this_visual_asset', 'Intended use for this visual asset')
                   }, USAGE_INTENT_ORDER.map(function (intentId) {
-                    return h('option', { key: intentId, value: intentId }, USAGE_INTENTS[intentId].label);
+                    return h('option', { key: intentId, value: intentId }, intentField(intentId, 'label', USAGE_INTENTS[intentId].label));
                   }))
                 ),
                 h('p', { className: 'mt-2 text-[0.625rem] font-bold leading-relaxed text-violet-900' },
-                  (activeUsageIntent.suggested ? 'Suggested by Sourcebook: ' : (activeUsageIntent.planId ? activeUsageIntent.sourceLabel + ': ' : 'Planned by you: ')) + activeUsageIntent.label + '. ' + activeUsageIntent.description
+                  (activeUsageIntent.suggested ? __alloT('stem.sourcebook.usage_suggested_by_sourcebook_prefix', 'Suggested by Sourcebook: ') : (activeUsageIntent.planId ? intentSourceLabel(activeUsageIntent) + ': ' : __alloT('stem.sourcebook.usage_planned_by_you_prefix', 'Planned by you: '))) + intentField(activeUsageIntent.id, 'label', activeUsageIntent.label) + '. ' + intentField(activeUsageIntent.id, 'description', activeUsageIntent.description)
                 )
               ),
               h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.preparation_presets', 'Preparation presets') },
@@ -9947,7 +10179,7 @@
               h('div', { className: 'flex gap-2 flex-wrap' },
                 controlButton('Fit', activePrep.mode === 'fit', function () { updatePrep(item.id, { mode: 'fit' }); }),
                 controlButton('Crop', activePrep.mode === 'crop', function () { updatePrep(item.id, { mode: 'crop' }); }),
-                controlButton('Repeat / tile', activePrep.mode === 'tile', function () { updatePrep(item.id, { mode: 'tile' }); })
+                controlButton(__alloT('stem.sourcebook.mode_repeat_tile', 'Repeat / tile'), activePrep.mode === 'tile', function () { updatePrep(item.id, { mode: 'tile' }); })
               ),
               h('fieldset', { className: 'rounded-2xl border border-[#c8d4ce] bg-[#f2f6f3] p-3', 'data-sourcebook-study-aids': 'true' },
                 h('legend', { className: 'px-1 text-[0.6875rem] font-black text-[#445950]' }, __alloT('stem.sourcebook.study_aids', 'Study aids for artists')),
@@ -9997,12 +10229,12 @@
                   h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.y, onChange: function (event) { updatePrep(item.id, { y: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.vertical_crop_focus', 'Vertical crop focus') })
                 )
               ),
-              activePrep.mode === 'tile' && h('label', { className: 'block text-[0.6875rem] font-bold text-[#445950]' }, 'Tile size ' + activePrep.tile + ' px',
+              activePrep.mode === 'tile' && h('label', { className: 'block text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.tile_size_px', 'Tile size {size} px', { size: activePrep.tile }),
                 h('input', { type: 'range', min: 60, max: 360, step: 10, value: activePrep.tile, onChange: function (event) { updatePrep(item.id, { tile: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.repeated_tile_size', 'Repeated tile size') })
               ),
               h('p', { className: 'rounded-xl bg-[#eef3f0] px-3 py-2 text-[0.625rem] font-bold text-[#53675f]', role: 'status' }, activePrep.mode === 'fit'
-                ? 'Full image keeps the original image dimensions.'
-                : activeDimensions.label + ' output - ' + activeDimensions.width + ' x ' + activeDimensions.height + ' px PNG.')
+                ? __alloT('stem.sourcebook.fit_keeps_original_dimensions', 'Full image keeps the original image dimensions.')
+                : __alloTf('stem.sourcebook.prepared_output_dimensions_png', '{label} output - {width} x {height} px PNG.', { label: activeDimensions.label, width: activeDimensions.width, height: activeDimensions.height }))
             ),
             h('section', {
               className: 'space-y-3 rounded-2xl border border-[#b8ccc3] bg-[#eef5f1] p-4',
@@ -10015,7 +10247,7 @@
                   className: 'rounded-full border border-[#9db9ad] bg-white px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wide text-[#35594c]',
                   'data-sourcebook-alt-text-source': accessibility.source,
                   'data-sourcebook-alt-text-reviewed': accessibility.reviewed ? 'true' : 'false'
-                }, accessibility.source === 'user-edited' ? 'User-edited' : (accessibility.decorative ? 'Decorative' : (accessibility.reviewed ? 'Catalog - confirmed' : 'Review needed')))
+                }, accessibility.source === 'user-edited' ? __alloT('stem.sourcebook.accessibility_status_user_edited', 'User-edited') : (accessibility.decorative ? __alloT('stem.sourcebook.accessibility_status_decorative', 'Decorative') : (accessibility.reviewed ? __alloT('stem.sourcebook.accessibility_status_catalog_confirmed', 'Catalog - confirmed') : __alloT('stem.sourcebook.accessibility_status_review_needed', 'Review needed'))))
               ),
               h('p', { className: 'text-[0.6875rem] font-bold leading-relaxed text-[#4e645b]' }, __alloT('stem.sourcebook.this_is_a_metadata_grounded_starting_p', 'This is a metadata-grounded starting point, not a visual AI description. Confirm it against the full image and the context where it will be used.')),
               h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.image_purpose', 'Image purpose') },
@@ -10081,27 +10313,27 @@
                 type: 'button', 'data-sourcebook-single-action': 'handoff', onClick: function () { sendToPageDesigner(item); }, disabled: handoffId === item.id,
                 className: 'col-span-2 min-h-[48px] rounded-xl bg-[#183b32] text-white font-black text-xs shadow-sm hover:bg-[#245447] disabled:opacity-60 disabled:cursor-wait',
                 title: __alloT('stem.sourcebook.insert_this_prepared_asset_into_a_new_', 'Insert this prepared asset into a new Page Designer document with its source and rights information')
-              }, handoffId === item.id ? 'Preparing image...' : 'Open in Page Designer'),
+              }, handoffId === item.id ? __alloT('stem.sourcebook.preparing_image', 'Preparing image...') : __alloT('stem.sourcebook.open_in_page_designer', 'Open in Page Designer')),
               h('button', {
                 type: 'button', 'data-sourcebook-single-action': 'package', onClick: function () { saveSourcePackage(item); }, disabled: packageId === item.id,
                 className: 'col-span-2 min-h-[46px] rounded-xl border border-[#b35a35] bg-white text-[#8c452b] font-black text-xs hover:bg-[#fff5ef] disabled:opacity-60 disabled:cursor-wait',
                 title: __alloT('stem.sourcebook.download_a_self_contained_source_sheet', 'Download a self-contained source sheet with the prepared image, credit, license, and source record')
-              }, packageId === item.id ? 'Building source package...' : 'Download source package'),
+              }, packageId === item.id ? __alloT('stem.sourcebook.building_source_package', 'Building source package...') : __alloT('stem.sourcebook.download_source_package', 'Download source package')),
               mobileDetailOpen && (handoffId === item.id || packageId === item.id) && h('button', { type: 'button', onClick: function () { cancelSingleSourceAction('user'); }, className: 'col-span-2 min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-single': 'detail' }, __alloT('stem.sourcebook.cancel_image_preparation', 'Cancel image preparation')),
 
               h('button', {
                 type: 'button',
                 onClick: function () { toggleSaved(item); },
                 'aria-pressed': saved ? 'true' : 'false',
-                'aria-label': saved ? 'Remove ' + item.title + ' from palette' : 'Save ' + item.title + ' to palette',
+                'aria-label': saved ? __alloTf('stem.sourcebook.aria_remove_from_palette', 'Remove {title} from palette', { title: item.title }) : __alloTf('stem.sourcebook.aria_save_to_palette', 'Save {title} to palette', { title: item.title }),
                 className: 'min-h-[44px] rounded-xl font-black text-xs ' + (saved ? 'bg-[#183b32] text-white' : 'bg-[#d9e9e2] text-[#20483c]')
-              }, saved ? '✓ In palette' : '+ Save'),
+              }, saved ? __alloT('stem.sourcebook.detail_in_palette', '✓ In palette') : __alloT('stem.sourcebook.detail_save', '+ Save')),
               item.live === true && providerSupportsLiveSearch(item.provider) && h('button', {
                 type: 'button', onClick: function () { findMoreFromCollection(item); },
                 'data-sourcebook-more-from-provider': item.provider,
-                'aria-label': __alloTf('stem.sourcebook.aria_find_more_from_provider', 'Find more {kind} assets from {provider}', { kind: item.kind, provider: item.provider }),
+                'aria-label': __alloTf('stem.sourcebook.aria_find_more_from_provider', 'Find more {kind} assets from {provider}', { kind: kindLabel(item.kind), provider: item.provider }),
                 className: 'col-span-2 min-h-[44px] rounded-xl bg-[#e6efe9] border border-[#9eb9ae] px-3 font-black text-xs text-[#214c3f] hover:bg-[#d8e8e0]'
-              }, 'More from ' + providerPresentation(item.provider).name),
+              }, __alloTf('stem.sourcebook.more_from_provider', 'More from {provider}', { provider: providerPresentation(item.provider).name })),
               h('button', { type: 'button', onClick: function () {
                 copyText(attributionText(item)).then(function (copied) { if (copied) bumpQuestCounter('creditsCopied'); toast(copied ? __alloT('stem.sourcebook.msg_attribution_copied', 'Attribution copied.') : __alloT('stem.sourcebook.msg_attribution_not_copied', 'Attribution could not be copied in this browser.'), copied ? 'success' : 'error'); });
               }, className: 'min-h-[44px] rounded-xl bg-white border border-[#a9bbb3] font-black text-xs text-[#294d42]' }, __alloT('stem.sourcebook.copy_credit', 'Copy credit')),
@@ -10164,7 +10396,7 @@
               h('input', { type: 'checkbox', checked: autoCurate, onChange: function (event) { var checked = !!event.target.checked; setAutoCurate(checked); patch({ autoCurate: checked }); }, className: 'h-4 w-4 accent-[#183b32]' }),
               __alloT('stem.sourcebook.save_picks_to_palette', 'Save picks to palette')
             ),
-            h('button', { type: 'submit', className: 'min-h-[48px] px-6 rounded-xl bg-[#183b32] text-white text-sm font-black shadow-md hover:bg-[#245447]' }, autoCurate ? 'Find & save ' + paletteTarget : 'Search verified visuals')
+            h('button', { type: 'submit', className: 'min-h-[48px] px-6 rounded-xl bg-[#183b32] text-white text-sm font-black shadow-md hover:bg-[#245447]' }, autoCurate ? __alloTf('stem.sourcebook.find_and_save_count', 'Find & save {count}', { count: paletteTarget }) : __alloT('stem.sourcebook.search_verified_visuals', 'Search verified visuals'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap mt-3', 'aria-label': __alloT('stem.sourcebook.example_searches', 'Example searches') },
             h('button', {
@@ -10200,7 +10432,7 @@
         },
           h('div', { className: 'shrink-0 px-1' },
             h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[.12em] text-[#49635a]' }, __alloT('stem.sourcebook.palette', 'Palette')),
-            h('p', { className: 'text-xs font-black text-[#18352d]' }, selectedItems.length + ' saved' + (checkedPaletteItems.length ? ' · ' + checkedPaletteItems.length + ' selected' : ''))
+            h('p', { className: 'text-xs font-black text-[#18352d]' }, __alloTf('stem.sourcebook.tray_saved_count', '{count} saved', { count: selectedItems.length }) + (checkedPaletteItems.length ? __alloTf('stem.sourcebook.tray_selected_count', ' · {count} selected', { count: checkedPaletteItems.length }) : ''))
           ),
           h('div', { className: 'flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5', role: 'list', 'aria-label': __alloT('stem.sourcebook.palette_thumbnails', 'Palette thumbnails') }, selectedItems.map(function (item) {
             var isActive = active.id === item.id;
@@ -10208,7 +10440,7 @@
             return h('button', {
               key: item.id, type: 'button', role: 'listitem', onClick: function () { inspectSourcebookItem(item); },
               className: 'relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border-2 bg-[#edf1ed] ' + (isChecked ? 'border-amber-500 ring-2 ring-amber-200' : (isActive ? 'border-[#2f6b59]' : 'border-[#cad6d0]')),
-              title: 'Preview ' + item.title,
+              title: __alloTf('stem.sourcebook.title_preview_item', 'Preview {title}', { title: item.title }),
               'aria-label': __alloTf('stem.sourcebook.aria_preview_saved_source', 'Preview saved source {title}', { title: item.title }),
               'aria-pressed': isActive ? 'true' : 'false',
               'aria-controls': 'sourcebook-detail-panel'
@@ -10217,7 +10449,7 @@
               isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-700 text-[0.5625rem] font-black text-white' }, '✓')
             );
           })),
-          h('button', { type: 'button', onClick: function () { setShowingCollection(true); }, className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, showingCollection ? 'Viewing palette' : 'View palette')
+          h('button', { type: 'button', onClick: function () { setShowingCollection(true); }, className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, showingCollection ? __alloT('stem.sourcebook.viewing_palette', 'Viewing palette') : __alloT('stem.sourcebook.view_palette', 'View palette'))
         ),
         paletteImportBusy && h('div', { role: 'status', 'aria-live': 'polite', 'data-sourcebook-palette-verification': paletteImportBusy,
           className: 'sb-no-print mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm font-bold text-sky-950' },
@@ -10290,7 +10522,7 @@
         ),
         providerReportList.length > 0 && h('details', { className: 'sb-no-print mb-4 rounded-2xl border border-[#bfd0c8] bg-[#f7faf8] px-3 py-2', open: searchActive || providerRetryableCount > 0 || undefined, 'aria-label': __alloT('stem.sourcebook.provider_search_progress', 'Provider search progress') },
           h('summary', { className: 'flex min-h-[40px] cursor-pointer items-center text-xs font-black text-[#315248]' },
-            h('span', { className: 'mr-auto' }, searchActive ? 'Searching public collections…' : 'Collection search report'),
+            h('span', { className: 'mr-auto' }, searchActive ? __alloT('stem.sourcebook.searching_public_collections', 'Searching public collections…') : __alloT('stem.sourcebook.collection_search_report', 'Collection search report')),
             h('span', { className: 'text-[0.6875rem] font-bold' }, providerReportList.filter(function (report) { return report.status === 'ready' || report.status === 'cached'; }).length + ' of ' + providerReportList.length + ' responded' + (providerRetryableCount ? ' / ' + providerRetryableCount + ' need attention' : (providerDeepenableCount ? ' / open to search one collection deeper' : '')))
           ),
           h('div', { className: 'mt-2 grid gap-2 border-t border-[#d8e3de] pt-2 sm:grid-cols-2 lg:grid-cols-3', 'aria-live': 'polite' }, providerReportList.map(function (report) {
@@ -10315,17 +10547,17 @@
             }, __alloTf('stem.sourcebook.label_collection_batch_loaded', 'Collection batch {batch} / {count} loaded on board', { batch: report.batch + 1, count: loadedProviderCount })),
             hasProviderAction && h('div', { className: 'mt-2 border-t border-current/20 pt-2' },
               h('p', { className: 'mb-2 text-[0.625rem] font-bold leading-snug opacity-80' }, canRetry
-                ? 'Retries this collection batch only; current verified board stays intact.'
-                : 'Checks only the next query batch in this collection; other collections are not requested.'),
+                ? __alloT('stem.sourcebook.title_retries_this_collection_batch_only', 'Retries this collection batch only; current verified board stays intact.')
+                : __alloT('stem.sourcebook.title_checks_only_next_batch_in_collection', 'Checks only the next query batch in this collection; other collections are not requested.')),
               h('button', {
                 type: 'button',
                 onClick: function () { if (canRetry) retryProviderCollection(report.provider); else searchDeeperProviderCollection(report.provider); },
                 disabled: searchActive || !!retryingProvider,
                 className: 'min-h-[44px] w-full rounded-lg border border-current bg-white/80 px-3 py-2 text-[0.6875rem] font-black disabled:cursor-wait disabled:opacity-60',
-                'aria-label': (canRetry ? 'Retry only ' : 'Search next batch only in ') + report.provider,
+                'aria-label': canRetry ? __alloTf('stem.sourcebook.aria_retry_only_provider', 'Retry only {provider}', { provider: report.provider }) : __alloTf('stem.sourcebook.aria_search_next_batch_only_in_provider', 'Search next batch only in {provider}', { provider: report.provider }),
                 'data-sourcebook-retry-provider': canRetry ? report.provider : undefined,
                 'data-sourcebook-deepen-provider': canSearchDeeper ? report.provider : undefined
-              }, isTargeting ? (canRetry ? 'Retrying...' : 'Searching...') : (canRetry ? 'Retry collection' : 'Search next batch'))
+              }, isTargeting ? (canRetry ? __alloT('stem.sourcebook.retrying', 'Retrying...') : __alloT('stem.sourcebook.searching', 'Searching...')) : (canRetry ? __alloT('stem.sourcebook.retry_collection', 'Retry collection') : __alloT('stem.sourcebook.search_next_batch', 'Search next batch')))
             )
           );
         }))),
@@ -10340,7 +10572,7 @@
               h('h3', { id: 'sourcebook-coverage-guide-title', className: 'mt-1 text-sm font-black text-[#183b32]' }, __alloT('stem.sourcebook.choose_the_most_useful_next_collection', 'Choose the most useful next collection')),
               h('p', { className: 'mt-1 max-w-2xl text-[0.6875rem] font-semibold leading-relaxed text-[#597269]' }, __alloT('stem.sourcebook.deterministic_source_routing_one_colle', 'Deterministic source routing / one collection request. Your current rights-verified board and palette stay intact.'))
             ),
-            h('span', { className: 'w-fit rounded-full border border-[#b8d7ca] bg-white px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.08em] text-[#31584c]' }, kind === 'All' ? 'Balanced coverage' : kind + ' route')
+            h('span', { className: 'w-fit rounded-full border border-[#b8d7ca] bg-white px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.08em] text-[#31584c]' }, kind === 'All' ? __alloT('stem.sourcebook.coverage_balanced', 'Balanced coverage') : __alloTf('stem.sourcebook.coverage_kind_route', '{kind} route', { kind: kindLabel(kind) }))
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 px-4 pt-3', 'aria-label': __alloT('stem.sourcebook.collection_coverage_summary', 'Collection coverage summary') },
             h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'contributed' },
@@ -10367,7 +10599,7 @@
           ),
           coverageGuide.nextProvider ? h('div', { className: 'm-4 mt-3 flex flex-col gap-3 rounded-xl border border-[#b6cec3] bg-white p-3 sm:flex-row sm:items-center' },
             h('div', { className: 'min-w-0 flex-1' },
-              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.08em] text-[#658076]' }, 'Recommended next / batch ' + (coverageGuide.nextBatch + 1)),
+              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.08em] text-[#658076]' }, __alloTf('stem.sourcebook.recommended_next_batch', 'Recommended next / batch {batch}', { batch: coverageGuide.nextBatch + 1 })),
               h('strong', { className: 'mt-0.5 block text-sm text-[#183b32]' }, coverageGuide.nextProvider),
               h('p', { className: 'mt-1 text-[0.6875rem] font-semibold leading-relaxed text-[#597269]' }, coverageGuide.reason)
             ),
@@ -10376,10 +10608,10 @@
               onClick: function () { searchDeeperProviderCollection(coverageGuide.nextProvider); },
               disabled: searchActive || !!retryingProvider,
               className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 py-2 text-xs font-black text-white shadow-sm transition hover:bg-[#245345] disabled:cursor-wait disabled:opacity-60',
-              'aria-label': 'Search the recommended next collection: ' + coverageGuide.nextProvider,
+              'aria-label': __alloTf('stem.sourcebook.aria_search_recommended_next_collection', 'Search the recommended next collection: {provider}', { provider: coverageGuide.nextProvider }),
               'data-sourcebook-smart-expand': coverageGuide.nextProvider,
               'data-sourcebook-coverage-next-batch': coverageGuide.nextBatch
-            }, retryingProvider === coverageGuide.nextProvider ? 'Searching...' : 'Search this collection next')
+            }, retryingProvider === coverageGuide.nextProvider ? __alloT('stem.sourcebook.searching', 'Searching...') : __alloT('stem.sourcebook.search_this_collection_next', 'Search this collection next'))
           ) : h('p', { className: 'm-4 mt-3 rounded-xl border border-[#d4e2dc] bg-white px-3 py-3 text-[0.6875rem] font-bold leading-relaxed text-[#526c62]' }, __alloT('stem.sourcebook.no_additional_targeted_batch_is_availa', 'No additional targeted batch is available from the collections that responded. Retry any collection needing attention or start a broader query.'))
         ),
         query && discoveryNote && h('div', { className: 'sb-no-print mb-4 rounded-xl border border-[#b9c9c2] bg-[#f7f4eb] px-3 py-2 text-xs text-[#395248]' },
@@ -10388,20 +10620,20 @@
         h('details', { className: 'sb-no-print mb-5 rounded-2xl border border-[#b9c9c2] bg-white px-3 py-2' },
           h('summary', { className: 'flex min-h-[42px] cursor-pointer items-center text-xs font-black text-[#315248]' },
             h('span', { className: 'mr-auto' }, __alloT('stem.sourcebook.filters_and_search_options', 'Filters and search options')),
-            h('span', { className: 'rounded-full bg-[#e9f1ed] px-2.5 py-1 text-[0.6875rem]' }, kind + ' · ' + (provider === 'All' ? LIVE_PROVIDER_NAMES.length + ' collections' : provider) + ' · ' + (rightsScope === 'pd' ? 'Public Domain' : (rightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY')))
+            h('span', { className: 'rounded-full bg-[#e9f1ed] px-2.5 py-1 text-[0.6875rem]' }, kindLabel(kind) + ' · ' + (provider === 'All' ? __alloTn('stem.sourcebook.collections_count', LIVE_PROVIDER_NAMES.length, '{count} collection', '{count} collections') : provider) + ' · ' + (rightsScope === 'pd' ? __alloT('stem.sourcebook.rights_scope_public_domain', 'Public Domain') : (rightsScope === 'pd-cc0' ? __alloT('stem.sourcebook.rights_scope_summary_pd_cc0', 'PD + CC0') : __alloT('stem.sourcebook.rights_scope_summary_pd_cc0_cc_by', 'PD + CC0 + CC BY'))))
           ),
           h('div', { className: 'mt-3 space-y-3 border-t border-[#d8e0dc] pt-3' },
             h('p', {
               className: 'rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[0.6875rem] font-bold leading-relaxed text-sky-950',
               'data-sourcebook-search-settings-note': 'true'
             }, __alloT('stem.sourcebook.changing_material_type_reuse_scope_or_', 'Changing material type, reuse scope, or search scope starts a fresh rights-checked collection search. Use Explore loaded board below for instant filtering.')),
-            h('div', { className: 'flex gap-2 flex-wrap', 'aria-label': __alloT('stem.sourcebook.material_type_filters', 'Material type filters') }, kinds.map(function (value) { return controlButton(value, kind === value, function () { setFilter('kind', value); }); })),
+            h('div', { className: 'flex gap-2 flex-wrap', 'aria-label': __alloT('stem.sourcebook.material_type_filters', 'Material type filters') }, kinds.map(function (value) { return controlButton(kindLabel(value), kind === value, function () { setFilter('kind', value); }, { key: value }); })),
             h('div', { className: 'flex flex-col md:flex-row md:items-center gap-3' },
               h('div', { className: 'flex gap-2 flex-wrap flex-1 items-center', 'aria-label': __alloT('stem.sourcebook.reuse_rights_filters', 'Reuse rights filters') },
                 h('span', { className: 'text-xs font-black text-[#4d645b] mr-1' }, __alloT('stem.sourcebook.reuse_scope', 'Reuse scope')),
-                controlButton('Public Domain', rightsScope === 'pd', function () { setFilter('rights', 'pd'); }),
-                controlButton('Include CC0', rightsScope === 'pd-cc0', function () { setFilter('rights', 'pd-cc0'); }),
-                controlButton('Include CC BY', rightsScope === 'all', function () { setFilter('rights', 'all'); })
+                controlButton(__alloT('stem.sourcebook.rights_scope_public_domain', 'Public Domain'), rightsScope === 'pd', function () { setFilter('rights', 'pd'); }),
+                controlButton(__alloT('stem.sourcebook.rights_scope_include_cc0', 'Include CC0'), rightsScope === 'pd-cc0', function () { setFilter('rights', 'pd-cc0'); }),
+                controlButton(__alloT('stem.sourcebook.rights_scope_include_cc_by', 'Include CC BY'), rightsScope === 'all', function () { setFilter('rights', 'all'); })
               ),
               h('div', { className: 'rounded-xl border border-[#c2d0ca] bg-[#f7faf8] px-3 py-2' },
                 h('label', { className: 'text-xs font-black text-[#4d645b]' }, __alloT('stem.sourcebook.search_scope', 'Search scope '),
@@ -10409,9 +10641,9 @@
                 ),
                 h('p', { className: 'mt-1 text-[0.625rem] font-bold text-[#62766e]' }, __alloT('stem.sourcebook.changing_this_starts_a_new_collection_', 'Changing this starts a new collection search.'))
               ),
-              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#c2d0ca] bg-[#eef4f0] px-3 text-[0.6875rem] font-black text-[#31584c]', title: capability.visionAi ? 'Let Gemini compare a temporary contact sheet of rights-verified thumbnails' : 'Visual AI is not connected. Sourcebook still searches and ranks rights-verified catalog metadata.' },
+              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#c2d0ca] bg-[#eef4f0] px-3 text-[0.6875rem] font-black text-[#31584c]', title: capability.visionAi ? __alloT('stem.sourcebook.title_visual_ai_available', 'Let Gemini compare a temporary contact sheet of rights-verified thumbnails') : __alloT('stem.sourcebook.title_visual_ai_not_connected', 'Visual AI is not connected. Sourcebook still searches and ranks rights-verified catalog metadata.') },
                 h('input', { type: 'checkbox', checked: visualReview && capability.visionAi, disabled: !capability.visionAi, onChange: function (event) { var checked = !!event.target.checked; setVisualReview(checked); patch({ visualReview: checked }); }, className: 'h-4 w-4 accent-[#183b32]' }),
-                capability.visionAi ? 'Visual AI review' : 'Visual AI unavailable · metadata ranking active'
+                capability.visionAi ? __alloT('stem.sourcebook.visual_ai_review', 'Visual AI review') : __alloT('stem.sourcebook.visual_ai_unavailable', 'Visual AI unavailable · metadata ranking active')
               )
             ),
             rightsScope === 'all' && h('p', { className: 'text-[0.6875rem] font-bold text-[#6a5143]' }, __alloT('stem.sourcebook.cc_by_results_require_the_attribution_', 'CC BY results require the attribution Sourcebook preserves in every package and handoff.'))
@@ -10422,7 +10654,7 @@
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3 mb-3' },
               h('div', null,
                 h('p', { className: 'text-[0.625rem] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? __alloT('stem.sourcebook.saved_working_set', 'Saved working set') : (query ? __alloT('stem.sourcebook.public_collections', 'Public collections') : __alloT('stem.sourcebook.offline_shelf', 'Offline fallback shelf'))),
-                h('h2', { id: 'sourcebook-results-title', tabIndex: -1, className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? refinedResults.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
+                h('h2', { id: 'sourcebook-results-title', tabIndex: -1, className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? __alloTn('stem.sourcebook.results_matches_for_query', refinedResults.length, '{count} match for “{query}”', '{count} matches for “{query}”', { query: query }) : __alloT('stem.sourcebook.browse_the_starting_shelf', 'Browse the starting shelf'))),
                 !showingCollection && h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' available')
               ),
               h('div', { className: 'sb-no-print flex flex-wrap justify-end gap-2' },
@@ -10484,7 +10716,7 @@
                       'aria-pressed': effectiveLoadedKindFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-kind': 'All',
                       className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedKindFilter === 'All' ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
-                    }, 'All types · ' + loadedProviderResults.length),
+                    }, __alloTf('stem.sourcebook.facet_all_types_count', 'All types · {count}', { count: loadedProviderResults.length })),
                     loadedKindCoverageList.map(function (entry) {
                       var selected = effectiveLoadedKindFilter === entry.kind;
                       return h('button', {
@@ -10492,7 +10724,7 @@
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-kind': entry.kind,
                         className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
-                      }, entry.kind + ' · ' + entry.count);
+                      }, kindLabel(entry.kind) + ' · ' + entry.count);
                     })
                   )
                 ),
@@ -10504,7 +10736,7 @@
                       'aria-pressed': effectiveLoadedRightsFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-rights': 'All',
                       className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedRightsFilter === 'All' ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-200 bg-white text-emerald-900')
-                    }, 'All allowed · ' + loadedKindResults.length),
+                    }, __alloTf('stem.sourcebook.facet_all_allowed_count', 'All allowed · {count}', { count: loadedKindResults.length })),
                     loadedRightsCoverageList.map(function (entry) {
                       var selected = effectiveLoadedRightsFilter === entry.rightsType;
                       return h('button', {
@@ -10635,7 +10867,7 @@
               h('button', {
                 type: 'button', disabled: !canLoadMore || liveStatus === 'loading' || liveStatus === 'loading-more', onClick: loadMoreResults,
                 className: 'min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40'
-              }, liveStatus === 'loading-more' ? 'Checking next batch...' : (canLoadMore ? 'Find more verified assets' : 'No more verified matches')),
+              }, liveStatus === 'loading-more' ? __alloT('stem.sourcebook.checking_next_batch', 'Checking next batch...') : (canLoadMore ? __alloT('stem.sourcebook.find_more_verified_assets', 'Find more verified assets') : __alloT('stem.sourcebook.no_more_verified_matches', 'No more verified matches'))),
               h('button', {
                 type: 'button', onClick: clearLiveBoard,
                 className: 'min-h-[40px] rounded-xl border border-[#9eb2aa] bg-white px-3 text-xs font-black text-[#53685f]',
@@ -10648,29 +10880,29 @@
             },
               h('div', { className: 'grid gap-4 p-4 md:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end' },
                 h('div', null,
-                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.2em] text-[#a8c9bd]' }, curationBusy ? 'Reviewing the verified board…' : 'Ready-made starting point'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.2em] text-[#a8c9bd]' }, curationBusy ? __alloT('stem.sourcebook.reviewing_the_verified_board', 'Reviewing the verified board…') : __alloT('stem.sourcebook.ready_made_starting_point', 'Ready-made starting point')),
                   h('h3', { className: 'mt-1 font-serif text-2xl font-black leading-tight text-white' }, __alloTf('stem.sourcebook.selected_visuals', 'Sourcebook selected {count} visuals', { count: recommendedItems.length })),
                   h('p', { className: 'mt-1 max-w-2xl text-xs leading-relaxed text-[#d3e3dd]' }, __alloT('stem.sourcebook.use_this_rights_verified_set_as_is_or_', 'Use this rights-verified set as-is, or inspect any pick before adding it to your palette. The full result board remains below.')),
                   h('p', { className: 'mt-2 max-w-2xl text-[0.6875rem] font-bold leading-relaxed text-[#c7ddd5]' }, __alloT('stem.sourcebook.automatic_picks_must_have_matching_tit', 'Automatic picks must have matching title, description, or tag metadata. Broad results stay on the board for exploration and are never added automatically.')),
-                  h('p', { className: 'mt-2 text-[0.6875rem] font-bold text-[#afcec3]' }, 'Chosen from ' + liveResults.length + ' verified results · ' + recommendedCoverage.providerCount + ' collection' + (recommendedCoverage.providerCount === 1 ? '' : 's') + ' · ' + recommendedCoverage.kindCount + ' visual type' + (recommendedCoverage.kindCount === 1 ? '' : 's')),
+                  h('p', { className: 'mt-2 text-[0.6875rem] font-bold text-[#afcec3]' }, __alloTf('stem.sourcebook.chosen_from_verified_results_summary', 'Chosen from {count} verified results · {collections} · {types}', { count: liveResults.length, collections: __alloTn('stem.sourcebook.collections_count', recommendedCoverage.providerCount, '{count} collection', '{count} collections'), types: __alloTn('stem.sourcebook.visual_types_count', recommendedCoverage.kindCount, '{count} visual type', '{count} visual types') })),
                   activePinnedRecommendationIds.length > 0 && h('p', { className: 'mt-2 inline-flex rounded-full bg-amber-300 px-2.5 py-1 text-[0.625rem] font-black text-amber-950' }, activePinnedRecommendationIds.length + ' pick' + (activePinnedRecommendationIds.length === 1 ? '' : 's') + ' kept for the next refinement')
                 ),
                 h('div', { className: 'flex flex-wrap gap-2 lg:max-w-[360px] lg:justify-end' },
                   h('button', {
                     type: 'button', disabled: recommendedIsPalette,
-                    onClick: function () { replacePaletteWithItems(recommendedItems, 'Your palette now contains the ' + recommendedItems.length + ' strongest recommendations.'); },
+                    onClick: function () { replacePaletteWithItems(recommendedItems, __alloTf('stem.sourcebook.msg_palette_now_contains_strongest_recommendations', 'Your palette now contains the {count} strongest recommendations.', { count: recommendedItems.length })); },
                     className: 'min-h-[42px] rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32] shadow-sm disabled:opacity-60',
                     title: __alloT('stem.sourcebook.replace_the_current_palette_with_this_', 'Replace the current palette with this curated, rights-verified set')
-                  }, recommendedIsPalette ? 'Using this palette' : ((collection.length ? 'Replace palette' : 'Use as palette') + ' (' + recommendedItems.length + ')')),
+                  }, recommendedIsPalette ? __alloT('stem.sourcebook.using_this_palette', 'Using this palette') : (collection.length ? __alloTf('stem.sourcebook.replace_palette_count', 'Replace palette ({count})', { count: recommendedItems.length }) : __alloTf('stem.sourcebook.use_as_palette_count', 'Use as palette ({count})', { count: recommendedItems.length }))),
                   h('button', {
                     type: 'button', disabled: recommendedSavedCount === recommendedItems.length,
                     onClick: function () { addItemsToPalette(recommendedItems, __alloTf('stem.sourcebook.msg_saved_recommended_assets', 'Saved {count} recommended assets to your palette.', { count: recommendedItems.length })); },
                     className: 'min-h-[42px] rounded-xl border border-[#75988c] bg-white/10 px-4 text-xs font-black text-white disabled:opacity-60'
-                  }, recommendedSavedCount === recommendedItems.length ? 'All picks saved' : 'Save recommendations (' + recommendedItems.length + ')'),
+                  }, recommendedSavedCount === recommendedItems.length ? __alloT('stem.sourcebook.all_picks_saved', 'All picks saved') : __alloTf('stem.sourcebook.save_recommendations_count', 'Save recommendations ({count})', { count: recommendedItems.length })),
                   h('button', {
                     type: 'button', disabled: curationBusy || liveStatus === 'loading' || liveStatus === 'loading-more', onClick: function () { refreshCuration(''); },
                     className: 'min-h-[42px] rounded-xl border border-[#75988c] bg-transparent px-4 text-xs font-black text-[#d6e7e1] disabled:opacity-50'
-                  }, curationBusy ? 'Re-curating…' : 'Re-curate matches'),
+                  }, curationBusy ? __alloT('stem.sourcebook.re_curating', 'Re-curating…') : __alloT('stem.sourcebook.re_curate_matches', 'Re-curate matches')),
                   activePinnedRecommendationIds.length > 0 && h('button', { type: 'button', disabled: curationBusy, onClick: resetPinnedRecommendations, className: 'min-h-[42px] rounded-xl border border-amber-300/70 bg-amber-200/10 px-4 text-xs font-black text-amber-100 disabled:opacity-50' }, __alloT('stem.sourcebook.release_kept_picks', 'Release kept picks'))
                 )
               ),
@@ -10688,14 +10920,14 @@
                       className: 'mt-1 min-h-[44px] w-full rounded-xl border border-[#75988c] bg-white px-3 text-xs font-bold text-[#18352d] placeholder:text-[#71857d] focus:outline-none focus:ring-2 focus:ring-[#a7d7c7]'
                     })
                   ),
-                  h('button', { type: 'submit', disabled: curationBusy || !refinementDraft.trim(), className: 'min-h-[44px] self-end rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32] disabled:opacity-50' }, curationBusy ? 'Refining…' : 'Refine picks')
+                  h('button', { type: 'submit', disabled: curationBusy || !refinementDraft.trim(), className: 'min-h-[44px] self-end rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32] disabled:opacity-50' }, curationBusy ? __alloT('stem.sourcebook.refining', 'Refining…') : __alloT('stem.sourcebook.refine_picks', 'Refine picks'))
                 ),
                 h('div', { className: 'mt-2 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.quick_palette_refinements', 'Quick palette refinements') }, ['stronger linework', 'more scientific', 'more archival', 'less decorative'].map(function (suggestion) {
                   return h('button', { key: suggestion, type: 'button', disabled: curationBusy, onClick: function () { refreshCuration(suggestion); }, className: 'min-h-[36px] rounded-full border border-[#75988c] bg-white/10 px-3 text-[0.625rem] font-black text-[#e3eee9] disabled:opacity-50' }, suggestion);
                 })),
                 h('p', { className: 'mt-2 text-[0.625rem] font-bold text-[#a8c9bd]' }, activePinnedRecommendationIds.length
-                  ? 'Kept picks stay in the set; Sourcebook re-evaluates the remaining slots without another provider request.'
-                  : 'This re-evaluates only the current rights-verified board, so it is fast and does not make another provider request.')
+                  ? __alloT('stem.sourcebook.refine_note_kept_picks_stay', 'Kept picks stay in the set; Sourcebook re-evaluates the remaining slots without another provider request.')
+                  : __alloT('stem.sourcebook.refine_note_re_evaluates_current_board', 'This re-evaluates only the current rights-verified board, so it is fast and does not make another provider request.'))
               ),
               h('div', { className: 'grid grid-cols-2 gap-px border-y border-[#365c50] bg-[#365c50] sm:grid-cols-3', 'aria-label': __alloT('stem.sourcebook.selected_visual_previews', 'Selected visual previews') }, recommendedItems.map(function (item, index) {
                 var saved = collection.indexOf(item.id) !== -1;
@@ -10727,8 +10959,8 @@
                     h('button', {
                       type: 'button', onClick: function () { togglePinnedRecommendation(item); }, 'aria-pressed': pinned,
                       className: 'min-h-[38px] w-full rounded-xl border px-3 text-[0.625rem] font-black ' + (pinned ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb3aa] bg-white text-[#294d42]'),
-                      title: pinned ? 'Allow Sourcebook to replace this pick during the next refinement' : 'Preserve this pick while Sourcebook refines the remaining slots'
-                    }, pinned ? '✓ Keep during refinement' : 'Keep this pick')
+                      title: pinned ? __alloT('stem.sourcebook.title_allow_replace_this_pick', 'Allow Sourcebook to replace this pick during the next refinement') : __alloT('stem.sourcebook.title_preserve_this_pick', 'Preserve this pick while Sourcebook refines the remaining slots')
+                    }, pinned ? __alloT('stem.sourcebook.keep_during_refinement', '✓ Keep during refinement') : __alloT('stem.sourcebook.keep_this_pick', 'Keep this pick'))
                   )
                 );
               })),
@@ -10807,14 +11039,14 @@
                 })
               ),
               h('div', { className: 'flex flex-wrap items-end gap-2' },
-                h('button', { type: 'button', disabled: !filteredPaletteItems.length, onClick: function () { selectVisiblePaletteItems(filteredPaletteItems); }, className: 'min-h-[40px] rounded-xl border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40] disabled:opacity-40' }, 'Select shown (' + filteredPaletteItems.length + ')'),
+                h('button', { type: 'button', disabled: !filteredPaletteItems.length, onClick: function () { selectVisiblePaletteItems(filteredPaletteItems); }, className: 'min-h-[40px] rounded-xl border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40] disabled:opacity-40' }, __alloTf('stem.sourcebook.select_shown_count', 'Select shown ({count})', { count: filteredPaletteItems.length })),
                 h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: function () { setCheckedPaletteIds([]); }, className: 'min-h-[40px] rounded-xl border border-[#aebdb7] bg-white px-3 text-[0.6875rem] font-black text-[#53685f] disabled:opacity-40' }, __alloT('stem.sourcebook.clear_selection', 'Clear selection')),
                 h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: removeCheckedPaletteItems, className: 'min-h-[40px] rounded-xl border border-red-300 bg-red-50 px-3 text-[0.6875rem] font-black text-red-800 disabled:opacity-40' }, __alloTf('stem.sourcebook.remove_selected_count', 'Remove selected ({count})', { count: checkedPaletteItems.length }))
               ),
               h('p', { className: 'text-[0.625rem] font-bold text-[#5a7168] md:col-span-2', role: 'status', 'aria-live': 'polite' },
                 checkedPaletteItems.length
                   ? checkedPaletteItems.length + ' selected. Preparation, package, JSON, credits, and print actions now use this selection in palette order.'
-                  : 'No subset selected. Preparation and output actions use all ' + selectedItems.length + ' palette assets.'
+                  : __alloTf('stem.sourcebook.no_subset_selected_uses_all', 'No subset selected. Preparation and output actions use all {count} palette assets.', { count: selectedItems.length })
               )
             ),
             showingCollection && selectedItems.length > 0 && h('details', {
@@ -10829,17 +11061,17 @@
                   h('h2', { id: 'sourcebook-usage-plan-title', className: 'mt-1 font-serif text-lg font-black text-[#2f254d]' }, __alloT('stem.sourcebook.plan_how_each_asset_will_be_used', 'Plan how each asset will be used')),
                   h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-violet-900' }, __alloT('stem.sourcebook.sourcebook_can_suggest_a_role_from_the', 'Sourcebook can suggest a role from the material type and preparation, or you can set one. The plan travels with JSON, source packages, print sheets, and Page Designer handoff.'))
                 ),
-                h('label', { className: 'text-[0.625rem] font-black text-violet-950' }, (checkedPaletteItems.length ? 'Set use for selected assets' : 'Set use for all palette assets'),
+                h('label', { className: 'text-[0.625rem] font-black text-violet-950' }, (checkedPaletteItems.length ? __alloT('stem.sourcebook.set_use_for_selected_assets', 'Set use for selected assets') : __alloT('stem.sourcebook.set_use_for_all_palette_assets', 'Set use for all palette assets')),
                   h('select', {
                     value: '',
                     onChange: function (event) { if (event.target.value) applyUsageIntentToPalette(event.target.value); },
                     className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-500 bg-white px-3 text-xs font-bold text-[#30264f]',
                     'data-sourcebook-bulk-usage-intent': checkedPaletteItems.length || selectedItems.length,
-                    'aria-label': checkedPaletteItems.length ? 'Set intended use for selected palette assets' : 'Set intended use for every palette asset'
+                    'aria-label': checkedPaletteItems.length ? __alloT('stem.sourcebook.aria_set_intended_use_selected', 'Set intended use for selected palette assets') : __alloT('stem.sourcebook.aria_set_intended_use_every', 'Set intended use for every palette asset')
                   },
                     h('option', { value: '', disabled: true }, __alloT('stem.sourcebook.choose_intended_use', 'Choose intended use…')),
                     USAGE_INTENT_ORDER.map(function (intentId) {
-                      return h('option', { key: intentId, value: intentId }, USAGE_INTENTS[intentId].label);
+                      return h('option', { key: intentId, value: intentId }, intentField(intentId, 'label', USAGE_INTENTS[intentId].label));
                     })
                   )
                 )
@@ -10859,7 +11091,7 @@
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.14em] text-violet-700' }, __alloT('stem.sourcebook.one_click_role_planning', 'One-click role planning')),
                   h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-violet-900' }, __alloT('stem.sourcebook.sourcebook_balances_roles_from_catalog', 'Sourcebook balances roles from catalog metadata, preparation, dimensions, and set coverage. Roles you assigned yourself stay unchanged, and no new search or AI request is made.'))
                 ),
-                h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': checkedPaletteItems.length ? 'Plan roles for selected palette assets' : 'Plan roles for the full palette' },
+                h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': checkedPaletteItems.length ? __alloT('stem.sourcebook.aria_plan_roles_selected', 'Plan roles for selected palette assets') : __alloT('stem.sourcebook.aria_plan_roles_full_palette', 'Plan roles for the full palette') },
                   USAGE_PLAN_ORDER.map(function (planId) {
                     var usagePlan = USAGE_PLANS[planId];
                     return h('button', {
@@ -10869,7 +11101,7 @@
                       className: 'min-h-[40px] rounded-xl border border-violet-500 bg-white px-3 text-[0.6875rem] font-black text-violet-950 hover:bg-violet-100',
                       title: usagePlan.description,
                       'data-sourcebook-usage-plan-action': planId
-                    }, usagePlan.buttonLabel);
+                    }, planField(planId, 'buttonLabel', usagePlan.buttonLabel));
                   })
                 )
               ),
@@ -10901,12 +11133,12 @@
                     var roleFillVerificationBlocked = savedSmkVerificationStatus === 'loading' || savedSmkVerificationStatus === 'error';
                     var roleFillDisabled = searchActive || roleFillCount < 1 || roleFillVerificationBlocked || roleAction.mode === 'blocked' || roleAction.mode === 'covered';
                     var roleFillLabel = roleFillVerificationBlocked
-                      ? 'Verify saved sources first'
+                      ? __alloT('stem.sourcebook.role_verify_saved_sources_first', 'Verify saved sources first')
                       : (searchActive
-                        ? 'Search in progress'
+                        ? __alloT('stem.sourcebook.role_search_in_progress', 'Search in progress')
                         : (roleAction.mode === 'blocked'
-                          ? 'Choose what to remove'
-                          : (roleAction.mode === 'replace' ? 'Find & replace ' + roleFillCount : 'Find & add ' + roleFillCount)));
+                          ? __alloT('stem.sourcebook.role_choose_what_to_remove', 'Choose what to remove')
+                          : (roleAction.mode === 'replace' ? __alloTf('stem.sourcebook.role_find_and_replace_count', 'Find & replace {count}', { count: roleFillCount }) : __alloTf('stem.sourcebook.role_find_and_add_count', 'Find & add {count}', { count: roleFillCount }))));
                     var replacementRoleLabels = roleAction.replacements.map(function (entry) {
                       return entry.roleLabel;
                     }).filter(function (label, index, all) {
@@ -10943,8 +11175,8 @@
                           'data-sourcebook-role-gap': group.id,
                           'data-sourcebook-role-action': roleAction.mode
                         },
-                          h('span', { className: 'text-[0.625rem] font-black text-amber-900' }, __alloTf('stem.sourcebook.label_needs_role_count', 'Needs {count} {role}', { count: group.missing, role: group.shortLabel.toLowerCase() })),
-                          h('span', { className: 'mt-1 text-[0.5rem] font-bold uppercase tracking-[.1em] text-amber-700' }, roleAction.mode === 'replace' ? 'Rebalance opportunity' : 'Suggested gap'),
+                          h('span', { className: 'text-[0.625rem] font-black text-amber-900' }, __alloTf('stem.sourcebook.label_needs_role_count', 'Needs {count} {role}', { count: group.missing, role: intentField(group.id, 'shortLabel', group.shortLabel).toLowerCase() })),
+                          h('span', { className: 'mt-1 text-[0.5rem] font-bold uppercase tracking-[.1em] text-amber-700' }, roleAction.mode === 'replace' ? __alloT('stem.sourcebook.role_rebalance_opportunity', 'Rebalance opportunity') : __alloT('stem.sourcebook.role_suggested_gap', 'Suggested gap')),
                           h('button', {
                             type: 'button',
                             disabled: roleFillDisabled,
@@ -10952,12 +11184,12 @@
                             className: 'mt-2 min-h-[36px] rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-[0.5625rem] font-black text-amber-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-55',
                             'data-sourcebook-fill-role': group.id,
                             'aria-label': roleFillVerificationBlocked
-                              ? 'Verify saved source records before filling this role'
+                              ? __alloT('stem.sourcebook.title_verify_saved_records_before_filling_role', 'Verify saved source records before filling this role')
                               : (roleAction.mode === 'blocked'
-                                ? 'Choose an asset to remove; Sourcebook protects manually assigned, prepared, and selected assets'
+                                ? __alloT('stem.sourcebook.title_choose_asset_to_remove_protected', 'Choose an asset to remove; Sourcebook protects manually assigned, prepared, and selected assets')
                                 : (roleAction.mode === 'replace'
-                                  ? 'Find and replace ' + roleFillCount + ' overrepresented automatic or Sourcebook-planned assets with rights-verified assets for the ' + group.label + ' role; undo will be available'
-                                  : 'Find and add up to ' + roleFillCount + ' rights-verified assets for the ' + group.label + ' role within the palette goal'))
+                                  ? __alloTf('stem.sourcebook.title_find_and_replace_for_role', 'Find and replace {count} overrepresented automatic or Sourcebook-planned assets with rights-verified assets for the {role} role; undo will be available', { count: roleFillCount, role: group.label })
+                                  : __alloTf('stem.sourcebook.title_find_and_add_for_role', 'Find and add up to {count} rights-verified assets for the {role} role within the palette goal', { count: roleFillCount, role: group.label })))
                           }, roleFillLabel),
                           h('span', {
                             className: 'mt-1.5 text-[0.5rem] font-bold leading-snug text-amber-800',
@@ -10965,8 +11197,8 @@
                           }, roleAction.mode === 'replace'
                             ? 'Keeps ' + roleAction.goal + ' assets \u00b7 replaces ' + roleFillCount + (replacementRoleLabels ? ' from ' + replacementRoleLabels : '') + ' \u00b7 undo available'
                             : (roleAction.mode === 'blocked'
-                              ? 'Manual, prepared, and selected assets stay protected.'
-                              : 'Adds only within the ' + roleAction.goal + '-asset goal.'))
+                              ? __alloT('stem.sourcebook.role_note_protected_assets', 'Manual, prepared, and selected assets stay protected.')
+                              : __alloTf('stem.sourcebook.role_note_adds_within_goal', 'Adds only within the {goal}-asset goal.', { goal: roleAction.goal })))
                         )
                       ),
                       group.items.length > 4 && h('p', { className: 'mt-2 text-[0.5625rem] font-black text-violet-700' }, '+' + (group.items.length - 4) + ' more in this role')
@@ -10974,11 +11206,11 @@
                   })
                 ),
                 h('div', { className: 'flex flex-col gap-1 border-t border-violet-100 bg-[#f7f4ff] px-4 py-3 text-[0.625rem] font-bold text-violet-900 sm:flex-row sm:items-center sm:justify-between' },
-                  h('span', { 'data-sourcebook-role-gaps': paletteRoleBoard.missing.length }, paletteRoleBoard.ready ? 'All planned roles covered' : 'Suggested gaps: ' + paletteRoleBoard.missingLabel),
+                  h('span', { 'data-sourcebook-role-gaps': paletteRoleBoard.missing.length }, paletteRoleBoard.ready ? __alloT('stem.sourcebook.all_planned_roles_covered', 'All planned roles covered') : __alloTf('stem.sourcebook.suggested_gaps_list', 'Suggested gaps: {gaps}', { gaps: paletteRoleBoard.missingLabel })),
                   h('div', { className: 'flex flex-col gap-0.5 text-left sm:text-right' },
                     h('span', null, __alloT('stem.sourcebook.advisory_only_missing_roles_never_bloc', 'Advisory only - missing roles never block output.')),
                     h('span', { 'data-sourcebook-role-balance-behavior': paletteRoleBoard.total < paletteRoleBoard.goal ? 'add' : 'replace' }, __alloT('stem.sourcebook.below_the_goal_sourcebook_adds_at_the_', 'Below the goal, Sourcebook adds. At the goal, it replaces only unprepared automatic or Sourcebook-planned assets and provides undo.')),
-                    h('span', { 'data-sourcebook-role-search-mode': capability.textAi ? 'gemini' : 'metadata' }, 'Gap search uses ' + (capability.textAi ? 'Gemini-assisted curation' : 'deterministic metadata ranking') + '; deterministic rights checks stay independent.')
+                    h('span', { 'data-sourcebook-role-search-mode': capability.textAi ? 'gemini' : 'metadata' }, __alloTf('stem.sourcebook.gap_search_uses_method', 'Gap search uses {method}; deterministic rights checks stay independent.', { method: capability.textAi ? __alloT('stem.sourcebook.gap_search_method_gemini', 'Gemini-assisted curation') : __alloT('stem.sourcebook.gap_search_method_metadata', 'deterministic metadata ranking') }))
                   )
                 )
               )
@@ -10990,7 +11222,7 @@
             },
               h('div', { className: 'flex flex-col gap-3 border-b border-[#d3dfda] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
-                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, checkedPaletteItems.length ? 'Selected output' : 'Full palette output'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, checkedPaletteItems.length ? __alloT('stem.sourcebook.selected_output', 'Selected output') : __alloT('stem.sourcebook.full_palette_output', 'Full palette output')),
                   h('h2', { id: 'sourcebook-output-preflight-title', tabIndex: -1, className: 'mt-1 font-serif text-xl font-black' }, __alloT('stem.sourcebook.output_preflight', 'Output preflight')),
                   h('p', { className: 'mt-1 text-[0.6875rem] font-semibold text-[#d1e0db]' }, __alloT('stem.sourcebook.a_truthful_snapshot_of_intended_use_re', 'A truthful snapshot of intended use, reuse rights, accessibility review, print evidence, and attribution before download.'))
                 ),
@@ -10998,7 +11230,7 @@
                   h('span', {
                     className: 'rounded-full px-3 py-1.5 text-[0.625rem] font-black ' + (outputPreflightSummary.ready ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'),
                     'data-sourcebook-preflight-status': outputPreflightSummary.pendingChecks
-                  }, outputPreflightSummary.ready ? 'Ready for output' : outputPreflightSummary.pendingChecks + ' check' + (outputPreflightSummary.pendingChecks === 1 ? '' : 's') + ' remain'),
+                  }, outputPreflightSummary.ready ? __alloT('stem.sourcebook.ready_for_output', 'Ready for output') : __alloTn('stem.sourcebook.checks_remain', outputPreflightSummary.pendingChecks, '{count} check remains', '{count} checks remain')),
                   h('span', { className: 'rounded-full border border-[#65867a] bg-white/10 px-3 py-1.5 text-[0.625rem] font-black', 'data-sourcebook-output-count': exportItems.length }, exportItems.length + ' asset' + (exportItems.length === 1 ? '' : 's'))
                 )
               ),
@@ -11011,7 +11243,7 @@
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-accessibility': outputPreflightSummary.accessibilityReviewed + '/' + outputPreflightSummary.total },
                   h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.accessibility_reviewed', 'Accessibility reviewed')),
                   h('p', { className: 'mt-1 text-lg font-black ' + (outputPreflightSummary.accessibilitySuggested ? 'text-amber-800' : 'text-emerald-800') }, outputPreflightSummary.accessibilityReviewed + '/' + outputPreflightSummary.total),
-                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.accessibilitySuggested ? outputPreflightSummary.accessibilitySuggested + ' catalog suggestion' + (outputPreflightSummary.accessibilitySuggested === 1 ? '' : 's') + ' to review' : 'Every image purpose is confirmed')
+                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.accessibilitySuggested ? __alloTn('stem.sourcebook.catalog_suggestions_to_review', outputPreflightSummary.accessibilitySuggested, '{count} catalog suggestion to review', '{count} catalog suggestions to review') : __alloT('stem.sourcebook.every_image_purpose_is_confirmed', 'Every image purpose is confirmed'))
                 ),
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-print': outputPrintSupported + '/' + outputPreflightSummary.total },
                   h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.print_supported', 'Print supported')),
@@ -11021,14 +11253,14 @@
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-attribution': outputPreflightSummary.attributionRequired },
                   h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.cc_by_attribution', 'CC BY attribution')),
                   h('p', { className: 'mt-1 text-lg font-black text-[#31584c]' }, outputPreflightSummary.attributionRequired),
-                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.attributionRequired ? 'Required credits are included in output' : 'No CC BY credit required')
+                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.attributionRequired ? __alloT('stem.sourcebook.required_credits_included_in_output', 'Required credits are included in output') : __alloT('stem.sourcebook.no_cc_by_credit_required', 'No CC BY credit required'))
                 )
               ),
               h('div', { className: 'flex flex-col gap-3 border-t border-[#d3dfda] bg-[#f1f6f3] p-3 lg:flex-row lg:items-center' },
                 h('p', { className: 'min-w-0 flex-1 text-[0.625rem] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
                   outputPreflightSummary.ready
-                    ? 'All output checks currently have supporting evidence.'
-                    : outputReviewRows.length + ' asset' + (outputReviewRows.length === 1 ? '' : 's') + ' account for ' + outputPreflightSummary.pendingChecks + ' remaining evidence check' + (outputPreflightSummary.pendingChecks === 1 ? '' : 's') + '. Output remains available with every review note preserved.'
+                    ? __alloT('stem.sourcebook.all_output_checks_have_evidence', 'All output checks currently have supporting evidence.')
+                    : __alloTf('stem.sourcebook.assets_account_for_remaining_checks', '{assets} account for {checks}. Output remains available with every review note preserved.', { assets: __alloTn('stem.sourcebook.assets_count', outputReviewRows.length, '{count} asset', '{count} assets'), checks: __alloTn('stem.sourcebook.remaining_evidence_checks_count', outputPreflightSummary.pendingChecks, '{count} remaining evidence check', '{count} remaining evidence checks') })
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   h('button', {
@@ -11055,7 +11287,7 @@
                     className: 'min-h-[42px] rounded-xl bg-[#b84d37] px-4 text-xs font-black text-white disabled:opacity-40',
                     'data-sourcebook-review-next-check': nextOutputReviewItem ? nextOutputReviewItem.id : '',
                     'data-sourcebook-review-print-issue': nextOutputPrintIssue ? nextOutputPrintIssue.id : ''
-                  }, nextOutputReviewItem ? 'Review next check' : 'All checks complete')
+                  }, nextOutputReviewItem ? __alloT('stem.sourcebook.review_next_check', 'Review next check') : __alloT('stem.sourcebook.all_checks_complete', 'All checks complete'))
                 )
               ),
               h('details', {
@@ -11065,8 +11297,8 @@
               },
                 h('summary', { className: 'cursor-pointer px-4 py-3 text-[0.6875rem] font-black text-[#244c40] hover:bg-[#f5f8f6]' },
                   outputReviewRows.length
-                    ? 'Asset review queue · ' + outputReviewRows.length + ' need action'
-                    : 'Asset-level preflight receipt · ' + outputPreflightRows.length + ' ready'
+                    ? __alloTf('stem.sourcebook.asset_review_queue_count', 'Asset review queue · {count} need action', { count: outputReviewRows.length })
+                    : __alloTf('stem.sourcebook.asset_preflight_receipt_count', 'Asset-level preflight receipt · {count} ready', { count: outputPreflightRows.length })
                 ),
                 h('div', { className: 'grid gap-2 border-t border-[#e0e8e4] bg-[#f6f8f7] p-3 md:grid-cols-2' }, outputQueueRows.map(function (row) {
                   return h('article', {
@@ -11093,14 +11325,14 @@
                       }, row.status === 'review' ? 'Review' : 'Inspect')
                     ),
                     h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
-                      h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[0.5625rem] font-black text-violet-950' }, row.usageIntentLabel + (row.usageIntentSuggested ? ' · suggested' : (row.usageIntentPlanId ? ' · ' + USAGE_PLANS[row.usageIntentPlanId].label : ''))),
-                      h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + (row.rightsVerified ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950') }, row.rightsVerified ? 'Rights verified' : 'Rights blocked'),
+                      h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[0.5625rem] font-black text-violet-950' }, intentField(row.usageIntent, 'label', row.usageIntentLabel) + (row.usageIntentSuggested ? __alloT('stem.sourcebook.row_suggested_suffix', ' · suggested') : (row.usageIntentPlanId ? ' · ' + planField(row.usageIntentPlanId, 'label', USAGE_PLANS[row.usageIntentPlanId].label) : ''))),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + (row.rightsVerified ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950') }, row.rightsVerified ? __alloT('stem.sourcebook.row_rights_verified', 'Rights verified') : __alloT('stem.sourcebook.row_rights_blocked', 'Rights blocked')),
                       h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + (row.accessibilityReviewed ? 'bg-emerald-100 text-emerald-950' : 'bg-amber-100 text-amber-950') }, row.accessibilityLabel),
                       h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + ((row.printStatus === 'ready' || row.printStatus === 'usable') ? 'bg-sky-100 text-sky-950' : 'bg-amber-100 text-amber-950') }, row.printLabel),
                       row.attributionRequired && h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[0.5625rem] font-black text-violet-950' }, __alloT('stem.sourcebook.credit_required', 'Credit required'))
                     ),
                     h('p', { className: 'mt-2 text-[0.625rem] font-bold leading-relaxed text-[#53685f]' },
-                      row.actions.length ? 'Next: ' + row.actions.join('; ') + '.' : 'All current evidence checks pass.'
+                      row.actions.length ? __alloTf('stem.sourcebook.preflight_next_actions', 'Next: {actions}.', { actions: row.actions.join('; ') }) : __alloT('stem.sourcebook.all_current_evidence_checks_pass', 'All current evidence checks pass.')
                     )
                   );
                 }))
@@ -11161,14 +11393,14 @@
                   },
                   className: 'min-h-[42px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40',
                   'data-sourcebook-review-next': nextAccessibilityReviewItem ? nextAccessibilityReviewItem.id : ''
-                }, nextAccessibilityReviewItem ? 'Review next suggestion' : 'Accessibility review complete')
+                }, nextAccessibilityReviewItem ? __alloT('stem.sourcebook.review_next_suggestion', 'Review next suggestion') : __alloT('stem.sourcebook.accessibility_review_complete', 'Accessibility review complete'))
               )
             ),
             showingCollection && selectedItems.length > 0 && h('div', {
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-[#c4d2cc] bg-[#f5f7f4] px-3 py-2',
               'aria-label': __alloT('stem.sourcebook.prepare_every_palette_asset', 'Prepare every palette asset')
             },
-              h('span', { className: 'mr-1 text-[0.6875rem] font-black text-[#38564d]' }, checkedPaletteItems.length ? 'Prepare selected (' + checkedPaletteItems.length + ')' : 'Prepare all'),
+              h('span', { className: 'mr-1 text-[0.6875rem] font-black text-[#38564d]' }, checkedPaletteItems.length ? __alloTf('stem.sourcebook.prepare_selected_count', 'Prepare selected ({count})', { count: checkedPaletteItems.length }) : __alloT('stem.sourcebook.prepare_all', 'Prepare all')),
               h('button', { type: 'button', onClick: function () { applyPreparationToPalette('fit'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Fit selected' : 'Fit all'),
               h('button', { type: 'button', onClick: function () { applyPreparationToPalette('crop'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Crop selected' : 'Crop all'),
               h('button', { type: 'button', onClick: function () { applyPreparationToPalette('tile'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Tile selected' : 'Tile all'),
@@ -11199,14 +11431,14 @@
               h('div', { className: 'flex flex-col gap-3 p-3 sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.14em] text-sky-800' }, __alloT('stem.sourcebook.compare_before_saving', 'Compare before saving')),
-                  h('p', { className: 'mt-1 text-xs font-bold leading-relaxed text-[#38564d]' }, comparisonItems.length + ' of ' + COMPARISON_MAX_ASSETS + ' rights-verified candidates selected. ' + (comparisonItems.length < 2 ? 'Add one more to review them side by side.' : 'Review source, reuse, relevance, and print readiness without another search.'))
+                  h('p', { className: 'mt-1 text-xs font-bold leading-relaxed text-[#38564d]' }, __alloTf('stem.sourcebook.comparison_selected_summary', '{count} of {max} rights-verified candidates selected. {hint}', { count: comparisonItems.length, max: COMPARISON_MAX_ASSETS, hint: comparisonItems.length < 2 ? __alloT('stem.sourcebook.comparison_hint_add_one_more', 'Add one more to review them side by side.') : __alloT('stem.sourcebook.comparison_hint_review_without_search', 'Review source, reuse, relevance, and print readiness without another search.') }))
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   h('button', {
                     type: 'button', onClick: openComparison, disabled: comparisonItems.length < 2,
                     className: 'min-h-[44px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40',
                     'data-sourcebook-open-comparison': 'true'
-                  }, 'Review side by side (' + comparisonItems.length + ')'),
+                  }, __alloTf('stem.sourcebook.review_side_by_side_count', 'Review side by side ({count})', { count: comparisonItems.length })),
                   h('button', {
                     type: 'button', onClick: clearComparison,
                     className: 'min-h-[44px] rounded-xl border border-[#9fb8ae] bg-white px-3 text-xs font-black text-[#38564d]',
@@ -11223,7 +11455,7 @@
                   h('div', { className: 'min-w-0 flex-1' },
                     h('p', { className: 'truncate text-[0.5625rem] font-black uppercase tracking-[.08em] text-[#60766d]' }, item.provider),
                     h('p', { className: 'mt-0.5 line-clamp-2 text-[0.6875rem] font-black leading-tight text-[#18352d]' }, item.title),
-                    h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-emerald-800' }, item.rightsShort)
+                    h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-emerald-800' }, rightsShortLabel(item))
                   ),
                   h('button', {
                     type: 'button', onClick: function () { toggleComparison(item); },
@@ -11262,7 +11494,7 @@
                     onClick: function () { addItemsToPalette(comparisonItems, __alloTf('stem.sourcebook.msg_saved_compared_assets', 'Saved {count} compared assets to your palette.', { count: comparisonItems.length })); },
                     className: 'min-h-[44px] rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32]',
                     'data-sourcebook-save-comparison': 'true'
-                  }, 'Save compared (' + comparisonItems.length + ')'),
+                  }, __alloTf('stem.sourcebook.save_compared_count', 'Save compared ({count})', { count: comparisonItems.length })),
                   h('button', {
                     type: 'button', onClick: function () { setComparisonOpen(false); },
                     className: 'min-h-[44px] rounded-xl border border-[#6f9185] bg-white/10 px-4 text-xs font-black text-white',
@@ -11275,7 +11507,7 @@
                 var itemReadiness = printReadiness(item, itemPreparation, measuredDimensions[item.id]);
                 var itemMatch = query ? discoveryMatchDetails(item, selectionQuery || query, kind) : null;
                 var itemSaved = collection.indexOf(item.id) !== -1;
-                var pixelLabel = itemReadiness.width && itemReadiness.height ? itemReadiness.width + ' x ' + itemReadiness.height + ' px' : 'Verify full-size file';
+                var pixelLabel = itemReadiness.width && itemReadiness.height ? __alloTf('stem.sourcebook.pixel_dimensions_px', '{width} x {height} px', { width: itemReadiness.width, height: itemReadiness.height }) : __alloT('stem.sourcebook.verify_full_size_file', 'Verify full-size file');
                 return h('article', {
                   key: item.id,
                   className: 'overflow-hidden rounded-2xl border border-[#c5d5ce] bg-white shadow-sm',
@@ -11285,7 +11517,7 @@
                   h('div', { className: 'relative h-44 overflow-hidden bg-[#e8ece7]' },
                     sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] } }),
                     h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[0.625rem] font-black text-white' }, __alloTf('stem.sourcebook.label_candidate_n', 'Candidate {n}', { n: index + 1 })),
-                    h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950' }, item.rightsShort)
+                    h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950' }, rightsShortLabel(item))
                   ),
                   h('div', { className: 'p-4' },
                     h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, item.provider),
@@ -11298,9 +11530,9 @@
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.source_2', 'Source')),
                       h('dd', { className: 'font-bold text-[#18352d]' }, item.provider),
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.reuse', 'Reuse')),
-                      h('dd', { className: 'font-bold text-emerald-800' }, item.rightsShort),
+                      h('dd', { className: 'font-bold text-emerald-800' }, rightsShortLabel(item)),
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.print', 'Print')),
-                      h('dd', { className: 'font-bold ' + readinessBadgeClasses(itemReadiness) + ' w-fit rounded-full px-2 py-0.5' }, itemReadiness.label),
+                      h('dd', { className: 'font-bold ' + readinessBadgeClasses(itemReadiness) + ' w-fit rounded-full px-2 py-0.5' }, readinessLabel(itemReadiness)),
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.pixels', 'Pixels')),
                       h('dd', { className: 'font-bold text-[#18352d]' }, pixelLabel),
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.material', 'Material')),
@@ -11312,7 +11544,7 @@
                       h('button', {
                         type: 'button', disabled: itemSaved, onClick: function () { if (!itemSaved) toggleSaved(item); },
                         className: 'min-h-[42px] flex-1 rounded-xl bg-[#183b32] px-3 text-xs font-black text-white disabled:opacity-50'
-                      }, itemSaved ? 'Saved' : 'Save to palette'),
+                      }, itemSaved ? __alloT('stem.sourcebook.compare_saved', 'Saved') : __alloT('stem.sourcebook.compare_save_to_palette', 'Save to palette')),
                       h('button', {
                         type: 'button', onClick: function () { inspectSourcebookItem(item); },
                         className: 'min-h-[42px] rounded-xl border border-[#9fb3aa] bg-white px-3 text-xs font-black text-[#38564d]'
@@ -11339,8 +11571,8 @@
               )
             ] : [])) : h('div', { className: 'rounded-3xl border-2 border-dashed border-[#b7c7c0] bg-[#f5f7f4] p-10 text-center' },
               h('div', { 'aria-hidden': 'true', className: 'text-4xl' }, '⌕'),
-              h('h3', { className: 'font-serif text-xl font-black mt-2' }, showingCollection ? (paletteFilter.trim() ? 'No saved source matches this palette filter' : 'Your palette is ready for its first source') : (boardFilter.trim() ? 'No loaded result matches this filter' : 'No close match on this shelf')),
-              h('p', { className: 'text-xs text-[#5f7169] mt-2 max-w-md mx-auto' }, showingCollection ? (paletteFilter.trim() ? 'Clear or revise the palette filter to return to the full saved working set.' : 'Save a result to build a printable working set.') : (boardFilter.trim() ? 'Clear the local filter to return to all rights-verified results.' : 'Try fewer descriptive words, clear a filter, or continue the same search at an open-source provider below.')),
+              h('h3', { className: 'font-serif text-xl font-black mt-2' }, showingCollection ? (paletteFilter.trim() ? __alloT('stem.sourcebook.empty_no_saved_source_matches_filter', 'No saved source matches this palette filter') : __alloT('stem.sourcebook.empty_palette_ready_for_first_source', 'Your palette is ready for its first source')) : (boardFilter.trim() ? __alloT('stem.sourcebook.empty_no_loaded_result_matches_filter', 'No loaded result matches this filter') : __alloT('stem.sourcebook.empty_no_close_match_on_shelf', 'No close match on this shelf'))),
+              h('p', { className: 'text-xs text-[#5f7169] mt-2 max-w-md mx-auto' }, showingCollection ? (paletteFilter.trim() ? __alloT('stem.sourcebook.empty_hint_clear_palette_filter', 'Clear or revise the palette filter to return to the full saved working set.') : __alloT('stem.sourcebook.empty_hint_save_a_result', 'Save a result to build a printable working set.')) : (boardFilter.trim() ? __alloT('stem.sourcebook.empty_hint_clear_local_filter', 'Clear the local filter to return to all rights-verified results.') : __alloT('stem.sourcebook.empty_hint_try_fewer_words', 'Try fewer descriptive words, clear a filter, or continue the same search at an open-source provider below.'))),
               showingCollection && paletteFilter.trim() && h('button', { type: 'button', onClick: function () { setPaletteFilter(''); }, className: 'sb-no-print mt-4 min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, __alloT('stem.sourcebook.clear_palette_filter', 'Clear palette filter')),
               !showingCollection && boardFilter.trim() && h('button', { type: 'button', onClick: function () { setBoardFilter(''); }, className: 'sb-no-print mt-4 min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, __alloT('stem.sourcebook.clear_local_filter', 'Clear local filter'))
             )),
@@ -11364,7 +11596,7 @@
                 'aria-controls': 'sourcebook-results-board',
                 'aria-disabled': hiddenLoadedResultCount <= 0 ? 'true' : 'false',
                 'data-sourcebook-show-more-loaded': 'true'
-              }, hiddenLoadedResultCount > 0 ? ('Show ' + Math.min(BOARD_RENDER_STEP, hiddenLoadedResultCount) + ' more loaded results') : 'All loaded results shown')
+              }, hiddenLoadedResultCount > 0 ? __alloTf('stem.sourcebook.show_more_loaded_results', 'Show {count} more loaded results', { count: Math.min(BOARD_RENDER_STEP, hiddenLoadedResultCount) }) : __alloT('stem.sourcebook.all_loaded_results_shown', 'All loaded results shown'))
             ),            h('section', { className: 'sb-no-print mt-6 rounded-3xl bg-[#1d3a32] text-[#edf5f1] p-5', 'aria-labelledby': 'sourcebook-more-title' },
               h('div', { className: 'flex items-start justify-between gap-3' },
                 h('div', null,

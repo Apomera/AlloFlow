@@ -16,7 +16,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("'aria-busy': ready ? 'false' : 'true'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D particle chamber'");
     expect(source).toContain("'aria-describedby': 'particle-chamber-help'");
-    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H D ? Escape ArrowLeft ArrowRight ArrowUp ArrowDown Plus -'");
+    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H D P A 2 ? Escape ArrowLeft ArrowRight ArrowUp ArrowDown Plus -'");
     expect(source).toContain("['D', 'Show or hide the chamber readouts dock']");
     expect(source).toContain('onKeyDown: onLabKey');
     expect(source).toContain('event.currentTarget.focus()');
@@ -350,7 +350,8 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     const controls = source.indexOf('var controls = new THREE.OrbitControls(camera, canvas);');
     expect(gate).toBeGreaterThan(0);
     expect(gate).toBeLessThan(controls);
-    expect(source).toContain('function onTouchGate(event) { controls.enabled = event.touches.length >= 2 || event.touches.length === 0; }');
+    // The gate records its verdict so the flat view (which disables the controls every frame) can restore it on exit.
+    expect(source).toContain("function onTouchGate(event) { touchGateEnabled = event.touches.length >= 2 || event.touches.length === 0; controls.enabled = touchGateEnabled && settingsRef.current.viewMode !== 'flat'; }");
     expect(source).toContain('controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;');
     expect(source).toContain("canvas.removeEventListener('touchstart', onTouchGate); canvas.removeEventListener('touchend', onTouchGate); canvas.removeEventListener('touchcancel', onTouchGate); controls.dispose();");
     // The hint shows only for coarse pointers, is decorative for AT (the help text carries the words), and survives high contrast.
@@ -364,8 +365,8 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
   it('stops drawing the chamber while it is scrolled off screen, without stopping the experiment', () => {
     // ~41 GPU draws a second while 3,000 px off screen on a 5,900 px phone page (scratch/particle_probe_offscreen.mjs).
     expect(source).toContain("visibilityObserver = new IntersectionObserver(function (entries) { stageVisible = entries[entries.length - 1].isIntersecting; }, { threshold: 0 }); visibilityObserver.observe(canvas);");
-    expect(source).toContain('if (stageVisible) renderer.render(scene, camera);');
-    expect(source).not.toMatch(/^\s*renderer\.render\(scene, camera\);/m); // no ungated draw remains
+    expect(source).toContain('if (stageVisible) renderer.render(scene, activeCamera);'); // activeCamera: the orbit or the flat camera
+    expect(source).not.toMatch(/^\s*renderer\.render\(scene, (camera|activeCamera)\);/m); // no ungated draw remains
     expect(source).toContain('if (visibilityObserver) visibilityObserver.disconnect();');
     // Physics must not be gated: the step loop stays keyed on running/step only.
     expect(source).toContain('} else if (runRef.current || stepRef.current) {');
@@ -390,6 +391,43 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
       expect(tool).not.toContain('script.onload = loadOrbit');
       expect(tool).not.toContain('three.min.js');
     });
+  });
+
+  it('seeds the chamber at its setpoint and pumps particles into the live chamber instead of re-seeding it', () => {
+    // A chamber seeded at 300 K read 239 K until the temperature slider was touched: the seed drew speeds from a
+    // uniform band and never scaled them, while the slider did. And every count change was a full re-seed, so
+    // "add particles" was a jump cut and Avogadro's relationship could only be studied as two separate runs.
+    expect(source).toContain('var seedScale = Math.sqrt(Math.max(1, temperature) / 40 / seedMeanV2);');
+    expect(source).toContain('function makePumpedParticles(n, settings, temperature, seed, type)');
+    expect(source.match(/if \(p\.settling\) p\.settling = false; else impulse \+= particleMass/g)).toHaveLength(2); // both walls on every axis
+    expect(source).toContain('pump: pumpIn, release: releaseOut');
+    expect(source).toContain('setLiveCount(particles.length);');
+    expect(source).not.toContain('settingsRef.current.count'); // every live reading counts what is in the chamber now
+    expect(source.match(/count: liveCount, boxSize: boxSize/g).length).toBeGreaterThanOrEqual(3); // trials, tracer walks, live conditions
+    expect(source).toContain("role: 'group', 'aria-label': 'Pump and lid'");
+    expect(source).toContain("'aria-label': 'Fullscreen pump and lid'");
+    expect(source).toContain("['P', 'Pump eight particles in through the wall nozzle (Shift+P releases eight through the lid)']");
+    expect(source).toContain("id: 'avogadro'");
+    expect(source).toContain('unavailable in the solid preset because the lattice has no free space'); // aria-disabled reason, still reachable
+  });
+
+  it('starts diffusion behind a divider, offers a flat 2D view, audio cues, a kinetic energy chart and a model note', () => {
+    expect(source).toContain("if (next === 'diffusion') { setMembrane(true); setPermeability(0); setMembraneSelectivity('both'); }");
+    expect(source).toContain('if (permeability <= 0) {'); // a divider is a wall, not a membrane: no transport events or assay samples
+    expect(source).toContain('membranePlane.material.wireframe = !dividerVisible;');
+    expect(source).toContain("(protocol.id === 'mixing' ? 0 : 1)"); // Diffusion Race begins with the divider in place
+    expect(source).toContain('new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100)');
+    expect(source).toContain("var flat = settingsRef.current.viewMode === 'flat'; activeCamera = flat ? flatCamera : camera; controls.enabled = !flat && touchGateEnabled; stars.visible = !flat;");
+    expect(source).toContain("'aria-label': 'Flat 2D view. A fixed front camera with no perspective; nearer particles draw larger.'");
+    expect(source).toContain("['2', 'Flat 2D view with a fixed front camera; press again for the 3D orbit view']");
+    expect(source).toContain("restoreOneOf(bucket.viewMode, ['orbit', 'flat'], 'orbit')");
+    expect(source).toContain('var AudioCtx = window.AudioContext || window.webkitAudioContext;');
+    expect(source).toContain("document.addEventListener('visibilitychange', onVisibility);"); // the tone must not play on in a background tab
+    expect(source).toContain('audio.ctx.close()'); // and must not outlive the tool
+    expect(source).toContain("['A', 'Audio cues: pressure tone, wall-hit clicks, pump whoosh']");
+    expect(source).toContain('function energyDistribution(particles, massRatioB, binCount)');
+    expect(source).toContain("'Paired histogram of kinetic energy per particle. Species A mean '");
+    expect(source).toContain('there is no thermostat'); // the model note says what a model unit is and what the sliders do
   });
 
   it('keeps the deploy mirror byte-identical', () => {

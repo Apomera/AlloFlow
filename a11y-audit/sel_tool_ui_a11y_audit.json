@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-29T02:08:13.934Z",
-  "toolCount": 71,
+  "generatedAt": "2026-09-13T18:46:11.911Z",
+  "toolCount": 72,
   "themesAudited": [
     "light",
     "dark",
@@ -15,8 +15,8 @@
     "toolsWithIssues": 0,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
-      "textNodesGraded": 14219,
-      "skippedGradientBackground": 934,
+      "textNodesGraded": 18416,
+      "skippedGradientBackground": 901,
       "skippedColourFromCssClass": 933,
       "note": "Skipped nodes are NOT passes. Gradient-backed text has no single background to measure; class-sourced colours cannot be resolved from SSR markup."
     }
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 78312,
+      "renderedBytes": 430170,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 26104,
+          "renderedBytes": 143390,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 26104,
+          "renderedBytes": 143390,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 26104,
+          "renderedBytes": 143390,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -454,7 +454,7 @@
     {
       "id": "conflict",
       "label": "Conflict Resolution Lab",
-      "renderedBytes": 60297,
+      "renderedBytes": 71487,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -462,7 +462,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 20099,
+          "renderedBytes": 23829,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -471,7 +471,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 20099,
+          "renderedBytes": 23829,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -480,7 +480,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 20099,
+          "renderedBytes": 23829,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -532,7 +532,7 @@
     {
       "id": "coping",
       "label": "Coping Toolkit",
-      "renderedBytes": 944736,
+      "renderedBytes": 944928,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -540,7 +540,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 314911,
+          "renderedBytes": 314975,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -549,7 +549,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 314911,
+          "renderedBytes": 314975,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -558,7 +558,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 314914,
+          "renderedBytes": 314978,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -766,7 +766,7 @@
     {
       "id": "decisions",
       "label": "Decision Workshop",
-      "renderedBytes": 44331,
+      "renderedBytes": 67437,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -774,7 +774,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 14776,
+          "renderedBytes": 22479,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -783,7 +783,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 14776,
+          "renderedBytes": 22479,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -792,7 +792,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 14779,
+          "renderedBytes": 22479,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -922,7 +922,7 @@
     {
       "id": "emotions",
       "label": "Emotions Explorer",
-      "renderedBytes": 74370,
+      "renderedBytes": 76242,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -930,7 +930,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 24790,
+          "renderedBytes": 25414,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -939,7 +939,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 24790,
+          "renderedBytes": 25414,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -948,7 +948,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 24790,
+          "renderedBytes": 25414,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1117,7 +1117,7 @@
     {
       "id": "goals",
       "label": "Goal Setter",
-      "renderedBytes": 40698,
+      "renderedBytes": 40812,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1125,7 +1125,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13565,
+          "renderedBytes": 13603,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1134,7 +1134,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13565,
+          "renderedBytes": 13603,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1143,7 +1143,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13568,
+          "renderedBytes": 13606,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1195,7 +1195,7 @@
     {
       "id": "growthmindset",
       "label": "Growth Mindset Workshop",
-      "renderedBytes": 56763,
+      "renderedBytes": 63474,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1203,7 +1203,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 18921,
+          "renderedBytes": 21158,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1212,7 +1212,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 18921,
+          "renderedBytes": 21158,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1221,7 +1221,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 18921,
+          "renderedBytes": 21158,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1273,7 +1273,7 @@
     {
       "id": "howlTracker",
       "label": "HOWL Tracker",
-      "renderedBytes": 65739,
+      "renderedBytes": 68166,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1281,7 +1281,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 21910,
+          "renderedBytes": 22719,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1290,7 +1290,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 21910,
+          "renderedBytes": 22719,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1299,7 +1299,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 21919,
+          "renderedBytes": 22728,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1351,7 +1351,7 @@
     {
       "id": "journal",
       "label": "Feelings Journal",
-      "renderedBytes": 63351,
+      "renderedBytes": 71211,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1359,7 +1359,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 21116,
+          "renderedBytes": 23737,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1368,7 +1368,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 21116,
+          "renderedBytes": 23737,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1377,7 +1377,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 21119,
+          "renderedBytes": 23737,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1468,7 +1468,7 @@
     {
       "id": "mindfulness",
       "label": "Mindfulness Corner",
-      "renderedBytes": 94692,
+      "renderedBytes": 113853,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1476,7 +1476,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 31562,
+          "renderedBytes": 37949,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1485,7 +1485,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 31562,
+          "renderedBytes": 37949,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1494,7 +1494,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 31568,
+          "renderedBytes": 37955,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1741,7 +1741,7 @@
     {
       "id": "perspective",
       "label": "Perspective-Taking Lab",
-      "renderedBytes": 51099,
+      "renderedBytes": 71112,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1749,7 +1749,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17029,
+          "renderedBytes": 23703,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1758,7 +1758,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17029,
+          "renderedBytes": 23703,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1767,7 +1767,46 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17041,
+          "renderedBytes": 23706,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "practiceJourneys",
+      "label": "Practice Journeys (Pilot)",
+      "renderedBytes": 9284,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 3094,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 3093,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 3097,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1780,7 +1819,7 @@
     {
       "id": "quietQuestions",
       "label": "Quiet Questions",
-      "renderedBytes": 25314,
+      "renderedBytes": 25224,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1788,7 +1827,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8436,
+          "renderedBytes": 8406,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1797,7 +1836,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8436,
+          "renderedBytes": 8406,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1806,7 +1845,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8442,
+          "renderedBytes": 8412,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2326,7 +2365,7 @@
     {
       "id": "teamwork",
       "label": "Teamwork Builder",
-      "renderedBytes": 58191,
+      "renderedBytes": 58239,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2334,7 +2373,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 19397,
+          "renderedBytes": 19413,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2343,7 +2382,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 19397,
+          "renderedBytes": 19413,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2352,7 +2391,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 19397,
+          "renderedBytes": 19413,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2521,7 +2560,7 @@
     {
       "id": "upstander",
       "label": "Upstander Workshop",
-      "renderedBytes": 97347,
+      "renderedBytes": 205422,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2529,7 +2568,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 32448,
+          "renderedBytes": 68474,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2538,7 +2577,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 32448,
+          "renderedBytes": 68474,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2547,7 +2586,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 32451,
+          "renderedBytes": 68474,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2755,7 +2794,7 @@
     {
       "id": "zones",
       "label": "Emotion Zones",
-      "renderedBytes": 92264,
+      "renderedBytes": 110798,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2763,7 +2802,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 30646,
+          "renderedBytes": 36824,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2772,7 +2811,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 30646,
+          "renderedBytes": 36824,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2781,7 +2820,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 30972,
+          "renderedBytes": 37150,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

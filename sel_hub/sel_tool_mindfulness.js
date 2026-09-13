@@ -442,6 +442,5137 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Gratitude Prompts ──
   // ══════════════════════════════════════════════════════════════
+  // ─── Content libraries wired 2026-09-13 (archived Aug 25 as never-read; now each has a view) ───
+var TRAUMA_ADAPTATIONS = [
+    {
+      id: 'adapt_closed_eye_body_scan',
+      standardPractice: 'Closed-eye body scan',
+      riskForTrauma: 'Closing the eyes removes visual safety cues. For trauma survivors, eyes closed plus inward attention to the body can trigger flashbacks, dissociation, or panic, especially when scanning areas associated with stored trauma (chest, throat, pelvis, gut).',
+      adaptations: [
+        {
+          variant: 'Eyes open soft gaze',
+          description: 'Keep eyes open with a soft, unfocused gaze on the floor about 3 to 6 feet ahead. You can blink and shift your gaze any time. The room and its safety remain visible.',
+          whenToUse: 'Default for anyone with trauma history, anyone new to body-focused practice, anyone returning from a difficult sit.'
+        },
+        {
+          variant: 'External anchor instead of body',
+          description: 'Use an external sensory anchor (sounds in the room, the feel of feet on the floor, hands resting on thighs) instead of scanning through internal sensations.',
+          whenToUse: 'When internal body sensation itself is overwhelming or trigger.'
+        },
+        {
+          variant: 'Skip vulnerable regions',
+          description: 'Scan only neutral areas (hands, forearms, feet, lower legs). Skip chest, throat, pelvis, gut, or any area associated with trauma.',
+          whenToUse: 'When specific body regions are reliably activating.'
+        },
+        {
+          variant: 'Movement instead of scan',
+          description: 'Do gentle movement (shoulder rolls, ankle circles, light stretching) with attention, instead of stationary scan.',
+          whenToUse: 'When stillness amplifies activation.'
+        }
+      ],
+      groundingFirst: 'Before any body scan, name where you are, the date, and three things you see in the room. Plant your feet on the floor and feel the floor pressing back. This orients you to safety before going inward.',
+      earlyWarning: [
+        'Heart rate climbing notably',
+        'Breath becoming shallow, fast, or held',
+        'Sense of leaving the body (looking down at yourself)',
+        'Old memory or sensation surfacing from a remembered event',
+        'Sudden urge to get up and leave'
+      ],
+      ifActivated: [
+        'Open your eyes immediately and look around the room',
+        'Plant feet firmly; press them into the floor and feel the pressure back',
+        'Name out loud: my name is _____, today is _____, I am in _____',
+        'Get up, walk slowly, get a drink of water',
+        'Switch to grounding (5 things you see, 4 you hear, 3 you touch)',
+        'End the practice; trying again the same way the same day is not wise'
+      ],
+      facilitatorNote: 'For any group with members who may have trauma history (most groups, in practice): always offer the eyes-open option from the start, not as a remediation for failure. Frame it as a valid form of practice, not a beginner version. Watch for stillness that looks frozen rather than relaxed (jaw tension, shallow breath, blanched face) and check in privately.',
+      research: 'Treleaven D (2018). Trauma-Sensitive Mindfulness. van der Kolk B (2014). Briere J & Scott C (2014). NCTSN Trauma-Informed Practice guidelines.'
+    },
+    {
+      id: 'adapt_long_silent_sitting',
+      standardPractice: 'Long silent sitting',
+      riskForTrauma: 'Extended stillness in silence is one of the highest-risk practices for trauma survivors. It removes distraction, requires sustained inward attention, and exceeds the capacity many trauma survivors have built for tolerating unstructured time alone with themselves.',
+      adaptations: [
+        {
+          variant: 'Short sits, frequent breaks',
+          description: 'Sit 5 to 10 minutes, then take a 1 to 2 minute break to move, sip water, or look around. Repeat as desired. Total practice time can be the same; the structure protects.',
+          whenToUse: 'Default for anyone with trauma history; also for beginners and anyone returning to practice.'
+        },
+        {
+          variant: 'Guided rather than silent',
+          description: 'Use a guided audio that provides regular verbal anchors (a voice every 30 to 60 seconds) rather than full silence.',
+          whenToUse: 'When silence itself is destabilizing.'
+        },
+        {
+          variant: 'External focus with timer',
+          description: 'Sit for a defined time, but with focus on external sounds, the room, or environmental sensations rather than internal experience.',
+          whenToUse: 'When inward attention is not yet safe.'
+        },
+        {
+          variant: 'Movement break embedded',
+          description: 'Build in a planned movement break at the midpoint of any sit longer than 15 minutes. Stand, walk for 30 seconds, return.',
+          whenToUse: 'For sits between 20 and 45 minutes.'
+        }
+      ],
+      groundingFirst: 'Before any long sit, complete a grounding sequence: orient to room, body, breath, and the fact that you can stop at any time. Set a timer; do not depend on intuition for ending.',
+      earlyWarning: [
+        'Restlessness building into agitation',
+        'Increasing emotional intensity that feels uncontainable',
+        'Drowsiness that feels like dissociation, not normal sleepiness',
+        'Loss of sense of where you are or what time it is',
+        'Compulsion to continue past discomfort to prove something'
+      ],
+      ifActivated: [
+        'Stop the sit; an early end is success, not failure',
+        'Stand up; physical movement breaks the freeze',
+        'Re-orient: 5 things you see, 4 you hear, 3 you touch',
+        'Drink water, eat a small grounding snack (something with protein)',
+        'Walk outside for a few minutes if you can',
+        'Do not return to practice the same day; reflect with a journal or trusted person'
+      ],
+      facilitatorNote: 'Avoid extended silent sits with new groups, with anyone you do not know well, and with any group that has not been explicitly screened for trauma readiness. Always specify length in advance and use a clear ending signal. Build in stand-and-stretch breaks for sits over 20 minutes.',
+      research: 'Treleaven D (2018). Lindahl JR, et al. (2017). NCTSN guidelines. Briere J & Scott C (2014). Principles of Trauma Therapy.'
+    },
+    {
+      id: 'adapt_lying_down',
+      standardPractice: 'Lying-down practice (positional vulnerability)',
+      riskForTrauma: 'Lying down places the body in a vulnerable position (supine, eyes potentially closed, exposed front of body). For survivors of physical or sexual assault, this position itself can activate trauma response, regardless of practice content.',
+      adaptations: [
+        {
+          variant: 'Side-lying instead of supine',
+          description: 'Lie on your side rather than on your back. This is less exposing and can feel safer.',
+          whenToUse: 'For anyone who finds supine position activating.'
+        },
+        {
+          variant: 'Seated alternative',
+          description: 'Sit in a chair or on cushions instead of lying down. All body scan and relaxation practices can be done seated.',
+          whenToUse: 'Default for anyone with assault history or who is unsure.'
+        },
+        {
+          variant: 'Position of choice',
+          description: 'Offer multiple positions (chair, side-lying, supine, propped on bolsters) and allow practitioners to switch any time without comment.',
+          whenToUse: 'In any group setting.'
+        },
+        {
+          variant: 'Eyes open, head propped',
+          description: 'If lying down, keep eyes open or partially open with the head propped on a pillow so you can see the room.',
+          whenToUse: 'When supine is preferred but full eyes-closed feels unsafe.'
+        }
+      ],
+      groundingFirst: 'Before lying down, orient to the room, identify the exit, identify trusted people present. Establish that you can change position or leave at any time.',
+      earlyWarning: [
+        'Tension building in the body once supine',
+        'Sense of being trapped or unable to move',
+        'Memory of past assault or violation',
+        'Urge to roll up or curl into fetal position',
+        'Holding breath or shallow breathing'
+      ],
+      ifActivated: [
+        'Sit up immediately; do not stay in the position trying to observe',
+        'Get up and stand; move',
+        'Re-orient to the room and the safety of the present',
+        'Switch to seated practice for the remainder',
+        'Note what triggered; share with a therapist if there is one',
+        'Do not return to supine practice until you have processed the trigger'
+      ],
+      facilitatorNote: 'Never require supine position in any group. Always offer alternatives explicitly. In yoga or relaxation settings, name that students can adjust position any time without comment. Be especially aware of this in shavasana, savasana, or yoga nidra contexts where supine is traditional.',
+      research: 'Treleaven D (2018). Emerson D & Hopper E (2011). Overcoming Trauma Through Yoga. NCTSN guidelines.'
+    },
+    {
+      id: 'adapt_loving_kindness_self',
+      standardPractice: 'Loving-kindness for self (can backfire in shame spirals)',
+      riskForTrauma: 'For people with deep shame, self-hatred, or trauma-based negative self-view, generating loving-kindness toward themselves can paradoxically intensify shame, grief, or self-loathing. The contrast between the offered phrase (may I be happy) and felt experience of unworthiness can collapse the practice.',
+      adaptations: [
+        {
+          variant: 'Start with a benefactor',
+          description: 'Begin with someone who has been kind to you (a grandparent, mentor, beloved pet) rather than with self. Generate the feeling first; bring it to self last, or skip self entirely for a while.',
+          whenToUse: 'When self-directed phrases produce backlash; default for anyone with trauma or shame history.'
+        },
+        {
+          variant: 'Younger self instead of current self',
+          description: 'Direct the phrases to a younger version of yourself (5-year-old self, 10-year-old self) rather than current self. This often bypasses adult shame.',
+          whenToUse: 'When direct self-loving-kindness is too direct.'
+        },
+        {
+          variant: 'Phrases of common humanity',
+          description: 'Use phrases of common humanity (may all beings know this difficulty is part of being human) rather than personalized self-phrases. Compassion without singling out self.',
+          whenToUse: 'When isolating self for compassion feels unsafe or false.'
+        },
+        {
+          variant: 'Witness self with neutrality',
+          description: 'Drop the kindness phrases entirely and practice neutral attention to self (noticing without judgment). Save loving-kindness for later when capacity is built.',
+          whenToUse: 'When even compassion-toward-others is too much.'
+        }
+      ],
+      groundingFirst: 'Before any self-directed practice, name that you are doing this as an experiment, and that backlash is information, not failure. Have a backup grounding practice ready.',
+      earlyWarning: [
+        'Surge of shame, grief, or self-hatred',
+        'Cynical or angry counter-thoughts (you do not deserve this)',
+        'Tears that feel more grief than relief',
+        'Numbness that descends like a curtain',
+        'Sense of phoniness or performing the practice'
+      ],
+      ifActivated: [
+        'Drop the practice; switch to a benefactor (someone else who loved you well)',
+        'Or switch to common humanity phrases (all beings struggling, not just you)',
+        'Place a hand on your heart and breathe slowly',
+        'Acknowledge what came up without trying to fix it',
+        'Talk to a therapist if shame spirals are recurring',
+        'Be gentle; do not push self-directed practice that consistently backfires'
+      ],
+      facilitatorNote: 'Always offer the benefactor and common-humanity entry points alongside self-directed practice. Name explicitly that some people find self-loving-kindness activates shame, and that this is common rather than failure. In groups, do not require sharing of what came up.',
+      research: 'Germer C & Neff K (2019). Teaching the Mindful Self-Compassion Program. Treleaven D (2018). Gilbert P (2009). The Compassionate Mind.'
+    },
+    {
+      id: 'adapt_loving_kindness_difficult',
+      standardPractice: 'Loving-kindness for a difficult person',
+      riskForTrauma: 'Directing loving-kindness toward a person who abused, harmed, or betrayed you can re-traumatize. The instruction to send love to your abuser can replicate the dynamic where the survivor protects the abuser at their own expense. This practice is contraindicated for many trauma survivors.',
+      adaptations: [
+        {
+          variant: 'Skip difficult-person stage entirely',
+          description: 'Stop the loving-kindness sequence after benefactor, self, neutral person, and all beings. Do not include a specific difficult person.',
+          whenToUse: 'For anyone with a history of being harmed by a specific person; for any trauma survivor.'
+        },
+        {
+          variant: 'Mildly difficult person only',
+          description: 'Use a mildly annoying person (the slow person in line, a colleague who frustrates you) rather than anyone who has actually harmed you.',
+          whenToUse: 'When some difficult-person practice is desired but actual harm-doers are off limits.'
+        },
+        {
+          variant: 'Substitute distant compassion',
+          description: 'Instead of love-toward-abuser, practice may they no longer cause harm, may they meet justice, may I be free of their effects. This is compassion-shaped but not self-betraying.',
+          whenToUse: 'When some attitudinal shift is wanted but love is the wrong frame.'
+        },
+        {
+          variant: 'Loving-kindness for self in relation',
+          description: 'Direct loving-kindness to your own wounded self in the wake of what they did, rather than to them.',
+          whenToUse: 'When the practice is to heal you, not them.'
+        }
+      ],
+      groundingFirst: 'Before any practice involving people who have harmed you, ground in your own safety: the harm is in the past, you are safe now, you are not required to love anyone who hurt you.',
+      earlyWarning: [
+        'Surge of anger at the practice itself',
+        'Sense of being asked to betray yourself',
+        'Trauma response (flashback, freeze, panic)',
+        'Grief that feels destabilizing',
+        'Compliance that feels false or performative'
+      ],
+      ifActivated: [
+        'Drop the practice immediately; you are not required to love your abuser',
+        'Ground in your own body and present safety',
+        'Place a hand on your heart and offer loving-kindness to yourself in light of what they did',
+        'Speak out loud, I do not have to send love to anyone who hurt me',
+        'Talk to a trauma-informed therapist about what came up',
+        'Note that any teacher or community pushing this practice on you should be questioned'
+      ],
+      facilitatorNote: 'NEVER require this practice. Always frame it as optional with a clear opt-out. Explicitly say that anyone for whom this would mean directing love at someone who harmed them may skip it. Do not romanticize forgiveness as a practice goal; premature forgiveness is well-documented to harm survivors.',
+      research: 'Treleaven D (2018). Salzberg S (1995). Loving-Kindness (note the limits Salzberg herself names). Lerner H (2014) on forgiveness. NCTSN guidelines on trauma processing.'
+    },
+    {
+      id: 'adapt_mindfulness_difficult_emotions',
+      standardPractice: 'Mindfulness of difficult emotions',
+      riskForTrauma: 'Sustained attention to difficult emotions in trauma survivors can flood the system rather than process it. The window of tolerance can be exceeded, leading to dissociation or panic rather than integration.',
+      adaptations: [
+        {
+          variant: 'Titrated attention',
+          description: 'Touch the difficult emotion briefly (5 to 15 seconds), then return to a resource (breath, feet, hands). Alternate touching and resourcing.',
+          whenToUse: 'When sustained attention overwhelms; default for trauma work.'
+        },
+        {
+          variant: 'External anchor first',
+          description: 'Establish a strong external anchor (sounds, sight, feet on floor) before bringing any attention to internal emotion. Keep the anchor available throughout.',
+          whenToUse: 'Before any practice that brings up emotion.'
+        },
+        {
+          variant: 'Edge of the emotion only',
+          description: 'Attend to the edge or periphery of the emotion (where it begins, where it ends in the body) rather than its center.',
+          whenToUse: 'When the center of an emotion is overwhelming.'
+        },
+        {
+          variant: 'Resourcing instead of facing',
+          description: 'Skip facing the emotion entirely; build resources first (felt sense of safety, a remembered moment of calm, a comforting image).',
+          whenToUse: 'When window of tolerance is narrow.'
+        }
+      ],
+      groundingFirst: 'Before any emotion-focused practice, establish a strong external anchor and a way to return to it. Confirm you have someone to talk to afterward if needed.',
+      earlyWarning: [
+        'Emotion overwhelming rather than moving through',
+        'Trauma memory surfacing',
+        'Dissociation (going outside body, glass wall)',
+        'Inability to return attention to anchor',
+        'Sensation of drowning or being trapped'
+      ],
+      ifActivated: [
+        'Open eyes and orient externally',
+        'Plant feet, press into floor',
+        'Name 5 things you see; describe them in detail',
+        'Move physically (stand, walk, stretch)',
+        'Drink cold water',
+        'Reach out to a trusted person; do not sit alone with overwhelm'
+      ],
+      facilitatorNote: 'Distinguish between processing an emotion within window of tolerance and flooding outside it. Watch for signs the practitioner is no longer present (glazed eyes, frozen posture, very shallow breath) and intervene with grounding before the dissociation deepens. Never push someone to stay with an emotion they cannot tolerate.',
+      research: 'Treleaven D (2018). van der Kolk B (2014). Siegel DJ (1999, 2010) on window of tolerance. Briere J & Scott C (2014).'
+    },
+    {
+      id: 'adapt_breath_observation',
+      standardPractice: 'Breath observation (some find breath threatening)',
+      riskForTrauma: 'For people with asthma, COPD, panic disorder, or history of suffocation or strangulation, attention to breath can trigger panic or trauma response. Slow or controlled breathing can feel like being unable to breathe.',
+      adaptations: [
+        {
+          variant: 'Sound instead of breath',
+          description: 'Use ambient sounds (room sounds, traffic outside, fan) as the primary anchor instead of breath.',
+          whenToUse: 'For anyone with respiratory issues, panic history, or trauma related to airway.'
+        },
+        {
+          variant: 'Touch instead of breath',
+          description: 'Use the feeling of hands on thighs, feet on floor, or back against chair as the primary anchor.',
+          whenToUse: 'When breath is reliably activating.'
+        },
+        {
+          variant: 'Breath in the body, not the breath itself',
+          description: 'Attend to the movement breath makes in the belly or back rather than the breath itself (subtly shifts the focus from the action of breathing).',
+          whenToUse: 'When direct attention to breath triggers tightness or panic.'
+        },
+        {
+          variant: 'Free breath, no observation',
+          description: 'Let breath happen on its own without observing it; use a different anchor entirely.',
+          whenToUse: 'When breath cannot be a useful anchor at all.'
+        }
+      ],
+      groundingFirst: 'Before any breath practice, name that you can stop any time, that you do not have to control your breath, and that the breath will take care of itself if you let it.',
+      earlyWarning: [
+        'Sense of unable to get a full breath',
+        'Tight chest, throat constriction',
+        'Memory of suffocation, drowning, or panic',
+        'Urge to gulp air or sigh repeatedly',
+        'Holding breath unconsciously'
+      ],
+      ifActivated: [
+        'Stop attending to breath; switch to a different anchor (sound, touch)',
+        'Open eyes, look around the room',
+        'Let breath happen freely; do not try to control it',
+        'Drink cold water',
+        'Move (stand, walk) to discharge activation',
+        'Do not return to breath-focus that session; reassess later with a teacher'
+      ],
+      facilitatorNote: 'Always offer non-breath anchors at the start of any practice, not as remediation. Never instruct controlled or counted breathing as a default for groups; it is a high-risk intervention for many people. Specifically avoid extended pranayama, breath retention, or rapid breathing techniques without screening.',
+      research: 'Treleaven D (2018). Bessel van der Kolk (2014). Brown RP & Gerbarg PL (2012) on caution with intense breathing practices. APA panic disorder guidelines.'
+    },
+    {
+      id: 'adapt_visualization_safe_place',
+      standardPractice: 'Visualization practices (safe place can paradoxically trigger)',
+      riskForTrauma: 'Asking trauma survivors to visualize a safe place can paradoxically trigger trauma. They may not have a felt sense of any safe place. They may visualize a place that was safe but then think of being assaulted there. The instruction to feel safe can itself activate the absence of safety as a felt experience.',
+      adaptations: [
+        {
+          variant: 'Generic neutral place, not safe place',
+          description: 'Instead of safe place, suggest a neutral place (a clean kitchen, a library, a beach). Avoid the loaded word safe.',
+          whenToUse: 'When safe is itself a trigger.'
+        },
+        {
+          variant: 'Real place from current life',
+          description: 'Use a place that actually exists in the practitioner current safe life (their bedroom now, a favorite corner), not an imagined idealized space.',
+          whenToUse: 'When imagined visualization feels false.'
+        },
+        {
+          variant: 'Concrete object, not place',
+          description: 'Visualize a single concrete object (a stone, a cup, a flower) rather than a place or scene.',
+          whenToUse: 'When any scene-level visualization is destabilizing.'
+        },
+        {
+          variant: 'External focus, no visualization',
+          description: 'Skip visualization entirely; use external sensory anchors (sounds, sight of the room) instead.',
+          whenToUse: 'When visualization is consistently activating.'
+        }
+      ],
+      groundingFirst: 'Before any visualization, confirm you have a present-tense external anchor to return to. Note that imagined imagery can feel real to the nervous system, which is why caution matters.',
+      earlyWarning: [
+        'Inability to visualize anything (which is fine and not a problem)',
+        'Visualization shifting to threat or memory of trauma',
+        'Sense of paradoxical contrast (imagining safety highlights its absence)',
+        'Tears or grief about not having had a safe place',
+        'Trauma memory intruding into the imagined scene'
+      ],
+      ifActivated: [
+        'Open eyes; orient to actual physical room',
+        'Drop the visualization; the imagined scene cannot help if it activates',
+        'Use external anchor (5 things you see)',
+        'Note what came up without trying to fix it',
+        'If grief about absence of safety surfaces, allow it without analyzing',
+        'Talk to a therapist if a safe place is not available even in imagination'
+      ],
+      facilitatorNote: 'Be cautious with all visualization practices in groups. Always offer the option to not visualize. The trauma-informed default is external sensory focus, not internal imagery. Watch for participants whose eyes are tightly closed and bodies are rigid; offer them eyes-open alternatives privately.',
+      research: 'Treleaven D (2018). Briere J & Scott C (2014). Rothschild B (2000). The Body Remembers. EMDR safe-place protocol limitations literature.'
+    },
+    {
+      id: 'adapt_loving_touch_self_soothe',
+      standardPractice: 'Loving touch self-soothe (touch may not be safe)',
+      riskForTrauma: 'Self-touch (hand on heart, hand on belly, holding own face) can be a powerful self-soothing tool, but for trauma survivors, especially those with assault history, even self-initiated touch can activate trauma. The hand on a part of the body may evoke the touch of a perpetrator.',
+      adaptations: [
+        {
+          variant: 'Hand on neutral area',
+          description: 'Place a hand on a neutral area (forearm, knee, top of head) rather than chest, belly, or heart-center.',
+          whenToUse: 'When chest, belly, or heart touch is activating.'
+        },
+        {
+          variant: 'No touch, pressure object instead',
+          description: 'Use a weighted object (small pillow, weighted blanket on lap) instead of self-touch.',
+          whenToUse: 'When any self-touch is destabilizing.'
+        },
+        {
+          variant: 'Touch on outside of clothes',
+          description: 'Hand placement remains over clothing, never on skin.',
+          whenToUse: 'When skin contact is too direct.'
+        },
+        {
+          variant: 'Skip self-touch entirely',
+          description: 'Use breath, sound, or visual anchor instead of any tactile element.',
+          whenToUse: 'When all self-touch options activate trauma.'
+        }
+      ],
+      groundingFirst: 'Before introducing self-touch, name that touch is optional, that the practitioner chooses where and whether to touch, and that any touch can be modified or stopped any time.',
+      earlyWarning: [
+        'Body tensing or flinching at the touch',
+        'Sense of someone elses touch overlaying your own',
+        'Memory of unwanted touch surfacing',
+        'Disgust, nausea, or skin-crawling sensation',
+        'Urge to wipe or rub the touched area away'
+      ],
+      ifActivated: [
+        'Remove the hand immediately',
+        'Shake out the touched area gently',
+        'Wash hands with cool water or hold them under running water',
+        'Switch to non-touch anchor (sound, sight)',
+        'Note what came up without analyzing in the moment',
+        'Talk to a trauma-informed therapist about the trigger'
+      ],
+      facilitatorNote: 'Never require self-touch in groups. Always frame as optional and offer alternatives explicitly. Be aware that some practitioners may comply outwardly while activated internally; offer post-practice check-ins privately.',
+      research: 'Germer C & Neff K (2019). Treleaven D (2018). Briere J & Scott C (2014).'
+    },
+    {
+      id: 'adapt_spinal_alignment_posture',
+      standardPractice: 'Spinal alignment and posture instruction',
+      riskForTrauma: 'Detailed instruction about posture (lift the crown, drop the shoulders, engage the core) can be activating for people with body shame, eating disorder history, or trauma involving body criticism. Hands-on adjustments are an additional risk for assault survivors.',
+      adaptations: [
+        {
+          variant: 'General comfort instruction',
+          description: 'Instruct only find a position that feels stable and comfortable. Avoid detailed alignment cues.',
+          whenToUse: 'Default for any group with mixed trauma backgrounds.'
+        },
+        {
+          variant: 'Function over form',
+          description: 'Cue the function (you can breathe easily, you can stay here a while) rather than visual form (shoulders back, chin tucked).',
+          whenToUse: 'When alignment talk produces body shame.'
+        },
+        {
+          variant: 'No hands-on adjustments without explicit consent',
+          description: 'Never touch participants without explicit prior consent that includes the option to revoke at any time. In group settings, use a consent card system (red side up to opt out).',
+          whenToUse: 'In all group settings; non-negotiable.'
+        },
+        {
+          variant: 'Verbal cues only',
+          description: 'Use only verbal cues; do not demonstrate posture by touching anyone.',
+          whenToUse: 'Default in all settings unless individual consent is established and current.'
+        }
+      ],
+      groundingFirst: 'Before any posture instruction, name that participants can adjust posture any time, that comfort matters more than ideal form, and that no hands-on adjustments will occur without explicit consent.',
+      earlyWarning: [
+        'Self-criticism rising during alignment instruction',
+        'Sense of being looked at or judged',
+        'Tension building from trying to hold the prescribed shape',
+        'Memory of past body criticism',
+        'Discomfort with the instructor circulating among participants'
+      ],
+      ifActivated: [
+        'Shift to whatever position is actually comfortable, ignore prescribed alignment',
+        'If activated by instructor proximity, change your seat or step out',
+        'Speak up privately to the instructor or skip future sessions if needed',
+        'Note the trigger without judgment',
+        'If body shame is being activated, see a therapist familiar with eating disorders or body image work'
+      ],
+      facilitatorNote: 'Adopt a strict no-touch default with explicit consent protocols for hands-on adjustments. Frame all posture as flexible. Do not use language that implies one position is correct or that others are doing it wrong. Be especially careful in yoga, where hands-on adjustment is traditional but trauma-incompatible.',
+      research: 'Treleaven D (2018). Emerson D & Hopper E (2011). Overcoming Trauma Through Yoga. Maehle A on consent in yoga settings.'
+    },
+    {
+      id: 'adapt_group_meditation_circle',
+      standardPractice: 'Group meditation circle',
+      riskForTrauma: 'Sitting in a circle with others can feel exposing, especially for trauma survivors with social anxiety, dissociation history, or history of group harm (cult, bullying, religious abuse). The visibility of being watched while in a vulnerable state can prevent practice entirely.',
+      adaptations: [
+        {
+          variant: 'Row arrangement, not circle',
+          description: 'Arrange chairs or cushions in rows facing the same direction (front of room) rather than a circle facing each other.',
+          whenToUse: 'For groups with mixed trauma backgrounds.'
+        },
+        {
+          variant: 'Back of room option',
+          description: 'Make explicit that anyone can sit in the back or at the edge, near a door, and that this is a valid choice rather than a problem.',
+          whenToUse: 'In any group setting.'
+        },
+        {
+          variant: 'Eyes-open option clear',
+          description: 'Specify that eyes-open practice is welcome and that no one will be looked at or judged for their practice form.',
+          whenToUse: 'Always.'
+        },
+        {
+          variant: 'No sharing required',
+          description: 'Do not require any post-practice sharing. Make sharing fully optional with clear opt-out and no follow-up questioning.',
+          whenToUse: 'Always.'
+        }
+      ],
+      groundingFirst: 'Before group practice, name the exits, name that anyone can leave at any time without explanation, name that there is no required sharing or eye contact.',
+      earlyWarning: [
+        'Discomfort with being in the circle (eyes constantly checking others)',
+        'Inability to settle because of social attention',
+        'Anxiety about post-practice sharing',
+        'Sense of being watched or judged',
+        'Memory of past group experiences (religious, cult, bullying)'
+      ],
+      ifActivated: [
+        'Move your seat to the edge or back of the room',
+        'Leave the group temporarily; take a break in another room',
+        'Close eyes only if comfortable, otherwise keep them open with soft external gaze',
+        'Skip any sharing portion; you do not owe the group your experience',
+        'If the group dynamic is reliably activating, find an individual practice path instead'
+      ],
+      facilitatorNote: 'Default to row seating, never require sharing, never circulate during practice in a way that puts participants on display. Be especially cautious in residential or retreat settings where group pressure to participate is high. Create explicit opt-out structures.',
+      research: 'Treleaven D (2018). Briere J & Scott C (2014). Lalich J on cult dynamics. Hassan S (2018) on combating cult influence.'
+    },
+    {
+      id: 'adapt_eye_gazing',
+      standardPractice: 'Eye-gazing practices',
+      riskForTrauma: 'Sustained eye-gazing with a partner is a high-intensity practice that can activate trauma related to intimacy, social anxiety, or boundary violation. It can also produce dissociation in vulnerable people. Many partnered meditation contexts include eye-gazing without screening for trauma readiness.',
+      adaptations: [
+        {
+          variant: 'Skip entirely',
+          description: 'Do not include eye-gazing as a practice. Use parallel practice (same room, not facing each other) instead of partnered.',
+          whenToUse: 'Default for trauma-informed practice.'
+        },
+        {
+          variant: 'Brief eye contact, then look away',
+          description: 'If some partnered awareness is desired, use brief glances (1 to 3 seconds) with frequent looking-away rather than sustained gazing.',
+          whenToUse: 'When some partnered practice is wanted with trauma awareness.'
+        },
+        {
+          variant: 'Side-by-side parallel',
+          description: 'Sit side by side facing the same direction rather than facing each other.',
+          whenToUse: 'In couples or partnered contexts where co-regulation is the goal.'
+        },
+        {
+          variant: 'Opt-out explicit and easy',
+          description: 'If eye-gazing is offered, make opt-out clear and stigma-free. Provide an alternative activity in the same space for those who opt out.',
+          whenToUse: 'When eye-gazing is offered at all.'
+        }
+      ],
+      groundingFirst: 'Before any partnered eye practice, name that opt-out is welcome, that looking away is allowed, that any partnered intimacy practice is high-intensity and not for everyone.',
+      earlyWarning: [
+        'Trance-like or dissociative quality entering the gaze',
+        'Sense of merging or losing self',
+        'Activation related to past intimate-partner trauma',
+        'Discomfort with the social intensity',
+        'Tears, panic, or shutdown'
+      ],
+      ifActivated: [
+        'Look away immediately; this is your right',
+        'Stand up, leave the practice if needed',
+        'Reorient to your own body, your own breath, your own present',
+        'Do not push past activation in the name of practice depth',
+        'Talk with the partner afterward about what happened and what is needed'
+      ],
+      facilitatorNote: 'Be very cautious about including eye-gazing in any group setting. Many trauma-informed teachers omit it entirely. If included, screen for trauma readiness, make opt-out trivial, and never frame opt-out as resistance.',
+      research: 'Treleaven D (2018). Briere J & Scott C (2014). Bowen S, et al. on relational practices in clinical contexts.'
+    },
+    {
+      id: 'adapt_holding_still',
+      standardPractice: 'Holding still (freeze-response trigger)',
+      riskForTrauma: 'Sustained physical stillness can trigger the freeze response in trauma survivors. The body interprets stillness as the unable-to-move state of past trauma. Movement is one of the primary trauma-recovery mechanisms; sustained stillness can re-traumatize rather than calm.',
+      adaptations: [
+        {
+          variant: 'Permission to move',
+          description: 'Make explicit that practitioners can move any time without comment. Movement is not failure, it is allowed.',
+          whenToUse: 'Default in all practice settings.'
+        },
+        {
+          variant: 'Built-in micro-movement',
+          description: 'Include subtle planned movement (rocking gently, shifting weight, swaying) as part of the practice itself.',
+          whenToUse: 'For anyone for whom stillness is activating.'
+        },
+        {
+          variant: 'Walking meditation alternative',
+          description: 'Offer walking meditation as a parallel option to sitting at all sessions.',
+          whenToUse: 'In all settings.'
+        },
+        {
+          variant: 'Shorter still segments',
+          description: 'Break sits into 5 to 10 minute segments with planned movement (stand, stretch, walk briefly) between.',
+          whenToUse: 'For practitioners building stillness tolerance.'
+        }
+      ],
+      groundingFirst: 'Before any extended stillness, name that movement is welcome any time, that the goal is not perfect stillness, and that the body will tell you what it needs.',
+      earlyWarning: [
+        'Sense of being unable to move (different from choosing not to)',
+        'Heart rate climbing in the absence of movement',
+        'Memory of being held still, trapped, or restrained',
+        'Frozen quality (not relaxed) to posture',
+        'Numbness in limbs from unmoving posture'
+      ],
+      ifActivated: [
+        'Move immediately; rock, sway, stand, walk',
+        'Reorient to the fact that you can move freely now',
+        'Shake out limbs, stretch, do shoulder rolls',
+        'Switch to walking meditation for the rest of the session',
+        'Do not push through freeze; freeze is a trauma signal, not a meditation depth'
+      ],
+      facilitatorNote: 'Always offer movement options and frame them as equally valid practice. Watch for the difference between still-relaxed and still-frozen; the second is a trauma signal. If you see frozen posture, offer movement as an option without singling out the practitioner.',
+      research: 'Treleaven D (2018). Levine PA (1997, 2010). Waking the Tiger. Somatic Experiencing literature. Porges SW polyvagal theory.'
+    },
+    {
+      id: 'adapt_shavasana',
+      standardPractice: 'Lying-on-back yoga shavasana',
+      riskForTrauma: 'Shavasana (corpse pose) places the body in the most vulnerable position: supine, eyes closed, exposed front of body, often in a darkened room with strangers nearby. For assault survivors, the position itself plus the social context can trigger trauma. It is one of the highest-risk default postures in popular wellness.',
+      adaptations: [
+        {
+          variant: 'Eyes open shavasana',
+          description: 'Lie supine but keep eyes open with a soft gaze at the ceiling. Many studios omit this option, but it is essential.',
+          whenToUse: 'For anyone for whom eyes-closed supine is activating.'
+        },
+        {
+          variant: 'Side-lying shavasana',
+          description: 'Lie on the side with a pillow between knees, head supported. Less exposing than supine.',
+          whenToUse: 'When supine position activates.'
+        },
+        {
+          variant: 'Seated shavasana',
+          description: 'Sit upright in chair or against wall for the final rest. Eyes open or closed by choice.',
+          whenToUse: 'Default for trauma-informed yoga.'
+        },
+        {
+          variant: 'Self-positioned with bolsters',
+          description: 'Use bolsters under knees, behind back, over chest (light weight) to feel held rather than exposed.',
+          whenToUse: 'When supine is preferred but feels too open.'
+        }
+      ],
+      groundingFirst: 'Before shavasana, name the options out loud (supine, side-lying, seated, eyes open or closed), note where exits are, note that adjustments are welcome.',
+      earlyWarning: [
+        'Tension building once you lie down',
+        'Inability to settle in the position',
+        'Trauma memory surfacing',
+        'Hyper-vigilance to sounds or movement in the room',
+        'Disgust or fear with the exposed-front position'
+      ],
+      ifActivated: [
+        'Sit up immediately; this is allowed',
+        'Switch position (side-lying or seated)',
+        'Open eyes; reorient to the room',
+        'Leave the room if needed; this is allowed and not a problem',
+        'Talk to the instructor afterward; if dismissed, find a different teacher'
+      ],
+      facilitatorNote: 'Always offer alternatives at the start of shavasana, not as remediation. Do not dim lights below safe seeing level. Do not circulate touching students; if hands-on assists are offered, get explicit, written, current consent (not a generic intake form from months ago).',
+      research: 'Treleaven D (2018). Emerson D & Hopper E (2011). Overcoming Trauma Through Yoga. Trauma-informed yoga literature.'
+    },
+    {
+      id: 'adapt_trataka_candle',
+      standardPractice: 'Trataka (candle gazing, can dissociate)',
+      riskForTrauma: 'Sustained focused gazing at a single point (traditionally a candle) can induce dissociation, trance states, or hypnotic phenomena. For trauma survivors with dissociative tendencies, this can deepen rather than resolve dissociation.',
+      adaptations: [
+        {
+          variant: 'Short duration only',
+          description: 'Limit gazing to 1 to 3 minutes, then look away and blink. Do not do extended trataka.',
+          whenToUse: 'For anyone with dissociative tendencies.'
+        },
+        {
+          variant: 'Soft gaze on neutral object',
+          description: 'Use a soft gaze on a plant, a stone, a piece of art rather than a flame. Less hypnotic.',
+          whenToUse: 'When some focused-gaze practice is wanted with lower risk.'
+        },
+        {
+          variant: 'Frequent blinking',
+          description: 'Encourage frequent blinking and shifting gaze, not sustained unblinking fixation.',
+          whenToUse: 'When any gazing practice is done.'
+        },
+        {
+          variant: 'Skip entirely',
+          description: 'Use a different concentration practice (sound, breath, body sensation) instead.',
+          whenToUse: 'Default for trauma survivors with any dissociation history.'
+        }
+      ],
+      groundingFirst: 'Before any focused gazing, name that the practice can produce trance-like states and that grounding will be needed afterward. Have a grounding sequence ready.',
+      earlyWarning: [
+        'Tunnel vision or sense of being absorbed into the gazed object',
+        'Loss of awareness of surroundings',
+        'Sense of leaving the body',
+        'Time distortion during practice',
+        'Difficulty returning to ordinary awareness afterward'
+      ],
+      ifActivated: [
+        'Blink repeatedly, look away, scan the room',
+        'Stand up, move, walk briskly',
+        'Re-orient (5 things you see, name them)',
+        'Drink cold water, eat something with strong flavor',
+        'Do not drive or operate machinery until fully reoriented',
+        'Skip this practice in the future if dissociation occurs'
+      ],
+      facilitatorNote: 'Be cautious offering trataka in groups. Always pair with grounding before and after. Do not extend duration beyond a few minutes for general groups. Avoid in any group with known dissociative members.',
+      research: 'Lindahl JR, et al. (2017). PLOS ONE. Putnam FW on dissociation. Treleaven D (2018).'
+    },
+    {
+      id: 'adapt_long_mantra',
+      standardPractice: 'Long mantra repetition',
+      riskForTrauma: 'Extended mantra repetition can produce trance states, hyperventilation effects (if breath is coupled), and dissociation. It can also induce mania-like elevation in vulnerable people. Long sessions exceed many practitioners safe practice capacity.',
+      adaptations: [
+        {
+          variant: 'Short session, regular pace',
+          description: 'Limit to 10 to 15 minutes. Use a quiet, steady pace rather than loud, fast, or building intensity.',
+          whenToUse: 'Default. Long extended sessions need teacher guidance and screening.'
+        },
+        {
+          variant: 'Silent mental repetition only',
+          description: 'Repeat silently rather than aloud. Less physically activating.',
+          whenToUse: 'For lower-intensity practice.'
+        },
+        {
+          variant: 'Coupled with grounding',
+          description: 'Pair the mantra with a grounding sensation (feet on floor, hands on thighs) to anchor.',
+          whenToUse: 'When some grounding is needed alongside the practice.'
+        },
+        {
+          variant: 'Choose a neutral phrase',
+          description: 'Use a meaning-neutral phrase or sound rather than a phrase loaded with theological or charged content.',
+          whenToUse: 'When the religious or charged content itself is activating.'
+        }
+      ],
+      groundingFirst: 'Before any extended mantra practice, ground in body, set a clear time limit, ensure you have water and a safe place to rest afterward.',
+      earlyWarning: [
+        'Mounting energy or excitement during practice',
+        'Lightheadedness, dizziness, or tingling',
+        'Trance state deepening past comfort',
+        'Hyperventilation symptoms (tingling lips, hands)',
+        'Mania-like elevation or grandiosity'
+      ],
+      ifActivated: [
+        'Stop the mantra; switch to ordinary breathing',
+        'Open eyes, orient to room',
+        'Stand up, walk slowly',
+        'Drink water, eat something grounding',
+        'Do not continue or extend the practice',
+        'If mania-like symptoms persist, seek psychiatric evaluation'
+      ],
+      facilitatorNote: 'Avoid long, loud, or building-intensity mantra practice in unscreened groups. Screen for personal or family history of bipolar disorder before any intensive vocal practice. Keep session length modest in general groups.',
+      research: 'Lindahl JR, et al. (2017). Yorston G (2001). Mania precipitated by meditation. Britton WB (2019).'
+    },
+    {
+      id: 'adapt_silent_retreats',
+      standardPractice: 'Silent retreats (long sustained practice)',
+      riskForTrauma: 'Silent retreats compound multiple risk factors: extended practice hours, social isolation, sleep restriction, removal of distraction, often unfamiliar environment, sometimes hierarchical teacher relationships. They are the highest-risk format for adverse meditation experiences in the research literature.',
+      adaptations: [
+        {
+          variant: 'Short, daily retreats only',
+          description: 'Limit to single-day retreats with full sleep and meals at home. Build up gradually if longer is desired.',
+          whenToUse: 'Default for newer practitioners or those with mental health history.'
+        },
+        {
+          variant: 'Permission to leave or speak',
+          description: 'Choose retreats with explicit permission to leave the schedule, speak with a teacher, or break silence as needed without stigma.',
+          whenToUse: 'When attending any multi-day retreat.'
+        },
+        {
+          variant: 'Pre-retreat screening',
+          description: 'Pre-screen with the retreat staff: mental health history, medication, prior adverse experiences. Skip retreats that do not do screening.',
+          whenToUse: 'Before any multi-day retreat.'
+        },
+        {
+          variant: 'Trauma-informed retreat only',
+          description: 'Attend only retreats run by teachers trained in trauma-informed practice. The Trauma-Sensitive Mindfulness community maintains directories.',
+          whenToUse: 'For trauma survivors considering any retreat.'
+        }
+      ],
+      groundingFirst: 'Before any retreat, have a therapist available by phone, a friend or family member who can be reached, a clear plan for how to leave if needed.',
+      earlyWarning: [
+        'Mounting agitation, anxiety, or destabilization during the retreat',
+        'Trauma memories surfacing without containment',
+        'Inability to sleep',
+        'Mania-like elevation, grandiosity, or no need for sleep',
+        'Identity destabilization or loss of meaning'
+      ],
+      ifActivated: [
+        'Speak with the retreat teacher or staff immediately',
+        'Leave the retreat if needed; this is not failure',
+        'Get someone to come pick you up rather than driving in destabilized state',
+        'See a therapist within 1 to 2 days of leaving',
+        'Do not return to retreat practice until you have processed what happened',
+        'Crisis: call or text 988, text HOME to 741741'
+      ],
+      facilitatorNote: 'Retreat staff: have pre-screening protocols, have on-call mental health support, have clear opt-out and exit pathways. Watch for participants who are deteriorating, not deepening, and intervene early. Do not pressure participants to stay through difficulty.',
+      research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB (2019). Cheetah House at Brown (clinical resources for meditation-related difficulties).'
+    },
+    {
+      id: 'adapt_pelvic_body_scan',
+      standardPractice: 'Body scan of pelvic region',
+      riskForTrauma: 'Body scans that include attention to the pelvic region are especially activating for survivors of sexual assault or abuse. Sustained attention to genital, abdominal, or hip areas can trigger flashbacks, dissociation, or panic.',
+      adaptations: [
+        {
+          variant: 'Skip pelvic region',
+          description: 'In body scan, skip from lower abdomen to thighs without scanning hips, pelvis, or genital area.',
+          whenToUse: 'For survivors of sexual trauma; default for any unknown trauma history.'
+        },
+        {
+          variant: 'Brief, peripheral attention',
+          description: 'If included, attend briefly (a few seconds) to the outer edges (hip bones, lower belly skin) rather than centrally.',
+          whenToUse: 'When some attention is desired with lower risk.'
+        },
+        {
+          variant: 'External anchor instead',
+          description: 'Switch focus to external sensation (sounds, sight of room) when scan reaches pelvic region.',
+          whenToUse: 'Whenever pelvic region is activating.'
+        },
+        {
+          variant: 'Stop body scan entirely',
+          description: 'Do not do body scan; use a different practice (sound focus, walking meditation) instead.',
+          whenToUse: 'When body scan reliably activates trauma.'
+        }
+      ],
+      groundingFirst: 'Before any body scan, name that any region can be skipped, that the scan is not required to be complete, and that activation is information rather than failure.',
+      earlyWarning: [
+        'Trauma memory surfacing as scan approaches pelvic region',
+        'Body tensing, freezing, or going numb',
+        'Disgust, shame, or fear sensations',
+        'Urge to leave the practice',
+        'Dissociation (going outside body)'
+      ],
+      ifActivated: [
+        'Stop the scan; do not push to complete',
+        'Open eyes, orient to room',
+        'Move physically; stand up, walk',
+        'Ground (5 things you see, 4 you hear)',
+        'Reach out to a trauma-informed therapist if memories surfaced',
+        'Crisis: call or text 988'
+      ],
+      facilitatorNote: 'Always name that any body region can be skipped at any time. Avoid leading body scans into pelvic region in general groups. Some MBSR scripts that include detailed pelvic attention should be modified for trauma-informed contexts.',
+      research: 'Treleaven D (2018). van der Kolk B (2014). Briere J & Scott C (2014). Maltz W (2012). The Sexual Healing Journey.'
+    },
+    {
+      id: 'adapt_heart_center_meditation',
+      standardPractice: 'Heart-center meditation (after heartbreak)',
+      riskForTrauma: 'Heart-center meditation (attention to the chest, heart-area, or heart-related qualities like love or compassion) can be powerfully activating after recent heartbreak, loss, or grief. Sustained attention to the heart-center can flood the practitioner with unprocessed grief.',
+      adaptations: [
+        {
+          variant: 'Skip heart-center entirely',
+          description: 'Use a different anchor (hands, feet, breath at the nostrils) when heart-area attention is activating.',
+          whenToUse: 'During acute grief or recent loss.'
+        },
+        {
+          variant: 'Hand on heart with grounding',
+          description: 'Place hand on heart with explicit grounding (you are safe now, you are here, you can rest). Brief contact, not sustained absorption.',
+          whenToUse: 'When some heart-area work is desired.'
+        },
+        {
+          variant: 'Compassion for all beings',
+          description: 'Use compassion phrases directed at all beings collectively, not at self or specific person, to reduce intensity.',
+          whenToUse: 'When directed heart-work is too much.'
+        },
+        {
+          variant: 'Movement-based grief practice',
+          description: 'Use walking meditation, gentle yoga, or dance to move grief through the body rather than sit with it.',
+          whenToUse: 'When stillness with grief is overwhelming.'
+        }
+      ],
+      groundingFirst: 'Before any heart-center practice, name that grief can surface and that this is welcome but does not have to be processed all at once. Have a way to end early.',
+      earlyWarning: [
+        'Wave of grief, longing, or sadness rising quickly',
+        'Chest tightness, throat constriction',
+        'Tears that feel uncontainable',
+        'Sense of being flooded',
+        'Inability to keep attention at heart-center because of intensity'
+      ],
+      ifActivated: [
+        'Stop the practice; let the wave move through',
+        'Move attention to a neutral area (hands, feet)',
+        'Cry if it comes; do not try to stop tears',
+        'Reach out to someone who can sit with you',
+        'Do not isolate after a big grief wave',
+        'Continue talking to a therapist or grief support during this period'
+      ],
+      facilitatorNote: 'In groups, name that recent loss or grief makes heart-area practice intense; offer alternatives. Do not lead heart-center practice as a default in groups where grief is likely (bereavement contexts, post-loss communities).',
+      research: 'Treleaven D (2018). Worden JW (2018). Grief Counseling and Grief Therapy. Germer C & Neff K (2019).'
+    },
+    {
+      id: 'adapt_walking_meditation_barefoot',
+      standardPractice: 'Walking meditation barefoot',
+      riskForTrauma: 'Barefoot walking meditation can be activating for people with foot-trauma history, hyper-sensitive sensory processing, or for whom bare feet feel exposing or unsafe. The cultural assumption that barefoot is more natural or grounded is not universal.',
+      adaptations: [
+        {
+          variant: 'Shoes or socks allowed',
+          description: 'Explicit permission to wear shoes or socks. Do not require bare feet.',
+          whenToUse: 'Always in mixed groups.'
+        },
+        {
+          variant: 'Indoor smooth surface only',
+          description: 'When barefoot, walk on a smooth, controlled surface (yoga mat, smooth floor) rather than grass, gravel, or rough textures.',
+          whenToUse: 'When barefoot is preferred but sensory environment matters.'
+        },
+        {
+          variant: 'Brief barefoot, then footwear',
+          description: 'Do 1 to 2 minutes barefoot as an option, then return to footwear. Do not require sustained barefoot.',
+          whenToUse: 'When some grounding contact is desired.'
+        },
+        {
+          variant: 'Attention to feet through shoes',
+          description: 'Attend to the sensations of feet in shoes (weight, pressure, texture of insoles) rather than bare contact.',
+          whenToUse: 'When bare feet are not viable but foot attention is desired.'
+        }
+      ],
+      groundingFirst: 'Before walking meditation, name that shoes are welcome, that the pace is your own, that you can stop and stand still at any time.',
+      earlyWarning: [
+        'Hyper-attention to ground texture becoming overwhelming',
+        'Discomfort with the sensation of bare feet',
+        'Memory of past foot-related trauma',
+        'Embarrassment or self-consciousness about feet being visible',
+        'Difficulty walking with attention'
+      ],
+      ifActivated: [
+        'Put shoes back on',
+        'Sit down and end the walking portion',
+        'Switch to seated practice',
+        'If discomfort with feet being visible is the issue, address with footwear privacy',
+        'Note the trigger without judgment'
+      ],
+      facilitatorNote: 'Never require bare feet in any group. Offer it as one option among several. Be aware of cultural assumptions about barefoot being more natural; this is not universal and can be alienating.',
+      research: 'Treleaven D (2018). Emerson D (2015). Trauma-Sensitive Yoga in Therapy.'
+    },
+    {
+      id: 'adapt_mindful_eating',
+      standardPractice: 'Mindful eating (eating disorder triggers)',
+      riskForTrauma: 'Slow, attentive eating can be highly activating for people with eating disorder history. Sustained attention to taste, texture, sensation while eating can trigger restriction, binge urges, or shame about food. The wellness-coded language around mindful eating can also subtly reinforce restriction culture.',
+      adaptations: [
+        {
+          variant: 'Skip mindful eating with ED history',
+          description: 'For practitioners with eating disorder history, do not do mindful eating exercises. Use other mindfulness anchors.',
+          whenToUse: 'Default for anyone with current or past ED.'
+        },
+        {
+          variant: 'Brief, neutral attention',
+          description: 'If mindful eating is done, keep it brief (a single bite, a few seconds) and use neutral, non-evaluative language (notice texture; not is this food good for you).',
+          whenToUse: 'When some mindful eating is included.'
+        },
+        {
+          variant: 'Eat normally, attend after',
+          description: 'Eat at normal pace; reflect briefly afterward on the meal as a whole rather than scanning each bite.',
+          whenToUse: 'When the slow-eating instruction is itself activating.'
+        },
+        {
+          variant: 'Group meals only, no exercise framing',
+          description: 'Take meals together in silence or shared conversation, without explicitly framing as a mindfulness exercise.',
+          whenToUse: 'In retreat or workshop settings.'
+        }
+      ],
+      groundingFirst: 'Before any mindful eating exercise, name that eating disorder history (current or past) is welcome, that the exercise can be opted out of, and that the goal is not to evaluate or restrict food.',
+      earlyWarning: [
+        'Restrictive thoughts arising (I should not be eating this)',
+        'Binge urges or food preoccupation',
+        'Shame, disgust, or guilt about food',
+        'Hyper-evaluation of taste or texture',
+        'Distress at the slow pace'
+      ],
+      ifActivated: [
+        'Eat at your normal pace; do not slow down further',
+        'Stop the formal exercise',
+        'Speak with a therapist or ED-informed clinician',
+        'Crisis or relapse risk: call NEDA at 1-800-931-2237 or text NEDA to 741741',
+        'Do not continue mindful eating exercises if they reliably activate ED thoughts'
+      ],
+      facilitatorNote: 'Be very cautious offering mindful eating in any group, especially groups likely to include eating disorder history (women, athletes, dancers, perfectionist students). Frame as optional. Do not use mindful eating as a weight-management framing.',
+      research: 'Kristeller JL on mindful eating in eating disorder treatment. NEDA clinical guidelines. Treleaven D (2018). Mason AE, et al. on mindfulness and disordered eating.'
+    },
+    {
+      id: 'adapt_mindfulness_thoughts_ocd',
+      standardPractice: 'Mindfulness of thoughts (can intensify OCD)',
+      riskForTrauma: 'For people with OCD, sustained attention to thoughts (especially intrusive thoughts) can intensify the OCD cycle. The instruction to observe thoughts non-judgmentally can paradoxically increase rumination, mental checking, or compulsive engagement with thoughts.',
+      adaptations: [
+        {
+          variant: 'External anchor only',
+          description: 'For OCD, use external sensory anchors (sounds, body sensations) rather than internal thought observation.',
+          whenToUse: 'Default for anyone with OCD diagnosis or strong intrusive-thought pattern.'
+        },
+        {
+          variant: 'Brief acknowledgment, return to anchor',
+          description: 'Acknowledge thoughts briefly (a word like thinking) and return immediately to a non-thought anchor. Do not stay with thoughts.',
+          whenToUse: 'When some thought-awareness is desired without engagement.'
+        },
+        {
+          variant: 'ERP-informed approach',
+          description: 'For OCD, mindfulness should pair with exposure and response prevention (ERP) under a clinician trained in OCD. Generic mindfulness alone is not appropriate.',
+          whenToUse: 'For OCD treatment.'
+        },
+        {
+          variant: 'Behavioral activation instead',
+          description: 'For depression with ruminative quality, use behavioral activation (concrete activity) rather than thought-observation.',
+          whenToUse: 'When rumination is the primary issue.'
+        }
+      ],
+      groundingFirst: 'Before any thought-focused practice, screen for OCD or rumination. If present, default to external anchors. Note that thoughts are not the appropriate object of attention for everyone.',
+      earlyWarning: [
+        'Intrusive thoughts intensifying rather than passing',
+        'Compulsive mental checking or analysis of thoughts',
+        'Increased anxiety with each observed thought',
+        'Rumination loop deepening',
+        'Sense of needing to figure out or resolve thoughts'
+      ],
+      ifActivated: [
+        'Stop attending to thoughts; switch to external anchor',
+        'Stand up, move; physical action interrupts rumination',
+        'Engage in a concrete task (clean, cook, exercise)',
+        'Talk to an OCD-informed therapist; this often needs specialized treatment',
+        'Do not interpret intrusive thoughts as meaningful spiritual material',
+        'IOCDF (International OCD Foundation) maintains a therapist directory'
+      ],
+      facilitatorNote: 'Be cautious teaching thoughts-as-object practices in any group with possible OCD members (which is most groups; OCD has a 1 to 2 percent population prevalence). Frame thought observation as one option, not the default.',
+      research: 'IOCDF (International OCD Foundation) clinical guidelines. Wilson R & Lyons LC (2013) on OCD treatment. Treleaven D (2018). Cassin SE on OCD and mindfulness.'
+    },
+    {
+      id: 'adapt_witness_consciousness',
+      standardPractice: 'Witness-consciousness practice (depersonalization risk)',
+      riskForTrauma: 'Practices that emphasize witness-consciousness, the observer behind experience, or non-identification with experience can produce or worsen depersonalization in vulnerable practitioners. The instruction to identify with the witness rather than the experience can dissociate rather than free.',
+      adaptations: [
+        {
+          variant: 'Embodied awareness instead',
+          description: 'Practice awareness that is inside the body, not separate from it. Feel sensations, breath, weight; do not pull back to a witness.',
+          whenToUse: 'Default for trauma survivors and anyone with dissociative tendencies.'
+        },
+        {
+          variant: 'Skip witness framing',
+          description: 'Use mindfulness frames that emphasize being with experience rather than witnessing it from outside.',
+          whenToUse: 'When witness framing produces depersonalization.'
+        },
+        {
+          variant: 'Brief witness moments, with grounding',
+          description: 'If some witness practice is desired, do brief moments (a few breaths) with immediate return to embodied sensation.',
+          whenToUse: 'For practitioners with experience and stable grounding.'
+        },
+        {
+          variant: 'Skip entirely',
+          description: 'Use compassion, loving-kindness, or grounding practices instead of witness-consciousness.',
+          whenToUse: 'For practitioners with depersonalization history.'
+        }
+      ],
+      groundingFirst: 'Before any witness practice, name that some practitioners find this destabilizing, that depersonalization is a warning sign, and that grounding will be needed afterward.',
+      earlyWarning: [
+        'Sense of separation from the body or experience',
+        'Watching yourself from outside',
+        'Sense that experience is happening to someone else',
+        'Glass-wall feeling between you and the world',
+        'Cold detached calm that does not feel earned'
+      ],
+      ifActivated: [
+        'Stop the practice immediately',
+        'Embody: feel feet on floor, weight in chair, breath in body',
+        'Move physically; walk, stretch, shake out',
+        'Touch a textured object and describe it in words',
+        'Engage socially; talk to someone',
+        'See a clinician if depersonalization persists more than a few hours'
+      ],
+      facilitatorNote: 'Be cautious teaching witness-consciousness in unscreened groups. This is an advanced practice with real risk profile. Modern trauma-informed teaching often omits it entirely or replaces with embodied awareness.',
+      research: 'Lindahl JR, et al. (2017). PLOS ONE. Treleaven D (2018). Simeon D & Abugel J (2006) on depersonalization disorder.'
+    },
+    {
+      id: 'adapt_death_contemplation',
+      standardPractice: 'Death contemplation (advanced, not for general use)',
+      riskForTrauma: 'Death contemplation (corpse meditation, awareness of mortality, charnel ground practices) is a documented practice in several traditions but is unambiguously not appropriate for general groups, beginners, or anyone with depression, suicidal history, recent loss, or trauma. It can precipitate severe destabilization.',
+      adaptations: [
+        {
+          variant: 'Skip entirely in general groups',
+          description: 'Do not offer death contemplation in any general meditation group, classroom, or open workshop.',
+          whenToUse: 'Default. Always.'
+        },
+        {
+          variant: 'Mortality acknowledgment, brief',
+          description: 'If some mortality awareness is part of the curriculum, keep it to a brief acknowledgment (life is finite, this moment is rare) without sustained contemplation of death.',
+          whenToUse: 'In wisdom-tradition contexts with adult, screened participants.'
+        },
+        {
+          variant: 'Reserved for advanced practitioners',
+          description: 'Reserve detailed death contemplation for practitioners with years of practice, stable mental health, and direct teacher relationship.',
+          whenToUse: 'When at all.'
+        },
+        {
+          variant: 'Skip skull, corpse, gore imagery',
+          description: 'Modern traditions often skip the graphic imagery of classical corpse meditation entirely; this is appropriate.',
+          whenToUse: 'Always in modern Western contexts unless deeply trained.'
+        }
+      ],
+      groundingFirst: 'Before any mortality-focused practice, screen carefully: recent loss, depression, suicidal history, trauma history are all contraindications. Have a clinician available.',
+      earlyWarning: [
+        'Suicidal ideation arising or intensifying',
+        'Severe depression deepening',
+        'Trauma flooding (recent loss, near-death experience)',
+        'Existential dread that feels unmanageable',
+        'Loss of meaning that destabilizes'
+      ],
+      ifActivated: [
+        'Stop immediately',
+        'Engage in vigorous life activity (exercise, social contact, work)',
+        'Call a therapist same day',
+        'Crisis: call or text 988, text HOME to 741741',
+        'Do not return to this practice',
+        'Note that this practice was not appropriate for you and that this is not a failure'
+      ],
+      facilitatorNote: 'Do not offer death contemplation in general groups. The classical use cases (long-term monastic practitioners with daily teacher contact) are not the contexts most modern teachers serve. Modern adaptations of death contemplation in wellness contexts are largely inappropriate.',
+      research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB (2019). Classical Theravada and Tibetan sources on charnel-ground practice. APA suicide risk assessment guidelines.'
+    },
+    {
+      id: 'adapt_sound_bath_loud',
+      standardPractice: 'Sound bath at loud volume (sensory overload)',
+      riskForTrauma: 'Loud sound baths (large gongs, multiple bowls at high volume) can produce sensory overload, trigger PTSD startle response, induce panic, or cause physical hearing harm. The wellness framing as immersive or healing does not change the physical reality of loud sound on a sensitive nervous system.',
+      adaptations: [
+        {
+          variant: 'Moderate volume only',
+          description: 'Limit sound bath volume to comfortable conversational range. Avoid sustained loud or peak-volume passages.',
+          whenToUse: 'Always.'
+        },
+        {
+          variant: 'Earplugs available',
+          description: 'Provide earplugs or earmuffs to all participants. Make using them stigma-free.',
+          whenToUse: 'In all sound-based practice settings.'
+        },
+        {
+          variant: 'Seat near exit',
+          description: 'Sit near the exit so you can leave easily if sound becomes overwhelming.',
+          whenToUse: 'When attending unfamiliar sound practice.'
+        },
+        {
+          variant: 'Quiet sound practice only',
+          description: 'Use quieter sound practices (singing bowls at moderate volume, soft chimes, ambient music) rather than gongs or large vibration instruments.',
+          whenToUse: 'For sensitive nervous systems or trauma survivors.'
+        }
+      ],
+      groundingFirst: 'Before any sound bath, name volume range, note exits, distribute earplugs, name that leaving any time is welcome.',
+      earlyWarning: [
+        'Startle response or jumping at loud passages',
+        'Sensation of being unable to escape the sound',
+        'PTSD activation (memory of explosion, accident, attack)',
+        'Headache, ear pain, or tinnitus during practice',
+        'Panic or dissociation'
+      ],
+      ifActivated: [
+        'Put in earplugs or cover ears',
+        'Leave the room; do not stay in painful sound',
+        'If ears are ringing or hurting, leave and rest in quiet',
+        'See an audiologist if tinnitus persists or hearing feels affected',
+        'Talk to the facilitator about volume; if dismissed, find a different practitioner',
+        'Do not return to that facilitator if they dismiss your sensory limits'
+      ],
+      facilitatorNote: 'Sound bath facilitators: keep volume modest, provide earplugs, name that some sensitive participants will leave and that this is welcome, screen for trauma history with loud sounds. Do not use volume as a measure of practice intensity.',
+      research: 'Treleaven D (2018). National Institute on Deafness and Other Communication Disorders on noise exposure. Goldsby TL on sound therapy (notes the need for moderate volume).'
+    }
+  ];
+var GRATITUDE_PROMPT_BANK = [
+    { id: 'p_001', prompt: 'Someone who made you laugh today', forBand: 'all', category: 'people' },
+    { id: 'p_002', prompt: 'A small comfort you used today', forBand: 'all', category: 'simple' },
+    { id: 'p_003', prompt: 'A sound you heard that made you pause', forBand: 'all', category: 'moments' },
+    { id: 'p_004', prompt: 'A meal you ate fully present', forBand: 'all', category: 'simple' },
+    { id: 'p_005', prompt: 'A teacher who saw you', forBand: 'middle', category: 'people' },
+    { id: 'p_006', prompt: 'A piece of clothing that feels good on your body', forBand: 'all', category: 'simple' },
+    { id: 'p_007', prompt: 'Something your body did for you automatically today', forBand: 'all', category: 'body' },
+    { id: 'p_008', prompt: 'A friend who knows your name without looking at you', forBand: 'all', category: 'people' },
+    { id: 'p_009', prompt: 'A song that landed differently this week', forBand: 'middle', category: 'moments' },
+    { id: 'p_010', prompt: 'A tree you walk past often', forBand: 'all', category: 'nature' },
+    { id: 'p_011', prompt: 'A teacher from a year you barely remember', forBand: 'high', category: 'memories' },
+    { id: 'p_012', prompt: 'The taste of clean water', forBand: 'all', category: 'simple' },
+    { id: 'p_013', prompt: 'A stranger\'s small kindness in the past week', forBand: 'all', category: 'people' },
+    { id: 'p_014', prompt: 'A part of your body that is working right now', forBand: 'all', category: 'body' },
+    { id: 'p_015', prompt: 'A moment of unexpected quiet', forBand: 'all', category: 'moments' },
+    { id: 'p_016', prompt: 'A smell that brings back a good memory', forBand: 'all', category: 'memories' },
+    { id: 'p_017', prompt: 'A book that changed how you see something', forBand: 'high', category: 'memories' },
+    { id: 'p_018', prompt: 'A small thing you got better at this month', forBand: 'middle', category: 'abilities' },
+    { id: 'p_019', prompt: 'A challenge you faced and survived', forBand: 'high', category: 'hard-times' },
+    { id: 'p_020', prompt: 'A way someone showed they care without saying it', forBand: 'all', category: 'people' },
+    { id: 'p_021', prompt: 'The light coming through a window today', forBand: 'all', category: 'moments' },
+    { id: 'p_022', prompt: 'A piece of advice that still helps', forBand: 'high', category: 'memories' },
+    { id: 'p_023', prompt: 'A skill your hands know without thinking', forBand: 'all', category: 'abilities' },
+    { id: 'p_024', prompt: 'A texture you love (fabric, fur, sand, paper)', forBand: 'all', category: 'simple' },
+    { id: 'p_025', prompt: 'A neighbor or community member you have never thanked', forBand: 'all', category: 'people' },
+    { id: 'p_026', prompt: 'The way a particular animal moves', forBand: 'all', category: 'nature' },
+    { id: 'p_027', prompt: 'A teacher who was tough but fair', forBand: 'middle', category: 'people' },
+    { id: 'p_028', prompt: 'A small object that always works (a pen, a key, a lock)', forBand: 'all', category: 'simple' },
+    { id: 'p_029', prompt: 'Something you used to be afraid of and are not anymore', forBand: 'middle', category: 'hard-times' },
+    { id: 'p_030', prompt: 'A weather you love', forBand: 'all', category: 'nature' },
+    { id: 'p_031', prompt: 'Something funny that happened this week', forBand: 'all', category: 'moments' },
+    { id: 'p_032', prompt: 'A meal someone made for you', forBand: 'all', category: 'people' },
+    { id: 'p_033', prompt: 'A bed that is comfortable enough to sleep in', forBand: 'all', category: 'simple' },
+    { id: 'p_034', prompt: 'A way your body has healed itself', forBand: 'all', category: 'body' },
+    { id: 'p_035', prompt: 'A teacher who let you redo something', forBand: 'middle', category: 'people' },
+    { id: 'p_036', prompt: 'A piece of music you can play in your head from memory', forBand: 'all', category: 'memories' },
+    { id: 'p_037', prompt: 'A friend who texted you first', forBand: 'all', category: 'people' },
+    { id: 'p_038', prompt: 'The internet connection that just worked today', forBand: 'middle', category: 'simple' },
+    { id: 'p_039', prompt: 'A small thing that surprised you (and you liked it)', forBand: 'all', category: 'surprises' },
+    { id: 'p_040', prompt: 'A piece of art that stopped you in your tracks', forBand: 'high', category: 'moments' },
+    { id: 'p_041', prompt: 'Your morning shower or wash routine', forBand: 'all', category: 'simple' },
+    { id: 'p_042', prompt: 'A bus or car or bike that got you where you needed to go', forBand: 'all', category: 'simple' },
+    { id: 'p_043', prompt: 'A sibling, cousin, or chosen-sibling who has your back', forBand: 'all', category: 'people' },
+    { id: 'p_044', prompt: 'A grandparent or elder who told you a story', forBand: 'all', category: 'people' },
+    { id: 'p_045', prompt: 'A childhood toy you loved', forBand: 'all', category: 'memories' },
+    { id: 'p_046', prompt: 'A sense of humor someone in your life has', forBand: 'middle', category: 'people' },
+    { id: 'p_047', prompt: 'A skill you taught yourself', forBand: 'high', category: 'abilities' },
+    { id: 'p_048', prompt: 'A place you can be quiet', forBand: 'all', category: 'simple' },
+    { id: 'p_049', prompt: 'A friend who lets you be sad without trying to fix it', forBand: 'high', category: 'people' },
+    { id: 'p_050', prompt: 'A favorite mug or cup', forBand: 'all', category: 'simple' },
+    { id: 'p_051', prompt: 'A coach who pushed you in the right way', forBand: 'middle', category: 'people' },
+    { id: 'p_052', prompt: 'A doctor or nurse who treated you well', forBand: 'all', category: 'people' },
+    { id: 'p_053', prompt: 'A custodian or cleaner at your school', forBand: 'all', category: 'people' },
+    { id: 'p_054', prompt: 'A cafeteria worker who knows your usual', forBand: 'all', category: 'people' },
+    { id: 'p_055', prompt: 'A school bus driver who said good morning', forBand: 'all', category: 'people' },
+    { id: 'p_056', prompt: 'A pet who waits at the door', forBand: 'all', category: 'people' },
+    { id: 'p_057', prompt: 'A specific tree you can describe from memory', forBand: 'all', category: 'nature' },
+    { id: 'p_058', prompt: 'The way snow muffles sound', forBand: 'all', category: 'nature' },
+    { id: 'p_059', prompt: 'The way rain smells', forBand: 'all', category: 'nature' },
+    { id: 'p_060', prompt: 'A specific cloud shape you remember', forBand: 'all', category: 'nature' },
+    { id: 'p_061', prompt: 'The first warm day of spring', forBand: 'all', category: 'nature' },
+    { id: 'p_062', prompt: 'The first cool morning of fall', forBand: 'all', category: 'nature' },
+    { id: 'p_063', prompt: 'A sunrise or sunset you actually watched', forBand: 'all', category: 'nature' },
+    { id: 'p_064', prompt: 'A moon you stopped to look at', forBand: 'all', category: 'nature' },
+    { id: 'p_065', prompt: 'A specific bird you have seen and can describe', forBand: 'all', category: 'nature' },
+    { id: 'p_066', prompt: 'A bug you decided not to kill', forBand: 'all', category: 'nature' },
+    { id: 'p_067', prompt: 'Your legs that walk you places', forBand: 'all', category: 'body' },
+    { id: 'p_068', prompt: 'Your hands that hold things you love', forBand: 'all', category: 'body' },
+    { id: 'p_069', prompt: 'Your eyes that read these words', forBand: 'all', category: 'body' },
+    { id: 'p_070', prompt: 'Your ears that hear music', forBand: 'all', category: 'body' },
+    { id: 'p_071', prompt: 'Your heart that beats without you asking', forBand: 'all', category: 'body' },
+    { id: 'p_072', prompt: 'Your lungs that breathe right now', forBand: 'all', category: 'body' },
+    { id: 'p_073', prompt: 'Your skin that holds you together', forBand: 'all', category: 'body' },
+    { id: 'p_074', prompt: 'Your sleep, the times it has worked', forBand: 'all', category: 'body' },
+    { id: 'p_075', prompt: 'A scar that healed', forBand: 'middle', category: 'body' },
+    { id: 'p_076', prompt: 'A bruise that has faded', forBand: 'all', category: 'body' },
+    { id: 'p_077', prompt: 'A muscle that helped you do something hard today', forBand: 'all', category: 'body' },
+    { id: 'p_078', prompt: 'A breath that calmed you when you needed it', forBand: 'all', category: 'body' },
+    { id: 'p_079', prompt: 'A meal that tasted better than usual', forBand: 'all', category: 'moments' },
+    { id: 'p_080', prompt: 'The first sip of something hot', forBand: 'all', category: 'simple' },
+    { id: 'p_081', prompt: 'The first sip of something cold on a hot day', forBand: 'all', category: 'simple' },
+    { id: 'p_082', prompt: 'A snack that surprised you with how good it was', forBand: 'all', category: 'surprises' },
+    { id: 'p_083', prompt: 'A piece of fruit at the right ripeness', forBand: 'all', category: 'simple' },
+    { id: 'p_084', prompt: 'A vegetable you actually like', forBand: 'all', category: 'simple' },
+    { id: 'p_085', prompt: 'A recipe you learned from someone', forBand: 'middle', category: 'memories' },
+    { id: 'p_086', prompt: 'A spice or seasoning that always makes you smile', forBand: 'all', category: 'simple' },
+    { id: 'p_087', prompt: 'A bakery smell when you walked past', forBand: 'all', category: 'moments' },
+    { id: 'p_088', prompt: 'A song that played at exactly the right time', forBand: 'middle', category: 'moments' },
+    { id: 'p_089', prompt: 'A book you reread because it helps', forBand: 'high', category: 'simple' },
+    { id: 'p_090', prompt: 'A line from a poem or song that you remember', forBand: 'high', category: 'memories' },
+    { id: 'p_091', prompt: 'A movie that made you cry in a good way', forBand: 'middle', category: 'moments' },
+    { id: 'p_092', prompt: 'A movie that made you laugh out loud', forBand: 'all', category: 'moments' },
+    { id: 'p_093', prompt: 'A video game that gave you a break', forBand: 'all', category: 'simple' },
+    { id: 'p_094', prompt: 'A show you watched with someone you love', forBand: 'all', category: 'memories' },
+    { id: 'p_095', prompt: 'A YouTube channel that taught you something useful', forBand: 'middle', category: 'simple' },
+    { id: 'p_096', prompt: 'A piece of homework you actually enjoyed', forBand: 'middle', category: 'surprises' },
+    { id: 'p_097', prompt: 'A class period that flew by', forBand: 'middle', category: 'moments' },
+    { id: 'p_098', prompt: 'A teacher\'s joke that landed', forBand: 'middle', category: 'people' },
+    { id: 'p_099', prompt: 'A teacher who held you to a high standard', forBand: 'high', category: 'people' },
+    { id: 'p_100', prompt: 'A substitute teacher who was actually good', forBand: 'middle', category: 'surprises' },
+    { id: 'p_101', prompt: 'A locker that opens on the first try', forBand: 'middle', category: 'simple' },
+    { id: 'p_102', prompt: 'A pencil that wrote smoothly', forBand: 'elementary', category: 'simple' },
+    { id: 'p_103', prompt: 'A backpack that fits everything', forBand: 'middle', category: 'simple' },
+    { id: 'p_104', prompt: 'A library that lets you be quiet', forBand: 'all', category: 'simple' },
+    { id: 'p_105', prompt: 'A librarian who recommended a book', forBand: 'all', category: 'people' },
+    { id: 'p_106', prompt: 'A school nurse who was kind', forBand: 'all', category: 'people' },
+    { id: 'p_107', prompt: 'A counselor who actually listened', forBand: 'middle', category: 'people' },
+    { id: 'p_108', prompt: 'A friend who waited for you when you were late', forBand: 'all', category: 'people' },
+    { id: 'p_109', prompt: 'A friend who texted just to check in', forBand: 'middle', category: 'people' },
+    { id: 'p_110', prompt: 'A group chat that made you laugh today', forBand: 'middle', category: 'moments' },
+    { id: 'p_111', prompt: 'A meme that hit at the perfect time', forBand: 'middle', category: 'moments' },
+    { id: 'p_112', prompt: 'A playlist that fit your mood', forBand: 'middle', category: 'simple' },
+    { id: 'p_113', prompt: 'A walk that cleared your head', forBand: 'all', category: 'moments' },
+    { id: 'p_114', prompt: 'A nap that brought you back to yourself', forBand: 'all', category: 'simple' },
+    { id: 'p_115', prompt: 'A bath or shower that felt like a reset', forBand: 'all', category: 'simple' },
+    { id: 'p_116', prompt: 'A clean towel', forBand: 'all', category: 'simple' },
+    { id: 'p_117', prompt: 'A pair of socks that have no holes', forBand: 'all', category: 'simple' },
+    { id: 'p_118', prompt: 'Sneakers that still have grip', forBand: 'all', category: 'simple' },
+    { id: 'p_119', prompt: 'A jacket that keeps the wind out', forBand: 'all', category: 'simple' },
+    { id: 'p_120', prompt: 'A blanket you have had for years', forBand: 'all', category: 'memories' },
+    { id: 'p_121', prompt: 'A pillow that fits your head', forBand: 'all', category: 'simple' },
+    { id: 'p_122', prompt: 'A toothbrush that is still doing its job', forBand: 'all', category: 'simple' },
+    { id: 'p_123', prompt: 'Soap that smells good', forBand: 'all', category: 'simple' },
+    { id: 'p_124', prompt: 'Hot water that comes out when you turn the knob', forBand: 'all', category: 'simple' },
+    { id: 'p_125', prompt: 'A washer or dryer somewhere you can use', forBand: 'all', category: 'simple' },
+    { id: 'p_126', prompt: 'A floor that is dry under your feet', forBand: 'all', category: 'simple' },
+    { id: 'p_127', prompt: 'A roof that is keeping the rain out right now', forBand: 'all', category: 'simple' },
+    { id: 'p_128', prompt: 'A door that locks', forBand: 'all', category: 'simple' },
+    { id: 'p_129', prompt: 'A window that opens', forBand: 'all', category: 'simple' },
+    { id: 'p_130', prompt: 'A light that turns on when you flip the switch', forBand: 'all', category: 'simple' },
+    { id: 'p_131', prompt: 'A working fridge', forBand: 'all', category: 'simple' },
+    { id: 'p_132', prompt: 'A stove or microwave that heats your food', forBand: 'all', category: 'simple' },
+    { id: 'p_133', prompt: 'A chair that supports your back', forBand: 'all', category: 'simple' },
+    { id: 'p_134', prompt: 'A desk where you can put your stuff', forBand: 'middle', category: 'simple' },
+    { id: 'p_135', prompt: 'A wall that has a memory pinned to it', forBand: 'middle', category: 'memories' },
+    { id: 'p_136', prompt: 'A photo you walked past today', forBand: 'all', category: 'memories' },
+    { id: 'p_137', prompt: 'A gift someone gave you that you still use', forBand: 'middle', category: 'memories' },
+    { id: 'p_138', prompt: 'A handwritten note you kept', forBand: 'middle', category: 'memories' },
+    { id: 'p_139', prompt: 'A piece of advice that finally clicked', forBand: 'high', category: 'memories' },
+    { id: 'p_140', prompt: 'A mistake that taught you something important', forBand: 'high', category: 'hard-times' },
+    { id: 'p_141', prompt: 'A failure that did not break you', forBand: 'high', category: 'hard-times' },
+    { id: 'p_142', prompt: 'A day you got through that you were not sure you could', forBand: 'high', category: 'hard-times' },
+    { id: 'p_143', prompt: 'A friend who stayed when others left', forBand: 'high', category: 'hard-times' },
+    { id: 'p_144', prompt: 'A version of yourself you no longer have to be', forBand: 'high', category: 'hard-times' },
+    { id: 'p_145', prompt: 'A boundary you set that protected you', forBand: 'high', category: 'hard-times' },
+    { id: 'p_146', prompt: 'A piece of help you asked for and received', forBand: 'high', category: 'hard-times' },
+    { id: 'p_147', prompt: 'A therapist, counselor, or trusted adult who showed up', forBand: 'high', category: 'people' },
+    { id: 'p_148', prompt: 'A medicine that helps you function', forBand: 'high', category: 'body' },
+    { id: 'p_149', prompt: 'A diagnosis that gave you language for what was happening', forBand: 'high', category: 'hard-times' },
+    { id: 'p_150', prompt: 'A coping skill that is starting to work', forBand: 'high', category: 'abilities' },
+    { id: 'p_151', prompt: 'A morning you woke up and did not want to stay in bed', forBand: 'high', category: 'moments' },
+    { id: 'p_152', prompt: 'A song you can play on an instrument', forBand: 'middle', category: 'abilities' },
+    { id: 'p_153', prompt: 'A language you speak', forBand: 'all', category: 'abilities' },
+    { id: 'p_154', prompt: 'A language you are learning', forBand: 'middle', category: 'abilities' },
+    { id: 'p_155', prompt: 'A skill your culture gave you', forBand: 'high', category: 'memories' },
+    { id: 'p_156', prompt: 'A recipe from your family', forBand: 'middle', category: 'memories' },
+    { id: 'p_157', prompt: 'A holiday tradition that means something', forBand: 'middle', category: 'memories' },
+    { id: 'p_158', prompt: 'An ancestor whose decisions made your life possible', forBand: 'high', category: 'memories' },
+    { id: 'p_159', prompt: 'A story passed down to you', forBand: 'middle', category: 'memories' },
+    { id: 'p_160', prompt: 'A movement or cause that fights for people like you', forBand: 'high', category: 'people' },
+    { id: 'p_161', prompt: 'An activist or organizer you admire (living or dead)', forBand: 'high', category: 'people' },
+    { id: 'p_162', prompt: 'A scientist whose work you benefit from daily', forBand: 'high', category: 'people' },
+    { id: 'p_163', prompt: 'A writer whose words have helped you', forBand: 'high', category: 'people' },
+    { id: 'p_164', prompt: 'A musician whose song has gotten you through something', forBand: 'middle', category: 'people' },
+    { id: 'p_165', prompt: 'An artist whose work makes the world more bearable', forBand: 'high', category: 'people' },
+    { id: 'p_166', prompt: 'A character (fictional) who made you feel less alone', forBand: 'middle', category: 'memories' },
+    { id: 'p_167', prompt: 'A historical figure you find yourself thinking about', forBand: 'high', category: 'memories' },
+    { id: 'p_168', prompt: 'A small surprise this week', forBand: 'all', category: 'surprises' },
+    { id: 'p_169', prompt: 'A surprise that turned out better than you expected', forBand: 'middle', category: 'surprises' },
+    { id: 'p_170', prompt: 'A new food you tried and liked', forBand: 'all', category: 'surprises' },
+    { id: 'p_171', prompt: 'A person you misjudged at first', forBand: 'high', category: 'surprises' },
+    { id: 'p_172', prompt: 'A class you thought you would hate but did not', forBand: 'middle', category: 'surprises' },
+    { id: 'p_173', prompt: 'A topic you started learning about for fun', forBand: 'middle', category: 'abilities' },
+    { id: 'p_174', prompt: 'A skill you used today without realizing how hard it once was', forBand: 'high', category: 'abilities' },
+    { id: 'p_175', prompt: 'A moment you noticed yourself growing', forBand: 'high', category: 'abilities' },
+    { id: 'p_176', prompt: 'A time you handled something better than the old you would have', forBand: 'high', category: 'abilities' },
+    { id: 'p_177', prompt: 'A time you said no when you needed to', forBand: 'high', category: 'abilities' },
+    { id: 'p_178', prompt: 'A time you said yes when you almost did not', forBand: 'high', category: 'abilities' },
+    { id: 'p_179', prompt: 'A risk you took that paid off', forBand: 'high', category: 'abilities' },
+    { id: 'p_180', prompt: 'A risk you took that did not pay off but you are still glad you tried', forBand: 'high', category: 'hard-times' },
+    { id: 'p_181', prompt: 'A friendship that has outlasted what it had to', forBand: 'high', category: 'people' },
+    { id: 'p_182', prompt: 'A relative you have only known as an adult', forBand: 'high', category: 'people' },
+    { id: 'p_183', prompt: 'A teacher you secretly miss', forBand: 'high', category: 'memories' },
+    { id: 'p_184', prompt: 'A school year you actually liked', forBand: 'middle', category: 'memories' },
+    { id: 'p_185', prompt: 'A summer you remember fondly', forBand: 'middle', category: 'memories' },
+    { id: 'p_186', prompt: 'A holiday that lived up to itself', forBand: 'all', category: 'memories' },
+    { id: 'p_187', prompt: 'A birthday that mattered to you', forBand: 'all', category: 'memories' },
+    { id: 'p_188', prompt: 'A trip or outing that still feels alive', forBand: 'all', category: 'memories' },
+    { id: 'p_189', prompt: 'A walk you take on hard days', forBand: 'high', category: 'simple' },
+    { id: 'p_190', prompt: 'A place online that is good for you', forBand: 'middle', category: 'simple' },
+    { id: 'p_191', prompt: 'A creator whose work is genuinely helpful', forBand: 'middle', category: 'people' },
+    { id: 'p_192', prompt: 'A teacher (not at your school) who taught you through video or writing', forBand: 'high', category: 'people' },
+    { id: 'p_193', prompt: 'A doctor who finally listened', forBand: 'high', category: 'people' },
+    { id: 'p_194', prompt: 'A pharmacist who explained something clearly', forBand: 'high', category: 'people' },
+    { id: 'p_195', prompt: 'An app or tool that makes your life easier', forBand: 'middle', category: 'simple' },
+    { id: 'p_196', prompt: 'A keyboard shortcut you use all the time', forBand: 'high', category: 'simple' },
+    { id: 'p_197', prompt: 'A pair of headphones that fit your ears', forBand: 'middle', category: 'simple' },
+    { id: 'p_198', prompt: 'A speaker, microphone, or instrument that does what you ask', forBand: 'middle', category: 'simple' },
+    { id: 'p_199', prompt: 'A camera that captures things you want to remember', forBand: 'middle', category: 'simple' },
+    { id: 'p_200', prompt: 'A photo you took that you are proud of', forBand: 'middle', category: 'memories' },
+    { id: 'p_201', prompt: 'A drawing or doodle you made today', forBand: 'all', category: 'abilities' },
+    { id: 'p_202', prompt: 'A sentence you wrote that you actually like', forBand: 'high', category: 'abilities' },
+    { id: 'p_203', prompt: 'A problem you solved by yourself', forBand: 'middle', category: 'abilities' },
+    { id: 'p_204', prompt: 'A problem you solved by asking for help', forBand: 'high', category: 'abilities' },
+    { id: 'p_205', prompt: 'A friend who is good at the thing you are not', forBand: 'middle', category: 'people' },
+    { id: 'p_206', prompt: 'A friend who is patient with the thing you are bad at', forBand: 'middle', category: 'people' },
+    { id: 'p_207', prompt: 'A morning where nothing went wrong', forBand: 'all', category: 'moments' },
+    { id: 'p_208', prompt: 'An afternoon that felt longer than it was', forBand: 'all', category: 'moments' },
+    { id: 'p_209', prompt: 'An evening that ended with you ready to sleep', forBand: 'all', category: 'moments' },
+    { id: 'p_210', prompt: 'A night you slept well', forBand: 'all', category: 'simple' },
+    { id: 'p_211', prompt: 'A dream you remember', forBand: 'middle', category: 'moments' },
+    { id: 'p_212', prompt: 'A nightmare that ended', forBand: 'middle', category: 'moments' },
+    { id: 'p_213', prompt: 'A waking-up that did not feel like a fight', forBand: 'all', category: 'moments' },
+    { id: 'p_214', prompt: 'A day off you actually rested on', forBand: 'middle', category: 'simple' },
+    { id: 'p_215', prompt: 'A weekend that was long enough', forBand: 'middle', category: 'simple' },
+    { id: 'p_216', prompt: 'A snow day or weather cancellation', forBand: 'all', category: 'surprises' },
+    { id: 'p_217', prompt: 'A test you were ready for', forBand: 'middle', category: 'abilities' },
+    { id: 'p_218', prompt: 'A presentation that went better than you feared', forBand: 'middle', category: 'surprises' },
+    { id: 'p_219', prompt: 'An audition or tryout you survived', forBand: 'middle', category: 'abilities' },
+    { id: 'p_220', prompt: 'A performance you finished', forBand: 'middle', category: 'abilities' },
+    { id: 'p_221', prompt: 'A game or match where you played well', forBand: 'middle', category: 'abilities' },
+    { id: 'p_222', prompt: 'A game where your team showed up for you', forBand: 'middle', category: 'people' },
+    { id: 'p_223', prompt: 'A coach who made you a better teammate', forBand: 'middle', category: 'people' },
+    { id: 'p_224', prompt: 'A teammate who set you up to succeed', forBand: 'middle', category: 'people' },
+    { id: 'p_225', prompt: 'A piece of equipment that finally worked right', forBand: 'middle', category: 'simple' },
+    { id: 'p_226', prompt: 'A piece of clothing that fit on the first try', forBand: 'all', category: 'simple' },
+    { id: 'p_227', prompt: 'A haircut or hairstyle you actually like', forBand: 'middle', category: 'simple' },
+    { id: 'p_228', prompt: 'A compliment that landed', forBand: 'middle', category: 'moments' },
+    { id: 'p_229', prompt: 'A compliment you gave that landed', forBand: 'middle', category: 'people' },
+    { id: 'p_230', prompt: 'A laugh that came out of nowhere today', forBand: 'all', category: 'moments' },
+    { id: 'p_231', prompt: 'A teacher who pronounced your name correctly on the first day', forBand: 'all', category: 'people' },
+    { id: 'p_232', prompt: 'A person who remembered your pronouns without being reminded', forBand: 'high', category: 'people' },
+    { id: 'p_233', prompt: 'A waiter or cashier who was kind on a hard day', forBand: 'all', category: 'people' },
+    { id: 'p_234', prompt: 'A stranger who held the door for you', forBand: 'all', category: 'people' },
+    { id: 'p_235', prompt: 'A small bird at a feeder', forBand: 'all', category: 'nature' },
+    { id: 'p_236', prompt: 'The way light moves on water', forBand: 'all', category: 'nature' },
+    { id: 'p_237', prompt: 'A leaf that has changed color', forBand: 'all', category: 'nature' },
+    { id: 'p_238', prompt: 'The way a particular flower smells', forBand: 'all', category: 'nature' },
+    { id: 'p_239', prompt: 'A patch of moss between sidewalk cracks', forBand: 'all', category: 'nature' },
+    { id: 'p_240', prompt: 'The sound of wind in trees', forBand: 'all', category: 'nature' },
+    { id: 'p_241', prompt: 'A storm watched from inside', forBand: 'all', category: 'nature' },
+    { id: 'p_242', prompt: 'A snowfall you walked through', forBand: 'all', category: 'nature' },
+    { id: 'p_243', prompt: 'A puddle you stepped around or in', forBand: 'all', category: 'nature' },
+    { id: 'p_244', prompt: 'A river you crossed', forBand: 'all', category: 'nature' },
+    { id: 'p_245', prompt: 'A bridge that held you up', forBand: 'middle', category: 'simple' },
+    { id: 'p_246', prompt: 'A road that took you somewhere you wanted to be', forBand: 'middle', category: 'simple' },
+    { id: 'p_247', prompt: 'A sidewalk that was shoveled by someone', forBand: 'all', category: 'people' },
+    { id: 'p_248', prompt: 'A traffic light that worked', forBand: 'middle', category: 'simple' },
+    { id: 'p_249', prompt: 'A stop sign at a corner you needed it', forBand: 'middle', category: 'simple' },
+    { id: 'p_250', prompt: 'A streetlight that came on at dusk', forBand: 'all', category: 'simple' },
+    { id: 'p_251', prompt: 'A fire alarm you have never had to use', forBand: 'middle', category: 'simple' },
+    { id: 'p_252', prompt: 'A working smoke detector overhead', forBand: 'middle', category: 'simple' },
+    { id: 'p_253', prompt: 'A heating system that runs in winter', forBand: 'all', category: 'simple' },
+    { id: 'p_254', prompt: 'A fan or AC that cools you in summer', forBand: 'all', category: 'simple' },
+    { id: 'p_255', prompt: 'A working washing machine somewhere accessible to you', forBand: 'all', category: 'simple' },
+    { id: 'p_256', prompt: 'A grocery store that has what you need', forBand: 'all', category: 'simple' },
+    { id: 'p_257', prompt: 'A farmer whose food you ate this week', forBand: 'high', category: 'people' },
+    { id: 'p_258', prompt: 'A trucker who delivered something you used today', forBand: 'high', category: 'people' },
+    { id: 'p_259', prompt: 'A pharmacist who filled a prescription', forBand: 'high', category: 'people' },
+    { id: 'p_260', prompt: 'A mechanic who fixed a car that gets you places', forBand: 'high', category: 'people' },
+    { id: 'p_261', prompt: 'A plumber who once fixed something at your home', forBand: 'high', category: 'people' },
+    { id: 'p_262', prompt: 'A teacher you only had for one year but who shaped you', forBand: 'high', category: 'memories' },
+    { id: 'p_263', prompt: 'A song lyric you remember word for word', forBand: 'middle', category: 'memories' },
+    { id: 'p_264', prompt: 'A poem you memorized for class and still remember', forBand: 'high', category: 'memories' },
+    { id: 'p_265', prompt: 'A childhood friend you still think about', forBand: 'middle', category: 'memories' },
+    { id: 'p_266', prompt: 'A neighbor you had as a kid who was kind', forBand: 'middle', category: 'memories' },
+    { id: 'p_267', prompt: 'A toy you played with until it fell apart', forBand: 'all', category: 'memories' },
+    { id: 'p_268', prompt: 'A blanket fort you built or remember building', forBand: 'all', category: 'memories' },
+    { id: 'p_269', prompt: 'A snowman you made or saw someone make', forBand: 'all', category: 'memories' },
+    { id: 'p_270', prompt: 'A sand castle you built at a beach', forBand: 'all', category: 'memories' },
+    { id: 'p_271', prompt: 'A treehouse, fort, or hideout you had access to', forBand: 'all', category: 'memories' },
+    { id: 'p_272', prompt: 'A skill you learned without thinking about it (walking, talking, riding)', forBand: 'all', category: 'abilities' },
+    { id: 'p_273', prompt: 'A skill you worked hard to learn', forBand: 'middle', category: 'abilities' },
+    { id: 'p_274', prompt: 'A skill you taught someone else', forBand: 'middle', category: 'abilities' },
+    { id: 'p_275', prompt: 'A moment you felt competent today', forBand: 'middle', category: 'abilities' },
+    { id: 'p_276', prompt: 'A time you noticed yourself being patient', forBand: 'high', category: 'abilities' },
+    { id: 'p_277', prompt: 'A time you noticed yourself being kind', forBand: 'middle', category: 'abilities' },
+    { id: 'p_278', prompt: 'A time you noticed yourself being brave (any size)', forBand: 'middle', category: 'abilities' },
+    { id: 'p_279', prompt: 'A time you noticed yourself being honest when it cost you', forBand: 'high', category: 'abilities' },
+    { id: 'p_280', prompt: 'A time you apologized and meant it', forBand: 'high', category: 'abilities' },
+    { id: 'p_281', prompt: 'A time you forgave someone (yourself or another)', forBand: 'high', category: 'abilities' },
+    { id: 'p_282', prompt: 'A boundary you held this week', forBand: 'high', category: 'abilities' },
+    { id: 'p_283', prompt: 'A boundary someone else held that you actually respected', forBand: 'high', category: 'people' },
+    { id: 'p_284', prompt: 'A way someone showed up for you without being asked', forBand: 'high', category: 'people' },
+    { id: 'p_285', prompt: 'A time a friend told you a hard truth', forBand: 'high', category: 'people' },
+    { id: 'p_286', prompt: 'A time you told a friend a hard truth and they thanked you later', forBand: 'high', category: 'people' },
+    { id: 'p_287', prompt: 'A moment of laughter that broke a tense room', forBand: 'middle', category: 'moments' },
+    { id: 'p_288', prompt: 'A silence that felt comfortable', forBand: 'high', category: 'moments' },
+    { id: 'p_289', prompt: 'A conversation that went somewhere unexpected', forBand: 'middle', category: 'surprises' },
+    { id: 'p_290', prompt: 'A message you got that came at the right moment', forBand: 'middle', category: 'surprises' },
+    { id: 'p_291', prompt: 'A coincidence that made you smile', forBand: 'all', category: 'surprises' },
+    { id: 'p_292', prompt: 'A door that opened just as you needed it', forBand: 'all', category: 'surprises' },
+    { id: 'p_293', prompt: 'A small win at school today', forBand: 'middle', category: 'moments' },
+    { id: 'p_294', prompt: 'A small win at home today', forBand: 'all', category: 'moments' },
+    { id: 'p_295', prompt: 'A small win inside yourself today', forBand: 'high', category: 'moments' },
+    { id: 'p_296', prompt: 'A way today was easier than yesterday', forBand: 'all', category: 'moments' },
+    { id: 'p_297', prompt: 'A way today was harder than yesterday — and you still showed up', forBand: 'high', category: 'hard-times' },
+    { id: 'p_298', prompt: 'A time you let yourself rest', forBand: 'high', category: 'simple' },
+    { id: 'p_299', prompt: 'A time you let yourself cry', forBand: 'high', category: 'simple' },
+    { id: 'p_300', prompt: 'A time you let yourself laugh fully', forBand: 'all', category: 'simple' },
+    { id: 'p_301', prompt: 'A friend who waited out your bad mood with you', forBand: 'high', category: 'people' },
+    { id: 'p_302', prompt: 'A teacher who did not give up on you when you were a mess', forBand: 'high', category: 'people' },
+    { id: 'p_303', prompt: 'A coach who stopped you from doing something stupid', forBand: 'high', category: 'people' },
+    { id: 'p_304', prompt: 'A school counselor who remembered something you told them weeks ago', forBand: 'high', category: 'people' },
+    { id: 'p_305', prompt: 'A bus driver who slowed down for you as you ran', forBand: 'all', category: 'people' },
+    { id: 'p_306', prompt: 'A doorman, security guard, or hall monitor who greeted you by name', forBand: 'all', category: 'people' },
+    { id: 'p_307', prompt: 'A custodian who fixed something you broke without making you feel bad', forBand: 'middle', category: 'people' },
+    { id: 'p_308', prompt: 'A pet who slept on your lap during a hard hour', forBand: 'all', category: 'people' },
+    { id: 'p_309', prompt: 'A wild animal you saw and remembered', forBand: 'all', category: 'nature' },
+    { id: 'p_310', prompt: 'A constellation you can find in the sky', forBand: 'middle', category: 'nature' },
+    { id: 'p_311', prompt: 'A planet you have actually identified', forBand: 'middle', category: 'nature' },
+    { id: 'p_312', prompt: 'A meteor or shooting star you have seen', forBand: 'all', category: 'nature' },
+    { id: 'p_313', prompt: 'The smell of cut grass', forBand: 'all', category: 'nature' },
+    { id: 'p_314', prompt: 'The smell of old books', forBand: 'high', category: 'nature' },
+    { id: 'p_315', prompt: 'The smell of laundry just out of the dryer', forBand: 'all', category: 'simple' },
+    { id: 'p_316', prompt: 'The smell of coffee or tea brewing', forBand: 'middle', category: 'simple' },
+    { id: 'p_317', prompt: 'The smell of bread baking', forBand: 'all', category: 'simple' },
+    { id: 'p_318', prompt: 'A first sip of water in the morning', forBand: 'all', category: 'simple' },
+    { id: 'p_319', prompt: 'A glass of water after exercise', forBand: 'all', category: 'simple' },
+    { id: 'p_320', prompt: 'A breeze through an open window', forBand: 'all', category: 'simple' },
+    { id: 'p_321', prompt: 'The feeling of taking off your shoes', forBand: 'all', category: 'simple' },
+    { id: 'p_322', prompt: 'The feeling of getting into bed at the end of a long day', forBand: 'all', category: 'simple' },
+    { id: 'p_323', prompt: 'The feeling of waking up to discover you can sleep a little longer', forBand: 'all', category: 'simple' },
+    { id: 'p_324', prompt: 'The feeling of finishing a long assignment', forBand: 'middle', category: 'moments' },
+    { id: 'p_325', prompt: 'The feeling of clicking submit on something you worked hard on', forBand: 'high', category: 'moments' },
+    { id: 'p_326', prompt: 'The feeling of crossing a finish line (literal or metaphorical)', forBand: 'middle', category: 'moments' },
+    { id: 'p_327', prompt: 'The feeling of a hot shower after being cold all day', forBand: 'all', category: 'simple' },
+    { id: 'p_328', prompt: 'The feeling of a cold drink on a hot day', forBand: 'all', category: 'simple' },
+    { id: 'p_329', prompt: 'The feeling of putting on a warm coat in the cold', forBand: 'all', category: 'simple' },
+    { id: 'p_330', prompt: 'A favorite teacher\'s handwriting', forBand: 'middle', category: 'memories' },
+    { id: 'p_331', prompt: 'A piece of feedback that helped you grow', forBand: 'high', category: 'memories' },
+    { id: 'p_332', prompt: 'A grade you got that surprised you in a good way', forBand: 'middle', category: 'surprises' },
+    { id: 'p_333', prompt: 'A class where you understood something you used to find impossible', forBand: 'middle', category: 'abilities' },
+    { id: 'p_334', prompt: 'A lab where the experiment worked', forBand: 'middle', category: 'moments' },
+    { id: 'p_335', prompt: 'A field trip that you still remember years later', forBand: 'all', category: 'memories' },
+    { id: 'p_336', prompt: 'A school event you actually had fun at', forBand: 'middle', category: 'memories' },
+    { id: 'p_337', prompt: 'A dance, prom, or formal you survived (or skipped happily)', forBand: 'high', category: 'memories' },
+    { id: 'p_338', prompt: 'A first day of school that went better than feared', forBand: 'middle', category: 'memories' },
+    { id: 'p_339', prompt: 'A last day of school that closed something well', forBand: 'middle', category: 'memories' },
+    { id: 'p_340', prompt: 'A graduation (yours or someone else\'s) that mattered', forBand: 'high', category: 'memories' },
+    { id: 'p_341', prompt: 'A wedding or celebration you witnessed', forBand: 'high', category: 'memories' },
+    { id: 'p_342', prompt: 'A funeral that taught you how to grieve', forBand: 'high', category: 'memories' },
+    { id: 'p_343', prompt: 'A baby being born (in your family or community)', forBand: 'high', category: 'memories' },
+    { id: 'p_344', prompt: 'A pet you adopted or someone in your life adopted', forBand: 'all', category: 'memories' },
+    { id: 'p_345', prompt: 'A new friend who arrived just when you needed them', forBand: 'high', category: 'people' },
+    { id: 'p_346', prompt: 'An old friend who came back into your life', forBand: 'high', category: 'people' },
+    { id: 'p_347', prompt: 'A family member you have grown closer to', forBand: 'high', category: 'people' },
+    { id: 'p_348', prompt: 'A relative you did not know well but who showed up', forBand: 'high', category: 'people' },
+    { id: 'p_349', prompt: 'A mentor older than you who treats you as a peer', forBand: 'high', category: 'people' },
+    { id: 'p_350', prompt: 'A younger person who looks up to you', forBand: 'high', category: 'people' },
+    { id: 'p_351', prompt: 'A peer who set a standard you wanted to match', forBand: 'high', category: 'people' },
+    { id: 'p_352', prompt: 'A team you belonged to that worked', forBand: 'middle', category: 'people' },
+    { id: 'p_353', prompt: 'A team you belonged to that did not work but taught you something', forBand: 'high', category: 'hard-times' },
+    { id: 'p_354', prompt: 'A friendship that ended cleanly', forBand: 'high', category: 'hard-times' },
+    { id: 'p_355', prompt: 'A relationship that ended and freed you', forBand: 'high', category: 'hard-times' },
+    { id: 'p_356', prompt: 'A move (across town or across country) that turned out okay', forBand: 'high', category: 'hard-times' },
+    { id: 'p_357', prompt: 'A medical procedure you got through', forBand: 'high', category: 'hard-times' },
+    { id: 'p_358', prompt: 'A dental appointment that did not actually hurt', forBand: 'all', category: 'simple' },
+    { id: 'p_359', prompt: 'A vaccination you got that protects you', forBand: 'middle', category: 'body' },
+    { id: 'p_360', prompt: 'A surgery that healed something' , forBand: 'high', category: 'body' },
+    { id: 'p_361', prompt: 'A diagnosis that finally named what you were experiencing', forBand: 'high', category: 'hard-times' },
+    { id: 'p_362', prompt: 'A therapy session where you actually said something true', forBand: 'high', category: 'people' },
+    { id: 'p_363', prompt: 'A medication that gave you back functioning', forBand: 'high', category: 'body' },
+    { id: 'p_364', prompt: 'A hospital nurse who treated you like a person', forBand: 'high', category: 'people' },
+    { id: 'p_365', prompt: 'A receptionist who was patient when you were confused', forBand: 'middle', category: 'people' },
+    { id: 'p_366', prompt: 'A pharmacist who answered a question you were embarrassed to ask', forBand: 'high', category: 'people' },
+    { id: 'p_367', prompt: 'A 311 or city worker who responded to a request', forBand: 'high', category: 'people' },
+    { id: 'p_368', prompt: 'A poll worker on election day', forBand: 'high', category: 'people' },
+    { id: 'p_369', prompt: 'A volunteer at a food bank, shelter, or relief organization', forBand: 'high', category: 'people' },
+    { id: 'p_370', prompt: 'An organizer who fought for a policy that helps you', forBand: 'high', category: 'people' },
+    { id: 'p_371', prompt: 'A journalist whose reporting changed how you saw something', forBand: 'high', category: 'people' },
+    { id: 'p_372', prompt: 'A whistleblower who told an uncomfortable truth', forBand: 'high', category: 'people' },
+    { id: 'p_373', prompt: 'A lawyer who fought for someone vulnerable', forBand: 'high', category: 'people' },
+    { id: 'p_374', prompt: 'A judge who ruled fairly in a case you read about', forBand: 'high', category: 'people' },
+    { id: 'p_375', prompt: 'A teacher who used a name correctly on the first try', forBand: 'high', category: 'people' },
+    { id: 'p_376', prompt: 'A teacher who let you eat in the classroom when you needed to', forBand: 'middle', category: 'people' },
+    { id: 'p_377', prompt: 'A teacher who let you put your head down when you needed to', forBand: 'middle', category: 'people' },
+    { id: 'p_378', prompt: 'A teacher who noticed when you stopped raising your hand', forBand: 'high', category: 'people' },
+    { id: 'p_379', prompt: 'A teacher who pulled you aside without making it a big deal', forBand: 'high', category: 'people' },
+    { id: 'p_380', prompt: 'A teacher who emailed your parents about something good', forBand: 'middle', category: 'people' },
+    { id: 'p_381', prompt: 'A counselor who helped you change a schedule', forBand: 'middle', category: 'people' },
+    { id: 'p_382', prompt: 'A counselor who wrote you a recommendation letter', forBand: 'high', category: 'people' },
+    { id: 'p_383', prompt: 'A coach who benched you for the right reason', forBand: 'high', category: 'people' },
+    { id: 'p_384', prompt: 'A coach who put you back in after a mistake', forBand: 'middle', category: 'people' },
+    { id: 'p_385', prompt: 'A friend who let you talk about the same thing for the tenth time', forBand: 'high', category: 'people' },
+    { id: 'p_386', prompt: 'A friend who told you when you were being unkind', forBand: 'high', category: 'people' },
+    { id: 'p_387', prompt: 'A friend who knew how to sit in silence with you', forBand: 'high', category: 'people' },
+    { id: 'p_388', prompt: 'A friend who introduced you to a song, book, or idea that mattered', forBand: 'middle', category: 'people' },
+    { id: 'p_389', prompt: 'A friend who taught you a skill you use now', forBand: 'middle', category: 'people' },
+    { id: 'p_390', prompt: 'A friend who showed you a kind of family you did not know existed', forBand: 'high', category: 'people' }
+  ];
+var AWE_PRACTICES = [
+    {
+      id: 'awe_walk',
+      name: 'Awe Walk',
+      category: 'movement-based',
+      forBand: 'all',
+      durationMin: 15,
+      setup: 'Any outdoor walking route, 15 minutes, ideally a route with at least one tree, sky view, or piece of beauty.',
+      steps: [
+        'Walk at a slower-than-usual pace.',
+        'Approach the walk as if you are seeing this place for the first time.',
+        'Pay attention to the vast: tall trees, expansive skies, distant horizons, intricate detail.',
+        'When something catches you, stop. Look. Take a breath.',
+        'Continue walking, noticing how often awe-eligible things appear when you are looking for them.'
+      ],
+      whatItDoes: 'Increases the frequency and intensity of awe experiences in everyday life; measurably improves well-being even at one 15-minute walk per week.',
+      whyItWorks: 'Awe broadens attention beyond the self, shrinks rumination, and produces a felt sense of smaller-self that paradoxically increases well-being and prosocial behavior.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Indoor awe walk through a museum or cathedral.',
+        'Urban awe walk noticing architecture and human ingenuity.',
+        'Group awe walk in silence with debrief at the end.'
+      ],
+      example: 'A 75-year-old participant in Sturm et al. (2020) reported feeling "smaller and more connected" after eight weekly awe walks, with measurable mood improvement.',
+      cautions: 'Adapt for mobility — awe rolls, awe sits, awe-from-a-window all work; the practice is in attention, not pace.',
+      research: 'Sturm, Datta, Roy, Sible, Kosik, Veziris, Chow, Morris, Neuhaus, Kramer, Miller, Holley, and Keltner (2020), Emotion — eight weekly awe walks produced significant increases in daily positive emotions and decreases in daily distress versus control walks.'
+    },
+    {
+      id: 'night_sky',
+      name: 'Looking at the Night Sky',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 10,
+      setup: 'Outside at night, ideally away from heavy light pollution, warm clothes if cold.',
+      steps: [
+        'Lie down or recline so you can see the sky comfortably.',
+        'Look up. Do not name constellations — just look.',
+        'Let your eyes adjust for at least three minutes.',
+        'Notice how the sky feels bigger the longer you look.',
+        'Stay for at least ten minutes total.'
+      ],
+      whatItDoes: 'Produces vastness-induced awe that reliably shifts perspective on daily concerns.',
+      whyItWorks: 'The night sky activates the awe-eliciting features of vastness and need-for-accommodation (Keltner and Haidt, 2003); the visual field has no scale-reference, which intensifies the felt size of the universe.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Moon-only version on a bright night.',
+        'Meteor-shower version during predictable showers.',
+        'Through-binoculars version for star detail.'
+      ],
+      example: 'A teen in rural Maine watches the August Perseids lying in the yard; for an hour her test anxiety becomes uninteresting.',
+      cautions: 'Be aware of safety in dark outdoor settings; go with another person or stay near home.',
+      research: 'Keltner and Haidt (2003), Cognition and Emotion — foundational paper defining awe via vastness and accommodation.'
+    },
+    {
+      id: 'sunset_observation',
+      name: 'Sunset or Sunrise Observation',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 15,
+      setup: 'A window or outdoor spot with a clear view of the horizon, 15 minutes around sunrise or sunset.',
+      steps: [
+        'Arrive at least ten minutes before the peak moment.',
+        'Phone away.',
+        'Watch the color shifts in the sky, the clouds, the light on objects.',
+        'Stay until ten minutes after the sun is gone or up.',
+        'Walk back inside slowly.'
+      ],
+      whatItDoes: 'Provides a daily naturally-occurring awe trigger that requires no special location.',
+      whyItWorks: 'Color and light change at sunrise and sunset trigger awe via novelty and beauty; daily availability builds the awe muscle.',
+      bestFrequency: 'daily',
+      variations: [
+        'Time-lapse version if you have a phone camera with that feature.',
+        'Drawing version painting the colors.',
+        'Group version on a porch.'
+      ],
+      example: 'A family in Portland watches every sunset from October to March from the kitchen window; the youngest learns to point out "the pink minute."',
+      cautions: 'Never look directly at the sun; protect eyes especially during sunrise.',
+      research: 'Keltner (2023) Awe: The New Science of Everyday Wonder — sunrise and sunset listed among the most cross-culturally consistent awe triggers.'
+    },
+    {
+      id: 'cloud_watching',
+      name: 'Cloud Watching',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 10,
+      setup: 'Lying on grass, a bench, or by a window with sky view.',
+      steps: [
+        'Lie down or recline.',
+        'Look up at the clouds.',
+        'Notice shapes, movement, speed, layers.',
+        'Do not try to name them.',
+        'Stay for ten minutes.'
+      ],
+      whatItDoes: 'Provides accessible everyday awe without travel, equipment, or scheduling.',
+      whyItWorks: 'Clouds satisfy awe\'s vastness and accommodation criteria; their constantly-changing form prevents habituation.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Storm-watching version (safely).',
+        'Window version on rainy days.',
+        'Time-lapse photo version.'
+      ],
+      example: 'A second grader during recess lies on the playground watching one cloud transform; she reports being "less mad at her brother" by the end of the day.',
+      cautions: 'Sun protection for prolonged outdoor sky-watching.',
+      research: 'Keltner (2023); consistent with awe-elicitor research on natural phenomena.'
+    },
+    {
+      id: 'microscope_time',
+      name: 'Microscope Time (Look at Small Things Magnified)',
+      category: 'sensory',
+      forBand: 'middle',
+      durationMin: 20,
+      setup: 'A microscope (school lab, USB microscope, or magnifying glass) and small samples — leaf, hair, water drop, salt crystal.',
+      steps: [
+        'Pick one ordinary object.',
+        'Look at it with the naked eye for thirty seconds.',
+        'Look at it under magnification for at least two minutes.',
+        'Switch to a second object.',
+        'Repeat with three to five objects.'
+      ],
+      whatItDoes: 'Reveals the hidden vastness within the small, producing awe at the opposite scale from sky-gazing.',
+      whyItWorks: 'Awe-inducing accommodation can come from either direction — the immensely large or the microscopically detailed both expand the mind\'s frame.',
+      bestFrequency: 'spontaneous',
+      variations: [
+        'USB-microscope version that displays on a phone.',
+        'Hand-lens version when no microscope is available.',
+        'Water-drop version (a drop from a pond reveals worlds).'
+      ],
+      example: 'Middle schooler looks at a maple leaf vein under 40x and audibly gasps; spends 10 minutes drawing it.',
+      cautions: 'Use clean slides and dispose of biological samples appropriately.',
+      research: 'Keltner (2023) Awe — microscopic exploration cited as a perceptual-vastness awe trigger.'
+    },
+    {
+      id: 'visit_somewhere_old',
+      name: 'Visit Somewhere Old (Cathedral, Ancient Tree, Historic Site)',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 45,
+      setup: 'A place at least 100 years old — historic building, old tree, ancient site, cemetery, library.',
+      steps: [
+        'Visit alone or in small group.',
+        'Phone away or silenced.',
+        'Move slowly. Touch what is permitted to touch.',
+        'Imagine the lives that have passed through.',
+        'Stay at least 30 minutes.'
+      ],
+      whatItDoes: 'Produces awe through felt connection to deep time and the long human or natural story.',
+      whyItWorks: 'Temporal vastness (Bai et al., 2017) is one of the strongest awe elicitors; old places extend the felt timeline beyond personal lifespan.',
+      bestFrequency: 'spontaneous',
+      variations: [
+        'Old-tree version (a 300-year-old oak does the work).',
+        'Cathedral or temple version (any quiet old religious space).',
+        'Old-cemetery version (with respect).'
+      ],
+      example: 'Tenth grader visits an old cemetery and sits with the gravestone of a child who died at 7 in 1841; reports a long quiet afterward.',
+      cautions: 'Respect sacred spaces and ongoing community use; some religious sites have dress or behavior expectations.',
+      research: 'Bai, Maruskin, Chen, Gordon, Stellar, McNeil, Peng, and Keltner (2017), JPSP — temporal awe distinct from physical-vastness awe.'
+    },
+    {
+      id: 'listen_to_music_in_awe',
+      name: 'Listen to a Piece of Music in Awe',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 10,
+      setup: 'Headphones, one specific piece of music, no distractions, eyes closed.',
+      steps: [
+        'Pick one piece of music — instrumental works best, but any music you find moving.',
+        'Listen with eyes closed.',
+        'Do nothing else.',
+        'When goosebumps come, notice them.',
+        'When the music ends, sit in silence for thirty seconds.'
+      ],
+      whatItDoes: 'Produces aesthetic awe (often physically felt as chills) and trains attention for sustained listening.',
+      whyItWorks: 'Music-induced chills correlate with dopamine release (Salimpoor et al., 2011); awe framing extends the felt benefit.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Live-music version at a concert or recital.',
+        'Vocal-music version (choirs and chants are particularly awe-eliciting).',
+        'New-music version with one piece you have never heard.'
+      ],
+      example: 'A senior listens to Arvo Part\'s "Spiegel im Spiegel" once a week before exams; reports it works every time.',
+      cautions: 'For students with auditory sensitivity, control volume; for students with grief tied to specific songs, choose neutral pieces.',
+      research: 'Salimpoor, Benovoy, Larcher, Dagher, and Zatorre (2011), Nature Neuroscience — peak emotional response to music corresponds to dopamine release in striatum.'
+    },
+    {
+      id: 'read_a_passage_that_evokes_awe',
+      name: 'Read a Passage That Evokes Awe',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 15,
+      setup: 'One short passage from literature, poetry, philosophy, or sacred text.',
+      steps: [
+        'Read the passage once at normal speed.',
+        'Read it again slowly, aloud if possible.',
+        'Read it a third time, with pauses.',
+        'Sit with the silence after.',
+        'Write one sentence about what shifted.'
+      ],
+      whatItDoes: 'Demonstrates that awe is portable through language and accessible without travel.',
+      whyItWorks: 'Verbal awe-elicitors (great poems, philosophical passages, sacred texts) trigger the same physiological responses as direct awe experiences (Shiota, Keltner, and Mossman, 2007).',
+      bestFrequency: 'weekly',
+      variations: [
+        'Poem-of-the-week version.',
+        'Sacred-text version from your tradition.',
+        'Letter-from-history version (e.g., Carl Sagan\'s Pale Blue Dot passage).'
+      ],
+      example: 'A class reads the Pale Blue Dot passage aloud; the room goes quiet for a minute after.',
+      cautions: 'Choose passages that align with your community\'s values; awe-inducing does not mean ideologically neutral.',
+      research: 'Shiota, Keltner, and Mossman (2007), Cognition and Emotion — verbal stimuli reliably elicit awe.'
+    },
+    {
+      id: 'watch_ocean_waves',
+      name: 'Watch Ocean Waves',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 20,
+      setup: 'Beach, harbor, lake, or video of waves if no water access.',
+      steps: [
+        'Sit or stand where you can see the water.',
+        'Watch one wave from formation to break.',
+        'Watch another. And another.',
+        'Notice the rhythm.',
+        'Stay at least 20 minutes.'
+      ],
+      whatItDoes: 'Produces sustained awe through repeated novelty (every wave is different) plus vastness.',
+      whyItWorks: 'Water vastness is among the most cross-culturally consistent awe elicitors; the rhythmic nature also entrains breath and heart rate.',
+      bestFrequency: 'spontaneous',
+      variations: [
+        'River-flow version.',
+        'Stream version.',
+        'Video version when actual water is not available.'
+      ],
+      example: 'A family stops at the coast for 30 minutes mid-drive; the teenager unprompts puts down her phone.',
+      cautions: 'Beach safety — rip tides, slippery rocks, cold-water dangers.',
+      research: 'Keltner (2023) Awe; consistent with blue-space-and-well-being research (White et al., 2020).'
+    },
+    {
+      id: 'watch_fire',
+      name: 'Watch a Fire',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 20,
+      setup: 'Safe contained fire — fireplace, fire pit, bonfire, or candle.',
+      steps: [
+        'Sit at a safe distance.',
+        'Watch the flames.',
+        'Notice colors, movement, sound.',
+        'Do not look away for at least five minutes at a stretch.',
+        'Stay at least 20 minutes total.'
+      ],
+      whatItDoes: 'Produces a deeply ancient awe experience that activates a primordial attentional state.',
+      whyItWorks: 'Human nervous systems have evolved with fire for at least 400,000 years; fire-gazing activates a parasympathetic relaxation response distinct from screen-watching.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Candle-only version (safe indoors).',
+        'Group fire-circle version with shared silence.',
+        'Cooking-fire version while preparing food.'
+      ],
+      example: 'A camp counselor structures every night around a 20-minute silent fire-watch; campers report sleeping better.',
+      cautions: 'Fire safety, smoke inhalation, supervision for younger students; indoor candles need stable surfaces.',
+      research: 'Lynn (2014), Evolutionary Anthropology — fire-watching produces measurable blood-pressure decreases.'
+    },
+    {
+      id: 'observe_baby_or_child',
+      name: 'Observe a Baby or Young Child',
+      category: 'relational',
+      forBand: 'high',
+      durationMin: 10,
+      setup: 'With consent of caregiver, simply observing a baby or young child at play.',
+      steps: [
+        'Sit nearby without interrupting.',
+        'Watch their hands, their attention, their face.',
+        'Notice their absolute presence.',
+        'Notice your own response.',
+        'Do not interrupt their play.'
+      ],
+      whatItDoes: 'Produces awe at human development and at the felt quality of pre-conditioned attention.',
+      whyItWorks: 'Witnessing absolute presence in another being can elicit awe and remind the observer of the same capacity in themselves.',
+      bestFrequency: 'spontaneous',
+      variations: [
+        'Watching a child learn to walk.',
+        'Watching a baby discover their hands.',
+        'Watching a toddler study an insect for ten minutes.'
+      ],
+      example: 'A teenager spends 20 minutes watching her two-year-old cousin examine a leaf and reports "I forgot what attention looks like."',
+      cautions: 'Always with caregiver consent; never observe unfamiliar children without their parents present.',
+      research: 'Keltner (2023) lists witnessing developmental moments among everyday awe elicitors.'
+    },
+    {
+      id: 'watch_animals_being_themselves',
+      name: 'Watch Animals Being Themselves',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 15,
+      setup: 'Anywhere with observable animals — backyard, park, zoo (ethical), pet bird, ant trail.',
+      steps: [
+        'Find one animal or group.',
+        'Sit or stand at a respectful distance.',
+        'Watch them do their own thing.',
+        'Do not project human stories onto them.',
+        'Stay for at least 15 minutes.'
+      ],
+      whatItDoes: 'Reveals other minds and other forms of being-in-the-world, expanding the sense of life beyond human.',
+      whyItWorks: 'Witnessing non-human consciousness operating on its own terms is awe-eliciting (need-for-accommodation).',
+      bestFrequency: 'weekly',
+      variations: [
+        'Backyard-bird version.',
+        'Ant-trail version (a single ant trail is a 30-minute experience).',
+        'Aquarium version.'
+      ],
+      example: 'A student watches an ant trail for 20 minutes during her lunch period; emerges saying "they were doing something really specific."',
+      cautions: 'Do not feed, touch, or disturb wildlife; ethics of captive-animal observation vary.',
+      research: 'Keltner (2023) Awe; consistent with biophilia hypothesis (Wilson, 1984).'
+    },
+    {
+      id: 'time_lapse_of_flower',
+      name: 'Time-Lapse of a Flower Opening',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 5,
+      setup: 'A short time-lapse video of a flower opening or seed germinating.',
+      steps: [
+        'Watch the full video without doing anything else.',
+        'Watch it again slowly.',
+        'Notice the slow patience of growth.',
+        'Connect to a slow growth in your own life.',
+        'Sit silently for one minute.'
+      ],
+      whatItDoes: 'Compresses biological time into a few minutes, revealing patterns invisible at normal speed.',
+      whyItWorks: 'Temporal compression of natural processes triggers awe through perceptual novelty and connection to deep biological time.',
+      bestFrequency: 'spontaneous',
+      variations: [
+        'Cloud time-lapse.',
+        'Star-trail time-lapse.',
+        'Construction time-lapse for human-built awe.'
+      ],
+      example: 'A health teacher shows a tulip-opening time-lapse; the class quiets unusually.',
+      cautions: 'Screen-time considerations; pair with off-screen practice.',
+      research: 'Keltner (2023); perceptual-vastness research applied to time.'
+    },
+    {
+      id: 'mountain_visualization',
+      name: 'Mountain Visualization',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 15,
+      setup: 'Quiet space, eyes closed, sitting upright.',
+      steps: [
+        'Imagine a mountain in detail — shape, size, weather around it.',
+        'Imagine yourself sitting at its base.',
+        'Feel the mountain\'s steadiness.',
+        'Imagine breathing with its slow patience.',
+        'Open your eyes carrying a small piece of that steadiness.'
+      ],
+      whatItDoes: 'Cultivates inner steadiness using awe of mountains as the imaginal anchor.',
+      whyItWorks: 'Visualization activates many of the same neural patterns as actual perception; awe-inducing imagery can elicit awe response even without external trigger.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Specific real mountain you have visited or seen.',
+        'Mountain audio with wind and bird sounds.',
+        'Mountain photograph as the visual anchor.'
+      ],
+      example: 'A senior facing college applications visualizes Mount Katahdin for 10 minutes before opening her laptop; reports calmer focus.',
+      cautions: 'For students who have never seen mountains, offer alternative awe-imagery (ocean, forest, desert).',
+      research: 'Kabat-Zinn (1994) Wherever You Go, There You Are — mountain meditation; consistent with imagery-and-emotion research.'
+    },
+    {
+      id: 'galaxy_contemplation',
+      name: 'Galaxy and Cosmos Contemplation',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 15,
+      setup: 'A picture of a galaxy (Hubble or Webb deep field) and a quiet 15 minutes.',
+      steps: [
+        'Look at the image.',
+        'Read one fact about the scale: how many stars, how many galaxies, how many light-years.',
+        'Sit with the felt size.',
+        'Notice your own concerns in that scale.',
+        'Return to today with the perspective intact.'
+      ],
+      whatItDoes: 'Produces profound vastness-awe through cosmic perspective.',
+      whyItWorks: 'Cosmic perspective consistently produces the small-self response (Piff et al., 2015); even mediated through images, the effect is detectable.',
+      bestFrequency: 'monthly',
+      variations: [
+        'Planetarium visit.',
+        'Space-documentary version.',
+        'Hubble Deep Field 30-minute stare.'
+      ],
+      example: 'After viewing the Webb Deep Field, a senior reports her social-media drama "felt less real for a few hours."',
+      cautions: 'For students experiencing existential anxiety, cosmic perspective can amplify it; check in afterward.',
+      research: 'Piff, Dietze, Feinberg, Stancato, and Keltner (2015), JPSP — awe induces small-self and increases prosocial behavior.'
+    },
+    {
+      id: 'death_contemplation_small_dose',
+      name: 'Death Contemplation (Small Dose)',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 5,
+      setup: 'A quiet space, alone, brief (5 minutes only).',
+      steps: [
+        'Sit upright. Close your eyes.',
+        'Quietly acknowledge: I will die someday. So will everyone I love.',
+        'Do not dwell — simply acknowledge.',
+        'Open your eyes.',
+        'Notice what now matters more, and what matters less.'
+      ],
+      whatItDoes: 'Uses gentle mortality awareness to clarify values and intensify present-moment awe.',
+      whyItWorks: 'Brief, voluntary mortality awareness in safe settings is associated with increased gratitude and prosocial behavior; the practice must be brief and bounded.',
+      bestFrequency: 'monthly',
+      variations: [
+        'After-funeral version (when already in that frame).',
+        'Reading-an-obituary version.',
+        'Walking-through-a-cemetery version.'
+      ],
+      example: 'Adult facilitator does 5 minutes; reports increased patience with her teenager that evening.',
+      cautions: 'NOT for students with active suicidal ideation, recent loss, severe death anxiety, or psychiatric instability. Only for mature high-school students with consent. Stop if it becomes intrusive.',
+      research: 'Greenberg, Pyszczynski, and Solomon (1986) Terror Management Theory; bounded mortality awareness shown to enhance prosocial values (Vail et al., 2012).'
+    },
+    {
+      id: 'birth_contemplation',
+      name: 'Birth Contemplation',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 10,
+      setup: 'A photo of yourself or a loved one as a baby.',
+      steps: [
+        'Look at the photo.',
+        'Imagine that the person in the photo eventually became the person you know today.',
+        'Imagine the millions of moments between.',
+        'Silently thank whoever cared for them.',
+        'Sit with the awe of human becoming.'
+      ],
+      whatItDoes: 'Produces awe at human development as long, complex, miraculous, and ongoing.',
+      whyItWorks: 'Witnessing the gap between baby-self and current-self triggers awe via the magnitude of becoming.',
+      bestFrequency: 'monthly',
+      variations: [
+        'Sibling-photo version.',
+        'Parent-as-young-person version.',
+        'Group version sharing baby photos in a circle.'
+      ],
+      example: 'A class shares baby photos; the room collectively softens.',
+      cautions: 'For students with adoption, foster care, or estranged-family histories, allow alternatives (a photo of self at 5 or 7, a younger sibling, a niece).',
+      research: 'Consistent with developmental-awe and time-perspective research (Keltner, 2023).'
+    },
+    {
+      id: 'witnessing_moral_beauty',
+      name: 'Witnessing Acts of Moral Beauty',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 10,
+      setup: 'A story, video, or memory of someone acting with extraordinary moral courage or kindness.',
+      steps: [
+        'Bring the act fully to mind.',
+        'Let yourself feel the response — often a warm chest, tears, goosebumps.',
+        'Name what specifically moved you.',
+        'Ask: where in my life could I act in this spirit, even smaller?',
+        'Take one small action this week.'
+      ],
+      whatItDoes: 'Produces moral awe (elevation), which research links to increased prosocial behavior for hours afterward.',
+      whyItWorks: 'Elevation (Haidt, 2003) is a distinct positive emotion that motivates imitation of the witnessed behavior; even short exposures shift behavior.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Documentary-watching version.',
+        'Hero-of-the-week class practice.',
+        'Personal-witness version (someone you saw being moral courageous).'
+      ],
+      example: 'A class watches a clip of someone returning a lost wallet; that week, two students report similar small acts.',
+      cautions: 'Avoid making this performative; the practice is interior first, action second.',
+      research: 'Haidt (2003) The moral emotions; Algoe and Haidt (2009) on elevation and behavior.'
+    },
+    {
+      id: 'ancestral_reflection',
+      name: 'Ancestral Reflection',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 15,
+      setup: 'Quiet space, perhaps with one family or cultural object.',
+      steps: [
+        'Bring to mind one ancestor (biological or chosen).',
+        'Imagine what their daily life looked like.',
+        'Trace one specific thing they did that made your existence possible.',
+        'Silently thank them.',
+        'Pick one quality of theirs to carry today.'
+      ],
+      whatItDoes: 'Produces temporal-vastness awe and a felt sense of being part of a long chain.',
+      whyItWorks: 'Ancestral reflection is one of the most robustly cross-cultural awe practices (Bai et al., 2017); it expands identity beyond the individual.',
+      bestFrequency: 'monthly',
+      variations: [
+        'Letter-to-ancestor version.',
+        'Cultural-ancestor version (an ancestor of your craft, not your bloodline).',
+        'Group version sharing one ancestor each.'
+      ],
+      example: 'A student writes to her great-grandmother who left a country during a war; reports feeling held while applying to colleges.',
+      cautions: 'For students with painful family lineages, allow chosen-ancestors (mentors, cultural figures, fictional characters); do not require biological.',
+      research: 'Bai et al. (2017) on temporal awe; consistent with intergenerational-meaning research (McAdams, 2001).'
+    },
+    {
+      id: 'future_time_perspective',
+      name: 'Future-Time Perspective (What Will Outlast Me?)',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 15,
+      setup: 'A quiet space, journal.',
+      steps: [
+        'Ask: 100 years from now, what might still exist of what I do today?',
+        'List three things — a relationship, a created thing, a contribution.',
+        'Sit with the gap between today and that future.',
+        'Pick one small action that adds to one of the three.',
+        'Take it.'
+      ],
+      whatItDoes: 'Connects present action to deep-future meaning, expanding the felt timeline forward.',
+      whyItWorks: 'Future-self continuity (Hershfield, 2011) plus awe of long-time perspective produces motivation grounded in meaning rather than urgency.',
+      bestFrequency: 'monthly',
+      variations: [
+        'Letter to your descendants in 100 years.',
+        'Tree-planting version (literal long-term legacy).',
+        'Craft-tradition version (passing on a skill).'
+      ],
+      example: 'A senior teaches her little brother to bake bread the way their grandmother taught her; says "this might still exist in 2126."',
+      cautions: 'For students experiencing climate or existential anxiety, do not force optimism about the future; allow ambiguity.',
+      research: 'Hershfield (2011) future-self continuity; Bai et al. (2017) temporal awe.'
+    },
+    {
+      id: 'collective_effervescence',
+      name: 'Collective Effervescence',
+      category: 'relational',
+      forBand: 'all',
+      durationMin: 60,
+      setup: 'Any group experience involving synchronous movement, sound, or attention — concert, sports game, dance, choir, protest, worship, big school assembly.',
+      steps: [
+        'Show up to a group event that moves together.',
+        'Let yourself sync — clap, chant, move, sing.',
+        'Notice the felt shift from self to we.',
+        'After it ends, take 30 seconds of silence before checking your phone.',
+        'Carry the felt connection forward.'
+      ],
+      whatItDoes: 'Produces collective awe — Durkheim\'s "collective effervescence" — through synchronized group experience, one of the most reliable awe elicitors cross-culturally.',
+      whyItWorks: 'Synchronized movement and attention dissolve the felt boundary between self and group, producing the small-self response in a social rather than cosmic register.',
+      bestFrequency: 'spontaneous',
+      variations: [
+        'Concert version.',
+        'Pep-rally version.',
+        'Religious service version.',
+        'Protest march version.'
+      ],
+      example: 'A senior at a school assembly during a moment of silent group standing reports "I felt like we were one body for thirty seconds."',
+      cautions: 'For students with crowd anxiety or sensory sensitivity, adapt — smaller groups, quieter forms (recitation, breath circles) work too.',
+      research: 'Durkheim (1912); Keltner (2023) Awe lists collective effervescence as one of the eight wonders of life.'
+    },
+    {
+      id: 'awe_of_human_skill',
+      name: 'Awe of Human Skill',
+      category: 'sensory',
+      forBand: 'all',
+      durationMin: 15,
+      setup: 'A performance, demonstration, or video of someone exercising mastery (Olympic gymnastics, glass-blowing, surgery, calligraphy).',
+      steps: [
+        'Watch with full attention for at least 10 minutes.',
+        'Notice the precision, the years of practice.',
+        'Silently honor the person and the tradition behind them.',
+        'Notice your own response — chills, tears, a desire to try.',
+        'Pick one tiny thing in your own practice to do more carefully.'
+      ],
+      whatItDoes: 'Produces awe at human capacity and connects the viewer to long traditions of craft.',
+      whyItWorks: 'Witnessing extraordinary skill triggers awe via accommodation (the mind cannot easily fit what it sees into existing schemas of "human can do"); also models long-term effort as worth it.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Athletic version (Olympics, world records).',
+        'Craft version (woodworking, weaving, glassblowing).',
+        'Scientific-precision version (a chemistry demo, a surgical procedure).'
+      ],
+      example: 'A class watches a 4-minute video of a master calligrapher; afterward students hold their pens differently for the rest of the period.',
+      cautions: 'Pair with realism — most mastery comes from boring practice, not dramatic genius; avoid genius-narrative that discourages effort.',
+      research: 'Keltner (2023) Awe — "wonder of wisdom and skill" as one of the eight awe domains.'
+    },
+    {
+      id: 'awe_in_mathematics',
+      name: 'Awe in Mathematics',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 10,
+      setup: 'A mathematical idea or proof that has moved you (or look one up).',
+      steps: [
+        'Pick a piece of mathematics — Euler\'s identity, the Pythagorean theorem proof, the infinitude of primes, the golden ratio in nature.',
+        'Read or work through it slowly.',
+        'Sit with the felt sense of pattern.',
+        'Notice if anything in the body shifts.',
+        'Acknowledge that this pattern would still be true if no human had ever existed.'
+      ],
+      whatItDoes: 'Reveals mathematical pattern as a source of awe in its own right, beyond instrumental use.',
+      whyItWorks: 'Mathematical awe is grounded in apprehension of objective necessity — patterns that would hold even without us trigger the same accommodation response as cosmic vastness.',
+      bestFrequency: 'monthly',
+      variations: [
+        'Geometry version (constructing a regular pentagon with compass).',
+        'Number-theory version (proof there are infinite primes).',
+        'Physics version (light always travels at the same speed for every observer).'
+      ],
+      example: 'A pre-calc student sits with Euler\'s identity for ten minutes after class; reports "I don\'t know why but I almost cried."',
+      cautions: 'Do not weaponize this against students math-anxious; the practice is for the moments when math has felt beautiful, not as homework.',
+      research: 'Keltner (2023) Awe — epistemic awe in math and science consistently elicited across studies.'
+    },
+    {
+      id: 'awe_at_being_alive',
+      name: 'Awe at the Bare Fact of Being Alive',
+      category: 'contemplative',
+      forBand: 'high',
+      durationMin: 8,
+      setup: 'A quiet space, sitting upright, eyes open or closed.',
+      steps: [
+        'Sit and breathe naturally.',
+        'Quietly acknowledge: I exist. There is something rather than nothing.',
+        'Sit with the strangeness of that.',
+        'Do not try to explain it.',
+        'Open your eyes if they were closed.'
+      ],
+      whatItDoes: 'Produces existential awe through direct attention to the unaccountable fact of being.',
+      whyItWorks: 'Existential awe (Yaden et al., 2017) is associated with reduced fear of death, increased meaning, and increased prosocial behavior; the practice is the simplest possible form.',
+      bestFrequency: 'weekly',
+      variations: [
+        'Morning version upon waking.',
+        'Walking version while crossing a familiar path.',
+        'Lying-on-grass version (recommended).'
+      ],
+      example: 'Lay on the grass after a hard week. Looked up. Thought "I am here." Felt held by the world for two minutes.',
+      cautions: 'For students with derealization or dissociation, ground first with body sensation before this practice.',
+      research: 'Yaden, Haidt, Hood, Vago, and Newberg (2017) on varieties of self-transcendence; consistent with awe-and-meaning research.'
+    }
+  ];
+var SENSORY_ANCHORS = [
+    // ============================================================
+    // AUDITORY ANCHORS (15)
+    // ============================================================
+    {
+      id: 'sound_of_own_breath',
+      name: 'The sound of your own breath',
+      sense: 'auditory',
+      category: 'breath',
+      description: {
+        elementary: 'Listen for the little air sounds when you breathe in and out. It is one of the quietest sounds you can hear.',
+        middle: 'Notice the soft hush of air moving past your nose, lips, or throat. Your breath has a sound even when no one else can hear it.',
+        high: 'Attend to the subtle acoustic signature of respiration, the friction of air against tissue. It is intimate and always available.'
+      },
+      howToUseAsAnchor: [
+        'Settle into a comfortable position and let your jaw soften.',
+        'Close your eyes or lower your gaze to soften visual input.',
+        'Listen for the faintest sound of air entering and leaving.',
+        'When the mind wanders, return to that hush as soon as you notice.',
+        'Do not force the breath to be louder, just listen to what is there.',
+        'Stay for 1 to 10 minutes depending on capacity.'
+      ],
+      whenItHelps: [
+        'When external sounds are too distracting',
+        'When you want a private anchor in a public place',
+        'Before sleep when other senses are quieting',
+        'When sitting still feels hard and you need internal focus',
+        'For students who find tactile anchors too triggering'
+      ],
+      whenItDoesntHelp: 'Anyone with breath-related anxiety, panic disorder, or asthma may find this anchor activating. Use a body or sound anchor instead.',
+      variations: [
+        'Count the breath cycles softly in your mind from 1 to 10.',
+        'Notice only the in-breath sound, then only the out-breath.',
+        'Lengthen the exhale slightly and listen to it stretch.'
+      ],
+      research: 'Anapanasati (breath-awareness) is the foundational anchor across most contemplative traditions; Kabat-Zinn (1990) names it the primary MBSR object.'
+    },
+    {
+      id: 'sound_of_silence',
+      name: 'The sound of silence between sounds',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'Listen for the quiet space between noises. Silence has its own feeling.',
+        middle: 'Try to notice the gap between sounds, the moment of nothing before the next thing makes a noise.',
+        high: 'Attend to the negative space of sound, the substrate against which all auditory events occur. It is paradoxically full.'
+      },
+      howToUseAsAnchor: [
+        'Sit and let your ears go soft and open.',
+        'Notice one sound, then wait for the next.',
+        'Rest your attention in the gap between them.',
+        'When the next sound arrives, let it pass through.',
+        'Return to the silence underneath.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'In quiet rooms with intermittent sound',
+        'For advanced practitioners seeking subtler anchors',
+        'When you want to develop receptive (rather than focused) attention',
+        'During nature sits at dawn or dusk',
+        'For older students ready for paradox'
+      ],
+      whenItDoesntHelp: 'In loud or chaotic environments. Also unsuitable for students who find silence itself activating (some trauma histories).',
+      variations: [
+        'Map the silence by direction: above, below, behind, in front.',
+        'Notice how silence has texture (thick, thin, ringing).',
+        'Pair with a soft bell that punctuates the silence.'
+      ],
+      research: 'Pauline Oliveros\'s Deep Listening practice frames silence as primary content; resonates with Zen shikantaza.'
+    },
+    {
+      id: 'distant_traffic',
+      name: 'Distant traffic',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'Listen to cars and trucks that are far away. It sounds like a soft river of sound.',
+        middle: 'The hum of distant traffic blends into one continuous wash, like waves you cannot quite hear.',
+        high: 'Urban acoustic ecology treats distant traffic as a stable drone, a found instrument always available in city environments.'
+      },
+      howToUseAsAnchor: [
+        'Sit near a window or in a quiet room.',
+        'Let your ears reach toward the furthest sound you can hear.',
+        'Rest there. Do not analyze or label the cars.',
+        'Let nearer sounds (footsteps, voices) pass through without grabbing.',
+        'Return to the distant wash whenever attention drifts.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'In urban or suburban settings where silence is not available',
+        'For students who feel calmed (not annoyed) by traffic',
+        'Late at night when traffic thins to a soft hush',
+        'When you want a non-judgmental anchor (cars do not care about you)',
+        'For city-dwelling students who would otherwise feel ungrounded'
+      ],
+      whenItDoesntHelp: 'For students with sound sensitivity, PTSD related to vehicle accidents, or who live next to highways and are seeking relief from traffic.',
+      variations: [
+        'Notice the gaps between vehicles, not just the vehicles.',
+        'Map traffic to a direction (north / south).',
+        'Hear it as ocean waves or wind in trees.'
+      ],
+      research: 'R. Murray Schafer\'s soundscape ecology proposed reframing urban drone as keynote sounds rather than noise.'
+    },
+    {
+      id: 'hvac_hum',
+      name: 'HVAC hum',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'The heater or air conditioner makes a low buzzing sound. Listen to it like a song with no notes.',
+        middle: 'The mechanical hum of an HVAC system is a low, steady drone. It is one of the most reliable anchors in any building.',
+        high: 'A 60Hz building-electrical drone (or 50Hz outside North America) plus airflow turbulence creates a complex pink-noise wash.'
+      },
+      howToUseAsAnchor: [
+        'Sit comfortably and let your attention drop to the floor.',
+        'Listen for the lowest, steadiest sound in the room.',
+        'Rest your ears in it like setting them down on a soft surface.',
+        'Notice subtle changes in pitch as the fan modulates.',
+        'When the AC cycles off, listen to the absence.',
+        'Practice for 5 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'In school buildings, libraries, and offices',
+        'When you cannot leave the room for quiet',
+        'For students who find white noise calming',
+        'During testing or homework periods',
+        'When other students are typing or rustling'
+      ],
+      whenItDoesntHelp: 'For students with misophonia or auditory processing differences who hear HVAC as oppressive rather than soothing.',
+      variations: [
+        'Hum quietly along with the pitch you hear (in your head).',
+        'Notice when the fan kicks on and how the hum shifts.',
+        'Pair with breath: inhale on the fan-on, exhale on the fan-off cycles.'
+      ],
+      research: 'Pink and brown noise (the spectral profile of most HVAC) reduces cortical arousal in some sleep studies (Zhou et al. 2012).'
+    },
+    {
+      id: 'clock_ticking',
+      name: 'A clock ticking',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'A clock that ticks makes a steady tap-tap-tap. You can rest your attention on each tick.',
+        middle: 'The regular pulse of a mechanical clock is metronomic. Each tick is a small reset for your wandering mind.',
+        high: 'Isochronic ticking creates external entrainment cues that some studies link to mild slowing of subjective time and increased relaxation.'
+      },
+      howToUseAsAnchor: [
+        'Find a room with an analog ticking clock.',
+        'Sit quietly and let the tick become the loudest thing.',
+        'Rest one breath cycle per 4 to 6 ticks.',
+        'If you lose count, do not restart, just notice the next tick.',
+        'Let the tick become the only sound that matters.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'In libraries, grandparents\' homes, classrooms',
+        'For students who like rhythm and predictability',
+        'Pairing with paced breathing (one breath per 6 ticks)',
+        'When working through anxious thought spirals',
+        'When other sounds are unpredictable'
+      ],
+      whenItDoesntHelp: 'For students with OCD around time, test anxiety, or who associate ticking with countdowns (some autistic and PTSD students find it activating).',
+      variations: [
+        'Inhale for 4 ticks, exhale for 6.',
+        'Imagine each tick as a stone dropped into still water.',
+        'Pair with one of the longer breaths (4-7-8 timing).'
+      ],
+      research: 'Metronomic auditory cues are used in music therapy (Thaut, 2005) to entrain motor rhythms; calming use is anecdotal.'
+    },
+    {
+      id: 'birdsong',
+      name: 'Birdsong',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'Birds singing outside is a happy sound. You do not have to know the bird, just enjoy the song.',
+        middle: 'Birdsong is unpredictable in melody but predictable in feeling. It signals that a place is alive and safe.',
+        high: 'Studies link exposure to birdsong with reduced perceived stress and improved mood, independent of bird identification skill.'
+      },
+      howToUseAsAnchor: [
+        'Open a window or sit outside in a quiet place.',
+        'Let your ears soften and reach toward bird sounds.',
+        'Do not try to identify the species.',
+        'Notice melody, distance, direction, gaps of silence.',
+        'When the mind wanders, return to the next song.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Early morning practice (dawn chorus)',
+        'Recovery from burnout or grief',
+        'For students who feel restored by nature',
+        'When indoor anchors feel stale',
+        'After a stressful test or class'
+      ],
+      whenItDoesntHelp: 'In urban environments with no birds. Also unsuitable for students with bird phobia (ornithophobia, rare but real).',
+      variations: [
+        'Count how many distinct calls you hear in 60 seconds.',
+        'Try to locate one bird in space (without looking).',
+        'Pair with slow walking and listen as you move.'
+      ],
+      research: 'Hammoud et al. (2022) found exposure to birdsong reduced anxiety and paranoia in healthy adults.'
+    },
+    {
+      id: 'rain',
+      name: 'Rain',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'Rain on a roof or window sounds like soft tapping or a long shhh. It is calming for most people.',
+        middle: 'Rain produces wide-spectrum pink noise. Light rain is gentle, heavy rain is enveloping, and both can anchor you.',
+        high: 'The spectral fullness of rain masks distracting frequencies and lowers attentional vigilance, making it a near-universal calming anchor.'
+      },
+      howToUseAsAnchor: [
+        'Sit or lie near a window or under shelter outside.',
+        'Listen to the overall wash, not individual drops.',
+        'Notice the texture (light patter, heavy drumming, dripping).',
+        'When attention drifts, return to the loudest area of rain.',
+        'Allow yourself to be enveloped without analysis.',
+        'Practice for 5 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'Stormy days when going outside is not safe',
+        'Before sleep',
+        'After a hard day, when you need permission to be still',
+        'For students who find rain comforting',
+        'In Pacific Northwest, UK, and other rainy climates'
+      ],
+      whenItDoesntHelp: 'For students with flood or storm trauma, or those who associate rain with depression onset.',
+      variations: [
+        'Practice with eyes open, watching drops on glass.',
+        'Pair with a warm beverage held in the hand.',
+        'Use rain recording (rain on canvas, rain on metal roof) when no rain is available.'
+      ],
+      research: 'Pink-noise components in rain reduce sleep latency in some adults (Zhou 2012, ITN sleep studies).'
+    },
+    {
+      id: 'wind',
+      name: 'Wind',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'Wind makes leaves rustle and sometimes whistles. It is a sound that comes and goes.',
+        middle: 'Wind in trees, around buildings, or through grass creates dynamic, unpredictable acoustic textures.',
+        high: 'Aeolian sound is non-rhythmic and unpredictable, training acceptance of impermanence in auditory form.'
+      },
+      howToUseAsAnchor: [
+        'Sit outside or near an open window.',
+        'Listen for the sound the wind makes as it moves things.',
+        'Notice gusts, lulls, sudden changes.',
+        'Do not try to predict the next sound.',
+        'Allow the wind to come and go as the mind does.',
+        'Practice for 3 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Hill country, beach, prairie practice',
+        'For students who find unpredictability calming (not all do)',
+        'When practicing impermanence as a concept',
+        'On windy days when you cannot make outside still',
+        'Outdoor recess decompression'
+      ],
+      whenItDoesntHelp: 'For students with weather-related trauma (hurricane, wildfire) or sensory sensitivity to whistling sounds.',
+      variations: [
+        'Notice how wind interacts with different surfaces (leaves vs. wires).',
+        'Track wind direction by sound alone.',
+        'Pair with eyes-open watching of swaying branches.'
+      ],
+      research: 'Aeolian and natural-soundscape exposure linked to reduced rumination (Bratman 2015).'
+    },
+    {
+      id: 'ocean_waves',
+      name: 'Ocean waves',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'Waves at the beach go shhhhh-shhhhh in a slow steady rhythm. They are one of the most peaceful sounds.',
+        middle: 'Ocean waves are the most universally calming soundscape on Earth, found in nearly every culture\'s relaxation traditions.',
+        high: 'Wave periodicity (typically 6 to 12 seconds) closely matches resonant breathing rates, producing physiological entrainment.'
+      },
+      howToUseAsAnchor: [
+        'Sit at the beach or use a recording.',
+        'Let your breath fall into rhythm with the waves.',
+        'Inhale on the wave rising, exhale on the wash back.',
+        'Do not force the rhythm, let it find you.',
+        'Notice each wave as a new event.',
+        'Practice for 10 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'Vacation or post-vacation longing',
+        'For students who feel restored by water',
+        'Coastal community practice',
+        'Before sleep',
+        'For breath-entrainment to slow-paced respiration'
+      ],
+      whenItDoesntHelp: 'For students with drowning, tsunami, or maritime trauma; for inland students with no felt connection to ocean.',
+      variations: [
+        'Match breath to one wave cycle.',
+        'Imagine sitting just above the tide line as it rolls in.',
+        'Add seagulls or distant boat horn sparingly.'
+      ],
+      research: 'Ocean-wave audio in clinical relaxation training (Benson 1976; reproduced widely since).'
+    },
+    {
+      id: 'singing_bowl',
+      name: 'Singing bowl tone',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'A singing bowl makes a long ringing sound when you strike it. The sound takes a long time to fade away.',
+        middle: 'Tibetan and Himalayan singing bowls produce a sustained tone with rich overtones that decay slowly, ideal for tracking attention to its very end.',
+        high: 'Singing bowls produce inharmonic spectra (fundamental plus overtones); the slow decay trains sustained attention through fade.'
+      },
+      howToUseAsAnchor: [
+        'Strike the bowl once with a soft mallet (or have a facilitator do so).',
+        'Listen to the full tone from strike to silence.',
+        'Notice the moment you can no longer hear it.',
+        'Sit with the silence that remains.',
+        'When ready, strike again or rest in silence.',
+        'Practice with 3 to 7 strikes over 5 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'Beginning and ending of a session (bookend)',
+        'For students who like clear start/stop signals',
+        'In groups, to synchronize attention',
+        'For tracking impermanence (something arises and passes)',
+        'In trauma-informed practice when paired with eyes-open'
+      ],
+      whenItDoesntHelp: 'For students with sound sensitivity, autistic students who find sustained tones overwhelming, or those who associate bowls with appropriated spirituality.',
+      variations: [
+        'Vary the strike intensity (soft, medium).',
+        'Use multiple bowls of different pitches.',
+        'Pair with breath: inhale on strike, exhale through the fade.'
+      ],
+      research: 'Goldsby et al. (2017) reported reduced tension and anxiety from sound meditation including singing bowls.'
+    },
+    {
+      id: 'held_note',
+      name: 'A held note (own voice or recording)',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'You make one long sound with your voice (like ahhhh or ohhmmm). Listen to your own voice as it stretches.',
+        middle: 'A single held vocal note focuses attention by combining hearing and producing sound. The vibration is felt as much as heard.',
+        high: 'Vocal toning produces vagal stimulation through the larynx; the audible note doubles as proprioceptive anchor.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright and take a comfortable breath.',
+        'On the exhale, hum or sustain a vowel (mmm, ahhh, ohhh).',
+        'Listen and feel the vibration in your chest, throat, head.',
+        'Let the note end naturally with the breath.',
+        'Pause, breathe in, repeat.',
+        'Practice 6 to 12 cycles over 3 to 6 minutes.'
+      ],
+      whenItHelps: [
+        'For students who feel calmer when actively making sound',
+        'Vagal regulation work',
+        'Pre-presentation or pre-test centering',
+        'When silent practice feels too restless',
+        'For students who like singing'
+      ],
+      whenItDoesntHelp: 'Students with vocal trauma, selective mutism, social anxiety about being heard, or sore throats.',
+      variations: [
+        'Vary the pitch (low, mid, high).',
+        'Use different vowels and feel where vibration lands.',
+        'Hum silently in the throat if making sound feels exposing.'
+      ],
+      research: 'Kalyani et al. (2011) MRI study found OM chanting deactivated limbic regions similar to vagal nerve stimulation.'
+    },
+    {
+      id: 'noise_color',
+      name: 'White / brown / pink noise',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'These are special quiet whooshing sounds, like a soft fan. They cover up other sounds.',
+        middle: 'White, pink, and brown noise are spectral profiles. White is bright, pink is balanced, brown is deep and bass-heavy.',
+        high: 'White noise has equal energy per Hz; pink has equal energy per octave; brown emphasizes low frequencies. Each masks different distraction profiles.'
+      },
+      howToUseAsAnchor: [
+        'Choose the color that feels most settling (try each for 30 seconds).',
+        'Set the volume low enough that you must lean in to hear.',
+        'Rest your attention in the wash.',
+        'When you notice attention drifting, return to the noise.',
+        'Use as a backdrop, not a foreground.',
+        'Practice for 5 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'In open classrooms or shared spaces',
+        'For ADHD students who need consistent auditory backdrop',
+        'When other students are typing, talking, or moving',
+        'For sleep onset',
+        'When you cannot leave a busy environment'
+      ],
+      whenItDoesntHelp: 'For students with tinnitus (may worsen perception) or those who find any constant sound oppressive.',
+      variations: [
+        'Layer pink noise under a singing-bowl strike.',
+        'Use brown noise for sleep, pink for focus.',
+        'Pair with breath-counting from 1 to 10.'
+      ],
+      research: 'Pickens et al. (2019) meta-analysis: white-noise exposure has mixed evidence for cognitive performance but consistent self-reported calming.'
+    },
+    {
+      id: 'bell_return',
+      name: 'A bell (return to it whenever it rings)',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'When the bell rings, take one slow breath. The bell helps you remember to come back.',
+        middle: 'A bell rung at irregular intervals interrupts wandering thought and trains you to return to presence on cue.',
+        high: 'Thich Nhat Hanh\'s mindfulness bell practice uses unpredictable auditory cues as conditioning for sustained meta-awareness.'
+      },
+      howToUseAsAnchor: [
+        'Set a bell app or have a facilitator ring at irregular intervals.',
+        'Each time the bell rings, pause whatever you are doing.',
+        'Take three slow breaths.',
+        'Notice where your attention was before the bell.',
+        'Return to your activity or to the next sit.',
+        'Practice across an entire class period or 30-minute work block.'
+      ],
+      whenItHelps: [
+        'During study or seatwork',
+        'For training meta-attention (noticing where attention was)',
+        'In Plum Village-inspired practice',
+        'For students working on impulse control',
+        'During silent reading'
+      ],
+      whenItDoesntHelp: 'For students with sound startles or attention difficulties that worsen with interruption.',
+      variations: [
+        'Vary bell intervals (every 5, 7, 11 minutes).',
+        'Use a soft chime instead of a loud bell.',
+        'Self-ring (let students choose when).'
+      ],
+      research: 'Thich Nhat Hanh\'s Plum Village mindfulness bell tradition; replicated in school SEL programs (MindUP, MLERN).'
+    },
+    {
+      id: 'own_footsteps',
+      name: 'Footsteps (your own)',
+      sense: 'auditory',
+      category: 'movement',
+      description: {
+        elementary: 'When you walk, listen to your feet making sounds on the floor. Each step makes a soft tap.',
+        middle: 'Hearing your own footsteps as an anchor pairs sound and movement, ideal for kinesthetic learners.',
+        high: 'Audible foot contact provides multimodal feedback (auditory, proprioceptive, vestibular) suited to walking meditation.'
+      },
+      howToUseAsAnchor: [
+        'Walk slowly on a hard surface (wood, tile).',
+        'Listen to the sound of each foot landing.',
+        'Pair sound with the breath: 2 steps in, 3 steps out.',
+        'If thoughts wander, return to the next footfall.',
+        'Walk a known short loop for 5 to 15 minutes.',
+        'End by standing still and listening to the silence.'
+      ],
+      whenItHelps: [
+        'When sitting is uncomfortable',
+        'Between sitting practices to refresh focus',
+        'For students who cannot tolerate stillness',
+        'During recess decompression walks',
+        'For ADHD students'
+      ],
+      whenItDoesntHelp: 'For students with mobility-related grief or pain, or those for whom walking itself is destabilizing.',
+      variations: [
+        'Walk in soft socks for quieter feedback.',
+        'Walk barefoot indoors for proprioceptive added input.',
+        'Walk on gravel for added crunch.'
+      ],
+      research: 'Walking meditation reduces anxiety (Edwards 2018) and is endorsed in MBSR.'
+    },
+    {
+      id: 'children_playing_distant',
+      name: 'Children playing (distant, abstract)',
+      sense: 'auditory',
+      category: 'sound',
+      description: {
+        elementary: 'You can hear kids on the playground far away. It sounds like a happy bird-flock.',
+        middle: 'Distant children\'s voices blend into an abstract wash, signaling life and community without demanding attention.',
+        high: 'Distant human sound conveys safety (others are nearby) while remaining acoustically diffuse enough to function as anchor.'
+      },
+      howToUseAsAnchor: [
+        'Sit near (but not in) a playground or community space.',
+        'Let the voices remain a wash, not individual words.',
+        'Notice the rhythm of laughter, calls, pauses.',
+        'Do not try to follow any one voice.',
+        'Rest in the sense of a living place.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'For students who feel calmed by knowing others are near',
+        'Outdoor practice on school grounds',
+        'For introverts seeking gentle social warmth without interaction',
+        'Coffee shops at low volume',
+        'Park benches'
+      ],
+      whenItDoesntHelp: 'For students experiencing bullying who associate playgrounds with threat, or for sensory-sensitive students for whom voices feel intrusive.',
+      variations: [
+        'Pair with people-watching (eyes open).',
+        'Use a recording of distant playgrounds for indoor practice.',
+        'Bring a warm drink and rest at a bench.'
+      ],
+      research: 'Soundscape ecology classifies human-presence drone as one of the keynote categories (Schafer 1977).'
+    },
+
+    // ============================================================
+    // TACTILE ANCHORS (12)
+    // ============================================================
+    {
+      id: 'hands_on_thighs',
+      name: 'Hands resting on thighs',
+      sense: 'tactile',
+      category: 'body',
+      description: {
+        elementary: 'Put your hands on your legs and feel where they touch. Notice the weight and the warmth.',
+        middle: 'Hands resting on thighs creates a stable touchpoint that anchors the upper body and signals safety.',
+        high: 'Palms-down hands on thighs is the classical sitting posture in many traditions; provides constant proprioceptive feedback.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright on a chair or cushion.',
+        'Let hands rest on thighs, palms down or up.',
+        'Notice the weight of each hand and the warmth where skin meets clothing.',
+        'When attention drifts, return to that contact.',
+        'Allow other sensations to come and go.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Beginner sitting practice',
+        'For students who need a clear anchor for restless hands',
+        'During seated work breaks',
+        'When breath feels too internal',
+        'In trauma-informed practice (touch is on self, by self)'
+      ],
+      whenItDoesntHelp: 'Students with chronic hand pain or arthritis may need to adjust position; numb hands cannot serve as anchor.',
+      variations: [
+        'Palms up (more open) versus palms down (more grounded).',
+        'One hand on heart, one on belly.',
+        'Hands cupped in lap (mudra-style).'
+      ],
+      research: 'Standard MBSR seated posture (Kabat-Zinn 1990).'
+    },
+    {
+      id: 'feet_on_floor',
+      name: 'Feet on floor',
+      sense: 'tactile',
+      category: 'body',
+      description: {
+        elementary: 'Feel where your feet press into the floor. The floor is holding you up.',
+        middle: 'Foot contact with the floor is the most stable proprioceptive anchor; gravity does the work for you.',
+        high: 'Plantar pressure is a foundational grounding cue, often the first instruction in trauma-informed practice.'
+      },
+      howToUseAsAnchor: [
+        'Sit with both feet flat on the floor (shoes on or off).',
+        'Notice where the heel, ball, and toes press down.',
+        'Feel the floor pressing back up against you.',
+        'Wiggle toes once, then return to stillness.',
+        'Rest attention on the sense of being held by the ground.',
+        'Practice for 3 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety or dissociation episodes',
+        'Pre-test or pre-presentation centering',
+        'For students who feel ungrounded',
+        'Trauma-informed introduction to body awareness',
+        'During seated work'
+      ],
+      whenItDoesntHelp: 'Students with foot pain, neuropathy, or amputation. Offer alternatives (sit bones, back against chair).',
+      variations: [
+        'Barefoot for added sensory richness.',
+        'Shift weight side to side, then return to center.',
+        'Notice the floor as a held surface, not just a hard one.'
+      ],
+      research: 'Treleaven (2018) Trauma-Sensitive Mindfulness names this the most reliable grounding anchor.'
+    },
+    {
+      id: 'fingertips_touching',
+      name: 'Fingertips touching',
+      sense: 'tactile',
+      category: 'touch',
+      description: {
+        elementary: 'Touch your fingertips together gently. Feel each fingertip where it meets the other hand.',
+        middle: 'Self-touch fingertip to fingertip is a small, private anchor available in any situation.',
+        high: 'Bilateral self-touch produces hemispheric synchronization cues and is used in some EMDR variants.'
+      },
+      howToUseAsAnchor: [
+        'Sit or stand quietly.',
+        'Lightly bring opposite fingertips together (thumb to thumb, index to index, etc.).',
+        'Focus on the sensation of each contact point.',
+        'Move slowly from one pair to the next.',
+        'Return to the touch when attention wanders.',
+        'Practice for 2 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'In public spaces (invisible to others)',
+        'During tests or meetings',
+        'For students who need a discrete fidget',
+        'Pre-performance anxiety',
+        'During hard conversations'
+      ],
+      whenItDoesntHelp: 'For students with tactile defensiveness or fingertip pain.',
+      variations: [
+        'Touch one pair, hold, release. Repeat slowly.',
+        'Increase pressure slightly, then release.',
+        'Pair with breath (one touch per breath cycle).'
+      ],
+      research: 'Bilateral self-stimulation is a regulatory technique in trauma therapy (Shapiro 2001).'
+    },
+    {
+      id: 'lap_palms_up',
+      name: 'Lap with palms up',
+      sense: 'tactile',
+      category: 'body',
+      description: {
+        elementary: 'Put your hands in your lap, palms facing up. Notice the openness in your hands.',
+        middle: 'Open palms in the lap signal receptivity; the body posture cues a softer mental state.',
+        high: 'Upturned palms in dhyana mudra invite an open-receive stance contrasted with palms-down grounding.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright with hands resting in lap, palms up.',
+        'Feel the air on your palms and the weight of your hands.',
+        'Notice any temperature differences from palm to palm.',
+        'If hands twitch or fidget, simply notice and return.',
+        'Hold for the duration of the sit.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'When practicing receptivity (loving-kindness, gratitude)',
+        'After grief or hard conversations',
+        'For students who feel guarded',
+        'In paired practice (with another student\'s hands nearby, not touching)',
+        'When you want softness over groundedness'
+      ],
+      whenItDoesntHelp: 'When you feel fragile and exposed; palms-down is more protective.',
+      variations: [
+        'Cup one hand in the other (Zen mudra).',
+        'Rest palms on knees instead of lap.',
+        'Form a soft cup, ready to receive.'
+      ],
+      research: 'Embodied cognition research (Niedenthal 2007) shows posture influences felt state.'
+    },
+    {
+      id: 'smooth_stone',
+      name: 'Holding a smooth stone',
+      sense: 'tactile',
+      category: 'object',
+      description: {
+        elementary: 'A smooth stone in your hand is cool and heavy. Hold it like a small friend.',
+        middle: 'A worry stone or river stone provides constant tactile feedback that is both grounding and soothing.',
+        high: 'Polished stone offers temperature contrast (cool initially), weight, and texture, an excellent multi-channel anchor.'
+      },
+      howToUseAsAnchor: [
+        'Hold the stone in one hand or both.',
+        'Feel its weight, temperature, and surface texture.',
+        'Slowly turn it over and notice every facet.',
+        'Press it gently into your palm, release.',
+        'Return to it whenever attention drifts.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety, including in classroom or test settings',
+        'For students who need a transitional object',
+        'For sensory-seeking students',
+        'During hard conversations or interviews',
+        'Pocket-sized for portability'
+      ],
+      whenItDoesntHelp: 'In environments where holding objects is prohibited (some standardized tests).',
+      variations: [
+        'Try a rough stone for contrast.',
+        'Pair with a phrase (one breath per turn of the stone).',
+        'Pass between hands slowly.'
+      ],
+      research: 'Worry stones appear cross-culturally (Greek komboloi, Catholic relic-stones); contemporary OT uses tactile fidgets for self-regulation (Mahler 2017).'
+    },
+    {
+      id: 'fabric_edge',
+      name: 'Holding a fabric edge',
+      sense: 'tactile',
+      category: 'touch',
+      description: {
+        elementary: 'Find a soft edge on your clothes or a blanket. Rub it gently between your fingers.',
+        middle: 'A familiar fabric edge (hoodie, blanket, scarf) offers private tactile anchoring nearly anywhere.',
+        high: 'Self-soothing through fabric is widely observed across childhood and continues into adult contemplative use as a low-visibility anchor.'
+      },
+      howToUseAsAnchor: [
+        'Find a soft edge on your clothing or a nearby blanket.',
+        'Rub it gently between thumb and fingers.',
+        'Notice the texture, temperature, and any folds.',
+        'Slow the movement until it nearly stops.',
+        'Return to the sensation when attention wanders.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'In school settings (sleeves, hood drawstrings)',
+        'During sensory overload',
+        'When you need a low-visibility fidget',
+        'Pre-sleep, with a blanket or pillow edge',
+        'For autistic students who already use this naturally'
+      ],
+      whenItDoesntHelp: 'For students whose teachers misread fabric-rubbing as inattention; consider explaining to faculty.',
+      variations: [
+        'Rub slowly versus quickly.',
+        'Switch to a different texture (velvet, fleece, cotton).',
+        'Tie a small soft scrap to a keychain for portability.'
+      ],
+      research: 'Transitional objects (Winnicott 1953) and OT-informed sensory tools (Wilbarger 1991).'
+    },
+    {
+      id: 'cool_water',
+      name: 'Cool water on hands',
+      sense: 'tactile',
+      category: 'temperature',
+      description: {
+        elementary: 'Run cool water over your hands and feel the temperature change. It wakes you up gently.',
+        middle: 'Cool water on the hands or wrists is one of the fastest physiological resets, activating the dive reflex when applied to the face.',
+        high: 'Cold-water exposure to face or wrists triggers the mammalian dive reflex, dropping heart rate within 30 seconds (DBT TIPP).'
+      },
+      howToUseAsAnchor: [
+        'Go to a sink and run cool (not icy) water.',
+        'Place hands under the stream for 30 to 60 seconds.',
+        'Pay attention only to the temperature, sound, and feel.',
+        'Notice the warming that happens when you remove your hands.',
+        'Dry slowly and intentionally.',
+        'Practice as needed, or before a sit to settle.'
+      ],
+      whenItHelps: [
+        'Acute anxiety or panic (TIPP skill from DBT)',
+        'After arguments or hard conversations',
+        'Before tests or presentations',
+        'Mid-meditation if drowsy',
+        'Quick reset between classes'
+      ],
+      whenItDoesntHelp: 'Students with Raynaud\'s syndrome, severe cold sensitivity, or who have water-related trauma.',
+      variations: [
+        'Use a cool wet cloth on the face instead.',
+        'Hold an ice cube briefly (TIPP).',
+        'Splash water on the face (more intense dive reflex).'
+      ],
+      research: 'Linehan (1993) DBT TIPP skill uses cold-water face immersion as crisis-survival tool.'
+    },
+    {
+      id: 'warm_tea_cup',
+      name: 'Warm tea cup',
+      sense: 'tactile',
+      category: 'temperature',
+      description: {
+        elementary: 'Hold a warm cup in your hands and feel the heat. The warmth feels like a hug.',
+        middle: 'Holding a warm cup of tea or hot cocoa provides sustained warmth, weight, and ritual all at once.',
+        high: 'Physical warmth has been shown to increase felt social warmth (Williams & Bargh 2008); excellent for self-compassion practice.'
+      },
+      howToUseAsAnchor: [
+        'Prepare a warm beverage in a sturdy cup.',
+        'Wrap both hands around the cup.',
+        'Notice the warmth spreading into your palms.',
+        'Let attention rest on the temperature, the weight, the steam.',
+        'Sip slowly when ready.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Morning practice',
+        'Self-compassion sessions',
+        'After hard conversations',
+        'Cold-weather practice',
+        'For students who feel emotionally cold'
+      ],
+      whenItDoesntHelp: 'Students with hand tremors or who feel agitated by hot beverages.',
+      variations: [
+        'Use a sturdy mug versus a delicate teacup.',
+        'Add gentle herbal scents (chamomile, mint).',
+        'Pair with a phrase: \'I am giving myself warmth.\''
+      ],
+      research: 'Williams & Bargh (2008) Science paper: physical warmth elevates felt social warmth.'
+    },
+    {
+      id: 'soft_blanket',
+      name: 'Soft blanket on lap',
+      sense: 'tactile',
+      category: 'touch',
+      description: {
+        elementary: 'A soft blanket on your lap is like a soft, gentle weight. It feels safe.',
+        middle: 'A blanket draped over the lap or shoulders provides both warmth and gentle pressure, two regulating inputs.',
+        high: 'Light deep-pressure input (blanket weight, light gravity) signals safety through proprioception (DPT in occupational therapy).'
+      },
+      howToUseAsAnchor: [
+        'Drape a soft blanket over lap or shoulders.',
+        'Notice the weight, warmth, and texture.',
+        'Settle into the sense of being held.',
+        'Let attention rest on contact zones.',
+        'Stay for the duration of the practice.',
+        'Practice for 10 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety or overstimulation',
+        'Grief or loneliness',
+        'Cold rooms or cold seasons',
+        'Bedtime wind-down',
+        'For students who feel touch-starved'
+      ],
+      whenItDoesntHelp: 'Students with tactile defensiveness to certain fabrics, or those who overheat.',
+      variations: [
+        'Try weighted blanket (consult OT for weight).',
+        'Drape a shawl over shoulders for upper-body input.',
+        'Add a heated rice bag for added warmth.'
+      ],
+      research: 'Deep pressure touch (DPT) is foundational in sensory integration therapy (Ayres 1972; Mullen et al. 2008 weighted-blanket RCT).'
+    },
+    {
+      id: 'tongue_to_palate',
+      name: 'Tongue touching roof of mouth',
+      sense: 'tactile',
+      category: 'body',
+      description: {
+        elementary: 'Touch the tip of your tongue softly to the roof of your mouth. Feel the small contact there.',
+        middle: 'A subtle anchor used in qigong and yoga; tongue at the upper palate steadies a wandering mind invisibly.',
+        high: 'Tongue at hard palate is recommended in some pranayama traditions and creates closed-circuit subtle energy in Daoist frameworks.'
+      },
+      howToUseAsAnchor: [
+        'Sit comfortably with mouth closed.',
+        'Rest the tongue lightly behind the upper front teeth.',
+        'Feel the small point of contact.',
+        'Continue breathing softly through the nose.',
+        'Return to that point whenever attention drifts.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Any setting where invisible anchoring is needed (testing, public)',
+        'For students who clench the jaw',
+        'During public speaking',
+        'Throughout the day as an ambient cue',
+        'In qigong or yoga practice'
+      ],
+      whenItDoesntHelp: 'Students with tongue piercings, dental work that makes this uncomfortable, or oral-motor sensitivity.',
+      variations: [
+        'Rest on the gum ridge versus farther back.',
+        'Try with mouth slightly open.',
+        'Pair with slow nasal breath.'
+      ],
+      research: 'Tongue position is a feature in some traditional yoga and tai chi training; clinical evidence is limited.'
+    },
+    {
+      id: 'seat_cushion_pressure',
+      name: 'Pressure of seat cushion',
+      sense: 'tactile',
+      category: 'body',
+      description: {
+        elementary: 'Feel where you sit on the chair or cushion. The cushion is pressing back up.',
+        middle: 'Felt seat-pressure is a deep grounding cue; gravity is your assistant.',
+        high: 'Ischial tuberosity contact with seat surface offers reliable proprioceptive feedback that is hard to lose track of.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright on a chair or cushion.',
+        'Notice where the sit bones press into the seat.',
+        'Feel the seat pressing back up.',
+        'Shift weight slightly side to side, return to center.',
+        'Settle into the sense of being supported.',
+        'Practice for 5 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'Sitting meditation foundation',
+        'When breath feels unreliable',
+        'For students who feel ungrounded or dissociated',
+        'During seated work',
+        'Trauma-informed alternative to breath'
+      ],
+      whenItDoesntHelp: 'Students with tailbone pain or pressure injuries.',
+      variations: [
+        'Sit on different surfaces (cushion, chair, floor).',
+        'Notice the back of thighs as well as sit bones.',
+        'Pair with feet-on-floor anchor.'
+      ],
+      research: 'Foundation of zazen and shamatha; named in MBSR posture instruction.'
+    },
+    {
+      id: 'air_on_skin',
+      name: 'Air on skin',
+      sense: 'tactile',
+      category: 'sensation',
+      description: {
+        elementary: 'Feel the air moving around you on your skin. It is soft and almost not there.',
+        middle: 'The air on exposed skin is constant but easily ignored. Bringing attention to it sharpens awareness without forcing anything.',
+        high: 'Cutaneous mechanoreceptors respond to subtle air currents; this anchor trains discrimination of low-amplitude signals.'
+      },
+      howToUseAsAnchor: [
+        'Sit with arms or face exposed.',
+        'Notice air on the back of your hands or cheeks.',
+        'Feel its temperature and movement.',
+        'When attention wanders, return to the next subtle touch.',
+        'Allow yourself to feel the room around you.',
+        'Practice for 3 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'For students seeking subtle, almost-invisible anchors',
+        'Outdoor practice on still days',
+        'When other anchors feel too loud',
+        'Advanced practitioners',
+        'In yoga or qigong after movement'
+      ],
+      whenItDoesntHelp: 'In drafty cold rooms or after windburn; some sensory-sensitive students find air contact distracting.',
+      variations: [
+        'Stand in a gentle breeze.',
+        'Pair with breath at the nostrils.',
+        'Notice air on different body parts in turn.'
+      ],
+      research: 'Subtle-sensation anchors are part of advanced vipassana training (Goenka tradition).'
+    },
+
+    // ============================================================
+    // OLFACTORY ANCHORS (8)
+    // ============================================================
+    {
+      id: 'own_clothing_smell',
+      name: 'Smell of own clothing',
+      sense: 'olfactory',
+      category: 'sensation',
+      description: {
+        elementary: 'Your clothes have a quiet smell that is yours. It is comforting because you know it.',
+        middle: 'Your own clothing carries familiar odor (laundry, your skin, your environment) that signals safety.',
+        high: 'Familiar olfactory cues activate self-referential processing and signal safety; useful in trauma-informed grounding.'
+      },
+      howToUseAsAnchor: [
+        'Bring a sleeve or collar close to your nose.',
+        'Take a slow inhalation.',
+        'Notice what you smell (laundry, soap, skin).',
+        'Do not judge it as pleasant or unpleasant.',
+        'Return to it whenever you need.',
+        'Practice for 1 to 3 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety or dissociation',
+        'When you are away from home',
+        'For students who find their own smell comforting',
+        'Pre-test or pre-performance',
+        'When other anchors are not enough'
+      ],
+      whenItDoesntHelp: 'For students with self-image issues who find their own smell aversive; for those with anosmia.',
+      variations: [
+        'Smell a piece of clothing from home.',
+        'Pair with a slow exhale.',
+        'Combine with a small sip of water.'
+      ],
+      research: 'Olfactory memory is closely linked to limbic emotional processing; familiar smells are well-documented anxiolytics (Herz 2009).'
+    },
+    {
+      id: 'smell_of_room',
+      name: 'Smell of room',
+      sense: 'olfactory',
+      category: 'place',
+      description: {
+        elementary: 'Every room has its own smell. Notice what this one smells like right now.',
+        middle: 'The ambient odor of a room (wood, paper, books, food) is a stable place-anchor often ignored.',
+        high: 'Place-based olfactory cues anchor episodic memory and provide a unique signature for each environment.'
+      },
+      howToUseAsAnchor: [
+        'Sit in a room you know.',
+        'Take a slow inhalation through the nose.',
+        'Notice the dominant smells.',
+        'Do not analyze, just sense.',
+        'Return to the room\'s smell as the meditation continues.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'When entering a new space (orienting)',
+        'In libraries and classrooms with their own scent profile',
+        'For students who are visual or auditory by default and need a new sense',
+        'Grounding in a familiar place',
+        'Returning from a busy environment'
+      ],
+      whenItDoesntHelp: 'Rooms with strong chemical or unpleasant odors; students with chemical sensitivities.',
+      variations: [
+        'Practice in multiple rooms and notice differences.',
+        'Light a single candle and notice the change.',
+        'Pair with visual scanning of the same room.'
+      ],
+      research: 'Olfactory ambient priming influences mood and cognition (Knasko 1992).'
+    },
+    {
+      id: 'essential_oil_drop',
+      name: 'Single drop of essential oil',
+      sense: 'olfactory',
+      category: 'object',
+      description: {
+        elementary: 'One drop of a special-smelling oil on your hand is enough. Less is more.',
+        middle: 'A single drop of essential oil rubbed on the wrist or held in the palm provides a focused olfactory anchor.',
+        high: 'Concentrated essential oils trigger olfactory bulb response; lavender and bergamot have measurable anxiolytic effects.'
+      },
+      howToUseAsAnchor: [
+        'Place one drop of essential oil on the palm or back of hand.',
+        'Rub gently and bring to nose.',
+        'Inhale slowly three times.',
+        'Let the scent fade as you continue the practice.',
+        'Reapply only if necessary.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety, panic, sleep onset (especially lavender)',
+        'Focus (peppermint, rosemary)',
+        'Grief (rose, frankincense)',
+        'For students who respond well to scent',
+        'When transitioning between activities'
+      ],
+      whenItDoesntHelp: 'Students with chemical sensitivities, asthma triggered by scent, or scent-sensitive classrooms. Always opt-in. Never use on broken skin or undiluted on children.',
+      variations: [
+        'Place a drop on a tissue rather than skin.',
+        'Use a diffuser at low strength.',
+        'Pair with a specific phrase per scent.'
+      ],
+      research: 'Lavender oil (Sayorwan 2012) reduces anxiety in clinical settings; bergamot (Han 2017) similarly.'
+    },
+    {
+      id: 'fresh_cut_herb',
+      name: 'Fresh-cut herb (rosemary, mint)',
+      sense: 'olfactory',
+      category: 'object',
+      description: {
+        elementary: 'Rub a fresh leaf of mint or rosemary between your fingers and smell it. It is a strong, real smell.',
+        middle: 'Fresh herbs release oils when crushed; the scent is brighter and more alive than bottled essential oil.',
+        high: 'Direct contact with fresh plant material releases volatile organic compounds; rosemary improves focus (Moss 2003).'
+      },
+      howToUseAsAnchor: [
+        'Take a small sprig of mint, rosemary, basil, or lavender.',
+        'Crush gently between fingers.',
+        'Bring to nose and inhale slowly.',
+        'Notice the brightness, the green note, the warmth.',
+        'Return between breaths or as needed.',
+        'Practice for 2 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'Garden-based practice',
+        'For students who connect to nature',
+        'Cooking-related calming',
+        'Before tests (rosemary for memory)',
+        'During seasonal transitions'
+      ],
+      whenItDoesntHelp: 'Students with herb allergies or sensitivities; in classrooms where herbs are not feasible.',
+      variations: [
+        'Compare two herbs side by side.',
+        'Plant a small windowsill garden for ongoing supply.',
+        'Pair with a tea version of the same herb.'
+      ],
+      research: 'Moss et al. (2003) rosemary aroma improved memory performance.'
+    },
+    {
+      id: 'coffee_bean',
+      name: 'Coffee bean',
+      sense: 'olfactory',
+      category: 'object',
+      description: {
+        elementary: 'Smell a coffee bean to wake up your nose. It is a strong, dark smell.',
+        middle: 'A single coffee bean held to the nose offers a powerful, alerting scent without requiring caffeine intake.',
+        high: 'Coffee aroma alone (no ingestion) is shown to increase alertness and analytic cognition (Lee 2013).'
+      },
+      howToUseAsAnchor: [
+        'Hold a fresh coffee bean (or freshly ground coffee) to the nose.',
+        'Inhale slowly through the nose.',
+        'Notice the layers (earthy, nutty, bright).',
+        'Pause and inhale again.',
+        'Return to ordinary breathing.',
+        'Practice for 1 to 3 minutes.'
+      ],
+      whenItHelps: [
+        'Morning practice',
+        'Before tests requiring focus',
+        'When drowsy in afternoon',
+        'For students who associate coffee with safety (family rituals)',
+        'Between olfactory anchors as a contrast'
+      ],
+      whenItDoesntHelp: 'Students with coffee aversion or migraine triggered by coffee scent.',
+      variations: [
+        'Compare ground coffee to whole bean.',
+        'Compare to chocolate or vanilla.',
+        'Pair with morning sunlight.'
+      ],
+      research: 'Lee et al. (2013) reported improved performance on analytical tasks after coffee-aroma exposure (no caffeine).'
+    },
+    {
+      id: 'bread',
+      name: 'Bread',
+      sense: 'olfactory',
+      category: 'object',
+      description: {
+        elementary: 'Fresh bread smells warm and yeasty. It is a comforting smell that means food and home.',
+        middle: 'Baking or just-baked bread is one of the most universally comforting scents, associated with family and safety.',
+        high: 'Bakery-aroma exposure increases prosocial behavior (Gueguen 2012); strong association with hearth and home.'
+      },
+      howToUseAsAnchor: [
+        'Sit near fresh bread or a bakery scent.',
+        'Inhale slowly.',
+        'Notice yeast, warmth, sweetness.',
+        'Let yourself feel safe in the smell.',
+        'Return as needed during the practice.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'For students experiencing food insecurity (provided the bread is actually available)',
+        'Grief or homesickness',
+        'Cultural rituals around bread (challah, naan, tortilla, sourdough)',
+        'Family-based practice',
+        'Self-compassion sessions'
+      ],
+      whenItDoesntHelp: 'Students with gluten sensitivity who associate bread with pain; those for whom bread aroma triggers food insecurity grief.',
+      variations: [
+        'Bake a simple flatbread together as part of practice.',
+        'Use a bread-scented candle (test for safety).',
+        'Pair with a small piece of bread mindfully eaten.'
+      ],
+      research: 'Gueguen (2012) found bakery aromas increased helping behavior in shoppers.'
+    },
+    {
+      id: 'citrus_peel',
+      name: 'Citrus peel',
+      sense: 'olfactory',
+      category: 'object',
+      description: {
+        elementary: 'Peel an orange or lemon and smell the skin. The oil sprays out and smells bright and fresh.',
+        middle: 'Citrus peel oils (limonene) are uplifting and clarifying; squeezing a peel releases a burst of scent.',
+        high: 'D-limonene from citrus peel has documented mood-elevating and anti-anxiety effects (Komori 1995).'
+      },
+      howToUseAsAnchor: [
+        'Tear a piece of citrus peel.',
+        'Squeeze near nose to release oils.',
+        'Inhale slowly three times.',
+        'Hold the peel and continue practice.',
+        'Reapply as needed.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'Low mood, mild depression, anhedonia',
+        'For students who need lift, not calm',
+        'Morning practice',
+        'Mid-afternoon slump',
+        'Detail-focused work'
+      ],
+      whenItDoesntHelp: 'Students with citrus allergies or migraine triggered by citrus.',
+      variations: [
+        'Compare orange to lemon to lime.',
+        'Pair with eating a citrus segment mindfully.',
+        'Use a tea version (Earl Grey for bergamot).'
+      ],
+      research: 'Komori et al. (1995) citrus aromatherapy reduced antidepressant medication needs.'
+    },
+    {
+      id: 'lavender',
+      name: 'Lavender',
+      sense: 'olfactory',
+      category: 'object',
+      description: {
+        elementary: 'Lavender flowers and oil smell soft and sweet. It helps people feel sleepy and calm.',
+        middle: 'Lavender is the most-studied calming scent. It works for many but not all people.',
+        high: 'Linalool, the primary terpene in lavender, has measurable anxiolytic effect (Koulivand 2013 meta-analysis).'
+      },
+      howToUseAsAnchor: [
+        'Hold a dried lavender sprig or a drop of lavender oil.',
+        'Inhale slowly.',
+        'Notice the layers (floral, herbal, slightly camphoraceous).',
+        'Let yourself slow down.',
+        'Return whenever you need.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety, stress, sleep onset',
+        'Pre-sleep wind-down',
+        'After tests or hard conversations',
+        'For students who like floral scents',
+        'Lavender-scented pillow or sachet'
+      ],
+      whenItDoesntHelp: 'Students with lavender aversion (yes, some do dislike it intensely) or who associate it with funerals or hospitals.',
+      variations: [
+        'Pair with chamomile or rose for sleep.',
+        'Use lavender salt foot soak in evening.',
+        'Combine with deep slow breathing.'
+      ],
+      research: 'Koulivand et al. (2013) meta-analysis confirms anxiolytic and sleep-promoting effects of lavender.'
+    },
+
+    // ============================================================
+    // GUSTATORY ANCHORS (6)
+    // ============================================================
+    {
+      id: 'sip_of_tea',
+      name: 'Single sip of tea, attended to fully',
+      sense: 'gustatory',
+      category: 'object',
+      description: {
+        elementary: 'Take one tiny sip of warm tea and notice everything about it. Taste, temperature, feeling.',
+        middle: 'A single, deliberate sip of tea is a full sensory experience: warmth, aroma, taste, and mouthfeel.',
+        high: 'Tea-drinking as contemplative practice integrates four senses and a small mindful action; it is the basis of cha-no-yu (Japanese tea ceremony).'
+      },
+      howToUseAsAnchor: [
+        'Brew a small cup of tea and let it cool to drinking temperature.',
+        'Hold the cup, notice warmth.',
+        'Inhale the steam.',
+        'Take one small sip; hold it on the tongue.',
+        'Notice taste, temperature, mouthfeel before swallowing.',
+        'Pause, then take the next sip mindfully.',
+        'Practice over 10 to 20 minutes for one cup.'
+      ],
+      whenItHelps: [
+        'Morning or evening rituals',
+        'Self-compassion practice',
+        'After a hard conversation',
+        'For students who like ceremony',
+        'Cultural practice (chai, matcha, mint tea)'
+      ],
+      whenItDoesntHelp: 'Students with caffeine sensitivity (use herbal); those who burn their mouth easily.',
+      variations: [
+        'Try different teas and notice differences.',
+        'Pour the tea for someone else and notice the act.',
+        'Pair with a single biscuit eaten slowly.'
+      ],
+      research: 'Tea ceremony practice (Sen Soshitsu XV); mindful eating clinical work (Bays 2009).'
+    },
+    {
+      id: 'dark_chocolate',
+      name: 'A piece of dark chocolate',
+      sense: 'gustatory',
+      category: 'object',
+      description: {
+        elementary: 'One small piece of dark chocolate, eaten very slowly, tastes huge.',
+        middle: 'A single square of dark chocolate, eaten over 60 seconds, is a focused gustatory anchor with complex flavor layers.',
+        high: 'Dark chocolate releases mood-elevating compounds (theobromine, anandamide precursors) and provides rich olfactory-gustatory cross-modal stimulus.'
+      },
+      howToUseAsAnchor: [
+        'Take a single small square of dark chocolate (70 percent or higher).',
+        'Place it on the tongue without chewing.',
+        'Let it begin to melt.',
+        'Notice flavor changes (bitter, sweet, fruity, nutty).',
+        'Allow it to fully dissolve before chewing or swallowing.',
+        'Practice over 2 to 5 minutes for one piece.'
+      ],
+      whenItHelps: [
+        'Mood elevation',
+        'After a hard task as positive reinforcement',
+        'For students who connect with food rituals',
+        'Cultural practice (Maya cacao, Swiss tradition)',
+        'When taste-based anchoring works better than breath'
+      ],
+      whenItDoesntHelp: 'Students with chocolate sensitivity, eating-disorder histories where food rituals are triggering, dental sensitivity to cold or hard textures.',
+      variations: [
+        'Compare 70 percent to 85 percent dark.',
+        'Pair with a sip of warm water.',
+        'Try ceremonial cacao at low dose.'
+      ],
+      research: 'Mindful chocolate eating reduces stress and increases self-compassion in some studies (Meier 2017).'
+    },
+    {
+      id: 'raisin_mbsr',
+      name: 'A raisin (MBSR classic)',
+      sense: 'gustatory',
+      category: 'object',
+      description: {
+        elementary: 'Eat one raisin very, very slowly. Look at it, smell it, then taste it. It tastes more than you remember.',
+        middle: 'The raisin exercise is the classic introduction to MBSR mindful eating, often a person\'s first taste of deliberate attention.',
+        high: 'Kabat-Zinn\'s raisin exercise is the most replicated mindful-eating intervention in MBSR research; it teaches embodied attention through one food.'
+      },
+      howToUseAsAnchor: [
+        'Hold a single raisin in your palm.',
+        'Look at it as if you have never seen one.',
+        'Notice the wrinkles, color, weight.',
+        'Bring it to your nose and inhale.',
+        'Place on tongue, notice texture before biting.',
+        'Bite once; notice flavor burst.',
+        'Chew slowly; notice changes.',
+        'Swallow and follow the sensation downward.',
+        'Total practice: 5 to 8 minutes for one raisin.'
+      ],
+      whenItHelps: [
+        'First exposure to mindfulness',
+        'Mindful eating curriculum',
+        'For students who rush through meals',
+        'Classroom introduction in groups',
+        'Cross-cultural (works with any small dried fruit)'
+      ],
+      whenItDoesntHelp: 'Students with eating disorders, food sensitivities, or who find slow-eating triggering. Always opt-in.',
+      variations: [
+        'Use a dried apricot or a single nut instead.',
+        'Do this with eyes closed.',
+        'Compare with eating a raisin normally afterward.'
+      ],
+      research: 'Kabat-Zinn (1990) Full Catastrophe Living, foundational MBSR exercise.'
+    },
+    {
+      id: 'mint_dissolving',
+      name: 'A mint slowly dissolving',
+      sense: 'gustatory',
+      category: 'object',
+      description: {
+        elementary: 'Put a mint on your tongue and let it slowly disappear without chewing. The cool feeling lasts a long time.',
+        middle: 'A hard mint dissolving on the tongue provides a sustained anchor (temperature, taste, slow shrinking).',
+        high: 'Slow oral dissolution of a hard mint provides continuous gustatory and thermal stimulation, suitable for longer anchoring than chewable foods.'
+      },
+      howToUseAsAnchor: [
+        'Place a hard mint on the tongue.',
+        'Do not chew.',
+        'Notice the cool spreading sensation.',
+        'Feel the mint slowly shrinking.',
+        'Return to the practice when attention drifts.',
+        'Continue until the mint is fully gone (5 to 12 minutes).'
+      ],
+      whenItHelps: [
+        'Long sits when attention is wandering',
+        'For students who need oral input (gum-chewers, etc.)',
+        'During test prep when you need to be alert',
+        'Allergy season (clears nasal passages)',
+        'For students who fidget with mouth (substitutes for nail-biting)'
+      ],
+      whenItDoesntHelp: 'Students with dental issues that contraindicate hard candy; those with sugar restrictions (use sugar-free).',
+      variations: [
+        'Use a sugar-free mint.',
+        'Try a peppermint patty (chocolate plus mint).',
+        'Compare wintergreen versus peppermint.'
+      ],
+      research: 'Peppermint stimulus increases alertness and cognition (Moss 2008).'
+    },
+    {
+      id: 'water_on_tongue',
+      name: 'Water on tongue',
+      sense: 'gustatory',
+      category: 'sensation',
+      description: {
+        elementary: 'A sip of plain water has a quiet, clean taste. Notice the wet feeling on your tongue.',
+        middle: 'Plain water is the most neutral gustatory anchor; available, free, and never overwhelming.',
+        high: 'Water as a gustatory anchor highlights mouthfeel and temperature without flavor distraction; useful for advanced sensory differentiation.'
+      },
+      howToUseAsAnchor: [
+        'Take a small sip of room-temperature water.',
+        'Hold it on the tongue for a few seconds.',
+        'Notice the wetness, temperature, mouth shape.',
+        'Swallow slowly and follow the sensation down.',
+        'Pause and breathe before the next sip.',
+        'Practice for 3 to 8 minutes over half a glass.'
+      ],
+      whenItHelps: [
+        'Mid-meditation refresh',
+        'For students avoiding food during practice',
+        'Hydration as ritual',
+        'For sensory-sensitive students who find flavors too intense',
+        'Universal availability'
+      ],
+      whenItDoesntHelp: 'For students who associate water with restriction (some eating disorder histories).',
+      variations: [
+        'Try chilled, warm, or room temperature water.',
+        'Use lightly mineralized water for subtle taste.',
+        'Pair with a slow inhalation through the nose.'
+      ],
+      research: 'Hydration improves cognitive performance (Edmonds 2013); contemplative use is universal.'
+    },
+    {
+      id: 'sour_candy_tipp',
+      name: 'Sour candy (TIPP-aligned for crisis)',
+      sense: 'gustatory',
+      category: 'object',
+      description: {
+        elementary: 'A sour candy is so strong it pulls your mind back to right now. Use it when you feel overwhelmed.',
+        middle: 'A very sour candy (Warhead, lemon, etc.) snaps attention back to the body, useful in dissociation or acute distress.',
+        high: 'Intense gustatory stimuli (extreme sour, sometimes hot) are TIPP-adjacent skills in DBT for crisis-survival; sensory shock interrupts spiraling.'
+      },
+      howToUseAsAnchor: [
+        'Have a sour candy or lemon wedge ready.',
+        'When dissociating or panicking, place on tongue.',
+        'Let the sour shock pull attention into the body.',
+        'Take three slow breaths once oriented.',
+        'Drink water to clear taste.',
+        'Use as crisis interrupt, not daily practice.'
+      ],
+      whenItHelps: [
+        'Acute panic attack',
+        'Dissociation episode',
+        'Emotional flooding',
+        'Pre-test panic',
+        'When student is about to leave the practice mid-spiral'
+      ],
+      whenItDoesntHelp: 'Daily use (loses effect); students with dental sensitivity or acid reflux; those with eating-disorder histories where food rituals are charged. Always opt-in.',
+      variations: [
+        'Hot cinnamon candy (intense alternative).',
+        'Wasabi or hot sauce in extreme cases (supervised).',
+        'A fresh lemon slice bitten directly.'
+      ],
+      research: 'Linehan (1993) DBT TIPP skill set; sensory shock as crisis-survival intervention.'
+    },
+
+    // ============================================================
+    // VISUAL ANCHORS (10) - for open-eye practice
+    // ============================================================
+    {
+      id: 'candle_flame_trataka',
+      name: 'A candle flame (trataka)',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'A candle flame moves a little but stays in place. Watch it without staring too hard.',
+        middle: 'Trataka, the yoga practice of candle-gazing, develops both concentration and inner visualization.',
+        high: 'Trataka (Sanskrit: to gaze) is a classical yogic concentration practice; the flame as a stable yet living object trains stillness with vitality.'
+      },
+      howToUseAsAnchor: [
+        'Place a candle at arm\'s length, at eye level, in a darkened room.',
+        'Sit comfortably and gaze softly at the flame.',
+        'Try not to blink, but do not strain.',
+        'When tears come, gently close eyes and see the after-image.',
+        'Open eyes and return to the flame.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'Trauma-informed eyes-open practice',
+        'For students who cannot close eyes safely',
+        'Concentration training',
+        'Pre-sleep ritual',
+        'Yoga practitioners'
+      ],
+      whenItDoesntHelp: 'Students with epilepsy triggered by flickering, severe ADHD without supervision, or fire-safety issues. Always supervised in school.',
+      variations: [
+        'Use a battery LED candle for safety.',
+        'Try different colors of flame (with care).',
+        'Pair with mantra repetition.'
+      ],
+      research: 'Trataka improves attention and reduces stress (Mallinson & Singleton 2017 Roots of Yoga; clinical studies Talwadkar 2014).'
+    },
+    {
+      id: 'flower',
+      name: 'A flower',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'Look at one flower very slowly. Notice the colors, the petals, and where the light shines.',
+        middle: 'A single flower is a living mandala, intricate and brief; it teaches attention to detail and impermanence.',
+        high: 'Floral object meditation engages aesthetic perception, attention to detail, and contemplation of impermanence.'
+      },
+      howToUseAsAnchor: [
+        'Place a fresh flower in a vase at eye level.',
+        'Gaze softly at one petal first.',
+        'Move attention slowly across petals, stamens, leaves.',
+        'Notice color shifts and shadow.',
+        'Return to the whole flower.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Nature-loving students',
+        'Cultivating beauty appreciation',
+        'Bedside or desk practice',
+        'Grief work (flowers and impermanence)',
+        'For students who feel overwhelmed by complex stimuli'
+      ],
+      whenItDoesntHelp: 'Students with severe allergies; those in austere environments where flowers feel out of place.',
+      variations: [
+        'Compare buds to full blooms.',
+        'Use a single flower in a small vase.',
+        'Try a flower that opens during the practice (morning glory, lotus).'
+      ],
+      research: 'Flower exposure improves mood (Haviland-Jones 2005).'
+    },
+    {
+      id: 'single_dot_on_wall',
+      name: 'A single dot on a wall',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'A small dot on the wall is something to look at. It does not change, so your mind can rest.',
+        middle: 'A single visual fixation point on a blank wall is the simplest possible visual anchor.',
+        high: 'A small high-contrast fixation point on a neutral surface trains soft focus without sensory distraction.'
+      },
+      howToUseAsAnchor: [
+        'Place or imagine a small dot on a wall at eye level.',
+        'Sit at arm\'s length and gaze softly.',
+        'Allow peripheral vision to soften.',
+        'Do not strain or stare hard.',
+        'Return to the dot whenever attention drifts.',
+        'Practice for 5 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'In bare or minimal spaces',
+        'For students who need a literal anchor point',
+        'Test prep concentration training',
+        'Yoga drishti practice',
+        'Trauma-informed eyes-open'
+      ],
+      whenItDoesntHelp: 'Students with strabismus or visual difficulties who find fixation uncomfortable.',
+      variations: [
+        'Use a black dot on white paper.',
+        'Place at different distances.',
+        'Compare a dot to a small geometric shape.'
+      ],
+      research: 'Drishti (gaze point) practice in yoga; visual fixation in concentration training.'
+    },
+    {
+      id: 'small_object_on_table',
+      name: 'A small object on a table',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'Pick one small thing (a pencil, a button, a shell). Look at it for a while as if you found it for the first time.',
+        middle: 'A small object held in attention reveals more detail the longer you look. It teaches that even simple things have depth.',
+        high: 'Object meditation defamiliarizes the everyday, revealing detail invisible under habituation.'
+      },
+      howToUseAsAnchor: [
+        'Choose a small object (key, shell, pencil, stone).',
+        'Place it at arm\'s length on a table.',
+        'Gaze softly, exploring every surface.',
+        'Notice color, texture, shadow, edge.',
+        'Try to see it as if for the first time.',
+        'Practice for 5 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'Curiosity cultivation',
+        'For students who like detail',
+        'Art-class warm-up',
+        'Engineering and design students',
+        'For students who get bored with breath'
+      ],
+      whenItDoesntHelp: 'Students who fixate on irrelevant details (some OCD profiles); those who need stillness over inquiry.',
+      variations: [
+        'Switch objects each session.',
+        'Pair with drawing the object from memory.',
+        'Compare two similar objects.'
+      ],
+      research: 'Object-focused contemplation appears in Stoic, Zen, and Christian traditions (contemplatio).'
+    },
+    {
+      id: 'your_own_hand',
+      name: 'Your own hand',
+      sense: 'visual',
+      category: 'body',
+      description: {
+        elementary: 'Look at one of your hands. You have seen it a thousand times, but really look now.',
+        middle: 'Your own hand is the most accessible visual anchor: always present, always changing slightly.',
+        high: 'Hand-gazing combines self-recognition, anatomical detail, and the strangeness of seeing oneself with fresh eyes.'
+      },
+      howToUseAsAnchor: [
+        'Hold one hand at comfortable distance from your face.',
+        'Gaze softly at the back of the hand or the palm.',
+        'Notice lines, color, shadow, knuckles.',
+        'Wiggle a finger; notice the movement.',
+        'Return to stillness.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'Dissociation (re-association with body)',
+        'Self-recognition practice',
+        'For students who feel disconnected',
+        'Hand-injury recovery (acknowledging the hand)',
+        'For students who like body-awareness'
+      ],
+      whenItDoesntHelp: 'Students with body-dysmorphia tied to hands; those with hand trauma.',
+      variations: [
+        'Compare left to right hand.',
+        'Notice changes after exercise versus at rest.',
+        'Pair with hand gesture (mudra) practice.'
+      ],
+      research: 'Body-awareness practices in trauma recovery (van der Kolk 2014).'
+    },
+    {
+      id: 'leaf',
+      name: 'A leaf',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'Hold a leaf and look at all its lines and colors. Every leaf is different.',
+        middle: 'A leaf is intricate and asymmetric; it rewards close looking with new patterns.',
+        high: 'Plant morphology offers infinite variation; close observation of a leaf is a classical phenomenology exercise.'
+      },
+      howToUseAsAnchor: [
+        'Find a fresh or pressed leaf.',
+        'Hold it at comfortable distance.',
+        'Notice veins, edges, color gradients.',
+        'Turn it slowly; observe the underside.',
+        'Hold against light if available.',
+        'Practice for 5 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'Outdoor or seasonal practice',
+        'Botany and nature curiosity',
+        'For students who connect to trees',
+        'Autumn (color change as impermanence)',
+        'Art-class observation'
+      ],
+      whenItDoesntHelp: 'Students with severe allergies; those in environments where leaves are unavailable.',
+      variations: [
+        'Compare leaves from different trees.',
+        'Press a leaf as a long-term object.',
+        'Combine with drawing the leaf afterward.'
+      ],
+      research: 'Goethean observation (Henri Bortoft) and phenomenology of nature.'
+    },
+    {
+      id: 'pebble',
+      name: 'A pebble',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'A small pebble is a tiny piece of Earth. Look at the colors and tiny patterns on it.',
+        middle: 'A pebble carries millennia of slow shaping; close observation invites geological imagination.',
+        high: 'Lithic objects offer texture, color depth, and an opening to deep time as part of contemplative inquiry.'
+      },
+      howToUseAsAnchor: [
+        'Hold a pebble at arm\'s length.',
+        'Gaze softly, exploring texture and color.',
+        'Notice cracks, flecks, sheen.',
+        'Imagine where this stone has been.',
+        'Return to the visual surface.',
+        'Practice for 5 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'Earth-science and geology students',
+        'For students who collect rocks',
+        'Outdoor walking meditation pause',
+        'Beach or stream-side practice',
+        'For students drawn to the timeless'
+      ],
+      whenItDoesntHelp: 'Students who feel overwhelmed by deep-time concepts.',
+      variations: [
+        'Switch between sedimentary, igneous, metamorphic samples.',
+        'Combine with a story about where you found it.',
+        'Use a polished crystal for color (with respect to cultural use).'
+      ],
+      research: 'Object-focused meditation across traditions; deep-time contemplation (Macy 2007).'
+    },
+    {
+      id: 'artwork',
+      name: 'A piece of artwork',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'Look at a picture or painting you like for a long time. Notice things you did not see before.',
+        middle: 'Sustained gazing at one artwork (10+ minutes) reveals layers invisible to brief glances.',
+        high: 'Slow looking practice in museums extends gaze beyond habitual 17-second average to 10+ minutes; reveals composition, brushwork, story.'
+      },
+      howToUseAsAnchor: [
+        'Choose one artwork you love (poster, postcard, screen).',
+        'Sit at comfortable viewing distance.',
+        'Gaze softly across the whole image first.',
+        'Move attention to one detail, then another.',
+        'Return to the whole.',
+        'Practice for 10 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Art students',
+        'Museum visits',
+        'For students who connect through visual art',
+        'Cultivating slow attention',
+        'Pre-creative-writing prompt'
+      ],
+      whenItDoesntHelp: 'Students who find a chosen artwork triggering; those who feel pressured to interpret.',
+      variations: [
+        'Switch artwork weekly.',
+        'Pair with a journal entry afterward.',
+        'Compare two artworks side by side.'
+      ],
+      research: 'Slow Art Day movement; Tishman (2017) Slow Looking.'
+    },
+    {
+      id: 'window_view',
+      name: 'A window view',
+      sense: 'visual',
+      category: 'place',
+      description: {
+        elementary: 'Look out a window for a while. Watch the sky, trees, or buildings without thinking too hard.',
+        middle: 'A window view offers a slowly changing scene: clouds, light, leaves, people. It is alive but not demanding.',
+        high: 'Window-gazing combines distance vision (rest from screens) with slowly evolving stimuli; restorative attention theory (Kaplan 1995).'
+      },
+      howToUseAsAnchor: [
+        'Sit near a window.',
+        'Let your gaze rest on the farthest visible point.',
+        'Allow attention to wander across the scene.',
+        'Notice slow changes (light, clouds, shadows).',
+        'Do not try to control where attention goes.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Screen-fatigue recovery',
+        'Office or classroom breaks',
+        'For students who feel boxed in',
+        'Daydream-style practice',
+        'Weather-watching'
+      ],
+      whenItDoesntHelp: 'Windowless rooms; views onto distressing scenes (construction, traffic accidents).',
+      variations: [
+        'Switch windows in the home or classroom.',
+        'Pair with sky-only gazing.',
+        'Watch a single tree across seasons.'
+      ],
+      research: 'Kaplan (1995) attention restoration theory; restorative environments reduce mental fatigue.'
+    },
+    {
+      id: 'mandala_pattern',
+      name: 'A geometric pattern (mandala)',
+      sense: 'visual',
+      category: 'object',
+      description: {
+        elementary: 'A mandala is a beautiful circle full of patterns. Look at the center, then let your eyes follow the lines outward.',
+        middle: 'Mandalas are symmetric circular patterns used in many traditions to focus attention and represent wholeness.',
+        high: 'Mandala practice integrates symmetry perception, center-out attention, and symbolic representation; Jung used mandalas for integration work.'
+      },
+      howToUseAsAnchor: [
+        'Place a printed mandala at eye level.',
+        'Begin by gazing at the center.',
+        'Allow attention to follow lines outward.',
+        'Return to center.',
+        'Continue for the duration of practice.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'For students who like pattern and symmetry',
+        'Coloring mandalas before sitting',
+        'Cross-cultural practice (Buddhist, Hindu, Indigenous)',
+        'Art-therapy contexts',
+        'After scattered or fragmented experiences'
+      ],
+      whenItDoesntHelp: 'Students with vertigo triggered by geometric patterns; those uncomfortable with religious imagery (use secular geometric).',
+      variations: [
+        'Color a mandala by hand before gazing at it.',
+        'Use a Tibetan thangka image.',
+        'Use a flower-of-life secular pattern.'
+      ],
+      research: 'Jung\'s mandala work; mandala coloring reduces anxiety (Curry 2005).'
+    },
+
+    // ============================================================
+    // INTEROCEPTIVE ANCHORS (10) - internal body signals
+    // ============================================================
+    {
+      id: 'heartbeat_chest',
+      name: 'Heartbeat (felt in chest)',
+      sense: 'interoceptive',
+      category: 'body',
+      description: {
+        elementary: 'Put your hand on your chest and feel your heart beating. It is always working for you.',
+        middle: 'The heartbeat felt directly through the chest is one of the most intimate anchors available.',
+        high: 'Interoceptive cardiac awareness is foundational for emotion regulation (Craig 2009); the felt heartbeat anchors attention in body-state perception.'
+      },
+      howToUseAsAnchor: [
+        'Place one hand over the heart.',
+        'Sit quietly and feel for the beat.',
+        'Notice rhythm, strength, pace.',
+        'Do not try to slow or speed it.',
+        'Rest attention there.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Self-compassion practice',
+        'For students who feel disconnected from body',
+        'Grief',
+        'Heart-rate-variability training (with biofeedback)',
+        'Loving-kindness preparation'
+      ],
+      whenItDoesntHelp: 'Students with cardiac anxiety, panic disorder centered on heart-awareness, or cardiac conditions where attention worsens distress.',
+      variations: [
+        'Hand to heart and hand to belly together.',
+        'Visualize a warm light at the heart.',
+        'Pair with phrase: \'I am here for me.\''
+      ],
+      research: 'Cardiac interoception (Craig 2009; Schandry 1981 heartbeat-detection task).'
+    },
+    {
+      id: 'heartbeat_wrist',
+      name: 'Heartbeat felt in wrist',
+      sense: 'interoceptive',
+      category: 'body',
+      description: {
+        elementary: 'Press two fingers gently on your wrist to feel your pulse. It is your heart talking to your hand.',
+        middle: 'Pulse at the radial artery is easily found and gives a clear, rhythmic anchor.',
+        high: 'Radial pulse provides high-confidence cardiac feedback; useful when chest awareness is too intense.'
+      },
+      howToUseAsAnchor: [
+        'Place two fingers (not thumb) on the radial artery (thumb side of wrist).',
+        'Press gently until you feel the pulse.',
+        'Count beats for 30 seconds.',
+        'Release pressure, then find it again.',
+        'Notice rhythm and steadiness.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'For students who find chest awareness too close',
+        'HRV-style training',
+        'After exercise to feel recovery',
+        'Pre-sleep slowdown',
+        'Cardiology-curious students'
+      ],
+      whenItDoesntHelp: 'Students with cardiac conditions or hypochondria around heart rate.',
+      variations: [
+        'Switch between left and right wrist.',
+        'Try the carotid pulse (under jaw).',
+        'Pair with paced breath (one breath per 6 pulses).'
+      ],
+      research: 'Pulse-awareness practices in qigong and yoga; clinical use in biofeedback.'
+    },
+    {
+      id: 'heartbeat_neck',
+      name: 'Heartbeat felt at neck',
+      sense: 'interoceptive',
+      category: 'body',
+      description: {
+        elementary: 'Gently touch the side of your neck under your jaw to feel a strong pulse.',
+        middle: 'Carotid pulse is stronger than radial; it is more intense as an interoceptive anchor.',
+        high: 'Carotid pulse is high-amplitude and easily detected; provides strong cardiac signal for body-awareness training.'
+      },
+      howToUseAsAnchor: [
+        'Place two fingers under jaw on side of neck.',
+        'Apply gentle pressure (never push hard).',
+        'Find the steady pulse.',
+        'Release, then find it again.',
+        'Notice rhythm and strength.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'When wrist pulse is hard to find',
+        'For body-awareness training',
+        'Sports recovery monitoring',
+        'For students learning anatomy'
+      ],
+      whenItDoesntHelp: 'NEVER apply firm pressure to both sides at once (can affect blood flow); skip if dizziness occurs. Students with carotid issues should not use this anchor.',
+      variations: [
+        'Compare left and right.',
+        'Pair with a vagal-tone breathing exercise.',
+        'Use only briefly, then return to wrist.'
+      ],
+      research: 'Carotid pulse is a standard clinical assessment; mindful interoception (Mehling 2018 MAIA scale).'
+    },
+    {
+      id: 'breath_at_nostrils',
+      name: 'Breath at nostrils',
+      sense: 'interoceptive',
+      category: 'breath',
+      description: {
+        elementary: 'Feel the air going in and out at your nose. It is cool going in and warm coming out.',
+        middle: 'Nostril breath awareness focuses on the subtle temperature and movement at the tip of the nose, an advanced concentration anchor.',
+        high: 'Anapanasati at the nostrils is the classical Buddhist concentration object; subtle and demanding of refined attention.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright and close eyes.',
+        'Notice air entering nostrils (cooler).',
+        'Notice air leaving nostrils (warmer).',
+        'Do not control the breath.',
+        'Return to that small zone of sensation whenever attention drifts.',
+        'Practice for 10 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'Long sits in vipassana style',
+        'For experienced practitioners',
+        'For students who like subtle anchors',
+        'Yoga and pranayama preparation',
+        'Concentration training'
+      ],
+      whenItDoesntHelp: 'For students with nasal congestion, deviated septum, or breath-related anxiety.',
+      variations: [
+        'Notice one nostril at a time.',
+        'Combine with kapalabhati pranayama (advanced).',
+        'Pair with extended exhale.'
+      ],
+      research: 'Anapanasati (Anapanasati Sutta); foundational across Theravada and MBSR.'
+    },
+    {
+      id: 'breath_chest_rise',
+      name: 'Breath at chest rise/fall',
+      sense: 'interoceptive',
+      category: 'breath',
+      description: {
+        elementary: 'Notice your chest going up when you breathe in, and down when you breathe out.',
+        middle: 'Chest breathing is the most visible and felt; less subtle than nostril breath, more accessible to beginners.',
+        high: 'Thoracic respiratory mechanics provide clear proprioceptive feedback; appropriate for early-stage breath awareness training.'
+      },
+      howToUseAsAnchor: [
+        'Place one hand on the chest.',
+        'Feel chest rise on inhalation, fall on exhalation.',
+        'Notice the pause at top and bottom.',
+        'Do not deepen or change the breath.',
+        'Return to the rise and fall.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Beginner breath awareness',
+        'For students who find nostril breath too subtle',
+        'Mid-thoracic body awareness',
+        'After cardiovascular exercise',
+        'Singers and wind instrumentalists'
+      ],
+      whenItDoesntHelp: 'Students with chest-related anxiety (panic-disorder hyperventilation); habitual shallow breathers may want belly breath instead.',
+      variations: [
+        'Hand on chest plus hand on belly.',
+        'Count chest rises from 1 to 10.',
+        'Notice pause between in and out.'
+      ],
+      research: 'Diaphragmatic versus thoracic breathing; Brown & Gerbarg (2005) breath therapy.'
+    },
+    {
+      id: 'breath_belly_rise',
+      name: 'Breath at belly rise/fall',
+      sense: 'interoceptive',
+      category: 'breath',
+      description: {
+        elementary: 'Put a hand on your belly. When you breathe in, it goes out. When you breathe out, it goes in.',
+        middle: 'Belly (diaphragmatic) breathing is the most regulating breath; it activates the parasympathetic system.',
+        high: 'Diaphragmatic breathing increases vagal tone and is the foundation of most clinical breath-based interventions.'
+      },
+      howToUseAsAnchor: [
+        'Place one hand on the belly, below the navel.',
+        'Let the belly rise on inhalation, fall on exhalation.',
+        'If shallow, do not force; just notice.',
+        'Slowly the belly may take over from the chest.',
+        'Return to the movement whenever attention drifts.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Anxiety, panic, hyperventilation',
+        'For students who chest-breathe under stress',
+        'Pre-sleep wind-down',
+        'Vagal-tone work',
+        'Yoga and qigong preparation'
+      ],
+      whenItDoesntHelp: 'For students with body-image issues around the belly; first practice with hand-on-belly may help build comfort.',
+      variations: [
+        'Lying down with a book on the belly (visible rise).',
+        'Pair with longer exhale (4 in, 6 out).',
+        'Practice supine before sitting.'
+      ],
+      research: 'Brown & Gerbarg (2005); paced breathing for vagal tone (Steffen 2017).'
+    },
+    {
+      id: 'hunger_fullness',
+      name: 'Hunger / fullness state',
+      sense: 'interoceptive',
+      category: 'sensation',
+      description: {
+        elementary: 'Notice how your stomach feels right now. Is it empty? Full? Just right?',
+        middle: 'Tracking hunger and fullness is interoceptive awareness applied to eating; foundational for intuitive eating.',
+        high: 'Hunger-fullness interoception (HFI) is a developmental skill that supports self-regulation around food (Tribole & Resch 2020).'
+      },
+      howToUseAsAnchor: [
+        'Sit quietly and bring attention to the belly.',
+        'Notice fullness, emptiness, or in-between.',
+        'Do not judge or change.',
+        'Rate hunger on a 1 to 10 scale if helpful.',
+        'Return periodically through the day.',
+        'Practice as ambient cue, 3 to 5 times daily.'
+      ],
+      whenItHelps: [
+        'Intuitive-eating learning',
+        'For students rebuilding hunger cues after dieting or restriction',
+        'Around mealtimes',
+        'For students who eat for emotional reasons',
+        'Pre- and post-meal'
+      ],
+      whenItDoesntHelp: 'Students in acute eating-disorder treatment without clinical supervision; always handle with care.',
+      variations: [
+        'Track hunger before and after meals.',
+        'Pair with a food-mood journal.',
+        'Practice before deciding what to eat.'
+      ],
+      research: 'Tribole & Resch (2020) Intuitive Eating; clinical use in eating-disorder recovery.'
+    },
+    {
+      id: 'temperature_zones',
+      name: 'Temperature (warm/cool zones in body)',
+      sense: 'interoceptive',
+      category: 'sensation',
+      description: {
+        elementary: 'Scan your body and notice where you feel warm and where you feel cool. Hands are often cooler than feet.',
+        middle: 'Body-temperature awareness is a granular interoceptive practice; warm and cool zones reflect circulation and arousal.',
+        high: 'Cutaneous and visceral temperature awareness builds body-mapping skills useful for emotion regulation and somatic therapy.'
+      },
+      howToUseAsAnchor: [
+        'Sit comfortably and close eyes.',
+        'Scan from feet upward, noticing temperature.',
+        'Identify warmest and coolest zones.',
+        'Do not change anything.',
+        'Repeat the scan slowly.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Body-scan augmentation',
+        'For students who like temperature precision',
+        'Yoga nidra style practice',
+        'Trauma-informed body mapping',
+        'Cold-weather and warm-weather contrast practice'
+      ],
+      whenItDoesntHelp: 'Students with severe peripheral neuropathy or who feel disturbed by body asymmetries.',
+      variations: [
+        'Compare left side to right.',
+        'Compare hands to feet.',
+        'Notice changes during the practice.'
+      ],
+      research: 'MAIA-2 multidimensional interoceptive awareness scale (Mehling 2018).'
+    },
+    {
+      id: 'pulse_fingertips',
+      name: 'Pulse in fingertips',
+      sense: 'interoceptive',
+      category: 'body',
+      description: {
+        elementary: 'Be very still. Can you feel a tiny pulse in your fingertips?',
+        middle: 'Capillary pulse in fingertips is faint but present; finding it is itself a concentration exercise.',
+        high: 'Distal microvascular pulse perception is an advanced interoceptive skill requiring stillness and refined attention.'
+      },
+      howToUseAsAnchor: [
+        'Rest hands palm-up in lap, very still.',
+        'Soften gaze or close eyes.',
+        'Search for a slight throb at fingertips.',
+        'When found, rest there.',
+        'If lost, do not strain; allow it to return.',
+        'Practice for 5 to 12 minutes.'
+      ],
+      whenItHelps: [
+        'For experienced practitioners',
+        'Concentration training',
+        'After warming hands',
+        'For students who like subtle work',
+        'Following a body scan'
+      ],
+      whenItDoesntHelp: 'Students with cold extremities, neuropathy, or who feel frustrated by subtle anchors.',
+      variations: [
+        'Warm hands first (rub together or hold warm cup).',
+        'Compare left and right.',
+        'Pair with wrist-pulse cross-check.'
+      ],
+      research: 'Subtle-body practices in vipassana and qigong; clinical interoception research (Khalsa 2017).'
+    },
+    {
+      id: 'pulse_eyelids',
+      name: 'Pulse behind closed eyelids',
+      sense: 'interoceptive',
+      category: 'body',
+      description: {
+        elementary: 'Close your eyes and look at the inside of your eyelids. Sometimes you can see colors or feel a tiny pulse.',
+        middle: 'Behind closed lids, gentle pulse and color patterns can sometimes be perceived; advanced subtle awareness.',
+        high: 'Retinal and orbital microcirculation produce subtle pulse and phosphene perception with sustained attention.'
+      },
+      howToUseAsAnchor: [
+        'Close eyes gently.',
+        'Allow eyes to relax behind lids.',
+        'Notice any subtle pulse around the eyes.',
+        'Notice colors or shapes (phosphenes).',
+        'Do not strain or focus too hard.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'Experienced practitioners',
+        'For students who enjoy subtle phenomena',
+        'Yoga nidra preparation',
+        'Pre-sleep practice',
+        'Following candle gazing (after-images)'
+      ],
+      whenItDoesntHelp: 'For students with eye strain, migraines, or visual disturbances that worsen with attention to eye region.',
+      variations: [
+        'Pair with palming (cup hands over eyes).',
+        'Combine with breath at eye area.',
+        'Use only briefly to prevent strain.'
+      ],
+      research: 'Phosphene phenomenology (Oster 1970); contemplative reports across traditions.'
+    },
+
+    // ============================================================
+    // VESTIBULAR / PROPRIOCEPTIVE ANCHORS (8)
+    // ============================================================
+    {
+      id: 'slow_sway_side',
+      name: 'Slow sway side-to-side',
+      sense: 'vestibular',
+      category: 'movement',
+      description: {
+        elementary: 'Stand or sit and gently rock side to side, like a tree in a soft wind.',
+        middle: 'Slow lateral sway activates the vestibular system gently and is widely soothing across ages.',
+        high: 'Lateral vestibular activation through slow sway has measurable calming effect (vagal nerve afferents).'
+      },
+      howToUseAsAnchor: [
+        'Sit or stand comfortably.',
+        'Slowly shift weight to one side, then the other.',
+        'Move only a few inches each way.',
+        'Sync with breath if desired.',
+        'Return to center occasionally.',
+        'Practice for 3 to 10 minutes.'
+      ],
+      whenItHelps: [
+        'Self-soothing across all ages (cribs, rocking chairs)',
+        'Anxiety',
+        'Pre-sleep',
+        'For students who rock naturally (autistic, neurotypical)',
+        'After hard conversations'
+      ],
+      whenItDoesntHelp: 'Students with vestibular disorders; those who associate rocking with childhood trauma.',
+      variations: [
+        'Sit on a balance ball.',
+        'Use a rocking chair.',
+        'Vary speed (slower is usually calmer).'
+      ],
+      research: 'Vestibular stimulation effects on arousal regulation (Krueger 2018).'
+    },
+    {
+      id: 'gentle_rocking_fb',
+      name: 'Gentle rocking forward-back',
+      sense: 'vestibular',
+      category: 'movement',
+      description: {
+        elementary: 'Rock slowly forward and back, like you are in a boat on calm water.',
+        middle: 'Sagittal-plane rocking provides a different vestibular input than side-to-side; some find it more regulating.',
+        high: 'Anterior-posterior rocking stimulates otolith organs; davening (Jewish prayer) and Hindu prayer incorporate this naturally.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright on cushion or chair.',
+        'Gently rock forward, then back.',
+        'Keep range small.',
+        'Optionally sync with breath.',
+        'Return to stillness when ready.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'For students who naturally rock (autistic adults often do)',
+        'Religious practice carryover',
+        'Anxiety regulation',
+        'Pre-prayer or contemplation',
+        'Self-soothing'
+      ],
+      whenItDoesntHelp: 'Students with back pain or balance issues; those for whom rocking is socially stigmatized in their setting.',
+      variations: [
+        'Rock with hands on knees (more support).',
+        'Rock while seated on a yoga block.',
+        'Try cross-legged on cushion versus chair.'
+      ],
+      research: 'Repetitive vestibular input as self-regulation (Repp 2011); davening literature (Diamant 2014).'
+    },
+    {
+      id: 'spinning_slowly',
+      name: 'Spinning slowly (3 turns each way)',
+      sense: 'vestibular',
+      category: 'movement',
+      description: {
+        elementary: 'Stand and turn slowly in one direction three times. Then the other direction. Notice how it feels.',
+        middle: 'Slow controlled spinning resets the vestibular system; used in Sufi whirling and play-based regulation.',
+        high: 'Controlled rotational vestibular input has documented arousal-modulation effects; whirling traditions formalize this.'
+      },
+      howToUseAsAnchor: [
+        'Stand in a clear space.',
+        'Turn slowly in one direction, eyes soft or fixed forward.',
+        'Take 3 to 5 slow turns.',
+        'Stop and feel the after-spin.',
+        'Repeat in opposite direction.',
+        'Practice 2 to 5 minutes total.'
+      ],
+      whenItHelps: [
+        'For students who like movement (kinesthetic learners)',
+        'Vestibular-seeking neurodivergent students',
+        'Transition between activities',
+        'Wake-up practice',
+        'Sufi-inspired contemplation'
+      ],
+      whenItDoesntHelp: 'Students with vestibular disorders, motion sickness, or seizure history.',
+      variations: [
+        'Sufi whirling (advanced, with instruction).',
+        'Slow walking circle versus stationary turn.',
+        'Sit and turn in a swivel chair instead.'
+      ],
+      research: 'Sufi whirling (Mevlevi tradition); vestibular regulation research (Ayres 1972 sensory integration).'
+    },
+    {
+      id: 'head_circles',
+      name: 'Head circles',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Move your head in slow circles. Notice where your neck moves and where it feels tight.',
+        middle: 'Slow head circles map neck mobility and tension; an excellent micro-movement anchor.',
+        high: 'Cervical circumduction provides proprioceptive input through the neck, where chronic tension lives.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright with shoulders relaxed.',
+        'Slowly drop chin to chest.',
+        'Move ear toward shoulder, back of head dropping back, other ear to other shoulder.',
+        'Continue in slow circle.',
+        'Reverse direction.',
+        'Practice 2 to 5 minutes.'
+      ],
+      whenItHelps: [
+        'Tension in neck (sustained screen use)',
+        'Pre-meditation warmup',
+        'After hours of seated work',
+        'Beginning of body scan',
+        'For students with chronic neck tension'
+      ],
+      whenItDoesntHelp: 'Students with neck injuries, recent whiplash, or vertebral instability. Skip if dizziness occurs.',
+      variations: [
+        'Smaller circles for sensitive necks.',
+        'Half circles (front only) if back hurts.',
+        'Pair with shoulder rolls.'
+      ],
+      research: 'Cervical range-of-motion practices in physical therapy; widely used in yoga warmups.'
+    },
+    {
+      id: 'head_tipping',
+      name: 'Tipping head left-to-right',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Slowly tip your head so your ear comes toward your shoulder. Then the other side.',
+        middle: 'Lateral head tipping stretches sternocleidomastoid and stimulates vestibular cues.',
+        high: 'Lateral cervical flexion releases SCM and trapezius tension; combined vestibular plus proprioceptive input.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright.',
+        'Tip head right ear toward right shoulder.',
+        'Hold for 3 to 5 breaths.',
+        'Return to center.',
+        'Tip left ear toward left shoulder.',
+        'Hold and return.',
+        'Practice 3 to 5 minutes.'
+      ],
+      whenItHelps: [
+        'Office workers, students with screen-fatigue',
+        'Pre-meditation tension release',
+        'Warmup for body scan',
+        'Migraine-prevention stretches (gentle)',
+        'Yoga preparation'
+      ],
+      whenItDoesntHelp: 'Acute neck pain; students recovering from injury.',
+      variations: [
+        'Add light hand pressure on head for deeper stretch.',
+        'Combine with breath.',
+        'Pair with shoulder blade squeezes.'
+      ],
+      research: 'Yoga and physical therapy standard stretch.'
+    },
+    {
+      id: 'balance_closed_eyes',
+      name: 'Standing balance with closed eyes',
+      sense: 'proprioceptive',
+      category: 'body',
+      description: {
+        elementary: 'Stand with your feet together and close your eyes. Notice how your body works to stay still.',
+        middle: 'Closing the eyes while standing reveals how much we use vision for balance; the body must work harder.',
+        high: 'Eyes-closed standing balance trains proprioception and vestibular reliance; Romberg test in neurology.'
+      },
+      howToUseAsAnchor: [
+        'Stand near a wall or chair for safety.',
+        'Feet together or hip-width apart.',
+        'Close eyes.',
+        'Notice the small adjustments your body makes.',
+        'Open eyes when finished.',
+        'Practice for 30 to 90 seconds.'
+      ],
+      whenItHelps: [
+        'For students who like physical challenge',
+        'Yoga warmup',
+        'Sports practice',
+        'Neurodevelopmental therapy (with supervision)',
+        'Pre-tree-pose'
+      ],
+      whenItDoesntHelp: 'Elderly with fall risk; students with severe vestibular issues; never without something to grab.',
+      variations: [
+        'Feet wider for easier balance.',
+        'Tree pose with eyes closed (advanced).',
+        'One foot in front of the other (heel-toe).'
+      ],
+      research: 'Romberg test in clinical neurology; balance training in PT.'
+    },
+    {
+      id: 'sitting_balance_awareness',
+      name: 'Sitting balance awareness',
+      sense: 'proprioceptive',
+      category: 'body',
+      description: {
+        elementary: 'Sit very still and notice how you are balanced. Are you leaning? Centered?',
+        middle: 'Sitting balance awareness reveals tiny imbalances and tensions normally invisible.',
+        high: 'Postural awareness while seated trains alignment and reveals chronic asymmetries; foundational in yoga and Pilates.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright without back support.',
+        'Notice if you lean left, right, forward, back.',
+        'Adjust gently to center.',
+        'Feel the small balance adjustments.',
+        'Maintain for the practice.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Pre-meditation alignment',
+        'For students with chronic postural issues',
+        'After hours of slumping',
+        'Yoga and Pilates carryover',
+        'Trauma-informed body awareness'
+      ],
+      whenItDoesntHelp: 'Students with back pain who need support; those who fixate on perfecting posture.',
+      variations: [
+        'Sit on a balance disc for added input.',
+        'Use a backjack for support.',
+        'Try seated on the floor cross-legged.'
+      ],
+      research: 'Postural awareness in Alexander Technique and Feldenkrais.'
+    },
+    {
+      id: 'foot_pressure_shift',
+      name: 'Foot pressure shift',
+      sense: 'proprioceptive',
+      category: 'body',
+      description: {
+        elementary: 'Push gently into your feet in different parts: heels, toes, sides. Feel the pressure change.',
+        middle: 'Shifting weight through different parts of the foot maps the plantar surface and increases proprioception.',
+        high: 'Plantar pressure mapping increases sensorimotor integration; useful in PT and balance training.'
+      },
+      howToUseAsAnchor: [
+        'Stand or sit with feet flat on floor.',
+        'Push gently into heels, then toes, then outer edge, then inner edge.',
+        'Notice the felt difference.',
+        'Return to even distribution.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'Standing meditations',
+        'Athletes (foot awareness for sport)',
+        'For students with flat feet or other foot issues',
+        'Tai chi warmup',
+        'Walking meditation prep'
+      ],
+      whenItDoesntHelp: 'Students with foot pain or plantar fasciitis flare-ups.',
+      variations: [
+        'Barefoot on different textures (carpet, wood, grass).',
+        'Roll a small ball under each foot.',
+        'Pair with breath: inhale on shift, exhale on return.'
+      ],
+      research: 'Plantar somatosensation in balance (Meyer 2004).'
+    },
+
+    // ============================================================
+    // MOVEMENT-BASED ANCHORS (6)
+    // ============================================================
+    {
+      id: 'walking_footfall',
+      name: 'Walking footfall',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Walk slowly and feel each foot land. Heel, then ball of foot, then toes.',
+        middle: 'Walking meditation breaks down each step into stages: lifting, moving, placing.',
+        high: 'Cankama (walking meditation) is a classical Buddhist practice; trains attention to gross motor movement in real time.'
+      },
+      howToUseAsAnchor: [
+        'Walk a known loop slowly.',
+        'Feel each part of the foot as it lands.',
+        'Move slowly enough that each step has time.',
+        'Pair with phrase: \'lifting, moving, placing\' silently.',
+        'Pause occasionally and feel stillness.',
+        'Practice for 10 to 30 minutes.'
+      ],
+      whenItHelps: [
+        'When sitting is unbearable',
+        'Between sits to refresh',
+        'For students who need movement',
+        'Outdoor practice',
+        'After meals (less drowsy than sitting)'
+      ],
+      whenItDoesntHelp: 'Students with mobility limitations (offer seated alternative); spaces with no walking path.',
+      variations: [
+        'Walk barefoot on grass or sand.',
+        'Slow walking versus normal pace.',
+        'Walk a labyrinth.'
+      ],
+      research: 'Cankama in Pali Buddhism; clinical walking meditation (Edwards 2018).'
+    },
+    {
+      id: 'cycling_cadence',
+      name: 'Cycling cadence',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Riding a bike at a steady speed is its own kind of calm. Notice the pedals turning.',
+        middle: 'A steady cycling rhythm becomes meditative; the body keeps the pattern while the mind settles.',
+        high: 'Repetitive aerobic motion at moderate intensity induces flow states (Csikszentmihalyi 1990); cyclists report meditative quality.'
+      },
+      howToUseAsAnchor: [
+        'Ride a familiar route at moderate, steady pace.',
+        'Match breath to cadence (every 3 pedal strokes inhale, every 3 exhale).',
+        'Let mind rest in rhythm.',
+        'When thoughts intrude, return to cadence.',
+        'Pause occasionally to feel stillness.',
+        'Practice for 20 to 60 minutes.'
+      ],
+      whenItHelps: [
+        'For active students who cannot sit still',
+        'Commuting',
+        'For students with ADHD',
+        'Outdoor practice',
+        'Cardiovascular plus contemplative dual purpose'
+      ],
+      whenItDoesntHelp: 'Students without access to bicycles or safe routes; in traffic where vigilance is needed.',
+      variations: [
+        'Use stationary bike for indoor practice.',
+        'Pair with bird-listening on quiet routes.',
+        'Spin slower for deeper meditative state.'
+      ],
+      research: 'Aerobic exercise and contemplation (Edwards 2018); flow states in cycling.'
+    },
+    {
+      id: 'breath_arm_sync',
+      name: 'Breath-arm raise sync',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Raise your arms up as you breathe in, lower them as you breathe out.',
+        middle: 'Coordinating arm movement with breath links body and breath in a single rhythm.',
+        high: 'Synchronizing limb movement with respiration is foundational in qigong, tai chi, and yoga sun salutations.'
+      },
+      howToUseAsAnchor: [
+        'Stand with arms at sides.',
+        'Slowly raise arms overhead as you inhale.',
+        'Slowly lower as you exhale.',
+        'Move only as fast as the breath allows.',
+        'Repeat 6 to 12 cycles.',
+        'Practice for 3 to 8 minutes.'
+      ],
+      whenItHelps: [
+        'Pre-sitting warmup',
+        'For students who need movement',
+        'Yoga and qigong practice',
+        'Morning energizer',
+        'After long sitting'
+      ],
+      whenItDoesntHelp: 'Students with shoulder injuries; modify with elbows bent.',
+      variations: [
+        'Tai chi opening posture.',
+        'Sun salutation breath synchronization.',
+        'Smaller movement (just hands) seated.'
+      ],
+      research: 'Qigong and tai chi breath-movement coordination (Jahnke 2010).'
+    },
+    {
+      id: 'stretching_one_part',
+      name: 'Stretching one part of body',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Stretch one body part very slowly (like your arm) and pay attention to everything that moves.',
+        middle: 'Slow stretching of a single body part is a moving meditation; sensation is the anchor.',
+        high: 'Targeted slow stretching with attention to sensation engages somatic awareness more deeply than fast stretching.'
+      },
+      howToUseAsAnchor: [
+        'Choose one body part (arm, leg, back).',
+        'Move slowly into a comfortable stretch.',
+        'Notice every sensation (pulling, warmth, edges).',
+        'Hold for 30 to 60 seconds.',
+        'Release slowly.',
+        'Repeat with another part or same one.',
+        'Practice 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'After sitting for long periods',
+        'Before bed',
+        'For students who like felt-sense work',
+        'Yoga and stretching practice',
+        'Injury recovery (gentle)'
+      ],
+      whenItDoesntHelp: 'Acute injuries without PT guidance.',
+      variations: [
+        'Standing forward fold.',
+        'Seated single-leg stretch.',
+        'Shoulder rolls.'
+      ],
+      research: 'Yin yoga and slow-stretch contemplation (Grilley 2002).'
+    },
+    {
+      id: 'tai_chi_opening',
+      name: 'Tai chi opening movement',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'Stand and slowly raise your arms in front of you, like pushing through warm water.',
+        middle: 'The opening of tai chi is a single slow gesture that becomes a complete meditation.',
+        high: 'Wuji-into-Taiji opening posture initiates tai chi; the slow rising of arms is itself a complete practice.'
+      },
+      howToUseAsAnchor: [
+        'Stand with feet shoulder-width.',
+        'Knees soft, arms at sides.',
+        'Slowly raise arms forward, palms down, to shoulder height.',
+        'Pause, then bend elbows and draw hands toward chest.',
+        'Slowly lower arms.',
+        'Repeat 5 to 10 times.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Tai chi practitioners',
+        'For students who like slow movement',
+        'Pre-sitting warmup',
+        'Morning practice',
+        'Mind-body integration'
+      ],
+      whenItDoesntHelp: 'Students with severe shoulder limitations.',
+      variations: [
+        'Add visualizations (pushing energy, parting water).',
+        'Combine with breath.',
+        'Repeat in different directions.'
+      ],
+      research: 'Tai chi clinical research (Wayne 2013 Harvard Medical School Guide).'
+    },
+    {
+      id: 'sun_salutation',
+      name: 'Yoga sun salutation breath',
+      sense: 'proprioceptive',
+      category: 'movement',
+      description: {
+        elementary: 'A yoga sun salutation is a sequence of poses that flows with your breath.',
+        middle: 'Surya namaskar links 8 to 12 poses to inhalations and exhalations in a flowing sequence.',
+        high: 'Sun Salutation A (Ashtanga) is a complete vinyasa sequence linking breath to movement in established choreography.'
+      },
+      howToUseAsAnchor: [
+        'Learn the basic sequence from a yoga teacher or video.',
+        'Move through poses, one per breath.',
+        'Pay attention only to breath and movement.',
+        'Avoid pushing the body.',
+        'Repeat 3 to 6 rounds.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Morning practice',
+        'For yoga practitioners',
+        'Cardiovascular warmup',
+        'For students who like flowing sequences',
+        'Pre-sitting body warmup'
+      ],
+      whenItDoesntHelp: 'Students with wrist, shoulder, or back issues without modifications.',
+      variations: [
+        'Modified version with hands on a chair.',
+        'Sun Salutation B for more challenge.',
+        'Half-sun salutation for gentler practice.'
+      ],
+      research: 'Yoga clinical effectiveness (Cramer 2018 systematic reviews).'
+    },
+
+    // ============================================================
+    // PLACE ANCHORS (5)
+    // ============================================================
+    {
+      id: 'current_room_features',
+      name: 'Your current room\'s specific features',
+      sense: 'visual',
+      category: 'place',
+      description: {
+        elementary: 'Look around the room you are in. Name 3 things you see, 2 sounds, and 1 thing you feel.',
+        middle: 'Specific orienting to the current environment is a foundational grounding practice (5-4-3-2-1 method).',
+        high: 'Environmental orienting is the basis of grounding in trauma-focused work; sensory-specific naming interrupts dissociation.'
+      },
+      howToUseAsAnchor: [
+        'Sit and look around your room.',
+        'Name 5 things you can see.',
+        'Name 4 things you can feel.',
+        'Name 3 things you can hear.',
+        'Name 2 things you can smell.',
+        'Name 1 thing you can taste.',
+        'Practice for 5 minutes.'
+      ],
+      whenItHelps: [
+        'Dissociation episodes',
+        'Anxiety',
+        'Pre-test grounding',
+        'Trauma-informed practice',
+        'When abstract meditation feels destabilizing'
+      ],
+      whenItDoesntHelp: 'Environments that are themselves triggering (loud, chaotic, unsafe).',
+      variations: [
+        'Shorten to 3-2-1 for quick reset.',
+        'Walk around the room first.',
+        'Pair with breath.'
+      ],
+      research: 'Grounding techniques (Najavits 2002 Seeking Safety).'
+    },
+    {
+      id: 'safe_place_visualization',
+      name: 'A safe place visualization',
+      sense: 'visual',
+      category: 'place',
+      description: {
+        elementary: 'Close your eyes and imagine a place where you feel safe. It can be real or made up.',
+        middle: 'Visualizing a safe place activates calm and provides an internal refuge.',
+        high: 'Safe-place imagery is foundational in EMDR resourcing and somatic experiencing.'
+      },
+      howToUseAsAnchor: [
+        'Close eyes (or keep open if needed).',
+        'Imagine a place where you feel completely safe.',
+        'Add detail: what you see, hear, smell, feel.',
+        'Notice your body in that place.',
+        'Rest in the imagery.',
+        'Return when needed (anchored memory).',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'Trauma-informed practice',
+        'Anxiety',
+        'Pre-sleep',
+        'EMDR resourcing',
+        'For students who have lived through unsafe places'
+      ],
+      whenItDoesntHelp: 'For students who cannot find a safe place in memory or imagination; consider a present-moment anchor instead.',
+      variations: [
+        'Use a real place you have been.',
+        'Use a place from a book or movie.',
+        'Create a composite ideal place.'
+      ],
+      research: 'EMDR safe-place protocol (Shapiro 2001); SE container exercise (Levine 1997).'
+    },
+    {
+      id: 'favorite_chair',
+      name: 'Your favorite chair',
+      sense: 'visual',
+      category: 'place',
+      description: {
+        elementary: 'Sit in your favorite chair. Feel how it knows your shape.',
+        middle: 'A favorite chair is a microenvironment of safety; sitting there is itself a regulation cue.',
+        high: 'Repeated use of a single seat for practice creates conditioned association with calm.'
+      },
+      howToUseAsAnchor: [
+        'Sit in your favorite chair.',
+        'Notice how it feels familiar.',
+        'Settle in and feel supported.',
+        'Use this as anchor throughout practice.',
+        'Return mentally to the chair when away.',
+        'Practice for any duration.'
+      ],
+      whenItHelps: [
+        'Daily home practice',
+        'For students who like ritual and place',
+        'Reliable anchor at home',
+        'Post-difficult-day recovery',
+        'Reading and contemplation'
+      ],
+      whenItDoesntHelp: 'When away from home; for students without a designated chair.',
+      variations: [
+        'Bring a small cushion to use across chairs.',
+        'Use the same blanket for any chair.',
+        'Decorate a chair as a practice space.'
+      ],
+      research: 'Environment and habit (James 1890; classical conditioning in mindfulness).'
+    },
+    {
+      id: 'specific_tree',
+      name: 'A specific tree you know',
+      sense: 'visual',
+      category: 'place',
+      description: {
+        elementary: 'Pick one tree you see often. Visit it and look at it as your meditation place.',
+        middle: 'A single named tree (returned to repeatedly) becomes a witness and partner in practice.',
+        high: 'Relational engagement with a specific tree builds eco-contemplative grounding (Macy 2007).'
+      },
+      howToUseAsAnchor: [
+        'Choose one accessible tree.',
+        'Visit weekly or daily.',
+        'Sit or stand near it.',
+        'Notice it without trying to analyze.',
+        'Track its changes across seasons.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Outdoor practice',
+        'For students who connect to nature',
+        'Long-term contemplative practice',
+        'Grief work (trees as witnesses)',
+        'Eco-contemplative tradition'
+      ],
+      whenItDoesntHelp: 'Urban environments without accessible trees; students who cannot leave home.',
+      variations: [
+        'A houseplant indoors.',
+        'A photographed tree from far away.',
+        'Track this tree through a year.'
+      ],
+      research: 'Eco-contemplative work (Macy 2007 Active Hope); forest bathing (Park 2010 shinrin-yoku).'
+    },
+    {
+      id: 'patch_of_sky',
+      name: 'A specific patch of sky',
+      sense: 'visual',
+      category: 'place',
+      description: {
+        elementary: 'Look at the same piece of sky every day. It always looks different.',
+        middle: 'A consistent view of sky reveals weather, light, and time in ways we usually miss.',
+        high: 'Sky-gazing across seasons is taught in Dzogchen and used in contemporary nature-based contemplation.'
+      },
+      howToUseAsAnchor: [
+        'Choose a window or outdoor spot with sky view.',
+        'Visit at the same time daily if possible.',
+        'Gaze softly at the sky.',
+        'Notice color, clouds, light, birds.',
+        'Allow attention to drift across the view.',
+        'Practice for 5 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'For students who feel boxed in indoors',
+        'Anywhere with sky access',
+        'Weather-watching',
+        'Daydreamer-friendly',
+        'Dzogchen sky-gazing tradition'
+      ],
+      whenItDoesntHelp: 'Students with light sensitivity (avoid direct sun); environments without sky view.',
+      variations: [
+        'Lie down and look straight up.',
+        'Track one specific cloud type (cirrus, cumulus).',
+        'Pair with bird-spotting.'
+      ],
+      research: 'Sky-gazing (nam-mkha\' arted) in Dzogchen tradition; restorative environments (Kaplan 1995).'
+    },
+
+    // ============================================================
+    // COMPOSITE ANCHORS (5)
+    // ============================================================
+    {
+      id: 'five_senses_one_at_time',
+      name: 'The 5 senses one at a time',
+      sense: 'auditory',
+      category: 'sensation',
+      description: {
+        elementary: 'Spend 1 minute on each sense: seeing, hearing, smelling, tasting, feeling. That is one round of 5 minutes.',
+        middle: 'Rotating attention through each sense in turn is a structured awareness practice that prevents fixation.',
+        high: 'Sequential modality scanning trains attentional flexibility across sensory channels; foundational in body-scan variants.'
+      },
+      howToUseAsAnchor: [
+        'Set a timer or count breaths.',
+        'Spend 60 to 90 seconds on each: sight, sound, smell, taste, touch.',
+        'Notice each sense fully before moving on.',
+        'Do not force.',
+        'Complete one round, then repeat or rest.',
+        'Practice for 5 to 15 minutes.'
+      ],
+      whenItHelps: [
+        'For students who like structure',
+        'Beginner practice',
+        'For students with attention difficulties',
+        'After dissociation',
+        'When breath alone is not engaging enough'
+      ],
+      whenItDoesntHelp: 'Students with sensory processing issues affecting specific senses (may skip or modify).',
+      variations: [
+        'Add 6th sense: interoception.',
+        'Spend longer on the most engaging sense.',
+        'Pair with movement.'
+      ],
+      research: 'Sensory grounding in trauma-informed care (Najavits 2002).'
+    },
+    {
+      id: 'body_breath_together',
+      name: 'Body + breath together',
+      sense: 'interoceptive',
+      category: 'breath',
+      description: {
+        elementary: 'Feel your body and your breath at the same time. Notice both, like listening to two songs.',
+        middle: 'Dual awareness of body and breath builds peripheral attention while maintaining a central focus.',
+        high: 'Open-monitoring of body sensation with breath as primary anchor mirrors advanced vipassana technique.'
+      },
+      howToUseAsAnchor: [
+        'Sit comfortably.',
+        'Maintain awareness of breath at chosen point.',
+        'Simultaneously notice body sensations as they arise.',
+        'Let breath be central, body peripheral.',
+        'Return to breath if attention scatters.',
+        'Practice for 10 to 25 minutes.'
+      ],
+      whenItHelps: [
+        'Intermediate practitioners',
+        'After breath-only basics',
+        'For students who like complexity',
+        'Vipassana style training',
+        'Open-monitoring development'
+      ],
+      whenItDoesntHelp: 'Beginners who lose either focus; students who feel overwhelmed by simultaneity.',
+      variations: [
+        'Body-scan during breath awareness.',
+        'Add sound layer for three-channel practice.',
+        'Cycle between focus and open monitoring.'
+      ],
+      research: 'Focused-attention to open-monitoring progression (Lutz 2008).'
+    },
+    {
+      id: 'sound_breath_together',
+      name: 'Sound + breath together',
+      sense: 'auditory',
+      category: 'breath',
+      description: {
+        elementary: 'Listen to sounds around you and feel your breath at the same time.',
+        middle: 'Pairing breath awareness with ambient sound awareness creates a wider attentional field.',
+        high: 'Dual modality (interoceptive plus exteroceptive auditory) practice expands attentional capacity.'
+      },
+      howToUseAsAnchor: [
+        'Sit and notice breath.',
+        'Allow sounds to enter awareness.',
+        'Do not chase sounds, do not push them away.',
+        'Maintain breath as primary, sound as secondary.',
+        'Return to breath when scattered.',
+        'Practice for 10 to 20 minutes.'
+      ],
+      whenItHelps: [
+        'Practice in noisy environments',
+        'For students who normally find sound distracting',
+        'Acceptance training',
+        'Intermediate practice',
+        'Outdoor sits'
+      ],
+      whenItDoesntHelp: 'In overwhelming sound environments; students with auditory hypersensitivity.',
+      variations: [
+        'Outdoor versus indoor.',
+        'Quiet versus busy environments.',
+        'Add visual softening.'
+      ],
+      research: 'Open-monitoring training (Lutz 2008); shamatha-vipassana progression.'
+    },
+    {
+      id: 'whole_body_awareness',
+      name: 'Whole-body awareness',
+      sense: 'interoceptive',
+      category: 'body',
+      description: {
+        elementary: 'Feel your whole body at once, from head to toes, without picking one part.',
+        middle: 'Whole-body awareness is a panoramic interoceptive practice; advanced because it diffuses attention rather than focuses.',
+        high: 'Holistic somatic field perception is advanced; appears in shikantaza (just sitting) and Dzogchen.'
+      },
+      howToUseAsAnchor: [
+        'Sit upright.',
+        'Briefly scan body from feet to head.',
+        'Then hold the whole body in awareness at once.',
+        'Do not focus on any one part.',
+        'Allow sensations to come and go.',
+        'Practice for 15 to 40 minutes.'
+      ],
+      whenItHelps: [
+        'Advanced practitioners',
+        'Post-body-scan integration',
+        'Zen practice',
+        'For students who like spaciousness',
+        'Long retreats'
+      ],
+      whenItDoesntHelp: 'Beginners (too diffuse); students who lose attention without focus.',
+      variations: [
+        'Pair with sound awareness for full sensory field.',
+        'Add awareness of awareness itself (advanced).',
+        'Practice while walking.'
+      ],
+      research: 'Shikantaza (Dogen); Dzogchen rigpa; open-monitoring meditation.'
+    },
+    {
+      id: 'awareness_of_awareness',
+      name: 'Awareness of awareness itself',
+      sense: 'interoceptive',
+      category: 'sensation',
+      description: {
+        elementary: 'Notice that you are noticing. Try to feel the part of you that is paying attention.',
+        middle: 'Meta-awareness is the practice of attending to the attending itself; advanced and paradoxical.',
+        high: 'Meta-cognitive monitoring or rigpa-style awareness of awareness is the most refined contemplative practice.'
+      },
+      howToUseAsAnchor: [
+        'Sit and notice anything (breath, sound).',
+        'Then notice the noticing.',
+        'Try to feel the awareness that is doing the noticing.',
+        'Do not grasp; the felt sense will slip.',
+        'Return gently.',
+        'Practice for 15 to 45 minutes.'
+      ],
+      whenItHelps: [
+        'Very advanced practitioners',
+        'After years of focused-attention work',
+        'For students with philosophical interest',
+        'Long retreats',
+        'Direct-pointing instructions'
+      ],
+      whenItDoesntHelp: 'Beginners (frustrating); students who need concrete anchors; can destabilize in some cases.',
+      variations: [
+        'After noticing breath, notice that you noticed.',
+        'Sit in silence with no object.',
+        'Resting in open awareness.'
+      ],
+      research: 'Dzogchen pointing-out instructions; mindfulness of mindfulness (sati of sati) in Theravada.'
+    }
+  ];
+var VISUAL_ANCHORS = [
+    {
+      id: 'single_object_desk',
+      name: 'Single Object on Desk',
+      description: 'One stable, neutral object placed at arm\'s length on a desk or table. A book, a mug, a small plant, a wooden block. Eye level or slightly below.',
+      whyTraumaFriendly: 'Eyes-open practice keeps the survivor in the present room rather than dropping into closed-eye internal experience that can flood. A familiar object reassures the nervous system that nothing is changing or threatening.',
+      howToGaze: 'Sit comfortably and let your gaze rest softly on the object. Do not stare hard. Let peripheral vision soften, but keep eyes open. Allow attention to drift across the object\'s surface (color, edge, shadow). Return whenever you notice you have wandered.',
+      durationSec: 90,
+      forContext: 'Trauma-informed practice, dissociation prevention, first time trying meditation after PTSD diagnosis. Also works for testing centers, libraries, study spaces.'
+    },
+    {
+      id: 'plant_or_flower_visual',
+      name: 'Plant or Flower',
+      description: 'A living plant within easy view: pothos, snake plant, monstera, succulent, fresh-cut flower. Indoors or outdoors. Movement (slight leaf sway) is welcome but not required.',
+      whyTraumaFriendly: 'Living plants signal safety (the place is hospitable to life). Plants are non-judgmental and do not require interaction. Visual focus on greenery is the basis of biophilic regulation.',
+      howToGaze: 'Let eyes rest on the plant. Notice color, the way leaves catch light, any movement. Move attention between leaves slowly. If the plant has flowers, allow attention to drift to color and shape. Soft focus throughout.',
+      durationSec: 120,
+      forContext: 'Trauma practice, anxiety, post-conflict cooling. Also great for screen-fatigue breaks.'
+    },
+    {
+      id: 'wall_texture',
+      name: 'Wall Texture',
+      description: 'A textured wall: brick, plaster, wood paneling, painted with visible brushstrokes. Not a blank wall (too featureless). The wall stays still and asks nothing.',
+      whyTraumaFriendly: 'A wall is the ultimate stable object: it has been there before you and will be after. Texture gives attention something to do without overstimulation.',
+      howToGaze: 'Sit several feet back from the wall. Let your gaze rest on one section. Notice the texture (grain, irregularity, color variation). Allow attention to drift slowly across the surface. Return to one spot when wandering.',
+      durationSec: 120,
+      forContext: 'Trauma-informed practice, settings without natural elements, classrooms, dorm rooms. The most universally available trauma-friendly anchor.'
+    },
+    {
+      id: 'window_view_visual',
+      name: 'Window View',
+      description: 'A view through a window: sky, trees, a courtyard, a street. Slow-changing scene with visible distance.',
+      whyTraumaFriendly: 'Distance perception (looking far) reduces hyper-vigilance and helps the eyes relax from screen distance. The window itself frames the view and signals safety (you are inside, the world is outside).',
+      howToGaze: 'Sit at comfortable distance from the window. Let gaze rest on the farthest visible point. Allow attention to wander naturally across the scene. Notice changes in light, movement of leaves or clouds, passing of people or vehicles. No need to focus on any one thing.',
+      durationSec: 180,
+      forContext: 'Trauma practice in any environment with a window. Screen-fatigue recovery. Office breaks. Particularly effective for students who feel boxed in.'
+    },
+    {
+      id: 'own_hand_visual',
+      name: 'Your Own Hand',
+      description: 'Your own hand, held at comfortable distance. Palm or back of hand. Maybe placed on lap with palm up.',
+      whyTraumaFriendly: 'Your own body, looked at gently, can be reclaimed in trauma recovery. The hand is less charged than the face or torso. Always available, no equipment needed.',
+      howToGaze: 'Hold your hand at comfortable distance. Let gaze rest softly on the back of the hand or palm. Notice lines, color, knuckles, veins. Wiggle a finger if you wish. Allow yourself to see the hand as a stranger\'s curiosity might.',
+      durationSec: 90,
+      forContext: 'Trauma-informed body reclaiming, dissociation work, post-injury recovery, in any setting where no external object is available.'
+    },
+    {
+      id: 'floor_pattern',
+      name: 'Floor Pattern',
+      description: 'A pattern on the floor: wood grain, tile pattern, carpet weave, rug design. Something with regularity but not perfect symmetry.',
+      whyTraumaFriendly: 'Looking down can feel safer than looking forward (less interaction). Floor patterns are stable, predictable, and ground (literally).',
+      howToGaze: 'Sit comfortably and let gaze rest on the floor in front of you (3 to 6 feet away). Notice pattern repetition or variation. Allow attention to drift across the floor. Return to one section.',
+      durationSec: 120,
+      forContext: 'Trauma practice when downward gaze feels safest. Settings where wall-gazing feels exposed.'
+    },
+    {
+      id: 'ceiling_pattern',
+      name: 'Ceiling Pattern',
+      description: 'A pattern on the ceiling: acoustic tiles, exposed beams, painted texture, light fixture, ornate molding (in older buildings).',
+      whyTraumaFriendly: 'Looking up changes posture (chin slightly lifted) and breath (chest opens). For students who slump under stress, looking up is a small intervention.',
+      howToGaze: 'Sit upright (or recline) and let gaze rest on the ceiling. Notice pattern, grain, texture. Allow attention to drift. If practiced lying down, this becomes a savasana variant.',
+      durationSec: 120,
+      forContext: 'Trauma practice with relaxation, recovery from forward-bent posture, slumping students, or lying-down practice.'
+    },
+    {
+      id: 'light_fixture',
+      name: 'Light Fixture',
+      description: 'A light fixture: pendant lamp, chandelier, sconce, simple ceiling bulb. Not directly looking into bright bulbs, but at the fixture form.',
+      whyTraumaFriendly: 'Light fixtures are stable, neutral, and often in line of sight. Good for students who do not want to engage with charged content (artwork, mirrors).',
+      howToGaze: 'Let gaze rest on the fixture without staring at the bulb itself. Notice shape, color, shadow. Allow attention to soften.',
+      durationSec: 90,
+      forContext: 'Trauma-informed practice in indoor settings without other anchors. Hotel rooms, hospitals, waiting rooms.'
+    },
+    {
+      id: 'candle_with_safety',
+      name: 'Candle (with safety caveat)',
+      description: 'A small candle at safe distance, on a stable surface, in a room with adult supervision (in schools). Battery LED candles are an equally good alternative.',
+      whyTraumaFriendly: 'Flame movement is alive but predictable; classical trataka. However, for fire-trauma survivors this can be triggering. Always opt-in. LED candles preserve the gentle flicker without the fire-trauma risk.',
+      howToGaze: 'Sit at arm\'s length from the candle (real or LED). Gaze softly at the flame. Try not to blink, but do not strain. When eyes tire, close them and see the afterimage. Open and return to the flame.',
+      durationSec: 180,
+      forContext: 'Trauma-informed practice for students without fire trauma. LED version safe for all settings. Especially powerful for evening or dim-light practice.'
+    },
+    {
+      id: 'singing_bowl_visual',
+      name: 'Singing Bowl (visual + ready to be struck)',
+      description: 'A Tibetan singing bowl placed on a cushion, mallet beside it. Used as visual focus before and between strikes.',
+      whyTraumaFriendly: 'The bowl is a beautiful, stable object that carries meaning (a tool that will sound when ready). Anticipation is contained because you control when it sounds.',
+      howToGaze: 'Sit before the bowl. Let gaze rest on the bowl\'s surface, noticing color, patina, shape. When ready, strike. Watch and listen to the fade. Return to the bowl visually as the tone fades.',
+      durationSec: 240,
+      forContext: 'Trauma-informed practice that integrates sound on the student\'s terms. The student strikes when ready, not when an external schedule dictates.'
+    },
+    {
+      id: 'mandala_drawing',
+      name: 'Mandala Drawing',
+      description: 'A printed or drawn mandala: Buddhist thangka, secular geometric flower of life, Celtic knot. Symmetric circular pattern.',
+      whyTraumaFriendly: 'Symmetry signals safety; circles and mandalas are calming across cultures. The pattern stays still and does not impose.',
+      howToGaze: 'Place mandala at eye level at arm\'s length. Begin gazing at the center. Allow attention to follow lines outward. Return to center. Continue.',
+      durationSec: 180,
+      forContext: 'Trauma practice with structure, for students who like pattern and symmetry. Art-therapy integration. Especially good after coloring a mandala by hand.'
+    },
+    {
+      id: 'geometric_tile',
+      name: 'Geometric Tile',
+      description: 'A single decorative tile: Moroccan, Portuguese azulejo, Islamic geometric, hand-painted folk art. Often in entryways or bathrooms.',
+      whyTraumaFriendly: 'Geometric repetition is calming. Cultural tile traditions are tied to hospitality (entryway tiles welcome guests), reinforcing safety cues.',
+      howToGaze: 'Let gaze rest on the tile. Trace one pattern element with your eyes. Notice repetition. Allow attention to drift across the whole tile.',
+      durationSec: 120,
+      forContext: 'Trauma practice in homes or buildings with decorative tile. Cultural connection for students from tile-using traditions.'
+    },
+    {
+      id: 'tree_outside',
+      name: 'Tree Outside',
+      description: 'A specific tree visible through a window or outdoors. The same tree returned to over time.',
+      whyTraumaFriendly: 'Trees are non-judgmental, ancient, and stable. A specific named tree becomes a witness that the student can return to. Returning to the same tree across seasons builds a relationship that survives the practice itself.',
+      howToGaze: 'Let gaze rest on the tree. Notice trunk, branches, leaves, sky behind. Allow movement (sway, leaves) without trying to control. Return to the tree across days, weeks, months.',
+      durationSec: 240,
+      forContext: 'Trauma practice with eco-contemplative element. Long-term practice (visit same tree weekly). Outdoor or window-side practice.'
+    },
+    {
+      id: 'body_silhouette_mirror',
+      name: 'Body Silhouette in Mirror',
+      description: 'Your own silhouette in a mirror, fully clothed, viewed without judgment. The body as form, not as object of critique.',
+      whyTraumaFriendly: 'For survivors with body trauma, viewing the body neutrally is reclamation work. Doing it through soft visual gaze, not analytical scrutiny, is the trauma-informed approach. ALWAYS opt-in. May not be appropriate for students in active eating-disorder treatment without supervision.',
+      howToGaze: 'Stand or sit in front of a mirror. Let gaze rest on your silhouette. Do not analyze or judge. Notice shape, posture, the fact of having a body. If distress arises, switch to a different anchor.',
+      durationSec: 60,
+      forContext: 'Trauma practice for body reclaiming, with clinical support for body-image work. Skip if not yet appropriate. Hand or feet gazing is a safer entry point.'
+    },
+    {
+      id: 'space_between_self_and_wall',
+      name: 'The Space Between Yourself and the Wall',
+      description: 'The empty volume of air between you and a wall or surface. The space itself, not the wall or yourself.',
+      whyTraumaFriendly: 'Empty space is the most neutral possible anchor. Nothing is there to be triggering. This is the most refined trauma-friendly anchor for advanced practitioners.',
+      howToGaze: 'Sit facing a wall (or any surface) at comfortable distance. Let gaze soften into the volume of air between you. Do not focus on the wall or on yourself. Rest attention in the in-between.',
+      durationSec: 180,
+      forContext: 'Advanced trauma-informed practice. For students who have done substantial work and want a refined anchor. Also a Zen-inflected practice (wall-gazing in zazen, but with space added).'
+    }
+  ];
+
   var GRATITUDE_PROMPTS = {
     elementary: [
       'What made you smile today?',
@@ -14482,4194 +19613,20 @@ window.SelHub = window.SelHub || {
 
   // ── Gratitude Prompts (200+) ──
   // Specific prompts students can write or reflect on
-  var GRATITUDE_PROMPT_BANK = [
-    { id: 'p_001', prompt: 'Someone who made you laugh today', forBand: 'all', category: 'people' },
-    { id: 'p_002', prompt: 'A small comfort you used today', forBand: 'all', category: 'simple' },
-    { id: 'p_003', prompt: 'A sound you heard that made you pause', forBand: 'all', category: 'moments' },
-    { id: 'p_004', prompt: 'A meal you ate fully present', forBand: 'all', category: 'simple' },
-    { id: 'p_005', prompt: 'A teacher who saw you', forBand: 'middle', category: 'people' },
-    { id: 'p_006', prompt: 'A piece of clothing that feels good on your body', forBand: 'all', category: 'simple' },
-    { id: 'p_007', prompt: 'Something your body did for you automatically today', forBand: 'all', category: 'body' },
-    { id: 'p_008', prompt: 'A friend who knows your name without looking at you', forBand: 'all', category: 'people' },
-    { id: 'p_009', prompt: 'A song that landed differently this week', forBand: 'middle', category: 'moments' },
-    { id: 'p_010', prompt: 'A tree you walk past often', forBand: 'all', category: 'nature' },
-    { id: 'p_011', prompt: 'A teacher from a year you barely remember', forBand: 'high', category: 'memories' },
-    { id: 'p_012', prompt: 'The taste of clean water', forBand: 'all', category: 'simple' },
-    { id: 'p_013', prompt: 'A stranger\'s small kindness in the past week', forBand: 'all', category: 'people' },
-    { id: 'p_014', prompt: 'A part of your body that is working right now', forBand: 'all', category: 'body' },
-    { id: 'p_015', prompt: 'A moment of unexpected quiet', forBand: 'all', category: 'moments' },
-    { id: 'p_016', prompt: 'A smell that brings back a good memory', forBand: 'all', category: 'memories' },
-    { id: 'p_017', prompt: 'A book that changed how you see something', forBand: 'high', category: 'memories' },
-    { id: 'p_018', prompt: 'A small thing you got better at this month', forBand: 'middle', category: 'abilities' },
-    { id: 'p_019', prompt: 'A challenge you faced and survived', forBand: 'high', category: 'hard-times' },
-    { id: 'p_020', prompt: 'A way someone showed they care without saying it', forBand: 'all', category: 'people' },
-    { id: 'p_021', prompt: 'The light coming through a window today', forBand: 'all', category: 'moments' },
-    { id: 'p_022', prompt: 'A piece of advice that still helps', forBand: 'high', category: 'memories' },
-    { id: 'p_023', prompt: 'A skill your hands know without thinking', forBand: 'all', category: 'abilities' },
-    { id: 'p_024', prompt: 'A texture you love (fabric, fur, sand, paper)', forBand: 'all', category: 'simple' },
-    { id: 'p_025', prompt: 'A neighbor or community member you have never thanked', forBand: 'all', category: 'people' },
-    { id: 'p_026', prompt: 'The way a particular animal moves', forBand: 'all', category: 'nature' },
-    { id: 'p_027', prompt: 'A teacher who was tough but fair', forBand: 'middle', category: 'people' },
-    { id: 'p_028', prompt: 'A small object that always works (a pen, a key, a lock)', forBand: 'all', category: 'simple' },
-    { id: 'p_029', prompt: 'Something you used to be afraid of and are not anymore', forBand: 'middle', category: 'hard-times' },
-    { id: 'p_030', prompt: 'A weather you love', forBand: 'all', category: 'nature' },
-    { id: 'p_031', prompt: 'Something funny that happened this week', forBand: 'all', category: 'moments' },
-    { id: 'p_032', prompt: 'A meal someone made for you', forBand: 'all', category: 'people' },
-    { id: 'p_033', prompt: 'A bed that is comfortable enough to sleep in', forBand: 'all', category: 'simple' },
-    { id: 'p_034', prompt: 'A way your body has healed itself', forBand: 'all', category: 'body' },
-    { id: 'p_035', prompt: 'A teacher who let you redo something', forBand: 'middle', category: 'people' },
-    { id: 'p_036', prompt: 'A piece of music you can play in your head from memory', forBand: 'all', category: 'memories' },
-    { id: 'p_037', prompt: 'A friend who texted you first', forBand: 'all', category: 'people' },
-    { id: 'p_038', prompt: 'The internet connection that just worked today', forBand: 'middle', category: 'simple' },
-    { id: 'p_039', prompt: 'A small thing that surprised you (and you liked it)', forBand: 'all', category: 'surprises' },
-    { id: 'p_040', prompt: 'A piece of art that stopped you in your tracks', forBand: 'high', category: 'moments' },
-    { id: 'p_041', prompt: 'Your morning shower or wash routine', forBand: 'all', category: 'simple' },
-    { id: 'p_042', prompt: 'A bus or car or bike that got you where you needed to go', forBand: 'all', category: 'simple' },
-    { id: 'p_043', prompt: 'A sibling, cousin, or chosen-sibling who has your back', forBand: 'all', category: 'people' },
-    { id: 'p_044', prompt: 'A grandparent or elder who told you a story', forBand: 'all', category: 'people' },
-    { id: 'p_045', prompt: 'A childhood toy you loved', forBand: 'all', category: 'memories' },
-    { id: 'p_046', prompt: 'A sense of humor someone in your life has', forBand: 'middle', category: 'people' },
-    { id: 'p_047', prompt: 'A skill you taught yourself', forBand: 'high', category: 'abilities' },
-    { id: 'p_048', prompt: 'A place you can be quiet', forBand: 'all', category: 'simple' },
-    { id: 'p_049', prompt: 'A friend who lets you be sad without trying to fix it', forBand: 'high', category: 'people' },
-    { id: 'p_050', prompt: 'A favorite mug or cup', forBand: 'all', category: 'simple' },
-    { id: 'p_051', prompt: 'A coach who pushed you in the right way', forBand: 'middle', category: 'people' },
-    { id: 'p_052', prompt: 'A doctor or nurse who treated you well', forBand: 'all', category: 'people' },
-    { id: 'p_053', prompt: 'A custodian or cleaner at your school', forBand: 'all', category: 'people' },
-    { id: 'p_054', prompt: 'A cafeteria worker who knows your usual', forBand: 'all', category: 'people' },
-    { id: 'p_055', prompt: 'A school bus driver who said good morning', forBand: 'all', category: 'people' },
-    { id: 'p_056', prompt: 'A pet who waits at the door', forBand: 'all', category: 'people' },
-    { id: 'p_057', prompt: 'A specific tree you can describe from memory', forBand: 'all', category: 'nature' },
-    { id: 'p_058', prompt: 'The way snow muffles sound', forBand: 'all', category: 'nature' },
-    { id: 'p_059', prompt: 'The way rain smells', forBand: 'all', category: 'nature' },
-    { id: 'p_060', prompt: 'A specific cloud shape you remember', forBand: 'all', category: 'nature' },
-    { id: 'p_061', prompt: 'The first warm day of spring', forBand: 'all', category: 'nature' },
-    { id: 'p_062', prompt: 'The first cool morning of fall', forBand: 'all', category: 'nature' },
-    { id: 'p_063', prompt: 'A sunrise or sunset you actually watched', forBand: 'all', category: 'nature' },
-    { id: 'p_064', prompt: 'A moon you stopped to look at', forBand: 'all', category: 'nature' },
-    { id: 'p_065', prompt: 'A specific bird you have seen and can describe', forBand: 'all', category: 'nature' },
-    { id: 'p_066', prompt: 'A bug you decided not to kill', forBand: 'all', category: 'nature' },
-    { id: 'p_067', prompt: 'Your legs that walk you places', forBand: 'all', category: 'body' },
-    { id: 'p_068', prompt: 'Your hands that hold things you love', forBand: 'all', category: 'body' },
-    { id: 'p_069', prompt: 'Your eyes that read these words', forBand: 'all', category: 'body' },
-    { id: 'p_070', prompt: 'Your ears that hear music', forBand: 'all', category: 'body' },
-    { id: 'p_071', prompt: 'Your heart that beats without you asking', forBand: 'all', category: 'body' },
-    { id: 'p_072', prompt: 'Your lungs that breathe right now', forBand: 'all', category: 'body' },
-    { id: 'p_073', prompt: 'Your skin that holds you together', forBand: 'all', category: 'body' },
-    { id: 'p_074', prompt: 'Your sleep, the times it has worked', forBand: 'all', category: 'body' },
-    { id: 'p_075', prompt: 'A scar that healed', forBand: 'middle', category: 'body' },
-    { id: 'p_076', prompt: 'A bruise that has faded', forBand: 'all', category: 'body' },
-    { id: 'p_077', prompt: 'A muscle that helped you do something hard today', forBand: 'all', category: 'body' },
-    { id: 'p_078', prompt: 'A breath that calmed you when you needed it', forBand: 'all', category: 'body' },
-    { id: 'p_079', prompt: 'A meal that tasted better than usual', forBand: 'all', category: 'moments' },
-    { id: 'p_080', prompt: 'The first sip of something hot', forBand: 'all', category: 'simple' },
-    { id: 'p_081', prompt: 'The first sip of something cold on a hot day', forBand: 'all', category: 'simple' },
-    { id: 'p_082', prompt: 'A snack that surprised you with how good it was', forBand: 'all', category: 'surprises' },
-    { id: 'p_083', prompt: 'A piece of fruit at the right ripeness', forBand: 'all', category: 'simple' },
-    { id: 'p_084', prompt: 'A vegetable you actually like', forBand: 'all', category: 'simple' },
-    { id: 'p_085', prompt: 'A recipe you learned from someone', forBand: 'middle', category: 'memories' },
-    { id: 'p_086', prompt: 'A spice or seasoning that always makes you smile', forBand: 'all', category: 'simple' },
-    { id: 'p_087', prompt: 'A bakery smell when you walked past', forBand: 'all', category: 'moments' },
-    { id: 'p_088', prompt: 'A song that played at exactly the right time', forBand: 'middle', category: 'moments' },
-    { id: 'p_089', prompt: 'A book you reread because it helps', forBand: 'high', category: 'simple' },
-    { id: 'p_090', prompt: 'A line from a poem or song that you remember', forBand: 'high', category: 'memories' },
-    { id: 'p_091', prompt: 'A movie that made you cry in a good way', forBand: 'middle', category: 'moments' },
-    { id: 'p_092', prompt: 'A movie that made you laugh out loud', forBand: 'all', category: 'moments' },
-    { id: 'p_093', prompt: 'A video game that gave you a break', forBand: 'all', category: 'simple' },
-    { id: 'p_094', prompt: 'A show you watched with someone you love', forBand: 'all', category: 'memories' },
-    { id: 'p_095', prompt: 'A YouTube channel that taught you something useful', forBand: 'middle', category: 'simple' },
-    { id: 'p_096', prompt: 'A piece of homework you actually enjoyed', forBand: 'middle', category: 'surprises' },
-    { id: 'p_097', prompt: 'A class period that flew by', forBand: 'middle', category: 'moments' },
-    { id: 'p_098', prompt: 'A teacher\'s joke that landed', forBand: 'middle', category: 'people' },
-    { id: 'p_099', prompt: 'A teacher who held you to a high standard', forBand: 'high', category: 'people' },
-    { id: 'p_100', prompt: 'A substitute teacher who was actually good', forBand: 'middle', category: 'surprises' },
-    { id: 'p_101', prompt: 'A locker that opens on the first try', forBand: 'middle', category: 'simple' },
-    { id: 'p_102', prompt: 'A pencil that wrote smoothly', forBand: 'elementary', category: 'simple' },
-    { id: 'p_103', prompt: 'A backpack that fits everything', forBand: 'middle', category: 'simple' },
-    { id: 'p_104', prompt: 'A library that lets you be quiet', forBand: 'all', category: 'simple' },
-    { id: 'p_105', prompt: 'A librarian who recommended a book', forBand: 'all', category: 'people' },
-    { id: 'p_106', prompt: 'A school nurse who was kind', forBand: 'all', category: 'people' },
-    { id: 'p_107', prompt: 'A counselor who actually listened', forBand: 'middle', category: 'people' },
-    { id: 'p_108', prompt: 'A friend who waited for you when you were late', forBand: 'all', category: 'people' },
-    { id: 'p_109', prompt: 'A friend who texted just to check in', forBand: 'middle', category: 'people' },
-    { id: 'p_110', prompt: 'A group chat that made you laugh today', forBand: 'middle', category: 'moments' },
-    { id: 'p_111', prompt: 'A meme that hit at the perfect time', forBand: 'middle', category: 'moments' },
-    { id: 'p_112', prompt: 'A playlist that fit your mood', forBand: 'middle', category: 'simple' },
-    { id: 'p_113', prompt: 'A walk that cleared your head', forBand: 'all', category: 'moments' },
-    { id: 'p_114', prompt: 'A nap that brought you back to yourself', forBand: 'all', category: 'simple' },
-    { id: 'p_115', prompt: 'A bath or shower that felt like a reset', forBand: 'all', category: 'simple' },
-    { id: 'p_116', prompt: 'A clean towel', forBand: 'all', category: 'simple' },
-    { id: 'p_117', prompt: 'A pair of socks that have no holes', forBand: 'all', category: 'simple' },
-    { id: 'p_118', prompt: 'Sneakers that still have grip', forBand: 'all', category: 'simple' },
-    { id: 'p_119', prompt: 'A jacket that keeps the wind out', forBand: 'all', category: 'simple' },
-    { id: 'p_120', prompt: 'A blanket you have had for years', forBand: 'all', category: 'memories' },
-    { id: 'p_121', prompt: 'A pillow that fits your head', forBand: 'all', category: 'simple' },
-    { id: 'p_122', prompt: 'A toothbrush that is still doing its job', forBand: 'all', category: 'simple' },
-    { id: 'p_123', prompt: 'Soap that smells good', forBand: 'all', category: 'simple' },
-    { id: 'p_124', prompt: 'Hot water that comes out when you turn the knob', forBand: 'all', category: 'simple' },
-    { id: 'p_125', prompt: 'A washer or dryer somewhere you can use', forBand: 'all', category: 'simple' },
-    { id: 'p_126', prompt: 'A floor that is dry under your feet', forBand: 'all', category: 'simple' },
-    { id: 'p_127', prompt: 'A roof that is keeping the rain out right now', forBand: 'all', category: 'simple' },
-    { id: 'p_128', prompt: 'A door that locks', forBand: 'all', category: 'simple' },
-    { id: 'p_129', prompt: 'A window that opens', forBand: 'all', category: 'simple' },
-    { id: 'p_130', prompt: 'A light that turns on when you flip the switch', forBand: 'all', category: 'simple' },
-    { id: 'p_131', prompt: 'A working fridge', forBand: 'all', category: 'simple' },
-    { id: 'p_132', prompt: 'A stove or microwave that heats your food', forBand: 'all', category: 'simple' },
-    { id: 'p_133', prompt: 'A chair that supports your back', forBand: 'all', category: 'simple' },
-    { id: 'p_134', prompt: 'A desk where you can put your stuff', forBand: 'middle', category: 'simple' },
-    { id: 'p_135', prompt: 'A wall that has a memory pinned to it', forBand: 'middle', category: 'memories' },
-    { id: 'p_136', prompt: 'A photo you walked past today', forBand: 'all', category: 'memories' },
-    { id: 'p_137', prompt: 'A gift someone gave you that you still use', forBand: 'middle', category: 'memories' },
-    { id: 'p_138', prompt: 'A handwritten note you kept', forBand: 'middle', category: 'memories' },
-    { id: 'p_139', prompt: 'A piece of advice that finally clicked', forBand: 'high', category: 'memories' },
-    { id: 'p_140', prompt: 'A mistake that taught you something important', forBand: 'high', category: 'hard-times' },
-    { id: 'p_141', prompt: 'A failure that did not break you', forBand: 'high', category: 'hard-times' },
-    { id: 'p_142', prompt: 'A day you got through that you were not sure you could', forBand: 'high', category: 'hard-times' },
-    { id: 'p_143', prompt: 'A friend who stayed when others left', forBand: 'high', category: 'hard-times' },
-    { id: 'p_144', prompt: 'A version of yourself you no longer have to be', forBand: 'high', category: 'hard-times' },
-    { id: 'p_145', prompt: 'A boundary you set that protected you', forBand: 'high', category: 'hard-times' },
-    { id: 'p_146', prompt: 'A piece of help you asked for and received', forBand: 'high', category: 'hard-times' },
-    { id: 'p_147', prompt: 'A therapist, counselor, or trusted adult who showed up', forBand: 'high', category: 'people' },
-    { id: 'p_148', prompt: 'A medicine that helps you function', forBand: 'high', category: 'body' },
-    { id: 'p_149', prompt: 'A diagnosis that gave you language for what was happening', forBand: 'high', category: 'hard-times' },
-    { id: 'p_150', prompt: 'A coping skill that is starting to work', forBand: 'high', category: 'abilities' },
-    { id: 'p_151', prompt: 'A morning you woke up and did not want to stay in bed', forBand: 'high', category: 'moments' },
-    { id: 'p_152', prompt: 'A song you can play on an instrument', forBand: 'middle', category: 'abilities' },
-    { id: 'p_153', prompt: 'A language you speak', forBand: 'all', category: 'abilities' },
-    { id: 'p_154', prompt: 'A language you are learning', forBand: 'middle', category: 'abilities' },
-    { id: 'p_155', prompt: 'A skill your culture gave you', forBand: 'high', category: 'memories' },
-    { id: 'p_156', prompt: 'A recipe from your family', forBand: 'middle', category: 'memories' },
-    { id: 'p_157', prompt: 'A holiday tradition that means something', forBand: 'middle', category: 'memories' },
-    { id: 'p_158', prompt: 'An ancestor whose decisions made your life possible', forBand: 'high', category: 'memories' },
-    { id: 'p_159', prompt: 'A story passed down to you', forBand: 'middle', category: 'memories' },
-    { id: 'p_160', prompt: 'A movement or cause that fights for people like you', forBand: 'high', category: 'people' },
-    { id: 'p_161', prompt: 'An activist or organizer you admire (living or dead)', forBand: 'high', category: 'people' },
-    { id: 'p_162', prompt: 'A scientist whose work you benefit from daily', forBand: 'high', category: 'people' },
-    { id: 'p_163', prompt: 'A writer whose words have helped you', forBand: 'high', category: 'people' },
-    { id: 'p_164', prompt: 'A musician whose song has gotten you through something', forBand: 'middle', category: 'people' },
-    { id: 'p_165', prompt: 'An artist whose work makes the world more bearable', forBand: 'high', category: 'people' },
-    { id: 'p_166', prompt: 'A character (fictional) who made you feel less alone', forBand: 'middle', category: 'memories' },
-    { id: 'p_167', prompt: 'A historical figure you find yourself thinking about', forBand: 'high', category: 'memories' },
-    { id: 'p_168', prompt: 'A small surprise this week', forBand: 'all', category: 'surprises' },
-    { id: 'p_169', prompt: 'A surprise that turned out better than you expected', forBand: 'middle', category: 'surprises' },
-    { id: 'p_170', prompt: 'A new food you tried and liked', forBand: 'all', category: 'surprises' },
-    { id: 'p_171', prompt: 'A person you misjudged at first', forBand: 'high', category: 'surprises' },
-    { id: 'p_172', prompt: 'A class you thought you would hate but did not', forBand: 'middle', category: 'surprises' },
-    { id: 'p_173', prompt: 'A topic you started learning about for fun', forBand: 'middle', category: 'abilities' },
-    { id: 'p_174', prompt: 'A skill you used today without realizing how hard it once was', forBand: 'high', category: 'abilities' },
-    { id: 'p_175', prompt: 'A moment you noticed yourself growing', forBand: 'high', category: 'abilities' },
-    { id: 'p_176', prompt: 'A time you handled something better than the old you would have', forBand: 'high', category: 'abilities' },
-    { id: 'p_177', prompt: 'A time you said no when you needed to', forBand: 'high', category: 'abilities' },
-    { id: 'p_178', prompt: 'A time you said yes when you almost did not', forBand: 'high', category: 'abilities' },
-    { id: 'p_179', prompt: 'A risk you took that paid off', forBand: 'high', category: 'abilities' },
-    { id: 'p_180', prompt: 'A risk you took that did not pay off but you are still glad you tried', forBand: 'high', category: 'hard-times' },
-    { id: 'p_181', prompt: 'A friendship that has outlasted what it had to', forBand: 'high', category: 'people' },
-    { id: 'p_182', prompt: 'A relative you have only known as an adult', forBand: 'high', category: 'people' },
-    { id: 'p_183', prompt: 'A teacher you secretly miss', forBand: 'high', category: 'memories' },
-    { id: 'p_184', prompt: 'A school year you actually liked', forBand: 'middle', category: 'memories' },
-    { id: 'p_185', prompt: 'A summer you remember fondly', forBand: 'middle', category: 'memories' },
-    { id: 'p_186', prompt: 'A holiday that lived up to itself', forBand: 'all', category: 'memories' },
-    { id: 'p_187', prompt: 'A birthday that mattered to you', forBand: 'all', category: 'memories' },
-    { id: 'p_188', prompt: 'A trip or outing that still feels alive', forBand: 'all', category: 'memories' },
-    { id: 'p_189', prompt: 'A walk you take on hard days', forBand: 'high', category: 'simple' },
-    { id: 'p_190', prompt: 'A place online that is good for you', forBand: 'middle', category: 'simple' },
-    { id: 'p_191', prompt: 'A creator whose work is genuinely helpful', forBand: 'middle', category: 'people' },
-    { id: 'p_192', prompt: 'A teacher (not at your school) who taught you through video or writing', forBand: 'high', category: 'people' },
-    { id: 'p_193', prompt: 'A doctor who finally listened', forBand: 'high', category: 'people' },
-    { id: 'p_194', prompt: 'A pharmacist who explained something clearly', forBand: 'high', category: 'people' },
-    { id: 'p_195', prompt: 'An app or tool that makes your life easier', forBand: 'middle', category: 'simple' },
-    { id: 'p_196', prompt: 'A keyboard shortcut you use all the time', forBand: 'high', category: 'simple' },
-    { id: 'p_197', prompt: 'A pair of headphones that fit your ears', forBand: 'middle', category: 'simple' },
-    { id: 'p_198', prompt: 'A speaker, microphone, or instrument that does what you ask', forBand: 'middle', category: 'simple' },
-    { id: 'p_199', prompt: 'A camera that captures things you want to remember', forBand: 'middle', category: 'simple' },
-    { id: 'p_200', prompt: 'A photo you took that you are proud of', forBand: 'middle', category: 'memories' },
-    { id: 'p_201', prompt: 'A drawing or doodle you made today', forBand: 'all', category: 'abilities' },
-    { id: 'p_202', prompt: 'A sentence you wrote that you actually like', forBand: 'high', category: 'abilities' },
-    { id: 'p_203', prompt: 'A problem you solved by yourself', forBand: 'middle', category: 'abilities' },
-    { id: 'p_204', prompt: 'A problem you solved by asking for help', forBand: 'high', category: 'abilities' },
-    { id: 'p_205', prompt: 'A friend who is good at the thing you are not', forBand: 'middle', category: 'people' },
-    { id: 'p_206', prompt: 'A friend who is patient with the thing you are bad at', forBand: 'middle', category: 'people' },
-    { id: 'p_207', prompt: 'A morning where nothing went wrong', forBand: 'all', category: 'moments' },
-    { id: 'p_208', prompt: 'An afternoon that felt longer than it was', forBand: 'all', category: 'moments' },
-    { id: 'p_209', prompt: 'An evening that ended with you ready to sleep', forBand: 'all', category: 'moments' },
-    { id: 'p_210', prompt: 'A night you slept well', forBand: 'all', category: 'simple' },
-    { id: 'p_211', prompt: 'A dream you remember', forBand: 'middle', category: 'moments' },
-    { id: 'p_212', prompt: 'A nightmare that ended', forBand: 'middle', category: 'moments' },
-    { id: 'p_213', prompt: 'A waking-up that did not feel like a fight', forBand: 'all', category: 'moments' },
-    { id: 'p_214', prompt: 'A day off you actually rested on', forBand: 'middle', category: 'simple' },
-    { id: 'p_215', prompt: 'A weekend that was long enough', forBand: 'middle', category: 'simple' },
-    { id: 'p_216', prompt: 'A snow day or weather cancellation', forBand: 'all', category: 'surprises' },
-    { id: 'p_217', prompt: 'A test you were ready for', forBand: 'middle', category: 'abilities' },
-    { id: 'p_218', prompt: 'A presentation that went better than you feared', forBand: 'middle', category: 'surprises' },
-    { id: 'p_219', prompt: 'An audition or tryout you survived', forBand: 'middle', category: 'abilities' },
-    { id: 'p_220', prompt: 'A performance you finished', forBand: 'middle', category: 'abilities' },
-    { id: 'p_221', prompt: 'A game or match where you played well', forBand: 'middle', category: 'abilities' },
-    { id: 'p_222', prompt: 'A game where your team showed up for you', forBand: 'middle', category: 'people' },
-    { id: 'p_223', prompt: 'A coach who made you a better teammate', forBand: 'middle', category: 'people' },
-    { id: 'p_224', prompt: 'A teammate who set you up to succeed', forBand: 'middle', category: 'people' },
-    { id: 'p_225', prompt: 'A piece of equipment that finally worked right', forBand: 'middle', category: 'simple' },
-    { id: 'p_226', prompt: 'A piece of clothing that fit on the first try', forBand: 'all', category: 'simple' },
-    { id: 'p_227', prompt: 'A haircut or hairstyle you actually like', forBand: 'middle', category: 'simple' },
-    { id: 'p_228', prompt: 'A compliment that landed', forBand: 'middle', category: 'moments' },
-    { id: 'p_229', prompt: 'A compliment you gave that landed', forBand: 'middle', category: 'people' },
-    { id: 'p_230', prompt: 'A laugh that came out of nowhere today', forBand: 'all', category: 'moments' },
-    { id: 'p_231', prompt: 'A teacher who pronounced your name correctly on the first day', forBand: 'all', category: 'people' },
-    { id: 'p_232', prompt: 'A person who remembered your pronouns without being reminded', forBand: 'high', category: 'people' },
-    { id: 'p_233', prompt: 'A waiter or cashier who was kind on a hard day', forBand: 'all', category: 'people' },
-    { id: 'p_234', prompt: 'A stranger who held the door for you', forBand: 'all', category: 'people' },
-    { id: 'p_235', prompt: 'A small bird at a feeder', forBand: 'all', category: 'nature' },
-    { id: 'p_236', prompt: 'The way light moves on water', forBand: 'all', category: 'nature' },
-    { id: 'p_237', prompt: 'A leaf that has changed color', forBand: 'all', category: 'nature' },
-    { id: 'p_238', prompt: 'The way a particular flower smells', forBand: 'all', category: 'nature' },
-    { id: 'p_239', prompt: 'A patch of moss between sidewalk cracks', forBand: 'all', category: 'nature' },
-    { id: 'p_240', prompt: 'The sound of wind in trees', forBand: 'all', category: 'nature' },
-    { id: 'p_241', prompt: 'A storm watched from inside', forBand: 'all', category: 'nature' },
-    { id: 'p_242', prompt: 'A snowfall you walked through', forBand: 'all', category: 'nature' },
-    { id: 'p_243', prompt: 'A puddle you stepped around or in', forBand: 'all', category: 'nature' },
-    { id: 'p_244', prompt: 'A river you crossed', forBand: 'all', category: 'nature' },
-    { id: 'p_245', prompt: 'A bridge that held you up', forBand: 'middle', category: 'simple' },
-    { id: 'p_246', prompt: 'A road that took you somewhere you wanted to be', forBand: 'middle', category: 'simple' },
-    { id: 'p_247', prompt: 'A sidewalk that was shoveled by someone', forBand: 'all', category: 'people' },
-    { id: 'p_248', prompt: 'A traffic light that worked', forBand: 'middle', category: 'simple' },
-    { id: 'p_249', prompt: 'A stop sign at a corner you needed it', forBand: 'middle', category: 'simple' },
-    { id: 'p_250', prompt: 'A streetlight that came on at dusk', forBand: 'all', category: 'simple' },
-    { id: 'p_251', prompt: 'A fire alarm you have never had to use', forBand: 'middle', category: 'simple' },
-    { id: 'p_252', prompt: 'A working smoke detector overhead', forBand: 'middle', category: 'simple' },
-    { id: 'p_253', prompt: 'A heating system that runs in winter', forBand: 'all', category: 'simple' },
-    { id: 'p_254', prompt: 'A fan or AC that cools you in summer', forBand: 'all', category: 'simple' },
-    { id: 'p_255', prompt: 'A working washing machine somewhere accessible to you', forBand: 'all', category: 'simple' },
-    { id: 'p_256', prompt: 'A grocery store that has what you need', forBand: 'all', category: 'simple' },
-    { id: 'p_257', prompt: 'A farmer whose food you ate this week', forBand: 'high', category: 'people' },
-    { id: 'p_258', prompt: 'A trucker who delivered something you used today', forBand: 'high', category: 'people' },
-    { id: 'p_259', prompt: 'A pharmacist who filled a prescription', forBand: 'high', category: 'people' },
-    { id: 'p_260', prompt: 'A mechanic who fixed a car that gets you places', forBand: 'high', category: 'people' },
-    { id: 'p_261', prompt: 'A plumber who once fixed something at your home', forBand: 'high', category: 'people' },
-    { id: 'p_262', prompt: 'A teacher you only had for one year but who shaped you', forBand: 'high', category: 'memories' },
-    { id: 'p_263', prompt: 'A song lyric you remember word for word', forBand: 'middle', category: 'memories' },
-    { id: 'p_264', prompt: 'A poem you memorized for class and still remember', forBand: 'high', category: 'memories' },
-    { id: 'p_265', prompt: 'A childhood friend you still think about', forBand: 'middle', category: 'memories' },
-    { id: 'p_266', prompt: 'A neighbor you had as a kid who was kind', forBand: 'middle', category: 'memories' },
-    { id: 'p_267', prompt: 'A toy you played with until it fell apart', forBand: 'all', category: 'memories' },
-    { id: 'p_268', prompt: 'A blanket fort you built or remember building', forBand: 'all', category: 'memories' },
-    { id: 'p_269', prompt: 'A snowman you made or saw someone make', forBand: 'all', category: 'memories' },
-    { id: 'p_270', prompt: 'A sand castle you built at a beach', forBand: 'all', category: 'memories' },
-    { id: 'p_271', prompt: 'A treehouse, fort, or hideout you had access to', forBand: 'all', category: 'memories' },
-    { id: 'p_272', prompt: 'A skill you learned without thinking about it (walking, talking, riding)', forBand: 'all', category: 'abilities' },
-    { id: 'p_273', prompt: 'A skill you worked hard to learn', forBand: 'middle', category: 'abilities' },
-    { id: 'p_274', prompt: 'A skill you taught someone else', forBand: 'middle', category: 'abilities' },
-    { id: 'p_275', prompt: 'A moment you felt competent today', forBand: 'middle', category: 'abilities' },
-    { id: 'p_276', prompt: 'A time you noticed yourself being patient', forBand: 'high', category: 'abilities' },
-    { id: 'p_277', prompt: 'A time you noticed yourself being kind', forBand: 'middle', category: 'abilities' },
-    { id: 'p_278', prompt: 'A time you noticed yourself being brave (any size)', forBand: 'middle', category: 'abilities' },
-    { id: 'p_279', prompt: 'A time you noticed yourself being honest when it cost you', forBand: 'high', category: 'abilities' },
-    { id: 'p_280', prompt: 'A time you apologized and meant it', forBand: 'high', category: 'abilities' },
-    { id: 'p_281', prompt: 'A time you forgave someone (yourself or another)', forBand: 'high', category: 'abilities' },
-    { id: 'p_282', prompt: 'A boundary you held this week', forBand: 'high', category: 'abilities' },
-    { id: 'p_283', prompt: 'A boundary someone else held that you actually respected', forBand: 'high', category: 'people' },
-    { id: 'p_284', prompt: 'A way someone showed up for you without being asked', forBand: 'high', category: 'people' },
-    { id: 'p_285', prompt: 'A time a friend told you a hard truth', forBand: 'high', category: 'people' },
-    { id: 'p_286', prompt: 'A time you told a friend a hard truth and they thanked you later', forBand: 'high', category: 'people' },
-    { id: 'p_287', prompt: 'A moment of laughter that broke a tense room', forBand: 'middle', category: 'moments' },
-    { id: 'p_288', prompt: 'A silence that felt comfortable', forBand: 'high', category: 'moments' },
-    { id: 'p_289', prompt: 'A conversation that went somewhere unexpected', forBand: 'middle', category: 'surprises' },
-    { id: 'p_290', prompt: 'A message you got that came at the right moment', forBand: 'middle', category: 'surprises' },
-    { id: 'p_291', prompt: 'A coincidence that made you smile', forBand: 'all', category: 'surprises' },
-    { id: 'p_292', prompt: 'A door that opened just as you needed it', forBand: 'all', category: 'surprises' },
-    { id: 'p_293', prompt: 'A small win at school today', forBand: 'middle', category: 'moments' },
-    { id: 'p_294', prompt: 'A small win at home today', forBand: 'all', category: 'moments' },
-    { id: 'p_295', prompt: 'A small win inside yourself today', forBand: 'high', category: 'moments' },
-    { id: 'p_296', prompt: 'A way today was easier than yesterday', forBand: 'all', category: 'moments' },
-    { id: 'p_297', prompt: 'A way today was harder than yesterday — and you still showed up', forBand: 'high', category: 'hard-times' },
-    { id: 'p_298', prompt: 'A time you let yourself rest', forBand: 'high', category: 'simple' },
-    { id: 'p_299', prompt: 'A time you let yourself cry', forBand: 'high', category: 'simple' },
-    { id: 'p_300', prompt: 'A time you let yourself laugh fully', forBand: 'all', category: 'simple' },
-    { id: 'p_301', prompt: 'A friend who waited out your bad mood with you', forBand: 'high', category: 'people' },
-    { id: 'p_302', prompt: 'A teacher who did not give up on you when you were a mess', forBand: 'high', category: 'people' },
-    { id: 'p_303', prompt: 'A coach who stopped you from doing something stupid', forBand: 'high', category: 'people' },
-    { id: 'p_304', prompt: 'A school counselor who remembered something you told them weeks ago', forBand: 'high', category: 'people' },
-    { id: 'p_305', prompt: 'A bus driver who slowed down for you as you ran', forBand: 'all', category: 'people' },
-    { id: 'p_306', prompt: 'A doorman, security guard, or hall monitor who greeted you by name', forBand: 'all', category: 'people' },
-    { id: 'p_307', prompt: 'A custodian who fixed something you broke without making you feel bad', forBand: 'middle', category: 'people' },
-    { id: 'p_308', prompt: 'A pet who slept on your lap during a hard hour', forBand: 'all', category: 'people' },
-    { id: 'p_309', prompt: 'A wild animal you saw and remembered', forBand: 'all', category: 'nature' },
-    { id: 'p_310', prompt: 'A constellation you can find in the sky', forBand: 'middle', category: 'nature' },
-    { id: 'p_311', prompt: 'A planet you have actually identified', forBand: 'middle', category: 'nature' },
-    { id: 'p_312', prompt: 'A meteor or shooting star you have seen', forBand: 'all', category: 'nature' },
-    { id: 'p_313', prompt: 'The smell of cut grass', forBand: 'all', category: 'nature' },
-    { id: 'p_314', prompt: 'The smell of old books', forBand: 'high', category: 'nature' },
-    { id: 'p_315', prompt: 'The smell of laundry just out of the dryer', forBand: 'all', category: 'simple' },
-    { id: 'p_316', prompt: 'The smell of coffee or tea brewing', forBand: 'middle', category: 'simple' },
-    { id: 'p_317', prompt: 'The smell of bread baking', forBand: 'all', category: 'simple' },
-    { id: 'p_318', prompt: 'A first sip of water in the morning', forBand: 'all', category: 'simple' },
-    { id: 'p_319', prompt: 'A glass of water after exercise', forBand: 'all', category: 'simple' },
-    { id: 'p_320', prompt: 'A breeze through an open window', forBand: 'all', category: 'simple' },
-    { id: 'p_321', prompt: 'The feeling of taking off your shoes', forBand: 'all', category: 'simple' },
-    { id: 'p_322', prompt: 'The feeling of getting into bed at the end of a long day', forBand: 'all', category: 'simple' },
-    { id: 'p_323', prompt: 'The feeling of waking up to discover you can sleep a little longer', forBand: 'all', category: 'simple' },
-    { id: 'p_324', prompt: 'The feeling of finishing a long assignment', forBand: 'middle', category: 'moments' },
-    { id: 'p_325', prompt: 'The feeling of clicking submit on something you worked hard on', forBand: 'high', category: 'moments' },
-    { id: 'p_326', prompt: 'The feeling of crossing a finish line (literal or metaphorical)', forBand: 'middle', category: 'moments' },
-    { id: 'p_327', prompt: 'The feeling of a hot shower after being cold all day', forBand: 'all', category: 'simple' },
-    { id: 'p_328', prompt: 'The feeling of a cold drink on a hot day', forBand: 'all', category: 'simple' },
-    { id: 'p_329', prompt: 'The feeling of putting on a warm coat in the cold', forBand: 'all', category: 'simple' },
-    { id: 'p_330', prompt: 'A favorite teacher\'s handwriting', forBand: 'middle', category: 'memories' },
-    { id: 'p_331', prompt: 'A piece of feedback that helped you grow', forBand: 'high', category: 'memories' },
-    { id: 'p_332', prompt: 'A grade you got that surprised you in a good way', forBand: 'middle', category: 'surprises' },
-    { id: 'p_333', prompt: 'A class where you understood something you used to find impossible', forBand: 'middle', category: 'abilities' },
-    { id: 'p_334', prompt: 'A lab where the experiment worked', forBand: 'middle', category: 'moments' },
-    { id: 'p_335', prompt: 'A field trip that you still remember years later', forBand: 'all', category: 'memories' },
-    { id: 'p_336', prompt: 'A school event you actually had fun at', forBand: 'middle', category: 'memories' },
-    { id: 'p_337', prompt: 'A dance, prom, or formal you survived (or skipped happily)', forBand: 'high', category: 'memories' },
-    { id: 'p_338', prompt: 'A first day of school that went better than feared', forBand: 'middle', category: 'memories' },
-    { id: 'p_339', prompt: 'A last day of school that closed something well', forBand: 'middle', category: 'memories' },
-    { id: 'p_340', prompt: 'A graduation (yours or someone else\'s) that mattered', forBand: 'high', category: 'memories' },
-    { id: 'p_341', prompt: 'A wedding or celebration you witnessed', forBand: 'high', category: 'memories' },
-    { id: 'p_342', prompt: 'A funeral that taught you how to grieve', forBand: 'high', category: 'memories' },
-    { id: 'p_343', prompt: 'A baby being born (in your family or community)', forBand: 'high', category: 'memories' },
-    { id: 'p_344', prompt: 'A pet you adopted or someone in your life adopted', forBand: 'all', category: 'memories' },
-    { id: 'p_345', prompt: 'A new friend who arrived just when you needed them', forBand: 'high', category: 'people' },
-    { id: 'p_346', prompt: 'An old friend who came back into your life', forBand: 'high', category: 'people' },
-    { id: 'p_347', prompt: 'A family member you have grown closer to', forBand: 'high', category: 'people' },
-    { id: 'p_348', prompt: 'A relative you did not know well but who showed up', forBand: 'high', category: 'people' },
-    { id: 'p_349', prompt: 'A mentor older than you who treats you as a peer', forBand: 'high', category: 'people' },
-    { id: 'p_350', prompt: 'A younger person who looks up to you', forBand: 'high', category: 'people' },
-    { id: 'p_351', prompt: 'A peer who set a standard you wanted to match', forBand: 'high', category: 'people' },
-    { id: 'p_352', prompt: 'A team you belonged to that worked', forBand: 'middle', category: 'people' },
-    { id: 'p_353', prompt: 'A team you belonged to that did not work but taught you something', forBand: 'high', category: 'hard-times' },
-    { id: 'p_354', prompt: 'A friendship that ended cleanly', forBand: 'high', category: 'hard-times' },
-    { id: 'p_355', prompt: 'A relationship that ended and freed you', forBand: 'high', category: 'hard-times' },
-    { id: 'p_356', prompt: 'A move (across town or across country) that turned out okay', forBand: 'high', category: 'hard-times' },
-    { id: 'p_357', prompt: 'A medical procedure you got through', forBand: 'high', category: 'hard-times' },
-    { id: 'p_358', prompt: 'A dental appointment that did not actually hurt', forBand: 'all', category: 'simple' },
-    { id: 'p_359', prompt: 'A vaccination you got that protects you', forBand: 'middle', category: 'body' },
-    { id: 'p_360', prompt: 'A surgery that healed something' , forBand: 'high', category: 'body' },
-    { id: 'p_361', prompt: 'A diagnosis that finally named what you were experiencing', forBand: 'high', category: 'hard-times' },
-    { id: 'p_362', prompt: 'A therapy session where you actually said something true', forBand: 'high', category: 'people' },
-    { id: 'p_363', prompt: 'A medication that gave you back functioning', forBand: 'high', category: 'body' },
-    { id: 'p_364', prompt: 'A hospital nurse who treated you like a person', forBand: 'high', category: 'people' },
-    { id: 'p_365', prompt: 'A receptionist who was patient when you were confused', forBand: 'middle', category: 'people' },
-    { id: 'p_366', prompt: 'A pharmacist who answered a question you were embarrassed to ask', forBand: 'high', category: 'people' },
-    { id: 'p_367', prompt: 'A 311 or city worker who responded to a request', forBand: 'high', category: 'people' },
-    { id: 'p_368', prompt: 'A poll worker on election day', forBand: 'high', category: 'people' },
-    { id: 'p_369', prompt: 'A volunteer at a food bank, shelter, or relief organization', forBand: 'high', category: 'people' },
-    { id: 'p_370', prompt: 'An organizer who fought for a policy that helps you', forBand: 'high', category: 'people' },
-    { id: 'p_371', prompt: 'A journalist whose reporting changed how you saw something', forBand: 'high', category: 'people' },
-    { id: 'p_372', prompt: 'A whistleblower who told an uncomfortable truth', forBand: 'high', category: 'people' },
-    { id: 'p_373', prompt: 'A lawyer who fought for someone vulnerable', forBand: 'high', category: 'people' },
-    { id: 'p_374', prompt: 'A judge who ruled fairly in a case you read about', forBand: 'high', category: 'people' },
-    { id: 'p_375', prompt: 'A teacher who used a name correctly on the first try', forBand: 'high', category: 'people' },
-    { id: 'p_376', prompt: 'A teacher who let you eat in the classroom when you needed to', forBand: 'middle', category: 'people' },
-    { id: 'p_377', prompt: 'A teacher who let you put your head down when you needed to', forBand: 'middle', category: 'people' },
-    { id: 'p_378', prompt: 'A teacher who noticed when you stopped raising your hand', forBand: 'high', category: 'people' },
-    { id: 'p_379', prompt: 'A teacher who pulled you aside without making it a big deal', forBand: 'high', category: 'people' },
-    { id: 'p_380', prompt: 'A teacher who emailed your parents about something good', forBand: 'middle', category: 'people' },
-    { id: 'p_381', prompt: 'A counselor who helped you change a schedule', forBand: 'middle', category: 'people' },
-    { id: 'p_382', prompt: 'A counselor who wrote you a recommendation letter', forBand: 'high', category: 'people' },
-    { id: 'p_383', prompt: 'A coach who benched you for the right reason', forBand: 'high', category: 'people' },
-    { id: 'p_384', prompt: 'A coach who put you back in after a mistake', forBand: 'middle', category: 'people' },
-    { id: 'p_385', prompt: 'A friend who let you talk about the same thing for the tenth time', forBand: 'high', category: 'people' },
-    { id: 'p_386', prompt: 'A friend who told you when you were being unkind', forBand: 'high', category: 'people' },
-    { id: 'p_387', prompt: 'A friend who knew how to sit in silence with you', forBand: 'high', category: 'people' },
-    { id: 'p_388', prompt: 'A friend who introduced you to a song, book, or idea that mattered', forBand: 'middle', category: 'people' },
-    { id: 'p_389', prompt: 'A friend who taught you a skill you use now', forBand: 'middle', category: 'people' },
-    { id: 'p_390', prompt: 'A friend who showed you a kind of family you did not know existed', forBand: 'high', category: 'people' }
-  ];
-
+  
   // ── Awe Practices Library ──
   // Practices that cultivate wonder, awe, and the felt sense of larger-than-self
   // Based on Dacher Keltner / UC Berkeley awe research
-  var AWE_PRACTICES = [
-    {
-      id: 'awe_walk',
-      name: 'Awe Walk',
-      category: 'movement-based',
-      forBand: 'all',
-      durationMin: 15,
-      setup: 'Any outdoor walking route, 15 minutes, ideally a route with at least one tree, sky view, or piece of beauty.',
-      steps: [
-        'Walk at a slower-than-usual pace.',
-        'Approach the walk as if you are seeing this place for the first time.',
-        'Pay attention to the vast: tall trees, expansive skies, distant horizons, intricate detail.',
-        'When something catches you, stop. Look. Take a breath.',
-        'Continue walking, noticing how often awe-eligible things appear when you are looking for them.'
-      ],
-      whatItDoes: 'Increases the frequency and intensity of awe experiences in everyday life; measurably improves well-being even at one 15-minute walk per week.',
-      whyItWorks: 'Awe broadens attention beyond the self, shrinks rumination, and produces a felt sense of smaller-self that paradoxically increases well-being and prosocial behavior.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Indoor awe walk through a museum or cathedral.',
-        'Urban awe walk noticing architecture and human ingenuity.',
-        'Group awe walk in silence with debrief at the end.'
-      ],
-      example: 'A 75-year-old participant in Sturm et al. (2020) reported feeling "smaller and more connected" after eight weekly awe walks, with measurable mood improvement.',
-      cautions: 'Adapt for mobility — awe rolls, awe sits, awe-from-a-window all work; the practice is in attention, not pace.',
-      research: 'Sturm, Datta, Roy, Sible, Kosik, Veziris, Chow, Morris, Neuhaus, Kramer, Miller, Holley, and Keltner (2020), Emotion — eight weekly awe walks produced significant increases in daily positive emotions and decreases in daily distress versus control walks.'
-    },
-    {
-      id: 'night_sky',
-      name: 'Looking at the Night Sky',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 10,
-      setup: 'Outside at night, ideally away from heavy light pollution, warm clothes if cold.',
-      steps: [
-        'Lie down or recline so you can see the sky comfortably.',
-        'Look up. Do not name constellations — just look.',
-        'Let your eyes adjust for at least three minutes.',
-        'Notice how the sky feels bigger the longer you look.',
-        'Stay for at least ten minutes total.'
-      ],
-      whatItDoes: 'Produces vastness-induced awe that reliably shifts perspective on daily concerns.',
-      whyItWorks: 'The night sky activates the awe-eliciting features of vastness and need-for-accommodation (Keltner and Haidt, 2003); the visual field has no scale-reference, which intensifies the felt size of the universe.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Moon-only version on a bright night.',
-        'Meteor-shower version during predictable showers.',
-        'Through-binoculars version for star detail.'
-      ],
-      example: 'A teen in rural Maine watches the August Perseids lying in the yard; for an hour her test anxiety becomes uninteresting.',
-      cautions: 'Be aware of safety in dark outdoor settings; go with another person or stay near home.',
-      research: 'Keltner and Haidt (2003), Cognition and Emotion — foundational paper defining awe via vastness and accommodation.'
-    },
-    {
-      id: 'sunset_observation',
-      name: 'Sunset or Sunrise Observation',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 15,
-      setup: 'A window or outdoor spot with a clear view of the horizon, 15 minutes around sunrise or sunset.',
-      steps: [
-        'Arrive at least ten minutes before the peak moment.',
-        'Phone away.',
-        'Watch the color shifts in the sky, the clouds, the light on objects.',
-        'Stay until ten minutes after the sun is gone or up.',
-        'Walk back inside slowly.'
-      ],
-      whatItDoes: 'Provides a daily naturally-occurring awe trigger that requires no special location.',
-      whyItWorks: 'Color and light change at sunrise and sunset trigger awe via novelty and beauty; daily availability builds the awe muscle.',
-      bestFrequency: 'daily',
-      variations: [
-        'Time-lapse version if you have a phone camera with that feature.',
-        'Drawing version painting the colors.',
-        'Group version on a porch.'
-      ],
-      example: 'A family in Portland watches every sunset from October to March from the kitchen window; the youngest learns to point out "the pink minute."',
-      cautions: 'Never look directly at the sun; protect eyes especially during sunrise.',
-      research: 'Keltner (2023) Awe: The New Science of Everyday Wonder — sunrise and sunset listed among the most cross-culturally consistent awe triggers.'
-    },
-    {
-      id: 'cloud_watching',
-      name: 'Cloud Watching',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 10,
-      setup: 'Lying on grass, a bench, or by a window with sky view.',
-      steps: [
-        'Lie down or recline.',
-        'Look up at the clouds.',
-        'Notice shapes, movement, speed, layers.',
-        'Do not try to name them.',
-        'Stay for ten minutes.'
-      ],
-      whatItDoes: 'Provides accessible everyday awe without travel, equipment, or scheduling.',
-      whyItWorks: 'Clouds satisfy awe\'s vastness and accommodation criteria; their constantly-changing form prevents habituation.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Storm-watching version (safely).',
-        'Window version on rainy days.',
-        'Time-lapse photo version.'
-      ],
-      example: 'A second grader during recess lies on the playground watching one cloud transform; she reports being "less mad at her brother" by the end of the day.',
-      cautions: 'Sun protection for prolonged outdoor sky-watching.',
-      research: 'Keltner (2023); consistent with awe-elicitor research on natural phenomena.'
-    },
-    {
-      id: 'microscope_time',
-      name: 'Microscope Time (Look at Small Things Magnified)',
-      category: 'sensory',
-      forBand: 'middle',
-      durationMin: 20,
-      setup: 'A microscope (school lab, USB microscope, or magnifying glass) and small samples — leaf, hair, water drop, salt crystal.',
-      steps: [
-        'Pick one ordinary object.',
-        'Look at it with the naked eye for thirty seconds.',
-        'Look at it under magnification for at least two minutes.',
-        'Switch to a second object.',
-        'Repeat with three to five objects.'
-      ],
-      whatItDoes: 'Reveals the hidden vastness within the small, producing awe at the opposite scale from sky-gazing.',
-      whyItWorks: 'Awe-inducing accommodation can come from either direction — the immensely large or the microscopically detailed both expand the mind\'s frame.',
-      bestFrequency: 'spontaneous',
-      variations: [
-        'USB-microscope version that displays on a phone.',
-        'Hand-lens version when no microscope is available.',
-        'Water-drop version (a drop from a pond reveals worlds).'
-      ],
-      example: 'Middle schooler looks at a maple leaf vein under 40x and audibly gasps; spends 10 minutes drawing it.',
-      cautions: 'Use clean slides and dispose of biological samples appropriately.',
-      research: 'Keltner (2023) Awe — microscopic exploration cited as a perceptual-vastness awe trigger.'
-    },
-    {
-      id: 'visit_somewhere_old',
-      name: 'Visit Somewhere Old (Cathedral, Ancient Tree, Historic Site)',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 45,
-      setup: 'A place at least 100 years old — historic building, old tree, ancient site, cemetery, library.',
-      steps: [
-        'Visit alone or in small group.',
-        'Phone away or silenced.',
-        'Move slowly. Touch what is permitted to touch.',
-        'Imagine the lives that have passed through.',
-        'Stay at least 30 minutes.'
-      ],
-      whatItDoes: 'Produces awe through felt connection to deep time and the long human or natural story.',
-      whyItWorks: 'Temporal vastness (Bai et al., 2017) is one of the strongest awe elicitors; old places extend the felt timeline beyond personal lifespan.',
-      bestFrequency: 'spontaneous',
-      variations: [
-        'Old-tree version (a 300-year-old oak does the work).',
-        'Cathedral or temple version (any quiet old religious space).',
-        'Old-cemetery version (with respect).'
-      ],
-      example: 'Tenth grader visits an old cemetery and sits with the gravestone of a child who died at 7 in 1841; reports a long quiet afterward.',
-      cautions: 'Respect sacred spaces and ongoing community use; some religious sites have dress or behavior expectations.',
-      research: 'Bai, Maruskin, Chen, Gordon, Stellar, McNeil, Peng, and Keltner (2017), JPSP — temporal awe distinct from physical-vastness awe.'
-    },
-    {
-      id: 'listen_to_music_in_awe',
-      name: 'Listen to a Piece of Music in Awe',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 10,
-      setup: 'Headphones, one specific piece of music, no distractions, eyes closed.',
-      steps: [
-        'Pick one piece of music — instrumental works best, but any music you find moving.',
-        'Listen with eyes closed.',
-        'Do nothing else.',
-        'When goosebumps come, notice them.',
-        'When the music ends, sit in silence for thirty seconds.'
-      ],
-      whatItDoes: 'Produces aesthetic awe (often physically felt as chills) and trains attention for sustained listening.',
-      whyItWorks: 'Music-induced chills correlate with dopamine release (Salimpoor et al., 2011); awe framing extends the felt benefit.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Live-music version at a concert or recital.',
-        'Vocal-music version (choirs and chants are particularly awe-eliciting).',
-        'New-music version with one piece you have never heard.'
-      ],
-      example: 'A senior listens to Arvo Part\'s "Spiegel im Spiegel" once a week before exams; reports it works every time.',
-      cautions: 'For students with auditory sensitivity, control volume; for students with grief tied to specific songs, choose neutral pieces.',
-      research: 'Salimpoor, Benovoy, Larcher, Dagher, and Zatorre (2011), Nature Neuroscience — peak emotional response to music corresponds to dopamine release in striatum.'
-    },
-    {
-      id: 'read_a_passage_that_evokes_awe',
-      name: 'Read a Passage That Evokes Awe',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 15,
-      setup: 'One short passage from literature, poetry, philosophy, or sacred text.',
-      steps: [
-        'Read the passage once at normal speed.',
-        'Read it again slowly, aloud if possible.',
-        'Read it a third time, with pauses.',
-        'Sit with the silence after.',
-        'Write one sentence about what shifted.'
-      ],
-      whatItDoes: 'Demonstrates that awe is portable through language and accessible without travel.',
-      whyItWorks: 'Verbal awe-elicitors (great poems, philosophical passages, sacred texts) trigger the same physiological responses as direct awe experiences (Shiota, Keltner, and Mossman, 2007).',
-      bestFrequency: 'weekly',
-      variations: [
-        'Poem-of-the-week version.',
-        'Sacred-text version from your tradition.',
-        'Letter-from-history version (e.g., Carl Sagan\'s Pale Blue Dot passage).'
-      ],
-      example: 'A class reads the Pale Blue Dot passage aloud; the room goes quiet for a minute after.',
-      cautions: 'Choose passages that align with your community\'s values; awe-inducing does not mean ideologically neutral.',
-      research: 'Shiota, Keltner, and Mossman (2007), Cognition and Emotion — verbal stimuli reliably elicit awe.'
-    },
-    {
-      id: 'watch_ocean_waves',
-      name: 'Watch Ocean Waves',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 20,
-      setup: 'Beach, harbor, lake, or video of waves if no water access.',
-      steps: [
-        'Sit or stand where you can see the water.',
-        'Watch one wave from formation to break.',
-        'Watch another. And another.',
-        'Notice the rhythm.',
-        'Stay at least 20 minutes.'
-      ],
-      whatItDoes: 'Produces sustained awe through repeated novelty (every wave is different) plus vastness.',
-      whyItWorks: 'Water vastness is among the most cross-culturally consistent awe elicitors; the rhythmic nature also entrains breath and heart rate.',
-      bestFrequency: 'spontaneous',
-      variations: [
-        'River-flow version.',
-        'Stream version.',
-        'Video version when actual water is not available.'
-      ],
-      example: 'A family stops at the coast for 30 minutes mid-drive; the teenager unprompts puts down her phone.',
-      cautions: 'Beach safety — rip tides, slippery rocks, cold-water dangers.',
-      research: 'Keltner (2023) Awe; consistent with blue-space-and-well-being research (White et al., 2020).'
-    },
-    {
-      id: 'watch_fire',
-      name: 'Watch a Fire',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 20,
-      setup: 'Safe contained fire — fireplace, fire pit, bonfire, or candle.',
-      steps: [
-        'Sit at a safe distance.',
-        'Watch the flames.',
-        'Notice colors, movement, sound.',
-        'Do not look away for at least five minutes at a stretch.',
-        'Stay at least 20 minutes total.'
-      ],
-      whatItDoes: 'Produces a deeply ancient awe experience that activates a primordial attentional state.',
-      whyItWorks: 'Human nervous systems have evolved with fire for at least 400,000 years; fire-gazing activates a parasympathetic relaxation response distinct from screen-watching.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Candle-only version (safe indoors).',
-        'Group fire-circle version with shared silence.',
-        'Cooking-fire version while preparing food.'
-      ],
-      example: 'A camp counselor structures every night around a 20-minute silent fire-watch; campers report sleeping better.',
-      cautions: 'Fire safety, smoke inhalation, supervision for younger students; indoor candles need stable surfaces.',
-      research: 'Lynn (2014), Evolutionary Anthropology — fire-watching produces measurable blood-pressure decreases.'
-    },
-    {
-      id: 'observe_baby_or_child',
-      name: 'Observe a Baby or Young Child',
-      category: 'relational',
-      forBand: 'high',
-      durationMin: 10,
-      setup: 'With consent of caregiver, simply observing a baby or young child at play.',
-      steps: [
-        'Sit nearby without interrupting.',
-        'Watch their hands, their attention, their face.',
-        'Notice their absolute presence.',
-        'Notice your own response.',
-        'Do not interrupt their play.'
-      ],
-      whatItDoes: 'Produces awe at human development and at the felt quality of pre-conditioned attention.',
-      whyItWorks: 'Witnessing absolute presence in another being can elicit awe and remind the observer of the same capacity in themselves.',
-      bestFrequency: 'spontaneous',
-      variations: [
-        'Watching a child learn to walk.',
-        'Watching a baby discover their hands.',
-        'Watching a toddler study an insect for ten minutes.'
-      ],
-      example: 'A teenager spends 20 minutes watching her two-year-old cousin examine a leaf and reports "I forgot what attention looks like."',
-      cautions: 'Always with caregiver consent; never observe unfamiliar children without their parents present.',
-      research: 'Keltner (2023) lists witnessing developmental moments among everyday awe elicitors.'
-    },
-    {
-      id: 'watch_animals_being_themselves',
-      name: 'Watch Animals Being Themselves',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 15,
-      setup: 'Anywhere with observable animals — backyard, park, zoo (ethical), pet bird, ant trail.',
-      steps: [
-        'Find one animal or group.',
-        'Sit or stand at a respectful distance.',
-        'Watch them do their own thing.',
-        'Do not project human stories onto them.',
-        'Stay for at least 15 minutes.'
-      ],
-      whatItDoes: 'Reveals other minds and other forms of being-in-the-world, expanding the sense of life beyond human.',
-      whyItWorks: 'Witnessing non-human consciousness operating on its own terms is awe-eliciting (need-for-accommodation).',
-      bestFrequency: 'weekly',
-      variations: [
-        'Backyard-bird version.',
-        'Ant-trail version (a single ant trail is a 30-minute experience).',
-        'Aquarium version.'
-      ],
-      example: 'A student watches an ant trail for 20 minutes during her lunch period; emerges saying "they were doing something really specific."',
-      cautions: 'Do not feed, touch, or disturb wildlife; ethics of captive-animal observation vary.',
-      research: 'Keltner (2023) Awe; consistent with biophilia hypothesis (Wilson, 1984).'
-    },
-    {
-      id: 'time_lapse_of_flower',
-      name: 'Time-Lapse of a Flower Opening',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 5,
-      setup: 'A short time-lapse video of a flower opening or seed germinating.',
-      steps: [
-        'Watch the full video without doing anything else.',
-        'Watch it again slowly.',
-        'Notice the slow patience of growth.',
-        'Connect to a slow growth in your own life.',
-        'Sit silently for one minute.'
-      ],
-      whatItDoes: 'Compresses biological time into a few minutes, revealing patterns invisible at normal speed.',
-      whyItWorks: 'Temporal compression of natural processes triggers awe through perceptual novelty and connection to deep biological time.',
-      bestFrequency: 'spontaneous',
-      variations: [
-        'Cloud time-lapse.',
-        'Star-trail time-lapse.',
-        'Construction time-lapse for human-built awe.'
-      ],
-      example: 'A health teacher shows a tulip-opening time-lapse; the class quiets unusually.',
-      cautions: 'Screen-time considerations; pair with off-screen practice.',
-      research: 'Keltner (2023); perceptual-vastness research applied to time.'
-    },
-    {
-      id: 'mountain_visualization',
-      name: 'Mountain Visualization',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 15,
-      setup: 'Quiet space, eyes closed, sitting upright.',
-      steps: [
-        'Imagine a mountain in detail — shape, size, weather around it.',
-        'Imagine yourself sitting at its base.',
-        'Feel the mountain\'s steadiness.',
-        'Imagine breathing with its slow patience.',
-        'Open your eyes carrying a small piece of that steadiness.'
-      ],
-      whatItDoes: 'Cultivates inner steadiness using awe of mountains as the imaginal anchor.',
-      whyItWorks: 'Visualization activates many of the same neural patterns as actual perception; awe-inducing imagery can elicit awe response even without external trigger.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Specific real mountain you have visited or seen.',
-        'Mountain audio with wind and bird sounds.',
-        'Mountain photograph as the visual anchor.'
-      ],
-      example: 'A senior facing college applications visualizes Mount Katahdin for 10 minutes before opening her laptop; reports calmer focus.',
-      cautions: 'For students who have never seen mountains, offer alternative awe-imagery (ocean, forest, desert).',
-      research: 'Kabat-Zinn (1994) Wherever You Go, There You Are — mountain meditation; consistent with imagery-and-emotion research.'
-    },
-    {
-      id: 'galaxy_contemplation',
-      name: 'Galaxy and Cosmos Contemplation',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 15,
-      setup: 'A picture of a galaxy (Hubble or Webb deep field) and a quiet 15 minutes.',
-      steps: [
-        'Look at the image.',
-        'Read one fact about the scale: how many stars, how many galaxies, how many light-years.',
-        'Sit with the felt size.',
-        'Notice your own concerns in that scale.',
-        'Return to today with the perspective intact.'
-      ],
-      whatItDoes: 'Produces profound vastness-awe through cosmic perspective.',
-      whyItWorks: 'Cosmic perspective consistently produces the small-self response (Piff et al., 2015); even mediated through images, the effect is detectable.',
-      bestFrequency: 'monthly',
-      variations: [
-        'Planetarium visit.',
-        'Space-documentary version.',
-        'Hubble Deep Field 30-minute stare.'
-      ],
-      example: 'After viewing the Webb Deep Field, a senior reports her social-media drama "felt less real for a few hours."',
-      cautions: 'For students experiencing existential anxiety, cosmic perspective can amplify it; check in afterward.',
-      research: 'Piff, Dietze, Feinberg, Stancato, and Keltner (2015), JPSP — awe induces small-self and increases prosocial behavior.'
-    },
-    {
-      id: 'death_contemplation_small_dose',
-      name: 'Death Contemplation (Small Dose)',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 5,
-      setup: 'A quiet space, alone, brief (5 minutes only).',
-      steps: [
-        'Sit upright. Close your eyes.',
-        'Quietly acknowledge: I will die someday. So will everyone I love.',
-        'Do not dwell — simply acknowledge.',
-        'Open your eyes.',
-        'Notice what now matters more, and what matters less.'
-      ],
-      whatItDoes: 'Uses gentle mortality awareness to clarify values and intensify present-moment awe.',
-      whyItWorks: 'Brief, voluntary mortality awareness in safe settings is associated with increased gratitude and prosocial behavior; the practice must be brief and bounded.',
-      bestFrequency: 'monthly',
-      variations: [
-        'After-funeral version (when already in that frame).',
-        'Reading-an-obituary version.',
-        'Walking-through-a-cemetery version.'
-      ],
-      example: 'Adult facilitator does 5 minutes; reports increased patience with her teenager that evening.',
-      cautions: 'NOT for students with active suicidal ideation, recent loss, severe death anxiety, or psychiatric instability. Only for mature high-school students with consent. Stop if it becomes intrusive.',
-      research: 'Greenberg, Pyszczynski, and Solomon (1986) Terror Management Theory; bounded mortality awareness shown to enhance prosocial values (Vail et al., 2012).'
-    },
-    {
-      id: 'birth_contemplation',
-      name: 'Birth Contemplation',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 10,
-      setup: 'A photo of yourself or a loved one as a baby.',
-      steps: [
-        'Look at the photo.',
-        'Imagine that the person in the photo eventually became the person you know today.',
-        'Imagine the millions of moments between.',
-        'Silently thank whoever cared for them.',
-        'Sit with the awe of human becoming.'
-      ],
-      whatItDoes: 'Produces awe at human development as long, complex, miraculous, and ongoing.',
-      whyItWorks: 'Witnessing the gap between baby-self and current-self triggers awe via the magnitude of becoming.',
-      bestFrequency: 'monthly',
-      variations: [
-        'Sibling-photo version.',
-        'Parent-as-young-person version.',
-        'Group version sharing baby photos in a circle.'
-      ],
-      example: 'A class shares baby photos; the room collectively softens.',
-      cautions: 'For students with adoption, foster care, or estranged-family histories, allow alternatives (a photo of self at 5 or 7, a younger sibling, a niece).',
-      research: 'Consistent with developmental-awe and time-perspective research (Keltner, 2023).'
-    },
-    {
-      id: 'witnessing_moral_beauty',
-      name: 'Witnessing Acts of Moral Beauty',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 10,
-      setup: 'A story, video, or memory of someone acting with extraordinary moral courage or kindness.',
-      steps: [
-        'Bring the act fully to mind.',
-        'Let yourself feel the response — often a warm chest, tears, goosebumps.',
-        'Name what specifically moved you.',
-        'Ask: where in my life could I act in this spirit, even smaller?',
-        'Take one small action this week.'
-      ],
-      whatItDoes: 'Produces moral awe (elevation), which research links to increased prosocial behavior for hours afterward.',
-      whyItWorks: 'Elevation (Haidt, 2003) is a distinct positive emotion that motivates imitation of the witnessed behavior; even short exposures shift behavior.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Documentary-watching version.',
-        'Hero-of-the-week class practice.',
-        'Personal-witness version (someone you saw being moral courageous).'
-      ],
-      example: 'A class watches a clip of someone returning a lost wallet; that week, two students report similar small acts.',
-      cautions: 'Avoid making this performative; the practice is interior first, action second.',
-      research: 'Haidt (2003) The moral emotions; Algoe and Haidt (2009) on elevation and behavior.'
-    },
-    {
-      id: 'ancestral_reflection',
-      name: 'Ancestral Reflection',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 15,
-      setup: 'Quiet space, perhaps with one family or cultural object.',
-      steps: [
-        'Bring to mind one ancestor (biological or chosen).',
-        'Imagine what their daily life looked like.',
-        'Trace one specific thing they did that made your existence possible.',
-        'Silently thank them.',
-        'Pick one quality of theirs to carry today.'
-      ],
-      whatItDoes: 'Produces temporal-vastness awe and a felt sense of being part of a long chain.',
-      whyItWorks: 'Ancestral reflection is one of the most robustly cross-cultural awe practices (Bai et al., 2017); it expands identity beyond the individual.',
-      bestFrequency: 'monthly',
-      variations: [
-        'Letter-to-ancestor version.',
-        'Cultural-ancestor version (an ancestor of your craft, not your bloodline).',
-        'Group version sharing one ancestor each.'
-      ],
-      example: 'A student writes to her great-grandmother who left a country during a war; reports feeling held while applying to colleges.',
-      cautions: 'For students with painful family lineages, allow chosen-ancestors (mentors, cultural figures, fictional characters); do not require biological.',
-      research: 'Bai et al. (2017) on temporal awe; consistent with intergenerational-meaning research (McAdams, 2001).'
-    },
-    {
-      id: 'future_time_perspective',
-      name: 'Future-Time Perspective (What Will Outlast Me?)',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 15,
-      setup: 'A quiet space, journal.',
-      steps: [
-        'Ask: 100 years from now, what might still exist of what I do today?',
-        'List three things — a relationship, a created thing, a contribution.',
-        'Sit with the gap between today and that future.',
-        'Pick one small action that adds to one of the three.',
-        'Take it.'
-      ],
-      whatItDoes: 'Connects present action to deep-future meaning, expanding the felt timeline forward.',
-      whyItWorks: 'Future-self continuity (Hershfield, 2011) plus awe of long-time perspective produces motivation grounded in meaning rather than urgency.',
-      bestFrequency: 'monthly',
-      variations: [
-        'Letter to your descendants in 100 years.',
-        'Tree-planting version (literal long-term legacy).',
-        'Craft-tradition version (passing on a skill).'
-      ],
-      example: 'A senior teaches her little brother to bake bread the way their grandmother taught her; says "this might still exist in 2126."',
-      cautions: 'For students experiencing climate or existential anxiety, do not force optimism about the future; allow ambiguity.',
-      research: 'Hershfield (2011) future-self continuity; Bai et al. (2017) temporal awe.'
-    },
-    {
-      id: 'collective_effervescence',
-      name: 'Collective Effervescence',
-      category: 'relational',
-      forBand: 'all',
-      durationMin: 60,
-      setup: 'Any group experience involving synchronous movement, sound, or attention — concert, sports game, dance, choir, protest, worship, big school assembly.',
-      steps: [
-        'Show up to a group event that moves together.',
-        'Let yourself sync — clap, chant, move, sing.',
-        'Notice the felt shift from self to we.',
-        'After it ends, take 30 seconds of silence before checking your phone.',
-        'Carry the felt connection forward.'
-      ],
-      whatItDoes: 'Produces collective awe — Durkheim\'s "collective effervescence" — through synchronized group experience, one of the most reliable awe elicitors cross-culturally.',
-      whyItWorks: 'Synchronized movement and attention dissolve the felt boundary between self and group, producing the small-self response in a social rather than cosmic register.',
-      bestFrequency: 'spontaneous',
-      variations: [
-        'Concert version.',
-        'Pep-rally version.',
-        'Religious service version.',
-        'Protest march version.'
-      ],
-      example: 'A senior at a school assembly during a moment of silent group standing reports "I felt like we were one body for thirty seconds."',
-      cautions: 'For students with crowd anxiety or sensory sensitivity, adapt — smaller groups, quieter forms (recitation, breath circles) work too.',
-      research: 'Durkheim (1912); Keltner (2023) Awe lists collective effervescence as one of the eight wonders of life.'
-    },
-    {
-      id: 'awe_of_human_skill',
-      name: 'Awe of Human Skill',
-      category: 'sensory',
-      forBand: 'all',
-      durationMin: 15,
-      setup: 'A performance, demonstration, or video of someone exercising mastery (Olympic gymnastics, glass-blowing, surgery, calligraphy).',
-      steps: [
-        'Watch with full attention for at least 10 minutes.',
-        'Notice the precision, the years of practice.',
-        'Silently honor the person and the tradition behind them.',
-        'Notice your own response — chills, tears, a desire to try.',
-        'Pick one tiny thing in your own practice to do more carefully.'
-      ],
-      whatItDoes: 'Produces awe at human capacity and connects the viewer to long traditions of craft.',
-      whyItWorks: 'Witnessing extraordinary skill triggers awe via accommodation (the mind cannot easily fit what it sees into existing schemas of "human can do"); also models long-term effort as worth it.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Athletic version (Olympics, world records).',
-        'Craft version (woodworking, weaving, glassblowing).',
-        'Scientific-precision version (a chemistry demo, a surgical procedure).'
-      ],
-      example: 'A class watches a 4-minute video of a master calligrapher; afterward students hold their pens differently for the rest of the period.',
-      cautions: 'Pair with realism — most mastery comes from boring practice, not dramatic genius; avoid genius-narrative that discourages effort.',
-      research: 'Keltner (2023) Awe — "wonder of wisdom and skill" as one of the eight awe domains.'
-    },
-    {
-      id: 'awe_in_mathematics',
-      name: 'Awe in Mathematics',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 10,
-      setup: 'A mathematical idea or proof that has moved you (or look one up).',
-      steps: [
-        'Pick a piece of mathematics — Euler\'s identity, the Pythagorean theorem proof, the infinitude of primes, the golden ratio in nature.',
-        'Read or work through it slowly.',
-        'Sit with the felt sense of pattern.',
-        'Notice if anything in the body shifts.',
-        'Acknowledge that this pattern would still be true if no human had ever existed.'
-      ],
-      whatItDoes: 'Reveals mathematical pattern as a source of awe in its own right, beyond instrumental use.',
-      whyItWorks: 'Mathematical awe is grounded in apprehension of objective necessity — patterns that would hold even without us trigger the same accommodation response as cosmic vastness.',
-      bestFrequency: 'monthly',
-      variations: [
-        'Geometry version (constructing a regular pentagon with compass).',
-        'Number-theory version (proof there are infinite primes).',
-        'Physics version (light always travels at the same speed for every observer).'
-      ],
-      example: 'A pre-calc student sits with Euler\'s identity for ten minutes after class; reports "I don\'t know why but I almost cried."',
-      cautions: 'Do not weaponize this against students math-anxious; the practice is for the moments when math has felt beautiful, not as homework.',
-      research: 'Keltner (2023) Awe — epistemic awe in math and science consistently elicited across studies.'
-    },
-    {
-      id: 'awe_at_being_alive',
-      name: 'Awe at the Bare Fact of Being Alive',
-      category: 'contemplative',
-      forBand: 'high',
-      durationMin: 8,
-      setup: 'A quiet space, sitting upright, eyes open or closed.',
-      steps: [
-        'Sit and breathe naturally.',
-        'Quietly acknowledge: I exist. There is something rather than nothing.',
-        'Sit with the strangeness of that.',
-        'Do not try to explain it.',
-        'Open your eyes if they were closed.'
-      ],
-      whatItDoes: 'Produces existential awe through direct attention to the unaccountable fact of being.',
-      whyItWorks: 'Existential awe (Yaden et al., 2017) is associated with reduced fear of death, increased meaning, and increased prosocial behavior; the practice is the simplest possible form.',
-      bestFrequency: 'weekly',
-      variations: [
-        'Morning version upon waking.',
-        'Walking version while crossing a familiar path.',
-        'Lying-on-grass version (recommended).'
-      ],
-      example: 'Lay on the grass after a hard week. Looked up. Thought "I am here." Felt held by the world for two minutes.',
-      cautions: 'For students with derealization or dissociation, ground first with body sensation before this practice.',
-      research: 'Yaden, Haidt, Hood, Vago, and Newberg (2017) on varieties of self-transcendence; consistent with awe-and-meaning research.'
-    }
-  ];
-
+  
   // ── Sound & Sensory Anchors Library ──
   // 80+ anchors students can use as focus points during meditation
-  var SENSORY_ANCHORS = [
-    // ============================================================
-    // AUDITORY ANCHORS (15)
-    // ============================================================
-    {
-      id: 'sound_of_own_breath',
-      name: 'The sound of your own breath',
-      sense: 'auditory',
-      category: 'breath',
-      description: {
-        elementary: 'Listen for the little air sounds when you breathe in and out. It is one of the quietest sounds you can hear.',
-        middle: 'Notice the soft hush of air moving past your nose, lips, or throat. Your breath has a sound even when no one else can hear it.',
-        high: 'Attend to the subtle acoustic signature of respiration, the friction of air against tissue. It is intimate and always available.'
-      },
-      howToUseAsAnchor: [
-        'Settle into a comfortable position and let your jaw soften.',
-        'Close your eyes or lower your gaze to soften visual input.',
-        'Listen for the faintest sound of air entering and leaving.',
-        'When the mind wanders, return to that hush as soon as you notice.',
-        'Do not force the breath to be louder, just listen to what is there.',
-        'Stay for 1 to 10 minutes depending on capacity.'
-      ],
-      whenItHelps: [
-        'When external sounds are too distracting',
-        'When you want a private anchor in a public place',
-        'Before sleep when other senses are quieting',
-        'When sitting still feels hard and you need internal focus',
-        'For students who find tactile anchors too triggering'
-      ],
-      whenItDoesntHelp: 'Anyone with breath-related anxiety, panic disorder, or asthma may find this anchor activating. Use a body or sound anchor instead.',
-      variations: [
-        'Count the breath cycles softly in your mind from 1 to 10.',
-        'Notice only the in-breath sound, then only the out-breath.',
-        'Lengthen the exhale slightly and listen to it stretch.'
-      ],
-      research: 'Anapanasati (breath-awareness) is the foundational anchor across most contemplative traditions; Kabat-Zinn (1990) names it the primary MBSR object.'
-    },
-    {
-      id: 'sound_of_silence',
-      name: 'The sound of silence between sounds',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'Listen for the quiet space between noises. Silence has its own feeling.',
-        middle: 'Try to notice the gap between sounds, the moment of nothing before the next thing makes a noise.',
-        high: 'Attend to the negative space of sound, the substrate against which all auditory events occur. It is paradoxically full.'
-      },
-      howToUseAsAnchor: [
-        'Sit and let your ears go soft and open.',
-        'Notice one sound, then wait for the next.',
-        'Rest your attention in the gap between them.',
-        'When the next sound arrives, let it pass through.',
-        'Return to the silence underneath.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'In quiet rooms with intermittent sound',
-        'For advanced practitioners seeking subtler anchors',
-        'When you want to develop receptive (rather than focused) attention',
-        'During nature sits at dawn or dusk',
-        'For older students ready for paradox'
-      ],
-      whenItDoesntHelp: 'In loud or chaotic environments. Also unsuitable for students who find silence itself activating (some trauma histories).',
-      variations: [
-        'Map the silence by direction: above, below, behind, in front.',
-        'Notice how silence has texture (thick, thin, ringing).',
-        'Pair with a soft bell that punctuates the silence.'
-      ],
-      research: 'Pauline Oliveros\'s Deep Listening practice frames silence as primary content; resonates with Zen shikantaza.'
-    },
-    {
-      id: 'distant_traffic',
-      name: 'Distant traffic',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'Listen to cars and trucks that are far away. It sounds like a soft river of sound.',
-        middle: 'The hum of distant traffic blends into one continuous wash, like waves you cannot quite hear.',
-        high: 'Urban acoustic ecology treats distant traffic as a stable drone, a found instrument always available in city environments.'
-      },
-      howToUseAsAnchor: [
-        'Sit near a window or in a quiet room.',
-        'Let your ears reach toward the furthest sound you can hear.',
-        'Rest there. Do not analyze or label the cars.',
-        'Let nearer sounds (footsteps, voices) pass through without grabbing.',
-        'Return to the distant wash whenever attention drifts.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'In urban or suburban settings where silence is not available',
-        'For students who feel calmed (not annoyed) by traffic',
-        'Late at night when traffic thins to a soft hush',
-        'When you want a non-judgmental anchor (cars do not care about you)',
-        'For city-dwelling students who would otherwise feel ungrounded'
-      ],
-      whenItDoesntHelp: 'For students with sound sensitivity, PTSD related to vehicle accidents, or who live next to highways and are seeking relief from traffic.',
-      variations: [
-        'Notice the gaps between vehicles, not just the vehicles.',
-        'Map traffic to a direction (north / south).',
-        'Hear it as ocean waves or wind in trees.'
-      ],
-      research: 'R. Murray Schafer\'s soundscape ecology proposed reframing urban drone as keynote sounds rather than noise.'
-    },
-    {
-      id: 'hvac_hum',
-      name: 'HVAC hum',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'The heater or air conditioner makes a low buzzing sound. Listen to it like a song with no notes.',
-        middle: 'The mechanical hum of an HVAC system is a low, steady drone. It is one of the most reliable anchors in any building.',
-        high: 'A 60Hz building-electrical drone (or 50Hz outside North America) plus airflow turbulence creates a complex pink-noise wash.'
-      },
-      howToUseAsAnchor: [
-        'Sit comfortably and let your attention drop to the floor.',
-        'Listen for the lowest, steadiest sound in the room.',
-        'Rest your ears in it like setting them down on a soft surface.',
-        'Notice subtle changes in pitch as the fan modulates.',
-        'When the AC cycles off, listen to the absence.',
-        'Practice for 5 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'In school buildings, libraries, and offices',
-        'When you cannot leave the room for quiet',
-        'For students who find white noise calming',
-        'During testing or homework periods',
-        'When other students are typing or rustling'
-      ],
-      whenItDoesntHelp: 'For students with misophonia or auditory processing differences who hear HVAC as oppressive rather than soothing.',
-      variations: [
-        'Hum quietly along with the pitch you hear (in your head).',
-        'Notice when the fan kicks on and how the hum shifts.',
-        'Pair with breath: inhale on the fan-on, exhale on the fan-off cycles.'
-      ],
-      research: 'Pink and brown noise (the spectral profile of most HVAC) reduces cortical arousal in some sleep studies (Zhou et al. 2012).'
-    },
-    {
-      id: 'clock_ticking',
-      name: 'A clock ticking',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'A clock that ticks makes a steady tap-tap-tap. You can rest your attention on each tick.',
-        middle: 'The regular pulse of a mechanical clock is metronomic. Each tick is a small reset for your wandering mind.',
-        high: 'Isochronic ticking creates external entrainment cues that some studies link to mild slowing of subjective time and increased relaxation.'
-      },
-      howToUseAsAnchor: [
-        'Find a room with an analog ticking clock.',
-        'Sit quietly and let the tick become the loudest thing.',
-        'Rest one breath cycle per 4 to 6 ticks.',
-        'If you lose count, do not restart, just notice the next tick.',
-        'Let the tick become the only sound that matters.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'In libraries, grandparents\' homes, classrooms',
-        'For students who like rhythm and predictability',
-        'Pairing with paced breathing (one breath per 6 ticks)',
-        'When working through anxious thought spirals',
-        'When other sounds are unpredictable'
-      ],
-      whenItDoesntHelp: 'For students with OCD around time, test anxiety, or who associate ticking with countdowns (some autistic and PTSD students find it activating).',
-      variations: [
-        'Inhale for 4 ticks, exhale for 6.',
-        'Imagine each tick as a stone dropped into still water.',
-        'Pair with one of the longer breaths (4-7-8 timing).'
-      ],
-      research: 'Metronomic auditory cues are used in music therapy (Thaut, 2005) to entrain motor rhythms; calming use is anecdotal.'
-    },
-    {
-      id: 'birdsong',
-      name: 'Birdsong',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'Birds singing outside is a happy sound. You do not have to know the bird, just enjoy the song.',
-        middle: 'Birdsong is unpredictable in melody but predictable in feeling. It signals that a place is alive and safe.',
-        high: 'Studies link exposure to birdsong with reduced perceived stress and improved mood, independent of bird identification skill.'
-      },
-      howToUseAsAnchor: [
-        'Open a window or sit outside in a quiet place.',
-        'Let your ears soften and reach toward bird sounds.',
-        'Do not try to identify the species.',
-        'Notice melody, distance, direction, gaps of silence.',
-        'When the mind wanders, return to the next song.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Early morning practice (dawn chorus)',
-        'Recovery from burnout or grief',
-        'For students who feel restored by nature',
-        'When indoor anchors feel stale',
-        'After a stressful test or class'
-      ],
-      whenItDoesntHelp: 'In urban environments with no birds. Also unsuitable for students with bird phobia (ornithophobia, rare but real).',
-      variations: [
-        'Count how many distinct calls you hear in 60 seconds.',
-        'Try to locate one bird in space (without looking).',
-        'Pair with slow walking and listen as you move.'
-      ],
-      research: 'Hammoud et al. (2022) found exposure to birdsong reduced anxiety and paranoia in healthy adults.'
-    },
-    {
-      id: 'rain',
-      name: 'Rain',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'Rain on a roof or window sounds like soft tapping or a long shhh. It is calming for most people.',
-        middle: 'Rain produces wide-spectrum pink noise. Light rain is gentle, heavy rain is enveloping, and both can anchor you.',
-        high: 'The spectral fullness of rain masks distracting frequencies and lowers attentional vigilance, making it a near-universal calming anchor.'
-      },
-      howToUseAsAnchor: [
-        'Sit or lie near a window or under shelter outside.',
-        'Listen to the overall wash, not individual drops.',
-        'Notice the texture (light patter, heavy drumming, dripping).',
-        'When attention drifts, return to the loudest area of rain.',
-        'Allow yourself to be enveloped without analysis.',
-        'Practice for 5 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'Stormy days when going outside is not safe',
-        'Before sleep',
-        'After a hard day, when you need permission to be still',
-        'For students who find rain comforting',
-        'In Pacific Northwest, UK, and other rainy climates'
-      ],
-      whenItDoesntHelp: 'For students with flood or storm trauma, or those who associate rain with depression onset.',
-      variations: [
-        'Practice with eyes open, watching drops on glass.',
-        'Pair with a warm beverage held in the hand.',
-        'Use rain recording (rain on canvas, rain on metal roof) when no rain is available.'
-      ],
-      research: 'Pink-noise components in rain reduce sleep latency in some adults (Zhou 2012, ITN sleep studies).'
-    },
-    {
-      id: 'wind',
-      name: 'Wind',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'Wind makes leaves rustle and sometimes whistles. It is a sound that comes and goes.',
-        middle: 'Wind in trees, around buildings, or through grass creates dynamic, unpredictable acoustic textures.',
-        high: 'Aeolian sound is non-rhythmic and unpredictable, training acceptance of impermanence in auditory form.'
-      },
-      howToUseAsAnchor: [
-        'Sit outside or near an open window.',
-        'Listen for the sound the wind makes as it moves things.',
-        'Notice gusts, lulls, sudden changes.',
-        'Do not try to predict the next sound.',
-        'Allow the wind to come and go as the mind does.',
-        'Practice for 3 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Hill country, beach, prairie practice',
-        'For students who find unpredictability calming (not all do)',
-        'When practicing impermanence as a concept',
-        'On windy days when you cannot make outside still',
-        'Outdoor recess decompression'
-      ],
-      whenItDoesntHelp: 'For students with weather-related trauma (hurricane, wildfire) or sensory sensitivity to whistling sounds.',
-      variations: [
-        'Notice how wind interacts with different surfaces (leaves vs. wires).',
-        'Track wind direction by sound alone.',
-        'Pair with eyes-open watching of swaying branches.'
-      ],
-      research: 'Aeolian and natural-soundscape exposure linked to reduced rumination (Bratman 2015).'
-    },
-    {
-      id: 'ocean_waves',
-      name: 'Ocean waves',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'Waves at the beach go shhhhh-shhhhh in a slow steady rhythm. They are one of the most peaceful sounds.',
-        middle: 'Ocean waves are the most universally calming soundscape on Earth, found in nearly every culture\'s relaxation traditions.',
-        high: 'Wave periodicity (typically 6 to 12 seconds) closely matches resonant breathing rates, producing physiological entrainment.'
-      },
-      howToUseAsAnchor: [
-        'Sit at the beach or use a recording.',
-        'Let your breath fall into rhythm with the waves.',
-        'Inhale on the wave rising, exhale on the wash back.',
-        'Do not force the rhythm, let it find you.',
-        'Notice each wave as a new event.',
-        'Practice for 10 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'Vacation or post-vacation longing',
-        'For students who feel restored by water',
-        'Coastal community practice',
-        'Before sleep',
-        'For breath-entrainment to slow-paced respiration'
-      ],
-      whenItDoesntHelp: 'For students with drowning, tsunami, or maritime trauma; for inland students with no felt connection to ocean.',
-      variations: [
-        'Match breath to one wave cycle.',
-        'Imagine sitting just above the tide line as it rolls in.',
-        'Add seagulls or distant boat horn sparingly.'
-      ],
-      research: 'Ocean-wave audio in clinical relaxation training (Benson 1976; reproduced widely since).'
-    },
-    {
-      id: 'singing_bowl',
-      name: 'Singing bowl tone',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'A singing bowl makes a long ringing sound when you strike it. The sound takes a long time to fade away.',
-        middle: 'Tibetan and Himalayan singing bowls produce a sustained tone with rich overtones that decay slowly, ideal for tracking attention to its very end.',
-        high: 'Singing bowls produce inharmonic spectra (fundamental plus overtones); the slow decay trains sustained attention through fade.'
-      },
-      howToUseAsAnchor: [
-        'Strike the bowl once with a soft mallet (or have a facilitator do so).',
-        'Listen to the full tone from strike to silence.',
-        'Notice the moment you can no longer hear it.',
-        'Sit with the silence that remains.',
-        'When ready, strike again or rest in silence.',
-        'Practice with 3 to 7 strikes over 5 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'Beginning and ending of a session (bookend)',
-        'For students who like clear start/stop signals',
-        'In groups, to synchronize attention',
-        'For tracking impermanence (something arises and passes)',
-        'In trauma-informed practice when paired with eyes-open'
-      ],
-      whenItDoesntHelp: 'For students with sound sensitivity, autistic students who find sustained tones overwhelming, or those who associate bowls with appropriated spirituality.',
-      variations: [
-        'Vary the strike intensity (soft, medium).',
-        'Use multiple bowls of different pitches.',
-        'Pair with breath: inhale on strike, exhale through the fade.'
-      ],
-      research: 'Goldsby et al. (2017) reported reduced tension and anxiety from sound meditation including singing bowls.'
-    },
-    {
-      id: 'held_note',
-      name: 'A held note (own voice or recording)',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'You make one long sound with your voice (like ahhhh or ohhmmm). Listen to your own voice as it stretches.',
-        middle: 'A single held vocal note focuses attention by combining hearing and producing sound. The vibration is felt as much as heard.',
-        high: 'Vocal toning produces vagal stimulation through the larynx; the audible note doubles as proprioceptive anchor.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright and take a comfortable breath.',
-        'On the exhale, hum or sustain a vowel (mmm, ahhh, ohhh).',
-        'Listen and feel the vibration in your chest, throat, head.',
-        'Let the note end naturally with the breath.',
-        'Pause, breathe in, repeat.',
-        'Practice 6 to 12 cycles over 3 to 6 minutes.'
-      ],
-      whenItHelps: [
-        'For students who feel calmer when actively making sound',
-        'Vagal regulation work',
-        'Pre-presentation or pre-test centering',
-        'When silent practice feels too restless',
-        'For students who like singing'
-      ],
-      whenItDoesntHelp: 'Students with vocal trauma, selective mutism, social anxiety about being heard, or sore throats.',
-      variations: [
-        'Vary the pitch (low, mid, high).',
-        'Use different vowels and feel where vibration lands.',
-        'Hum silently in the throat if making sound feels exposing.'
-      ],
-      research: 'Kalyani et al. (2011) MRI study found OM chanting deactivated limbic regions similar to vagal nerve stimulation.'
-    },
-    {
-      id: 'noise_color',
-      name: 'White / brown / pink noise',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'These are special quiet whooshing sounds, like a soft fan. They cover up other sounds.',
-        middle: 'White, pink, and brown noise are spectral profiles. White is bright, pink is balanced, brown is deep and bass-heavy.',
-        high: 'White noise has equal energy per Hz; pink has equal energy per octave; brown emphasizes low frequencies. Each masks different distraction profiles.'
-      },
-      howToUseAsAnchor: [
-        'Choose the color that feels most settling (try each for 30 seconds).',
-        'Set the volume low enough that you must lean in to hear.',
-        'Rest your attention in the wash.',
-        'When you notice attention drifting, return to the noise.',
-        'Use as a backdrop, not a foreground.',
-        'Practice for 5 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'In open classrooms or shared spaces',
-        'For ADHD students who need consistent auditory backdrop',
-        'When other students are typing, talking, or moving',
-        'For sleep onset',
-        'When you cannot leave a busy environment'
-      ],
-      whenItDoesntHelp: 'For students with tinnitus (may worsen perception) or those who find any constant sound oppressive.',
-      variations: [
-        'Layer pink noise under a singing-bowl strike.',
-        'Use brown noise for sleep, pink for focus.',
-        'Pair with breath-counting from 1 to 10.'
-      ],
-      research: 'Pickens et al. (2019) meta-analysis: white-noise exposure has mixed evidence for cognitive performance but consistent self-reported calming.'
-    },
-    {
-      id: 'bell_return',
-      name: 'A bell (return to it whenever it rings)',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'When the bell rings, take one slow breath. The bell helps you remember to come back.',
-        middle: 'A bell rung at irregular intervals interrupts wandering thought and trains you to return to presence on cue.',
-        high: 'Thich Nhat Hanh\'s mindfulness bell practice uses unpredictable auditory cues as conditioning for sustained meta-awareness.'
-      },
-      howToUseAsAnchor: [
-        'Set a bell app or have a facilitator ring at irregular intervals.',
-        'Each time the bell rings, pause whatever you are doing.',
-        'Take three slow breaths.',
-        'Notice where your attention was before the bell.',
-        'Return to your activity or to the next sit.',
-        'Practice across an entire class period or 30-minute work block.'
-      ],
-      whenItHelps: [
-        'During study or seatwork',
-        'For training meta-attention (noticing where attention was)',
-        'In Plum Village-inspired practice',
-        'For students working on impulse control',
-        'During silent reading'
-      ],
-      whenItDoesntHelp: 'For students with sound startles or attention difficulties that worsen with interruption.',
-      variations: [
-        'Vary bell intervals (every 5, 7, 11 minutes).',
-        'Use a soft chime instead of a loud bell.',
-        'Self-ring (let students choose when).'
-      ],
-      research: 'Thich Nhat Hanh\'s Plum Village mindfulness bell tradition; replicated in school SEL programs (MindUP, MLERN).'
-    },
-    {
-      id: 'own_footsteps',
-      name: 'Footsteps (your own)',
-      sense: 'auditory',
-      category: 'movement',
-      description: {
-        elementary: 'When you walk, listen to your feet making sounds on the floor. Each step makes a soft tap.',
-        middle: 'Hearing your own footsteps as an anchor pairs sound and movement, ideal for kinesthetic learners.',
-        high: 'Audible foot contact provides multimodal feedback (auditory, proprioceptive, vestibular) suited to walking meditation.'
-      },
-      howToUseAsAnchor: [
-        'Walk slowly on a hard surface (wood, tile).',
-        'Listen to the sound of each foot landing.',
-        'Pair sound with the breath: 2 steps in, 3 steps out.',
-        'If thoughts wander, return to the next footfall.',
-        'Walk a known short loop for 5 to 15 minutes.',
-        'End by standing still and listening to the silence.'
-      ],
-      whenItHelps: [
-        'When sitting is uncomfortable',
-        'Between sitting practices to refresh focus',
-        'For students who cannot tolerate stillness',
-        'During recess decompression walks',
-        'For ADHD students'
-      ],
-      whenItDoesntHelp: 'For students with mobility-related grief or pain, or those for whom walking itself is destabilizing.',
-      variations: [
-        'Walk in soft socks for quieter feedback.',
-        'Walk barefoot indoors for proprioceptive added input.',
-        'Walk on gravel for added crunch.'
-      ],
-      research: 'Walking meditation reduces anxiety (Edwards 2018) and is endorsed in MBSR.'
-    },
-    {
-      id: 'children_playing_distant',
-      name: 'Children playing (distant, abstract)',
-      sense: 'auditory',
-      category: 'sound',
-      description: {
-        elementary: 'You can hear kids on the playground far away. It sounds like a happy bird-flock.',
-        middle: 'Distant children\'s voices blend into an abstract wash, signaling life and community without demanding attention.',
-        high: 'Distant human sound conveys safety (others are nearby) while remaining acoustically diffuse enough to function as anchor.'
-      },
-      howToUseAsAnchor: [
-        'Sit near (but not in) a playground or community space.',
-        'Let the voices remain a wash, not individual words.',
-        'Notice the rhythm of laughter, calls, pauses.',
-        'Do not try to follow any one voice.',
-        'Rest in the sense of a living place.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'For students who feel calmed by knowing others are near',
-        'Outdoor practice on school grounds',
-        'For introverts seeking gentle social warmth without interaction',
-        'Coffee shops at low volume',
-        'Park benches'
-      ],
-      whenItDoesntHelp: 'For students experiencing bullying who associate playgrounds with threat, or for sensory-sensitive students for whom voices feel intrusive.',
-      variations: [
-        'Pair with people-watching (eyes open).',
-        'Use a recording of distant playgrounds for indoor practice.',
-        'Bring a warm drink and rest at a bench.'
-      ],
-      research: 'Soundscape ecology classifies human-presence drone as one of the keynote categories (Schafer 1977).'
-    },
-
-    // ============================================================
-    // TACTILE ANCHORS (12)
-    // ============================================================
-    {
-      id: 'hands_on_thighs',
-      name: 'Hands resting on thighs',
-      sense: 'tactile',
-      category: 'body',
-      description: {
-        elementary: 'Put your hands on your legs and feel where they touch. Notice the weight and the warmth.',
-        middle: 'Hands resting on thighs creates a stable touchpoint that anchors the upper body and signals safety.',
-        high: 'Palms-down hands on thighs is the classical sitting posture in many traditions; provides constant proprioceptive feedback.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright on a chair or cushion.',
-        'Let hands rest on thighs, palms down or up.',
-        'Notice the weight of each hand and the warmth where skin meets clothing.',
-        'When attention drifts, return to that contact.',
-        'Allow other sensations to come and go.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Beginner sitting practice',
-        'For students who need a clear anchor for restless hands',
-        'During seated work breaks',
-        'When breath feels too internal',
-        'In trauma-informed practice (touch is on self, by self)'
-      ],
-      whenItDoesntHelp: 'Students with chronic hand pain or arthritis may need to adjust position; numb hands cannot serve as anchor.',
-      variations: [
-        'Palms up (more open) versus palms down (more grounded).',
-        'One hand on heart, one on belly.',
-        'Hands cupped in lap (mudra-style).'
-      ],
-      research: 'Standard MBSR seated posture (Kabat-Zinn 1990).'
-    },
-    {
-      id: 'feet_on_floor',
-      name: 'Feet on floor',
-      sense: 'tactile',
-      category: 'body',
-      description: {
-        elementary: 'Feel where your feet press into the floor. The floor is holding you up.',
-        middle: 'Foot contact with the floor is the most stable proprioceptive anchor; gravity does the work for you.',
-        high: 'Plantar pressure is a foundational grounding cue, often the first instruction in trauma-informed practice.'
-      },
-      howToUseAsAnchor: [
-        'Sit with both feet flat on the floor (shoes on or off).',
-        'Notice where the heel, ball, and toes press down.',
-        'Feel the floor pressing back up against you.',
-        'Wiggle toes once, then return to stillness.',
-        'Rest attention on the sense of being held by the ground.',
-        'Practice for 3 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety or dissociation episodes',
-        'Pre-test or pre-presentation centering',
-        'For students who feel ungrounded',
-        'Trauma-informed introduction to body awareness',
-        'During seated work'
-      ],
-      whenItDoesntHelp: 'Students with foot pain, neuropathy, or amputation. Offer alternatives (sit bones, back against chair).',
-      variations: [
-        'Barefoot for added sensory richness.',
-        'Shift weight side to side, then return to center.',
-        'Notice the floor as a held surface, not just a hard one.'
-      ],
-      research: 'Treleaven (2018) Trauma-Sensitive Mindfulness names this the most reliable grounding anchor.'
-    },
-    {
-      id: 'fingertips_touching',
-      name: 'Fingertips touching',
-      sense: 'tactile',
-      category: 'touch',
-      description: {
-        elementary: 'Touch your fingertips together gently. Feel each fingertip where it meets the other hand.',
-        middle: 'Self-touch fingertip to fingertip is a small, private anchor available in any situation.',
-        high: 'Bilateral self-touch produces hemispheric synchronization cues and is used in some EMDR variants.'
-      },
-      howToUseAsAnchor: [
-        'Sit or stand quietly.',
-        'Lightly bring opposite fingertips together (thumb to thumb, index to index, etc.).',
-        'Focus on the sensation of each contact point.',
-        'Move slowly from one pair to the next.',
-        'Return to the touch when attention wanders.',
-        'Practice for 2 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'In public spaces (invisible to others)',
-        'During tests or meetings',
-        'For students who need a discrete fidget',
-        'Pre-performance anxiety',
-        'During hard conversations'
-      ],
-      whenItDoesntHelp: 'For students with tactile defensiveness or fingertip pain.',
-      variations: [
-        'Touch one pair, hold, release. Repeat slowly.',
-        'Increase pressure slightly, then release.',
-        'Pair with breath (one touch per breath cycle).'
-      ],
-      research: 'Bilateral self-stimulation is a regulatory technique in trauma therapy (Shapiro 2001).'
-    },
-    {
-      id: 'lap_palms_up',
-      name: 'Lap with palms up',
-      sense: 'tactile',
-      category: 'body',
-      description: {
-        elementary: 'Put your hands in your lap, palms facing up. Notice the openness in your hands.',
-        middle: 'Open palms in the lap signal receptivity; the body posture cues a softer mental state.',
-        high: 'Upturned palms in dhyana mudra invite an open-receive stance contrasted with palms-down grounding.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright with hands resting in lap, palms up.',
-        'Feel the air on your palms and the weight of your hands.',
-        'Notice any temperature differences from palm to palm.',
-        'If hands twitch or fidget, simply notice and return.',
-        'Hold for the duration of the sit.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'When practicing receptivity (loving-kindness, gratitude)',
-        'After grief or hard conversations',
-        'For students who feel guarded',
-        'In paired practice (with another student\'s hands nearby, not touching)',
-        'When you want softness over groundedness'
-      ],
-      whenItDoesntHelp: 'When you feel fragile and exposed; palms-down is more protective.',
-      variations: [
-        'Cup one hand in the other (Zen mudra).',
-        'Rest palms on knees instead of lap.',
-        'Form a soft cup, ready to receive.'
-      ],
-      research: 'Embodied cognition research (Niedenthal 2007) shows posture influences felt state.'
-    },
-    {
-      id: 'smooth_stone',
-      name: 'Holding a smooth stone',
-      sense: 'tactile',
-      category: 'object',
-      description: {
-        elementary: 'A smooth stone in your hand is cool and heavy. Hold it like a small friend.',
-        middle: 'A worry stone or river stone provides constant tactile feedback that is both grounding and soothing.',
-        high: 'Polished stone offers temperature contrast (cool initially), weight, and texture, an excellent multi-channel anchor.'
-      },
-      howToUseAsAnchor: [
-        'Hold the stone in one hand or both.',
-        'Feel its weight, temperature, and surface texture.',
-        'Slowly turn it over and notice every facet.',
-        'Press it gently into your palm, release.',
-        'Return to it whenever attention drifts.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety, including in classroom or test settings',
-        'For students who need a transitional object',
-        'For sensory-seeking students',
-        'During hard conversations or interviews',
-        'Pocket-sized for portability'
-      ],
-      whenItDoesntHelp: 'In environments where holding objects is prohibited (some standardized tests).',
-      variations: [
-        'Try a rough stone for contrast.',
-        'Pair with a phrase (one breath per turn of the stone).',
-        'Pass between hands slowly.'
-      ],
-      research: 'Worry stones appear cross-culturally (Greek komboloi, Catholic relic-stones); contemporary OT uses tactile fidgets for self-regulation (Mahler 2017).'
-    },
-    {
-      id: 'fabric_edge',
-      name: 'Holding a fabric edge',
-      sense: 'tactile',
-      category: 'touch',
-      description: {
-        elementary: 'Find a soft edge on your clothes or a blanket. Rub it gently between your fingers.',
-        middle: 'A familiar fabric edge (hoodie, blanket, scarf) offers private tactile anchoring nearly anywhere.',
-        high: 'Self-soothing through fabric is widely observed across childhood and continues into adult contemplative use as a low-visibility anchor.'
-      },
-      howToUseAsAnchor: [
-        'Find a soft edge on your clothing or a nearby blanket.',
-        'Rub it gently between thumb and fingers.',
-        'Notice the texture, temperature, and any folds.',
-        'Slow the movement until it nearly stops.',
-        'Return to the sensation when attention wanders.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'In school settings (sleeves, hood drawstrings)',
-        'During sensory overload',
-        'When you need a low-visibility fidget',
-        'Pre-sleep, with a blanket or pillow edge',
-        'For autistic students who already use this naturally'
-      ],
-      whenItDoesntHelp: 'For students whose teachers misread fabric-rubbing as inattention; consider explaining to faculty.',
-      variations: [
-        'Rub slowly versus quickly.',
-        'Switch to a different texture (velvet, fleece, cotton).',
-        'Tie a small soft scrap to a keychain for portability.'
-      ],
-      research: 'Transitional objects (Winnicott 1953) and OT-informed sensory tools (Wilbarger 1991).'
-    },
-    {
-      id: 'cool_water',
-      name: 'Cool water on hands',
-      sense: 'tactile',
-      category: 'temperature',
-      description: {
-        elementary: 'Run cool water over your hands and feel the temperature change. It wakes you up gently.',
-        middle: 'Cool water on the hands or wrists is one of the fastest physiological resets, activating the dive reflex when applied to the face.',
-        high: 'Cold-water exposure to face or wrists triggers the mammalian dive reflex, dropping heart rate within 30 seconds (DBT TIPP).'
-      },
-      howToUseAsAnchor: [
-        'Go to a sink and run cool (not icy) water.',
-        'Place hands under the stream for 30 to 60 seconds.',
-        'Pay attention only to the temperature, sound, and feel.',
-        'Notice the warming that happens when you remove your hands.',
-        'Dry slowly and intentionally.',
-        'Practice as needed, or before a sit to settle.'
-      ],
-      whenItHelps: [
-        'Acute anxiety or panic (TIPP skill from DBT)',
-        'After arguments or hard conversations',
-        'Before tests or presentations',
-        'Mid-meditation if drowsy',
-        'Quick reset between classes'
-      ],
-      whenItDoesntHelp: 'Students with Raynaud\'s syndrome, severe cold sensitivity, or who have water-related trauma.',
-      variations: [
-        'Use a cool wet cloth on the face instead.',
-        'Hold an ice cube briefly (TIPP).',
-        'Splash water on the face (more intense dive reflex).'
-      ],
-      research: 'Linehan (1993) DBT TIPP skill uses cold-water face immersion as crisis-survival tool.'
-    },
-    {
-      id: 'warm_tea_cup',
-      name: 'Warm tea cup',
-      sense: 'tactile',
-      category: 'temperature',
-      description: {
-        elementary: 'Hold a warm cup in your hands and feel the heat. The warmth feels like a hug.',
-        middle: 'Holding a warm cup of tea or hot cocoa provides sustained warmth, weight, and ritual all at once.',
-        high: 'Physical warmth has been shown to increase felt social warmth (Williams & Bargh 2008); excellent for self-compassion practice.'
-      },
-      howToUseAsAnchor: [
-        'Prepare a warm beverage in a sturdy cup.',
-        'Wrap both hands around the cup.',
-        'Notice the warmth spreading into your palms.',
-        'Let attention rest on the temperature, the weight, the steam.',
-        'Sip slowly when ready.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Morning practice',
-        'Self-compassion sessions',
-        'After hard conversations',
-        'Cold-weather practice',
-        'For students who feel emotionally cold'
-      ],
-      whenItDoesntHelp: 'Students with hand tremors or who feel agitated by hot beverages.',
-      variations: [
-        'Use a sturdy mug versus a delicate teacup.',
-        'Add gentle herbal scents (chamomile, mint).',
-        'Pair with a phrase: \'I am giving myself warmth.\''
-      ],
-      research: 'Williams & Bargh (2008) Science paper: physical warmth elevates felt social warmth.'
-    },
-    {
-      id: 'soft_blanket',
-      name: 'Soft blanket on lap',
-      sense: 'tactile',
-      category: 'touch',
-      description: {
-        elementary: 'A soft blanket on your lap is like a soft, gentle weight. It feels safe.',
-        middle: 'A blanket draped over the lap or shoulders provides both warmth and gentle pressure, two regulating inputs.',
-        high: 'Light deep-pressure input (blanket weight, light gravity) signals safety through proprioception (DPT in occupational therapy).'
-      },
-      howToUseAsAnchor: [
-        'Drape a soft blanket over lap or shoulders.',
-        'Notice the weight, warmth, and texture.',
-        'Settle into the sense of being held.',
-        'Let attention rest on contact zones.',
-        'Stay for the duration of the practice.',
-        'Practice for 10 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety or overstimulation',
-        'Grief or loneliness',
-        'Cold rooms or cold seasons',
-        'Bedtime wind-down',
-        'For students who feel touch-starved'
-      ],
-      whenItDoesntHelp: 'Students with tactile defensiveness to certain fabrics, or those who overheat.',
-      variations: [
-        'Try weighted blanket (consult OT for weight).',
-        'Drape a shawl over shoulders for upper-body input.',
-        'Add a heated rice bag for added warmth.'
-      ],
-      research: 'Deep pressure touch (DPT) is foundational in sensory integration therapy (Ayres 1972; Mullen et al. 2008 weighted-blanket RCT).'
-    },
-    {
-      id: 'tongue_to_palate',
-      name: 'Tongue touching roof of mouth',
-      sense: 'tactile',
-      category: 'body',
-      description: {
-        elementary: 'Touch the tip of your tongue softly to the roof of your mouth. Feel the small contact there.',
-        middle: 'A subtle anchor used in qigong and yoga; tongue at the upper palate steadies a wandering mind invisibly.',
-        high: 'Tongue at hard palate is recommended in some pranayama traditions and creates closed-circuit subtle energy in Daoist frameworks.'
-      },
-      howToUseAsAnchor: [
-        'Sit comfortably with mouth closed.',
-        'Rest the tongue lightly behind the upper front teeth.',
-        'Feel the small point of contact.',
-        'Continue breathing softly through the nose.',
-        'Return to that point whenever attention drifts.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Any setting where invisible anchoring is needed (testing, public)',
-        'For students who clench the jaw',
-        'During public speaking',
-        'Throughout the day as an ambient cue',
-        'In qigong or yoga practice'
-      ],
-      whenItDoesntHelp: 'Students with tongue piercings, dental work that makes this uncomfortable, or oral-motor sensitivity.',
-      variations: [
-        'Rest on the gum ridge versus farther back.',
-        'Try with mouth slightly open.',
-        'Pair with slow nasal breath.'
-      ],
-      research: 'Tongue position is a feature in some traditional yoga and tai chi training; clinical evidence is limited.'
-    },
-    {
-      id: 'seat_cushion_pressure',
-      name: 'Pressure of seat cushion',
-      sense: 'tactile',
-      category: 'body',
-      description: {
-        elementary: 'Feel where you sit on the chair or cushion. The cushion is pressing back up.',
-        middle: 'Felt seat-pressure is a deep grounding cue; gravity is your assistant.',
-        high: 'Ischial tuberosity contact with seat surface offers reliable proprioceptive feedback that is hard to lose track of.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright on a chair or cushion.',
-        'Notice where the sit bones press into the seat.',
-        'Feel the seat pressing back up.',
-        'Shift weight slightly side to side, return to center.',
-        'Settle into the sense of being supported.',
-        'Practice for 5 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'Sitting meditation foundation',
-        'When breath feels unreliable',
-        'For students who feel ungrounded or dissociated',
-        'During seated work',
-        'Trauma-informed alternative to breath'
-      ],
-      whenItDoesntHelp: 'Students with tailbone pain or pressure injuries.',
-      variations: [
-        'Sit on different surfaces (cushion, chair, floor).',
-        'Notice the back of thighs as well as sit bones.',
-        'Pair with feet-on-floor anchor.'
-      ],
-      research: 'Foundation of zazen and shamatha; named in MBSR posture instruction.'
-    },
-    {
-      id: 'air_on_skin',
-      name: 'Air on skin',
-      sense: 'tactile',
-      category: 'sensation',
-      description: {
-        elementary: 'Feel the air moving around you on your skin. It is soft and almost not there.',
-        middle: 'The air on exposed skin is constant but easily ignored. Bringing attention to it sharpens awareness without forcing anything.',
-        high: 'Cutaneous mechanoreceptors respond to subtle air currents; this anchor trains discrimination of low-amplitude signals.'
-      },
-      howToUseAsAnchor: [
-        'Sit with arms or face exposed.',
-        'Notice air on the back of your hands or cheeks.',
-        'Feel its temperature and movement.',
-        'When attention wanders, return to the next subtle touch.',
-        'Allow yourself to feel the room around you.',
-        'Practice for 3 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'For students seeking subtle, almost-invisible anchors',
-        'Outdoor practice on still days',
-        'When other anchors feel too loud',
-        'Advanced practitioners',
-        'In yoga or qigong after movement'
-      ],
-      whenItDoesntHelp: 'In drafty cold rooms or after windburn; some sensory-sensitive students find air contact distracting.',
-      variations: [
-        'Stand in a gentle breeze.',
-        'Pair with breath at the nostrils.',
-        'Notice air on different body parts in turn.'
-      ],
-      research: 'Subtle-sensation anchors are part of advanced vipassana training (Goenka tradition).'
-    },
-
-    // ============================================================
-    // OLFACTORY ANCHORS (8)
-    // ============================================================
-    {
-      id: 'own_clothing_smell',
-      name: 'Smell of own clothing',
-      sense: 'olfactory',
-      category: 'sensation',
-      description: {
-        elementary: 'Your clothes have a quiet smell that is yours. It is comforting because you know it.',
-        middle: 'Your own clothing carries familiar odor (laundry, your skin, your environment) that signals safety.',
-        high: 'Familiar olfactory cues activate self-referential processing and signal safety; useful in trauma-informed grounding.'
-      },
-      howToUseAsAnchor: [
-        'Bring a sleeve or collar close to your nose.',
-        'Take a slow inhalation.',
-        'Notice what you smell (laundry, soap, skin).',
-        'Do not judge it as pleasant or unpleasant.',
-        'Return to it whenever you need.',
-        'Practice for 1 to 3 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety or dissociation',
-        'When you are away from home',
-        'For students who find their own smell comforting',
-        'Pre-test or pre-performance',
-        'When other anchors are not enough'
-      ],
-      whenItDoesntHelp: 'For students with self-image issues who find their own smell aversive; for those with anosmia.',
-      variations: [
-        'Smell a piece of clothing from home.',
-        'Pair with a slow exhale.',
-        'Combine with a small sip of water.'
-      ],
-      research: 'Olfactory memory is closely linked to limbic emotional processing; familiar smells are well-documented anxiolytics (Herz 2009).'
-    },
-    {
-      id: 'smell_of_room',
-      name: 'Smell of room',
-      sense: 'olfactory',
-      category: 'place',
-      description: {
-        elementary: 'Every room has its own smell. Notice what this one smells like right now.',
-        middle: 'The ambient odor of a room (wood, paper, books, food) is a stable place-anchor often ignored.',
-        high: 'Place-based olfactory cues anchor episodic memory and provide a unique signature for each environment.'
-      },
-      howToUseAsAnchor: [
-        'Sit in a room you know.',
-        'Take a slow inhalation through the nose.',
-        'Notice the dominant smells.',
-        'Do not analyze, just sense.',
-        'Return to the room\'s smell as the meditation continues.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'When entering a new space (orienting)',
-        'In libraries and classrooms with their own scent profile',
-        'For students who are visual or auditory by default and need a new sense',
-        'Grounding in a familiar place',
-        'Returning from a busy environment'
-      ],
-      whenItDoesntHelp: 'Rooms with strong chemical or unpleasant odors; students with chemical sensitivities.',
-      variations: [
-        'Practice in multiple rooms and notice differences.',
-        'Light a single candle and notice the change.',
-        'Pair with visual scanning of the same room.'
-      ],
-      research: 'Olfactory ambient priming influences mood and cognition (Knasko 1992).'
-    },
-    {
-      id: 'essential_oil_drop',
-      name: 'Single drop of essential oil',
-      sense: 'olfactory',
-      category: 'object',
-      description: {
-        elementary: 'One drop of a special-smelling oil on your hand is enough. Less is more.',
-        middle: 'A single drop of essential oil rubbed on the wrist or held in the palm provides a focused olfactory anchor.',
-        high: 'Concentrated essential oils trigger olfactory bulb response; lavender and bergamot have measurable anxiolytic effects.'
-      },
-      howToUseAsAnchor: [
-        'Place one drop of essential oil on the palm or back of hand.',
-        'Rub gently and bring to nose.',
-        'Inhale slowly three times.',
-        'Let the scent fade as you continue the practice.',
-        'Reapply only if necessary.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety, panic, sleep onset (especially lavender)',
-        'Focus (peppermint, rosemary)',
-        'Grief (rose, frankincense)',
-        'For students who respond well to scent',
-        'When transitioning between activities'
-      ],
-      whenItDoesntHelp: 'Students with chemical sensitivities, asthma triggered by scent, or scent-sensitive classrooms. Always opt-in. Never use on broken skin or undiluted on children.',
-      variations: [
-        'Place a drop on a tissue rather than skin.',
-        'Use a diffuser at low strength.',
-        'Pair with a specific phrase per scent.'
-      ],
-      research: 'Lavender oil (Sayorwan 2012) reduces anxiety in clinical settings; bergamot (Han 2017) similarly.'
-    },
-    {
-      id: 'fresh_cut_herb',
-      name: 'Fresh-cut herb (rosemary, mint)',
-      sense: 'olfactory',
-      category: 'object',
-      description: {
-        elementary: 'Rub a fresh leaf of mint or rosemary between your fingers and smell it. It is a strong, real smell.',
-        middle: 'Fresh herbs release oils when crushed; the scent is brighter and more alive than bottled essential oil.',
-        high: 'Direct contact with fresh plant material releases volatile organic compounds; rosemary improves focus (Moss 2003).'
-      },
-      howToUseAsAnchor: [
-        'Take a small sprig of mint, rosemary, basil, or lavender.',
-        'Crush gently between fingers.',
-        'Bring to nose and inhale slowly.',
-        'Notice the brightness, the green note, the warmth.',
-        'Return between breaths or as needed.',
-        'Practice for 2 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'Garden-based practice',
-        'For students who connect to nature',
-        'Cooking-related calming',
-        'Before tests (rosemary for memory)',
-        'During seasonal transitions'
-      ],
-      whenItDoesntHelp: 'Students with herb allergies or sensitivities; in classrooms where herbs are not feasible.',
-      variations: [
-        'Compare two herbs side by side.',
-        'Plant a small windowsill garden for ongoing supply.',
-        'Pair with a tea version of the same herb.'
-      ],
-      research: 'Moss et al. (2003) rosemary aroma improved memory performance.'
-    },
-    {
-      id: 'coffee_bean',
-      name: 'Coffee bean',
-      sense: 'olfactory',
-      category: 'object',
-      description: {
-        elementary: 'Smell a coffee bean to wake up your nose. It is a strong, dark smell.',
-        middle: 'A single coffee bean held to the nose offers a powerful, alerting scent without requiring caffeine intake.',
-        high: 'Coffee aroma alone (no ingestion) is shown to increase alertness and analytic cognition (Lee 2013).'
-      },
-      howToUseAsAnchor: [
-        'Hold a fresh coffee bean (or freshly ground coffee) to the nose.',
-        'Inhale slowly through the nose.',
-        'Notice the layers (earthy, nutty, bright).',
-        'Pause and inhale again.',
-        'Return to ordinary breathing.',
-        'Practice for 1 to 3 minutes.'
-      ],
-      whenItHelps: [
-        'Morning practice',
-        'Before tests requiring focus',
-        'When drowsy in afternoon',
-        'For students who associate coffee with safety (family rituals)',
-        'Between olfactory anchors as a contrast'
-      ],
-      whenItDoesntHelp: 'Students with coffee aversion or migraine triggered by coffee scent.',
-      variations: [
-        'Compare ground coffee to whole bean.',
-        'Compare to chocolate or vanilla.',
-        'Pair with morning sunlight.'
-      ],
-      research: 'Lee et al. (2013) reported improved performance on analytical tasks after coffee-aroma exposure (no caffeine).'
-    },
-    {
-      id: 'bread',
-      name: 'Bread',
-      sense: 'olfactory',
-      category: 'object',
-      description: {
-        elementary: 'Fresh bread smells warm and yeasty. It is a comforting smell that means food and home.',
-        middle: 'Baking or just-baked bread is one of the most universally comforting scents, associated with family and safety.',
-        high: 'Bakery-aroma exposure increases prosocial behavior (Gueguen 2012); strong association with hearth and home.'
-      },
-      howToUseAsAnchor: [
-        'Sit near fresh bread or a bakery scent.',
-        'Inhale slowly.',
-        'Notice yeast, warmth, sweetness.',
-        'Let yourself feel safe in the smell.',
-        'Return as needed during the practice.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'For students experiencing food insecurity (provided the bread is actually available)',
-        'Grief or homesickness',
-        'Cultural rituals around bread (challah, naan, tortilla, sourdough)',
-        'Family-based practice',
-        'Self-compassion sessions'
-      ],
-      whenItDoesntHelp: 'Students with gluten sensitivity who associate bread with pain; those for whom bread aroma triggers food insecurity grief.',
-      variations: [
-        'Bake a simple flatbread together as part of practice.',
-        'Use a bread-scented candle (test for safety).',
-        'Pair with a small piece of bread mindfully eaten.'
-      ],
-      research: 'Gueguen (2012) found bakery aromas increased helping behavior in shoppers.'
-    },
-    {
-      id: 'citrus_peel',
-      name: 'Citrus peel',
-      sense: 'olfactory',
-      category: 'object',
-      description: {
-        elementary: 'Peel an orange or lemon and smell the skin. The oil sprays out and smells bright and fresh.',
-        middle: 'Citrus peel oils (limonene) are uplifting and clarifying; squeezing a peel releases a burst of scent.',
-        high: 'D-limonene from citrus peel has documented mood-elevating and anti-anxiety effects (Komori 1995).'
-      },
-      howToUseAsAnchor: [
-        'Tear a piece of citrus peel.',
-        'Squeeze near nose to release oils.',
-        'Inhale slowly three times.',
-        'Hold the peel and continue practice.',
-        'Reapply as needed.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'Low mood, mild depression, anhedonia',
-        'For students who need lift, not calm',
-        'Morning practice',
-        'Mid-afternoon slump',
-        'Detail-focused work'
-      ],
-      whenItDoesntHelp: 'Students with citrus allergies or migraine triggered by citrus.',
-      variations: [
-        'Compare orange to lemon to lime.',
-        'Pair with eating a citrus segment mindfully.',
-        'Use a tea version (Earl Grey for bergamot).'
-      ],
-      research: 'Komori et al. (1995) citrus aromatherapy reduced antidepressant medication needs.'
-    },
-    {
-      id: 'lavender',
-      name: 'Lavender',
-      sense: 'olfactory',
-      category: 'object',
-      description: {
-        elementary: 'Lavender flowers and oil smell soft and sweet. It helps people feel sleepy and calm.',
-        middle: 'Lavender is the most-studied calming scent. It works for many but not all people.',
-        high: 'Linalool, the primary terpene in lavender, has measurable anxiolytic effect (Koulivand 2013 meta-analysis).'
-      },
-      howToUseAsAnchor: [
-        'Hold a dried lavender sprig or a drop of lavender oil.',
-        'Inhale slowly.',
-        'Notice the layers (floral, herbal, slightly camphoraceous).',
-        'Let yourself slow down.',
-        'Return whenever you need.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety, stress, sleep onset',
-        'Pre-sleep wind-down',
-        'After tests or hard conversations',
-        'For students who like floral scents',
-        'Lavender-scented pillow or sachet'
-      ],
-      whenItDoesntHelp: 'Students with lavender aversion (yes, some do dislike it intensely) or who associate it with funerals or hospitals.',
-      variations: [
-        'Pair with chamomile or rose for sleep.',
-        'Use lavender salt foot soak in evening.',
-        'Combine with deep slow breathing.'
-      ],
-      research: 'Koulivand et al. (2013) meta-analysis confirms anxiolytic and sleep-promoting effects of lavender.'
-    },
-
-    // ============================================================
-    // GUSTATORY ANCHORS (6)
-    // ============================================================
-    {
-      id: 'sip_of_tea',
-      name: 'Single sip of tea, attended to fully',
-      sense: 'gustatory',
-      category: 'object',
-      description: {
-        elementary: 'Take one tiny sip of warm tea and notice everything about it. Taste, temperature, feeling.',
-        middle: 'A single, deliberate sip of tea is a full sensory experience: warmth, aroma, taste, and mouthfeel.',
-        high: 'Tea-drinking as contemplative practice integrates four senses and a small mindful action; it is the basis of cha-no-yu (Japanese tea ceremony).'
-      },
-      howToUseAsAnchor: [
-        'Brew a small cup of tea and let it cool to drinking temperature.',
-        'Hold the cup, notice warmth.',
-        'Inhale the steam.',
-        'Take one small sip; hold it on the tongue.',
-        'Notice taste, temperature, mouthfeel before swallowing.',
-        'Pause, then take the next sip mindfully.',
-        'Practice over 10 to 20 minutes for one cup.'
-      ],
-      whenItHelps: [
-        'Morning or evening rituals',
-        'Self-compassion practice',
-        'After a hard conversation',
-        'For students who like ceremony',
-        'Cultural practice (chai, matcha, mint tea)'
-      ],
-      whenItDoesntHelp: 'Students with caffeine sensitivity (use herbal); those who burn their mouth easily.',
-      variations: [
-        'Try different teas and notice differences.',
-        'Pour the tea for someone else and notice the act.',
-        'Pair with a single biscuit eaten slowly.'
-      ],
-      research: 'Tea ceremony practice (Sen Soshitsu XV); mindful eating clinical work (Bays 2009).'
-    },
-    {
-      id: 'dark_chocolate',
-      name: 'A piece of dark chocolate',
-      sense: 'gustatory',
-      category: 'object',
-      description: {
-        elementary: 'One small piece of dark chocolate, eaten very slowly, tastes huge.',
-        middle: 'A single square of dark chocolate, eaten over 60 seconds, is a focused gustatory anchor with complex flavor layers.',
-        high: 'Dark chocolate releases mood-elevating compounds (theobromine, anandamide precursors) and provides rich olfactory-gustatory cross-modal stimulus.'
-      },
-      howToUseAsAnchor: [
-        'Take a single small square of dark chocolate (70 percent or higher).',
-        'Place it on the tongue without chewing.',
-        'Let it begin to melt.',
-        'Notice flavor changes (bitter, sweet, fruity, nutty).',
-        'Allow it to fully dissolve before chewing or swallowing.',
-        'Practice over 2 to 5 minutes for one piece.'
-      ],
-      whenItHelps: [
-        'Mood elevation',
-        'After a hard task as positive reinforcement',
-        'For students who connect with food rituals',
-        'Cultural practice (Maya cacao, Swiss tradition)',
-        'When taste-based anchoring works better than breath'
-      ],
-      whenItDoesntHelp: 'Students with chocolate sensitivity, eating-disorder histories where food rituals are triggering, dental sensitivity to cold or hard textures.',
-      variations: [
-        'Compare 70 percent to 85 percent dark.',
-        'Pair with a sip of warm water.',
-        'Try ceremonial cacao at low dose.'
-      ],
-      research: 'Mindful chocolate eating reduces stress and increases self-compassion in some studies (Meier 2017).'
-    },
-    {
-      id: 'raisin_mbsr',
-      name: 'A raisin (MBSR classic)',
-      sense: 'gustatory',
-      category: 'object',
-      description: {
-        elementary: 'Eat one raisin very, very slowly. Look at it, smell it, then taste it. It tastes more than you remember.',
-        middle: 'The raisin exercise is the classic introduction to MBSR mindful eating, often a person\'s first taste of deliberate attention.',
-        high: 'Kabat-Zinn\'s raisin exercise is the most replicated mindful-eating intervention in MBSR research; it teaches embodied attention through one food.'
-      },
-      howToUseAsAnchor: [
-        'Hold a single raisin in your palm.',
-        'Look at it as if you have never seen one.',
-        'Notice the wrinkles, color, weight.',
-        'Bring it to your nose and inhale.',
-        'Place on tongue, notice texture before biting.',
-        'Bite once; notice flavor burst.',
-        'Chew slowly; notice changes.',
-        'Swallow and follow the sensation downward.',
-        'Total practice: 5 to 8 minutes for one raisin.'
-      ],
-      whenItHelps: [
-        'First exposure to mindfulness',
-        'Mindful eating curriculum',
-        'For students who rush through meals',
-        'Classroom introduction in groups',
-        'Cross-cultural (works with any small dried fruit)'
-      ],
-      whenItDoesntHelp: 'Students with eating disorders, food sensitivities, or who find slow-eating triggering. Always opt-in.',
-      variations: [
-        'Use a dried apricot or a single nut instead.',
-        'Do this with eyes closed.',
-        'Compare with eating a raisin normally afterward.'
-      ],
-      research: 'Kabat-Zinn (1990) Full Catastrophe Living, foundational MBSR exercise.'
-    },
-    {
-      id: 'mint_dissolving',
-      name: 'A mint slowly dissolving',
-      sense: 'gustatory',
-      category: 'object',
-      description: {
-        elementary: 'Put a mint on your tongue and let it slowly disappear without chewing. The cool feeling lasts a long time.',
-        middle: 'A hard mint dissolving on the tongue provides a sustained anchor (temperature, taste, slow shrinking).',
-        high: 'Slow oral dissolution of a hard mint provides continuous gustatory and thermal stimulation, suitable for longer anchoring than chewable foods.'
-      },
-      howToUseAsAnchor: [
-        'Place a hard mint on the tongue.',
-        'Do not chew.',
-        'Notice the cool spreading sensation.',
-        'Feel the mint slowly shrinking.',
-        'Return to the practice when attention drifts.',
-        'Continue until the mint is fully gone (5 to 12 minutes).'
-      ],
-      whenItHelps: [
-        'Long sits when attention is wandering',
-        'For students who need oral input (gum-chewers, etc.)',
-        'During test prep when you need to be alert',
-        'Allergy season (clears nasal passages)',
-        'For students who fidget with mouth (substitutes for nail-biting)'
-      ],
-      whenItDoesntHelp: 'Students with dental issues that contraindicate hard candy; those with sugar restrictions (use sugar-free).',
-      variations: [
-        'Use a sugar-free mint.',
-        'Try a peppermint patty (chocolate plus mint).',
-        'Compare wintergreen versus peppermint.'
-      ],
-      research: 'Peppermint stimulus increases alertness and cognition (Moss 2008).'
-    },
-    {
-      id: 'water_on_tongue',
-      name: 'Water on tongue',
-      sense: 'gustatory',
-      category: 'sensation',
-      description: {
-        elementary: 'A sip of plain water has a quiet, clean taste. Notice the wet feeling on your tongue.',
-        middle: 'Plain water is the most neutral gustatory anchor; available, free, and never overwhelming.',
-        high: 'Water as a gustatory anchor highlights mouthfeel and temperature without flavor distraction; useful for advanced sensory differentiation.'
-      },
-      howToUseAsAnchor: [
-        'Take a small sip of room-temperature water.',
-        'Hold it on the tongue for a few seconds.',
-        'Notice the wetness, temperature, mouth shape.',
-        'Swallow slowly and follow the sensation down.',
-        'Pause and breathe before the next sip.',
-        'Practice for 3 to 8 minutes over half a glass.'
-      ],
-      whenItHelps: [
-        'Mid-meditation refresh',
-        'For students avoiding food during practice',
-        'Hydration as ritual',
-        'For sensory-sensitive students who find flavors too intense',
-        'Universal availability'
-      ],
-      whenItDoesntHelp: 'For students who associate water with restriction (some eating disorder histories).',
-      variations: [
-        'Try chilled, warm, or room temperature water.',
-        'Use lightly mineralized water for subtle taste.',
-        'Pair with a slow inhalation through the nose.'
-      ],
-      research: 'Hydration improves cognitive performance (Edmonds 2013); contemplative use is universal.'
-    },
-    {
-      id: 'sour_candy_tipp',
-      name: 'Sour candy (TIPP-aligned for crisis)',
-      sense: 'gustatory',
-      category: 'object',
-      description: {
-        elementary: 'A sour candy is so strong it pulls your mind back to right now. Use it when you feel overwhelmed.',
-        middle: 'A very sour candy (Warhead, lemon, etc.) snaps attention back to the body, useful in dissociation or acute distress.',
-        high: 'Intense gustatory stimuli (extreme sour, sometimes hot) are TIPP-adjacent skills in DBT for crisis-survival; sensory shock interrupts spiraling.'
-      },
-      howToUseAsAnchor: [
-        'Have a sour candy or lemon wedge ready.',
-        'When dissociating or panicking, place on tongue.',
-        'Let the sour shock pull attention into the body.',
-        'Take three slow breaths once oriented.',
-        'Drink water to clear taste.',
-        'Use as crisis interrupt, not daily practice.'
-      ],
-      whenItHelps: [
-        'Acute panic attack',
-        'Dissociation episode',
-        'Emotional flooding',
-        'Pre-test panic',
-        'When student is about to leave the practice mid-spiral'
-      ],
-      whenItDoesntHelp: 'Daily use (loses effect); students with dental sensitivity or acid reflux; those with eating-disorder histories where food rituals are charged. Always opt-in.',
-      variations: [
-        'Hot cinnamon candy (intense alternative).',
-        'Wasabi or hot sauce in extreme cases (supervised).',
-        'A fresh lemon slice bitten directly.'
-      ],
-      research: 'Linehan (1993) DBT TIPP skill set; sensory shock as crisis-survival intervention.'
-    },
-
-    // ============================================================
-    // VISUAL ANCHORS (10) - for open-eye practice
-    // ============================================================
-    {
-      id: 'candle_flame_trataka',
-      name: 'A candle flame (trataka)',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'A candle flame moves a little but stays in place. Watch it without staring too hard.',
-        middle: 'Trataka, the yoga practice of candle-gazing, develops both concentration and inner visualization.',
-        high: 'Trataka (Sanskrit: to gaze) is a classical yogic concentration practice; the flame as a stable yet living object trains stillness with vitality.'
-      },
-      howToUseAsAnchor: [
-        'Place a candle at arm\'s length, at eye level, in a darkened room.',
-        'Sit comfortably and gaze softly at the flame.',
-        'Try not to blink, but do not strain.',
-        'When tears come, gently close eyes and see the after-image.',
-        'Open eyes and return to the flame.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'Trauma-informed eyes-open practice',
-        'For students who cannot close eyes safely',
-        'Concentration training',
-        'Pre-sleep ritual',
-        'Yoga practitioners'
-      ],
-      whenItDoesntHelp: 'Students with epilepsy triggered by flickering, severe ADHD without supervision, or fire-safety issues. Always supervised in school.',
-      variations: [
-        'Use a battery LED candle for safety.',
-        'Try different colors of flame (with care).',
-        'Pair with mantra repetition.'
-      ],
-      research: 'Trataka improves attention and reduces stress (Mallinson & Singleton 2017 Roots of Yoga; clinical studies Talwadkar 2014).'
-    },
-    {
-      id: 'flower',
-      name: 'A flower',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'Look at one flower very slowly. Notice the colors, the petals, and where the light shines.',
-        middle: 'A single flower is a living mandala, intricate and brief; it teaches attention to detail and impermanence.',
-        high: 'Floral object meditation engages aesthetic perception, attention to detail, and contemplation of impermanence.'
-      },
-      howToUseAsAnchor: [
-        'Place a fresh flower in a vase at eye level.',
-        'Gaze softly at one petal first.',
-        'Move attention slowly across petals, stamens, leaves.',
-        'Notice color shifts and shadow.',
-        'Return to the whole flower.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Nature-loving students',
-        'Cultivating beauty appreciation',
-        'Bedside or desk practice',
-        'Grief work (flowers and impermanence)',
-        'For students who feel overwhelmed by complex stimuli'
-      ],
-      whenItDoesntHelp: 'Students with severe allergies; those in austere environments where flowers feel out of place.',
-      variations: [
-        'Compare buds to full blooms.',
-        'Use a single flower in a small vase.',
-        'Try a flower that opens during the practice (morning glory, lotus).'
-      ],
-      research: 'Flower exposure improves mood (Haviland-Jones 2005).'
-    },
-    {
-      id: 'single_dot_on_wall',
-      name: 'A single dot on a wall',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'A small dot on the wall is something to look at. It does not change, so your mind can rest.',
-        middle: 'A single visual fixation point on a blank wall is the simplest possible visual anchor.',
-        high: 'A small high-contrast fixation point on a neutral surface trains soft focus without sensory distraction.'
-      },
-      howToUseAsAnchor: [
-        'Place or imagine a small dot on a wall at eye level.',
-        'Sit at arm\'s length and gaze softly.',
-        'Allow peripheral vision to soften.',
-        'Do not strain or stare hard.',
-        'Return to the dot whenever attention drifts.',
-        'Practice for 5 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'In bare or minimal spaces',
-        'For students who need a literal anchor point',
-        'Test prep concentration training',
-        'Yoga drishti practice',
-        'Trauma-informed eyes-open'
-      ],
-      whenItDoesntHelp: 'Students with strabismus or visual difficulties who find fixation uncomfortable.',
-      variations: [
-        'Use a black dot on white paper.',
-        'Place at different distances.',
-        'Compare a dot to a small geometric shape.'
-      ],
-      research: 'Drishti (gaze point) practice in yoga; visual fixation in concentration training.'
-    },
-    {
-      id: 'small_object_on_table',
-      name: 'A small object on a table',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'Pick one small thing (a pencil, a button, a shell). Look at it for a while as if you found it for the first time.',
-        middle: 'A small object held in attention reveals more detail the longer you look. It teaches that even simple things have depth.',
-        high: 'Object meditation defamiliarizes the everyday, revealing detail invisible under habituation.'
-      },
-      howToUseAsAnchor: [
-        'Choose a small object (key, shell, pencil, stone).',
-        'Place it at arm\'s length on a table.',
-        'Gaze softly, exploring every surface.',
-        'Notice color, texture, shadow, edge.',
-        'Try to see it as if for the first time.',
-        'Practice for 5 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'Curiosity cultivation',
-        'For students who like detail',
-        'Art-class warm-up',
-        'Engineering and design students',
-        'For students who get bored with breath'
-      ],
-      whenItDoesntHelp: 'Students who fixate on irrelevant details (some OCD profiles); those who need stillness over inquiry.',
-      variations: [
-        'Switch objects each session.',
-        'Pair with drawing the object from memory.',
-        'Compare two similar objects.'
-      ],
-      research: 'Object-focused contemplation appears in Stoic, Zen, and Christian traditions (contemplatio).'
-    },
-    {
-      id: 'your_own_hand',
-      name: 'Your own hand',
-      sense: 'visual',
-      category: 'body',
-      description: {
-        elementary: 'Look at one of your hands. You have seen it a thousand times, but really look now.',
-        middle: 'Your own hand is the most accessible visual anchor: always present, always changing slightly.',
-        high: 'Hand-gazing combines self-recognition, anatomical detail, and the strangeness of seeing oneself with fresh eyes.'
-      },
-      howToUseAsAnchor: [
-        'Hold one hand at comfortable distance from your face.',
-        'Gaze softly at the back of the hand or the palm.',
-        'Notice lines, color, shadow, knuckles.',
-        'Wiggle a finger; notice the movement.',
-        'Return to stillness.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'Dissociation (re-association with body)',
-        'Self-recognition practice',
-        'For students who feel disconnected',
-        'Hand-injury recovery (acknowledging the hand)',
-        'For students who like body-awareness'
-      ],
-      whenItDoesntHelp: 'Students with body-dysmorphia tied to hands; those with hand trauma.',
-      variations: [
-        'Compare left to right hand.',
-        'Notice changes after exercise versus at rest.',
-        'Pair with hand gesture (mudra) practice.'
-      ],
-      research: 'Body-awareness practices in trauma recovery (van der Kolk 2014).'
-    },
-    {
-      id: 'leaf',
-      name: 'A leaf',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'Hold a leaf and look at all its lines and colors. Every leaf is different.',
-        middle: 'A leaf is intricate and asymmetric; it rewards close looking with new patterns.',
-        high: 'Plant morphology offers infinite variation; close observation of a leaf is a classical phenomenology exercise.'
-      },
-      howToUseAsAnchor: [
-        'Find a fresh or pressed leaf.',
-        'Hold it at comfortable distance.',
-        'Notice veins, edges, color gradients.',
-        'Turn it slowly; observe the underside.',
-        'Hold against light if available.',
-        'Practice for 5 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'Outdoor or seasonal practice',
-        'Botany and nature curiosity',
-        'For students who connect to trees',
-        'Autumn (color change as impermanence)',
-        'Art-class observation'
-      ],
-      whenItDoesntHelp: 'Students with severe allergies; those in environments where leaves are unavailable.',
-      variations: [
-        'Compare leaves from different trees.',
-        'Press a leaf as a long-term object.',
-        'Combine with drawing the leaf afterward.'
-      ],
-      research: 'Goethean observation (Henri Bortoft) and phenomenology of nature.'
-    },
-    {
-      id: 'pebble',
-      name: 'A pebble',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'A small pebble is a tiny piece of Earth. Look at the colors and tiny patterns on it.',
-        middle: 'A pebble carries millennia of slow shaping; close observation invites geological imagination.',
-        high: 'Lithic objects offer texture, color depth, and an opening to deep time as part of contemplative inquiry.'
-      },
-      howToUseAsAnchor: [
-        'Hold a pebble at arm\'s length.',
-        'Gaze softly, exploring texture and color.',
-        'Notice cracks, flecks, sheen.',
-        'Imagine where this stone has been.',
-        'Return to the visual surface.',
-        'Practice for 5 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'Earth-science and geology students',
-        'For students who collect rocks',
-        'Outdoor walking meditation pause',
-        'Beach or stream-side practice',
-        'For students drawn to the timeless'
-      ],
-      whenItDoesntHelp: 'Students who feel overwhelmed by deep-time concepts.',
-      variations: [
-        'Switch between sedimentary, igneous, metamorphic samples.',
-        'Combine with a story about where you found it.',
-        'Use a polished crystal for color (with respect to cultural use).'
-      ],
-      research: 'Object-focused meditation across traditions; deep-time contemplation (Macy 2007).'
-    },
-    {
-      id: 'artwork',
-      name: 'A piece of artwork',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'Look at a picture or painting you like for a long time. Notice things you did not see before.',
-        middle: 'Sustained gazing at one artwork (10+ minutes) reveals layers invisible to brief glances.',
-        high: 'Slow looking practice in museums extends gaze beyond habitual 17-second average to 10+ minutes; reveals composition, brushwork, story.'
-      },
-      howToUseAsAnchor: [
-        'Choose one artwork you love (poster, postcard, screen).',
-        'Sit at comfortable viewing distance.',
-        'Gaze softly across the whole image first.',
-        'Move attention to one detail, then another.',
-        'Return to the whole.',
-        'Practice for 10 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Art students',
-        'Museum visits',
-        'For students who connect through visual art',
-        'Cultivating slow attention',
-        'Pre-creative-writing prompt'
-      ],
-      whenItDoesntHelp: 'Students who find a chosen artwork triggering; those who feel pressured to interpret.',
-      variations: [
-        'Switch artwork weekly.',
-        'Pair with a journal entry afterward.',
-        'Compare two artworks side by side.'
-      ],
-      research: 'Slow Art Day movement; Tishman (2017) Slow Looking.'
-    },
-    {
-      id: 'window_view',
-      name: 'A window view',
-      sense: 'visual',
-      category: 'place',
-      description: {
-        elementary: 'Look out a window for a while. Watch the sky, trees, or buildings without thinking too hard.',
-        middle: 'A window view offers a slowly changing scene: clouds, light, leaves, people. It is alive but not demanding.',
-        high: 'Window-gazing combines distance vision (rest from screens) with slowly evolving stimuli; restorative attention theory (Kaplan 1995).'
-      },
-      howToUseAsAnchor: [
-        'Sit near a window.',
-        'Let your gaze rest on the farthest visible point.',
-        'Allow attention to wander across the scene.',
-        'Notice slow changes (light, clouds, shadows).',
-        'Do not try to control where attention goes.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Screen-fatigue recovery',
-        'Office or classroom breaks',
-        'For students who feel boxed in',
-        'Daydream-style practice',
-        'Weather-watching'
-      ],
-      whenItDoesntHelp: 'Windowless rooms; views onto distressing scenes (construction, traffic accidents).',
-      variations: [
-        'Switch windows in the home or classroom.',
-        'Pair with sky-only gazing.',
-        'Watch a single tree across seasons.'
-      ],
-      research: 'Kaplan (1995) attention restoration theory; restorative environments reduce mental fatigue.'
-    },
-    {
-      id: 'mandala_pattern',
-      name: 'A geometric pattern (mandala)',
-      sense: 'visual',
-      category: 'object',
-      description: {
-        elementary: 'A mandala is a beautiful circle full of patterns. Look at the center, then let your eyes follow the lines outward.',
-        middle: 'Mandalas are symmetric circular patterns used in many traditions to focus attention and represent wholeness.',
-        high: 'Mandala practice integrates symmetry perception, center-out attention, and symbolic representation; Jung used mandalas for integration work.'
-      },
-      howToUseAsAnchor: [
-        'Place a printed mandala at eye level.',
-        'Begin by gazing at the center.',
-        'Allow attention to follow lines outward.',
-        'Return to center.',
-        'Continue for the duration of practice.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'For students who like pattern and symmetry',
-        'Coloring mandalas before sitting',
-        'Cross-cultural practice (Buddhist, Hindu, Indigenous)',
-        'Art-therapy contexts',
-        'After scattered or fragmented experiences'
-      ],
-      whenItDoesntHelp: 'Students with vertigo triggered by geometric patterns; those uncomfortable with religious imagery (use secular geometric).',
-      variations: [
-        'Color a mandala by hand before gazing at it.',
-        'Use a Tibetan thangka image.',
-        'Use a flower-of-life secular pattern.'
-      ],
-      research: 'Jung\'s mandala work; mandala coloring reduces anxiety (Curry 2005).'
-    },
-
-    // ============================================================
-    // INTEROCEPTIVE ANCHORS (10) - internal body signals
-    // ============================================================
-    {
-      id: 'heartbeat_chest',
-      name: 'Heartbeat (felt in chest)',
-      sense: 'interoceptive',
-      category: 'body',
-      description: {
-        elementary: 'Put your hand on your chest and feel your heart beating. It is always working for you.',
-        middle: 'The heartbeat felt directly through the chest is one of the most intimate anchors available.',
-        high: 'Interoceptive cardiac awareness is foundational for emotion regulation (Craig 2009); the felt heartbeat anchors attention in body-state perception.'
-      },
-      howToUseAsAnchor: [
-        'Place one hand over the heart.',
-        'Sit quietly and feel for the beat.',
-        'Notice rhythm, strength, pace.',
-        'Do not try to slow or speed it.',
-        'Rest attention there.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Self-compassion practice',
-        'For students who feel disconnected from body',
-        'Grief',
-        'Heart-rate-variability training (with biofeedback)',
-        'Loving-kindness preparation'
-      ],
-      whenItDoesntHelp: 'Students with cardiac anxiety, panic disorder centered on heart-awareness, or cardiac conditions where attention worsens distress.',
-      variations: [
-        'Hand to heart and hand to belly together.',
-        'Visualize a warm light at the heart.',
-        'Pair with phrase: \'I am here for me.\''
-      ],
-      research: 'Cardiac interoception (Craig 2009; Schandry 1981 heartbeat-detection task).'
-    },
-    {
-      id: 'heartbeat_wrist',
-      name: 'Heartbeat felt in wrist',
-      sense: 'interoceptive',
-      category: 'body',
-      description: {
-        elementary: 'Press two fingers gently on your wrist to feel your pulse. It is your heart talking to your hand.',
-        middle: 'Pulse at the radial artery is easily found and gives a clear, rhythmic anchor.',
-        high: 'Radial pulse provides high-confidence cardiac feedback; useful when chest awareness is too intense.'
-      },
-      howToUseAsAnchor: [
-        'Place two fingers (not thumb) on the radial artery (thumb side of wrist).',
-        'Press gently until you feel the pulse.',
-        'Count beats for 30 seconds.',
-        'Release pressure, then find it again.',
-        'Notice rhythm and steadiness.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'For students who find chest awareness too close',
-        'HRV-style training',
-        'After exercise to feel recovery',
-        'Pre-sleep slowdown',
-        'Cardiology-curious students'
-      ],
-      whenItDoesntHelp: 'Students with cardiac conditions or hypochondria around heart rate.',
-      variations: [
-        'Switch between left and right wrist.',
-        'Try the carotid pulse (under jaw).',
-        'Pair with paced breath (one breath per 6 pulses).'
-      ],
-      research: 'Pulse-awareness practices in qigong and yoga; clinical use in biofeedback.'
-    },
-    {
-      id: 'heartbeat_neck',
-      name: 'Heartbeat felt at neck',
-      sense: 'interoceptive',
-      category: 'body',
-      description: {
-        elementary: 'Gently touch the side of your neck under your jaw to feel a strong pulse.',
-        middle: 'Carotid pulse is stronger than radial; it is more intense as an interoceptive anchor.',
-        high: 'Carotid pulse is high-amplitude and easily detected; provides strong cardiac signal for body-awareness training.'
-      },
-      howToUseAsAnchor: [
-        'Place two fingers under jaw on side of neck.',
-        'Apply gentle pressure (never push hard).',
-        'Find the steady pulse.',
-        'Release, then find it again.',
-        'Notice rhythm and strength.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'When wrist pulse is hard to find',
-        'For body-awareness training',
-        'Sports recovery monitoring',
-        'For students learning anatomy'
-      ],
-      whenItDoesntHelp: 'NEVER apply firm pressure to both sides at once (can affect blood flow); skip if dizziness occurs. Students with carotid issues should not use this anchor.',
-      variations: [
-        'Compare left and right.',
-        'Pair with a vagal-tone breathing exercise.',
-        'Use only briefly, then return to wrist.'
-      ],
-      research: 'Carotid pulse is a standard clinical assessment; mindful interoception (Mehling 2018 MAIA scale).'
-    },
-    {
-      id: 'breath_at_nostrils',
-      name: 'Breath at nostrils',
-      sense: 'interoceptive',
-      category: 'breath',
-      description: {
-        elementary: 'Feel the air going in and out at your nose. It is cool going in and warm coming out.',
-        middle: 'Nostril breath awareness focuses on the subtle temperature and movement at the tip of the nose, an advanced concentration anchor.',
-        high: 'Anapanasati at the nostrils is the classical Buddhist concentration object; subtle and demanding of refined attention.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright and close eyes.',
-        'Notice air entering nostrils (cooler).',
-        'Notice air leaving nostrils (warmer).',
-        'Do not control the breath.',
-        'Return to that small zone of sensation whenever attention drifts.',
-        'Practice for 10 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'Long sits in vipassana style',
-        'For experienced practitioners',
-        'For students who like subtle anchors',
-        'Yoga and pranayama preparation',
-        'Concentration training'
-      ],
-      whenItDoesntHelp: 'For students with nasal congestion, deviated septum, or breath-related anxiety.',
-      variations: [
-        'Notice one nostril at a time.',
-        'Combine with kapalabhati pranayama (advanced).',
-        'Pair with extended exhale.'
-      ],
-      research: 'Anapanasati (Anapanasati Sutta); foundational across Theravada and MBSR.'
-    },
-    {
-      id: 'breath_chest_rise',
-      name: 'Breath at chest rise/fall',
-      sense: 'interoceptive',
-      category: 'breath',
-      description: {
-        elementary: 'Notice your chest going up when you breathe in, and down when you breathe out.',
-        middle: 'Chest breathing is the most visible and felt; less subtle than nostril breath, more accessible to beginners.',
-        high: 'Thoracic respiratory mechanics provide clear proprioceptive feedback; appropriate for early-stage breath awareness training.'
-      },
-      howToUseAsAnchor: [
-        'Place one hand on the chest.',
-        'Feel chest rise on inhalation, fall on exhalation.',
-        'Notice the pause at top and bottom.',
-        'Do not deepen or change the breath.',
-        'Return to the rise and fall.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Beginner breath awareness',
-        'For students who find nostril breath too subtle',
-        'Mid-thoracic body awareness',
-        'After cardiovascular exercise',
-        'Singers and wind instrumentalists'
-      ],
-      whenItDoesntHelp: 'Students with chest-related anxiety (panic-disorder hyperventilation); habitual shallow breathers may want belly breath instead.',
-      variations: [
-        'Hand on chest plus hand on belly.',
-        'Count chest rises from 1 to 10.',
-        'Notice pause between in and out.'
-      ],
-      research: 'Diaphragmatic versus thoracic breathing; Brown & Gerbarg (2005) breath therapy.'
-    },
-    {
-      id: 'breath_belly_rise',
-      name: 'Breath at belly rise/fall',
-      sense: 'interoceptive',
-      category: 'breath',
-      description: {
-        elementary: 'Put a hand on your belly. When you breathe in, it goes out. When you breathe out, it goes in.',
-        middle: 'Belly (diaphragmatic) breathing is the most regulating breath; it activates the parasympathetic system.',
-        high: 'Diaphragmatic breathing increases vagal tone and is the foundation of most clinical breath-based interventions.'
-      },
-      howToUseAsAnchor: [
-        'Place one hand on the belly, below the navel.',
-        'Let the belly rise on inhalation, fall on exhalation.',
-        'If shallow, do not force; just notice.',
-        'Slowly the belly may take over from the chest.',
-        'Return to the movement whenever attention drifts.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Anxiety, panic, hyperventilation',
-        'For students who chest-breathe under stress',
-        'Pre-sleep wind-down',
-        'Vagal-tone work',
-        'Yoga and qigong preparation'
-      ],
-      whenItDoesntHelp: 'For students with body-image issues around the belly; first practice with hand-on-belly may help build comfort.',
-      variations: [
-        'Lying down with a book on the belly (visible rise).',
-        'Pair with longer exhale (4 in, 6 out).',
-        'Practice supine before sitting.'
-      ],
-      research: 'Brown & Gerbarg (2005); paced breathing for vagal tone (Steffen 2017).'
-    },
-    {
-      id: 'hunger_fullness',
-      name: 'Hunger / fullness state',
-      sense: 'interoceptive',
-      category: 'sensation',
-      description: {
-        elementary: 'Notice how your stomach feels right now. Is it empty? Full? Just right?',
-        middle: 'Tracking hunger and fullness is interoceptive awareness applied to eating; foundational for intuitive eating.',
-        high: 'Hunger-fullness interoception (HFI) is a developmental skill that supports self-regulation around food (Tribole & Resch 2020).'
-      },
-      howToUseAsAnchor: [
-        'Sit quietly and bring attention to the belly.',
-        'Notice fullness, emptiness, or in-between.',
-        'Do not judge or change.',
-        'Rate hunger on a 1 to 10 scale if helpful.',
-        'Return periodically through the day.',
-        'Practice as ambient cue, 3 to 5 times daily.'
-      ],
-      whenItHelps: [
-        'Intuitive-eating learning',
-        'For students rebuilding hunger cues after dieting or restriction',
-        'Around mealtimes',
-        'For students who eat for emotional reasons',
-        'Pre- and post-meal'
-      ],
-      whenItDoesntHelp: 'Students in acute eating-disorder treatment without clinical supervision; always handle with care.',
-      variations: [
-        'Track hunger before and after meals.',
-        'Pair with a food-mood journal.',
-        'Practice before deciding what to eat.'
-      ],
-      research: 'Tribole & Resch (2020) Intuitive Eating; clinical use in eating-disorder recovery.'
-    },
-    {
-      id: 'temperature_zones',
-      name: 'Temperature (warm/cool zones in body)',
-      sense: 'interoceptive',
-      category: 'sensation',
-      description: {
-        elementary: 'Scan your body and notice where you feel warm and where you feel cool. Hands are often cooler than feet.',
-        middle: 'Body-temperature awareness is a granular interoceptive practice; warm and cool zones reflect circulation and arousal.',
-        high: 'Cutaneous and visceral temperature awareness builds body-mapping skills useful for emotion regulation and somatic therapy.'
-      },
-      howToUseAsAnchor: [
-        'Sit comfortably and close eyes.',
-        'Scan from feet upward, noticing temperature.',
-        'Identify warmest and coolest zones.',
-        'Do not change anything.',
-        'Repeat the scan slowly.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Body-scan augmentation',
-        'For students who like temperature precision',
-        'Yoga nidra style practice',
-        'Trauma-informed body mapping',
-        'Cold-weather and warm-weather contrast practice'
-      ],
-      whenItDoesntHelp: 'Students with severe peripheral neuropathy or who feel disturbed by body asymmetries.',
-      variations: [
-        'Compare left side to right.',
-        'Compare hands to feet.',
-        'Notice changes during the practice.'
-      ],
-      research: 'MAIA-2 multidimensional interoceptive awareness scale (Mehling 2018).'
-    },
-    {
-      id: 'pulse_fingertips',
-      name: 'Pulse in fingertips',
-      sense: 'interoceptive',
-      category: 'body',
-      description: {
-        elementary: 'Be very still. Can you feel a tiny pulse in your fingertips?',
-        middle: 'Capillary pulse in fingertips is faint but present; finding it is itself a concentration exercise.',
-        high: 'Distal microvascular pulse perception is an advanced interoceptive skill requiring stillness and refined attention.'
-      },
-      howToUseAsAnchor: [
-        'Rest hands palm-up in lap, very still.',
-        'Soften gaze or close eyes.',
-        'Search for a slight throb at fingertips.',
-        'When found, rest there.',
-        'If lost, do not strain; allow it to return.',
-        'Practice for 5 to 12 minutes.'
-      ],
-      whenItHelps: [
-        'For experienced practitioners',
-        'Concentration training',
-        'After warming hands',
-        'For students who like subtle work',
-        'Following a body scan'
-      ],
-      whenItDoesntHelp: 'Students with cold extremities, neuropathy, or who feel frustrated by subtle anchors.',
-      variations: [
-        'Warm hands first (rub together or hold warm cup).',
-        'Compare left and right.',
-        'Pair with wrist-pulse cross-check.'
-      ],
-      research: 'Subtle-body practices in vipassana and qigong; clinical interoception research (Khalsa 2017).'
-    },
-    {
-      id: 'pulse_eyelids',
-      name: 'Pulse behind closed eyelids',
-      sense: 'interoceptive',
-      category: 'body',
-      description: {
-        elementary: 'Close your eyes and look at the inside of your eyelids. Sometimes you can see colors or feel a tiny pulse.',
-        middle: 'Behind closed lids, gentle pulse and color patterns can sometimes be perceived; advanced subtle awareness.',
-        high: 'Retinal and orbital microcirculation produce subtle pulse and phosphene perception with sustained attention.'
-      },
-      howToUseAsAnchor: [
-        'Close eyes gently.',
-        'Allow eyes to relax behind lids.',
-        'Notice any subtle pulse around the eyes.',
-        'Notice colors or shapes (phosphenes).',
-        'Do not strain or focus too hard.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'Experienced practitioners',
-        'For students who enjoy subtle phenomena',
-        'Yoga nidra preparation',
-        'Pre-sleep practice',
-        'Following candle gazing (after-images)'
-      ],
-      whenItDoesntHelp: 'For students with eye strain, migraines, or visual disturbances that worsen with attention to eye region.',
-      variations: [
-        'Pair with palming (cup hands over eyes).',
-        'Combine with breath at eye area.',
-        'Use only briefly to prevent strain.'
-      ],
-      research: 'Phosphene phenomenology (Oster 1970); contemplative reports across traditions.'
-    },
-
-    // ============================================================
-    // VESTIBULAR / PROPRIOCEPTIVE ANCHORS (8)
-    // ============================================================
-    {
-      id: 'slow_sway_side',
-      name: 'Slow sway side-to-side',
-      sense: 'vestibular',
-      category: 'movement',
-      description: {
-        elementary: 'Stand or sit and gently rock side to side, like a tree in a soft wind.',
-        middle: 'Slow lateral sway activates the vestibular system gently and is widely soothing across ages.',
-        high: 'Lateral vestibular activation through slow sway has measurable calming effect (vagal nerve afferents).'
-      },
-      howToUseAsAnchor: [
-        'Sit or stand comfortably.',
-        'Slowly shift weight to one side, then the other.',
-        'Move only a few inches each way.',
-        'Sync with breath if desired.',
-        'Return to center occasionally.',
-        'Practice for 3 to 10 minutes.'
-      ],
-      whenItHelps: [
-        'Self-soothing across all ages (cribs, rocking chairs)',
-        'Anxiety',
-        'Pre-sleep',
-        'For students who rock naturally (autistic, neurotypical)',
-        'After hard conversations'
-      ],
-      whenItDoesntHelp: 'Students with vestibular disorders; those who associate rocking with childhood trauma.',
-      variations: [
-        'Sit on a balance ball.',
-        'Use a rocking chair.',
-        'Vary speed (slower is usually calmer).'
-      ],
-      research: 'Vestibular stimulation effects on arousal regulation (Krueger 2018).'
-    },
-    {
-      id: 'gentle_rocking_fb',
-      name: 'Gentle rocking forward-back',
-      sense: 'vestibular',
-      category: 'movement',
-      description: {
-        elementary: 'Rock slowly forward and back, like you are in a boat on calm water.',
-        middle: 'Sagittal-plane rocking provides a different vestibular input than side-to-side; some find it more regulating.',
-        high: 'Anterior-posterior rocking stimulates otolith organs; davening (Jewish prayer) and Hindu prayer incorporate this naturally.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright on cushion or chair.',
-        'Gently rock forward, then back.',
-        'Keep range small.',
-        'Optionally sync with breath.',
-        'Return to stillness when ready.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'For students who naturally rock (autistic adults often do)',
-        'Religious practice carryover',
-        'Anxiety regulation',
-        'Pre-prayer or contemplation',
-        'Self-soothing'
-      ],
-      whenItDoesntHelp: 'Students with back pain or balance issues; those for whom rocking is socially stigmatized in their setting.',
-      variations: [
-        'Rock with hands on knees (more support).',
-        'Rock while seated on a yoga block.',
-        'Try cross-legged on cushion versus chair.'
-      ],
-      research: 'Repetitive vestibular input as self-regulation (Repp 2011); davening literature (Diamant 2014).'
-    },
-    {
-      id: 'spinning_slowly',
-      name: 'Spinning slowly (3 turns each way)',
-      sense: 'vestibular',
-      category: 'movement',
-      description: {
-        elementary: 'Stand and turn slowly in one direction three times. Then the other direction. Notice how it feels.',
-        middle: 'Slow controlled spinning resets the vestibular system; used in Sufi whirling and play-based regulation.',
-        high: 'Controlled rotational vestibular input has documented arousal-modulation effects; whirling traditions formalize this.'
-      },
-      howToUseAsAnchor: [
-        'Stand in a clear space.',
-        'Turn slowly in one direction, eyes soft or fixed forward.',
-        'Take 3 to 5 slow turns.',
-        'Stop and feel the after-spin.',
-        'Repeat in opposite direction.',
-        'Practice 2 to 5 minutes total.'
-      ],
-      whenItHelps: [
-        'For students who like movement (kinesthetic learners)',
-        'Vestibular-seeking neurodivergent students',
-        'Transition between activities',
-        'Wake-up practice',
-        'Sufi-inspired contemplation'
-      ],
-      whenItDoesntHelp: 'Students with vestibular disorders, motion sickness, or seizure history.',
-      variations: [
-        'Sufi whirling (advanced, with instruction).',
-        'Slow walking circle versus stationary turn.',
-        'Sit and turn in a swivel chair instead.'
-      ],
-      research: 'Sufi whirling (Mevlevi tradition); vestibular regulation research (Ayres 1972 sensory integration).'
-    },
-    {
-      id: 'head_circles',
-      name: 'Head circles',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Move your head in slow circles. Notice where your neck moves and where it feels tight.',
-        middle: 'Slow head circles map neck mobility and tension; an excellent micro-movement anchor.',
-        high: 'Cervical circumduction provides proprioceptive input through the neck, where chronic tension lives.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright with shoulders relaxed.',
-        'Slowly drop chin to chest.',
-        'Move ear toward shoulder, back of head dropping back, other ear to other shoulder.',
-        'Continue in slow circle.',
-        'Reverse direction.',
-        'Practice 2 to 5 minutes.'
-      ],
-      whenItHelps: [
-        'Tension in neck (sustained screen use)',
-        'Pre-meditation warmup',
-        'After hours of seated work',
-        'Beginning of body scan',
-        'For students with chronic neck tension'
-      ],
-      whenItDoesntHelp: 'Students with neck injuries, recent whiplash, or vertebral instability. Skip if dizziness occurs.',
-      variations: [
-        'Smaller circles for sensitive necks.',
-        'Half circles (front only) if back hurts.',
-        'Pair with shoulder rolls.'
-      ],
-      research: 'Cervical range-of-motion practices in physical therapy; widely used in yoga warmups.'
-    },
-    {
-      id: 'head_tipping',
-      name: 'Tipping head left-to-right',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Slowly tip your head so your ear comes toward your shoulder. Then the other side.',
-        middle: 'Lateral head tipping stretches sternocleidomastoid and stimulates vestibular cues.',
-        high: 'Lateral cervical flexion releases SCM and trapezius tension; combined vestibular plus proprioceptive input.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright.',
-        'Tip head right ear toward right shoulder.',
-        'Hold for 3 to 5 breaths.',
-        'Return to center.',
-        'Tip left ear toward left shoulder.',
-        'Hold and return.',
-        'Practice 3 to 5 minutes.'
-      ],
-      whenItHelps: [
-        'Office workers, students with screen-fatigue',
-        'Pre-meditation tension release',
-        'Warmup for body scan',
-        'Migraine-prevention stretches (gentle)',
-        'Yoga preparation'
-      ],
-      whenItDoesntHelp: 'Acute neck pain; students recovering from injury.',
-      variations: [
-        'Add light hand pressure on head for deeper stretch.',
-        'Combine with breath.',
-        'Pair with shoulder blade squeezes.'
-      ],
-      research: 'Yoga and physical therapy standard stretch.'
-    },
-    {
-      id: 'balance_closed_eyes',
-      name: 'Standing balance with closed eyes',
-      sense: 'proprioceptive',
-      category: 'body',
-      description: {
-        elementary: 'Stand with your feet together and close your eyes. Notice how your body works to stay still.',
-        middle: 'Closing the eyes while standing reveals how much we use vision for balance; the body must work harder.',
-        high: 'Eyes-closed standing balance trains proprioception and vestibular reliance; Romberg test in neurology.'
-      },
-      howToUseAsAnchor: [
-        'Stand near a wall or chair for safety.',
-        'Feet together or hip-width apart.',
-        'Close eyes.',
-        'Notice the small adjustments your body makes.',
-        'Open eyes when finished.',
-        'Practice for 30 to 90 seconds.'
-      ],
-      whenItHelps: [
-        'For students who like physical challenge',
-        'Yoga warmup',
-        'Sports practice',
-        'Neurodevelopmental therapy (with supervision)',
-        'Pre-tree-pose'
-      ],
-      whenItDoesntHelp: 'Elderly with fall risk; students with severe vestibular issues; never without something to grab.',
-      variations: [
-        'Feet wider for easier balance.',
-        'Tree pose with eyes closed (advanced).',
-        'One foot in front of the other (heel-toe).'
-      ],
-      research: 'Romberg test in clinical neurology; balance training in PT.'
-    },
-    {
-      id: 'sitting_balance_awareness',
-      name: 'Sitting balance awareness',
-      sense: 'proprioceptive',
-      category: 'body',
-      description: {
-        elementary: 'Sit very still and notice how you are balanced. Are you leaning? Centered?',
-        middle: 'Sitting balance awareness reveals tiny imbalances and tensions normally invisible.',
-        high: 'Postural awareness while seated trains alignment and reveals chronic asymmetries; foundational in yoga and Pilates.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright without back support.',
-        'Notice if you lean left, right, forward, back.',
-        'Adjust gently to center.',
-        'Feel the small balance adjustments.',
-        'Maintain for the practice.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Pre-meditation alignment',
-        'For students with chronic postural issues',
-        'After hours of slumping',
-        'Yoga and Pilates carryover',
-        'Trauma-informed body awareness'
-      ],
-      whenItDoesntHelp: 'Students with back pain who need support; those who fixate on perfecting posture.',
-      variations: [
-        'Sit on a balance disc for added input.',
-        'Use a backjack for support.',
-        'Try seated on the floor cross-legged.'
-      ],
-      research: 'Postural awareness in Alexander Technique and Feldenkrais.'
-    },
-    {
-      id: 'foot_pressure_shift',
-      name: 'Foot pressure shift',
-      sense: 'proprioceptive',
-      category: 'body',
-      description: {
-        elementary: 'Push gently into your feet in different parts: heels, toes, sides. Feel the pressure change.',
-        middle: 'Shifting weight through different parts of the foot maps the plantar surface and increases proprioception.',
-        high: 'Plantar pressure mapping increases sensorimotor integration; useful in PT and balance training.'
-      },
-      howToUseAsAnchor: [
-        'Stand or sit with feet flat on floor.',
-        'Push gently into heels, then toes, then outer edge, then inner edge.',
-        'Notice the felt difference.',
-        'Return to even distribution.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'Standing meditations',
-        'Athletes (foot awareness for sport)',
-        'For students with flat feet or other foot issues',
-        'Tai chi warmup',
-        'Walking meditation prep'
-      ],
-      whenItDoesntHelp: 'Students with foot pain or plantar fasciitis flare-ups.',
-      variations: [
-        'Barefoot on different textures (carpet, wood, grass).',
-        'Roll a small ball under each foot.',
-        'Pair with breath: inhale on shift, exhale on return.'
-      ],
-      research: 'Plantar somatosensation in balance (Meyer 2004).'
-    },
-
-    // ============================================================
-    // MOVEMENT-BASED ANCHORS (6)
-    // ============================================================
-    {
-      id: 'walking_footfall',
-      name: 'Walking footfall',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Walk slowly and feel each foot land. Heel, then ball of foot, then toes.',
-        middle: 'Walking meditation breaks down each step into stages: lifting, moving, placing.',
-        high: 'Cankama (walking meditation) is a classical Buddhist practice; trains attention to gross motor movement in real time.'
-      },
-      howToUseAsAnchor: [
-        'Walk a known loop slowly.',
-        'Feel each part of the foot as it lands.',
-        'Move slowly enough that each step has time.',
-        'Pair with phrase: \'lifting, moving, placing\' silently.',
-        'Pause occasionally and feel stillness.',
-        'Practice for 10 to 30 minutes.'
-      ],
-      whenItHelps: [
-        'When sitting is unbearable',
-        'Between sits to refresh',
-        'For students who need movement',
-        'Outdoor practice',
-        'After meals (less drowsy than sitting)'
-      ],
-      whenItDoesntHelp: 'Students with mobility limitations (offer seated alternative); spaces with no walking path.',
-      variations: [
-        'Walk barefoot on grass or sand.',
-        'Slow walking versus normal pace.',
-        'Walk a labyrinth.'
-      ],
-      research: 'Cankama in Pali Buddhism; clinical walking meditation (Edwards 2018).'
-    },
-    {
-      id: 'cycling_cadence',
-      name: 'Cycling cadence',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Riding a bike at a steady speed is its own kind of calm. Notice the pedals turning.',
-        middle: 'A steady cycling rhythm becomes meditative; the body keeps the pattern while the mind settles.',
-        high: 'Repetitive aerobic motion at moderate intensity induces flow states (Csikszentmihalyi 1990); cyclists report meditative quality.'
-      },
-      howToUseAsAnchor: [
-        'Ride a familiar route at moderate, steady pace.',
-        'Match breath to cadence (every 3 pedal strokes inhale, every 3 exhale).',
-        'Let mind rest in rhythm.',
-        'When thoughts intrude, return to cadence.',
-        'Pause occasionally to feel stillness.',
-        'Practice for 20 to 60 minutes.'
-      ],
-      whenItHelps: [
-        'For active students who cannot sit still',
-        'Commuting',
-        'For students with ADHD',
-        'Outdoor practice',
-        'Cardiovascular plus contemplative dual purpose'
-      ],
-      whenItDoesntHelp: 'Students without access to bicycles or safe routes; in traffic where vigilance is needed.',
-      variations: [
-        'Use stationary bike for indoor practice.',
-        'Pair with bird-listening on quiet routes.',
-        'Spin slower for deeper meditative state.'
-      ],
-      research: 'Aerobic exercise and contemplation (Edwards 2018); flow states in cycling.'
-    },
-    {
-      id: 'breath_arm_sync',
-      name: 'Breath-arm raise sync',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Raise your arms up as you breathe in, lower them as you breathe out.',
-        middle: 'Coordinating arm movement with breath links body and breath in a single rhythm.',
-        high: 'Synchronizing limb movement with respiration is foundational in qigong, tai chi, and yoga sun salutations.'
-      },
-      howToUseAsAnchor: [
-        'Stand with arms at sides.',
-        'Slowly raise arms overhead as you inhale.',
-        'Slowly lower as you exhale.',
-        'Move only as fast as the breath allows.',
-        'Repeat 6 to 12 cycles.',
-        'Practice for 3 to 8 minutes.'
-      ],
-      whenItHelps: [
-        'Pre-sitting warmup',
-        'For students who need movement',
-        'Yoga and qigong practice',
-        'Morning energizer',
-        'After long sitting'
-      ],
-      whenItDoesntHelp: 'Students with shoulder injuries; modify with elbows bent.',
-      variations: [
-        'Tai chi opening posture.',
-        'Sun salutation breath synchronization.',
-        'Smaller movement (just hands) seated.'
-      ],
-      research: 'Qigong and tai chi breath-movement coordination (Jahnke 2010).'
-    },
-    {
-      id: 'stretching_one_part',
-      name: 'Stretching one part of body',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Stretch one body part very slowly (like your arm) and pay attention to everything that moves.',
-        middle: 'Slow stretching of a single body part is a moving meditation; sensation is the anchor.',
-        high: 'Targeted slow stretching with attention to sensation engages somatic awareness more deeply than fast stretching.'
-      },
-      howToUseAsAnchor: [
-        'Choose one body part (arm, leg, back).',
-        'Move slowly into a comfortable stretch.',
-        'Notice every sensation (pulling, warmth, edges).',
-        'Hold for 30 to 60 seconds.',
-        'Release slowly.',
-        'Repeat with another part or same one.',
-        'Practice 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'After sitting for long periods',
-        'Before bed',
-        'For students who like felt-sense work',
-        'Yoga and stretching practice',
-        'Injury recovery (gentle)'
-      ],
-      whenItDoesntHelp: 'Acute injuries without PT guidance.',
-      variations: [
-        'Standing forward fold.',
-        'Seated single-leg stretch.',
-        'Shoulder rolls.'
-      ],
-      research: 'Yin yoga and slow-stretch contemplation (Grilley 2002).'
-    },
-    {
-      id: 'tai_chi_opening',
-      name: 'Tai chi opening movement',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'Stand and slowly raise your arms in front of you, like pushing through warm water.',
-        middle: 'The opening of tai chi is a single slow gesture that becomes a complete meditation.',
-        high: 'Wuji-into-Taiji opening posture initiates tai chi; the slow rising of arms is itself a complete practice.'
-      },
-      howToUseAsAnchor: [
-        'Stand with feet shoulder-width.',
-        'Knees soft, arms at sides.',
-        'Slowly raise arms forward, palms down, to shoulder height.',
-        'Pause, then bend elbows and draw hands toward chest.',
-        'Slowly lower arms.',
-        'Repeat 5 to 10 times.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Tai chi practitioners',
-        'For students who like slow movement',
-        'Pre-sitting warmup',
-        'Morning practice',
-        'Mind-body integration'
-      ],
-      whenItDoesntHelp: 'Students with severe shoulder limitations.',
-      variations: [
-        'Add visualizations (pushing energy, parting water).',
-        'Combine with breath.',
-        'Repeat in different directions.'
-      ],
-      research: 'Tai chi clinical research (Wayne 2013 Harvard Medical School Guide).'
-    },
-    {
-      id: 'sun_salutation',
-      name: 'Yoga sun salutation breath',
-      sense: 'proprioceptive',
-      category: 'movement',
-      description: {
-        elementary: 'A yoga sun salutation is a sequence of poses that flows with your breath.',
-        middle: 'Surya namaskar links 8 to 12 poses to inhalations and exhalations in a flowing sequence.',
-        high: 'Sun Salutation A (Ashtanga) is a complete vinyasa sequence linking breath to movement in established choreography.'
-      },
-      howToUseAsAnchor: [
-        'Learn the basic sequence from a yoga teacher or video.',
-        'Move through poses, one per breath.',
-        'Pay attention only to breath and movement.',
-        'Avoid pushing the body.',
-        'Repeat 3 to 6 rounds.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Morning practice',
-        'For yoga practitioners',
-        'Cardiovascular warmup',
-        'For students who like flowing sequences',
-        'Pre-sitting body warmup'
-      ],
-      whenItDoesntHelp: 'Students with wrist, shoulder, or back issues without modifications.',
-      variations: [
-        'Modified version with hands on a chair.',
-        'Sun Salutation B for more challenge.',
-        'Half-sun salutation for gentler practice.'
-      ],
-      research: 'Yoga clinical effectiveness (Cramer 2018 systematic reviews).'
-    },
-
-    // ============================================================
-    // PLACE ANCHORS (5)
-    // ============================================================
-    {
-      id: 'current_room_features',
-      name: 'Your current room\'s specific features',
-      sense: 'visual',
-      category: 'place',
-      description: {
-        elementary: 'Look around the room you are in. Name 3 things you see, 2 sounds, and 1 thing you feel.',
-        middle: 'Specific orienting to the current environment is a foundational grounding practice (5-4-3-2-1 method).',
-        high: 'Environmental orienting is the basis of grounding in trauma-focused work; sensory-specific naming interrupts dissociation.'
-      },
-      howToUseAsAnchor: [
-        'Sit and look around your room.',
-        'Name 5 things you can see.',
-        'Name 4 things you can feel.',
-        'Name 3 things you can hear.',
-        'Name 2 things you can smell.',
-        'Name 1 thing you can taste.',
-        'Practice for 5 minutes.'
-      ],
-      whenItHelps: [
-        'Dissociation episodes',
-        'Anxiety',
-        'Pre-test grounding',
-        'Trauma-informed practice',
-        'When abstract meditation feels destabilizing'
-      ],
-      whenItDoesntHelp: 'Environments that are themselves triggering (loud, chaotic, unsafe).',
-      variations: [
-        'Shorten to 3-2-1 for quick reset.',
-        'Walk around the room first.',
-        'Pair with breath.'
-      ],
-      research: 'Grounding techniques (Najavits 2002 Seeking Safety).'
-    },
-    {
-      id: 'safe_place_visualization',
-      name: 'A safe place visualization',
-      sense: 'visual',
-      category: 'place',
-      description: {
-        elementary: 'Close your eyes and imagine a place where you feel safe. It can be real or made up.',
-        middle: 'Visualizing a safe place activates calm and provides an internal refuge.',
-        high: 'Safe-place imagery is foundational in EMDR resourcing and somatic experiencing.'
-      },
-      howToUseAsAnchor: [
-        'Close eyes (or keep open if needed).',
-        'Imagine a place where you feel completely safe.',
-        'Add detail: what you see, hear, smell, feel.',
-        'Notice your body in that place.',
-        'Rest in the imagery.',
-        'Return when needed (anchored memory).',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'Trauma-informed practice',
-        'Anxiety',
-        'Pre-sleep',
-        'EMDR resourcing',
-        'For students who have lived through unsafe places'
-      ],
-      whenItDoesntHelp: 'For students who cannot find a safe place in memory or imagination; consider a present-moment anchor instead.',
-      variations: [
-        'Use a real place you have been.',
-        'Use a place from a book or movie.',
-        'Create a composite ideal place.'
-      ],
-      research: 'EMDR safe-place protocol (Shapiro 2001); SE container exercise (Levine 1997).'
-    },
-    {
-      id: 'favorite_chair',
-      name: 'Your favorite chair',
-      sense: 'visual',
-      category: 'place',
-      description: {
-        elementary: 'Sit in your favorite chair. Feel how it knows your shape.',
-        middle: 'A favorite chair is a microenvironment of safety; sitting there is itself a regulation cue.',
-        high: 'Repeated use of a single seat for practice creates conditioned association with calm.'
-      },
-      howToUseAsAnchor: [
-        'Sit in your favorite chair.',
-        'Notice how it feels familiar.',
-        'Settle in and feel supported.',
-        'Use this as anchor throughout practice.',
-        'Return mentally to the chair when away.',
-        'Practice for any duration.'
-      ],
-      whenItHelps: [
-        'Daily home practice',
-        'For students who like ritual and place',
-        'Reliable anchor at home',
-        'Post-difficult-day recovery',
-        'Reading and contemplation'
-      ],
-      whenItDoesntHelp: 'When away from home; for students without a designated chair.',
-      variations: [
-        'Bring a small cushion to use across chairs.',
-        'Use the same blanket for any chair.',
-        'Decorate a chair as a practice space.'
-      ],
-      research: 'Environment and habit (James 1890; classical conditioning in mindfulness).'
-    },
-    {
-      id: 'specific_tree',
-      name: 'A specific tree you know',
-      sense: 'visual',
-      category: 'place',
-      description: {
-        elementary: 'Pick one tree you see often. Visit it and look at it as your meditation place.',
-        middle: 'A single named tree (returned to repeatedly) becomes a witness and partner in practice.',
-        high: 'Relational engagement with a specific tree builds eco-contemplative grounding (Macy 2007).'
-      },
-      howToUseAsAnchor: [
-        'Choose one accessible tree.',
-        'Visit weekly or daily.',
-        'Sit or stand near it.',
-        'Notice it without trying to analyze.',
-        'Track its changes across seasons.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Outdoor practice',
-        'For students who connect to nature',
-        'Long-term contemplative practice',
-        'Grief work (trees as witnesses)',
-        'Eco-contemplative tradition'
-      ],
-      whenItDoesntHelp: 'Urban environments without accessible trees; students who cannot leave home.',
-      variations: [
-        'A houseplant indoors.',
-        'A photographed tree from far away.',
-        'Track this tree through a year.'
-      ],
-      research: 'Eco-contemplative work (Macy 2007 Active Hope); forest bathing (Park 2010 shinrin-yoku).'
-    },
-    {
-      id: 'patch_of_sky',
-      name: 'A specific patch of sky',
-      sense: 'visual',
-      category: 'place',
-      description: {
-        elementary: 'Look at the same piece of sky every day. It always looks different.',
-        middle: 'A consistent view of sky reveals weather, light, and time in ways we usually miss.',
-        high: 'Sky-gazing across seasons is taught in Dzogchen and used in contemporary nature-based contemplation.'
-      },
-      howToUseAsAnchor: [
-        'Choose a window or outdoor spot with sky view.',
-        'Visit at the same time daily if possible.',
-        'Gaze softly at the sky.',
-        'Notice color, clouds, light, birds.',
-        'Allow attention to drift across the view.',
-        'Practice for 5 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'For students who feel boxed in indoors',
-        'Anywhere with sky access',
-        'Weather-watching',
-        'Daydreamer-friendly',
-        'Dzogchen sky-gazing tradition'
-      ],
-      whenItDoesntHelp: 'Students with light sensitivity (avoid direct sun); environments without sky view.',
-      variations: [
-        'Lie down and look straight up.',
-        'Track one specific cloud type (cirrus, cumulus).',
-        'Pair with bird-spotting.'
-      ],
-      research: 'Sky-gazing (nam-mkha\' arted) in Dzogchen tradition; restorative environments (Kaplan 1995).'
-    },
-
-    // ============================================================
-    // COMPOSITE ANCHORS (5)
-    // ============================================================
-    {
-      id: 'five_senses_one_at_time',
-      name: 'The 5 senses one at a time',
-      sense: 'auditory',
-      category: 'sensation',
-      description: {
-        elementary: 'Spend 1 minute on each sense: seeing, hearing, smelling, tasting, feeling. That is one round of 5 minutes.',
-        middle: 'Rotating attention through each sense in turn is a structured awareness practice that prevents fixation.',
-        high: 'Sequential modality scanning trains attentional flexibility across sensory channels; foundational in body-scan variants.'
-      },
-      howToUseAsAnchor: [
-        'Set a timer or count breaths.',
-        'Spend 60 to 90 seconds on each: sight, sound, smell, taste, touch.',
-        'Notice each sense fully before moving on.',
-        'Do not force.',
-        'Complete one round, then repeat or rest.',
-        'Practice for 5 to 15 minutes.'
-      ],
-      whenItHelps: [
-        'For students who like structure',
-        'Beginner practice',
-        'For students with attention difficulties',
-        'After dissociation',
-        'When breath alone is not engaging enough'
-      ],
-      whenItDoesntHelp: 'Students with sensory processing issues affecting specific senses (may skip or modify).',
-      variations: [
-        'Add 6th sense: interoception.',
-        'Spend longer on the most engaging sense.',
-        'Pair with movement.'
-      ],
-      research: 'Sensory grounding in trauma-informed care (Najavits 2002).'
-    },
-    {
-      id: 'body_breath_together',
-      name: 'Body + breath together',
-      sense: 'interoceptive',
-      category: 'breath',
-      description: {
-        elementary: 'Feel your body and your breath at the same time. Notice both, like listening to two songs.',
-        middle: 'Dual awareness of body and breath builds peripheral attention while maintaining a central focus.',
-        high: 'Open-monitoring of body sensation with breath as primary anchor mirrors advanced vipassana technique.'
-      },
-      howToUseAsAnchor: [
-        'Sit comfortably.',
-        'Maintain awareness of breath at chosen point.',
-        'Simultaneously notice body sensations as they arise.',
-        'Let breath be central, body peripheral.',
-        'Return to breath if attention scatters.',
-        'Practice for 10 to 25 minutes.'
-      ],
-      whenItHelps: [
-        'Intermediate practitioners',
-        'After breath-only basics',
-        'For students who like complexity',
-        'Vipassana style training',
-        'Open-monitoring development'
-      ],
-      whenItDoesntHelp: 'Beginners who lose either focus; students who feel overwhelmed by simultaneity.',
-      variations: [
-        'Body-scan during breath awareness.',
-        'Add sound layer for three-channel practice.',
-        'Cycle between focus and open monitoring.'
-      ],
-      research: 'Focused-attention to open-monitoring progression (Lutz 2008).'
-    },
-    {
-      id: 'sound_breath_together',
-      name: 'Sound + breath together',
-      sense: 'auditory',
-      category: 'breath',
-      description: {
-        elementary: 'Listen to sounds around you and feel your breath at the same time.',
-        middle: 'Pairing breath awareness with ambient sound awareness creates a wider attentional field.',
-        high: 'Dual modality (interoceptive plus exteroceptive auditory) practice expands attentional capacity.'
-      },
-      howToUseAsAnchor: [
-        'Sit and notice breath.',
-        'Allow sounds to enter awareness.',
-        'Do not chase sounds, do not push them away.',
-        'Maintain breath as primary, sound as secondary.',
-        'Return to breath when scattered.',
-        'Practice for 10 to 20 minutes.'
-      ],
-      whenItHelps: [
-        'Practice in noisy environments',
-        'For students who normally find sound distracting',
-        'Acceptance training',
-        'Intermediate practice',
-        'Outdoor sits'
-      ],
-      whenItDoesntHelp: 'In overwhelming sound environments; students with auditory hypersensitivity.',
-      variations: [
-        'Outdoor versus indoor.',
-        'Quiet versus busy environments.',
-        'Add visual softening.'
-      ],
-      research: 'Open-monitoring training (Lutz 2008); shamatha-vipassana progression.'
-    },
-    {
-      id: 'whole_body_awareness',
-      name: 'Whole-body awareness',
-      sense: 'interoceptive',
-      category: 'body',
-      description: {
-        elementary: 'Feel your whole body at once, from head to toes, without picking one part.',
-        middle: 'Whole-body awareness is a panoramic interoceptive practice; advanced because it diffuses attention rather than focuses.',
-        high: 'Holistic somatic field perception is advanced; appears in shikantaza (just sitting) and Dzogchen.'
-      },
-      howToUseAsAnchor: [
-        'Sit upright.',
-        'Briefly scan body from feet to head.',
-        'Then hold the whole body in awareness at once.',
-        'Do not focus on any one part.',
-        'Allow sensations to come and go.',
-        'Practice for 15 to 40 minutes.'
-      ],
-      whenItHelps: [
-        'Advanced practitioners',
-        'Post-body-scan integration',
-        'Zen practice',
-        'For students who like spaciousness',
-        'Long retreats'
-      ],
-      whenItDoesntHelp: 'Beginners (too diffuse); students who lose attention without focus.',
-      variations: [
-        'Pair with sound awareness for full sensory field.',
-        'Add awareness of awareness itself (advanced).',
-        'Practice while walking.'
-      ],
-      research: 'Shikantaza (Dogen); Dzogchen rigpa; open-monitoring meditation.'
-    },
-    {
-      id: 'awareness_of_awareness',
-      name: 'Awareness of awareness itself',
-      sense: 'interoceptive',
-      category: 'sensation',
-      description: {
-        elementary: 'Notice that you are noticing. Try to feel the part of you that is paying attention.',
-        middle: 'Meta-awareness is the practice of attending to the attending itself; advanced and paradoxical.',
-        high: 'Meta-cognitive monitoring or rigpa-style awareness of awareness is the most refined contemplative practice.'
-      },
-      howToUseAsAnchor: [
-        'Sit and notice anything (breath, sound).',
-        'Then notice the noticing.',
-        'Try to feel the awareness that is doing the noticing.',
-        'Do not grasp; the felt sense will slip.',
-        'Return gently.',
-        'Practice for 15 to 45 minutes.'
-      ],
-      whenItHelps: [
-        'Very advanced practitioners',
-        'After years of focused-attention work',
-        'For students with philosophical interest',
-        'Long retreats',
-        'Direct-pointing instructions'
-      ],
-      whenItDoesntHelp: 'Beginners (frustrating); students who need concrete anchors; can destabilize in some cases.',
-      variations: [
-        'After noticing breath, notice that you noticed.',
-        'Sit in silence with no object.',
-        'Resting in open awareness.'
-      ],
-      research: 'Dzogchen pointing-out instructions; mindfulness of mindfulness (sati of sati) in Theravada.'
-    }
-  ];
-
+  
   // ── Soundscape Recipes ──
   // Combinations of synthesized sounds for different practice modes
-  var SOUNDSCAPE_RECIPES = [
-    {
-      id: 'forest_rain',
-      name: 'Forest Rain',
-      mode: 'relaxation',
-      layers: [
-        { source: 'rain_medium', frequencyRangeHz: '200-8000', volume: 0.45, panLfRt: 'center', description: 'Steady rain at medium intensity, full-spectrum pink-noise wash' },
-        { source: 'birdsong_distant', frequencyRangeHz: '1500-6000', volume: 0.18, panLfRt: 'right', intervalSec: 8, description: 'Occasional bird call, panned slightly right' },
-        { source: 'breeze_low', frequencyRangeHz: '60-400', volume: 0.15, panLfRt: 'left', description: 'Soft low rumble of distant wind in trees' },
-        { source: 'leaf_rustle', frequencyRangeHz: '2000-8000', volume: 0.08, panLfRt: 'center', intervalSec: 12, description: 'Intermittent rustling of leaves overhead' }
-      ],
-      whatItEvokes: 'A safe forest after rain has been falling for hours. The mind softens, the body settles. Layers of life are present but distant.',
-      durationMin: 15,
-      forContext: 'Daily relaxation, post-school decompression, or after a hard conversation. Works well for students who feel restored by nature.'
-    },
-    {
-      id: 'mountain_morning',
-      name: 'Mountain Morning',
-      mode: 'energize',
-      layers: [
-        { source: 'wind_high', frequencyRangeHz: '500-4000', volume: 0.28, panLfRt: 'wide', description: 'Sustained alpine wind sweep, panned wide for openness' },
-        { source: 'birdsong_dawn_chorus', frequencyRangeHz: '2000-7000', volume: 0.32, panLfRt: 'spread', description: 'Multiple bird species at dawn chorus density' },
-        { source: 'singing_bowl_distant', frequencyRangeHz: '440-880', volume: 0.20, panLfRt: 'center', intervalSec: 45, fade: 'long', description: 'Distant bowl strike, long fade, every 45 seconds' },
-        { source: 'water_drip', frequencyRangeHz: '1000-3000', volume: 0.05, panLfRt: 'right', intervalSec: 4, description: 'Slow water drip from melting snow' }
-      ],
-      whatItEvokes: 'Standing at altitude as the sun rises. Brisk, alive, expansive. The breath naturally deepens to match the openness.',
-      durationMin: 12,
-      forContext: 'Morning practice, before tests requiring alertness, or for students seeking elevation rather than calm.'
-    },
-    {
-      id: 'ocean_cliff',
-      name: 'Ocean Cliff',
-      mode: 'grounding',
-      layers: [
-        { source: 'ocean_waves_breaking', frequencyRangeHz: '60-2000', volume: 0.50, panLfRt: 'spread', cycleSec: 9, description: 'Waves breaking on rocky shore, 9-second cycle for breath entrainment' },
-        { source: 'wind_steady', frequencyRangeHz: '400-2500', volume: 0.25, panLfRt: 'center', description: 'Constant low-to-mid wind, full center' },
-        { source: 'gull_cry_distant', frequencyRangeHz: '1500-4500', volume: 0.10, panLfRt: 'left', intervalSec: 60, description: 'Single distant gull every minute' },
-        { source: 'ocean_far_horizon', frequencyRangeHz: '40-200', volume: 0.18, panLfRt: 'wide', description: 'Deep ocean rumble at the horizon (sub-bass)' }
-      ],
-      whatItEvokes: 'Standing on a high cliff watching waves below. Vast, ancient, indifferent in the comforting way that takes self-importance off the table.',
-      durationMin: 20,
-      forContext: 'Grief, ego-relief, post-conflict cooling, when students need to feel small in a good way.'
-    },
-    {
-      id: 'desert_night',
-      name: 'Desert Night',
-      mode: 'grounding',
-      layers: [
-        { source: 'wind_low_steady', frequencyRangeHz: '80-600', volume: 0.30, panLfRt: 'center', description: 'Sustained low wind across open desert' },
-        { source: 'coyote_distant', frequencyRangeHz: '500-2500', volume: 0.08, panLfRt: 'left', intervalSec: 90, description: 'Occasional distant coyote call, sparse' },
-        { source: 'drone_deep_60hz', frequencyRangeHz: '50-80', volume: 0.22, panLfRt: 'center', description: 'Sustained deep drone, anchoring fundamental' },
-        { source: 'cricket_chirp', frequencyRangeHz: '3000-5000', volume: 0.12, panLfRt: 'wide', cycleSec: 2, description: 'Slow cricket rhythm, panned wide' }
-      ],
-      whatItEvokes: 'A clear desert night with stars visible. Cold air, deep silence, the sense that you are very small and very welcome.',
-      durationMin: 18,
-      forContext: 'Pre-sleep, deep grief, or when students need to feel both held and free.'
-    },
-    {
-      id: 'tibetan_temple',
-      name: 'Tibetan Temple',
-      mode: 'focus',
-      layers: [
-        { source: 'singing_bowl_C', frequencyRangeHz: '256-2048', volume: 0.38, panLfRt: 'center', intervalSec: 30, fade: 'long', description: 'C-note bowl strike, 30-sec intervals, long decay' },
-        { source: 'singing_bowl_G', frequencyRangeHz: '384-3072', volume: 0.22, panLfRt: 'left', intervalSec: 22, fade: 'long', description: 'G-note bowl, offset interval, panned left' },
-        { source: 'distant_chant', frequencyRangeHz: '100-400', volume: 0.18, panLfRt: 'right', description: 'Low monastic chant, indistinct, panned right' },
-        { source: 'breath_audible', frequencyRangeHz: '200-1000', volume: 0.08, panLfRt: 'center', cycleSec: 6, description: 'Soft audible breath cycle (recorded or simulated)' }
-      ],
-      whatItEvokes: 'A high monastery at dawn. Centuries of practice are present in the air. Attention naturally collects.',
-      durationMin: 25,
-      forContext: 'Concentration training, longer sits, or for students drawn to contemplative traditions.'
-    },
-    {
-      id: 'pre_storm_calm',
-      name: 'Pre-Storm Calm',
-      mode: 'grounding',
-      layers: [
-        { source: 'drone_low_55hz', frequencyRangeHz: '50-150', volume: 0.30, panLfRt: 'center', description: 'Deep sustained drone, ominous but stable' },
-        { source: 'distant_thunder', frequencyRangeHz: '40-300', volume: 0.18, panLfRt: 'left', intervalSec: 35, description: 'Far-off thunder rumble every 35 seconds' },
-        { source: 'wind_gust', frequencyRangeHz: '300-1500', volume: 0.20, panLfRt: 'spread', intervalSec: 18, description: 'Periodic wind gust, panned wide' },
-        { source: 'breath_pace', frequencyRangeHz: '100-500', volume: 0.12, panLfRt: 'center', cycleSec: 8, description: 'Slow breath pace cue, 8-sec cycle' }
-      ],
-      whatItEvokes: 'The moment before a thunderstorm arrives. The air thickens, the body braces, but you are safe inside watching.',
-      durationMin: 12,
-      forContext: 'Working with fear or anticipation. Useful for students who feel anxious before tests, performances, or hard conversations.'
-    },
-    {
-      id: 'sleep_cocoon',
-      name: 'Sleep Cocoon',
-      mode: 'sleep',
-      layers: [
-        { source: 'brown_noise', frequencyRangeHz: '40-1500', volume: 0.55, panLfRt: 'center', description: 'Sustained brown noise (bass-heavy)' },
-        { source: 'heart_rate_pulse_55bpm', frequencyRangeHz: '40-80', volume: 0.12, panLfRt: 'center', cycleSec: 1.09, description: 'Slow heart-rate-matched low pulse, 55 BPM' },
-        { source: 'breath_pace_slow', frequencyRangeHz: '60-200', volume: 0.10, panLfRt: 'center', cycleSec: 10, description: 'Very slow breath cue, 10-sec cycle' }
-      ],
-      whatItEvokes: 'Being wrapped in a heavy soft blanket in a quiet room. Heart rate slows, breath naturally lengthens, the world recedes.',
-      durationMin: 30,
-      forContext: 'Bedtime, naps, or insomnia. Use with eye mask and at low volume. Brown noise masks household sounds.'
-    },
-    {
-      id: 'crisis_grounding',
-      name: 'Crisis Grounding',
-      mode: 'grounding',
-      layers: [
-        { source: 'sustained_tone_110hz', frequencyRangeHz: '110-220', volume: 0.40, panLfRt: 'center', description: 'Single sustained low-A tone, no melody, no variation' }
-      ],
-      whatItEvokes: 'Nothing decorative. Just one steady tone you can lean against when the world is too loud. The simplest possible anchor.',
-      durationMin: 10,
-      forContext: 'Acute panic, dissociation episodes, post-traumatic flashbacks. Pair with feet-on-floor and cool water. Tone is consistent so no surprise inputs.'
-    },
-    {
-      id: 'focus_pomodoro',
-      name: 'Focus Pomodoro',
-      mode: 'focus',
-      layers: [
-        { source: 'white_noise_low', frequencyRangeHz: '200-6000', volume: 0.30, panLfRt: 'center', description: 'Soft white noise backdrop for masking distractions' },
-        { source: 'soft_bell_1200hz', frequencyRangeHz: '1100-1300', volume: 0.40, panLfRt: 'center', intervalSec: 1500, fade: 'medium', description: 'Soft bell every 25 minutes (Pomodoro interval)' },
-        { source: 'breeze_subtle', frequencyRangeHz: '500-2500', volume: 0.08, panLfRt: 'wide', description: 'Subtle wide breeze for spatial openness' }
-      ],
-      whatItEvokes: 'A library that loves you. Masking noise lets you focus, and a soft bell every 25 minutes is your friendly reminder to take a break.',
-      durationMin: 90,
-      forContext: 'Study sessions, deep work, test prep. Pair with 25-min work / 5-min break cycle (Pomodoro technique).'
-    },
-    {
-      id: 'energize_morning',
-      name: 'Energize Morning',
-      mode: 'energize',
-      layers: [
-        { source: 'drum_low_60bpm', frequencyRangeHz: '60-250', volume: 0.30, panLfRt: 'center', cycleSec: 1, description: 'Slow low drum at 60 BPM, heartbeat-like' },
-        { source: 'birdsong_buildup', frequencyRangeHz: '1500-7000', volume: 0.25, panLfRt: 'spread', description: 'Dawn-chorus density birdsong building over first 3 minutes' },
-        { source: 'high_chime_random', frequencyRangeHz: '2000-4000', volume: 0.15, panLfRt: 'wide', intervalSec: 12, description: 'Bright chime pings, panned wide, random' },
-        { source: 'air_warm_breeze', frequencyRangeHz: '300-1500', volume: 0.10, panLfRt: 'center', description: 'Subtle warm breeze' }
-      ],
-      whatItEvokes: 'The world waking up. Drum tells the body it is time to move. Birdsong says you are safe to engage with the day.',
-      durationMin: 10,
-      forContext: 'Morning wake-up, pre-exercise, before performances or presentations. For students who need lift rather than calm.'
-    },
-    {
-      id: 'grief_container',
-      name: 'Grief Container',
-      mode: 'grief',
-      layers: [
-        { source: 'cello_drone_low_D', frequencyRangeHz: '73-294', volume: 0.45, panLfRt: 'center', description: 'Deep cello drone on low D, sustained' },
-        { source: 'breath_slow_cycle', frequencyRangeHz: '100-300', volume: 0.10, panLfRt: 'center', cycleSec: 12, description: 'Very slow breath cue, 12-sec cycle' },
-        { source: 'gong_distant', frequencyRangeHz: '110-880', volume: 0.20, panLfRt: 'left', intervalSec: 90, fade: 'very_long', description: 'Far gong every 90 seconds, very long fade' },
-        { source: 'rain_distant', frequencyRangeHz: '500-4000', volume: 0.15, panLfRt: 'right', description: 'Distant rain at edge of hearing' }
-      ],
-      whatItEvokes: 'A held space where grief is allowed to be. The cello holds the weight. The gong is a witness. The breath waits.',
-      durationMin: 25,
-      forContext: 'Loss, anniversaries, breakups, post-funeral. For students processing grief who need a soundtrack that does not rush them.'
-    },
-    {
-      id: 'walking_pace',
-      name: 'Walking Pace',
-      mode: 'focus',
-      layers: [
-        { source: 'footstep_pad_120bpm', frequencyRangeHz: '60-250', volume: 0.35, panLfRt: 'alternate', cycleSec: 0.5, description: 'Steady walking-pace pad, alternating L/R panning each step' },
-        { source: 'breath_walking_cycle', frequencyRangeHz: '100-300', volume: 0.10, panLfRt: 'center', cycleSec: 4, description: 'Breath cycle synced to 4 footsteps per breath' },
-        { source: 'low_pad_warm', frequencyRangeHz: '100-500', volume: 0.25, panLfRt: 'wide', description: 'Warm sustained pad, no melody' },
-        { source: 'ambient_traffic_distant', frequencyRangeHz: '100-800', volume: 0.05, panLfRt: 'spread', description: 'Faint distant traffic for urban authenticity' }
-      ],
-      whatItEvokes: 'Walking through a neighborhood at moderate pace. The footstep rhythm anchors the body. The pad keeps things alive.',
-      durationMin: 20,
-      forContext: 'Walking meditation, commuting, or as anchor for indoor walking when outdoor walking is not possible.'
-    }
-  ];
-
+  
   // ── Visual Focus Objects ──
   // Things to gaze softly at during open-eyes practice (especially trauma-friendly)
-  var VISUAL_ANCHORS = [
-    {
-      id: 'single_object_desk',
-      name: 'Single Object on Desk',
-      description: 'One stable, neutral object placed at arm\'s length on a desk or table. A book, a mug, a small plant, a wooden block. Eye level or slightly below.',
-      whyTraumaFriendly: 'Eyes-open practice keeps the survivor in the present room rather than dropping into closed-eye internal experience that can flood. A familiar object reassures the nervous system that nothing is changing or threatening.',
-      howToGaze: 'Sit comfortably and let your gaze rest softly on the object. Do not stare hard. Let peripheral vision soften, but keep eyes open. Allow attention to drift across the object\'s surface (color, edge, shadow). Return whenever you notice you have wandered.',
-      durationSec: 90,
-      forContext: 'Trauma-informed practice, dissociation prevention, first time trying meditation after PTSD diagnosis. Also works for testing centers, libraries, study spaces.'
-    },
-    {
-      id: 'plant_or_flower_visual',
-      name: 'Plant or Flower',
-      description: 'A living plant within easy view: pothos, snake plant, monstera, succulent, fresh-cut flower. Indoors or outdoors. Movement (slight leaf sway) is welcome but not required.',
-      whyTraumaFriendly: 'Living plants signal safety (the place is hospitable to life). Plants are non-judgmental and do not require interaction. Visual focus on greenery is the basis of biophilic regulation.',
-      howToGaze: 'Let eyes rest on the plant. Notice color, the way leaves catch light, any movement. Move attention between leaves slowly. If the plant has flowers, allow attention to drift to color and shape. Soft focus throughout.',
-      durationSec: 120,
-      forContext: 'Trauma practice, anxiety, post-conflict cooling. Also great for screen-fatigue breaks.'
-    },
-    {
-      id: 'wall_texture',
-      name: 'Wall Texture',
-      description: 'A textured wall: brick, plaster, wood paneling, painted with visible brushstrokes. Not a blank wall (too featureless). The wall stays still and asks nothing.',
-      whyTraumaFriendly: 'A wall is the ultimate stable object: it has been there before you and will be after. Texture gives attention something to do without overstimulation.',
-      howToGaze: 'Sit several feet back from the wall. Let your gaze rest on one section. Notice the texture (grain, irregularity, color variation). Allow attention to drift slowly across the surface. Return to one spot when wandering.',
-      durationSec: 120,
-      forContext: 'Trauma-informed practice, settings without natural elements, classrooms, dorm rooms. The most universally available trauma-friendly anchor.'
-    },
-    {
-      id: 'window_view_visual',
-      name: 'Window View',
-      description: 'A view through a window: sky, trees, a courtyard, a street. Slow-changing scene with visible distance.',
-      whyTraumaFriendly: 'Distance perception (looking far) reduces hyper-vigilance and helps the eyes relax from screen distance. The window itself frames the view and signals safety (you are inside, the world is outside).',
-      howToGaze: 'Sit at comfortable distance from the window. Let gaze rest on the farthest visible point. Allow attention to wander naturally across the scene. Notice changes in light, movement of leaves or clouds, passing of people or vehicles. No need to focus on any one thing.',
-      durationSec: 180,
-      forContext: 'Trauma practice in any environment with a window. Screen-fatigue recovery. Office breaks. Particularly effective for students who feel boxed in.'
-    },
-    {
-      id: 'own_hand_visual',
-      name: 'Your Own Hand',
-      description: 'Your own hand, held at comfortable distance. Palm or back of hand. Maybe placed on lap with palm up.',
-      whyTraumaFriendly: 'Your own body, looked at gently, can be reclaimed in trauma recovery. The hand is less charged than the face or torso. Always available, no equipment needed.',
-      howToGaze: 'Hold your hand at comfortable distance. Let gaze rest softly on the back of the hand or palm. Notice lines, color, knuckles, veins. Wiggle a finger if you wish. Allow yourself to see the hand as a stranger\'s curiosity might.',
-      durationSec: 90,
-      forContext: 'Trauma-informed body reclaiming, dissociation work, post-injury recovery, in any setting where no external object is available.'
-    },
-    {
-      id: 'floor_pattern',
-      name: 'Floor Pattern',
-      description: 'A pattern on the floor: wood grain, tile pattern, carpet weave, rug design. Something with regularity but not perfect symmetry.',
-      whyTraumaFriendly: 'Looking down can feel safer than looking forward (less interaction). Floor patterns are stable, predictable, and ground (literally).',
-      howToGaze: 'Sit comfortably and let gaze rest on the floor in front of you (3 to 6 feet away). Notice pattern repetition or variation. Allow attention to drift across the floor. Return to one section.',
-      durationSec: 120,
-      forContext: 'Trauma practice when downward gaze feels safest. Settings where wall-gazing feels exposed.'
-    },
-    {
-      id: 'ceiling_pattern',
-      name: 'Ceiling Pattern',
-      description: 'A pattern on the ceiling: acoustic tiles, exposed beams, painted texture, light fixture, ornate molding (in older buildings).',
-      whyTraumaFriendly: 'Looking up changes posture (chin slightly lifted) and breath (chest opens). For students who slump under stress, looking up is a small intervention.',
-      howToGaze: 'Sit upright (or recline) and let gaze rest on the ceiling. Notice pattern, grain, texture. Allow attention to drift. If practiced lying down, this becomes a savasana variant.',
-      durationSec: 120,
-      forContext: 'Trauma practice with relaxation, recovery from forward-bent posture, slumping students, or lying-down practice.'
-    },
-    {
-      id: 'light_fixture',
-      name: 'Light Fixture',
-      description: 'A light fixture: pendant lamp, chandelier, sconce, simple ceiling bulb. Not directly looking into bright bulbs, but at the fixture form.',
-      whyTraumaFriendly: 'Light fixtures are stable, neutral, and often in line of sight. Good for students who do not want to engage with charged content (artwork, mirrors).',
-      howToGaze: 'Let gaze rest on the fixture without staring at the bulb itself. Notice shape, color, shadow. Allow attention to soften.',
-      durationSec: 90,
-      forContext: 'Trauma-informed practice in indoor settings without other anchors. Hotel rooms, hospitals, waiting rooms.'
-    },
-    {
-      id: 'candle_with_safety',
-      name: 'Candle (with safety caveat)',
-      description: 'A small candle at safe distance, on a stable surface, in a room with adult supervision (in schools). Battery LED candles are an equally good alternative.',
-      whyTraumaFriendly: 'Flame movement is alive but predictable; classical trataka. However, for fire-trauma survivors this can be triggering. Always opt-in. LED candles preserve the gentle flicker without the fire-trauma risk.',
-      howToGaze: 'Sit at arm\'s length from the candle (real or LED). Gaze softly at the flame. Try not to blink, but do not strain. When eyes tire, close them and see the afterimage. Open and return to the flame.',
-      durationSec: 180,
-      forContext: 'Trauma-informed practice for students without fire trauma. LED version safe for all settings. Especially powerful for evening or dim-light practice.'
-    },
-    {
-      id: 'singing_bowl_visual',
-      name: 'Singing Bowl (visual + ready to be struck)',
-      description: 'A Tibetan singing bowl placed on a cushion, mallet beside it. Used as visual focus before and between strikes.',
-      whyTraumaFriendly: 'The bowl is a beautiful, stable object that carries meaning (a tool that will sound when ready). Anticipation is contained because you control when it sounds.',
-      howToGaze: 'Sit before the bowl. Let gaze rest on the bowl\'s surface, noticing color, patina, shape. When ready, strike. Watch and listen to the fade. Return to the bowl visually as the tone fades.',
-      durationSec: 240,
-      forContext: 'Trauma-informed practice that integrates sound on the student\'s terms. The student strikes when ready, not when an external schedule dictates.'
-    },
-    {
-      id: 'mandala_drawing',
-      name: 'Mandala Drawing',
-      description: 'A printed or drawn mandala: Buddhist thangka, secular geometric flower of life, Celtic knot. Symmetric circular pattern.',
-      whyTraumaFriendly: 'Symmetry signals safety; circles and mandalas are calming across cultures. The pattern stays still and does not impose.',
-      howToGaze: 'Place mandala at eye level at arm\'s length. Begin gazing at the center. Allow attention to follow lines outward. Return to center. Continue.',
-      durationSec: 180,
-      forContext: 'Trauma practice with structure, for students who like pattern and symmetry. Art-therapy integration. Especially good after coloring a mandala by hand.'
-    },
-    {
-      id: 'geometric_tile',
-      name: 'Geometric Tile',
-      description: 'A single decorative tile: Moroccan, Portuguese azulejo, Islamic geometric, hand-painted folk art. Often in entryways or bathrooms.',
-      whyTraumaFriendly: 'Geometric repetition is calming. Cultural tile traditions are tied to hospitality (entryway tiles welcome guests), reinforcing safety cues.',
-      howToGaze: 'Let gaze rest on the tile. Trace one pattern element with your eyes. Notice repetition. Allow attention to drift across the whole tile.',
-      durationSec: 120,
-      forContext: 'Trauma practice in homes or buildings with decorative tile. Cultural connection for students from tile-using traditions.'
-    },
-    {
-      id: 'tree_outside',
-      name: 'Tree Outside',
-      description: 'A specific tree visible through a window or outdoors. The same tree returned to over time.',
-      whyTraumaFriendly: 'Trees are non-judgmental, ancient, and stable. A specific named tree becomes a witness that the student can return to. Returning to the same tree across seasons builds a relationship that survives the practice itself.',
-      howToGaze: 'Let gaze rest on the tree. Notice trunk, branches, leaves, sky behind. Allow movement (sway, leaves) without trying to control. Return to the tree across days, weeks, months.',
-      durationSec: 240,
-      forContext: 'Trauma practice with eco-contemplative element. Long-term practice (visit same tree weekly). Outdoor or window-side practice.'
-    },
-    {
-      id: 'body_silhouette_mirror',
-      name: 'Body Silhouette in Mirror',
-      description: 'Your own silhouette in a mirror, fully clothed, viewed without judgment. The body as form, not as object of critique.',
-      whyTraumaFriendly: 'For survivors with body trauma, viewing the body neutrally is reclamation work. Doing it through soft visual gaze, not analytical scrutiny, is the trauma-informed approach. ALWAYS opt-in. May not be appropriate for students in active eating-disorder treatment without supervision.',
-      howToGaze: 'Stand or sit in front of a mirror. Let gaze rest on your silhouette. Do not analyze or judge. Notice shape, posture, the fact of having a body. If distress arises, switch to a different anchor.',
-      durationSec: 60,
-      forContext: 'Trauma practice for body reclaiming, with clinical support for body-image work. Skip if not yet appropriate. Hand or feet gazing is a safer entry point.'
-    },
-    {
-      id: 'space_between_self_and_wall',
-      name: 'The Space Between Yourself and the Wall',
-      description: 'The empty volume of air between you and a wall or surface. The space itself, not the wall or yourself.',
-      whyTraumaFriendly: 'Empty space is the most neutral possible anchor. Nothing is there to be triggering. This is the most refined trauma-friendly anchor for advanced practitioners.',
-      howToGaze: 'Sit facing a wall (or any surface) at comfortable distance. Let gaze soften into the volume of air between you. Do not focus on the wall or on yourself. Rest attention in the in-between.',
-      durationSec: 180,
-      forContext: 'Advanced trauma-informed practice. For students who have done substantial work and want a refined anchor. Also a Zen-inflected practice (wall-gazing in zazen, but with space added).'
-    }
-  ];
-  // ── Mindfulness Research Summaries Library ──
+    // ── Mindfulness Research Summaries Library ──
   // Student-accessible summaries of key research findings on contemplative practice
   var RESEARCH_SUMMARIES = [
     {
@@ -20890,1127 +21847,7 @@ window.SelHub = window.SelHub || {
 
   // ── Trauma-Informed Adaptations Library ──
   // For each standard practice, how to adapt for trauma survivors / safety
-  var TRAUMA_ADAPTATIONS = [
-    {
-      id: 'adapt_closed_eye_body_scan',
-      standardPractice: 'Closed-eye body scan',
-      riskForTrauma: 'Closing the eyes removes visual safety cues. For trauma survivors, eyes closed plus inward attention to the body can trigger flashbacks, dissociation, or panic, especially when scanning areas associated with stored trauma (chest, throat, pelvis, gut).',
-      adaptations: [
-        {
-          variant: 'Eyes open soft gaze',
-          description: 'Keep eyes open with a soft, unfocused gaze on the floor about 3 to 6 feet ahead. You can blink and shift your gaze any time. The room and its safety remain visible.',
-          whenToUse: 'Default for anyone with trauma history, anyone new to body-focused practice, anyone returning from a difficult sit.'
-        },
-        {
-          variant: 'External anchor instead of body',
-          description: 'Use an external sensory anchor (sounds in the room, the feel of feet on the floor, hands resting on thighs) instead of scanning through internal sensations.',
-          whenToUse: 'When internal body sensation itself is overwhelming or trigger.'
-        },
-        {
-          variant: 'Skip vulnerable regions',
-          description: 'Scan only neutral areas (hands, forearms, feet, lower legs). Skip chest, throat, pelvis, gut, or any area associated with trauma.',
-          whenToUse: 'When specific body regions are reliably activating.'
-        },
-        {
-          variant: 'Movement instead of scan',
-          description: 'Do gentle movement (shoulder rolls, ankle circles, light stretching) with attention, instead of stationary scan.',
-          whenToUse: 'When stillness amplifies activation.'
-        }
-      ],
-      groundingFirst: 'Before any body scan, name where you are, the date, and three things you see in the room. Plant your feet on the floor and feel the floor pressing back. This orients you to safety before going inward.',
-      earlyWarning: [
-        'Heart rate climbing notably',
-        'Breath becoming shallow, fast, or held',
-        'Sense of leaving the body (looking down at yourself)',
-        'Old memory or sensation surfacing from a remembered event',
-        'Sudden urge to get up and leave'
-      ],
-      ifActivated: [
-        'Open your eyes immediately and look around the room',
-        'Plant feet firmly; press them into the floor and feel the pressure back',
-        'Name out loud: my name is _____, today is _____, I am in _____',
-        'Get up, walk slowly, get a drink of water',
-        'Switch to grounding (5 things you see, 4 you hear, 3 you touch)',
-        'End the practice; trying again the same way the same day is not wise'
-      ],
-      facilitatorNote: 'For any group with members who may have trauma history (most groups, in practice): always offer the eyes-open option from the start, not as a remediation for failure. Frame it as a valid form of practice, not a beginner version. Watch for stillness that looks frozen rather than relaxed (jaw tension, shallow breath, blanched face) and check in privately.',
-      research: 'Treleaven D (2018). Trauma-Sensitive Mindfulness. van der Kolk B (2014). Briere J & Scott C (2014). NCTSN Trauma-Informed Practice guidelines.'
-    },
-    {
-      id: 'adapt_long_silent_sitting',
-      standardPractice: 'Long silent sitting',
-      riskForTrauma: 'Extended stillness in silence is one of the highest-risk practices for trauma survivors. It removes distraction, requires sustained inward attention, and exceeds the capacity many trauma survivors have built for tolerating unstructured time alone with themselves.',
-      adaptations: [
-        {
-          variant: 'Short sits, frequent breaks',
-          description: 'Sit 5 to 10 minutes, then take a 1 to 2 minute break to move, sip water, or look around. Repeat as desired. Total practice time can be the same; the structure protects.',
-          whenToUse: 'Default for anyone with trauma history; also for beginners and anyone returning to practice.'
-        },
-        {
-          variant: 'Guided rather than silent',
-          description: 'Use a guided audio that provides regular verbal anchors (a voice every 30 to 60 seconds) rather than full silence.',
-          whenToUse: 'When silence itself is destabilizing.'
-        },
-        {
-          variant: 'External focus with timer',
-          description: 'Sit for a defined time, but with focus on external sounds, the room, or environmental sensations rather than internal experience.',
-          whenToUse: 'When inward attention is not yet safe.'
-        },
-        {
-          variant: 'Movement break embedded',
-          description: 'Build in a planned movement break at the midpoint of any sit longer than 15 minutes. Stand, walk for 30 seconds, return.',
-          whenToUse: 'For sits between 20 and 45 minutes.'
-        }
-      ],
-      groundingFirst: 'Before any long sit, complete a grounding sequence: orient to room, body, breath, and the fact that you can stop at any time. Set a timer; do not depend on intuition for ending.',
-      earlyWarning: [
-        'Restlessness building into agitation',
-        'Increasing emotional intensity that feels uncontainable',
-        'Drowsiness that feels like dissociation, not normal sleepiness',
-        'Loss of sense of where you are or what time it is',
-        'Compulsion to continue past discomfort to prove something'
-      ],
-      ifActivated: [
-        'Stop the sit; an early end is success, not failure',
-        'Stand up; physical movement breaks the freeze',
-        'Re-orient: 5 things you see, 4 you hear, 3 you touch',
-        'Drink water, eat a small grounding snack (something with protein)',
-        'Walk outside for a few minutes if you can',
-        'Do not return to practice the same day; reflect with a journal or trusted person'
-      ],
-      facilitatorNote: 'Avoid extended silent sits with new groups, with anyone you do not know well, and with any group that has not been explicitly screened for trauma readiness. Always specify length in advance and use a clear ending signal. Build in stand-and-stretch breaks for sits over 20 minutes.',
-      research: 'Treleaven D (2018). Lindahl JR, et al. (2017). NCTSN guidelines. Briere J & Scott C (2014). Principles of Trauma Therapy.'
-    },
-    {
-      id: 'adapt_lying_down',
-      standardPractice: 'Lying-down practice (positional vulnerability)',
-      riskForTrauma: 'Lying down places the body in a vulnerable position (supine, eyes potentially closed, exposed front of body). For survivors of physical or sexual assault, this position itself can activate trauma response, regardless of practice content.',
-      adaptations: [
-        {
-          variant: 'Side-lying instead of supine',
-          description: 'Lie on your side rather than on your back. This is less exposing and can feel safer.',
-          whenToUse: 'For anyone who finds supine position activating.'
-        },
-        {
-          variant: 'Seated alternative',
-          description: 'Sit in a chair or on cushions instead of lying down. All body scan and relaxation practices can be done seated.',
-          whenToUse: 'Default for anyone with assault history or who is unsure.'
-        },
-        {
-          variant: 'Position of choice',
-          description: 'Offer multiple positions (chair, side-lying, supine, propped on bolsters) and allow practitioners to switch any time without comment.',
-          whenToUse: 'In any group setting.'
-        },
-        {
-          variant: 'Eyes open, head propped',
-          description: 'If lying down, keep eyes open or partially open with the head propped on a pillow so you can see the room.',
-          whenToUse: 'When supine is preferred but full eyes-closed feels unsafe.'
-        }
-      ],
-      groundingFirst: 'Before lying down, orient to the room, identify the exit, identify trusted people present. Establish that you can change position or leave at any time.',
-      earlyWarning: [
-        'Tension building in the body once supine',
-        'Sense of being trapped or unable to move',
-        'Memory of past assault or violation',
-        'Urge to roll up or curl into fetal position',
-        'Holding breath or shallow breathing'
-      ],
-      ifActivated: [
-        'Sit up immediately; do not stay in the position trying to observe',
-        'Get up and stand; move',
-        'Re-orient to the room and the safety of the present',
-        'Switch to seated practice for the remainder',
-        'Note what triggered; share with a therapist if there is one',
-        'Do not return to supine practice until you have processed the trigger'
-      ],
-      facilitatorNote: 'Never require supine position in any group. Always offer alternatives explicitly. In yoga or relaxation settings, name that students can adjust position any time without comment. Be especially aware of this in shavasana, savasana, or yoga nidra contexts where supine is traditional.',
-      research: 'Treleaven D (2018). Emerson D & Hopper E (2011). Overcoming Trauma Through Yoga. NCTSN guidelines.'
-    },
-    {
-      id: 'adapt_loving_kindness_self',
-      standardPractice: 'Loving-kindness for self (can backfire in shame spirals)',
-      riskForTrauma: 'For people with deep shame, self-hatred, or trauma-based negative self-view, generating loving-kindness toward themselves can paradoxically intensify shame, grief, or self-loathing. The contrast between the offered phrase (may I be happy) and felt experience of unworthiness can collapse the practice.',
-      adaptations: [
-        {
-          variant: 'Start with a benefactor',
-          description: 'Begin with someone who has been kind to you (a grandparent, mentor, beloved pet) rather than with self. Generate the feeling first; bring it to self last, or skip self entirely for a while.',
-          whenToUse: 'When self-directed phrases produce backlash; default for anyone with trauma or shame history.'
-        },
-        {
-          variant: 'Younger self instead of current self',
-          description: 'Direct the phrases to a younger version of yourself (5-year-old self, 10-year-old self) rather than current self. This often bypasses adult shame.',
-          whenToUse: 'When direct self-loving-kindness is too direct.'
-        },
-        {
-          variant: 'Phrases of common humanity',
-          description: 'Use phrases of common humanity (may all beings know this difficulty is part of being human) rather than personalized self-phrases. Compassion without singling out self.',
-          whenToUse: 'When isolating self for compassion feels unsafe or false.'
-        },
-        {
-          variant: 'Witness self with neutrality',
-          description: 'Drop the kindness phrases entirely and practice neutral attention to self (noticing without judgment). Save loving-kindness for later when capacity is built.',
-          whenToUse: 'When even compassion-toward-others is too much.'
-        }
-      ],
-      groundingFirst: 'Before any self-directed practice, name that you are doing this as an experiment, and that backlash is information, not failure. Have a backup grounding practice ready.',
-      earlyWarning: [
-        'Surge of shame, grief, or self-hatred',
-        'Cynical or angry counter-thoughts (you do not deserve this)',
-        'Tears that feel more grief than relief',
-        'Numbness that descends like a curtain',
-        'Sense of phoniness or performing the practice'
-      ],
-      ifActivated: [
-        'Drop the practice; switch to a benefactor (someone else who loved you well)',
-        'Or switch to common humanity phrases (all beings struggling, not just you)',
-        'Place a hand on your heart and breathe slowly',
-        'Acknowledge what came up without trying to fix it',
-        'Talk to a therapist if shame spirals are recurring',
-        'Be gentle; do not push self-directed practice that consistently backfires'
-      ],
-      facilitatorNote: 'Always offer the benefactor and common-humanity entry points alongside self-directed practice. Name explicitly that some people find self-loving-kindness activates shame, and that this is common rather than failure. In groups, do not require sharing of what came up.',
-      research: 'Germer C & Neff K (2019). Teaching the Mindful Self-Compassion Program. Treleaven D (2018). Gilbert P (2009). The Compassionate Mind.'
-    },
-    {
-      id: 'adapt_loving_kindness_difficult',
-      standardPractice: 'Loving-kindness for a difficult person',
-      riskForTrauma: 'Directing loving-kindness toward a person who abused, harmed, or betrayed you can re-traumatize. The instruction to send love to your abuser can replicate the dynamic where the survivor protects the abuser at their own expense. This practice is contraindicated for many trauma survivors.',
-      adaptations: [
-        {
-          variant: 'Skip difficult-person stage entirely',
-          description: 'Stop the loving-kindness sequence after benefactor, self, neutral person, and all beings. Do not include a specific difficult person.',
-          whenToUse: 'For anyone with a history of being harmed by a specific person; for any trauma survivor.'
-        },
-        {
-          variant: 'Mildly difficult person only',
-          description: 'Use a mildly annoying person (the slow person in line, a colleague who frustrates you) rather than anyone who has actually harmed you.',
-          whenToUse: 'When some difficult-person practice is desired but actual harm-doers are off limits.'
-        },
-        {
-          variant: 'Substitute distant compassion',
-          description: 'Instead of love-toward-abuser, practice may they no longer cause harm, may they meet justice, may I be free of their effects. This is compassion-shaped but not self-betraying.',
-          whenToUse: 'When some attitudinal shift is wanted but love is the wrong frame.'
-        },
-        {
-          variant: 'Loving-kindness for self in relation',
-          description: 'Direct loving-kindness to your own wounded self in the wake of what they did, rather than to them.',
-          whenToUse: 'When the practice is to heal you, not them.'
-        }
-      ],
-      groundingFirst: 'Before any practice involving people who have harmed you, ground in your own safety: the harm is in the past, you are safe now, you are not required to love anyone who hurt you.',
-      earlyWarning: [
-        'Surge of anger at the practice itself',
-        'Sense of being asked to betray yourself',
-        'Trauma response (flashback, freeze, panic)',
-        'Grief that feels destabilizing',
-        'Compliance that feels false or performative'
-      ],
-      ifActivated: [
-        'Drop the practice immediately; you are not required to love your abuser',
-        'Ground in your own body and present safety',
-        'Place a hand on your heart and offer loving-kindness to yourself in light of what they did',
-        'Speak out loud, I do not have to send love to anyone who hurt me',
-        'Talk to a trauma-informed therapist about what came up',
-        'Note that any teacher or community pushing this practice on you should be questioned'
-      ],
-      facilitatorNote: 'NEVER require this practice. Always frame it as optional with a clear opt-out. Explicitly say that anyone for whom this would mean directing love at someone who harmed them may skip it. Do not romanticize forgiveness as a practice goal; premature forgiveness is well-documented to harm survivors.',
-      research: 'Treleaven D (2018). Salzberg S (1995). Loving-Kindness (note the limits Salzberg herself names). Lerner H (2014) on forgiveness. NCTSN guidelines on trauma processing.'
-    },
-    {
-      id: 'adapt_mindfulness_difficult_emotions',
-      standardPractice: 'Mindfulness of difficult emotions',
-      riskForTrauma: 'Sustained attention to difficult emotions in trauma survivors can flood the system rather than process it. The window of tolerance can be exceeded, leading to dissociation or panic rather than integration.',
-      adaptations: [
-        {
-          variant: 'Titrated attention',
-          description: 'Touch the difficult emotion briefly (5 to 15 seconds), then return to a resource (breath, feet, hands). Alternate touching and resourcing.',
-          whenToUse: 'When sustained attention overwhelms; default for trauma work.'
-        },
-        {
-          variant: 'External anchor first',
-          description: 'Establish a strong external anchor (sounds, sight, feet on floor) before bringing any attention to internal emotion. Keep the anchor available throughout.',
-          whenToUse: 'Before any practice that brings up emotion.'
-        },
-        {
-          variant: 'Edge of the emotion only',
-          description: 'Attend to the edge or periphery of the emotion (where it begins, where it ends in the body) rather than its center.',
-          whenToUse: 'When the center of an emotion is overwhelming.'
-        },
-        {
-          variant: 'Resourcing instead of facing',
-          description: 'Skip facing the emotion entirely; build resources first (felt sense of safety, a remembered moment of calm, a comforting image).',
-          whenToUse: 'When window of tolerance is narrow.'
-        }
-      ],
-      groundingFirst: 'Before any emotion-focused practice, establish a strong external anchor and a way to return to it. Confirm you have someone to talk to afterward if needed.',
-      earlyWarning: [
-        'Emotion overwhelming rather than moving through',
-        'Trauma memory surfacing',
-        'Dissociation (going outside body, glass wall)',
-        'Inability to return attention to anchor',
-        'Sensation of drowning or being trapped'
-      ],
-      ifActivated: [
-        'Open eyes and orient externally',
-        'Plant feet, press into floor',
-        'Name 5 things you see; describe them in detail',
-        'Move physically (stand, walk, stretch)',
-        'Drink cold water',
-        'Reach out to a trusted person; do not sit alone with overwhelm'
-      ],
-      facilitatorNote: 'Distinguish between processing an emotion within window of tolerance and flooding outside it. Watch for signs the practitioner is no longer present (glazed eyes, frozen posture, very shallow breath) and intervene with grounding before the dissociation deepens. Never push someone to stay with an emotion they cannot tolerate.',
-      research: 'Treleaven D (2018). van der Kolk B (2014). Siegel DJ (1999, 2010) on window of tolerance. Briere J & Scott C (2014).'
-    },
-    {
-      id: 'adapt_breath_observation',
-      standardPractice: 'Breath observation (some find breath threatening)',
-      riskForTrauma: 'For people with asthma, COPD, panic disorder, or history of suffocation or strangulation, attention to breath can trigger panic or trauma response. Slow or controlled breathing can feel like being unable to breathe.',
-      adaptations: [
-        {
-          variant: 'Sound instead of breath',
-          description: 'Use ambient sounds (room sounds, traffic outside, fan) as the primary anchor instead of breath.',
-          whenToUse: 'For anyone with respiratory issues, panic history, or trauma related to airway.'
-        },
-        {
-          variant: 'Touch instead of breath',
-          description: 'Use the feeling of hands on thighs, feet on floor, or back against chair as the primary anchor.',
-          whenToUse: 'When breath is reliably activating.'
-        },
-        {
-          variant: 'Breath in the body, not the breath itself',
-          description: 'Attend to the movement breath makes in the belly or back rather than the breath itself (subtly shifts the focus from the action of breathing).',
-          whenToUse: 'When direct attention to breath triggers tightness or panic.'
-        },
-        {
-          variant: 'Free breath, no observation',
-          description: 'Let breath happen on its own without observing it; use a different anchor entirely.',
-          whenToUse: 'When breath cannot be a useful anchor at all.'
-        }
-      ],
-      groundingFirst: 'Before any breath practice, name that you can stop any time, that you do not have to control your breath, and that the breath will take care of itself if you let it.',
-      earlyWarning: [
-        'Sense of unable to get a full breath',
-        'Tight chest, throat constriction',
-        'Memory of suffocation, drowning, or panic',
-        'Urge to gulp air or sigh repeatedly',
-        'Holding breath unconsciously'
-      ],
-      ifActivated: [
-        'Stop attending to breath; switch to a different anchor (sound, touch)',
-        'Open eyes, look around the room',
-        'Let breath happen freely; do not try to control it',
-        'Drink cold water',
-        'Move (stand, walk) to discharge activation',
-        'Do not return to breath-focus that session; reassess later with a teacher'
-      ],
-      facilitatorNote: 'Always offer non-breath anchors at the start of any practice, not as remediation. Never instruct controlled or counted breathing as a default for groups; it is a high-risk intervention for many people. Specifically avoid extended pranayama, breath retention, or rapid breathing techniques without screening.',
-      research: 'Treleaven D (2018). Bessel van der Kolk (2014). Brown RP & Gerbarg PL (2012) on caution with intense breathing practices. APA panic disorder guidelines.'
-    },
-    {
-      id: 'adapt_visualization_safe_place',
-      standardPractice: 'Visualization practices (safe place can paradoxically trigger)',
-      riskForTrauma: 'Asking trauma survivors to visualize a safe place can paradoxically trigger trauma. They may not have a felt sense of any safe place. They may visualize a place that was safe but then think of being assaulted there. The instruction to feel safe can itself activate the absence of safety as a felt experience.',
-      adaptations: [
-        {
-          variant: 'Generic neutral place, not safe place',
-          description: 'Instead of safe place, suggest a neutral place (a clean kitchen, a library, a beach). Avoid the loaded word safe.',
-          whenToUse: 'When safe is itself a trigger.'
-        },
-        {
-          variant: 'Real place from current life',
-          description: 'Use a place that actually exists in the practitioner current safe life (their bedroom now, a favorite corner), not an imagined idealized space.',
-          whenToUse: 'When imagined visualization feels false.'
-        },
-        {
-          variant: 'Concrete object, not place',
-          description: 'Visualize a single concrete object (a stone, a cup, a flower) rather than a place or scene.',
-          whenToUse: 'When any scene-level visualization is destabilizing.'
-        },
-        {
-          variant: 'External focus, no visualization',
-          description: 'Skip visualization entirely; use external sensory anchors (sounds, sight of the room) instead.',
-          whenToUse: 'When visualization is consistently activating.'
-        }
-      ],
-      groundingFirst: 'Before any visualization, confirm you have a present-tense external anchor to return to. Note that imagined imagery can feel real to the nervous system, which is why caution matters.',
-      earlyWarning: [
-        'Inability to visualize anything (which is fine and not a problem)',
-        'Visualization shifting to threat or memory of trauma',
-        'Sense of paradoxical contrast (imagining safety highlights its absence)',
-        'Tears or grief about not having had a safe place',
-        'Trauma memory intruding into the imagined scene'
-      ],
-      ifActivated: [
-        'Open eyes; orient to actual physical room',
-        'Drop the visualization; the imagined scene cannot help if it activates',
-        'Use external anchor (5 things you see)',
-        'Note what came up without trying to fix it',
-        'If grief about absence of safety surfaces, allow it without analyzing',
-        'Talk to a therapist if a safe place is not available even in imagination'
-      ],
-      facilitatorNote: 'Be cautious with all visualization practices in groups. Always offer the option to not visualize. The trauma-informed default is external sensory focus, not internal imagery. Watch for participants whose eyes are tightly closed and bodies are rigid; offer them eyes-open alternatives privately.',
-      research: 'Treleaven D (2018). Briere J & Scott C (2014). Rothschild B (2000). The Body Remembers. EMDR safe-place protocol limitations literature.'
-    },
-    {
-      id: 'adapt_loving_touch_self_soothe',
-      standardPractice: 'Loving touch self-soothe (touch may not be safe)',
-      riskForTrauma: 'Self-touch (hand on heart, hand on belly, holding own face) can be a powerful self-soothing tool, but for trauma survivors, especially those with assault history, even self-initiated touch can activate trauma. The hand on a part of the body may evoke the touch of a perpetrator.',
-      adaptations: [
-        {
-          variant: 'Hand on neutral area',
-          description: 'Place a hand on a neutral area (forearm, knee, top of head) rather than chest, belly, or heart-center.',
-          whenToUse: 'When chest, belly, or heart touch is activating.'
-        },
-        {
-          variant: 'No touch, pressure object instead',
-          description: 'Use a weighted object (small pillow, weighted blanket on lap) instead of self-touch.',
-          whenToUse: 'When any self-touch is destabilizing.'
-        },
-        {
-          variant: 'Touch on outside of clothes',
-          description: 'Hand placement remains over clothing, never on skin.',
-          whenToUse: 'When skin contact is too direct.'
-        },
-        {
-          variant: 'Skip self-touch entirely',
-          description: 'Use breath, sound, or visual anchor instead of any tactile element.',
-          whenToUse: 'When all self-touch options activate trauma.'
-        }
-      ],
-      groundingFirst: 'Before introducing self-touch, name that touch is optional, that the practitioner chooses where and whether to touch, and that any touch can be modified or stopped any time.',
-      earlyWarning: [
-        'Body tensing or flinching at the touch',
-        'Sense of someone elses touch overlaying your own',
-        'Memory of unwanted touch surfacing',
-        'Disgust, nausea, or skin-crawling sensation',
-        'Urge to wipe or rub the touched area away'
-      ],
-      ifActivated: [
-        'Remove the hand immediately',
-        'Shake out the touched area gently',
-        'Wash hands with cool water or hold them under running water',
-        'Switch to non-touch anchor (sound, sight)',
-        'Note what came up without analyzing in the moment',
-        'Talk to a trauma-informed therapist about the trigger'
-      ],
-      facilitatorNote: 'Never require self-touch in groups. Always frame as optional and offer alternatives explicitly. Be aware that some practitioners may comply outwardly while activated internally; offer post-practice check-ins privately.',
-      research: 'Germer C & Neff K (2019). Treleaven D (2018). Briere J & Scott C (2014).'
-    },
-    {
-      id: 'adapt_spinal_alignment_posture',
-      standardPractice: 'Spinal alignment and posture instruction',
-      riskForTrauma: 'Detailed instruction about posture (lift the crown, drop the shoulders, engage the core) can be activating for people with body shame, eating disorder history, or trauma involving body criticism. Hands-on adjustments are an additional risk for assault survivors.',
-      adaptations: [
-        {
-          variant: 'General comfort instruction',
-          description: 'Instruct only find a position that feels stable and comfortable. Avoid detailed alignment cues.',
-          whenToUse: 'Default for any group with mixed trauma backgrounds.'
-        },
-        {
-          variant: 'Function over form',
-          description: 'Cue the function (you can breathe easily, you can stay here a while) rather than visual form (shoulders back, chin tucked).',
-          whenToUse: 'When alignment talk produces body shame.'
-        },
-        {
-          variant: 'No hands-on adjustments without explicit consent',
-          description: 'Never touch participants without explicit prior consent that includes the option to revoke at any time. In group settings, use a consent card system (red side up to opt out).',
-          whenToUse: 'In all group settings; non-negotiable.'
-        },
-        {
-          variant: 'Verbal cues only',
-          description: 'Use only verbal cues; do not demonstrate posture by touching anyone.',
-          whenToUse: 'Default in all settings unless individual consent is established and current.'
-        }
-      ],
-      groundingFirst: 'Before any posture instruction, name that participants can adjust posture any time, that comfort matters more than ideal form, and that no hands-on adjustments will occur without explicit consent.',
-      earlyWarning: [
-        'Self-criticism rising during alignment instruction',
-        'Sense of being looked at or judged',
-        'Tension building from trying to hold the prescribed shape',
-        'Memory of past body criticism',
-        'Discomfort with the instructor circulating among participants'
-      ],
-      ifActivated: [
-        'Shift to whatever position is actually comfortable, ignore prescribed alignment',
-        'If activated by instructor proximity, change your seat or step out',
-        'Speak up privately to the instructor or skip future sessions if needed',
-        'Note the trigger without judgment',
-        'If body shame is being activated, see a therapist familiar with eating disorders or body image work'
-      ],
-      facilitatorNote: 'Adopt a strict no-touch default with explicit consent protocols for hands-on adjustments. Frame all posture as flexible. Do not use language that implies one position is correct or that others are doing it wrong. Be especially careful in yoga, where hands-on adjustment is traditional but trauma-incompatible.',
-      research: 'Treleaven D (2018). Emerson D & Hopper E (2011). Overcoming Trauma Through Yoga. Maehle A on consent in yoga settings.'
-    },
-    {
-      id: 'adapt_group_meditation_circle',
-      standardPractice: 'Group meditation circle',
-      riskForTrauma: 'Sitting in a circle with others can feel exposing, especially for trauma survivors with social anxiety, dissociation history, or history of group harm (cult, bullying, religious abuse). The visibility of being watched while in a vulnerable state can prevent practice entirely.',
-      adaptations: [
-        {
-          variant: 'Row arrangement, not circle',
-          description: 'Arrange chairs or cushions in rows facing the same direction (front of room) rather than a circle facing each other.',
-          whenToUse: 'For groups with mixed trauma backgrounds.'
-        },
-        {
-          variant: 'Back of room option',
-          description: 'Make explicit that anyone can sit in the back or at the edge, near a door, and that this is a valid choice rather than a problem.',
-          whenToUse: 'In any group setting.'
-        },
-        {
-          variant: 'Eyes-open option clear',
-          description: 'Specify that eyes-open practice is welcome and that no one will be looked at or judged for their practice form.',
-          whenToUse: 'Always.'
-        },
-        {
-          variant: 'No sharing required',
-          description: 'Do not require any post-practice sharing. Make sharing fully optional with clear opt-out and no follow-up questioning.',
-          whenToUse: 'Always.'
-        }
-      ],
-      groundingFirst: 'Before group practice, name the exits, name that anyone can leave at any time without explanation, name that there is no required sharing or eye contact.',
-      earlyWarning: [
-        'Discomfort with being in the circle (eyes constantly checking others)',
-        'Inability to settle because of social attention',
-        'Anxiety about post-practice sharing',
-        'Sense of being watched or judged',
-        'Memory of past group experiences (religious, cult, bullying)'
-      ],
-      ifActivated: [
-        'Move your seat to the edge or back of the room',
-        'Leave the group temporarily; take a break in another room',
-        'Close eyes only if comfortable, otherwise keep them open with soft external gaze',
-        'Skip any sharing portion; you do not owe the group your experience',
-        'If the group dynamic is reliably activating, find an individual practice path instead'
-      ],
-      facilitatorNote: 'Default to row seating, never require sharing, never circulate during practice in a way that puts participants on display. Be especially cautious in residential or retreat settings where group pressure to participate is high. Create explicit opt-out structures.',
-      research: 'Treleaven D (2018). Briere J & Scott C (2014). Lalich J on cult dynamics. Hassan S (2018) on combating cult influence.'
-    },
-    {
-      id: 'adapt_eye_gazing',
-      standardPractice: 'Eye-gazing practices',
-      riskForTrauma: 'Sustained eye-gazing with a partner is a high-intensity practice that can activate trauma related to intimacy, social anxiety, or boundary violation. It can also produce dissociation in vulnerable people. Many partnered meditation contexts include eye-gazing without screening for trauma readiness.',
-      adaptations: [
-        {
-          variant: 'Skip entirely',
-          description: 'Do not include eye-gazing as a practice. Use parallel practice (same room, not facing each other) instead of partnered.',
-          whenToUse: 'Default for trauma-informed practice.'
-        },
-        {
-          variant: 'Brief eye contact, then look away',
-          description: 'If some partnered awareness is desired, use brief glances (1 to 3 seconds) with frequent looking-away rather than sustained gazing.',
-          whenToUse: 'When some partnered practice is wanted with trauma awareness.'
-        },
-        {
-          variant: 'Side-by-side parallel',
-          description: 'Sit side by side facing the same direction rather than facing each other.',
-          whenToUse: 'In couples or partnered contexts where co-regulation is the goal.'
-        },
-        {
-          variant: 'Opt-out explicit and easy',
-          description: 'If eye-gazing is offered, make opt-out clear and stigma-free. Provide an alternative activity in the same space for those who opt out.',
-          whenToUse: 'When eye-gazing is offered at all.'
-        }
-      ],
-      groundingFirst: 'Before any partnered eye practice, name that opt-out is welcome, that looking away is allowed, that any partnered intimacy practice is high-intensity and not for everyone.',
-      earlyWarning: [
-        'Trance-like or dissociative quality entering the gaze',
-        'Sense of merging or losing self',
-        'Activation related to past intimate-partner trauma',
-        'Discomfort with the social intensity',
-        'Tears, panic, or shutdown'
-      ],
-      ifActivated: [
-        'Look away immediately; this is your right',
-        'Stand up, leave the practice if needed',
-        'Reorient to your own body, your own breath, your own present',
-        'Do not push past activation in the name of practice depth',
-        'Talk with the partner afterward about what happened and what is needed'
-      ],
-      facilitatorNote: 'Be very cautious about including eye-gazing in any group setting. Many trauma-informed teachers omit it entirely. If included, screen for trauma readiness, make opt-out trivial, and never frame opt-out as resistance.',
-      research: 'Treleaven D (2018). Briere J & Scott C (2014). Bowen S, et al. on relational practices in clinical contexts.'
-    },
-    {
-      id: 'adapt_holding_still',
-      standardPractice: 'Holding still (freeze-response trigger)',
-      riskForTrauma: 'Sustained physical stillness can trigger the freeze response in trauma survivors. The body interprets stillness as the unable-to-move state of past trauma. Movement is one of the primary trauma-recovery mechanisms; sustained stillness can re-traumatize rather than calm.',
-      adaptations: [
-        {
-          variant: 'Permission to move',
-          description: 'Make explicit that practitioners can move any time without comment. Movement is not failure, it is allowed.',
-          whenToUse: 'Default in all practice settings.'
-        },
-        {
-          variant: 'Built-in micro-movement',
-          description: 'Include subtle planned movement (rocking gently, shifting weight, swaying) as part of the practice itself.',
-          whenToUse: 'For anyone for whom stillness is activating.'
-        },
-        {
-          variant: 'Walking meditation alternative',
-          description: 'Offer walking meditation as a parallel option to sitting at all sessions.',
-          whenToUse: 'In all settings.'
-        },
-        {
-          variant: 'Shorter still segments',
-          description: 'Break sits into 5 to 10 minute segments with planned movement (stand, stretch, walk briefly) between.',
-          whenToUse: 'For practitioners building stillness tolerance.'
-        }
-      ],
-      groundingFirst: 'Before any extended stillness, name that movement is welcome any time, that the goal is not perfect stillness, and that the body will tell you what it needs.',
-      earlyWarning: [
-        'Sense of being unable to move (different from choosing not to)',
-        'Heart rate climbing in the absence of movement',
-        'Memory of being held still, trapped, or restrained',
-        'Frozen quality (not relaxed) to posture',
-        'Numbness in limbs from unmoving posture'
-      ],
-      ifActivated: [
-        'Move immediately; rock, sway, stand, walk',
-        'Reorient to the fact that you can move freely now',
-        'Shake out limbs, stretch, do shoulder rolls',
-        'Switch to walking meditation for the rest of the session',
-        'Do not push through freeze; freeze is a trauma signal, not a meditation depth'
-      ],
-      facilitatorNote: 'Always offer movement options and frame them as equally valid practice. Watch for the difference between still-relaxed and still-frozen; the second is a trauma signal. If you see frozen posture, offer movement as an option without singling out the practitioner.',
-      research: 'Treleaven D (2018). Levine PA (1997, 2010). Waking the Tiger. Somatic Experiencing literature. Porges SW polyvagal theory.'
-    },
-    {
-      id: 'adapt_shavasana',
-      standardPractice: 'Lying-on-back yoga shavasana',
-      riskForTrauma: 'Shavasana (corpse pose) places the body in the most vulnerable position: supine, eyes closed, exposed front of body, often in a darkened room with strangers nearby. For assault survivors, the position itself plus the social context can trigger trauma. It is one of the highest-risk default postures in popular wellness.',
-      adaptations: [
-        {
-          variant: 'Eyes open shavasana',
-          description: 'Lie supine but keep eyes open with a soft gaze at the ceiling. Many studios omit this option, but it is essential.',
-          whenToUse: 'For anyone for whom eyes-closed supine is activating.'
-        },
-        {
-          variant: 'Side-lying shavasana',
-          description: 'Lie on the side with a pillow between knees, head supported. Less exposing than supine.',
-          whenToUse: 'When supine position activates.'
-        },
-        {
-          variant: 'Seated shavasana',
-          description: 'Sit upright in chair or against wall for the final rest. Eyes open or closed by choice.',
-          whenToUse: 'Default for trauma-informed yoga.'
-        },
-        {
-          variant: 'Self-positioned with bolsters',
-          description: 'Use bolsters under knees, behind back, over chest (light weight) to feel held rather than exposed.',
-          whenToUse: 'When supine is preferred but feels too open.'
-        }
-      ],
-      groundingFirst: 'Before shavasana, name the options out loud (supine, side-lying, seated, eyes open or closed), note where exits are, note that adjustments are welcome.',
-      earlyWarning: [
-        'Tension building once you lie down',
-        'Inability to settle in the position',
-        'Trauma memory surfacing',
-        'Hyper-vigilance to sounds or movement in the room',
-        'Disgust or fear with the exposed-front position'
-      ],
-      ifActivated: [
-        'Sit up immediately; this is allowed',
-        'Switch position (side-lying or seated)',
-        'Open eyes; reorient to the room',
-        'Leave the room if needed; this is allowed and not a problem',
-        'Talk to the instructor afterward; if dismissed, find a different teacher'
-      ],
-      facilitatorNote: 'Always offer alternatives at the start of shavasana, not as remediation. Do not dim lights below safe seeing level. Do not circulate touching students; if hands-on assists are offered, get explicit, written, current consent (not a generic intake form from months ago).',
-      research: 'Treleaven D (2018). Emerson D & Hopper E (2011). Overcoming Trauma Through Yoga. Trauma-informed yoga literature.'
-    },
-    {
-      id: 'adapt_trataka_candle',
-      standardPractice: 'Trataka (candle gazing, can dissociate)',
-      riskForTrauma: 'Sustained focused gazing at a single point (traditionally a candle) can induce dissociation, trance states, or hypnotic phenomena. For trauma survivors with dissociative tendencies, this can deepen rather than resolve dissociation.',
-      adaptations: [
-        {
-          variant: 'Short duration only',
-          description: 'Limit gazing to 1 to 3 minutes, then look away and blink. Do not do extended trataka.',
-          whenToUse: 'For anyone with dissociative tendencies.'
-        },
-        {
-          variant: 'Soft gaze on neutral object',
-          description: 'Use a soft gaze on a plant, a stone, a piece of art rather than a flame. Less hypnotic.',
-          whenToUse: 'When some focused-gaze practice is wanted with lower risk.'
-        },
-        {
-          variant: 'Frequent blinking',
-          description: 'Encourage frequent blinking and shifting gaze, not sustained unblinking fixation.',
-          whenToUse: 'When any gazing practice is done.'
-        },
-        {
-          variant: 'Skip entirely',
-          description: 'Use a different concentration practice (sound, breath, body sensation) instead.',
-          whenToUse: 'Default for trauma survivors with any dissociation history.'
-        }
-      ],
-      groundingFirst: 'Before any focused gazing, name that the practice can produce trance-like states and that grounding will be needed afterward. Have a grounding sequence ready.',
-      earlyWarning: [
-        'Tunnel vision or sense of being absorbed into the gazed object',
-        'Loss of awareness of surroundings',
-        'Sense of leaving the body',
-        'Time distortion during practice',
-        'Difficulty returning to ordinary awareness afterward'
-      ],
-      ifActivated: [
-        'Blink repeatedly, look away, scan the room',
-        'Stand up, move, walk briskly',
-        'Re-orient (5 things you see, name them)',
-        'Drink cold water, eat something with strong flavor',
-        'Do not drive or operate machinery until fully reoriented',
-        'Skip this practice in the future if dissociation occurs'
-      ],
-      facilitatorNote: 'Be cautious offering trataka in groups. Always pair with grounding before and after. Do not extend duration beyond a few minutes for general groups. Avoid in any group with known dissociative members.',
-      research: 'Lindahl JR, et al. (2017). PLOS ONE. Putnam FW on dissociation. Treleaven D (2018).'
-    },
-    {
-      id: 'adapt_long_mantra',
-      standardPractice: 'Long mantra repetition',
-      riskForTrauma: 'Extended mantra repetition can produce trance states, hyperventilation effects (if breath is coupled), and dissociation. It can also induce mania-like elevation in vulnerable people. Long sessions exceed many practitioners safe practice capacity.',
-      adaptations: [
-        {
-          variant: 'Short session, regular pace',
-          description: 'Limit to 10 to 15 minutes. Use a quiet, steady pace rather than loud, fast, or building intensity.',
-          whenToUse: 'Default. Long extended sessions need teacher guidance and screening.'
-        },
-        {
-          variant: 'Silent mental repetition only',
-          description: 'Repeat silently rather than aloud. Less physically activating.',
-          whenToUse: 'For lower-intensity practice.'
-        },
-        {
-          variant: 'Coupled with grounding',
-          description: 'Pair the mantra with a grounding sensation (feet on floor, hands on thighs) to anchor.',
-          whenToUse: 'When some grounding is needed alongside the practice.'
-        },
-        {
-          variant: 'Choose a neutral phrase',
-          description: 'Use a meaning-neutral phrase or sound rather than a phrase loaded with theological or charged content.',
-          whenToUse: 'When the religious or charged content itself is activating.'
-        }
-      ],
-      groundingFirst: 'Before any extended mantra practice, ground in body, set a clear time limit, ensure you have water and a safe place to rest afterward.',
-      earlyWarning: [
-        'Mounting energy or excitement during practice',
-        'Lightheadedness, dizziness, or tingling',
-        'Trance state deepening past comfort',
-        'Hyperventilation symptoms (tingling lips, hands)',
-        'Mania-like elevation or grandiosity'
-      ],
-      ifActivated: [
-        'Stop the mantra; switch to ordinary breathing',
-        'Open eyes, orient to room',
-        'Stand up, walk slowly',
-        'Drink water, eat something grounding',
-        'Do not continue or extend the practice',
-        'If mania-like symptoms persist, seek psychiatric evaluation'
-      ],
-      facilitatorNote: 'Avoid long, loud, or building-intensity mantra practice in unscreened groups. Screen for personal or family history of bipolar disorder before any intensive vocal practice. Keep session length modest in general groups.',
-      research: 'Lindahl JR, et al. (2017). Yorston G (2001). Mania precipitated by meditation. Britton WB (2019).'
-    },
-    {
-      id: 'adapt_silent_retreats',
-      standardPractice: 'Silent retreats (long sustained practice)',
-      riskForTrauma: 'Silent retreats compound multiple risk factors: extended practice hours, social isolation, sleep restriction, removal of distraction, often unfamiliar environment, sometimes hierarchical teacher relationships. They are the highest-risk format for adverse meditation experiences in the research literature.',
-      adaptations: [
-        {
-          variant: 'Short, daily retreats only',
-          description: 'Limit to single-day retreats with full sleep and meals at home. Build up gradually if longer is desired.',
-          whenToUse: 'Default for newer practitioners or those with mental health history.'
-        },
-        {
-          variant: 'Permission to leave or speak',
-          description: 'Choose retreats with explicit permission to leave the schedule, speak with a teacher, or break silence as needed without stigma.',
-          whenToUse: 'When attending any multi-day retreat.'
-        },
-        {
-          variant: 'Pre-retreat screening',
-          description: 'Pre-screen with the retreat staff: mental health history, medication, prior adverse experiences. Skip retreats that do not do screening.',
-          whenToUse: 'Before any multi-day retreat.'
-        },
-        {
-          variant: 'Trauma-informed retreat only',
-          description: 'Attend only retreats run by teachers trained in trauma-informed practice. The Trauma-Sensitive Mindfulness community maintains directories.',
-          whenToUse: 'For trauma survivors considering any retreat.'
-        }
-      ],
-      groundingFirst: 'Before any retreat, have a therapist available by phone, a friend or family member who can be reached, a clear plan for how to leave if needed.',
-      earlyWarning: [
-        'Mounting agitation, anxiety, or destabilization during the retreat',
-        'Trauma memories surfacing without containment',
-        'Inability to sleep',
-        'Mania-like elevation, grandiosity, or no need for sleep',
-        'Identity destabilization or loss of meaning'
-      ],
-      ifActivated: [
-        'Speak with the retreat teacher or staff immediately',
-        'Leave the retreat if needed; this is not failure',
-        'Get someone to come pick you up rather than driving in destabilized state',
-        'See a therapist within 1 to 2 days of leaving',
-        'Do not return to retreat practice until you have processed what happened',
-        'Crisis: call or text 988, text HOME to 741741'
-      ],
-      facilitatorNote: 'Retreat staff: have pre-screening protocols, have on-call mental health support, have clear opt-out and exit pathways. Watch for participants who are deteriorating, not deepening, and intervene early. Do not pressure participants to stay through difficulty.',
-      research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB (2019). Cheetah House at Brown (clinical resources for meditation-related difficulties).'
-    },
-    {
-      id: 'adapt_pelvic_body_scan',
-      standardPractice: 'Body scan of pelvic region',
-      riskForTrauma: 'Body scans that include attention to the pelvic region are especially activating for survivors of sexual assault or abuse. Sustained attention to genital, abdominal, or hip areas can trigger flashbacks, dissociation, or panic.',
-      adaptations: [
-        {
-          variant: 'Skip pelvic region',
-          description: 'In body scan, skip from lower abdomen to thighs without scanning hips, pelvis, or genital area.',
-          whenToUse: 'For survivors of sexual trauma; default for any unknown trauma history.'
-        },
-        {
-          variant: 'Brief, peripheral attention',
-          description: 'If included, attend briefly (a few seconds) to the outer edges (hip bones, lower belly skin) rather than centrally.',
-          whenToUse: 'When some attention is desired with lower risk.'
-        },
-        {
-          variant: 'External anchor instead',
-          description: 'Switch focus to external sensation (sounds, sight of room) when scan reaches pelvic region.',
-          whenToUse: 'Whenever pelvic region is activating.'
-        },
-        {
-          variant: 'Stop body scan entirely',
-          description: 'Do not do body scan; use a different practice (sound focus, walking meditation) instead.',
-          whenToUse: 'When body scan reliably activates trauma.'
-        }
-      ],
-      groundingFirst: 'Before any body scan, name that any region can be skipped, that the scan is not required to be complete, and that activation is information rather than failure.',
-      earlyWarning: [
-        'Trauma memory surfacing as scan approaches pelvic region',
-        'Body tensing, freezing, or going numb',
-        'Disgust, shame, or fear sensations',
-        'Urge to leave the practice',
-        'Dissociation (going outside body)'
-      ],
-      ifActivated: [
-        'Stop the scan; do not push to complete',
-        'Open eyes, orient to room',
-        'Move physically; stand up, walk',
-        'Ground (5 things you see, 4 you hear)',
-        'Reach out to a trauma-informed therapist if memories surfaced',
-        'Crisis: call or text 988'
-      ],
-      facilitatorNote: 'Always name that any body region can be skipped at any time. Avoid leading body scans into pelvic region in general groups. Some MBSR scripts that include detailed pelvic attention should be modified for trauma-informed contexts.',
-      research: 'Treleaven D (2018). van der Kolk B (2014). Briere J & Scott C (2014). Maltz W (2012). The Sexual Healing Journey.'
-    },
-    {
-      id: 'adapt_heart_center_meditation',
-      standardPractice: 'Heart-center meditation (after heartbreak)',
-      riskForTrauma: 'Heart-center meditation (attention to the chest, heart-area, or heart-related qualities like love or compassion) can be powerfully activating after recent heartbreak, loss, or grief. Sustained attention to the heart-center can flood the practitioner with unprocessed grief.',
-      adaptations: [
-        {
-          variant: 'Skip heart-center entirely',
-          description: 'Use a different anchor (hands, feet, breath at the nostrils) when heart-area attention is activating.',
-          whenToUse: 'During acute grief or recent loss.'
-        },
-        {
-          variant: 'Hand on heart with grounding',
-          description: 'Place hand on heart with explicit grounding (you are safe now, you are here, you can rest). Brief contact, not sustained absorption.',
-          whenToUse: 'When some heart-area work is desired.'
-        },
-        {
-          variant: 'Compassion for all beings',
-          description: 'Use compassion phrases directed at all beings collectively, not at self or specific person, to reduce intensity.',
-          whenToUse: 'When directed heart-work is too much.'
-        },
-        {
-          variant: 'Movement-based grief practice',
-          description: 'Use walking meditation, gentle yoga, or dance to move grief through the body rather than sit with it.',
-          whenToUse: 'When stillness with grief is overwhelming.'
-        }
-      ],
-      groundingFirst: 'Before any heart-center practice, name that grief can surface and that this is welcome but does not have to be processed all at once. Have a way to end early.',
-      earlyWarning: [
-        'Wave of grief, longing, or sadness rising quickly',
-        'Chest tightness, throat constriction',
-        'Tears that feel uncontainable',
-        'Sense of being flooded',
-        'Inability to keep attention at heart-center because of intensity'
-      ],
-      ifActivated: [
-        'Stop the practice; let the wave move through',
-        'Move attention to a neutral area (hands, feet)',
-        'Cry if it comes; do not try to stop tears',
-        'Reach out to someone who can sit with you',
-        'Do not isolate after a big grief wave',
-        'Continue talking to a therapist or grief support during this period'
-      ],
-      facilitatorNote: 'In groups, name that recent loss or grief makes heart-area practice intense; offer alternatives. Do not lead heart-center practice as a default in groups where grief is likely (bereavement contexts, post-loss communities).',
-      research: 'Treleaven D (2018). Worden JW (2018). Grief Counseling and Grief Therapy. Germer C & Neff K (2019).'
-    },
-    {
-      id: 'adapt_walking_meditation_barefoot',
-      standardPractice: 'Walking meditation barefoot',
-      riskForTrauma: 'Barefoot walking meditation can be activating for people with foot-trauma history, hyper-sensitive sensory processing, or for whom bare feet feel exposing or unsafe. The cultural assumption that barefoot is more natural or grounded is not universal.',
-      adaptations: [
-        {
-          variant: 'Shoes or socks allowed',
-          description: 'Explicit permission to wear shoes or socks. Do not require bare feet.',
-          whenToUse: 'Always in mixed groups.'
-        },
-        {
-          variant: 'Indoor smooth surface only',
-          description: 'When barefoot, walk on a smooth, controlled surface (yoga mat, smooth floor) rather than grass, gravel, or rough textures.',
-          whenToUse: 'When barefoot is preferred but sensory environment matters.'
-        },
-        {
-          variant: 'Brief barefoot, then footwear',
-          description: 'Do 1 to 2 minutes barefoot as an option, then return to footwear. Do not require sustained barefoot.',
-          whenToUse: 'When some grounding contact is desired.'
-        },
-        {
-          variant: 'Attention to feet through shoes',
-          description: 'Attend to the sensations of feet in shoes (weight, pressure, texture of insoles) rather than bare contact.',
-          whenToUse: 'When bare feet are not viable but foot attention is desired.'
-        }
-      ],
-      groundingFirst: 'Before walking meditation, name that shoes are welcome, that the pace is your own, that you can stop and stand still at any time.',
-      earlyWarning: [
-        'Hyper-attention to ground texture becoming overwhelming',
-        'Discomfort with the sensation of bare feet',
-        'Memory of past foot-related trauma',
-        'Embarrassment or self-consciousness about feet being visible',
-        'Difficulty walking with attention'
-      ],
-      ifActivated: [
-        'Put shoes back on',
-        'Sit down and end the walking portion',
-        'Switch to seated practice',
-        'If discomfort with feet being visible is the issue, address with footwear privacy',
-        'Note the trigger without judgment'
-      ],
-      facilitatorNote: 'Never require bare feet in any group. Offer it as one option among several. Be aware of cultural assumptions about barefoot being more natural; this is not universal and can be alienating.',
-      research: 'Treleaven D (2018). Emerson D (2015). Trauma-Sensitive Yoga in Therapy.'
-    },
-    {
-      id: 'adapt_mindful_eating',
-      standardPractice: 'Mindful eating (eating disorder triggers)',
-      riskForTrauma: 'Slow, attentive eating can be highly activating for people with eating disorder history. Sustained attention to taste, texture, sensation while eating can trigger restriction, binge urges, or shame about food. The wellness-coded language around mindful eating can also subtly reinforce restriction culture.',
-      adaptations: [
-        {
-          variant: 'Skip mindful eating with ED history',
-          description: 'For practitioners with eating disorder history, do not do mindful eating exercises. Use other mindfulness anchors.',
-          whenToUse: 'Default for anyone with current or past ED.'
-        },
-        {
-          variant: 'Brief, neutral attention',
-          description: 'If mindful eating is done, keep it brief (a single bite, a few seconds) and use neutral, non-evaluative language (notice texture; not is this food good for you).',
-          whenToUse: 'When some mindful eating is included.'
-        },
-        {
-          variant: 'Eat normally, attend after',
-          description: 'Eat at normal pace; reflect briefly afterward on the meal as a whole rather than scanning each bite.',
-          whenToUse: 'When the slow-eating instruction is itself activating.'
-        },
-        {
-          variant: 'Group meals only, no exercise framing',
-          description: 'Take meals together in silence or shared conversation, without explicitly framing as a mindfulness exercise.',
-          whenToUse: 'In retreat or workshop settings.'
-        }
-      ],
-      groundingFirst: 'Before any mindful eating exercise, name that eating disorder history (current or past) is welcome, that the exercise can be opted out of, and that the goal is not to evaluate or restrict food.',
-      earlyWarning: [
-        'Restrictive thoughts arising (I should not be eating this)',
-        'Binge urges or food preoccupation',
-        'Shame, disgust, or guilt about food',
-        'Hyper-evaluation of taste or texture',
-        'Distress at the slow pace'
-      ],
-      ifActivated: [
-        'Eat at your normal pace; do not slow down further',
-        'Stop the formal exercise',
-        'Speak with a therapist or ED-informed clinician',
-        'Crisis or relapse risk: call NEDA at 1-800-931-2237 or text NEDA to 741741',
-        'Do not continue mindful eating exercises if they reliably activate ED thoughts'
-      ],
-      facilitatorNote: 'Be very cautious offering mindful eating in any group, especially groups likely to include eating disorder history (women, athletes, dancers, perfectionist students). Frame as optional. Do not use mindful eating as a weight-management framing.',
-      research: 'Kristeller JL on mindful eating in eating disorder treatment. NEDA clinical guidelines. Treleaven D (2018). Mason AE, et al. on mindfulness and disordered eating.'
-    },
-    {
-      id: 'adapt_mindfulness_thoughts_ocd',
-      standardPractice: 'Mindfulness of thoughts (can intensify OCD)',
-      riskForTrauma: 'For people with OCD, sustained attention to thoughts (especially intrusive thoughts) can intensify the OCD cycle. The instruction to observe thoughts non-judgmentally can paradoxically increase rumination, mental checking, or compulsive engagement with thoughts.',
-      adaptations: [
-        {
-          variant: 'External anchor only',
-          description: 'For OCD, use external sensory anchors (sounds, body sensations) rather than internal thought observation.',
-          whenToUse: 'Default for anyone with OCD diagnosis or strong intrusive-thought pattern.'
-        },
-        {
-          variant: 'Brief acknowledgment, return to anchor',
-          description: 'Acknowledge thoughts briefly (a word like thinking) and return immediately to a non-thought anchor. Do not stay with thoughts.',
-          whenToUse: 'When some thought-awareness is desired without engagement.'
-        },
-        {
-          variant: 'ERP-informed approach',
-          description: 'For OCD, mindfulness should pair with exposure and response prevention (ERP) under a clinician trained in OCD. Generic mindfulness alone is not appropriate.',
-          whenToUse: 'For OCD treatment.'
-        },
-        {
-          variant: 'Behavioral activation instead',
-          description: 'For depression with ruminative quality, use behavioral activation (concrete activity) rather than thought-observation.',
-          whenToUse: 'When rumination is the primary issue.'
-        }
-      ],
-      groundingFirst: 'Before any thought-focused practice, screen for OCD or rumination. If present, default to external anchors. Note that thoughts are not the appropriate object of attention for everyone.',
-      earlyWarning: [
-        'Intrusive thoughts intensifying rather than passing',
-        'Compulsive mental checking or analysis of thoughts',
-        'Increased anxiety with each observed thought',
-        'Rumination loop deepening',
-        'Sense of needing to figure out or resolve thoughts'
-      ],
-      ifActivated: [
-        'Stop attending to thoughts; switch to external anchor',
-        'Stand up, move; physical action interrupts rumination',
-        'Engage in a concrete task (clean, cook, exercise)',
-        'Talk to an OCD-informed therapist; this often needs specialized treatment',
-        'Do not interpret intrusive thoughts as meaningful spiritual material',
-        'IOCDF (International OCD Foundation) maintains a therapist directory'
-      ],
-      facilitatorNote: 'Be cautious teaching thoughts-as-object practices in any group with possible OCD members (which is most groups; OCD has a 1 to 2 percent population prevalence). Frame thought observation as one option, not the default.',
-      research: 'IOCDF (International OCD Foundation) clinical guidelines. Wilson R & Lyons LC (2013) on OCD treatment. Treleaven D (2018). Cassin SE on OCD and mindfulness.'
-    },
-    {
-      id: 'adapt_witness_consciousness',
-      standardPractice: 'Witness-consciousness practice (depersonalization risk)',
-      riskForTrauma: 'Practices that emphasize witness-consciousness, the observer behind experience, or non-identification with experience can produce or worsen depersonalization in vulnerable practitioners. The instruction to identify with the witness rather than the experience can dissociate rather than free.',
-      adaptations: [
-        {
-          variant: 'Embodied awareness instead',
-          description: 'Practice awareness that is inside the body, not separate from it. Feel sensations, breath, weight; do not pull back to a witness.',
-          whenToUse: 'Default for trauma survivors and anyone with dissociative tendencies.'
-        },
-        {
-          variant: 'Skip witness framing',
-          description: 'Use mindfulness frames that emphasize being with experience rather than witnessing it from outside.',
-          whenToUse: 'When witness framing produces depersonalization.'
-        },
-        {
-          variant: 'Brief witness moments, with grounding',
-          description: 'If some witness practice is desired, do brief moments (a few breaths) with immediate return to embodied sensation.',
-          whenToUse: 'For practitioners with experience and stable grounding.'
-        },
-        {
-          variant: 'Skip entirely',
-          description: 'Use compassion, loving-kindness, or grounding practices instead of witness-consciousness.',
-          whenToUse: 'For practitioners with depersonalization history.'
-        }
-      ],
-      groundingFirst: 'Before any witness practice, name that some practitioners find this destabilizing, that depersonalization is a warning sign, and that grounding will be needed afterward.',
-      earlyWarning: [
-        'Sense of separation from the body or experience',
-        'Watching yourself from outside',
-        'Sense that experience is happening to someone else',
-        'Glass-wall feeling between you and the world',
-        'Cold detached calm that does not feel earned'
-      ],
-      ifActivated: [
-        'Stop the practice immediately',
-        'Embody: feel feet on floor, weight in chair, breath in body',
-        'Move physically; walk, stretch, shake out',
-        'Touch a textured object and describe it in words',
-        'Engage socially; talk to someone',
-        'See a clinician if depersonalization persists more than a few hours'
-      ],
-      facilitatorNote: 'Be cautious teaching witness-consciousness in unscreened groups. This is an advanced practice with real risk profile. Modern trauma-informed teaching often omits it entirely or replaces with embodied awareness.',
-      research: 'Lindahl JR, et al. (2017). PLOS ONE. Treleaven D (2018). Simeon D & Abugel J (2006) on depersonalization disorder.'
-    },
-    {
-      id: 'adapt_death_contemplation',
-      standardPractice: 'Death contemplation (advanced, not for general use)',
-      riskForTrauma: 'Death contemplation (corpse meditation, awareness of mortality, charnel ground practices) is a documented practice in several traditions but is unambiguously not appropriate for general groups, beginners, or anyone with depression, suicidal history, recent loss, or trauma. It can precipitate severe destabilization.',
-      adaptations: [
-        {
-          variant: 'Skip entirely in general groups',
-          description: 'Do not offer death contemplation in any general meditation group, classroom, or open workshop.',
-          whenToUse: 'Default. Always.'
-        },
-        {
-          variant: 'Mortality acknowledgment, brief',
-          description: 'If some mortality awareness is part of the curriculum, keep it to a brief acknowledgment (life is finite, this moment is rare) without sustained contemplation of death.',
-          whenToUse: 'In wisdom-tradition contexts with adult, screened participants.'
-        },
-        {
-          variant: 'Reserved for advanced practitioners',
-          description: 'Reserve detailed death contemplation for practitioners with years of practice, stable mental health, and direct teacher relationship.',
-          whenToUse: 'When at all.'
-        },
-        {
-          variant: 'Skip skull, corpse, gore imagery',
-          description: 'Modern traditions often skip the graphic imagery of classical corpse meditation entirely; this is appropriate.',
-          whenToUse: 'Always in modern Western contexts unless deeply trained.'
-        }
-      ],
-      groundingFirst: 'Before any mortality-focused practice, screen carefully: recent loss, depression, suicidal history, trauma history are all contraindications. Have a clinician available.',
-      earlyWarning: [
-        'Suicidal ideation arising or intensifying',
-        'Severe depression deepening',
-        'Trauma flooding (recent loss, near-death experience)',
-        'Existential dread that feels unmanageable',
-        'Loss of meaning that destabilizes'
-      ],
-      ifActivated: [
-        'Stop immediately',
-        'Engage in vigorous life activity (exercise, social contact, work)',
-        'Call a therapist same day',
-        'Crisis: call or text 988, text HOME to 741741',
-        'Do not return to this practice',
-        'Note that this practice was not appropriate for you and that this is not a failure'
-      ],
-      facilitatorNote: 'Do not offer death contemplation in general groups. The classical use cases (long-term monastic practitioners with daily teacher contact) are not the contexts most modern teachers serve. Modern adaptations of death contemplation in wellness contexts are largely inappropriate.',
-      research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB (2019). Classical Theravada and Tibetan sources on charnel-ground practice. APA suicide risk assessment guidelines.'
-    },
-    {
-      id: 'adapt_sound_bath_loud',
-      standardPractice: 'Sound bath at loud volume (sensory overload)',
-      riskForTrauma: 'Loud sound baths (large gongs, multiple bowls at high volume) can produce sensory overload, trigger PTSD startle response, induce panic, or cause physical hearing harm. The wellness framing as immersive or healing does not change the physical reality of loud sound on a sensitive nervous system.',
-      adaptations: [
-        {
-          variant: 'Moderate volume only',
-          description: 'Limit sound bath volume to comfortable conversational range. Avoid sustained loud or peak-volume passages.',
-          whenToUse: 'Always.'
-        },
-        {
-          variant: 'Earplugs available',
-          description: 'Provide earplugs or earmuffs to all participants. Make using them stigma-free.',
-          whenToUse: 'In all sound-based practice settings.'
-        },
-        {
-          variant: 'Seat near exit',
-          description: 'Sit near the exit so you can leave easily if sound becomes overwhelming.',
-          whenToUse: 'When attending unfamiliar sound practice.'
-        },
-        {
-          variant: 'Quiet sound practice only',
-          description: 'Use quieter sound practices (singing bowls at moderate volume, soft chimes, ambient music) rather than gongs or large vibration instruments.',
-          whenToUse: 'For sensitive nervous systems or trauma survivors.'
-        }
-      ],
-      groundingFirst: 'Before any sound bath, name volume range, note exits, distribute earplugs, name that leaving any time is welcome.',
-      earlyWarning: [
-        'Startle response or jumping at loud passages',
-        'Sensation of being unable to escape the sound',
-        'PTSD activation (memory of explosion, accident, attack)',
-        'Headache, ear pain, or tinnitus during practice',
-        'Panic or dissociation'
-      ],
-      ifActivated: [
-        'Put in earplugs or cover ears',
-        'Leave the room; do not stay in painful sound',
-        'If ears are ringing or hurting, leave and rest in quiet',
-        'See an audiologist if tinnitus persists or hearing feels affected',
-        'Talk to the facilitator about volume; if dismissed, find a different practitioner',
-        'Do not return to that facilitator if they dismiss your sensory limits'
-      ],
-      facilitatorNote: 'Sound bath facilitators: keep volume modest, provide earplugs, name that some sensitive participants will leave and that this is welcome, screen for trauma history with loud sounds. Do not use volume as a measure of practice intensity.',
-      research: 'Treleaven D (2018). National Institute on Deafness and Other Communication Disorders on noise exposure. Goldsby TL on sound therapy (notes the need for moderate volume).'
-    }
-  ];
-
+  
   // ══════════════════════════════════════════════════════════════
   // ── Closure-Scoped Timers ──
   // ══════════════════════════════════════════════════════════════
@@ -23029,7 +22866,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var gratitudeContent = null;
       if (activeTab === 'gratitude') {
-        var prompts = GRATITUDE_PROMPTS[band] || GRATITUDE_PROMPTS.elementary;
+        var prompts = (GRATITUDE_PROMPTS[band] || GRATITUDE_PROMPTS.elementary).concat(typeof GRATITUDE_PROMPT_BANK !== 'undefined' ? GRATITUDE_PROMPT_BANK.filter(function(p) { return !p.forBand || p.forBand === 'all' || p.forBand === band; }).map(function(p) { return p.prompt; }) : []);
 
         gratitudeContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
@@ -26196,6 +26033,101 @@ if (activeTab === 'gratitude_lib') {
   }
 }
       // ══════════════════════════════════════════════════════════
+
+      // ─── Wired-content panels (2026-09-13) ──────────────────────────────
+      // Appended to existing tab content; original tab code untouched.
+      function _minText(x) { return x && typeof x === 'object' && !Array.isArray(x) ? (x[band] || x.middle || x.elementary || x.high || '') : (x || ''); }
+      function _minPanel(key, title, blurb, children, accent) {
+        var hid = 'mind-wired-' + key;
+        return h('section', { 'aria-labelledby': hid, style: { margin: '18px auto 0', maxWidth: 600, padding: 14, borderRadius: 12, background: _minBg('#1e293b'), borderLeft: '4px solid ' + (accent || '#a78bfa') } },
+          h('h3', { id: hid, style: { margin: '0 0 4px', fontSize: 15, fontWeight: 900, color: _minFg('#f1f5f9') } }, title),
+          blurb && h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _minFg('#94a3b8'), lineHeight: 1.5 } }, blurb),
+          children
+        );
+      }
+      function _minDetails(summary, body, key) {
+        return h('details', { key: key, style: { marginBottom: 6, borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a') } },
+          h('summary', { style: { cursor: 'pointer', padding: '10px 12px', fontSize: 13, fontWeight: 700, color: _minFg('#e2e8f0'), minHeight: 44, display: 'flex', alignItems: 'center' } }, summary),
+          h('div', { style: { padding: '0 12px 12px', fontSize: 12.5, color: _minFg('#cbd5e1'), lineHeight: 1.6 } }, body)
+        );
+      }
+      function _minAny(v) {
+        if (v == null || v === '') return null;
+        if (typeof v === 'string' || typeof v === 'number') return h('p', { style: { margin: '2px 0' } }, String(v));
+        if (Array.isArray(v)) return h('ul', { style: { margin: '2px 0', paddingLeft: 18 } }, v.map(function(x, i) { return h('li', { key: i }, typeof x === 'string' ? x : _minAny(x)); }));
+        return h('dl', { style: { margin: '2px 0' } }, Object.keys(v).map(function(k) { return h('div', { key: k, style: { marginBottom: 4 } }, h('dt', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: _minFg('#94a3b8') } }, k.replace(/([A-Z])/g, ' $1')), h('dd', { style: { margin: 0 } }, _minAny(v[k]))); }));
+      }
+      function _minKV(label, value, tone) {
+        if (value == null || value === '' || (Array.isArray(value) && !value.length)) return null;
+        return h('div', { style: { marginTop: 6 } },
+          h('div', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: _minFg(tone || '#94a3b8') } }, label),
+          _minAny(value)
+        );
+      }
+      // "If this feels unsafe": trauma-sensitive alternatives for the practices on this tab.
+      function _minSafer(keys) {
+        if (typeof TRAUMA_ADAPTATIONS === 'undefined' || !TRAUMA_ADAPTATIONS.length) return null;
+        var items = TRAUMA_ADAPTATIONS.filter(function(t) { return keys.some(function(k) { return t.standardPractice.toLowerCase().indexOf(k.toLowerCase()) === 0; }); });
+        if (!items.length) return null;
+        return _minPanel('safer-' + keys[0].replace(/\W+/g, '-').toLowerCase(), 'If this practice feels unsafe',
+          'Some people find a practice makes things worse, especially after hard experiences. That is information, not failure. Here is how to change it, the early signs to stop, and what to do if you get activated.',
+          items.map(function(t) {
+            return _minDetails(t.standardPractice, h('div', null,
+              _minKV('Why it can be hard', t.riskForTrauma), _minKV('Ways to change it', t.adaptations), _minKV('Ground first', t.groundingFirst),
+              _minKV('Early signs to stop', t.earlyWarning, '#fbbf24'), _minKV('If you get activated', t.ifActivated, '#fca5a5')
+            ), t.id);
+          }), '#fbbf24');
+      }
+      function _minAnchors() {
+        var sensory = typeof SENSORY_ANCHORS !== 'undefined' ? SENSORY_ANCHORS : [];
+        var visual = typeof VISUAL_ANCHORS !== 'undefined' ? VISUAL_ANCHORS : [];
+        if (!sensory.length && !visual.length) return null;
+        var senses = sensory.map(function(a) { return a.sense; }).filter(function(x, i, arr) { return x && arr.indexOf(x) === i; });
+        var pick = d.anchorSense || 'all';
+        var list = sensory.filter(function(a) { return pick === 'all' || a.sense === pick; });
+        return _minPanel('anchors', 'More anchors for your senses',
+          'An anchor is one steady thing to come back to. Pick a sense, open an anchor, try it for thirty seconds. Eyes can stay open for every one of these.',
+          h('div', null,
+            senses.length ? h('div', { role: 'group', 'aria-label': 'Sense', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+              ['all'].concat(senses).map(function(sn) {
+                var on = pick === sn;
+                return h('button', { key: sn, onClick: function() { upd({ anchorSense: sn }); if (soundEnabled) sfxClick(); }, 'aria-pressed': on ? 'true' : 'false',
+                  style: { minHeight: 36, padding: '6px 12px', borderRadius: 999, border: '1px solid ' + (on ? '#5eead4' : '#475569'), background: on ? 'rgba(20,184,166,0.18)' : _minBg('#0f172a'), color: on ? _minFg('#5eead4') : _minFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, sn);
+              })
+            ) : null,
+            list.slice(0, 20).map(function(a) {
+              return _minDetails(a.name + (a.sense ? ' \u00B7 ' + a.sense : ''), h('div', null,
+                h('p', { style: { margin: '0 0 6px' } }, _minText(a.description) || _minText(a)),
+                _minKV('How to use it', a.howToUseAsAnchor), _minKV('When it helps', a.whenItHelps), _minKV('When it does not', a.whenItDoesntHelp), _minKV('Variations', a.variations)
+              ), a.id);
+            }),
+            (pick === 'all' || pick === 'visual') && visual.length ? h('div', null,
+              h('h4', { style: { margin: '10px 0 6px', fontSize: 13, color: _minFg('#e2e8f0') } }, 'Eyes-open visual anchors'),
+              visual.map(function(v) {
+                return _minDetails(v.name, h('div', null, h('p', { style: { margin: '0 0 6px' } }, v.description), _minKV('Why it is trauma-friendly', v.whyTraumaFriendly), _minKV('How to gaze', v.howToGaze), _minKV('How long', v.durationSec ? v.durationSec + ' seconds' : null), _minKV('Good for', v.forContext)), v.id);
+              })
+            ) : null
+          ), '#5eead4');
+      }
+      function _minAwe() {
+        if (typeof AWE_PRACTICES === 'undefined' || !AWE_PRACTICES.length) return null;
+        var list = AWE_PRACTICES.filter(function(p) { return !p.forBand || p.forBand === 'all' || p.forBand === band; });
+        if (!list.length) list = AWE_PRACTICES;
+        return _minPanel('awe', 'Awe practices',
+          'Awe is the feeling of something bigger than you: a sky, a tree, a piece of music, a kind act. Short practices that go looking for it. They work best a few times a week, not once.',
+          list.map(function(p) {
+            return _minDetails(p.name + (p.durationMin ? ' \u00B7 ' + p.durationMin + ' min' : ''), h('div', null,
+              _minKV('Setup', p.setup), _minKV('Steps', p.steps), _minKV('What it does', p.whatItDoes), _minKV('Why it works', p.whyItWorks), _minKV('How often', p.bestFrequency), _minKV('Variations', p.variations), _minKV('Example', p.example), _minKV('Cautions', p.cautions, '#fbbf24')
+            ), p.id);
+          }), '#22c55e');
+      }
+      if (activeTab === 'breathe' && breatheContent) breatheContent = h('div', null, breatheContent, _minSafer(['Breath observation']));
+      if (activeTab === 'scan' && scanContent) scanContent = h('div', null, scanContent, _minSafer(['Closed-eye body scan', 'Lying-down practice', 'Body scan of pelvic region', 'Holding still']));
+      if (activeTab === 'meditate' && meditateContent) meditateContent = h('div', null, meditateContent, _minSafer(['Long silent sitting', 'Loving-kindness for self', 'Loving-kindness for a difficult person', 'Mindfulness of difficult emotions', 'Group meditation circle', 'Mindfulness of thoughts', 'Visualization practices']));
+      if (activeTab === 'ground' && groundContent) groundContent = h('div', null, groundContent, _minAnchors());
+      if (activeTab === 'moments' && momentsContent) momentsContent = h('div', null, momentsContent, _minAwe());
+      if (activeTab === 'trataka' && typeof tratakaContent !== 'undefined' && tratakaContent) tratakaContent = h('div', null, tratakaContent, _minSafer(['Trataka', 'Eye-gazing practices']));
+
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },

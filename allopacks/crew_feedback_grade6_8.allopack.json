@@ -1,0 +1,572 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 6: Feedback Is Information, Not a Verdict",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_feedback_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset; examining prejudices and biases about one's own ability); CASEL Self-Management (setting personal and collective goals; exhibiting self-discipline); EL Education Crew (Crew Launch: learning targets and HOWL reflection); Maine DOE PBIS Tier 1 (teaching academic perseverance as an expected behavior)"
+  },
+  "sourceTopic": "Self-assessment, feedback, and revision",
+  "history": [
+    {
+      "id": "cf-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 6: Feedback Is Information, Not a Verdict",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Perseverance. \"I persevere to produce high quality work.\"\n\nThis week you practice rating your own work against a target before anyone else does, and then using feedback as a map.\n\n1. Read **Feedback Is Information, Not a Verdict** (10 minutes).\n2. Learn the **Glossary** words, then win the **Matching** game.\n3. Keep the **Verdict or Map?** chart open.\n4. Sort the cards in **Verdict Thinking or Map Thinking?**\n5. Take the quiz. Question 4 is about the difference between revising and redoing.\n6. Open the SEL Hub and choose [Growth Mindset](#sel-hub/growthmindset?station=sel_station_crew_launch_feedback) to practice the one-word change. Then open [HOWL Tracker](#sel-hub/howlTracker?station=sel_station_crew_launch_feedback) and rate your own perseverance for the past two weeks with one piece of evidence for the rating. If a thought like \"I am bad at this\" is loud, try [CBT Thought Record](#sel-hub/thoughtRecord?station=sel_station_crew_launch_feedback) on it.\n7. Use the **Sentence Frames** to self-assess one piece of real work against its rubric.\n8. Lock it in with **Remember Gap, Map, Yet**.\n9. Finish with the **Explore Challenge: Rate It Before They Do**, on an assignment due this week.\n\nYour commitment: this week, rate one assignment against its rubric before turning it in, and compare your rating to the feedback you get. 🗺\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cf-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cf-glossary"
+          },
+          {
+            "id": "cf-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cf-goal-manual",
+            "label": "I rated one assignment against its rubric before turning it in and compared my rating to the feedback",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cf-reading",
+      "type": "simplified",
+      "title": "Feedback Is Information, Not a Verdict",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Feedback Is Information, Not a Verdict\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nTwo Perseverance behaviors in the King HOWLs go together: **assess** your work using **targets** and **rubrics**, and learn from **feedback** and **revise**. Both are about the same skill. Looking at your own work honestly, before and after someone else does, and then changing it.\n\nFeedback is hard to hear. When a teacher hands back a draft with comments, a lot of people feel one of two things. Either \"this means I am bad at this,\" or \"this teacher just does not like my work.\" Both feelings are normal. Both are also wrong about what feedback is. Feedback is information about the **gap** between where the work is and where the target is. It is not a **verdict** about you.\n\nThat is why targets and rubrics matter. A learning target says what the work is supposed to do. A rubric says what each level of doing it looks like. When you have those in front of you, you can check your own work before anyone else sees it. That is self-assessment. It turns feedback from a surprise into a confirmation. You already knew the **evidence** was thin in paragraph two. The teacher just agreed.\n\nHere is a fictional example. Leila turns in a science explanation. It comes back with three comments: \"claim is clear,\" \"evidence is missing for the second part,\" \"reasoning needs to connect the evidence to the claim.\" Leila's first reaction is a sinking feeling. Then she opens the rubric. The rubric has three rows: claim, evidence, reasoning. She rates her own draft on each row. Claim, level 3. Evidence, level 2. Reasoning, level 2. The teacher's comments and her own ratings match. Now the comments are not a judgment. They are a map. She adds one piece of evidence for the second part and one sentence connecting it to the claim. That is the whole revision. Twenty minutes.\n\nRevising is not **redoing**. Redoing means starting over because the first try felt bad. Revising means keeping what works and changing what the target says to change. Most revisions are small. The people who revise well are not the people with the most talent. They are the people who can look at a rubric row, look at their work, and say \"that one, not that one\" without it feeling like an attack.\n\nThere is a thought that gets in the way: \"I cannot do this.\" The growth-minded version is one word longer: \"I cannot do this **yet**.\" That word is not a slogan. It is a claim about how brains work. Skills are built by doing the hard thing slightly wrong and then adjusting. Feedback is the adjusting part. Skipping it does not protect you. It just stops the building.\n\nThis week you practice rating your own work against a rubric before you get feedback, and then treating the feedback as a map. You will use the HOWL Tracker in the SEL Hub to rate your own perseverance the same way: with evidence, not with a feeling.",
+      "meta": "6th-8th Grade • Leveled reading • ~510 words"
+    },
+    {
+      "id": "cf-glossary",
+      "type": "glossary",
+      "title": "Feedback Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Feedback",
+          "def": "Information about the gap between where the work is and where the target is.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Verdict",
+          "def": "A final judgment. Feedback is not one.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Target",
+          "def": "What the work is supposed to do, written in words a student can check.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Rubric",
+          "def": "A chart that says what each level of the work looks like, row by row.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Assess",
+          "def": "To rate work against what it is supposed to do. Doing it to your own work first is the responsible version.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Revise",
+          "def": "Keep what works, change what the target says to change.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Redo",
+          "def": "Start over because the first try felt bad. Usually not what the target asks for.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Evidence",
+          "def": "Something in the work you can point to that supports a rating.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Gap",
+          "def": "The space between the work as it is and the work as the target describes it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Yet",
+          "def": "The word that turns \"I cannot do this\" into a claim about how brains build skills.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "6th-8th Grade • 10 terms • Tiered"
+    },
+    {
+      "id": "cf-anchor",
+      "type": "anchor-chart",
+      "title": "Verdict or Map?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "VERDICT OR MAP?",
+        "sections": [
+          {
+            "label": "VERDICT THINKING",
+            "bullets": [
+              "\"This means I am bad at this\"",
+              "\"The teacher does not like my work\"",
+              "Feeling: sinking, then stopping"
+            ],
+            "iconPrompt": "a plain gavel on a block"
+          },
+          {
+            "label": "MAP THINKING",
+            "bullets": [
+              "\"Which row is the gap in?\"",
+              "\"What does the next level look like?\"",
+              "Feeling: okay, that one, not that one"
+            ],
+            "iconPrompt": "a folded paper map with one route marked"
+          },
+          {
+            "label": "SELF-ASSESS FIRST",
+            "bullets": [
+              "Open the rubric before you turn it in",
+              "Rate each row with evidence",
+              "Feedback becomes confirmation, not surprise"
+            ],
+            "iconPrompt": "a checklist with a pencil resting on it"
+          },
+          {
+            "label": "REVISE, DO NOT REDO",
+            "bullets": [
+              "Keep what works",
+              "Change what the target says",
+              "Most revisions are small"
+            ],
+            "iconPrompt": "a page with one paragraph highlighted and the rest untouched"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cf-sort",
+      "type": "concept-sort",
+      "title": "Verdict Thinking or Map Thinking?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cf-verdict",
+            "label": "VERDICT THINKING",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "cf-map",
+            "label": "MAP THINKING",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cf-i1",
+            "content": "\"Three comments. I am terrible at science writing.\"",
+            "categoryId": "cf-verdict"
+          },
+          {
+            "id": "cf-i2",
+            "content": "\"Claim row is fine. Evidence row is where the gap is.\"",
+            "categoryId": "cf-map"
+          },
+          {
+            "id": "cf-i3",
+            "content": "\"She always marks me down. She just does not like my stuff.\"",
+            "categoryId": "cf-verdict"
+          },
+          {
+            "id": "cf-i4",
+            "content": "\"The rubric says level 3 needs two pieces of evidence. I have one.\"",
+            "categoryId": "cf-map"
+          },
+          {
+            "id": "cf-i5",
+            "content": "\"I am going to start the whole thing over.\"",
+            "categoryId": "cf-verdict"
+          },
+          {
+            "id": "cf-i6",
+            "content": "\"I will add one sentence connecting the evidence to the claim and leave the rest.\"",
+            "categoryId": "cf-map"
+          },
+          {
+            "id": "cf-i7",
+            "content": "\"I cannot write conclusions yet. What does a level 4 conclusion do that mine does not?\"",
+            "categoryId": "cf-map"
+          },
+          {
+            "id": "cf-i8",
+            "content": "\"I cannot write conclusions. I never could.\"",
+            "categoryId": "cf-verdict"
+          },
+          {
+            "id": "cf-i9",
+            "content": "\"My own rating was a 2 on reasoning. The comment agrees. Not a surprise.\"",
+            "categoryId": "cf-map"
+          },
+          {
+            "id": "cf-i10",
+            "content": "\"I got comments, so the grade is going to be bad. Why bother fixing it.\"",
+            "categoryId": "cf-verdict"
+          }
+        ]
+      },
+      "meta": "2 categories • 10 cards"
+    },
+    {
+      "id": "cf-quiz",
+      "type": "quiz",
+      "title": "Map or Verdict?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "According to the reading, what is feedback?",
+            "options": [
+              "A judgment about whether you are good at a subject",
+              "Information about the gap between the work and the target",
+              "A teacher's opinion about the effort you put in",
+              "The grade explained in words instead of a number"
+            ],
+            "correctAnswer": "Information about the gap between the work and the target",
+            "conceptLabel": "feedback is information"
+          },
+          {
+            "type": "mcq",
+            "question": "What did opening the rubric do for Leila?",
+            "options": [
+              "It showed her the teacher had made a mistake on one comment",
+              "It gave her a higher rating than the teacher had given",
+              "It turned the comments from a judgment into a map",
+              "It told her to start the explanation over from the beginning"
+            ],
+            "correctAnswer": "It turned the comments from a judgment into a map",
+            "conceptLabel": "rubric as map"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading say to self-assess BEFORE getting feedback?",
+            "options": [
+              "So the teacher does not have to write as many comments",
+              "So you can argue for a higher grade if the feedback is unfair",
+              "So you can skip the feedback if your own rating is high",
+              "So feedback becomes a confirmation instead of a surprise"
+            ],
+            "correctAnswer": "So feedback becomes a confirmation instead of a surprise",
+            "conceptLabel": "self-assess first"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the difference between revising and redoing?",
+            "options": [
+              "Revising keeps what works and changes what the target says to change",
+              "Revising means fixing spelling; redoing means fixing ideas",
+              "Redoing is for big assignments and revising is for small ones",
+              "There is no real difference; they both mean improving the work"
+            ],
+            "correctAnswer": "Revising keeps what works and changes what the target says to change",
+            "conceptLabel": "revise not redo"
+          },
+          {
+            "type": "mcq",
+            "question": "What does the reading say the word \"yet\" is?",
+            "options": [
+              "A slogan teachers use to make students feel better",
+              "A polite way of admitting you cannot do something",
+              "A claim about how brains build skills by adjusting",
+              "A word to use only after you have already improved"
+            ],
+            "correctAnswer": "A claim about how brains build skills by adjusting",
+            "conceptLabel": "yet is a claim"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A teacher writes \"evidence is thin\" on your draft. Write the map-thinking version of your first thought.",
+            "expectedAnswer": "Something like: The gap is in the evidence row; the next level needs another piece of evidence, so I will add one and keep the rest.",
+            "conceptLabel": "rubric as map"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of the last feedback you got (no names). Was your first reaction verdict thinking or map thinking? What would the map version have been?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cf-frames",
+      "type": "sentence-frames",
+      "title": "Self-Assess Against the Rubric",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The target for this work is ____."
+          },
+          {
+            "text": "On the ____ row, I rate my work a ____ because I can point to ____."
+          },
+          {
+            "text": "The row with the biggest gap is ____. The next level looks like ____."
+          },
+          {
+            "text": "To revise, I will keep ____ and change ____."
+          },
+          {
+            "text": "When the feedback comes back, I expect it to say ____."
+          },
+          {
+            "text": "I cannot ____ yet. The adjustment I am making is ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Rates with evidence | Rates on feeling | Rates with one thing to point to | Rates every row with something to point to |\n| Finds the gap | Says \"it is all bad\" or \"it is fine\" | Names one row | Names the row and what the next level looks like |\n| Revises, not redoes | Starts over | Changes one thing | Keeps what works and changes only what the target says |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cf-faq",
+      "type": "faq",
+      "title": "Feedback Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What if my self-rating is higher than the teacher's?",
+          "answer": "That is useful. It means you and the rubric are reading a row differently. Ask what the next level looks like on that row. That is the ask move from last week."
+        },
+        {
+          "question": "What if the feedback is just a grade with no comments?",
+          "answer": "Use the rubric as the comments. Rate each row yourself and find the gap. Then ask the teacher which row cost the most points."
+        },
+        {
+          "question": "Is it okay to feel bad when I get feedback?",
+          "answer": "Yes. The sinking feeling is normal. The skill is what you do in the thirty seconds after it: open the rubric."
+        },
+        {
+          "question": "What if I really did do everything on the rubric?",
+          "answer": "Then say so, with evidence. \"The rubric says two pieces of evidence and here are mine\" is map thinking. Teachers can be wrong about a row too."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Perseverance HOWL includes assessing your work using targets and rubrics, and learning from feedback and revising. Rating your own work first and then revising is that HOWL, in two sentences."
+        }
+      ],
+      "meta": "5 questions"
+    },
+    {
+      "id": "cf-memory",
+      "type": "memory-aid",
+      "title": "Remember Gap, Map, Yet",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Gap, Map, Yet",
+        "instructions": "Each card locks in one idea from Feedback Is Information, Not a Verdict. Look at the example aid, make it your own, and tell how it helps you take feedback.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "rhyme-rhythm",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Feedback is information about the gap between where the work is and where the target is. It is not a verdict about you. Now the comments are not a judgment. They are a map. Revising means keeping what works and changing what the target says to change. The growth-minded version is one word longer: \"I cannot do this yet.\"",
+        "lessonRef": {
+          "resourceId": "cf-reading",
+          "title": "Feedback Is Information, Not a Verdict"
+        },
+        "cards": [
+          {
+            "id": "cf-ma-gapmap",
+            "target": "Feedback is information about the gap, and the rubric turns it into a map",
+            "essentialFacts": [
+              "Feedback is information about the gap between where the work is and where the target is.",
+              "It is not a verdict about you.",
+              "Now the comments are not a judgment. They are a map."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "rhyme-rhythm",
+            "mode": "scaffolded",
+            "aiExample": "Find the gap, read the map, skip the verdict, close the gap. Say it twice and the rhyme carries the order: gap first, map second, verdict never.",
+            "mapping": "Gap and map rhyme, which pairs the idea (a gap) with the tool (the rubric map); \"skip the verdict\" names the thing to leave out; \"close the gap\" is the revision.",
+            "scaffoldStarter": "Find the ____, read the ____, skip the ____.",
+            "scaffoldSteps": [
+              "Write gap, map, verdict.",
+              "Put them in a line with a beat.",
+              "Say it the next time a paper comes back."
+            ],
+            "coachPrompts": [
+              "Which of the three words is the one you forget when the feedback stings?"
+            ],
+            "studentPrompt": "Make your own rhyme or beat for gap, map, verdict.",
+            "reasoningPrompt": "How does your rhyme change the first thirty seconds after feedback?",
+            "hookFact": {
+              "text": "She adds one piece of evidence for the second part and one sentence connecting it to the claim. That is the whole revision. Twenty minutes.",
+              "sourceTitle": "Feedback Is Information, Not a Verdict (this lesson)"
+            }
+          },
+          {
+            "id": "cf-ma-yet",
+            "target": "\"Yet\" turns \"I cannot\" into a claim about how skills are built",
+            "essentialFacts": [
+              "The growth-minded version is one word longer: \"I cannot do this yet.\"",
+              "Skills are built by doing the hard thing slightly wrong and then adjusting."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "YET = not YET built. A house that is not built yet is still a house that is going to exist. \"I cannot do this yet\" means the skill is under construction, not cancelled.",
+            "mapping": "Yet links to a building under construction: something unfinished but in progress, which is what the word claims about a skill.",
+            "scaffoldStarter": "\"I cannot ____ yet\" means ____.",
+            "scaffoldSteps": [
+              "Write a sentence you have said that starts with \"I cannot.\"",
+              "Add yet.",
+              "Say what is under construction."
+            ],
+            "coachPrompts": [
+              "What is the difference between \"I cannot do this yet\" and \"I will try harder\"?"
+            ],
+            "studentPrompt": "Make your own picture or word link for yet.",
+            "reasoningPrompt": "How does your link help you keep going after a low rubric row?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • gap and map, yet"
+    },
+    {
+      "id": "cf-challenge",
+      "type": "applied-challenge",
+      "title": "Explore Challenge: Rate It Before They Do",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Rate It Before They Do",
+        "instructions": "Take one real assignment due this week that has a rubric or a learning target. Rate your own draft row by row with evidence before you turn it in, predict the feedback, then compare your prediction to what comes back and revise.",
+        "selectionMode": "manual",
+        "family": "explore",
+        "fitReason": "The HOWL behaviors are self-assessing with targets and rubrics and learning from feedback to revise. Predicting feedback and checking the prediction makes both behaviors observable and gives the student a result they can compare, not a feeling.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "explore",
+          "context": "You have an assignment due this week with a rubric or a target. Most students turn it in and wait. You are going to rate it first.",
+          "role": "A student exploring how close their self-assessment is to the teacher's",
+          "audience": "You. Then your Crew, who hears how close the prediction was and what you revised.",
+          "drivingQuestion": "How close is my own rubric rating to the feedback I actually get, and which row did I misjudge?",
+          "seedDirection": "Print or copy the rubric. For each row, write your rating and one thing in the draft you can point to. Write down what you expect the feedback to say. Turn it in. Compare.",
+          "lockedLessonFacts": [
+            "Feedback is information about the gap between where the work is and where the target is; it is not a verdict.",
+            "A rubric says what each level of the work looks like, row by row.",
+            "Self-assessment turns feedback from a surprise into a confirmation.",
+            "Revising means keeping what works and changing what the target says to change."
+          ],
+          "openQuestions": [
+            "Which row am I least sure how to rate?",
+            "What evidence in my draft supports each rating?",
+            "Which row do I predict the teacher will mark lowest?",
+            "After the feedback comes back, which row did I misjudge, and why?"
+          ],
+          "stakeholders": [
+            "You",
+            "The teacher who gives the feedback",
+            "Your Crew leader, who can help you read a rubric row"
+          ],
+          "criteria": [
+            "Every rubric row has a self-rating and one piece of evidence",
+            "A written prediction of the feedback exists before turning in",
+            "The comparison names at least one row where the prediction matched and one where it did not, or explains why all matched",
+            "The revision changes only what the target says to change",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "One assignment",
+            "Self-rating done before turning in, not after",
+            "The record is honest about the misjudged row",
+            "No redoing the whole assignment"
+          ],
+          "deliverable": "A rubric with your ratings and evidence, your written prediction, a short comparison to the real feedback, and the revised piece (or the revision plan if the feedback is not back yet).",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student rated her history paragraph.",
+            "move": "She gave herself a 3 on evidence and a 3 on reasoning and predicted the teacher would say the same. The feedback gave evidence a 3 and reasoning a 2, with the comment \"you quote the source but do not say why it matters.\" Her comparison said: \"I misjudged reasoning. I thought quoting was reasoning. Next level means saying why.\" She added two sentences and kept the rest.",
+            "whyItHelps": "It shows the misjudged row is the most useful result: it tells her exactly which idea she was reading wrong."
+          },
+          "frameStarter": "On the ____ row I rated myself ____ because ____. I predicted the feedback would say ____.",
+          "frameChoices": [
+            "The prediction matched on ____.",
+            "I misjudged ____, because I thought ____ meant ____.",
+            "My revision keeps ____ and changes ____."
+          ],
+          "coachPrompts": [
+            "If every prediction matched, what does that tell you about your self-assessment? Is the rubric row you are most sure about actually the one you should check hardest?",
+            "Which row would you ask the teacher about, using the four moves from last week?"
+          ]
+        },
+        "coachHint": "Some students will not get feedback back within the week. The prediction and the self-rating are still the deliverable; the comparison can come the following Crew.",
+        "sourceExcerpt": "The teacher's comments and her own ratings match. Now the comments are not a judgment. They are a map. She adds one piece of evidence for the second part and one sentence connecting it to the claim. That is the whole revision.",
+        "lessonRef": {
+          "resourceId": "cf-reading",
+          "title": "Feedback Is Information, Not a Verdict"
+        }
+      },
+      "meta": "6th-8th Grade • Explore brief • predict the feedback"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_feedback",
+      "name": "Crew station: Week 6: Feedback Is Information, Not a Verdict",
+      "tools": [
+        "growthmindset",
+        "howlTracker",
+        "thoughtRecord"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 6: Feedback Is Information, Not a Verdict pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_feedback_time",
+          "type": "timeSpent",
+          "toolId": "growthmindset",
+          "label": "Spend 5 minutes in Growth Mindset",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_feedback_check",
+          "type": "manualComplete",
+          "toolId": "thoughtRecord",
+          "label": "I rated one assignment against its rubric before turning it in and compared my rating to the feedback",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

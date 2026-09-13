@@ -2055,819 +2055,15 @@ window.SelHub = window.SelHub || {
   ];
   BINGO_CHALLENGES = BINGO_CHALLENGES.concat(BINGO_CHALLENGES_EXTENDED);
 
-  var MENTOR_QUOTES = [
-    { id: 'mq1', mentor: 'Judy Heumann', context: 'On disability rights', quote: 'Disability only becomes a tragedy when society fails to provide the things we need to lead our lives.', useWhen: 'When you feel like the problem is YOU instead of the system.', followup: 'What part of your environment, not your body or mind, is making this hard right now?' },
-    { id: 'mq2', mentor: 'Judy Heumann', context: 'On asking', quote: "We don't have to look to the world to confirm that we're equal. We are.", useWhen: 'When you feel like you have to prove you deserve accommodations.', followup: "What would you do today if you didn't have to prove you deserve it?" },
-    { id: 'mq3', mentor: 'Temple Grandin', context: 'On being different', quote: 'I am different, not less.', useWhen: 'When you compare yourself to neurotypical peers.', followup: 'What does your brain do BETTER than others, not just differently?' },
-    { id: 'mq4', mentor: 'Temple Grandin', context: 'On masking', quote: 'The world needs all kinds of minds.', useWhen: 'When you feel pressure to act more "normal."', followup: 'What part of yourself have you been hiding this week that you wish you could show?' },
-    { id: 'mq5', mentor: 'Haben Girma', context: 'On access', quote: 'Disability is an opportunity for innovation.', useWhen: 'When an accommodation request feels like a burden you are placing on others.', followup: 'What new thing could exist BECAUSE of what you need?' },
-    { id: 'mq6', mentor: 'Haben Girma', context: 'On lawyering', quote: "When access is denied, fight back. The law is on your side.", useWhen: 'When you are told no and not given a reason.', followup: 'Whose job is it to tell you the legal reason? Not yours.' },
-    { id: 'mq7', mentor: 'Ed Roberts', context: 'On the Berkeley sit-in', quote: 'If we have learned one thing from the civil rights movement, it is that when others speak for you, you lose.', useWhen: 'When you let a parent or teacher answer for you in a meeting.', followup: 'What is one sentence YOU could say in your next meeting, before anyone else jumps in?' },
-    { id: 'mq8', mentor: 'Alice Wong', context: 'On disabled wisdom', quote: 'Disabled people are the experts on our own lives.', useWhen: 'When a professional tells you they know your experience better than you.', followup: 'You can disagree with experts. What is one thing you know about yourself that they got wrong?' },
-    { id: 'mq9', mentor: 'Lydia X.Z. Brown', context: 'On the autistic community', quote: 'Nothing about us without us.', useWhen: 'When decisions about your supports happen in a room you are not in.', followup: 'Whose meeting are you missing? Can you ask to be invited?' },
-    { id: 'mq10', mentor: 'Greta Thunberg', context: 'On being underestimated', quote: 'I have Aspergers and that means I\'m sometimes a bit different from the norm. And, given the right circumstances, being different is a superpower.', useWhen: 'When you wonder if your neurodivergence stops you from leading.', followup: 'Pick one circumstance where being different IS the strength. Use it today.' },
-    { id: 'mq11', mentor: 'Malala Yousafzai', context: 'On the right to learn', quote: 'One child, one teacher, one book, one pen can change the world.', useWhen: 'When you feel too small to push back on a school decision.', followup: 'Write one sentence to one teacher this week. Save it. Read it back if you doubt your voice.' },
-    { id: 'mq12', mentor: 'Malala Yousafzai', context: 'On fear', quote: 'I raise up my voice, not so I can shout, but so that those without a voice can be heard.', useWhen: 'When advocating for yourself feels selfish.', followup: 'Who else benefits when YOU ask for what you need? Name one classmate who needs the same thing.' },
-    { id: 'mq13', mentor: 'Fred Korematsu', context: 'On lifelong resistance', quote: 'If you have the feeling something is wrong, don\'t be afraid to speak up.', useWhen: 'When the rule sounds wrong but everyone else is following it.', followup: 'What is the rule and what feels off about it? Write it down.' },
-    { id: 'mq14', mentor: 'Patrick Henry Hughes', context: 'On parents', quote: 'My father has been my legs my whole life. Now I want to use my voice.', useWhen: 'When you are ready to lead the conversation that your parent has always led.', followup: 'Pick one sentence in your next IEP you will say yourself. Just one.' },
-    { id: 'mq15', mentor: 'Marlee Matlin', context: 'On bilingual identity', quote: 'I think this is just another reminder that everyone is human and we all have a story.', useWhen: 'When someone treats you like a problem to solve.', followup: 'What is one part of your story that explains why this accommodation matters to you?' },
-    { id: 'mq16', mentor: 'Stephen Hawking', context: 'On limits', quote: 'However difficult life may seem, there is always something you can do and succeed at.', useWhen: 'When everything feels stuck.', followup: 'What is the smallest thing you could do in the next 10 minutes that would still count?' },
-    { id: 'mq17', mentor: 'Helen Keller', context: 'On vision', quote: 'The only thing worse than being blind is having sight but no vision.', useWhen: 'When peers tease you for caring about something they don\'t see yet.', followup: 'What do you see that they don\'t yet? Write it down. Save it for later.' },
-    { id: 'mq18', mentor: 'Frida Kahlo', context: 'On chronic pain', quote: 'Feet, what do I need them for if I have wings to fly?', useWhen: 'When you grieve what your body cannot do today.', followup: 'What is one strength you have that does NOT depend on a body part that hurts?' },
-    { id: 'mq19', mentor: 'Stevie Wonder', context: 'On joy', quote: 'Just because a man lacks the use of his eyes does not mean he lacks vision.', useWhen: 'When people define you by what is missing.', followup: 'What do you HAVE? Make a list of three things by name.' },
-    { id: 'mq20', mentor: 'Andrew Solomon', context: 'On the right to be unwell', quote: 'Depression is the flaw in love.', useWhen: 'When you feel like you are broken for grieving.', followup: 'What did you love that you are missing? It is okay to name it.' },
-    { id: 'mq21', mentor: 'Carrie Fisher', context: 'On mental health stigma', quote: 'I am mentally ill. I can say that. I am not ashamed of that.', useWhen: 'When you are told to hide your diagnosis.', followup: 'Who is one safe person you could be honest with this week?' },
-    { id: 'mq22', mentor: 'Demi Lovato', context: 'On treatment', quote: 'You have to learn to love yourself before you can be loved.', useWhen: 'When the school says fix yourself before they will help.', followup: 'Loving yourself does not mean fixing yourself. What is one piece of yourself you will not try to change today?' },
-    { id: 'mq23', mentor: 'Glennon Doyle', context: 'On the inside voice', quote: 'We can do hard things.', useWhen: 'When you are about to enter a meeting that scares you.', followup: 'Say it three times before the meeting starts. Out loud if you can.' },
-    { id: 'mq24', mentor: 'Brene Brown', context: 'On vulnerability', quote: 'Vulnerability is not winning or losing; it is having the courage to show up when you cannot control the outcome.', useWhen: 'When you want to advocate but cannot guarantee you will get a yes.', followup: 'A no does not erase the asking. What will you still ask, even if the answer is no?' },
-    { id: 'mq25', mentor: 'Audre Lorde', context: 'On speaking up', quote: 'Your silence will not protect you.', useWhen: 'When you think keeping quiet will keep you safe.', followup: 'In one sentence, what is the truth that is loudest in your head right now?' },
-    { id: 'mq26', mentor: 'Audre Lorde', context: 'On self-care', quote: 'Caring for myself is not self-indulgence, it is self-preservation, and that is an act of political warfare.', useWhen: 'When taking a regulation break feels selfish.', followup: 'You are not the support team. What is one thing you will do for YOU before you help anyone else today?' },
-    { id: 'mq27', mentor: 'Cesar Chavez', context: 'On grassroots power', quote: 'You are never strong enough that you don\'t need help.', useWhen: 'When you think asking for help means you are weak.', followup: 'Who is one person you have refused to ask? Just one ask, today.' },
-    { id: 'mq28', mentor: 'Dolores Huerta', context: 'On organizing', quote: 'Every moment is an organizing opportunity, every person a potential activist, every minute a chance to change the world.', useWhen: 'When you feel like one student cannot change a school policy.', followup: 'Name one classmate who could ask the same thing with you. Talk to them this week.' },
-    { id: 'mq29', mentor: 'Yuri Kochiyama', context: 'On solidarity', quote: 'Each one of us can make a difference, but together we can change the world.', useWhen: 'When your needs feel separate from other students.', followup: 'Whose accommodations would also be made easier by yours? Whose would be made easier by you speaking up?' },
-    { id: 'mq30', mentor: 'Bayard Rustin', context: 'On organizing', quote: 'The only weapon we have is our bodies, and we need to tuck them in places so wheels don\'t turn.', useWhen: 'When you think you need a microphone to be heard.', followup: 'Your presence in a room is a statement. What room will you walk into this week?' },
-    { id: 'mq31', mentor: 'Rosa Parks', context: 'On tired', quote: 'People always say that I didn\'t give up my seat because I was tired, but that isn\'t true. The only tired I was, was tired of giving in.', useWhen: 'When you have backed down so many times the next no feels impossible.', followup: 'What is one place you have given in too long? Today, you do not have to.' },
-    { id: 'mq32', mentor: 'Fannie Lou Hamer', context: 'On fatigue', quote: 'I am sick and tired of being sick and tired.', useWhen: 'When you can barely lift the words to ask anymore.', followup: 'The exhaustion is data, not failure. What does your tired tell you to change?' },
-    { id: 'mq33', mentor: 'Ella Baker', context: 'On youth leadership', quote: 'Strong people don\'t need strong leaders.', useWhen: 'When you wait for an adult to start the conversation you need.', followup: 'What words will YOU say first? Before any adult speaks?' },
-    { id: 'mq34', mentor: 'Frederick Douglass', context: 'On power', quote: 'Power concedes nothing without a demand. It never did and it never will.', useWhen: 'When you hope politely waiting will work.', followup: 'What is your demand in writing? One sentence.' },
-    { id: 'mq35', mentor: 'James Baldwin', context: 'On naming truth', quote: 'Not everything that is faced can be changed, but nothing can be changed until it is faced.', useWhen: 'When you avoid naming what is wrong.', followup: 'Say the hard sentence out loud, even just to yourself. Now write it down.' },
-    { id: 'mq36', mentor: 'Maya Angelou', context: 'On surviving', quote: 'You may not control all the events that happen to you, but you can decide not to be reduced by them.', useWhen: 'When something happened to you that you did not choose.', followup: 'What is one piece of you that this event did NOT touch?' },
-    { id: 'mq37', mentor: 'Maya Angelou', context: 'On being underestimated', quote: 'I can be changed by what happens to me. But I refuse to be reduced by it.', useWhen: 'When a hard thing keeps making you smaller.', followup: 'How can what happened to you grow you instead of shrink you? Write one sentence.' },
-    { id: 'mq38', mentor: 'Marsha P. Johnson', context: 'On showing up loud', quote: 'No pride for some of us without liberation for all of us.', useWhen: 'When you advocate only for yourself, never for others.', followup: 'Whose accommodation would you fight for today, even if you do not need it?' },
-    { id: 'mq39', mentor: 'Sylvia Rivera', context: 'On being heard', quote: 'We have to be visible. We should not be ashamed of who we are.', useWhen: 'When you camouflage your identity to fit in.', followup: 'What is one piece of you that you have been hiding? Could you uncover it for one hour today?' },
-    { id: 'mq40', mentor: 'Marlee Matlin', context: 'On Deaf identity', quote: 'The handicap of deafness is not in the ear; it is in the mind.', useWhen: 'When you feel your disability is the problem.', followup: 'What attitude in the room is making this harder than the disability itself?' },
-    { id: 'mq41', mentor: 'Nyle DiMarco', context: 'On bilingual brain', quote: 'Sign language is my native language. English is my second.', useWhen: 'When school treats your accommodations like a translation problem instead of a culture.', followup: 'What language, format, or rhythm fits how YOU think? Ask for that, not for what fits them.' },
-    { id: 'mq42', mentor: 'Ryan Haddad', context: 'On bodies on stage', quote: 'My body is the most political thing about me.', useWhen: 'When you wish you could just blend in.', followup: 'Your visibility is part of the work. What would change if one classmate saw YOUR body as normal because of yours?' },
-    { id: 'mq43', mentor: 'Aimi Hamraie', context: 'On universal design', quote: 'Accessibility is a relationship, not a checklist.', useWhen: 'When the school says they already comply with the law.', followup: 'Compliance is not access. What is one accommodation you have that is still not actually accessible? Name it.' },
-    { id: 'mq44', mentor: 'Imani Barbarin', context: 'On disabled rage', quote: 'My anger is the proof that I deserve better.', useWhen: 'When you are told you are being too emotional.', followup: 'What did your anger correctly notice? Write the data underneath the feeling.' },
-    { id: 'mq45', mentor: 'Mia Mingus', context: 'On disability justice', quote: 'We do not want crumbs; we want the whole table.', useWhen: 'When you are offered the bare minimum.', followup: 'What is the full accommodation you actually need, not the one you have settled for?' },
-    { id: 'mq46', mentor: 'Patty Berne', context: 'On collective access', quote: 'Disability justice centers people who experience overlapping forms of oppression.', useWhen: 'When you feel like your needs compete with someone else\'s.', followup: 'Whose access ALSO helps yours? Can you ask together?' },
-    { id: 'mq47', mentor: 'Stella Young', context: 'On inspiration porn', quote: 'I am not your inspiration. I am here to live my life.', useWhen: 'When a teacher praises you for doing ordinary things.', followup: 'You do not exist to teach others. What do YOU want to do for YOU today?' },
-    { id: 'mq48', mentor: 'Wong Kim Ark', context: 'On birthright', quote: 'I am American by birth. I will not be denied.', useWhen: 'When someone questions whether you really belong here.', followup: 'You belong here. Write it down where you can see it.' },
-    { id: 'mq49', mentor: 'Sandra Day O\'Connor', context: 'On dyslexia in law school', quote: 'When you are afraid, ask a question. When you don\'t know, ask twice.', useWhen: 'When you are scared to look dumb by asking.', followup: 'You do not have to understand everything before asking. What is your first question?' },
-    { id: 'mq50', mentor: 'Steve Jobs', context: 'On dyslexia and design', quote: 'Stay hungry, stay foolish.', useWhen: 'When playing it safe feels easier than asking for what you need.', followup: 'What is the bold ask you have been afraid to make this week? Now make it small enough to do today.' },
-    { id: 'mq51', mentor: 'Richard Branson', context: 'On dyslexia and business', quote: 'My biggest motivation? Just to keep challenging myself.', useWhen: 'When school tells you what you cannot do.', followup: 'What is one challenge you set for YOURSELF, separate from anyone\'s expectations?' },
-    { id: 'mq52', mentor: 'Whoopi Goldberg', context: 'On being labeled', quote: 'I think it\'s good to be smart. I think it\'s good to be a smart-ass.', useWhen: 'When you have been called difficult for asking.', followup: 'Difficult is not the worst word. Use it once today.' },
-    { id: 'mq53', mentor: 'Henry Winkler', context: 'On late dyslexia diagnosis', quote: 'Your destiny is going to unfold in front of you no matter what people tell you.', useWhen: 'When you wonder if your diagnosis came too late.', followup: 'It is not too late. What is the next single step regardless?' },
-    { id: 'mq54', mentor: 'Selma Blair', context: 'On chronic illness', quote: 'I will not be silent.', useWhen: 'When you are told you are exaggerating.', followup: 'You are not exaggerating. What is one symptom you have been minimizing this week?' },
-    { id: 'mq55', mentor: 'Selma Blair', context: 'On dignity', quote: 'I have always been afraid of being thought too needy.', useWhen: 'When you worry that asking makes you a burden.', followup: 'Asking is not needy. What is one ask you have been swallowing?' },
-    { id: 'mq56', mentor: 'Christopher Reeve', context: 'On hope after injury', quote: 'A hero is an ordinary individual who finds strength to persevere and endure in spite of overwhelming obstacles.', useWhen: 'When you doubt you have anything in you for one more meeting.', followup: 'You are the hero, not the bystander. What is the next ordinary thing only you can do?' },
-    { id: 'mq57', mentor: 'Bessel van der Kolk', context: 'On trauma', quote: 'The body keeps the score.', useWhen: 'When your body acts up before your mind catches up.', followup: 'What is your body trying to tell you about this situation? Listen first, advocate second.' },
-    { id: 'mq58', mentor: 'Peter Levine', context: 'On self-regulation', quote: 'The greatest predictor of resilience is regulation, not toughness.', useWhen: 'When you push through instead of pause.', followup: 'What is one regulation tool you have skipped because you felt you should be tougher?' },
-    { id: 'mq59', mentor: 'Naoki Higashida', context: 'On autistic experience', quote: 'Please do not let us suffer in silence.', useWhen: 'When you wonder if the meltdown means you are broken.', followup: 'It means you are overwhelmed, not broken. What support did you not have access to before it happened?' },
-    { id: 'mq60', mentor: 'Erin Manning', context: 'On the dance of difference', quote: 'There is more than one rhythm of being.', useWhen: 'When you feel out of step with peers.', followup: 'What rhythm fits YOU? Schedule one hour of it today.' },
-    { id: 'mq61', mentor: 'Eric Garcia', context: 'On autism advocacy', quote: 'Autistic people don\'t need awareness. We need accommodation.', useWhen: 'When the school says they are aware but nothing changes.', followup: 'Awareness without access is just performance. What is one concrete access change you need this week?' },
-    { id: 'mq62', mentor: 'Jen White-Johnson', context: 'On Black neurodivergent identity', quote: 'My identity is not a deficit.', useWhen: 'When you feel like the things that make you, you are also what is wrong.', followup: 'What part of your identity will you celebrate, not apologize for, this week?' },
-    { id: 'mq63', mentor: 'Morenike Giwa Onaiwu', context: 'On multiply marginalized advocacy', quote: 'I do not get to choose which oppression to fight first.', useWhen: 'When you are told to pick one identity to advocate from.', followup: 'You are all of you. Whose advocacy spaces are missing the full you? Notice them this week.' },
-    { id: 'mq64', mentor: 'Nick Walker', context: 'On neurodiversity', quote: 'Neurodiversity is the diversity of brains and minds, just like biodiversity.', useWhen: 'When you feel like a deviation instead of a variant.', followup: 'You are not the exception. You are part of the diversity. Say it three times.' },
-    { id: 'mq65', mentor: 'Devon Price', context: 'On unmasking', quote: 'It is not your job to perform normal.', useWhen: 'When the cost of masking is breaking you.', followup: 'What is one small thing you will stop performing today, just for the next hour?' },
-    { id: 'mq66', mentor: 'Sara Luterman', context: 'On adult autistic identity', quote: 'Acceptance is the opposite of cure.', useWhen: 'When you are told you can be okay only if you change.', followup: 'What is one part of you that you are tired of being told to fix?' },
-    { id: 'mq67', mentor: 'Helena Donato-Sapp', context: 'On youth disability journalism', quote: 'My disability is not a story for inspiration. It is my actual life.', useWhen: 'When you are featured but not consulted.', followup: 'Who gets to tell your story? You do. Who needs reminding?' },
-    { id: 'mq68', mentor: 'Akemi Tomoda', context: 'On youth-led council', quote: 'I learned that no one will hand you the microphone. You have to ask for it.', useWhen: 'When you are waiting to be invited to speak.', followup: 'Who could you ask for the mic this week? Just ask.' },
-    { id: 'mq69', mentor: 'Greta Gerwig', context: 'On directing', quote: 'I always want my characters, especially women, to be fully realized.', useWhen: 'When others reduce you to one trait.', followup: 'What are three traits of yours that the school never names? Name them.' },
-    { id: 'mq70', mentor: 'Ai Weiwei', context: 'On dissent', quote: 'A small act is worth a million thoughts.', useWhen: 'When you are paralyzed planning the perfect protest.', followup: 'What is the smallest act you could take in the next 30 minutes?' },
-    { id: 'mq71', mentor: 'Bell Hooks', context: 'On voice', quote: 'I will not have my life narrowed down.', useWhen: 'When someone tells you the path you must take.', followup: 'What path do YOU want? Sketch the next 5 years for YOU, not them.' },
-    { id: 'mq72', mentor: 'Bell Hooks', context: 'On love and politics', quote: 'The practice of love offers no place of safety.', useWhen: 'When you are afraid to show up loudly for the people you love.', followup: 'Who needs you to advocate for them this week? Even if it costs you something.' },
-    { id: 'mq73', mentor: 'Roxane Gay', context: 'On a complicated body', quote: 'I am a bad feminist. I would rather be a bad feminist than no feminist at all.', useWhen: 'When you are afraid of being an imperfect advocate.', followup: 'You do not have to be a perfect advocate. What is one imperfect thing you will still say?' },
-    { id: 'mq74', mentor: 'Tarana Burke', context: 'On me too', quote: 'Empowerment through empathy.', useWhen: 'When you cannot describe your own story but you can name what happened to someone else.', followup: 'Start there. Whose story echoes yours? You are not alone.' },
-    { id: 'mq75', mentor: 'Patrisse Cullors', context: 'On Black liberation', quote: 'Black lives mattering is a starting point.', useWhen: 'When you feel like advocacy is supposed to be polite.', followup: 'What is the loudest sentence you have been quiet about? Speak it once today.' },
-    { id: 'mq76', mentor: 'Vashti McKenzie', context: 'On faith leadership', quote: 'When you do enough, you have done enough.', useWhen: 'When you keep extending yourself past empty.', followup: 'What is enough for today, not for everyone else\'s standards?' },
-    { id: 'mq77', mentor: 'Wilma Mankiller', context: 'On Cherokee leadership', quote: 'The hardest part of any task is starting.', useWhen: 'When the meeting is in 3 days and you cannot bring yourself to prepare.', followup: 'Write one sentence of preparation. Right now. Just one.' },
-    { id: 'mq78', mentor: 'Yuri Kochiyama', context: 'On chosen family', quote: 'We are all part of one another.', useWhen: 'When you feel like your needs are isolated.', followup: 'Who else in your life has shared this need? Reach out.' },
-    { id: 'mq79', mentor: 'Liz Murray', context: 'On homeless to Harvard', quote: 'I can do it. I will do it. I am doing it.', useWhen: 'When the path feels impossible.', followup: 'You do not have to do all of it. What is the one thing you ARE doing right now?' },
-    { id: 'mq80', mentor: 'Mae Jemison', context: 'On being the first', quote: 'Never be limited by other people\'s limited imaginations.', useWhen: 'When everyone in your meeting tells you what you cannot do.', followup: 'Imagine what they cannot. Sketch it on paper before the next meeting.' },
-    { id: 'mq81', mentor: 'Misty Copeland', context: 'On breaking the mold', quote: 'You can do anything when you have passion and drive.', useWhen: 'When you have been told your interest is not appropriate for someone like you.', followup: 'What is the thing you keep being told is not for you? Try one piece of it this week.' },
-    { id: 'mq82', mentor: 'Sonia Sotomayor', context: 'On juvenile diabetes and the bench', quote: 'I am an ordinary person who has been blessed with extraordinary opportunities.', useWhen: 'When you feel like the accommodations you need are too special.', followup: 'Accommodations are not special treatment. They are the floor. Name one accommodation that is non-negotiable for you.' },
-    { id: 'mq83', mentor: 'Ruth Bader Ginsburg', context: 'On dissent', quote: 'Fight for the things that you care about, but do it in a way that will lead others to join you.', useWhen: 'When you advocate alone and burn out.', followup: 'Who could join you next week? One person. Invite them.' },
-    { id: 'mq84', mentor: 'Thurgood Marshall', context: 'On the long arc', quote: 'You can\'t legislate change in attitudes, but you can legislate change in behavior.', useWhen: 'When you wait for adults to feel differently.', followup: 'Stop waiting for the feeling. Ask for the behavior change in writing.' },
-    { id: 'mq85', mentor: 'Cesar Chavez', context: 'On non-violence', quote: 'Non-violence is not inaction. It is not for the timid or the weak. It is hard work.', useWhen: 'When you confuse calm advocacy for weak advocacy.', followup: 'You can be calm AND demanding. What is the firm, polite sentence?' },
-    { id: 'mq86', mentor: 'Howard Zinn', context: 'On the people\'s history', quote: 'You can\'t be neutral on a moving train.', useWhen: 'When you decide not to advocate because you do not want to take a side.', followup: 'Silence is a side. What direction is the train moving without you?' },
-    { id: 'mq87', mentor: 'Paolo Freire', context: 'On the banking model', quote: 'No one educates anyone. We educate each other in community.', useWhen: 'When you wait for an adult to teach you advocacy.', followup: 'You are also the teacher. Who could you teach this week?' },
-    { id: 'mq88', mentor: 'bell hooks', context: 'On engaged pedagogy', quote: 'To educate as a practice of freedom is to teach in a way that students can choose to be courageous.', useWhen: 'When you do not feel courageous.', followup: 'You do not need to feel courageous. You just need to ACT courageously. What is one act?' },
-    { id: 'mq89', mentor: 'Octavia Butler', context: 'On change', quote: 'All that you touch you change. All that you change changes you.', useWhen: 'When you are afraid changing the system will change YOU in scary ways.', followup: 'Yes, you will change. Probably for the better. What part of you is ready to be different?' },
-    { id: 'mq90', mentor: 'Octavia Butler', context: 'On survival', quote: 'You don\'t start out writing good stuff. You start out writing crap and thinking it\'s good stuff, and then gradually you get better at it.', useWhen: 'When your first letter to a teacher sounds bad.', followup: 'Send a bad letter. Editing comes later. Write the bad version now.' },
-    { id: 'mq91', mentor: 'Ursula K. Le Guin', context: 'On dissent', quote: 'We live in capitalism. Its power seems inescapable. But so did the divine right of kings.', useWhen: 'When the school system feels eternal and unchangeable.', followup: 'No system is eternal. What one piece of yours could be different next year?' },
-    { id: 'mq92', mentor: 'Toni Morrison', context: 'On freedom', quote: 'The function of freedom is to free someone else.', useWhen: 'When you only advocate for yourself.', followup: 'Whose advocacy is your advocacy? Name them.' },
-    { id: 'mq93', mentor: 'Toni Morrison', context: 'On the gaze', quote: 'If you are free, you need to free somebody else.', useWhen: 'When you have got your accommodations and forgotten others.', followup: 'Who in your school is still waiting for what you got? Could you help them ask?' },
-    { id: 'mq94', mentor: 'Audre Lorde', context: 'On the master\'s tools', quote: 'The master\'s tools will never dismantle the master\'s house.', useWhen: 'When you use only the system\'s vocabulary in a complaint.', followup: 'What words from YOUR experience, not theirs, would tell the truth?' },
-    { id: 'mq95', mentor: 'Adrienne Rich', context: 'On lies', quote: 'Lying is done with words, and also with silence.', useWhen: 'When you stay quiet about a hard truth.', followup: 'What silence have you been telling? Could you break it once, just to one person?' },
-    { id: 'mq96', mentor: 'Adrienne Rich', context: 'On poetry of resistance', quote: 'You cannot speak for me. I must speak for myself.', useWhen: 'When you let a parent dominate your meeting.', followup: 'Plan one sentence YOU will say first in the next meeting.' },
-    { id: 'mq97', mentor: 'Susan Sontag', context: 'On illness', quote: 'Illness is the night-side of life.', useWhen: 'When you are tired of pretending you are fine.', followup: 'Tonight, you do not have to perform okay. Who could see the un-okay version?' },
-    { id: 'mq98', mentor: 'Cherrie Moraga', context: 'On Chicana feminism', quote: 'We are all stories. Some of us are still becoming.', useWhen: 'When you feel stuck in one identity.', followup: 'Who are you becoming? Name the next version of yourself.' },
-    { id: 'mq99', mentor: 'Gloria Anzaldua', context: 'On borderlands', quote: 'I will no longer be made to feel ashamed of existing.', useWhen: 'When you apologize for your own existence.', followup: 'Stop apologizing for one thing today. Just one.' },
-    { id: 'mq100', mentor: 'Gloria Anzaldua', context: 'On the wound', quote: 'A woman who writes has power, and a woman with power is feared.', useWhen: 'When your written advocacy is being dismissed.', followup: 'Send the letter anyway. The fear is theirs, not yours.' },
-    { id: 'mq101', mentor: 'Octavia Butler', context: 'On worldbuilding', quote: 'In order to rise from its own ashes, a phoenix first must burn.', useWhen: 'When everything seems to be on fire.', followup: 'What needs to end so you can begin? Write it down.' },
-    { id: 'mq101b', mentor: 'James Baldwin', context: 'On love and politics', quote: 'Love takes off the masks that we fear we cannot live without and know we cannot live within.', useWhen: 'When you wonder if it is safer to keep masking.', followup: 'Pick one place this week where you do not mask. Just one hour.' },
-    { id: 'mq102', mentor: 'Maxine Hong Kingston', context: 'On voice and silence', quote: 'In a time of destruction, create something.', useWhen: 'When you cannot stop the harm. Find what you CAN make instead.', followup: 'Make one tiny thing today. A letter, a doodle, a sentence. Just create.' },
-    { id: 'mq103', mentor: 'Howard Thurman', context: 'On vocation', quote: 'Ask yourself what makes you come alive, and go do that.', useWhen: 'When you feel pressure to chase a path that drains you.', followup: 'What is alive in you? Schedule 30 minutes of it tomorrow.' },
-    { id: 'mq104', mentor: 'Robin Wall Kimmerer', context: 'On Indigenous science', quote: 'Knowing the names of plants is one of the first ways we say I see you.', useWhen: 'When you wish someone would see you.', followup: 'Whose existence have you been ignoring? See them today.' },
-    { id: 'mq105', mentor: 'Joy Harjo', context: 'On Mvskoke poetry', quote: 'Remember you are all people, and all people are you.', useWhen: 'When you feel isolated in your struggle.', followup: 'Who is also you, this week? Reach out to one.' },
-    { id: 'mq106', mentor: 'Joy Harjo', context: 'On survival', quote: 'Remember your birth.', useWhen: 'When you have forgotten your own beginning.', followup: 'Ask someone who knew you young. Hear their story of you. Save it.' },
-    { id: 'mq107', mentor: 'Mary Oliver', context: 'On attention', quote: 'Pay attention. Be astonished. Tell about it.', useWhen: 'When advocacy feels too big.', followup: 'Notice one specific thing today. Tell one person. That is advocacy.' },
-    { id: 'mq108', mentor: 'Mary Oliver', context: 'On wild life', quote: 'Tell me, what is it you plan to do with your one wild and precious life?', useWhen: 'When the path others picked for you feels small.', followup: 'Write what is wild and precious about YOUR plan. Even if just one sentence.' },
-    { id: 'mq109', mentor: 'Ross Gay', context: 'On joy as politics', quote: 'Joy is the surest sign of revolutionary love.', useWhen: 'When you think you have to be serious to be taken seriously.', followup: 'Bring joy into one part of advocacy this week. A sticker, a song, a dance break.' },
-    { id: 'mq110', mentor: 'Adrienne Maree Brown', context: 'On emergent strategy', quote: 'Move at the speed of trust.', useWhen: 'When you push faster than your relationships can hold.', followup: 'Who do you not yet trust enough to ask? Build that first. The ask comes after.' },
-    { id: 'mq111', mentor: 'Adrienne Maree Brown', context: 'On pleasure activism', quote: 'Pleasure is the measure of freedom.', useWhen: 'When you have stripped joy from your routine to advocate harder.', followup: 'What gives you pleasure that you have postponed? Reclaim 15 minutes of it.' },
-    { id: 'mq112', mentor: 'Brittney Cooper', context: 'On rage', quote: 'My rage is full of love.', useWhen: 'When you are told your anger is the problem.', followup: 'What love is at the bottom of your anger? Name it. Say it before the anger.' },
-    { id: 'mq113', mentor: 'Mariame Kaba', context: 'On abolition', quote: 'Hope is a discipline.', useWhen: 'When you wait to feel hopeful before you advocate.', followup: 'Hope is action, not feeling. What is one action you will take regardless of how you feel?' },
-    { id: 'mq114', mentor: 'Mariame Kaba', context: 'On community accountability', quote: 'Nothing we do is wasted.', useWhen: 'When a letter you sent got no response.', followup: 'That letter is still working. Send another to a different person.' },
-    { id: 'mq115', mentor: 'Toni Cade Bambara', context: 'On the role of the artist', quote: 'The role of the artist is to make the revolution irresistible.', useWhen: 'When advocacy feels heavy and dull.', followup: 'How could you make your next ask creative, beautiful, or surprising? Try once this week.' },
-    { id: 'mq116', mentor: 'Bryan Stevenson', context: 'On proximity', quote: 'You can\'t be an effective problem solver from a distance.', useWhen: 'When you study a problem instead of getting close to one person.', followup: 'Who is one person closer to this problem than you? Listen to them this week.' },
-    { id: 'mq117', mentor: 'Bryan Stevenson', context: 'On dignity', quote: 'Each of us is more than the worst thing we\'ve ever done.', useWhen: 'When a single mistake makes you feel like that is who you are.', followup: 'What is one true thing about you that has nothing to do with the worst thing? Say it out loud.' },
-    { id: 'mq118', mentor: 'Ta-Nehisi Coates', context: 'On the body', quote: 'You are growing into consciousness, and my wish for you is that you feel no need to constrict yourself to make other people comfortable.', useWhen: 'When you shrink so others feel okay.', followup: 'What is one place you have been shrinking? Stand at full size today.' },
-    { id: 'mq119', mentor: 'Michelle Obama', context: 'On going high', quote: 'When they go low, we go high.', useWhen: 'When you want to match someone\'s cruelty.', followup: 'What is the response that costs them more and you less? Say that one.' },
-    { id: 'mq120', mentor: 'Michelle Obama', context: 'On reading', quote: 'No country can ever truly flourish if it stifles the potential of its women.', useWhen: 'When you doubt whether your access to school is a global question.', followup: 'You are part of a long line of people fighting to learn. Add your name to that line, in writing.' },
-    { id: 'mq121', mentor: 'Yara Shahidi', context: 'On Black girl genius', quote: 'My representation matters.', useWhen: 'When you wonder if your presence in the room is enough.', followup: 'It is enough. Show up. The being seen is the work.' },
-    { id: 'mq122', mentor: 'Amanda Gorman', context: 'On young poets', quote: 'There is always light, if only we\'re brave enough to see it. If only we\'re brave enough to be it.', useWhen: 'When you are exhausted of being the example.', followup: 'You do not have to be the light all day. Be it for 10 minutes. Then rest.' },
-    { id: 'mq123', mentor: 'Marley Dias', context: 'On 1000 Black girl books', quote: 'See yourself, find yourself, be yourself.', useWhen: 'When your school library does not include who you are.', followup: 'Ask for one book this week that has someone like you on the cover.' },
-    { id: 'mq124', mentor: 'Mari Copeny', context: 'On Flint water', quote: 'I am Little Miss Flint. And I will not be ignored.', useWhen: 'When adults tell you to wait until you are older.', followup: 'What is one thing you will not wait to advocate for? Schedule it now.' },
-    { id: 'mq125', mentor: 'Naomi Wadler', context: 'On gun violence', quote: 'I am here today to acknowledge and represent the African-American girls whose stories don\'t make the front page of every national newspaper.', useWhen: 'When you advocate for yourself but feel guilty for not representing others.', followup: 'You can name BOTH. Whose name will you say alongside yours?' },
-    { id: 'mq126', mentor: 'Greta Thunberg', context: 'On urgency', quote: 'I want you to act as if the house is on fire. Because it is.', useWhen: 'When you delay because you are not in crisis YET.', followup: 'You do not have to be in crisis to advocate. What is the small step before crisis?' },
-    { id: 'mq127', mentor: 'Anuradha Vittachi', context: 'On youth voice', quote: 'When children have their own voice, they want to use it well.', useWhen: 'When adults say you do not know what you want.', followup: 'Write down what you want in your own words. Bring it. Read it.' },
-    { id: 'mq128', mentor: 'Kid President', context: 'On dreaming', quote: 'It\'s everybody\'s duty to give the world a reason to dance.', useWhen: 'When advocacy gets too heavy.', followup: 'Take a 5-minute dance break before your next ask. Yes, really.' },
-    { id: 'mq129', mentor: 'Jaylen Arnold', context: 'On bullying with Tourette\'s', quote: 'Walking away from a bully is not weak. It is strong.', useWhen: 'When someone tells you to fight back instead of disengage.', followup: 'You do not have to engage every fight. Which one will you walk away from today?' },
-    { id: 'mq130', mentor: 'Mikayla Holmgren', context: 'On Down syndrome and pageants', quote: 'There is nothing I cannot do.', useWhen: 'When you have absorbed the message that there are doors closed to you.', followup: 'Which door have you not even tried because you assumed no? Knock once this week.' }
-  ];
-
-  var POWER_UP_CARDS = [
-    { id: 'pc1', name: 'The Pause', icon: '⏸️', rarity: 'common', useWhen: 'Before responding to a hard question or accusation.', howTo: 'Count to 3. Then say: "I want to think about that for a moment." Then 3 more seconds. THEN respond.', whyItWorks: 'Buys regulation time. Models thoughtfulness instead of impulsivity. Most adults respect a pause more than a fast answer.', unlocksWith: 'Use it 3 times in real life.' },
-    { id: 'pc2', name: 'The Reframe', icon: '🔄', rarity: 'common', useWhen: 'When someone labels you as the problem.', howTo: 'Say: "That\'s one way to see it. From where I sit, what is happening is ___."', whyItWorks: 'You do not have to fight the label. You just have to offer the alternative narrative in their hearing.', unlocksWith: 'Use it once with a teacher.' },
-    { id: 'pc3', name: 'The Ask-Twice', icon: '🎯', rarity: 'common', useWhen: 'When a no is given without an explanation.', howTo: 'Ask: "Can you help me understand why not?" Wait. If they redirect, ask again: "I just want to know the reason. What is it?"', whyItWorks: 'Most no answers are based on assumptions you can address if you hear them. Many a no melts when the asker is calm and curious.', unlocksWith: 'Use it once. Most students never ask twice.' },
-    { id: 'pc4', name: 'The Document', icon: '📝', rarity: 'common', useWhen: 'After any meeting, conversation, or incident that matters.', howTo: 'Write 3 sentences in a notes app: Date, what happened, what was agreed. Save it. Repeat.', whyItWorks: 'Memory fades. Records survive. Most advocacy disputes hinge on who has documentation.', unlocksWith: 'Document 5 events.' },
-    { id: 'pc5', name: 'The Email-Same-Day', icon: '📧', rarity: 'common', useWhen: 'After a verbal agreement with a teacher or parent.', howTo: 'Same day: send an email summarizing what you agreed. "Just to make sure I understand: we said ___. Let me know if I have it right."', whyItWorks: 'Turns memory into paper trail. Lets them correct you if you got it wrong, before it costs anyone.', unlocksWith: 'Send 3 confirmation emails.' },
-    { id: 'pc6', name: 'The Specific Ask', icon: '🎯', rarity: 'uncommon', useWhen: 'When you have been vague about what you need.', howTo: 'Replace "I need more help" with "I need extra time on tests OR a quiet space OR weekly check-ins." Pick one concrete option.', whyItWorks: 'Vague asks get vague responses. Concrete asks get tracked. Test by trying the same need vague vs. specific in two contexts.', unlocksWith: 'Make 5 specific asks instead of vague ones.' },
-    { id: 'pc7', name: 'The Reason Statement', icon: '💡', rarity: 'uncommon', useWhen: 'When you ask for something and someone questions whether it is necessary.', howTo: 'Pair the ask with a one-sentence why: "I need a break pass because when I get overstimulated I shut down and miss the rest of class."', whyItWorks: 'Reasons make the ask harder to refuse. They show forethought and de-personalize the request.', unlocksWith: 'Pair 5 asks with reasons.' },
-    { id: 'pc8', name: 'The Yes-And', icon: '➕', rarity: 'uncommon', useWhen: 'When someone proposes a fix that is not quite right.', howTo: 'Say: "Yes, that helps with X AND I also need ___ for the part of the issue where Y."', whyItWorks: 'Does not reject their offer. Keeps relationship. Adds the missing piece.', unlocksWith: 'Use it twice. Notice how rarely conversation breaks down.' },
-    { id: 'pc9', name: 'The Concrete Story', icon: '📖', rarity: 'uncommon', useWhen: 'When you are told your need is exaggerated.', howTo: 'Tell a specific incident: "Two weeks ago in 3rd period, when X happened, here is what I did, here is what got missed. That is why ___ would help."', whyItWorks: 'Abstract complaints get dismissed. Concrete stories get tracked.', unlocksWith: 'Tell 3 concrete stories in advocacy meetings.' },
-    { id: 'pc10', name: 'The Permission Slip', icon: '🪪', rarity: 'uncommon', useWhen: 'You are about to do something brave that scares you.', howTo: 'Write yourself a permission slip on paper: "I am allowed to ask for ___. I am allowed to feel ___. I am allowed to leave if ___." Keep it in your pocket.', whyItWorks: 'External permission lowers internal resistance. Especially helpful for masking students.', unlocksWith: 'Write 5 permission slips.' },
-    { id: 'pc11', name: 'The Time Box', icon: '⏰', rarity: 'uncommon', useWhen: 'A conversation is going in circles.', howTo: 'Say: "Can we set 10 more minutes on this and then come back to it tomorrow if we are still stuck?"', whyItWorks: 'Removes the pressure to resolve everything now. Most disputes get easier with sleep.', unlocksWith: 'Time-box 3 hard conversations.' },
-    { id: 'pc12', name: 'The Person-Behind-Me', icon: '👤', rarity: 'uncommon', useWhen: 'You are too tired to advocate for just yourself.', howTo: 'Think: "If I do not ask, who is the next student who will need this and not get it?" Ask for them.', whyItWorks: 'Externalizing the stake makes the ask feel less personal and more important.', unlocksWith: 'Ask in honor of someone else once.' },
-    { id: 'pc13', name: 'The Witness', icon: '👁️', rarity: 'uncommon', useWhen: 'A hard meeting is ahead.', howTo: 'Bring a witness: friend, advocate, parent, or just a notetaker. They do not have to speak. Their presence changes the dynamic.', whyItWorks: 'Adults speak more carefully when others listen. You get a second memory of the meeting.', unlocksWith: 'Bring a witness to one meeting.' },
-    { id: 'pc14', name: 'The Cool Letter', icon: '✉️', rarity: 'uncommon', useWhen: 'You want to advocate but get too dysregulated face-to-face.', howTo: 'Write the letter when you are calm. Read it back tomorrow. Edit if needed. Send.', whyItWorks: 'Letters let you choose your words. Verbal arguments do not.', unlocksWith: 'Send 3 cool letters.' },
-    { id: 'pc15', name: 'The Other Person', icon: '🪞', rarity: 'rare', useWhen: 'You feel attacked in a meeting.', howTo: 'Pause and say: "I want to hear what you are seeing. Tell me what you are noticing." Listen first. Speak second.', whyItWorks: 'Defensive mode escalates. Curiosity de-escalates. You also get information about what they actually think.', unlocksWith: 'Try it 3 times. Notice the temperature drop.' },
-    { id: 'pc16', name: 'The Body Pause', icon: '🌬️', rarity: 'rare', useWhen: 'Your body is escalating mid-conversation.', howTo: 'Excuse yourself: "I need 2 minutes for water." Step outside. 5 deep breaths. Come back.', whyItWorks: 'Cannot advocate from a flooded nervous system. Regulation precedes negotiation.', unlocksWith: 'Use a body pause 3 times.' },
-    { id: 'pc17', name: 'The Pre-Written Sentence', icon: '📃', rarity: 'rare', useWhen: 'You freeze in front of authority figures.', howTo: 'Write one sentence on an index card before the meeting. Take it out. Read it word for word.', whyItWorks: 'Removes the cognitive load of generating language under stress.', unlocksWith: 'Use a pre-written sentence in 3 hard meetings.' },
-    { id: 'pc18', name: 'The Power-Up Stack', icon: '🃏', rarity: 'rare', useWhen: 'A big meeting is coming.', howTo: 'Pick 3 power-up cards before the meeting. Plan how to use each one. After the meeting, mark which ones you used.', whyItWorks: 'Planning beats improvising. Patterns become habits faster.', unlocksWith: 'Stack 3 power-ups for 2 separate meetings.' },
-    { id: 'pc19', name: 'The Follow-Up', icon: '🔁', rarity: 'rare', useWhen: 'After 2 weeks with no response.', howTo: 'Email: "Hi ___, following up on my email from [date]. Could you let me know your timeline? Thanks."', whyItWorks: 'Most things get lost, not denied. The follow-up surfaces them. Most adults respect a polite follow-up.', unlocksWith: 'Send 5 follow-ups.' },
-    { id: 'pc20', name: 'The Plus-One', icon: '➕👤', rarity: 'rare', useWhen: 'You need backup for a system-level ask.', howTo: 'Invite a teacher, counselor, parent, or peer who agrees with you to co-sign or co-attend.', whyItWorks: 'Solo asks can be dismissed. Two voices double the weight.', unlocksWith: 'Recruit one plus-one.' },
-    { id: 'pc21', name: 'The Visual Aid', icon: '📊', rarity: 'rare', useWhen: 'Words are not landing.', howTo: 'Bring a graph, a timeline, a list of incidents. Numbers and pictures get tracked. Words get lost.', whyItWorks: 'Adults trained in compliance respond to data. Use the tool that fits the audience.', unlocksWith: 'Bring a visual to one meeting.' },
-    { id: 'pc22', name: 'The Reasonable Tone', icon: '🕊️', rarity: 'rare', useWhen: 'You are about to be dismissed as "too emotional."', howTo: 'Lower your voice, slow your pace, name one specific fact. "On Tuesday at 10:15am, X happened."', whyItWorks: 'You may not be allowed your anger in their room. You can be calm AND firm.', unlocksWith: 'Use it 3 times.' },
-    { id: 'pc23', name: 'The Permission to Disagree', icon: '🤝', rarity: 'rare', useWhen: 'A team has decided against you.', howTo: 'Say: "I respect this team. I disagree with this decision. I want to put my disagreement in writing for the record."', whyItWorks: 'You preserve the relationship AND mark the disagreement. Required for some legal escalations.', unlocksWith: 'Use it once.' },
-    { id: 'pc24', name: 'The Trial Period', icon: '🧪', rarity: 'epic', useWhen: 'A no is based on uncertainty about whether your accommodation will work.', howTo: 'Say: "Can we try it for 3 weeks and check back? If it does not help, I will let you know."', whyItWorks: 'Trial periods feel lower-risk to administrators. They almost always become permanent.', unlocksWith: 'Negotiate a trial period.' },
-    { id: 'pc25', name: 'The Bridge', icon: '🌉', rarity: 'epic', useWhen: 'A teacher is invested in a stance you cannot accept.', howTo: 'Find a third person they respect. Ask: "Could we get ___ to weigh in?" The bridge person de-escalates without forcing them to lose face.', whyItWorks: 'Most authority figures budge if face-saving is preserved.', unlocksWith: 'Use a bridge person once.' },
-    { id: 'pc26', name: 'The Honest Friend', icon: '💬', rarity: 'epic', useWhen: 'You suspect you are being unreasonable.', howTo: 'Ask one trusted friend to play devil\'s advocate before you send the email. Listen to their pushback.', whyItWorks: 'Most advocates are too close to their own case. A friend can spot what looks weak.', unlocksWith: 'Run 3 cases past an honest friend.' },
-    { id: 'pc27', name: 'The Whole Picture', icon: '🖼️', rarity: 'epic', useWhen: 'You are told the problem is bigger than your needs.', howTo: 'Acknowledge their problem first. Then add yours: "I hear the staffing constraint. AND, here is what changes if I do not get this accommodation."', whyItWorks: 'Validating their problem un-locks their hearing of yours.', unlocksWith: 'Try the whole picture once.' },
-    { id: 'pc28', name: 'The Reversal', icon: '🔃', rarity: 'epic', useWhen: 'Someone has accused you of doing what they are doing.', howTo: 'Stay calm. Name what is actually happening: "I notice when I asked for X, the conversation turned to Y. Can we come back to X?"', whyItWorks: 'Brings the deflection out of the shadows without escalating.', unlocksWith: 'Reverse a deflection in real life.' },
-    { id: 'pc29', name: 'The Boundary Restate', icon: '🚧', rarity: 'epic', useWhen: 'Someone repeatedly violates a boundary you set.', howTo: 'Restate the boundary EXACTLY as before, plus the consequence: "I said no calls after 9pm. If it continues, I will block the number for the night."', whyItWorks: 'Repeating identical language is not weakness. It is stability. Boundaries with no consequence are wishes.', unlocksWith: 'Restate one boundary 3 times.' },
-    { id: 'pc30', name: 'The Strategic Retreat', icon: '🚪', rarity: 'epic', useWhen: 'You are losing the argument AND being escalated.', howTo: 'Say: "I want to think about this and come back tomorrow." Leave. Do not promise anything.', whyItWorks: 'Most arguments are won by the last person in the room. The one who leaves first does not lose; the one who stays in dysregulation does.', unlocksWith: 'Strategically retreat once.' },
-    { id: 'pc31', name: 'The Yes-And-No', icon: '⚖️', rarity: 'epic', useWhen: 'You want part of what is being offered, not all of it.', howTo: 'Be specific: "Yes to the seating change. No to the schedule change. Here is why."', whyItWorks: 'Splitting the offer prevents you from rejecting good parts to avoid bad parts.', unlocksWith: 'Yes-and-no once in a real meeting.' },
-    { id: 'pc32', name: 'The Compound Ask', icon: '🔗', rarity: 'epic', useWhen: 'A small ask has been refused but you have leverage for a related one.', howTo: 'Ask the smaller adjacent ask: "Can we just try [smaller piece]?" Many noes split when asked piecemeal.', whyItWorks: 'Foot-in-the-door works in both directions. Use it for good.', unlocksWith: 'Compound-ask once.' },
-    { id: 'pc33', name: 'The Higher-Up', icon: '⬆️', rarity: 'legendary', useWhen: 'Your first line of contact has shut you down.', howTo: 'Politely escalate: "I appreciate the response. I would like to talk to ___ about this. Could you connect me?"', whyItWorks: 'Asking who their boss is, in writing, in calm tones, is a known move that produces faster responses.', unlocksWith: 'Escalate one issue.' },
-    { id: 'pc34', name: 'The Outside Witness', icon: '🌐', rarity: 'legendary', useWhen: 'The system inside school will not respond.', howTo: 'Bring in a parent, advocate, lawyer, community organization, or media person. Be careful with public exposure but do not be afraid of it.', whyItWorks: 'External pressure changes the calculus inside.', unlocksWith: 'Bring in one outside witness.' },
-    { id: 'pc35', name: 'The OCR Complaint', icon: '🛡️', rarity: 'legendary', useWhen: 'Civil rights violation, last resort.', howTo: 'File with the U.S. Department of Education Office for Civil Rights. Free. Does not require a lawyer.', whyItWorks: 'Federal investigation. Schools take it seriously. Should not be a first move but is a real one.', unlocksWith: 'Only use when needed. Know it exists.' },
-    { id: 'pc36', name: 'The Self-Compassion', icon: '🤗', rarity: 'common', useWhen: 'You messed up an advocacy attempt.', howTo: 'Say to yourself: "That was a hard thing I tried. I learned ___. Next time I will ___."', whyItWorks: 'Self-criticism kills future advocacy. Compassion preserves it.', unlocksWith: 'Practice once a day for a week.' },
-    { id: 'pc37', name: 'The Replay', icon: '🎞️', rarity: 'common', useWhen: 'After a hard advocacy moment.', howTo: 'Replay it once. Note: what worked, what bombed, what you would change. Write it down. Move on.', whyItWorks: 'Reflection without rumination. Set a time limit (15 minutes).', unlocksWith: 'Do 5 replays.' },
-    { id: 'pc38', name: 'The Question Behind The Question', icon: '❔', rarity: 'rare', useWhen: 'A teacher asks a question that feels weird or off.', howTo: 'Pause. Ask back: "What is making you ask?" Most weird questions come from concerns the teacher has not named directly.', whyItWorks: 'Names the elephant. Gets the real conversation started.', unlocksWith: 'Ask QBQ once.' },
-    { id: 'pc39', name: 'The Reciprocal', icon: '🤝', rarity: 'rare', useWhen: 'You ask for help often from one person.', howTo: 'Find one small way to help them back: a thank-you note, sharing a useful resource, asking how they are.', whyItWorks: 'Sustainable relationships are reciprocal. Pure-asks burn out the helper.', unlocksWith: 'Give one reciprocal gift this week.' },
-    { id: 'pc40', name: 'The Annual Review', icon: '📅', rarity: 'epic', useWhen: 'End of year or annual IEP.', howTo: 'Bring data from your whole year. What worked. What did not. What you want next year. Lead the meeting.', whyItWorks: 'Annual review is your big moment. Do not waste it as a passenger.', unlocksWith: 'Lead one annual review.' },
-    { id: 'pc41', name: 'The Future Tense', icon: '🔮', rarity: 'rare', useWhen: 'Stuck arguing about the past.', howTo: 'Pivot: "I hear what happened. Going forward, what will be different?"', whyItWorks: 'Forward focus de-escalates and gets to action.', unlocksWith: 'Pivot to future once.' },
-    { id: 'pc42', name: 'The Re-Ask Later', icon: '🔁', rarity: 'common', useWhen: 'A no was given but the context will change soon (new semester, new teacher).', howTo: 'Wait. Re-ask in the new context. Many noes are temporary.', whyItWorks: 'Stable noes are rare. Most depend on who is in the room. New room, new chance.', unlocksWith: 'Re-ask once and notice the result.' },
-    { id: 'pc43', name: 'The Sandwich Check', icon: '🥪', rarity: 'common', useWhen: 'Someone gives you criticism that does not feel quite true.', howTo: 'Ask: "Can you give me 2 specific examples?" Vague criticism is often inaccurate.', whyItWorks: 'Specifics test the claim. Examples often do not exist.', unlocksWith: 'Ask for examples 3 times.' },
-    { id: 'pc44', name: 'The Witness-To-Self', icon: '🪞', rarity: 'common', useWhen: 'You are about to do something hard.', howTo: 'Imagine watching yourself from outside. Notice your fear. Notice your strength. Choose what to do.', whyItWorks: 'External perspective is regulating. The witness self is the one who can choose.', unlocksWith: 'Witness yourself once.' },
-    { id: 'pc45', name: 'The After-Care', icon: '🛁', rarity: 'common', useWhen: 'After a heavy advocacy moment.', howTo: 'Plan in advance: snack, walk, music, friend, soft clothes. Recovery is part of the work.', whyItWorks: 'Sustainable advocacy requires care after the act, not just before.', unlocksWith: 'Plan after-care for 3 events.' },
-    { id: 'pc46', name: 'The 24-Hour Rule', icon: '⏳', rarity: 'rare', useWhen: 'You want to send a hot reply.', howTo: 'Write the reply. Save as draft. Sleep on it. Re-read. Send tomorrow.', whyItWorks: 'Hot replies do not change minds. Cool replies often do.', unlocksWith: 'Use the 24-hour rule 3 times.' },
-    { id: 'pc47', name: 'The Multiple Channels', icon: '📡', rarity: 'rare', useWhen: 'One channel of communication is failing.', howTo: 'Email AND call AND in-person request. Same content, different routes.', whyItWorks: 'People respond to different channels. Redundancy works.', unlocksWith: 'Try 3 channels for 1 ask.' },
-    { id: 'pc48', name: 'The Public Record', icon: '📜', rarity: 'legendary', useWhen: 'You want to escalate from private to documented.', howTo: 'Make your communication public-record style: written, dated, copied to multiple people. Or copy a board member.', whyItWorks: 'Schools track who is on the cc line. The audience changes the response.', unlocksWith: 'Send one public-record-style email.' },
-    { id: 'pc49', name: 'The Yes-First', icon: '✅', rarity: 'rare', useWhen: 'You are about to push back hard.', howTo: 'Find one thing to agree with first. Even just: "I agree this is hard." Then push.', whyItWorks: 'Listening lubricates pushback. People hear better after being heard.', unlocksWith: 'Yes-first 5 times.' },
-    { id: 'pc50', name: 'The Resource Audit', icon: '📦', rarity: 'common', useWhen: 'You are stuck on what to ask for.', howTo: 'List: people, money, time, space, support, equipment. What do you need MORE of, LESS of, DIFFERENT of?', whyItWorks: 'Structures the ask. Reveals options.', unlocksWith: 'Do one resource audit before a meeting.' }
-  ];
-
-  var DAILY_PRACTICE_PROMPTS = [
-    { id: 'dp1', focus: 'voice', prompt: 'Today, finish this sentence out loud: "What I need more of is ____." Say it three times.' },
-    { id: 'dp2', focus: 'voice', prompt: 'Practice the phrase "I disagree" in a mirror. Say it 5 different ways: gentle, firm, curious, playful, neutral.' },
-    { id: 'dp3', focus: 'voice', prompt: 'Speak one sentence about your needs to one trusted person today. Just one. Notice how you feel after.' },
-    { id: 'dp4', focus: 'voice', prompt: 'Record yourself reading one of your scripts. Listen back. Where do you sound confident? Where do you sound apologetic?' },
-    { id: 'dp5', focus: 'voice', prompt: 'In a class today, raise your hand once. Just to be present. You do not have to have the right answer.' },
-    { id: 'dp6', focus: 'rights', prompt: 'Look up one right that you have at school today. Write it on an index card. Carry it.' },
-    { id: 'dp7', focus: 'rights', prompt: 'Find your IEP or 504 plan. Read one section. Note one accommodation you forgot you had.' },
-    { id: 'dp8', focus: 'rights', prompt: 'Find out the name of the principal, special education coordinator, and your case manager.' },
-    { id: 'dp9', focus: 'rights', prompt: 'Find out where the closest counselor office is.' },
-    { id: 'dp10', focus: 'rights', prompt: 'Find a copy of the school discipline policy. Read it.' },
-    { id: 'dp11', focus: 'self', prompt: 'Write 3 strengths you have today. Not from a survey, from your own observation.' },
-    { id: 'dp12', focus: 'self', prompt: 'Name one accommodation you wish more people offered you. Add it to your wish list.' },
-    { id: 'dp13', focus: 'self', prompt: 'Name one trigger you noticed today. What was happening right before it?' },
-    { id: 'dp14', focus: 'self', prompt: 'Eat a meal today without checking your phone. Notice the food.' },
-    { id: 'dp15', focus: 'self', prompt: 'Take 5 minutes of silence today. No music, no talking, no scrolling.' },
-    { id: 'dp16', focus: 'practice', prompt: 'Send one email today that you have been putting off. Even if it is short. Even if it is imperfect.' },
-    { id: 'dp17', focus: 'practice', prompt: 'Ask one clarifying question in class today: "Can you say that another way?"' },
-    { id: 'dp18', focus: 'practice', prompt: 'Disagree once with a peer today, kindly. Not just to argue, but to practice the muscle.' },
-    { id: 'dp19', focus: 'practice', prompt: 'Find one boundary you have wanted to set. State it to one person today.' },
-    { id: 'dp20', focus: 'practice', prompt: 'Make one request that scares you a little. Notice what happens after.' },
-    { id: 'dp21', focus: 'reflect', prompt: 'At the end of today, write down: What did I ask for? What did I avoid asking for? Why?' },
-    { id: 'dp22', focus: 'reflect', prompt: 'Notice once today when you almost spoke up but did not. What was the fear? Was it accurate?' },
-    { id: 'dp23', focus: 'reflect', prompt: 'Track one accommodation. Did it help? How? What is missing?' },
-    { id: 'dp24', focus: 'reflect', prompt: 'Notice one moment of disempowerment today. What was the trigger? What would have helped?' },
-    { id: 'dp25', focus: 'reflect', prompt: 'Notice one moment of agency today. What did you do? What allowed it?' },
-    { id: 'dp26', focus: 'community', prompt: 'Tell one classmate you are glad they are in school today.' },
-    { id: 'dp27', focus: 'community', prompt: 'Find one person with a different accommodation than yours. Ask them how it works for them.' },
-    { id: 'dp28', focus: 'community', prompt: 'Sit with someone different at lunch today.' },
-    { id: 'dp29', focus: 'community', prompt: 'Ask a friend for help with something small.' },
-    { id: 'dp30', focus: 'community', prompt: 'Thank a teacher who has been good to you. In writing. Today.' },
-    { id: 'dp31', focus: 'voice', prompt: 'Practice saying "I need a break" out loud. 3 different tones: tired, firm, playful.' },
-    { id: 'dp32', focus: 'voice', prompt: 'Try one sentence you have only thought, not said: "When you ___, I feel ___." Write it. Maybe say it.' },
-    { id: 'dp33', focus: 'rights', prompt: 'Look up the name of your state\'s special education law. Skim it for 5 minutes.' },
-    { id: 'dp34', focus: 'rights', prompt: 'Find out: who is your IEP case manager and what is their email?' },
-    { id: 'dp35', focus: 'self', prompt: 'Track your energy across the day. When is it highest? Lowest? What patterns emerge?' },
-    { id: 'dp36', focus: 'self', prompt: 'Name a sensory input that helps you (texture, sound, smell). Bring more of it today.' },
-    { id: 'dp37', focus: 'self', prompt: 'Name a sensory input that overwhelms you. Reduce it today.' },
-    { id: 'dp38', focus: 'practice', prompt: 'Apologize once today, well. "I\'m sorry I ___. Here\'s what I\'ll do differently."' },
-    { id: 'dp39', focus: 'practice', prompt: 'Accept a compliment without deflecting. Just say "Thank you."' },
-    { id: 'dp40', focus: 'reflect', prompt: 'Re-read your IEP today. Note one accommodation that has not been working.' },
-    { id: 'dp41', focus: 'reflect', prompt: 'Look at last year\'s grades. What patterns do you see in classes that worked vs. did not?' },
-    { id: 'dp42', focus: 'community', prompt: 'Compliment a teacher today, specifically. "I really learned ___ when you ___."' },
-    { id: 'dp43', focus: 'community', prompt: 'Bring a small kindness to school today. A note, a snack to share, a saved seat.' },
-    { id: 'dp44', focus: 'community', prompt: 'Notice one student who seems to be alone today. Decide if you can do something.' },
-    { id: 'dp45', focus: 'voice', prompt: 'Practice saying "no, thank you" 3 times in a mirror.' },
-    { id: 'dp46', focus: 'voice', prompt: 'Practice saying "I changed my mind" out loud. It is a complete sentence.' },
-    { id: 'dp47', focus: 'rights', prompt: 'Identify ONE adult at school you would trust with a hard story. Name them.' },
-    { id: 'dp48', focus: 'rights', prompt: 'Identify ONE adult outside of school you would trust with a hard story. Name them.' },
-    { id: 'dp49', focus: 'self', prompt: 'Write one boundary you wish your family respected. Just write it. Sharing is optional.' },
-    { id: 'dp50', focus: 'self', prompt: 'Notice one body sensation today (tight shoulders, dry mouth, knot in stomach). What was happening?' },
-    { id: 'dp51', focus: 'practice', prompt: 'Make eye contact with one person you usually avoid. Even briefly.' },
-    { id: 'dp52', focus: 'practice', prompt: 'Hold a pause for 5 full seconds before responding to a question today.' },
-    { id: 'dp53', focus: 'reflect', prompt: 'Notice which class is hardest today. Why? What would help by 25%?' },
-    { id: 'dp54', focus: 'reflect', prompt: 'Notice which class is easiest today. Why? What can you take FROM it INTO the hard class?' },
-    { id: 'dp55', focus: 'community', prompt: 'Send a text or letter to one person who matters to you and tell them why.' },
-    { id: 'dp56', focus: 'voice', prompt: 'Disagree with one adult today, respectfully. Use: "I see it differently. Here is why."' },
-    { id: 'dp57', focus: 'rights', prompt: 'Read one accommodation in your IEP closely. What does it actually mean in real life?' },
-    { id: 'dp58', focus: 'self', prompt: 'Pick one trigger and write your early warning signs (e.g., before I meltdown, I usually ___).' },
-    { id: 'dp59', focus: 'practice', prompt: 'Try a new script today. Even if awkward. Note what part felt strange.' },
-    { id: 'dp60', focus: 'reflect', prompt: 'Track 24 hours of accommodation usage. Which were available? Which were used?' },
-    { id: 'dp61', focus: 'voice', prompt: 'Tell someone what you are good at today. Out loud. Without softening it.' },
-    { id: 'dp62', focus: 'voice', prompt: 'Tell someone what you are struggling with today. Pick a safe person.' },
-    { id: 'dp63', focus: 'rights', prompt: 'Note your right to a free appropriate public education (FAPE). Say it out loud.' },
-    { id: 'dp64', focus: 'self', prompt: 'Identify one mask you wear at school. What does it cost you?' },
-    { id: 'dp65', focus: 'practice', prompt: 'Hold a boundary you have set for at least 24 hours. Notice the discomfort. Hold anyway.' },
-    { id: 'dp66', focus: 'reflect', prompt: 'Notice once today: was that anxiety, or excitement? They feel similar but are different.' },
-    { id: 'dp67', focus: 'community', prompt: 'Find one community space (online or in-person) where someone with your identity shares their experience.' },
-    { id: 'dp68', focus: 'voice', prompt: 'Ask a question in class that you would normally not. Even a small one.' },
-    { id: 'dp69', focus: 'rights', prompt: 'Print or screenshot one section of your IEP. Carry it for a week.' },
-    { id: 'dp70', focus: 'self', prompt: 'Plan one small joy for tomorrow. Schedule it. Defend it.' },
-    { id: 'dp71', focus: 'practice', prompt: 'Refuse one thing today that you would have said yes to last week. Just one.' },
-    { id: 'dp72', focus: 'reflect', prompt: 'What is one fear that has been driving your masking? Name it. Is it still true?' },
-    { id: 'dp73', focus: 'community', prompt: 'Make plans with one person this week. Initiating beats hoping.' },
-    { id: 'dp74', focus: 'voice', prompt: 'Practice this sentence: "I am not finished talking." Use it once today.' },
-    { id: 'dp75', focus: 'rights', prompt: 'Read a 1-page summary of the ADA today.' },
-    { id: 'dp76', focus: 'self', prompt: 'Take an inventory of your supports. Who? What? When? What is missing?' },
-    { id: 'dp77', focus: 'practice', prompt: 'Set one alarm reminder today for a regulation break. Honor it when it rings.' },
-    { id: 'dp78', focus: 'reflect', prompt: 'Notice one assumption you made today that turned out to be wrong.' },
-    { id: 'dp79', focus: 'community', prompt: 'Find one historical self-advocate with your identity. Read their bio. Save it.' },
-    { id: 'dp80', focus: 'voice', prompt: 'Lower your voice once today. Slower. Steadier. Notice how others respond.' },
-    { id: 'dp81', focus: 'rights', prompt: 'Find the parent rights or procedural safeguards document for your state. Bookmark it.' },
-    { id: 'dp82', focus: 'self', prompt: 'Forgive yourself for one thing today. Out loud. Now.' },
-    { id: 'dp83', focus: 'practice', prompt: 'Try the sandwich: agree, push, agree. "I hear ___. I want ___. I appreciate ___."' },
-    { id: 'dp84', focus: 'reflect', prompt: 'What is one belief about yourself you have outgrown? Notice the new belief.' },
-    { id: 'dp85', focus: 'community', prompt: 'Reach out to a person from your past who supported you. Thank them now.' },
-    { id: 'dp86', focus: 'voice', prompt: 'In a group today, say one thing that no one else has said yet.' },
-    { id: 'dp87', focus: 'rights', prompt: 'Identify your school\'s formal complaint process. Just look. Bookmark.' },
-    { id: 'dp88', focus: 'self', prompt: 'Schedule a full hour of solitude this week. Defend it.' },
-    { id: 'dp89', focus: 'practice', prompt: 'Try to ask the same thing 3 times in 3 different ways. Notice which works.' },
-    { id: 'dp90', focus: 'reflect', prompt: 'Looking back at this week: what is one thing you would do differently?' },
-    { id: 'dp91', focus: 'community', prompt: 'Recommend one resource to one person today. Pay forward.' },
-    { id: 'dp92', focus: 'voice', prompt: 'Express gratitude out loud to one adult today, specifically: "When you ___, I felt ___."' },
-    { id: 'dp93', focus: 'rights', prompt: 'Note: you have a right to refuse to consent to a new evaluation. What do you actually want evaluated?' },
-    { id: 'dp94', focus: 'self', prompt: 'Identify one talent of yours that has nothing to do with school. Make space for it this week.' },
-    { id: 'dp95', focus: 'practice', prompt: 'Practice one scripted phrase with a friend or family member before the real meeting.' },
-    { id: 'dp96', focus: 'reflect', prompt: 'Identify the last time you felt fully seen at school. What conditions made that possible?' },
-    { id: 'dp97', focus: 'community', prompt: 'Read one disability rights essay today. Take 5 notes.' },
-    { id: 'dp98', focus: 'voice', prompt: 'Write a 1-page letter to yourself from your future advocate self. Save it.' },
-    { id: 'dp99', focus: 'rights', prompt: 'Identify what part of your IEP is most often ignored. Document the next ignored instance.' },
-    { id: 'dp100', focus: 'self', prompt: 'Compliment yourself out loud today. Be specific. "I did ___ well today."' },
-    { id: 'dp101', focus: 'practice', prompt: 'Negotiate one small thing today. Snack, screen time, seat choice. Practice the muscle.' },
-    { id: 'dp102', focus: 'reflect', prompt: 'Compare yourself one year ago to today. List 3 things that are different.' },
-    { id: 'dp103', focus: 'community', prompt: 'Find one disability-led organization. Sign up for their newsletter.' },
-    { id: 'dp104', focus: 'voice', prompt: 'Practice the most important sentence you have not yet said.' },
-    { id: 'dp105', focus: 'self', prompt: 'Pick one thing you have been blaming yourself for and instead blame the system. Notice what shifts.' },
-    { id: 'dp106', focus: 'practice', prompt: 'Reach out to one new ally today.' },
-    { id: 'dp107', focus: 'reflect', prompt: 'Name a recurring pattern in your school year. What might break it?' },
-    { id: 'dp108', focus: 'rights', prompt: 'Memorize the name of your state\'s parent training and information center.' },
-    { id: 'dp109', focus: 'community', prompt: 'Volunteer for one small thing today. Setting up, cleaning, lending, helping.' },
-    { id: 'dp110', focus: 'voice', prompt: 'Say no to one thing today. Even a small thing.' },
-    { id: 'dp111', focus: 'self', prompt: 'Try eating slower today.' },
-    { id: 'dp112', focus: 'practice', prompt: 'Send a 1-line check-in to a friend today.' },
-    { id: 'dp113', focus: 'reflect', prompt: 'Notice the difference between a need and a want today. List 3 of each.' },
-    { id: 'dp114', focus: 'rights', prompt: 'Look up: how many days does your school have to respond to an evaluation request?' },
-    { id: 'dp115', focus: 'community', prompt: 'Smile at a stranger today.' },
-    { id: 'dp116', focus: 'voice', prompt: 'Speak up when an injustice happens, even quietly. To one peer. To one teacher.' },
-    { id: 'dp117', focus: 'self', prompt: 'Forgive yourself for the masking you did today. It was survival.' },
-    { id: 'dp118', focus: 'practice', prompt: 'Have a hard conversation today, well-prepared.' },
-    { id: 'dp119', focus: 'reflect', prompt: 'Note one assumption about your future you have been holding. Examine it.' },
-    { id: 'dp120', focus: 'rights', prompt: 'Find the email of one school board member. Subscribe to board agendas.' },
-    { id: 'dp121', focus: 'community', prompt: 'Reach out to one disability-led group online. Even just to read.' },
-    { id: 'dp122', focus: 'voice', prompt: 'Use the word "boundary" in a sentence today. Like a tool, not an accusation.' },
-    { id: 'dp123', focus: 'self', prompt: 'Practice receiving help today. Without immediately offering to repay it.' },
-    { id: 'dp124', focus: 'practice', prompt: 'Set one goal for this week. Write it down. Tell one person.' },
-    { id: 'dp125', focus: 'reflect', prompt: 'What is one core value you have? When does that value cost you something?' },
-    { id: 'dp126', focus: 'rights', prompt: 'Find: the office for civil rights regional office for your state.' },
-    { id: 'dp127', focus: 'community', prompt: 'Watch one disability rights documentary this week.' },
-    { id: 'dp128', focus: 'voice', prompt: 'Write a 3-line speech to yourself before the next hard moment.' },
-    { id: 'dp129', focus: 'self', prompt: 'Pick one piece of clothing today that you wear for YOU, not for camouflage.' },
-    { id: 'dp130', focus: 'practice', prompt: 'Practice 1 minute of breath-controlled silence in a tense conversation.' },
-    { id: 'dp131', focus: 'reflect', prompt: 'What is one shame you carry that is not actually yours?' },
-    { id: 'dp132', focus: 'rights', prompt: 'Find: the special education ombudsperson for your state, if there is one.' },
-    { id: 'dp133', focus: 'community', prompt: 'Befriend a peer with a different accommodation than yours.' },
-    { id: 'dp134', focus: 'voice', prompt: 'Say goodbye well today. To one person. With specific gratitude.' },
-    { id: 'dp135', focus: 'self', prompt: 'Pick one piece of feedback you have received and ask: was that true?' },
-    { id: 'dp136', focus: 'practice', prompt: 'Take an action that scares you a little today.' },
-    { id: 'dp137', focus: 'reflect', prompt: 'Read your IEP goals. Which is real progress? Which is meaningless to you?' },
-    { id: 'dp138', focus: 'rights', prompt: 'Note: you can have your IEP meeting attendees include who YOU want.' },
-    { id: 'dp139', focus: 'community', prompt: 'Find one person you can text when you need to vent. Confirm with them today.' },
-    { id: 'dp140', focus: 'voice', prompt: 'Write the truth about something you have been hiding. You do not have to share it.' },
-    { id: 'dp141', focus: 'self', prompt: 'Schedule a doctor or therapy appointment you have been putting off.' },
-    { id: 'dp142', focus: 'practice', prompt: 'Practice the phrase "Tell me more." It is a complete advocacy move.' },
-    { id: 'dp143', focus: 'reflect', prompt: 'Notice one boundary someone else holds well. Learn from it.' },
-    { id: 'dp144', focus: 'rights', prompt: 'Find: your state\'s P&A organization (Protection and Advocacy).' },
-    { id: 'dp145', focus: 'community', prompt: 'Recommend a book, movie, or song to one person today.' },
-    { id: 'dp146', focus: 'voice', prompt: 'Send a written request, however brief, today.' },
-    { id: 'dp147', focus: 'self', prompt: 'Pick one form of media that drains you and skip it today.' },
-    { id: 'dp148', focus: 'practice', prompt: 'Try the phrase "I am going to think about it overnight." Buy yourself time.' },
-    { id: 'dp149', focus: 'reflect', prompt: 'Pick one part of your life where you are NOT advocating. Why? Choose: keep silent, or speak.' },
-    { id: 'dp150', focus: 'rights', prompt: 'Recall: you have a right to be at your IEP meeting. Plan to attend.' },
-    { id: 'dp151', focus: 'community', prompt: 'Help one classmate with something today.' },
-    { id: 'dp152', focus: 'voice', prompt: 'Make a long-overdue phone call today.' },
-    { id: 'dp153', focus: 'self', prompt: 'Notice one body cue you have been ignoring (hunger, thirst, fatigue). Honor it.' },
-    { id: 'dp154', focus: 'practice', prompt: 'Practice asking for a specific accommodation in a low-stakes situation.' },
-    { id: 'dp155', focus: 'reflect', prompt: 'Name one thing in your life that is working. Just one. Acknowledge it.' },
-    { id: 'dp156', focus: 'rights', prompt: 'Print: this 1-pager of your rights. Carry it.' },
-    { id: 'dp157', focus: 'community', prompt: 'Invite one person to do something with you today.' },
-    { id: 'dp158', focus: 'voice', prompt: 'Speak the name of an emotion out loud: "I am feeling ___." Multiple times today.' },
-    { id: 'dp159', focus: 'self', prompt: 'Choose one part of yourself you have been ashamed of. Tell it: "You are not the enemy."' },
-    { id: 'dp160', focus: 'practice', prompt: 'Try one new boundary today. Even tiny.' },
-    { id: 'dp161', focus: 'reflect', prompt: 'List the last 3 things you said yes to that you should have said no to. Pattern?' },
-    { id: 'dp162', focus: 'rights', prompt: 'Confirm: who has access to your IEP? Limit it if needed.' },
-    { id: 'dp163', focus: 'community', prompt: 'Engage with one online community of self-advocates this week.' },
-    { id: 'dp164', focus: 'voice', prompt: 'Tell a teacher one thing they could change that would help. Not a complaint. A request.' },
-    { id: 'dp165', focus: 'self', prompt: 'Plan one thing you can look forward to. Defend it from interruption.' },
-    { id: 'dp166', focus: 'practice', prompt: 'Try the open-ended ask: "What ideas do YOU have?"' },
-    { id: 'dp167', focus: 'reflect', prompt: 'Audit your week. Where did you grow? Where did you shrink?' },
-    { id: 'dp168', focus: 'rights', prompt: 'Note: you can REVOKE consent to special education in writing. (Be careful but know it.)' },
-    { id: 'dp169', focus: 'community', prompt: 'Send a thank-you note to a former teacher.' },
-    { id: 'dp170', focus: 'voice', prompt: 'Try the phrase "I changed my mind." It does not require an explanation.' },
-    { id: 'dp171', focus: 'self', prompt: 'Identify 1 way you self-soothe that hurts you. Replace it with one that does not.' },
-    { id: 'dp172', focus: 'practice', prompt: 'Practice introducing yourself to a new person today.' },
-    { id: 'dp173', focus: 'reflect', prompt: 'Identify what was different in your last good day. Recreate one piece tomorrow.' },
-    { id: 'dp174', focus: 'rights', prompt: 'Verify: is your IEP up to date? Find the last review date.' },
-    { id: 'dp175', focus: 'community', prompt: 'Show up to a school event you have been avoiding.' },
-    { id: 'dp176', focus: 'voice', prompt: 'Speak in your strongest voice: "I deserve to be here."' },
-    { id: 'dp177', focus: 'self', prompt: 'Pick one habit to start. One habit to stop. Both are advocacy.' },
-    { id: 'dp178', focus: 'practice', prompt: 'Practice a hard apology today. Specific. No excuse.' },
-    { id: 'dp179', focus: 'reflect', prompt: 'Name an unprocessed feeling. Where is it in your body?' },
-    { id: 'dp180', focus: 'rights', prompt: 'Save: the phone number of your district office.' },
-    { id: 'dp181', focus: 'community', prompt: 'Hug one person who needs it (with consent).' },
-    { id: 'dp182', focus: 'voice', prompt: 'Speak truthfully about one thing you have been performing.' },
-    { id: 'dp183', focus: 'self', prompt: 'Honor one rest you have been resisting.' },
-    { id: 'dp184', focus: 'practice', prompt: 'Make a call you have been avoiding. Even a short one.' },
-    { id: 'dp185', focus: 'reflect', prompt: 'List 3 things you are afraid will happen if you advocate. Examine each: is it likely?' },
-    { id: 'dp186', focus: 'rights', prompt: 'Identify: a free legal aid organization for special education in your area.' },
-    { id: 'dp187', focus: 'community', prompt: 'Reach out across a difference today.' },
-    { id: 'dp188', focus: 'voice', prompt: 'Try the phrase "I appreciate that AND ___" today.' },
-    { id: 'dp189', focus: 'self', prompt: 'Sit with one feeling for 5 minutes before reacting.' },
-    { id: 'dp190', focus: 'practice', prompt: 'Make a request without softening it with "if it\'s not too much trouble."' },
-    { id: 'dp191', focus: 'reflect', prompt: 'Imagine yourself in 5 years. What does that person want you to do this week?' },
-    { id: 'dp192', focus: 'rights', prompt: 'Note: you have a right to a fair hearing if you disagree with IEP decisions.' },
-    { id: 'dp193', focus: 'community', prompt: 'Send a kind anonymous note today.' },
-    { id: 'dp194', focus: 'voice', prompt: 'Use the phrase "This isn\'t working for me." Once today. No more, no less.' },
-    { id: 'dp195', focus: 'self', prompt: 'Plan a small reward for an upcoming hard advocacy moment.' },
-    { id: 'dp196', focus: 'practice', prompt: 'Reach out to an old mentor. Just to say hi.' },
-    { id: 'dp197', focus: 'reflect', prompt: 'What is the kindest sentence you could say to yourself right now? Say it.' },
-    { id: 'dp198', focus: 'rights', prompt: 'Find your school\'s nondiscrimination policy. Read it once.' },
-    { id: 'dp199', focus: 'community', prompt: 'Show up to a community event in your city, even briefly.' },
-    { id: 'dp200', focus: 'voice', prompt: 'End today with one sentence aloud: "I matter."' }
-  ];
-
-  var TRIGGERS_AND_RESPONSES = [
-    { id: 'tr1', category: 'sensory', trigger: 'Fluorescent lights flickering', earlyWarn: 'Eyes start watering. Squinting. Slight headache behind eyes.', shutdownLook: 'Hands over eyes. Hood up. Cannot read board.', respond: 'Sunglasses pass. Move to window seat. Tint extension on screen.', accomToAsk: 'Permission to wear sunglasses or hat indoors during fluorescent classroom hours.', backupPlan: 'Step out to nurse for 5 min reset. Re-enter when settled.' },
-    { id: 'tr2', category: 'sensory', trigger: 'Cafeteria noise level', earlyWarn: 'Hands cover ears reflexively. Cannot follow what friend is saying.', shutdownLook: 'Stops eating. Stares at table. Tears up without explanation.', respond: 'Noise-canceling earbuds. Eat in library or counselor office instead.', accomToAsk: 'Alternate lunch location in IEP. Or stagger lunch by 10 minutes.', backupPlan: 'Eat in scheduled quiet space 3+ days per week regardless.' },
-    { id: 'tr3', category: 'sensory', trigger: 'Tag in shirt or seam in sock', earlyWarn: 'Constant fidgeting at one spot. Hand keeps returning.', shutdownLook: 'Refusing to wear the clothing. Late for school.', respond: 'Cut tags out. Seamless socks. Stick with brands that work.', accomToAsk: 'Family accommodation, not school. But explain absences truthfully if late.', backupPlan: 'Keep emergency change of clothes in locker.' },
-    { id: 'tr4', category: 'sensory', trigger: 'Smell of cafeteria food cooking', earlyWarn: 'Nausea. Pushing food away. Pale face.', shutdownLook: 'Leaving cafeteria. Possible vomiting.', respond: 'Eat earlier or later. Carry mints. Permission to leave when triggered.', accomToAsk: 'Modified lunch schedule.', backupPlan: 'Snack stash in locker for missed lunches.' },
-    { id: 'tr5', category: 'sensory', trigger: 'Sudden loud noises (slamming doors, announcements)', earlyWarn: 'Startle response. Shoulders to ears. Frozen.', shutdownLook: 'Cannot return to task for 10+ min. Possible flashback if PTSD.', respond: 'Loop earplugs (low-level filter). Headphones in non-instruction time.', accomToAsk: 'Reduced sensory load classroom. Advance warning for fire drills.', backupPlan: 'Designate one staff to text before fire drills.' },
-    { id: 'tr6', category: 'sensory', trigger: 'Crowded hallway between classes', earlyWarn: 'Heart racing before bell. Avoidance of getting books from locker.', shutdownLook: 'Late to class repeatedly. Tardy slips piling up.', respond: 'Leave 2 min early or arrive 2 min late.', accomToAsk: 'Early-release pass in 504.', backupPlan: 'Mapped quiet route through building.' },
-    { id: 'tr7', category: 'sensory', trigger: 'Strong perfume or cologne from teacher or seatmate', earlyWarn: 'Sneezing. Itchy eyes. Difficulty concentrating.', shutdownLook: 'Migraine. Has to leave class.', respond: 'Seat change away from source. Speak privately to teacher.', accomToAsk: 'Fragrance-free request in plan.', backupPlan: 'Allergy meds available with nurse.' },
-    { id: 'tr8', category: 'sensory', trigger: 'Bright sunlight through windows', earlyWarn: 'Eye strain. Holding paper up to block light.', shutdownLook: 'Cannot read what teacher writes. Falling behind on notes.', respond: 'Window blinds adjusted. Seat reassignment.', accomToAsk: 'Lighting adjustment.', backupPlan: 'Tinted glasses or visor.' },
-    { id: 'tr9', category: 'sensory', trigger: 'Texture of certain papers or pencils', earlyWarn: 'Refuses to use specific materials. Hands shake.', shutdownLook: 'Writing illegible. Marks "I did not do it" on assignments.', respond: 'Bring own preferred materials. Permission to type instead.', accomToAsk: 'Materials accommodation.', backupPlan: 'Laptop or tablet always available.' },
-    { id: 'tr10', category: 'sensory', trigger: 'Wet, slimy, or mushy food texture', earlyWarn: 'Gagging. Pushing tray away.', shutdownLook: 'Skipping lunch entirely. Energy crash by 5th period.', respond: 'Bring own lunch. Microwave or dry options.', accomToAsk: 'Permission to bring lunch and store in nurse fridge.', backupPlan: 'Protein bars and crackers in locker.' },
-    { id: 'tr11', category: 'social', trigger: 'Being called on in class without warning', earlyWarn: 'Heart pounds. Mouth dry. Mind blank.', shutdownLook: 'Stammering. Saying "I dont know" to questions you knew.', respond: 'Hand signal with teacher: "I need to think for 30 seconds."', accomToAsk: 'Pre-signal before cold-call.', backupPlan: 'Sit further back. Pre-prep one answer per day.' },
-    { id: 'tr12', category: 'social', trigger: 'Group project assignment', earlyWarn: 'Stomach knots. Already imagining failure.', shutdownLook: 'Group falls apart. Last-minute panic. Lower grade than working alone.', respond: 'Ask to choose own group. Or ask for individual alternative.', accomToAsk: 'Individual project alternative for group assignments.', backupPlan: 'Pre-build a script for group-work check-in: "Where are we, what is next, who is doing what?"' },
-    { id: 'tr13', category: 'social', trigger: 'Unstructured time (recess, free period, between activities)', earlyWarn: 'Aimless wandering. Pretending to read.', shutdownLook: 'Crying in bathroom. Sneaking phone usage.', respond: 'Pre-plan: book, journal, drawing, library, club.', accomToAsk: 'Lunch club or special interest group enrollment.', backupPlan: 'Identify 1 staff member to check in during these times.' },
-    { id: 'tr14', category: 'social', trigger: 'Group chat or text message blowup', earlyWarn: 'Phone buzzes nonstop. Reading every message. Cannot focus.', shutdownLook: 'Up all night. Anxious all day. Stomach pain.', respond: 'Mute notifications. Set check-in times.', accomToAsk: 'School counselor support for digital boundary planning.', backupPlan: 'Hand phone to parent at 9pm if needed.' },
-    { id: 'tr15', category: 'social', trigger: 'Conflict with friend', earlyWarn: 'Cant stop rehearsing the conversation in your head.', shutdownLook: 'Missing class to avoid the friend. Skipping meals.', respond: 'Text one trusted person. Schedule conversation with friend within 48 hours.', accomToAsk: 'Counselor mediation option.', backupPlan: 'Pre-written letter to friend if voice talk feels impossible.' },
-    { id: 'tr16', category: 'social', trigger: 'Being misunderstood after speaking up', earlyWarn: 'Hot face. Wanting to take it back.', shutdownLook: 'Mute for rest of day. Apologizing in writing later for being clear.', respond: 'Practice: "I said it the way I meant it. Can you tell me what you heard?"', accomToAsk: 'Restated clarification chance, not retraction.', backupPlan: 'Bring witness or write follow-up email same day.' },
-    { id: 'tr17', category: 'social', trigger: 'Forgetting someones name or face', earlyWarn: 'Panic. Avoiding eye contact.', shutdownLook: 'Pretending you do not know them. Hurting their feelings.', respond: 'Script: "I am bad with names. Can you tell me yours again?"', accomToAsk: 'No accommodation needed. Skill to practice.', backupPlan: 'Phone notes app: keep a low-key list of names + faces.' },
-    { id: 'tr18', category: 'social', trigger: 'Sarcasm or teasing that you cant decode', earlyWarn: 'Confusion. Laughing nervously to hide it.', shutdownLook: 'Hurt feelings later when you realize the joke.', respond: 'Practice: "Im not sure if youre joking. Can you tell me directly?"', accomToAsk: 'Direct communication norm with key adults.', backupPlan: 'Trust your read. If it felt mean, it probably was.' },
-    { id: 'tr19', category: 'social', trigger: 'Being touched without warning', earlyWarn: 'Body freezes. Cannot speak.', shutdownLook: 'Avoid the person. Possible flashback.', respond: 'Practice firm sentence: "Please dont touch me. I would tell you if I wanted that."', accomToAsk: 'Schoolwide consent culture. May require admin support.', backupPlan: 'Report unwanted touching. Schools must respond.' },
-    { id: 'tr20', category: 'social', trigger: 'Eye contact pressure', earlyWarn: 'Brain freezes. Cannot listen and look.', shutdownLook: 'Looking away looks dishonest to NT adults.', respond: 'Explain: "I listen better when I do not have to look at you. I am paying attention."', accomToAsk: 'Educate key teachers about autism + eye contact.', backupPlan: 'Look at their forehead or mouth as substitute.' },
-    { id: 'tr21', category: 'academic', trigger: 'Pop quiz or unexpected test', earlyWarn: 'Stomach drop. Tears welling.', shutdownLook: 'Blank paper. Failed assessment that does not reflect knowledge.', respond: 'Advance notice accommodation in IEP. No pop quizzes for you.', accomToAsk: '24-hour notice for all assessments.', backupPlan: 'Permission to retake or alternate format.' },
-    { id: 'tr22', category: 'academic', trigger: 'Long multi-step word problem', earlyWarn: 'Re-reading sentence #1 five times.', shutdownLook: 'Skipping problems entirely. Test left half blank.', respond: 'Highlighter to break into chunks. Read aloud option.', accomToAsk: 'Read-aloud or text-to-speech for long passages.', backupPlan: 'Practice multi-step decoding strategies in advance.' },
-    { id: 'tr23', category: 'academic', trigger: 'Timed writing prompt', earlyWarn: 'Stuck on first sentence for 5+ minutes.', shutdownLook: 'Three sentences submitted in 25 minutes.', respond: 'Extended time. Speech-to-text. Outline before writing.', accomToAsk: 'Extended time, scribe, or speech-to-text accommodation.', backupPlan: 'Pre-write opener templates for typical prompts.' },
-    { id: 'tr24', category: 'academic', trigger: 'Math word problem with multiple variables', earlyWarn: 'Confused about what is being asked.', shutdownLook: 'Skipping. Getting low grades on otherwise easy concepts.', respond: 'Highlight the question first. Translate to numbers second.', accomToAsk: 'Visual or graphical aids permitted on tests.', backupPlan: 'Index card with translation steps in pencil case.' },
-    { id: 'tr25', category: 'academic', trigger: 'Reading aloud in class', earlyWarn: 'Sweating. Counting paragraphs to estimate when your turn.', shutdownLook: 'Voice freezing. Misreading words you know.', respond: 'No-cold-call agreement with teacher. Pre-arranged passages.', accomToAsk: 'No-cold-read accommodation. Volunteer-only.', backupPlan: 'Practice the passage in advance with parent.' },
-    { id: 'tr26', category: 'academic', trigger: 'Switching classrooms between periods', earlyWarn: 'Forgetting what you needed for next class.', shutdownLook: 'Half-assignments. Late to class. Lost materials.', respond: 'Checklist taped to inside locker door. Set phone reminders.', accomToAsk: 'Visual schedule. Transition support.', backupPlan: 'Buddy system: classmate to walk with you.' },
-    { id: 'tr27', category: 'academic', trigger: 'Substitute teacher', earlyWarn: 'Heart sinks when you walk in.', shutdownLook: 'Whole day lost. Refusal to engage.', respond: 'Pre-printed card explaining your accommodations to hand to sub.', accomToAsk: 'Sub accommodation card on file with main teacher.', backupPlan: 'Permission to call main teacher or counselor if sub does not honor plan.' },
-    { id: 'tr28', category: 'academic', trigger: 'Project deadline you forgot until day-of', earlyWarn: 'Hits you at breakfast. Stomach drops.', shutdownLook: 'Skipping school. Lying to teacher.', respond: 'Honest email NOW: "I forgot. I will have it Friday."', accomToAsk: 'Extension accommodation. Most teachers grant if asked early.', backupPlan: 'Phone calendar with 1-week and 1-day reminders for all assignments.' },
-    { id: 'tr29', category: 'academic', trigger: 'Grade lower than expected', earlyWarn: 'Spiral starts. "Im stupid. Whats the point."', shutdownLook: 'Avoiding the class. Effort drop for weeks.', respond: 'Email teacher: "Can we talk about what I missed and how to improve?"', accomToAsk: 'Grade conversation in counselor office.', backupPlan: 'Self-compassion script: "One grade is not who I am."' },
-    { id: 'tr30', category: 'academic', trigger: 'Open-ended question with no right answer', earlyWarn: 'Paralysis. Cannot pick a direction.', shutdownLook: 'Blank page or random off-topic answer.', respond: 'Structured prompts. Pre-built thesis templates.', accomToAsk: 'Graphic organizers as accommodation.', backupPlan: 'Carry 3 fall-back thesis frames in notebook.' },
-    { id: 'tr31', category: 'family', trigger: 'Parent forgets your accommodation', earlyWarn: 'Tightness in chest at home dinner.', shutdownLook: 'Outburst that feels disproportionate to event.', respond: 'Family meeting. Print accommodations and post on fridge.', accomToAsk: 'Counselor session including parent.', backupPlan: 'Trusted adult outside family who can advocate when home falters.' },
-    { id: 'tr32', category: 'family', trigger: 'Sibling teasing about your needs', earlyWarn: 'Body tenses at first joke.', shutdownLook: 'Hiding accommodations. Refusing tools that help.', respond: 'Direct sentence: "It hurts. Stop." If continues, parent involvement.', accomToAsk: 'Family therapy if pattern persists.', backupPlan: 'Private accommodation tools (e.g., headphones at home) for self-regulation.' },
-    { id: 'tr33', category: 'family', trigger: 'Parent compares you to neurotypical sibling', earlyWarn: 'Internal "I am the broken one" script activates.', shutdownLook: 'Withdrawal. Resentment.', respond: 'Plan one sentence: "When you compare me to ___, it makes me feel ___."', accomToAsk: 'Family counseling.', backupPlan: 'Outside witness (counselor, relative) who sees your strengths.' },
-    { id: 'tr34', category: 'family', trigger: 'Family event with unfamiliar relatives', earlyWarn: 'Dread starts days ahead.', shutdownLook: 'Hiding in bedroom. Tears at relative house.', respond: 'Pre-plan exit. Buddy assignment. Time-limited stay.', accomToAsk: 'Family accommodation, not school.', backupPlan: 'Quiet activity (book, headphones) brought along.' },
-    { id: 'tr35', category: 'family', trigger: 'Family meal at restaurant with menu surprises', earlyWarn: 'Anxiety about food choices.', shutdownLook: 'Refusing to order. Tears.', respond: 'Review menu online before going. Pre-pick option.', accomToAsk: 'None. Plan.', backupPlan: 'Granola bar in bag if dish does not work out.' },
-    { id: 'tr36', category: 'family', trigger: 'Parent overrides your accommodation choice', earlyWarn: 'Voice gets small. Body slumps.', shutdownLook: 'Meeting outcome doesnt fit. School year worse.', respond: 'Practice: "Mom, I want to lead this. Can I try first?"', accomToAsk: 'Pre-meeting parent-child agreement.', backupPlan: 'Side conversation with case manager about what YOU want.' },
-    { id: 'tr37', category: 'family', trigger: 'Family rule changes without warning', earlyWarn: 'Cant find footing. Frustration spike.', shutdownLook: 'Argument with parent that escalates.', respond: 'Family contract: rule changes get 24-hour notice.', accomToAsk: 'Family-level. School can suggest.', backupPlan: 'Visual schedule at home.' },
-    { id: 'tr38', category: 'family', trigger: 'Holiday or break with unstructured time', earlyWarn: 'Dread about empty days.', shutdownLook: 'Sleeping all day. Mood drops.', respond: 'Pre-plan: 3 anchors per day (meal, activity, social).', accomToAsk: 'School counselor pre-break plan.', backupPlan: 'Daily check-in text with trusted friend.' },
-    { id: 'tr39', category: 'family', trigger: 'Parent has hard day and cant fully show up', earlyWarn: 'Parent short-tempered or distracted.', shutdownLook: 'You take on too much emotional labor.', respond: 'Permission to use other supports today. Be a kid.', accomToAsk: 'External adult support.', backupPlan: 'Backup adult: aunt, coach, counselor.' },
-    { id: 'tr40', category: 'family', trigger: 'Family conflict before school morning', earlyWarn: 'Crying. Cant get out of bed.', shutdownLook: 'School day ruined before it starts.', respond: 'Email teacher: "Had a rough morning, may need quiet today."', accomToAsk: 'Sign-in pass at counselor on rough days.', backupPlan: 'Pre-arranged regulation room.' },
-    { id: 'tr41', category: 'emotional', trigger: 'Criticism from authority figure', earlyWarn: 'Tears within 30 sec. Inner voice says "I am bad."', shutdownLook: 'Shutdown. Cant explain self. Avoidance.', respond: 'Practice: "Thank you. Can I have a few minutes to process?"', accomToAsk: 'Receive feedback in writing first when possible.', backupPlan: 'Self-compassion script: "Feedback is data, not identity."' },
-    { id: 'tr42', category: 'emotional', trigger: 'Public failure (wrong answer, fall, etc.)', earlyWarn: 'Hot face. Wanting to disappear.', shutdownLook: 'Mask drops. Possible meltdown or freeze.', respond: 'Pre-built script: "I made a mistake. Moving on." Move on.', accomToAsk: 'Permission to recover privately.', backupPlan: 'Step out for 2 min. Come back.' },
-    { id: 'tr43', category: 'emotional', trigger: 'Anniversary of hard event', earlyWarn: 'Mood drops without external cause.', shutdownLook: 'Cant function. Cant explain why.', respond: 'Calendar your anniversaries. Plan extra support.', accomToAsk: 'Pre-arranged extended time on anniversary week.', backupPlan: 'Trusted adult knows the anniversary too.' },
-    { id: 'tr44', category: 'emotional', trigger: 'Comparing yourself to a high-achieving peer', earlyWarn: 'Spiral. "Why cant I be like that?"', shutdownLook: 'Effort drops. Disengagement.', respond: 'Reality check: "What do I not know about their hidden struggle? What is my own measure?"', accomToAsk: 'None. Self-work.', backupPlan: 'List your own growth this year.' },
-    { id: 'tr45', category: 'emotional', trigger: 'Loneliness in a crowded room', earlyWarn: 'Looking around and nobody seeing you.', shutdownLook: 'Withdrawal. Refusing future invitations.', respond: 'Quality > quantity. Reach out to ONE person you trust.', accomToAsk: 'Lunch buddy match.', backupPlan: 'One online community where you do feel seen.' },
-    { id: 'tr46', category: 'emotional', trigger: 'Hopelessness about future', earlyWarn: '"Whats the point" looping in mind.', shutdownLook: 'Suicidal ideation or self-harm urge.', respond: 'IMMEDIATE: tell someone. 988 if safer than in-person.', accomToAsk: 'Mental health crisis plan with school.', backupPlan: 'Crisis Companion tool in SEL Hub. Trusted adult numbers in phone.' },
-    { id: 'tr47', category: 'emotional', trigger: 'Imposter syndrome at honors meeting', earlyWarn: '"They will figure out I dont belong."', shutdownLook: 'Underperform on purpose. Skip the event.', respond: 'Bring your file of evidence (grades, work, feedback).', accomToAsk: 'None. Re-anchor in evidence.', backupPlan: 'Pre-event affirmation: "I earned this seat."' },
-    { id: 'tr48', category: 'emotional', trigger: 'Burnout from masking all week', earlyWarn: 'Friday night cant get off bed.', shutdownLook: 'Weekend lost to recovery.', respond: 'Schedule de-masking time. Less verbal interaction.', accomToAsk: 'Monday slow-start accommodation.', backupPlan: 'Sensory-friendly weekend plan: 1 social, 2 rest, 1 special interest.' },
-    { id: 'tr49', category: 'emotional', trigger: 'Feeling like a burden to your support team', earlyWarn: 'Apologizing for every request.', shutdownLook: 'Refusing accommodations you need.', respond: 'Counter-script: "My team chose this job. They get paid. I am not a burden."', accomToAsk: 'None. Mindset work.', backupPlan: 'Counselor session.' },
-    { id: 'tr50', category: 'emotional', trigger: 'Wave of anger you cant explain', earlyWarn: 'Hands clenched. Jaw tight.', shutdownLook: 'Outburst that doesnt fit situation.', respond: 'Step out. 5 deep breaths. Note what the anger is protecting.', accomToAsk: 'Trauma-informed regulation plan.', backupPlan: 'Pre-arranged break pass.' },
-    { id: 'tr51', category: 'systemic', trigger: 'IEP meeting where adults talk over you', earlyWarn: 'Body shrinking in chair.', shutdownLook: 'Decisions made without your input. Whole year off-track.', respond: 'Pre-write: 3 sentences YOU will say first. Read them.', accomToAsk: 'Student-led IEP. Possible in nearly any state.', backupPlan: 'Email your input to the team before the meeting.' },
-    { id: 'tr52', category: 'systemic', trigger: 'Teacher does not implement accommodation', earlyWarn: 'You sit through class without your tool.', shutdownLook: 'Frustration. Class grade drops. Helpless feeling.', respond: 'Same-day email to case manager. Documentation.', accomToAsk: 'Documentation pattern in IEP.', backupPlan: 'Loop in counselor as second escalation.' },
-    { id: 'tr53', category: 'systemic', trigger: 'Test accommodation lost on test day', earlyWarn: 'You walk in and table is gone.', shutdownLook: 'You take test under wrong conditions.', respond: 'STOP. Find proctor. "I have an accommodation that is not here. I need to wait."', accomToAsk: 'Test accommodation reminder protocol.', backupPlan: 'Bring written copy of your IEP accommodations to all tests.' },
-    { id: 'tr54', category: 'systemic', trigger: 'New school, new staff, plan forgotten', earlyWarn: 'Confusion about who knows you.', shutdownLook: 'Misunderstandings. Discipline events.', respond: 'Personal accommodation packet you carry with you.', accomToAsk: 'Transition meeting before first day.', backupPlan: 'Print copies of your IEP for week 1.' },
-    { id: 'tr55', category: 'systemic', trigger: 'Disciplinary referral that did not consider your IEP', earlyWarn: 'Notification you got referred.', shutdownLook: 'Punishment without consideration of disability.', respond: 'Request a manifestation determination meeting.', accomToAsk: 'Discipline-specific procedural safeguards.', backupPlan: 'Outside advocate, parent organization, P&A.' },
-    { id: 'tr56', category: 'systemic', trigger: 'School calls home about behavior, parent panics', earlyWarn: 'Parent texts: "What did you do."', shutdownLook: 'Family conflict on top of school issue.', respond: 'Your version in writing. Send to parent before they call you.', accomToAsk: 'Communication chain with parent before discipline calls.', backupPlan: 'Trusted adult to mediate.' },
-    { id: 'tr57', category: 'systemic', trigger: 'Annual review going by quickly with no discussion of YOU', earlyWarn: 'Form-driven meeting. Boxes checked.', shutdownLook: 'Whole year of accommodations same as last year, regardless of fit.', respond: 'Pre-meeting: prepare 3 things to change. Bring them.', accomToAsk: 'Student-led annual review.', backupPlan: 'Schedule supplemental meeting if annual rushed.' },
-    { id: 'tr58', category: 'systemic', trigger: 'Specialist (OT, SLP) not coming to sessions', earlyWarn: 'Sessions cancelled or rescheduled repeatedly.', shutdownLook: 'Service minutes not delivered. Goals not progressing.', respond: 'Log all missed sessions. Email case manager.', accomToAsk: 'Compensatory services for missed time.', backupPlan: 'P&A or OCR if pattern persists.' },
-    { id: 'tr59', category: 'systemic', trigger: 'Standardized test season', earlyWarn: 'Stress about high-stakes test.', shutdownLook: 'Crashed performance. Inaccurate results.', respond: 'Confirm all accommodations 6 weeks ahead.', accomToAsk: 'Testing accommodations in writing 6+ weeks before testing.', backupPlan: 'Practice tests with accommodations in real conditions.' },
-    { id: 'tr60', category: 'systemic', trigger: 'Transition to college or workforce', earlyWarn: 'IEP ends. ADA is the new rule. Different system.', shutdownLook: 'Lost accommodations. Crashed first semester.', respond: 'Senior year: visit disability services at college early. Apply for accommodations.', accomToAsk: 'Transition plan starting at 14 (federal floor).', backupPlan: 'Self-advocacy toolkit ready for adult systems.' }
-  ];
-
-  var WORDS_THAT_HURT = [
-    { id: 'wh1', term: 'Retarded (as insult)', why: 'A word that has been used to dehumanize people with intellectual disabilities for over a century. When used casually or as an insult, it tells anyone with intellectual disability that they are the lowest possible thing one can be called.', whatToSayInstead: 'Use the specific word for what you mean: "That is unfair." "That is annoying." "That is silly." Be specific.', howToRespondIfTargeted: 'You do not have to engage with the word. You can say: "That word is hurtful. Please dont use it around me." If safe, name why: "It hurts because ___."', communityPosition: 'Both Self Advocacy International and AAIDD have led the campaign against the R-word for over 15 years.' },
-    { id: 'wh2', term: 'Crazy / insane / nuts (about mental health)', why: 'Casually using mental health terms as insults teaches that mental illness equals dangerous, illogical, or bad. People with actual mental health conditions hear it as: I am the worst thing you can be.', whatToSayInstead: 'Specific words: "ridiculous, wild, unbelievable, frustrating, intense."', howToRespondIfTargeted: 'You can name it. "I have a mental health condition. That word is loaded for me." Or simply: "Lets pick a different word."', communityPosition: 'NAMI and most mental health orgs encourage moving away from these terms.' },
-    { id: 'wh3', term: 'Spaz / spastic', why: 'Originally a medical term describing involuntary muscle movement. Casually means clumsy or out of control. Hurtful to people with cerebral palsy and similar conditions.', whatToSayInstead: '"Clumsy" if you mean dropped something. "Excited" if you mean energetic. Be specific.', howToRespondIfTargeted: 'Direct: "That word is loaded. Please dont use it."', communityPosition: 'Considered a slur in the UK; growing awareness in US disability communities.' },
-    { id: 'wh4', term: 'Lame', why: 'Originally a word for someone with physical disability affecting walking. Casually means uncool or bad. The connection between disability and bad runs deep when we use this word.', whatToSayInstead: '"Disappointing, boring, not what I wanted." Pick the actual feeling.', howToRespondIfTargeted: 'You can correct casually: "Could we use a different word?"', communityPosition: 'Widely understood in disability advocacy as ableist; replacement urged.' },
-    { id: 'wh5', term: 'Wheelchair-bound', why: 'Wheelchairs free people. They are tools for mobility. Calling someone bound to one frames the tool as a prison instead of as wings.', whatToSayInstead: '"Uses a wheelchair." That is the accurate and respectful phrase.', howToRespondIfTargeted: 'If used about you: "Actually, my wheelchair is freedom. I use a wheelchair."', communityPosition: 'Universal preference in wheelchair-using community.' },
-    { id: 'wh6', term: 'Suffers from', why: 'Implies the person is constantly suffering and defines them by the condition. Many of us live well WITH our conditions, not in suffering FROM them.', whatToSayInstead: '"Has." "Lives with." "Manages."', howToRespondIfTargeted: 'Educate: "I have ___. I dont suffer from it. I live with it."', communityPosition: 'Person-first or identity-first; either is preferred over suffers-from.' },
-    { id: 'wh7', term: 'Special needs', why: 'Tries to be polite but sets people apart as having needs that are special, when actually all people have needs and disabled people just need different ones. Many disability rights leaders reject the term.', whatToSayInstead: '"Disabled" or "with a disability" or specific (autistic, deaf, mobility disability).', howToRespondIfTargeted: 'Direct: "I prefer disabled. My needs are not special. They are just needs."', communityPosition: 'Identity-first advocates actively push back against this; some communities still use it.' },
-    { id: 'wh8', term: 'Differently-abled', why: 'Same problem as special needs. Tries to soften but conveys that disabled is somehow shameful, requiring euphemism.', whatToSayInstead: 'Disabled. Use the actual word.', howToRespondIfTargeted: '"I am disabled. It is not a bad word."', communityPosition: 'Largely rejected by disability rights movement.' },
-    { id: 'wh9', term: 'Handicapped', why: 'Etymology myth (cap-in-hand begging) is overstated, but the word is dated and replaced by disabled in modern usage and law.', whatToSayInstead: 'Disabled. Or accessible (for spaces and parking).', howToRespondIfTargeted: 'Mild correction: "Modern term is disabled or accessible."', communityPosition: 'Outdated but not slur-level.' },
-    { id: 'wh10', term: 'Confined to a wheelchair', why: 'Same problem as wheelchair-bound. Frames the wheelchair as a prison.', whatToSayInstead: '"Uses a wheelchair."', howToRespondIfTargeted: 'Same correction.', communityPosition: 'Universally preferred phrasing exists.' },
-    { id: 'wh11', term: 'Brave / inspirational (for ordinary activities)', why: 'Calling a disabled person brave for going to school or work is inspiration porn. It tells us our existence is so unusual that ordinary acts are heroic. It centers nondisabled feelings.', whatToSayInstead: 'Compliment specific actions: "That was a hard test. Nice work." "You handled that well."', howToRespondIfTargeted: 'Polite correction: "Thanks. I am just doing my thing."', communityPosition: 'Stella Young\'s TED talk on inspiration porn is canonical.' },
-    { id: 'wh12', term: 'OCD (as casual habit)', why: 'When someone with mild preferences says they are "so OCD" they erase the reality of OCD as a disabling mental illness with intrusive thoughts and compulsions.', whatToSayInstead: '"Particular. Organized. Prefer things tidy." Pick the actual word.', howToRespondIfTargeted: 'Educate: "OCD is intrusive thoughts and compulsions. What you mean is ___."', communityPosition: 'IOCDF actively campaigns against casual use.' },
-    { id: 'wh13', term: 'Bipolar (as moodiness)', why: 'Bipolar is a serious mental illness with specific clinical criteria. Casual use makes it harder for people with bipolar to get help.', whatToSayInstead: '"Moody. Unpredictable. Changeable."', howToRespondIfTargeted: 'Educate.', communityPosition: 'DBSA and mental health advocacy.' },
-    { id: 'wh14', term: 'PTSD (as common stress)', why: 'PTSD is a trauma response with specific clinical criteria. Casual use trivializes a serious condition and erases people with actual PTSD.', whatToSayInstead: '"Stressed. Overwhelmed. Anxious."', howToRespondIfTargeted: 'Educate.', communityPosition: 'PTSD advocacy groups.' },
-    { id: 'wh15', term: 'Triggered (as casual annoyance)', why: 'Triggered originally meant a trauma response. Casual use mocks the people who actually experience trauma triggers.', whatToSayInstead: '"Annoyed. Bothered. Irritated."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Mental health advocacy.' },
-    { id: 'wh16', term: 'Schizo / split personality (mocking)', why: 'Schizophrenia is a serious mental illness with specific symptoms. It is NOT split personality (different condition). Mocking use stigmatizes people who already face dangerous stereotypes.', whatToSayInstead: '"Inconsistent. Contradicts itself."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Schizophrenia & Related Disorders Alliance of America.' },
-    { id: 'wh17', term: 'Midget', why: 'Considered a slur by Little People of America. The preferred terms are little person or person with dwarfism.', whatToSayInstead: 'Little person. Person with dwarfism.', howToRespondIfTargeted: 'Polite correction.', communityPosition: 'Little People of America has actively campaigned for term retirement.' },
-    { id: 'wh18', term: 'Gypsy / gypped (as ripped off)', why: 'Gypsy is a slur for Romani people. Gypped comes from the stereotype that Romani people cheat. Both are anti-Romani racism.', whatToSayInstead: '"Cheated. Robbed. Defrauded."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Romani advocacy.' },
-    { id: 'wh19', term: 'Indian giver', why: 'Racist term that mocks Indigenous people based on inaccurate historical caricature. Has nothing to do with actual Indigenous practices.', whatToSayInstead: '"Someone who took back a gift."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Native American advocacy.' },
-    { id: 'wh20', term: 'Off the reservation', why: 'Originally a term for Native Americans who left their forced reservations, often resulting in violence by the U.S. government. Casual use erases that violence.', whatToSayInstead: '"Off-script. Off-topic. Going rogue."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Native American advocacy.' },
-    { id: 'wh21', term: 'Tone-deaf', why: 'Tone-deafness is a real condition (amusia). Using it as a metaphor for being insensitive equates disability with being a bad person.', whatToSayInstead: '"Insensitive. Out of touch. Missing the moment."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Emerging disability advocacy.' },
-    { id: 'wh22', term: 'Falling on deaf ears', why: 'Equates deafness with not listening or not caring. Deaf people listen with their eyes and hands. The metaphor erases their listening.', whatToSayInstead: '"Ignored. Not heard out. Brushed off."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Deaf community advocacy.' },
-    { id: 'wh23', term: 'Blind to (something)', why: 'Equates blindness with not understanding. Blind people understand. The metaphor is ableist.', whatToSayInstead: '"Ignorant of. Unaware of. Missing."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Blind community advocacy.' },
-    { id: 'wh24', term: 'Crippling (debt, anxiety, etc.)', why: 'Equates physical disability with the worst possible state. Even casual use stigmatizes physical disability.', whatToSayInstead: '"Overwhelming. Severe. Disabling-in-the-clinical-sense if you mean clinical."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Disability community.' },
-    { id: 'wh25', term: 'Psycho / psychotic (as scary/violent)', why: 'Psychosis is a mental health symptom. Most people with psychosis are not violent and are far more likely to be victims of violence than perpetrators.', whatToSayInstead: '"Scary. Aggressive. Out of control."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Schizophrenia advocacy.' },
-    { id: 'wh26', term: 'Anorexic / bulimic (as thin or watching weight)', why: 'These are serious eating disorders with high mortality rates. Casual use trivializes life-threatening illness.', whatToSayInstead: '"Slim. Careful about food. Restricting."', howToRespondIfTargeted: 'Educate.', communityPosition: 'NEDA actively campaigns.' },
-    { id: 'wh27', term: 'High-functioning / low-functioning (autism)', why: 'High-functioning erases the actual struggles of articulate autistic people. Low-functioning denies the humanity and intelligence of autistic people with higher support needs. Functioning labels are used to deny services to those labeled high and to deny humanity to those labeled low.', whatToSayInstead: '"Autistic with X support needs in Y area."', howToRespondIfTargeted: 'Educate: "I prefer not to use functioning labels. They flatten me."', communityPosition: 'ASAN and most autistic-led orgs reject functioning labels.' },
-    { id: 'wh28', term: 'Aspergers (used as separate from autism)', why: 'Aspergers is now part of the autism spectrum (DSM-5). Using it separately can imply "the acceptable kind of autism." The eponym Hans Asperger\'s history with Nazi child welfare has also led many to drop the term.', whatToSayInstead: '"Autistic."', howToRespondIfTargeted: 'Use the term you prefer for yourself.', communityPosition: 'Mixed; community trending away from Aspergers.' },
-    { id: 'wh29', term: 'Mongoloid (about Down syndrome)', why: 'Outdated racist term once used for Down syndrome. Now a slur on multiple axes.', whatToSayInstead: 'Down syndrome. Person with Down syndrome.', howToRespondIfTargeted: 'Direct: "That word is racist and ableist. Please dont use it."', communityPosition: 'NDSS and similar orgs reject term.' },
-    { id: 'wh30', term: 'Vegetable (about coma or severe disability)', why: 'Dehumanizes people. Asserts they are not people.', whatToSayInstead: 'Person in a coma. Person with severe disability.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Disability community.' },
-    { id: 'wh31', term: 'Tard / R-word abbreviated', why: 'Same as full word. The shortening does not make it less harmful.', whatToSayInstead: 'See entry wh1.', howToRespondIfTargeted: 'Same as wh1.', communityPosition: 'Same as wh1.' },
-    { id: 'wh32', term: 'Lazy (about disability)', why: 'People with chronic fatigue, depression, ADHD, executive function disorders are often called lazy when they are managing invisible disability symptoms.', whatToSayInstead: '"Struggling. Overwhelmed. Burned out."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Chronic illness advocacy.' },
-    { id: 'wh33', term: 'Faking it (about disability)', why: 'Implies disability is performance. For people with invisible disabilities especially, this is harmful and disbelieving.', whatToSayInstead: 'Believe the person.', howToRespondIfTargeted: 'Direct: "You dont believe me. That is a problem."', communityPosition: 'Disability advocacy.' },
-    { id: 'wh34', term: 'Attention-seeker (about distress)', why: 'When someone shows distress, "attention-seeking" implies they should be ignored. But attention can be exactly what is needed in mental health crisis.', whatToSayInstead: '"Asking for help. Calling for connection. In distress."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Mental health advocacy.' },
-    { id: 'wh35', term: 'Drama queen / drama king', why: 'Dismisses emotional response as performative. Often used to silence people whose emotions are gendered or racialized differently.', whatToSayInstead: '"Reacting intensely." Maybe ask: "What is happening?"', howToRespondIfTargeted: 'Direct.', communityPosition: 'Mental health and gender advocacy.' },
-    { id: 'wh36', term: 'Hysterical (about womens emotion)', why: 'Etymology: hyster = uterus. Used historically to invalidate womens medical complaints.', whatToSayInstead: '"Upset. Distressed. Angry."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Feminist and disability advocacy.' },
-    { id: 'wh37', term: 'Sissy / pansy (about boys feelings)', why: 'Teaches boys that feeling = feminine = bad. Hurts boys, hurts girls, hurts non-binary kids.', whatToSayInstead: 'Use the actual feeling word.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Gender advocacy.' },
-    { id: 'wh38', term: 'Man up (about emotional response)', why: 'Same issue. Equates manhood with not feeling.', whatToSayInstead: '"Handle this. Stay grounded. Take care."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Gender advocacy.' },
-    { id: 'wh39', term: 'Acting out / behavior issues (about distress)', why: 'Often used to describe Black students and disabled students experiencing distress, where similar reactions in other students would be called "having a bad day."', whatToSayInstead: '"In distress. Needing support. Communicating need."', howToRespondIfTargeted: 'Educate. Use the data.', communityPosition: 'Education advocacy.' },
-    { id: 'wh40', term: 'Defiant (about saying no)', why: 'Often coded language. Children of color and disabled children are described as defiant when they self-advocate. Pathologizes appropriate boundaries.', whatToSayInstead: '"Said no. Refused. Disagreed."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Education advocacy.' },
-    { id: 'wh41', term: 'Manipulative (about asking for what one needs)', why: 'When marginalized people ask for accommodations using different communication styles, they are sometimes called manipulative.', whatToSayInstead: '"Asking for what they need. Advocating."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Mental health and disability advocacy.' },
-    { id: 'wh42', term: 'Aggressive (about assertive)', why: 'Often racialized and gendered. Women of color especially face this label for assertive communication.', whatToSayInstead: '"Direct. Assertive. Clear."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Anti-racism advocacy.' },
-    { id: 'wh43', term: 'Acting white / acting black', why: 'Reifies racial stereotypes about how people of any race should behave. Hurts people across all groups.', whatToSayInstead: 'Describe the actual behavior without race.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Anti-racism advocacy.' },
-    { id: 'wh44', term: 'Real American / where are you really from?', why: 'Implies some Americans are more real than others, usually based on race or accent.', whatToSayInstead: 'Be specific without race: "Where did you grow up?" if you actually want to know.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Anti-racism advocacy.' },
-    { id: 'wh45', term: 'Articulate (as compliment to person of color)', why: 'Often given to Black or brown professionals as if articulateness were a surprise. Backhanded compliment.', whatToSayInstead: 'Comment on the substance: "I learned a lot from what you said."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Anti-racism advocacy.' },
-    { id: 'wh46', term: 'Tranny / transvestite (as slur)', why: 'Tranny is widely considered a slur by trans community. Transvestite is medical and dated.', whatToSayInstead: 'Trans. Transgender. Or specific (trans woman, trans man, non-binary).', howToRespondIfTargeted: 'Direct.', communityPosition: 'GLAAD style guide.' },
-    { id: 'wh47', term: 'That is so gay (negative)', why: 'Equates gay with bad. Tells gay students they are inherently bad.', whatToSayInstead: 'Use the actual feeling word.', howToRespondIfTargeted: 'Direct or educate.', communityPosition: 'GLSEN actively campaigns.' },
-    { id: 'wh48', term: 'No-homo', why: 'Treats gay attraction as something to disavow.', whatToSayInstead: 'Just say the thing without the disclaimer.', howToRespondIfTargeted: 'Educate.', communityPosition: 'LGBTQ advocacy.' },
-    { id: 'wh49', term: 'Deadname (using birth name of trans person)', why: 'Uses a name the person has actively rejected. Outs them. Invalidates their identity.', whatToSayInstead: 'Their current name. Apologize once and move on.', howToRespondIfTargeted: 'Direct.', communityPosition: 'GLAAD style guide.' },
-    { id: 'wh50', term: 'Born a man / born a woman (about trans)', why: 'Asserts that gender is fixed at birth. Trans people are not born their assigned gender; they are born trans.', whatToSayInstead: '"Assigned male at birth (AMAB)" or "assigned female at birth (AFAB)" if relevant.', howToRespondIfTargeted: 'Direct.', communityPosition: 'GLAAD style guide.' },
-    { id: 'wh51', term: 'Illegal alien (about people)', why: 'No human is illegal. Reduces a person to a single legal status.', whatToSayInstead: 'Undocumented person.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Immigration advocacy.' },
-    { id: 'wh52', term: 'Anchor baby', why: 'Slur for U.S.-born children of immigrants. Implies the child exists to manipulate.', whatToSayInstead: 'U.S.-born child of immigrants.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Immigration advocacy.' },
-    { id: 'wh53', term: 'Reverse racism', why: 'Misuses the term racism. Most academic and advocacy frameworks define racism as prejudice plus power.', whatToSayInstead: '"Racial prejudice." Then talk about which direction.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Anti-racism advocacy.' },
-    { id: 'wh54', term: 'You guys (in mixed-gender or all-female groups)', why: 'Defaults to male as universal. Erases non-male people in the group.', whatToSayInstead: 'Yall. Folks. Everyone. Team.', howToRespondIfTargeted: 'Optional polite reminder.', communityPosition: 'Gender inclusive language guides.' },
-    { id: 'wh55', term: 'Female (as noun for women)', why: 'Reduces women to biology. Compare: we say men, not males. So women, not females.', whatToSayInstead: 'Women. Girls. People.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Feminist advocacy.' }
-  ];
-
-  var ANNUAL_GOAL_TEMPLATES = [
-    { id: 'ag1', area: 'self-knowledge', goalFrame: 'I will be able to identify and name 3 of my personal strengths and 3 areas where I want support, with at least 80% accuracy across 4 of 5 IEP meeting check-ins.', whyItMatters: 'Self-knowledge is the foundation of every other self-advocacy skill.', sampleSupports: ['Strengths inventory completed each fall', 'Weekly journal entry: 1 strength used this week', 'Counselor 15-min check-in monthly'], celebration: 'Bring your strengths list to a meeting and read it aloud.' },
-    { id: 'ag2', area: 'rights-knowledge', goalFrame: 'I will name my disability category, top 3 accommodations, and case manager\'s name to a new teacher with 100% accuracy on independent trials.', whyItMatters: 'New-teacher transitions are where accommodations fail most.', sampleSupports: ['Accommodation card carried in folder', 'Pre-script with case manager', 'Role-play with parent before first day'], celebration: 'Take a selfie with your case manager when you introduce yourself.' },
-    { id: 'ag3', area: 'rights-knowledge', goalFrame: 'I will recite my procedural safeguards (in plain language) to my parent or counselor at least once per quarter.', whyItMatters: 'Knowing your rights is the difference between asking and being told.', sampleSupports: ['Plain-language rights handout', 'Parent or counselor pop-quiz', 'Bookmark to state P&A organization'], celebration: 'Quiz a peer on one right they did not know they had.' },
-    { id: 'ag4', area: 'communication', goalFrame: 'I will request 1 accommodation per week, in person or in writing, using a respectful, specific format, for 4 consecutive weeks.', whyItMatters: 'Practice builds the muscle. One per week is sustainable.', sampleSupports: ['Sentence stems library', 'Weekly check-in', 'Email template card'], celebration: 'Send your favorite teacher a thank-you for honoring your request.' },
-    { id: 'ag5', area: 'communication', goalFrame: 'I will follow up by email on any verbal request to a teacher within 24 hours, in 4 of 5 documented opportunities.', whyItMatters: 'Documentation protects you and reduces "I forgot" confusion.', sampleSupports: ['Email template card', 'Phone reminder to send follow-up', 'Counselor review of emails monthly'], celebration: 'Print your best email and share with case manager.' },
-    { id: 'ag6', area: 'meeting-skills', goalFrame: 'I will attend my IEP meeting and read aloud at least 3 prepared statements (strengths, needs, goals) with 80% adherence to my prep notes.', whyItMatters: 'Student presence at IEP shifts the dynamic toward student-led.', sampleSupports: ['Meeting prep packet', 'Pre-meeting practice with parent', 'Role-play with counselor'], celebration: 'Make a victory plate of your favorite food after the meeting.' },
-    { id: 'ag7', area: 'meeting-skills', goalFrame: 'I will lead the introductions in my next 2 IEP meetings, including stating my name, grade, and one strength.', whyItMatters: 'Leading the opening sets the tone that this is your meeting.', sampleSupports: ['Introduction script', 'Mirror practice', 'One supportive teacher in the room'], celebration: 'Reflect on how it felt afterward, in writing.' },
-    { id: 'ag8', area: 'self-regulation', goalFrame: 'I will identify 3 early warning signs of dysregulation and use a regulation strategy in 4 of 5 documented occurrences.', whyItMatters: 'Catching early prevents meltdowns and shutdown losses.', sampleSupports: ['Trigger list (per student)', 'Regulation toolkit (per student)', 'Pre-arranged regulation pass'], celebration: 'Track a week of successful early-catches.' },
-    { id: 'ag9', area: 'self-regulation', goalFrame: 'I will use my regulation pass independently (without staff prompt) in 3 of 4 documented opportunities.', whyItMatters: 'Independent use is the goal. Staff prompting is scaffolding.', sampleSupports: ['Pass-use journal', 'Visual cue card on desk', 'Pre-arranged quiet space'], celebration: 'Tell case manager: "I used my pass on my own this week."' },
-    { id: 'ag10', area: 'social', goalFrame: 'I will initiate one peer-to-peer interaction per week (greeting, question, invite) for 6 consecutive weeks.', whyItMatters: 'Initiation is the harder half of social skill. Receiving is easier.', sampleSupports: ['Greeting script', 'Lunch buddy match', 'Weekly check-in'], celebration: 'Add the friend\'s name to your personal map of allies.' },
-    { id: 'ag11', area: 'social', goalFrame: 'I will tell one adult about a peer conflict within 24 hours, in 3 of 4 documented opportunities.', whyItMatters: 'Telling early prevents escalation and protects your own narrative.', sampleSupports: ['Trusted-adult list', 'Conflict-reporting script', 'Counselor weekly check-in'], celebration: 'Notice how reporting earlier produces better outcomes.' },
-    { id: 'ag12', area: 'academic', goalFrame: 'I will track and self-report my assignment completion rate weekly to my case manager, with 80% accuracy compared to teacher records.', whyItMatters: 'Knowing your own data is the gateway to managing it.', sampleSupports: ['Weekly grade portal review', 'Case manager 15-min check-in', 'Visual completion tracker'], celebration: 'Color-coded chart of your weekly completion.' },
-    { id: 'ag13', area: 'academic', goalFrame: 'I will request extended time when needed, in advance of the assessment, in 3 of 4 documented opportunities.', whyItMatters: 'Day-of requests are stressful. Advance requests work.', sampleSupports: ['48-hour request reminder', 'Pre-script with proctor', 'Counselor support'], celebration: 'Reflect on the calm of advance requests vs. day-of panic.' },
-    { id: 'ag14', area: 'transition', goalFrame: 'I will identify and meet with disability services at my postsecondary destination at least 1 time before the start of senior year.', whyItMatters: 'College disability services do not transfer. You apply fresh.', sampleSupports: ['List of nearby colleges and DSS offices', 'Tour during junior year', 'Counselor support'], celebration: 'Take a photo with the DSS staff person.' },
-    { id: 'ag15', area: 'transition', goalFrame: 'I will identify 3 career interests and complete one interest inventory by Q3 of my IEP year.', whyItMatters: 'Career planning is required transition content under IDEA at 14+.', sampleSupports: ['Career interest inventory', 'Job shadow opportunities', 'Counselor career conversation'], celebration: 'Build a Pinterest or vision board of your career interests.' },
-    { id: 'ag16', area: 'mental-health', goalFrame: 'I will identify 3 trusted adults and 2 peer supports for mental health, and reach out to one at least monthly.', whyItMatters: 'Distributed support prevents collapse when one source unavailable.', sampleSupports: ['Trusted adults card', 'Phone numbers saved in phone', 'Crisis line 988 saved'], celebration: 'Thank one of them at the end of the year.' },
-    { id: 'ag17', area: 'mental-health', goalFrame: 'I will use a regulation strategy before a hard meeting, on 4 of 5 documented occasions.', whyItMatters: 'Pre-meeting regulation makes for better meeting outcomes.', sampleSupports: ['Regulation toolkit card', 'Pre-meeting walk', '5 deep breaths protocol'], celebration: 'Notice the difference in your meeting experience.' },
-    { id: 'ag18', area: 'tech', goalFrame: 'I will independently use my assistive technology (text-to-speech, dictation, etc.) in 4 of 5 documented opportunities per week.', whyItMatters: 'AT is only effective if you use it. Practice = use.', sampleSupports: ['AT training session', 'Quick-start cards on device', 'Tech buddy in class'], celebration: 'Show a peer how to use one of your AT tools.' },
-    { id: 'ag19', area: 'self-care', goalFrame: 'I will follow a consistent sleep schedule (defined by family) on 5 of 7 nights per week.', whyItMatters: 'Sleep impacts every other goal. Cant advocate when exhausted.', sampleSupports: ['Sleep schedule card', 'Phone wind-down mode', 'Parent partnership'], celebration: 'Notice your week 3 vs week 1 energy.' },
-    { id: 'ag20', area: 'self-care', goalFrame: 'I will use 1 sensory break per day in school, independently scheduled, for 4 of 5 documented days per week.', whyItMatters: 'Pre-scheduled breaks prevent crisis breaks.', sampleSupports: ['Phone alarm', 'Sensory tool kit', 'Pre-arranged location'], celebration: 'Track your end-of-day energy on scheduled-break weeks vs. unscheduled.' },
-    { id: 'ag21', area: 'community', goalFrame: 'I will participate in one disability-led community space (online or in-person) per quarter.', whyItMatters: 'Community is where identity becomes pride.', sampleSupports: ['List of community spaces', 'Counselor recommendation', 'Parent partnership'], celebration: 'Share one thing you learned from a community member.' },
-    { id: 'ag22', area: 'community', goalFrame: 'I will mentor or support one peer in a similar situation, for at least 2 contacts per quarter.', whyItMatters: 'Helping others reinforces your own identity and skills.', sampleSupports: ['Peer mentor program', 'Counselor pair-up', 'Lunch club'], celebration: 'Reflect on what you taught them.' },
-    { id: 'ag23', area: 'rights-knowledge', goalFrame: 'I will know who my states P&A organization is, and have their phone number saved, by Q1.', whyItMatters: 'P&A is the free legal advocate for disabled people in your state.', sampleSupports: ['P&A handout', 'Phone number in your contacts', 'Counselor introduction'], celebration: 'Bookmark their website.' },
-    { id: 'ag24', area: 'rights-knowledge', goalFrame: 'I will know the federal Office for Civil Rights complaint process at the level of being able to explain it in 3 sentences, by Q2.', whyItMatters: 'OCR is your final escalation when school fails.', sampleSupports: ['OCR 1-page summary', 'Counselor walk-through', 'Optional with parent'], celebration: 'Test yourself by explaining it to a peer.' },
-    { id: 'ag25', area: 'communication', goalFrame: 'I will write a 1-paragraph self-introduction (including disability + accommodations + interests) and update it each year.', whyItMatters: 'A polished self-intro is the foundation of meeting-leading and college DSS conversations.', sampleSupports: ['Writing template', 'Counselor edit', 'Practice in mirror'], celebration: 'Use it once and notice how it feels.' },
-    { id: 'ag26', area: 'meeting-skills', goalFrame: 'I will summarize my IEP meeting outcomes in 3 sentences within 48 hours, to my case manager.', whyItMatters: 'Active summary tests your understanding and creates record.', sampleSupports: ['Summary template', 'Case manager check-in', 'Voice memo backup'], celebration: 'Compare your summary to the official meeting notes.' },
-    { id: 'ag27', area: 'self-regulation', goalFrame: 'I will identify my top 3 coping skills and which one fits which trigger.', whyItMatters: 'Right tool for right moment.', sampleSupports: ['Coping inventory', 'Counselor session', 'Practice trials'], celebration: 'Make a personal coping skill matchmaker card.' },
-    { id: 'ag28', area: 'self-regulation', goalFrame: 'I will track my regulation pass usage and review monthly with my counselor.', whyItMatters: 'Self-monitoring creates accountability and pattern noticing.', sampleSupports: ['Pass log card', 'Counselor 15-min monthly', 'Phone tracker'], celebration: 'Make a visual graph at year-end.' },
-    { id: 'ag29', area: 'social', goalFrame: 'I will practice 1 new boundary-setting script per quarter, in role-play with a trusted person.', whyItMatters: 'Boundaries fail without practice. Practice = readiness.', sampleSupports: ['Script library', 'Counselor or parent role-play', 'Mirror practice'], celebration: 'Use it once for real, even small.' },
-    { id: 'ag30', area: 'social', goalFrame: 'I will recognize one safe person and one unsafe pattern from history and articulate why.', whyItMatters: 'Trust calibration is a lifelong skill.', sampleSupports: ['Trust journal', 'Counselor session', 'Trust building rubric'], celebration: 'Apply to a current relationship.' },
-    { id: 'ag31', area: 'academic', goalFrame: 'I will pre-read assignment instructions and ask one clarifying question before starting, in 4 of 5 documented opportunities.', whyItMatters: 'Early questions prevent later misunderstandings.', sampleSupports: ['Pre-read checklist', 'Clarifying question stems', 'Teacher partnership'], celebration: 'Notice the difference in your accuracy.' },
-    { id: 'ag32', area: 'academic', goalFrame: 'I will graphic-organize one essay or project per quarter before drafting.', whyItMatters: 'Pre-structure prevents mid-write panic.', sampleSupports: ['Graphic organizer templates', 'Counselor or teacher review', 'Software (e.g., Inspiration, Mindomo)'], celebration: 'Compare drafts with vs. without organizer.' },
-    { id: 'ag33', area: 'transition', goalFrame: 'I will complete a job shadow or career experience day at least once per year, starting in 9th grade.', whyItMatters: 'Career exposure shapes options earlier rather than later.', sampleSupports: ['Job shadow request', 'Family contacts', 'Counselor partnership'], celebration: 'Take a photo at the workplace and bring it to next IEP.' },
-    { id: 'ag34', area: 'transition', goalFrame: 'I will explore 1 college or training program per year that matches my interests, including a visit.', whyItMatters: 'Postsecondary options need to be specific and visited.', sampleSupports: ['College list builder', 'Tour scheduling', 'Counselor partnership'], celebration: 'Add the school to your visual map.' },
-    { id: 'ag35', area: 'mental-health', goalFrame: 'I will identify my own warning signs of escalating distress in 3 categories (body, thought, behavior).', whyItMatters: 'Personal warning signs are the key to early intervention.', sampleSupports: ['Warning sign journal', 'Counselor mapping session', 'Body scan practice'], celebration: 'Create your personal warning sign card.' },
-    { id: 'ag36', area: 'mental-health', goalFrame: 'I will use 988 or my crisis line number once during a non-crisis to test the system, by Q2.', whyItMatters: 'Testing the line in non-crisis means you know what to expect in crisis.', sampleSupports: ['988 information card', 'Counselor walk-through', 'Family partnership'], celebration: 'Save the number in your phone with a heart emoji.' },
-    { id: 'ag37', area: 'tech', goalFrame: 'I will independently set up my phone calendar, reminders, and alarms for school routines.', whyItMatters: 'Self-managed reminders are the bridge to adulting.', sampleSupports: ['Phone tutorial', 'Family partnership', 'Counselor check-in'], celebration: 'Show a parent how you set them up.' },
-    { id: 'ag38', area: 'self-care', goalFrame: 'I will identify 3 hobbies or special interests and protect at least 30 minutes per week for them.', whyItMatters: 'Special interests are not distractions. They are your regulation and joy.', sampleSupports: ['Interest list', 'Scheduling support', 'Family partnership'], celebration: 'Track your weekly hobby time.' },
-    { id: 'ag39', area: 'community', goalFrame: 'I will share my self-advocacy journey with one younger student or peer mentor by year end.', whyItMatters: 'Teaching consolidates your own learning.', sampleSupports: ['Mentor program', 'Counselor partnership', 'Story script'], celebration: 'Note how it feels to be the helper.' },
-    { id: 'ag40', area: 'rights-knowledge', goalFrame: 'I will read or watch one self-advocate biography (Heumann, Young, etc.) per quarter and summarize one lesson.', whyItMatters: 'Models matter. Knowing your lineage steadies you.', sampleSupports: ['Bio list', 'Library partnership', 'Counselor or English teacher partnership'], celebration: 'Bring quotes to your IEP meeting.' }
-  ];
-
-  var FAMILY_CONVERSATION_PREP = [
-    { id: 'fc1', topic: 'I want to lead my next IEP meeting', openWith: 'Mom/Dad, I want to talk about something important to me. Is now an okay time?', mainPoint: 'I want to lead my next IEP meeting. Not all of it, but I want to introduce myself, share my goals, and pick at least one accommodation. I am not trying to replace you. I want to learn how to do this.', anticipate: ['"You are too young." Answer: "Federal law says I can attend at any age. Many students start as young as 8. Lets pick what fits me."', '"You will get nervous." Answer: "I might. Thats why I want to practice. Will you help me practice?"', '"You wont remember everything." Answer: "Thats why we make notes and bring them. You can fill in where I forget."'], support: 'Practice the meeting with parent at least 3 times before the actual meeting. Read your prep aloud.', closeWith: 'Will you let me try? I might mess up some parts. But I want to start practicing while you are still here to help.' },
-    { id: 'fc2', topic: 'I am questioning my gender or sexuality', openWith: 'Mom/Dad, I want to share something. I love you. I am still me. Can we talk?', mainPoint: 'Take your time naming it. You do not have to label yourself in this conversation. You can say: I am exploring. I am questioning. I am ___ (term you have chosen).', anticipate: ['"How do you know?" Answer: "I have been thinking about this for a while. I am still figuring some things out. I wanted to tell you because you matter to me."', '"You are too young to know." Answer: "Some people figure this out young. Some figure it out later. I am where I am. Please trust me."', 'Possible denial, anger, sadness. Allow them their reaction without taking it as the final word.'], support: 'Have a backup adult ready to call after the conversation. Tell them: "I am about to come out. I might need to call you in an hour."', closeWith: 'I love you. I am the same person. I just told you something true.' },
-    { id: 'fc3', topic: 'I am struggling with my mental health', openWith: 'Mom/Dad, I want to be honest about how I am doing. Can we sit somewhere quiet?', mainPoint: 'For the last ___ weeks, I have been feeling ___. It is affecting my sleep / school / appetite / thoughts. I want to see a therapist or talk to my doctor.', anticipate: ['"It is just stress." Answer: "Maybe. But I want a professional opinion. Will you help me make an appointment?"', '"You are being dramatic." Answer: "I am telling you the truth. Please believe me. If it turns out to be nothing, that is okay. I would rather check."', '"What did we do wrong?" Answer: "Nothing. This is not about blame. It is about getting help."'], support: 'Have your symptoms list written down so you do not have to invent it on the spot. Crisis Companion tool has trackers.', closeWith: 'Thank you for listening. Can we make an appointment this week?' },
-    { id: 'fc4', topic: 'I want to drop a hard class or change my schedule', openWith: 'Mom/Dad, I want to talk about my classes. Can we look at my schedule together?', mainPoint: 'I am in ___ class. Here are the grades, the time I spend, and how I feel about it. I want to drop / switch / move to a different level. Here is why.', anticipate: ['"You should push through." Answer: "I have been pushing through for ___ months. Pushing more is breaking me. I need a smarter strategy, not more grit."', '"You will regret this." Answer: "Maybe. But staying in this is hurting me now. We can re-add later if I want."', '"What about college?" Answer: "I will take an additional class next year or summer if needed. Right now I need air."'], support: 'Bring data: grades, time spent, sleep affected.', closeWith: 'I want to make a smart choice. Can we look at this together?' },
-    { id: 'fc5', topic: 'A teacher is treating me unfairly', openWith: 'Mom/Dad, I need help with something at school. It is about ___ teacher.', mainPoint: 'For the last ___ weeks, ___ has been happening. Examples: [give 2-3 specific dated examples]. I have tried [list what you have tried]. It is affecting [list impacts]. I want to ___.', anticipate: ['"Are you sure?" Answer: "Yes. Here are my dated examples."', '"Maybe you are misreading." Answer: "Maybe. But the pattern is consistent across 5 incidents. That is data, not feeling."', '"Lets just deal with it." Answer: "It is affecting my grades and my mental health. I need it addressed."'], support: 'Document everything in writing before the conversation. Bring it printed.', closeWith: 'Will you email the principal with me? Or come to a meeting with the teacher?' },
-    { id: 'fc6', topic: 'I do not want to go to college', openWith: 'Mom/Dad, I want to talk about after high school. Can we sit?', mainPoint: 'College is not the right fit for me right now. Here is what I am considering instead: [trade school, gap year, employment, etc.]. Here is what I know about it. Here is what I am still figuring out.', anticipate: ['"You will fall behind." Answer: "Or I will get ahead in something else. Lets compare paths."', '"You can always go back." Answer: "Yes. And many people do. I want to start where I am ready."', 'Family expectations or generational pride about college.'], support: 'Research your alternative thoroughly. Bring data: salaries, training time, growth.', closeWith: 'I am not closing the door forever. I am picking the right door for now.' },
-    { id: 'fc7', topic: 'I want to attend a school event that scares my family', openWith: 'Mom/Dad, can we talk about ___ event?', mainPoint: 'I want to go to ___. Here is the plan: who is going, when, where, transportation, check-in plan. Here is what I will do if ___ happens.', anticipate: ['"It is not safe." Answer: "Here is the safety plan: [details]. What additional safety would you want?"', '"Why does this matter?" Answer: "Because [specific reason]. Other kids go. I want to go too."', 'Family-specific worry: address the actual worry, not the generic version.'], support: 'Plan with details. Sketch ride home, check-in times, what-if scenarios.', closeWith: 'Will you trust me with this one? Here is how I will earn that trust.' },
-    { id: 'fc8', topic: 'I want to date someone', openWith: 'Mom/Dad, can I tell you about someone?', mainPoint: 'I have been spending time with ___. I want to ___ (date them, go to dance with them, etc.). Here is what I know about them: [character traits, interests]. Here are the boundaries I will hold.', anticipate: ['"You are too young." Answer: "Here are my boundaries: [list]. I am asking for [specific permission]."', '"I do not approve of this person." Answer: "Tell me why specifically. Is it about their identity? Their family? Their behavior? Lets talk through it."', '"Wait." Answer: "How long? What needs to be true for the answer to change?"'], support: 'Be honest about your boundaries and your awareness of risks.', closeWith: 'Can we start with [smaller step] and see how it goes?' },
-    { id: 'fc9', topic: 'I want to set a phone or screen boundary with family', openWith: 'Mom/Dad, I want to ask about something. Can we make a rule about phones together?', mainPoint: 'I have noticed [pattern: phone-checked-during-dinner, late-night-texts, etc.]. I would like for us to ___ together (phones off at dinner, etc.). I will do my part. I am asking you to do yours.', anticipate: ['"You are the one who is always on it." Answer: "Yes, I am too. Lets both work on this. I will go first if you will."', 'Defensiveness.'], support: 'Propose a small step. Easier yes than big change.', closeWith: 'Will you do this with me?' },
-    { id: 'fc10', topic: 'A sibling is teasing me about my accommodations', openWith: 'Mom/Dad, I need help with ___ (sibling).', mainPoint: 'For the last ___ weeks, ___ has been ___. Examples: [give 2-3]. It is hurting me. I have asked them to stop. They have not. I want you to help.', anticipate: ['"Just ignore it." Answer: "I have. It has not stopped. I need backup from you."', '"They do not mean it." Answer: "Maybe. But the impact is real. Can we address the impact?"'], support: 'Tell the parent what specific actions you want them to take.', closeWith: 'Will you have a conversation with them? Or can we have a family meeting?' },
-    { id: 'fc11', topic: 'I want privacy in my room or with my devices', openWith: 'Mom/Dad, I want to talk about privacy. Can we sit?', mainPoint: 'I am ___ years old. I want ___ (privacy in my room, password on my phone, etc.). I understand you care about me. Here is what I propose to give you peace of mind: [transparency, check-ins, etc.] in exchange for the privacy.', anticipate: ['"We do not have secrets in this family." Answer: "Privacy is not secrecy. I will keep ___ open with you. I am asking for ___ private."', 'Worry about safety. Address it specifically.'], support: 'Offer a trial period. 2 weeks. Re-evaluate.', closeWith: 'Will you let us try?' },
-    { id: 'fc12', topic: 'A medication is not working for me', openWith: 'Mom/Dad, I want to talk about my medication. Can we plan a call to the doctor together?', mainPoint: 'I have been on ___ for ___ weeks. Here is what is working: [list]. Here is what is not: [list]. I would like to discuss changing or stopping.', anticipate: ['"Give it more time." Answer: "Maybe. But the doctor said to call if [specific concerns]. I think we are at that point."', 'Worry about stigma or dependence.'], support: 'Track your symptoms in writing. Bring data.', closeWith: 'Can we call the doctor this week?' },
-    { id: 'fc13', topic: 'I am being bullied', openWith: 'Mom/Dad, something is happening at school. I have not told you. I need to now.', mainPoint: 'For ___ weeks, ___ has been happening. Examples: [list]. It is affecting [school, sleep, mental health]. I want you to know. I want help.', anticipate: ['"Why did you not tell me?" Answer: "I was scared / ashamed / hoping it would stop. I am telling you now."', '"Just ignore them." Answer: "It is past that point. I need you to help me handle this."'], support: 'Bring documentation: dates, places, names, witnesses.', closeWith: 'Will you help me report this and protect me?' },
-    { id: 'fc14', topic: 'I want to get a job', openWith: 'Mom/Dad, can we talk about working part-time?', mainPoint: 'I want to start working ___. Here is the plan: [hours, location, transportation, school impact]. Here is what I want to earn for: [savings, college, car]. Here is what I will keep up: [school, chores, family time].', anticipate: ['"You will fall behind in school." Answer: "Here is my plan to protect study time."', '"You are too young." Answer: "I am ___. Here are the labor laws and what I am allowed to do."'], support: 'Bring a written plan with hours mapped against school week.', closeWith: 'Can we start with [trial period]?' },
-    { id: 'fc15', topic: 'I want to ask about money or financial transparency', openWith: 'Mom/Dad, can we talk about money? I want to understand more.', mainPoint: 'I am at the age where I want to learn ___ (budgeting, saving, our family situation). Can you teach me ___?', anticipate: ['"You do not need to worry." Answer: "I want to learn. It will help me when I am out of the house."', 'Family privacy norms.'], support: 'Offer to learn alongside them. Suggest a book or online resource.', closeWith: 'Will you teach me one thing per month?' },
-    { id: 'fc16', topic: 'My faith or beliefs are changing', openWith: 'Mom/Dad, I have been thinking about something important. I love you. I want to share.', mainPoint: 'My understanding of ___ (our faith, beliefs, values) has been changing. I am thinking about ___. I am not rejecting you or what you taught me. I am exploring.', anticipate: ['"This is a phase." Answer: "Maybe. But it is real right now. Will you walk with me?"', 'Strong religious or cultural reaction. Stay calm. State your love clearly.'], support: 'Have a trusted outside adult ready to call after.', closeWith: 'I am not closing this conversation. I am opening it. I want to talk again.' },
-    { id: 'fc17', topic: 'I want to talk about race/identity in our family', openWith: 'Mom/Dad, I want to ask about something hard. Can we sit?', mainPoint: 'I am navigating ___ (race, ethnicity, mixed identity, etc.) and I have questions or things to share.', anticipate: ['Discomfort. Family history pain. Generational silence.', '"We do not talk about that." Answer: "I know. And I am asking now."'], support: 'Have an outside ally (counselor, community leader) for follow-up.', closeWith: 'Thank you for listening, even if it was hard.' },
-    { id: 'fc18', topic: 'I want to plan for after-graduation independence', openWith: 'Mom/Dad, can we plan for after high school together?', mainPoint: 'I want to start practicing ___ (cooking, banking, transportation, scheduling appointments) so I am ready. Will you teach me one new skill per month?', anticipate: ['"There is plenty of time." Answer: "I want to start now. Time goes faster than we think."', '"I will just keep doing it for you." Answer: "I love that. AND I want to learn. Lets do it together."'], support: 'Make a list of life skills. Pick 1-2 per month.', closeWith: 'Can we start with ___ this week?' },
-    { id: 'fc19', topic: 'I want to be referred to by different name or pronouns', openWith: 'Mom/Dad, I want to ask you to use ___ for me. It feels right.', mainPoint: 'My name will be ___. My pronouns are ___. I would like you to use them. I know it might take adjusting. I will be patient.', anticipate: ['"This is hard for me." Answer: "I know. It is also important to me. Will you try?"', '"What about your given name?" Answer: "It is still on paper. But this is what I want to be called."'], support: 'Backup adult or community ready.', closeWith: 'Thank you for hearing me.' },
-    { id: 'fc20', topic: 'I need help with a substance issue', openWith: 'Mom/Dad, I have been using ___. I am asking for help.', mainPoint: 'I have been using ___ for ___. Here is what is happening. I want to stop or get help. I need ___.', anticipate: ['Anger, fear, blame. Allow it.', '"How could you?" Answer: "I am scared too. I am telling you because I trust you."'], support: 'Have a counselor or trusted adult on standby.', closeWith: 'Will you help me get connected to ___ (treatment, support group)?' }
-  ];
-
-  var FRIENDSHIP_AUDIT_QUESTIONS = [
-    { id: 'fa1', category: 'safety', q: 'Does this person make me feel physically safe?' },
-    { id: 'fa2', category: 'safety', q: 'Does this person respect my no?' },
-    { id: 'fa3', category: 'safety', q: 'Does this person stop touching me when I ask?' },
-    { id: 'fa4', category: 'safety', q: 'Does this person pressure me to do things I would not choose alone?' },
-    { id: 'fa5', category: 'safety', q: 'Can I tell this person something hard without fear of being mocked?' },
-    { id: 'fa6', category: 'reciprocity', q: 'Does this person ask about me, not just talk about themselves?' },
-    { id: 'fa7', category: 'reciprocity', q: 'When I share something hard, does this person sit with it?' },
-    { id: 'fa8', category: 'reciprocity', q: 'Does this person celebrate my wins?' },
-    { id: 'fa9', category: 'reciprocity', q: 'Does this person help when I need help, or only when convenient for them?' },
-    { id: 'fa10', category: 'reciprocity', q: 'Have I helped them recently? Did they receive it well?' },
-    { id: 'fa11', category: 'reciprocity', q: 'Do we both bring up plans, or only one of us?' },
-    { id: 'fa12', category: 'truth', q: 'Does this person tell me hard truths when I need them?' },
-    { id: 'fa13', category: 'truth', q: 'Does this person let me tell hard truths back?' },
-    { id: 'fa14', category: 'truth', q: 'Can we apologize to each other and move forward?' },
-    { id: 'fa15', category: 'truth', q: 'Does this person try to control my view of myself?' },
-    { id: 'fa16', category: 'truth', q: 'Does this person try to control my view of others I love?' },
-    { id: 'fa17', category: 'identity', q: 'Does this person know my disability / identity / story?' },
-    { id: 'fa18', category: 'identity', q: 'Does this person respect that knowledge?' },
-    { id: 'fa19', category: 'identity', q: 'Does this person treat my accommodations as normal?' },
-    { id: 'fa20', category: 'identity', q: 'Does this person introduce me to others well?' },
-    { id: 'fa21', category: 'identity', q: 'Does this person speak well of me when I am not in the room?' },
-    { id: 'fa22', category: 'growth', q: 'Am I growing in this friendship?' },
-    { id: 'fa23', category: 'growth', q: 'Is this person growing in this friendship?' },
-    { id: 'fa24', category: 'growth', q: 'Do I dread seeing this person sometimes?' },
-    { id: 'fa25', category: 'growth', q: 'Do I leave conversations with them feeling better or worse?' },
-    { id: 'fa26', category: 'growth', q: 'In a year, do I want to be more like this person?' },
-    { id: 'fa27', category: 'community', q: 'Does this person know my other friends?' },
-    { id: 'fa28', category: 'community', q: 'Is this person jealous of other friends?' },
-    { id: 'fa29', category: 'community', q: 'Has this person tried to isolate me?' },
-    { id: 'fa30', category: 'community', q: 'Does this person fit into the larger network of people I want around me?' },
-    { id: 'fa31', category: 'time', q: 'Have we spent quality (not just quantity) time recently?' },
-    { id: 'fa32', category: 'time', q: 'Is this person a daily friend, a weekly friend, a monthly friend, or a yearly friend? Is that right?' },
-    { id: 'fa33', category: 'time', q: 'Have we drifted? Is the drift natural or worrying?' },
-    { id: 'fa34', category: 'effort', q: 'Who initiates most often?' },
-    { id: 'fa35', category: 'effort', q: 'Is the effort even? If not, am I okay with that?' },
-    { id: 'fa36', category: 'conflict', q: 'How do we handle conflict?' },
-    { id: 'fa37', category: 'conflict', q: 'Have we ever repaired after a fight?' },
-    { id: 'fa38', category: 'conflict', q: 'Does this person give me silent treatment?' },
-    { id: 'fa39', category: 'conflict', q: 'Have I given them silent treatment?' },
-    { id: 'fa40', category: 'conflict', q: 'Can we disagree and still be friends?' },
-    { id: 'fa41', category: 'energy', q: 'Do I feel energized after spending time with this person?' },
-    { id: 'fa42', category: 'energy', q: 'Do I feel drained after spending time with this person?' },
-    { id: 'fa43', category: 'energy', q: 'If drained, is it the type of drained I can recover from?' },
-    { id: 'fa44', category: 'patterns', q: 'Is there a pattern of forgetting my needs?' },
-    { id: 'fa45', category: 'patterns', q: 'Is there a pattern of canceling on me?' },
-    { id: 'fa46', category: 'patterns', q: 'Is there a pattern of crisis that I am asked to manage?' },
-    { id: 'fa47', category: 'patterns', q: 'Is there a pattern of mocking or putting me down?' },
-    { id: 'fa48', category: 'patterns', q: 'Is there a pattern of love-bombing followed by withdrawal?' },
-    { id: 'fa49', category: 'final', q: 'If I had no history with this person, would I choose them today?' },
-    { id: 'fa50', category: 'final', q: 'What is the friendship I deserve? Does this match?' }
-  ];
-
-  var ADVOCACY_BOOK_RECS = [
-    {
-      id: 'br1',
-      title: 'Being Heumann: An Unrepentant Memoir of a Disability Rights Activist',
-      author: 'Judy Heumann with Kristen Joiner',
-      year: 2020,
-      ageLevel: 'YA / adult',
-      topics: ['disability rights history', 'lifelong activism', 'memoir'],
-      whyItMatters: 'Judy Heumann is the mother of modern disability rights. Her memoir traces her path from a child denied school entry because of her wheelchair to one of the most influential disability rights advocates in history. Includes the 504 sit-in, ADA passage, and international work.',
-      bestUse: 'Read with a friend or family member. Discuss what changes in YOUR understanding chapter by chapter.',
-      keyTakeaways: [
-        'Disability rights took decades to win',
-        'Direct action works',
-        'You are part of a tradition'
-      ]
-    },
-    {
-      id: 'br2',
-      title: 'Disability Visibility: First-Person Stories from the Twenty-First Century',
-      author: 'edited by Alice Wong',
-      year: 2020,
-      ageLevel: 'YA / adult',
-      topics: ['disability identity', 'first-person essays', 'multiply marginalized'],
-      whyItMatters: 'Anthology of 37 first-person essays from disabled people. Covers a wide spectrum of disability, race, class, gender, sexuality. Modeling what it looks like to write your own story.',
-      bestUse: 'Read one essay at a time. Note which ones land for you. Write your own essay in response to one.',
-      keyTakeaways: [
-        'Your story is part of a chorus',
-        'Multiple identities make richer stories',
-        'Writing your own story is advocacy'
-      ]
-    },
-    {
-      id: 'br3',
-      title: 'Demystifying Disability: What to Know, What to Say, and How to Be an Ally',
-      author: 'Emily Ladau',
-      year: 2021,
-      ageLevel: 'YA / adult',
-      topics: ['ally education', 'disability 101', 'language'],
-      whyItMatters: 'Accessible introduction to disability concepts, terms, history, and etiquette. Great for non-disabled allies AND for disabled people who want to articulate their experience.',
-      bestUse: 'Lend to a friend or teacher who wants to learn. Or read yourself to find language for things you have always felt.',
-      keyTakeaways: [
-        'Disability is a normal part of human experience',
-        'Language matters AND there is variation within community',
-        'Allyship is action, not feeling'
-      ]
-    },
-    {
-      id: 'br4',
-      title: 'Unmasking Autism: Discovering the New Faces of Neurodiversity',
-      author: 'Devon Price',
-      year: 2022,
-      ageLevel: 'YA / adult',
-      topics: ['autism', 'masking', 'late diagnosis'],
-      whyItMatters: 'For autistic readers (especially late-diagnosed) who recognize they have been masking. Argues for the right to unmask, and provides practical strategies. Critically examines the cost of masking.',
-      bestUse: 'Read with a journal. Reflect on what your own masking has cost you.',
-      keyTakeaways: [
-        'Masking is exhausting and damaging',
-        'Unmasking is gradual and contextual',
-        'You are not broken; the world is mismatched'
-      ]
-    },
-    {
-      id: 'br5',
-      title: 'All My Stripes: A Story for Children with Autism',
-      author: 'Shaina Rudolph and Danielle Royer',
-      year: 2015,
-      ageLevel: 'elementary',
-      topics: ['autism', 'identity', 'strengths-based'],
-      whyItMatters: 'Picture book featuring Zane, an autistic zebra, who learns that his autism is just one stripe among many. Strengths-based portrayal.',
-      bestUse: 'Read with younger sibling or to younger student. Foundation for strengths-based identity.',
-      keyTakeaways: [
-        'Disability is one part of who you are',
-        'Strengths and challenges go together',
-        'Pride in identity is for kids too'
-      ]
-    },
-    {
-      id: 'br6',
-      title: 'The Reason I Jump',
-      author: 'Naoki Higashida',
-      year: 2007,
-      ageLevel: 'YA / adult',
-      topics: ['autism', 'communication', 'sensory experience'],
-      whyItMatters: 'Written by a 13-year-old nonspeaking autistic boy in Japan. Answers questions about why autistic people do what they do, in their own words. Counters the assumption that nonspeaking autistic people do not have rich inner lives.',
-      bestUse: 'Read slowly. Each chapter is a different question.',
-      keyTakeaways: [
-        'Nonspeaking does not mean not thinking',
-        'Sensory experience is part of identity',
-        'Autistic voices belong at the center'
-      ]
-    },
-    {
-      id: 'br7',
-      title: 'Sitting Pretty: The View from My Ordinary Resilient Disabled Body',
-      author: 'Rebekah Taussig',
-      year: 2020,
-      ageLevel: 'YA / adult',
-      topics: ['wheelchair use', 'memoir', 'sex and disability'],
-      whyItMatters: 'Memoir from a paralyzed woman who refuses to be either tragic or inspirational. Honest about all parts of her life including dating, body, work, parenthood.',
-      bestUse: 'Read for the voice. Note where she defies expectations.',
-      keyTakeaways: [
-        'Disabled bodies are bodies, not symbols',
-        'Inspiration porn is exhausting',
-        'Ordinary disabled lives are radical'
-      ]
-    },
-    {
-      id: 'br8',
-      title: 'Disability Is for Everyone: Strategies for an Inclusive Society',
-      author: 'multiple authors',
-      year: 'various',
-      ageLevel: 'YA / adult',
-      topics: ['universal design', 'inclusion', 'systems change'],
-      whyItMatters: 'Anthology approach. Multiple voices articulate that accessibility benefits everyone.',
-      bestUse: 'Use as reference for advocacy with non-disabled adults who think accommodations are zero-sum.',
-      keyTakeaways: [
-        'Accessibility is universal benefit',
-        'Inclusion is systems, not gestures',
-        'Disability community has theory and practice'
-      ]
-    },
-    {
-      id: 'br9',
-      title: 'The Curious Incident of the Dog in the Night-Time',
-      author: 'Mark Haddon',
-      year: 2003,
-      ageLevel: 'YA',
-      topics: ['autism (fiction)', 'narrative voice'],
-      whyItMatters: 'Novel narrated by a 15-year-old autistic protagonist. Note: Haddon is not autistic and the autistic community has mixed views. Read critically; pair with autistic-authored work.',
-      bestUse: 'Read alongside a book by an autistic author for contrast. Discuss representation.',
-      keyTakeaways: [
-        'Representation matters AND who is doing the representing matters',
-        'No single autistic story is the autistic story',
-        'Reading critically is part of being an informed reader'
-      ]
-    },
-    {
-      id: 'br10',
-      title: 'Year of the Tiger: An Activist\'s Life',
-      author: 'Alice Wong',
-      year: 2022,
-      ageLevel: 'YA / adult',
-      topics: ['activism', 'Asian-American disability', 'memoir'],
-      whyItMatters: 'Memoir from Alice Wong, founder of Disability Visibility Project. Maps her life as activist, journalist, organizer. Centers multiply marginalized perspective.',
-      bestUse: 'Read with attention to how she built community and platform.',
-      keyTakeaways: [
-        'Activism takes many forms',
-        'Multiply marginalized organizing creates new possibilities',
-        'Disability media is necessary'
-      ]
-    },
-    {
-      id: 'br11',
-      title: 'Care Work: Dreaming Disability Justice',
-      author: 'Leah Lakshmi Piepzna-Samarasinha',
-      year: 2018,
-      ageLevel: 'YA / adult',
-      topics: ['disability justice', 'queer disabled experience', 'community care'],
-      whyItMatters: 'Essays from a queer disabled writer of color. Examines what it means to care for disabled community members in radical, intersectional ways.',
-      bestUse: 'Read in conversation with disability rights texts. Note differences.',
-      keyTakeaways: [
-        'Disability justice differs from disability rights',
-        'Care is political',
-        'Mutual aid is foundational'
-      ]
-    },
-    {
-      id: 'br12',
-      title: 'Disability Pride: Dispatches from a Post-ADA World',
-      author: 'Ben Mattlin',
-      year: 2022,
-      ageLevel: 'YA / adult',
-      topics: ['disability pride', 'history', 'identity formation'],
-      whyItMatters: 'Examines the meaning of disability pride 30 years after ADA. Honest about wins and losses.',
-      bestUse: 'Read for context on how disability identity has evolved.',
-      keyTakeaways: [
-        'Pride is a discipline, not a feeling',
-        'Movement history is alive',
-        'There is no single path to identity'
-      ]
-    }
-  ];
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
   var ADVOCACY_PODCAST_RECS = [
     { id: 'pr1', title: 'Disability Visibility', host: 'Alice Wong', topic: 'disability culture and politics', startWith: 'Episode with Vilissa Thompson on Black disability', length: '~45 min', why: 'Politically grounded, broadly accessible.' },
     { id: 'pr2', title: 'The Heumann Perspective', host: 'Judy Heumann (continuing)', topic: 'disability rights conversations', startWith: 'Interview with Sin Invalid', length: '~60 min', why: 'Foundational figure in conversation with movement leaders.' },
@@ -2879,281 +2075,8 @@ window.SelHub = window.SelHub || {
     { id: 'pr8', title: 'Crip Crap', host: 'Various', topic: 'disability humor and analysis', startWith: 'Topical episodes', length: 'varies', why: 'Humor as advocacy tool.' }
   ];
 
-  var IEP_GLOSSARY_DEEP = [
-    {
-      id: 'ig1',
-      term: 'Present Levels of Performance (PLP / PLAAFP)',
-      shortDef: 'The section of an IEP that describes what the student can currently do and what they need.',
-      fullDef: 'PLAAFP stands for Present Levels of Academic Achievement and Functional Performance. It is the foundation of an IEP because every goal, service, and accommodation must connect to a present level. PLAAFP should include strengths, needs, and how the disability affects involvement in general education.',
-      whyItMatters: 'Many IEPs have weak PLAAFP. If your PLAAFP just lists deficits, push back. Strengths matter. Specific data matters.',
-      whatToLookFor: [
-        'Specific data, not vague statements',
-        'Strengths AND needs',
-        'How disability affects general education involvement',
-        'Recent (within past year)',
-        'Multiple sources of data'
-      ],
-      redFlags: [
-        'Only deficits listed',
-        'Vague statements ("difficulty with academics")',
-        'Same wording year over year (copy-paste)',
-        'No data citations'
-      ]
-    },
-    {
-      id: 'ig2',
-      term: 'Measurable Annual Goals',
-      shortDef: 'Specific goals your IEP team writes for what you should be able to do in one year.',
-      fullDef: 'Goals must be measurable, meaning they specify what skill, in what conditions, at what level. Federal law requires goals to be ambitious AND attainable.',
-      whyItMatters: 'Goals drive everything. If goals are weak, services and progress reporting are weak too.',
-      whatToLookFor: [
-        'Specific skill named',
-        'Conditions stated (where, how, with what supports)',
-        'Mastery criteria (e.g., 80% accuracy in 4 of 5 trials)',
-        'Method of measurement specified',
-        'Realistic timeline'
-      ],
-      redFlags: [
-        'Vague goals ("will improve reading")',
-        'No mastery criteria',
-        'Same goal year over year',
-        'Goals that just maintain rather than progress'
-      ],
-      sampleGoodGoal: 'Student will read grade-level passages and answer comprehension questions with 80% accuracy across 4 of 5 weekly probes, with text-to-speech accommodation provided.',
-      sampleBadGoal: 'Student will improve in reading.'
-    },
-    {
-      id: 'ig3',
-      term: 'Accommodations',
-      shortDef: 'Adjustments to HOW you do work, without changing WHAT you do.',
-      fullDef: 'Accommodations level the playing field. They do not change the curriculum or the standard. Examples: extended time, quiet space, audio books, scribe.',
-      whyItMatters: 'Accommodations should be used, not just listed. If accommodations are not being used, IEP team needs to know.',
-      vsModifications: 'Modifications change WHAT you do. Accommodations change HOW. Modifications affect grade-level expectations; accommodations preserve them.'
-    },
-    {
-      id: 'ig4',
-      term: 'Modifications',
-      shortDef: 'Changes to WHAT you do, the curriculum or expectations themselves.',
-      fullDef: 'Modifications are appropriate when the student cannot access grade-level work even with accommodations. Examples: reduced number of problems, different reading level, alternate assessment.',
-      whyItMatters: 'Modifications affect grade-level expectations. Consider carefully whether they are appropriate. Sometimes modifications are over-used and limit student potential. Sometimes they are necessary.',
-      vsAccommodations: 'See accommodations entry.'
-    },
-    {
-      id: 'ig5',
-      term: 'Related Services',
-      shortDef: 'Services provided in addition to special education instruction, like speech-language therapy, OT, PT, counseling.',
-      fullDef: 'Related services support student\'s ability to benefit from special education. Each service should be specified in IEP: frequency, duration, location, provider type.',
-      whyItMatters: 'Related services are often where accommodations fall short. If service is "30 min per week" but actually provided 15 minutes 2 of 4 weeks, that is a violation.',
-      whatToLookFor: [
-        'Frequency and duration specified',
-        'Direct vs. consult service noted',
-        'Provider credentials',
-        'Location (push-in vs. pull-out)',
-        'Coordination with classroom teachers'
-      ]
-    },
-    {
-      id: 'ig6',
-      term: 'Least Restrictive Environment (LRE)',
-      shortDef: 'Federal mandate that students with disabilities be educated with non-disabled peers to the maximum extent appropriate.',
-      fullDef: 'LRE is a continuum from full general education to specialized settings. Decisions must be individualized and supported by data. Removal from general education requires justification.',
-      whyItMatters: 'LRE protects against unnecessary segregation. School cannot just decide to put you in self-contained because it is convenient.',
-      whatToLookFor: [
-        'Why is more restrictive environment proposed?',
-        'What has been tried in less restrictive environment?',
-        'How will progress be measured?',
-        'How will you return to less restrictive environment?'
-      ]
-    },
-    {
-      id: 'ig7',
-      term: 'Free Appropriate Public Education (FAPE)',
-      shortDef: 'Federal mandate that all students with disabilities receive education appropriate to their unique needs at no cost.',
-      fullDef: 'FAPE is the core promise of IDEA. The Endrew F. Supreme Court decision (2017) clarified that FAPE means appropriately ambitious progress, not just minimal benefit.',
-      whyItMatters: 'FAPE is what your IEP is for. If your school is not providing FAPE, you have legal remedy.',
-      keyComponents: [
-        'Special education designed to meet unique needs',
-        'Related services as needed',
-        'Free (no cost to family)',
-        'Public (not requiring private placement)',
-        'In conformity with IEP'
-      ]
-    },
-    {
-      id: 'ig8',
-      term: 'Procedural Safeguards',
-      shortDef: 'Parent and student rights under IDEA.',
-      fullDef: 'Procedural safeguards include rights to prior written notice, parental consent, access to records, dispute resolution, independent educational evaluation, and more. School must provide annually.',
-      whyItMatters: 'Knowing procedural safeguards is the foundation of advocacy.',
-      keyRights: [
-        'Right to prior written notice before changes',
-        'Right to refuse consent to evaluations or services',
-        'Right to access educational records',
-        'Right to independent educational evaluation',
-        'Right to mediation and due process',
-        'Right to attorney',
-        'Right to participation in IEP process'
-      ]
-    },
-    {
-      id: 'ig9',
-      term: 'Prior Written Notice (PWN)',
-      shortDef: 'School must provide written notice before proposing or refusing changes to IEP, identification, evaluation, or placement.',
-      fullDef: 'PWN must explain what is proposed or refused, why, what data was considered, what alternatives were considered. Cannot be a single-paragraph summary.',
-      whyItMatters: 'PWN forces school to articulate decisions in writing. Vague PWN may indicate weak decision.',
-      whatToLookFor: [
-        'Specific description of proposal',
-        'Reasons (with data)',
-        'Alternatives considered',
-        'Other relevant information',
-        'Parent\'s rights to disagree'
-      ]
-    },
-    {
-      id: 'ig10',
-      term: 'Eligibility Determination',
-      shortDef: 'Process by which school determines whether student qualifies for special education.',
-      fullDef: 'Federal IDEA defines 13 disability categories. School team (including parent) reviews evaluation data and determines whether student meets criteria for one or more categories and needs special education.',
-      whyItMatters: 'Eligibility determines whether you get an IEP. If denied, you may have right to ask why and appeal.',
-      categories: [
-        'Autism',
-        'Deaf-Blindness',
-        'Deafness',
-        'Emotional Disturbance',
-        'Hearing Impairment',
-        'Intellectual Disability',
-        'Multiple Disabilities',
-        'Orthopedic Impairment',
-        'Other Health Impairment (OHI)',
-        'Specific Learning Disability',
-        'Speech or Language Impairment',
-        'Traumatic Brain Injury',
-        'Visual Impairment'
-      ]
-    },
-    {
-      id: 'ig11',
-      term: 'Transition Planning',
-      shortDef: 'IDEA-required planning for life after high school.',
-      fullDef: 'Starts at age 14 in many states (16 federal floor). Must include measurable post-school goals in education, employment, and independent living. Updated annually.',
-      whyItMatters: 'High school passes fast. Transition planning is the bridge to your adult life.',
-      whatToLookFor: [
-        'Post-school goals (your goals)',
-        'Transition assessments documenting interests, preferences',
-        'Course of study aligned with goals',
-        'Connections to adult services',
-        'Self-advocacy goals'
-      ]
-    },
-    {
-      id: 'ig12',
-      term: 'Age of Majority',
-      shortDef: 'Age at which rights transfer from parent to student (18 in most states).',
-      fullDef: 'When student turns 18, IEP rights transfer to them unless court has appointed guardian. School must notify of rights transfer in advance.',
-      whyItMatters: 'You become the legal IEP signer at 18. Most students need to actively learn how to lead their IEP before then.',
-      keyConsiderations: [
-        'You can still want parent input',
-        'You can sign waivers to share information with parents',
-        'Some students choose guardianship; others reject it',
-        'Supported decision-making is alternative to guardianship'
-      ]
-    }
-  ];
-
-  var MEETING_AGENDA_TEMPLATES = [
-    {
-      id: 'ma1',
-      type: 'Annual IEP Review',
-      whoAttends: ['Student', 'Parent', 'General education teacher', 'Special education teacher / case manager', 'School psychologist or counselor', 'LEA representative', 'Related service providers'],
-      typicalLength: '60-90 minutes',
-      agenda: [
-        { item: 'Introductions', minutes: 5, who: 'all', whatToDo: 'Each person introduces themselves and their role.' },
-        { item: 'Student leads opening', minutes: 5, who: 'student', whatToDo: 'Student introduces themselves, names one strength, one goal area.' },
-        { item: 'Review of current PLAAFP', minutes: 10, who: 'case manager', whatToDo: 'Read present levels. Student adds their perspective.' },
-        { item: 'Progress on current goals', minutes: 15, who: 'case manager + service providers', whatToDo: 'Review each goal. Student weighs in on what worked, what did not.' },
-        { item: 'Review accommodations: what helped, what did not', minutes: 10, who: 'student leads', whatToDo: 'Student names which accommodations they actually used. Team discusses adjustments.' },
-        { item: 'New goals for coming year', minutes: 15, who: 'all', whatToDo: 'Discuss and finalize 3-5 goals.' },
-        { item: 'Services and placement', minutes: 10, who: 'team', whatToDo: 'Confirm services, frequency, locations.' },
-        { item: 'Transition planning (if applicable)', minutes: 10, who: 'student + counselor', whatToDo: 'Review post-school goals, transition activities.' },
-        { item: 'Q&A and concerns', minutes: 5, who: 'all', whatToDo: 'Last chance for questions.' },
-        { item: 'Sign-off and next steps', minutes: 5, who: 'parent / student', whatToDo: 'Sign IEP. Confirm next steps. Schedule any follow-ups.' }
-      ],
-      studentPrep: [
-        'Read your IEP in advance',
-        'Bring your strengths/needs list',
-        'Bring accommodation use log',
-        'Have 1-2 goal proposals',
-        'Bring questions in writing'
-      ]
-    },
-    {
-      id: 'ma2',
-      type: 'Re-Evaluation Planning',
-      whoAttends: ['Student (if appropriate)', 'Parent', 'Case manager', 'School psychologist', 'Other evaluators as needed'],
-      typicalLength: '45 minutes',
-      agenda: [
-        { item: 'Review purpose of re-evaluation', minutes: 5, who: 'case manager', whatToDo: 'Why is re-eval needed? Eligibility, programming, transition?' },
-        { item: 'Review existing data', minutes: 10, who: 'team', whatToDo: 'What do we already know? What gaps?' },
-        { item: 'Propose evaluation areas', minutes: 15, who: 'team', whatToDo: 'Cognitive, achievement, behavioral, OT/PT/SLP, etc.' },
-        { item: 'Discuss parental consent', minutes: 5, who: 'parent', whatToDo: 'Parent reviews and signs or refuses.' },
-        { item: 'Set timeline', minutes: 5, who: 'team', whatToDo: '60 days for full re-eval typical. Schedule eligibility meeting.' },
-        { item: 'Q&A', minutes: 5, who: 'all', whatToDo: 'Last questions.' }
-      ],
-      studentPrep: ['You can attend if appropriate. Ask about what each evaluation entails.']
-    },
-    {
-      id: 'ma3',
-      type: 'Manifestation Determination Review',
-      whoAttends: ['Student', 'Parent', 'School administrator', 'Special education teacher', 'School psychologist', 'Behavior specialist (if BIP)'],
-      typicalLength: '60-90 minutes',
-      agenda: [
-        { item: 'Statement of disciplinary action', minutes: 5, who: 'administrator', whatToDo: 'What discipline is proposed? Why?' },
-        { item: 'Review of IEP and BIP', minutes: 15, who: 'case manager', whatToDo: 'Is IEP/BIP being implemented? Where?' },
-        { item: 'Description of behavior', minutes: 10, who: 'witnesses', whatToDo: 'What happened, factually?' },
-        { item: 'Connection to disability?', minutes: 20, who: 'team', whatToDo: 'Was behavior caused by or substantially related to disability? Was it caused by failure to implement IEP?' },
-        { item: 'Determination', minutes: 10, who: 'team', whatToDo: 'Either: behavior was manifestation, or it was not.' },
-        { item: 'Next steps', minutes: 10, who: 'team', whatToDo: 'If manifestation: return to placement, develop new BIP. If not: discipline proceeds; FAPE still required.' },
-        { item: 'Documentation and rights', minutes: 5, who: 'administrator', whatToDo: 'Document decision. Provide procedural safeguards.' }
-      ],
-      studentPrep: ['Document your version of events same-day', 'Bring witness names', 'Bring parent or advocate']
-    },
-    {
-      id: 'ma4',
-      type: 'Mediation Session',
-      whoAttends: ['Student (sometimes)', 'Parent', 'District representative', 'Trained mediator'],
-      typicalLength: '4-8 hours typically',
-      agenda: [
-        { item: 'Opening statements by mediator', minutes: 15, who: 'mediator', whatToDo: 'Ground rules, process, confidentiality.' },
-        { item: 'Parent statement', minutes: 30, who: 'parent', whatToDo: 'Concerns, proposals, goals.' },
-        { item: 'District statement', minutes: 30, who: 'district', whatToDo: 'Position, constraints, proposals.' },
-        { item: 'Joint discussion or caucus', minutes: 60, who: 'all', whatToDo: 'Discuss. Mediator may caucus with each side separately.' },
-        { item: 'Drafting agreement', minutes: 60, who: 'all', whatToDo: 'Write specific terms.' },
-        { item: 'Review and sign', minutes: 15, who: 'all', whatToDo: 'Mediation agreement signed becomes binding.' }
-      ],
-      studentPrep: ['Discuss in advance whether you attend', 'Document your perspective in writing for parent to use', 'Be available by phone if needed']
-    },
-    {
-      id: 'ma5',
-      type: 'Student-Led IEP',
-      whoAttends: ['Student leads', 'Parent', 'Case manager', 'Teachers'],
-      typicalLength: '60 minutes',
-      agenda: [
-        { item: 'Student welcomes and sets purpose', minutes: 5, who: 'student', whatToDo: '"Welcome everyone. This is my IEP meeting. I want to start by telling you a little about how this year has gone."' },
-        { item: 'Student presents strengths', minutes: 10, who: 'student', whatToDo: 'Top 3 strengths with examples.' },
-        { item: 'Student presents needs', minutes: 10, who: 'student', whatToDo: 'Top 3 needs with examples.' },
-        { item: 'Student presents accommodation review', minutes: 10, who: 'student', whatToDo: 'Which accommodations they used, what worked, what did not.' },
-        { item: 'Student proposes new goals', minutes: 15, who: 'student leads', whatToDo: 'Student proposes 2-3 goals. Team adds.' },
-        { item: 'Team discussion and finalization', minutes: 10, who: 'all', whatToDo: 'Discuss, adjust, agree.' }
-      ],
-      studentPrep: [
-        'Practice with parent at least 3 times',
-        'Have notes',
-        'Decide in advance what you want different this year',
-        'Have a celebration planned for after'
-      ]
-    }
-  ];
-
+  
+  
   var IDENTITY_NARRATIVES = [
     {
       id: 'in1',
@@ -3626,1127 +2549,19 @@ window.SelHub = window.SelHub || {
     { id: 'fa25', text: 'You are allowed to be loved.' }
   ];
 
-  var ADVOCACY_CLOSING_THOUGHTS = [
-    {
-      id: 'act1',
-      title: 'What advocacy is not',
-      thoughts: [
-        'Advocacy is not always loud.',
-        'Advocacy is not always confrontational.',
-        'Advocacy is not always public.',
-        'Advocacy is not always successful.',
-        'Advocacy is not a single moment. It is a practice.',
-        'Advocacy is not for some people and not others. It is a skill that all disabled people can develop.',
-        'Advocacy is not a guarantee of outcome. It is a guarantee of voice.',
-        'Advocacy is not a substitute for systemic change. It is part of building it.'
-      ]
-    },
-    {
-      id: 'act2',
-      title: 'What advocacy looks like',
-      thoughts: [
-        'Sending an email at the right time',
-        'Asking the right question in a meeting',
-        'Setting a boundary with grace',
-        'Documenting an incident',
-        'Reading your own IEP',
-        'Telling a teacher what helps you',
-        'Walking out of a hostile room',
-        'Coming back the next day',
-        'Saying no to inspiration porn',
-        'Saying yes to community'
-      ]
-    },
-    {
-      id: 'act3',
-      title: 'What advocacy requires',
-      thoughts: [
-        'Knowing yourself (slow work)',
-        'Knowing your rights (study)',
-        'Knowing your language (community)',
-        'Knowing when to push (judgment)',
-        'Knowing when to rest (wisdom)',
-        'Knowing who has your back (trust)',
-        'Documenting along the way (records)',
-        'Forgiving yourself for mistakes (compassion)',
-        'Celebrating wins (joy)',
-        'Continuing the journey (resilience)'
-      ]
-    },
-    {
-      id: 'act4',
-      title: 'What advocacy gives back',
-      thoughts: [
-        'Self-knowledge',
-        'Confidence',
-        'Real change in your life',
-        'Real change in your community',
-        'Connection to others doing the work',
-        'A sense of agency',
-        'A voice that gets stronger over time',
-        'A community that has your back',
-        'Skills that translate to every part of life',
-        'A different relationship to your own disability'
-      ]
-    },
-    {
-      id: 'act5',
-      title: 'A final word',
-      thoughts: [
-        'You are not alone.',
-        'Your story matters.',
-        'The journey is the destination.',
-        'The community is the medicine.',
-        'You are part of something bigger than yourself.',
-        'Disabled people built this. Disabled people will continue building it.',
-        'You belong.',
-        'You are loved.',
-        'You are home in this work.',
-        'Welcome.'
-      ]
-    }
-  ];
-
-  var TRANSITION_TIMELINE_DETAILED = [
-    {
-      id: 'ttd1',
-      age: 14,
-      milestones: [
-        'Attend IEP meeting and introduce yourself',
-        'Begin transition planning under IDEA',
-        'Identify 3-5 career interests',
-        'Take career interest inventory',
-        'Begin tracking your own accommodations',
-        'Identify trusted adults beyond family'
-      ],
-      familyRole: 'Coach, not lead',
-      schoolRole: 'Initiate transition discussion',
-      studentRole: 'Active participant, learning to lead'
-    },
-    {
-      id: 'ttd2',
-      age: 15,
-      milestones: [
-        'Lead introductions at IEP meeting',
-        'Propose at least one goal',
-        'Begin career exploration (job shadows, informational interviews)',
-        'Update transition plan annually',
-        'Take driver\'s permit if able',
-        'Build adult communication skills'
-      ],
-      familyRole: 'Coach behind the scenes',
-      schoolRole: 'Support transition exploration',
-      studentRole: 'Increasing leadership'
-    },
-    {
-      id: 'ttd3',
-      age: 16,
-      milestones: [
-        'Lead parts of IEP meeting',
-        'Take SAT/ACT with accommodations if applicable',
-        'Visit colleges or training programs',
-        'Begin part-time job if appropriate',
-        'Apply for vocational rehabilitation if applicable',
-        'Build resume'
-      ],
-      familyRole: 'Supportive but stepping back',
-      schoolRole: 'Connect to outside services',
-      studentRole: 'Leading aspects of own life'
-    },
-    {
-      id: 'ttd4',
-      age: 17,
-      milestones: [
-        'College applications',
-        'Visit DSS at potential colleges',
-        'Apply for scholarships',
-        'Make post-school decisions',
-        'Continue work or career exploration',
-        'Prepare for age of majority'
-      ],
-      familyRole: 'Strategic support',
-      schoolRole: 'Senior transition planning',
-      studentRole: 'Decision maker'
-    },
-    {
-      id: 'ttd5',
-      age: 18,
-      milestones: [
-        'Age of majority - sign own IEP',
-        'Register to vote',
-        'College acceptance and DSS registration',
-        'Workplace ADA if employed',
-        'Apply for SSI if eligible',
-        'Make legal and medical decisions'
-      ],
-      familyRole: 'Trusted advisor when invited',
-      schoolRole: 'Final IEP year if applicable',
-      studentRole: 'Adult decision maker'
-    },
-    {
-      id: 'ttd6',
-      age: 19,
-      milestones: [
-        'College freshman year or career year',
-        'Use accommodations independently',
-        'Build new community',
-        'Independent living skills',
-        'Adult medical care',
-        'Financial independence building'
-      ],
-      familyRole: 'Safe place to return to',
-      schoolRole: 'Post-school resources if needed',
-      studentRole: 'Adult navigator'
-    },
-    {
-      id: 'ttd7',
-      age: 20,
-      milestones: [
-        'Sophomore college year or career growth',
-        'Deepen accommodations as needs evolve',
-        'Mentor younger student',
-        'Begin career planning seriously',
-        'Adult relationship building',
-        'Identity consolidation'
-      ],
-      familyRole: 'Equal adult',
-      schoolRole: 'College DSS or career services',
-      studentRole: 'Self-determined adult'
-    },
-    {
-      id: 'ttd8',
-      age: 21,
-      milestones: [
-        'Junior college year or career advancement',
-        'IDEA services end (most states)',
-        'Begin senior planning',
-        'Internships',
-        'Network building',
-        'Specialty interests'
-      ],
-      familyRole: 'Adult friend',
-      schoolRole: 'College DSS only',
-      studentRole: 'Career trajectory'
-    },
-    {
-      id: 'ttd9',
-      age: 22,
-      milestones: [
-        'IDEA officially ends',
-        'Senior year of college',
-        'Career launch planning',
-        'Graduate school decisions',
-        'Long-term housing decisions',
-        'Identity-grounded adulthood'
-      ],
-      familyRole: 'Adult network',
-      schoolRole: 'Last year of college supports',
-      studentRole: 'Emerging adult'
-    },
-    {
-      id: 'ttd10',
-      age: 23,
-      milestones: [
-        'Post-college transition',
-        'Workplace accommodations under ADA',
-        'Career building',
-        'Long-term relationships',
-        'Community contribution',
-        'Mentor others'
-      ],
-      familyRole: 'Mutual care',
-      schoolRole: 'None (alumni connections)',
-      studentRole: 'Established adult'
-    }
-  ];
-
-  var ADVOCACY_FINAL_LIBRARY = [
-    {
-      id: 'afl1',
-      area: 'Knowing yourself',
-      practices: [
-        'Daily body check-in (5 min)',
-        'Weekly emotion inventory (15 min)',
-        'Monthly strengths and needs review (30 min)',
-        'Quarterly identity reflection (60 min)',
-        'Annual self-portrait essay (2 hours)'
-      ],
-      whyMatters: 'Self-knowledge is the foundation of all other advocacy. Without it, you cannot ask for what you need.'
-    },
-    {
-      id: 'afl2',
-      area: 'Knowing your rights',
-      practices: [
-        'Annual review of IEP/504',
-        'Monthly procedural safeguards review',
-        'Track current case law',
-        'Maintain contacts with P&A and parent center',
-        'Read one disability rights piece weekly'
-      ],
-      whyMatters: 'Rights knowledge protects you when systems fail. The more you know, the harder you are to dismiss.'
-    },
-    {
-      id: 'afl3',
-      area: 'Communication',
-      practices: [
-        'Send one advocacy email weekly',
-        'Practice difficult conversations in mirror',
-        'Use sentence stems for hard moments',
-        'Document agreements in writing',
-        'Follow up within 48 hours'
-      ],
-      whyMatters: 'Clear communication is the difference between needs met and needs missed.'
-    },
-    {
-      id: 'afl4',
-      area: 'Documentation',
-      practices: [
-        'Daily log entries',
-        'Weekly review',
-        'Monthly summary',
-        'Quarterly trend analysis',
-        'Annual portfolio'
-      ],
-      whyMatters: 'Records are power. Memory is fiction. Documentation wins disputes.'
-    },
-    {
-      id: 'afl5',
-      area: 'Self-regulation',
-      practices: [
-        'Daily breath practice (5 min)',
-        'Weekly movement',
-        'Monthly emotional check-in',
-        'Quarterly rest review',
-        'Annual mental health checkup'
-      ],
-      whyMatters: 'You cannot advocate from a dysregulated state. Regulation precedes negotiation.'
-    },
-    {
-      id: 'afl6',
-      area: 'Community',
-      practices: [
-        'Daily connection with one person',
-        'Weekly community participation',
-        'Monthly new connection',
-        'Quarterly community service',
-        'Annual relationship audit'
-      ],
-      whyMatters: 'Community sustains the long arc of advocacy. Solo advocacy burns out.'
-    },
-    {
-      id: 'afl7',
-      area: 'Meeting skills',
-      practices: [
-        'Pre-meeting prep packet (always)',
-        'Meeting notes (always)',
-        'Post-meeting follow-up email (always)',
-        'Quarterly meeting skill review',
-        'Annual meeting goals'
-      ],
-      whyMatters: 'IEP meetings are where decisions are made. Showing up unprepared is showing up disadvantaged.'
-    },
-    {
-      id: 'afl8',
-      area: 'Identity',
-      practices: [
-        'Connect with identity-affirming media',
-        'Read disability writing weekly',
-        'Use identity language that fits',
-        'Honor cultural heritage',
-        'Build identity community'
-      ],
-      whyMatters: 'Strong identity grounds advocacy. Without it, advocacy is exhausting.'
-    },
-    {
-      id: 'afl9',
-      area: 'Transition planning',
-      practices: [
-        'Annual transition assessment',
-        'Quarterly future visualization',
-        'Monthly post-school skill building',
-        'Connect with college DSS or workplace ADA',
-        'Build network beyond school'
-      ],
-      whyMatters: 'Adulthood comes fast. Preparation prevents crisis.'
-    },
-    {
-      id: 'afl10',
-      area: 'Mentor relationship',
-      practices: [
-        'Have at least one mentor',
-        'Reach out monthly',
-        'Update them on growth',
-        'Apply their wisdom',
-        'Become a mentor when ready'
-      ],
-      whyMatters: 'Mentors compress learning. They accelerate the journey.'
-    }
-  ];
-
-  var ADVOCACY_FINAL_RESOURCES = [
-    { id: 'afr1', title: 'Disability Visibility Project', url: 'disabilityvisibilityproject.com', use: 'Disability-led media for stories and current organizing' },
-    { id: 'afr2', title: 'ASAN', url: 'autisticadvocacy.org', use: 'Autistic-led advocacy and resources' },
-    { id: 'afr3', title: 'Disability Rights Education and Defense Fund', url: 'dredf.org', use: 'Disability civil rights legal information' },
-    { id: 'afr4', title: 'Disability Justice Collective', url: 'disabilityjusticecollective.com', use: 'Intersectional movement organizing' },
-    { id: 'afr5', title: 'NAMI National', url: 'nami.org', use: 'Mental health support, education, peer programs' },
-    { id: 'afr6', title: 'Trevor Project', url: 'thetrevorproject.org', use: 'LGBTQ youth crisis support' },
-    { id: 'afr7', title: 'NEDA', url: 'nationaleatingdisorders.org', use: 'Eating disorder support and resources' },
-    { id: 'afr8', title: 'COPAA', url: 'copaa.org', use: 'Find special education attorneys' },
-    { id: 'afr9', title: 'Wrightslaw', url: 'wrightslaw.com', use: 'Special education law information' },
-    { id: 'afr10', title: 'Maine Disability Rights', url: 'drme.org', use: 'Maine P&A organization' },
-    { id: 'afr11', title: 'Maine Parent Federation', url: 'mpf.org', use: 'Maine parent training center' },
-    { id: 'afr12', title: 'Bookshare', url: 'bookshare.org', use: 'Free audiobooks for print-disabled' },
-    { id: 'afr13', title: 'Learning Ally', url: 'learningally.org', use: 'Audiobooks for dyslexic students' },
-    { id: 'afr14', title: 'JAN', url: 'askjan.org', use: 'Job Accommodation Network' },
-    { id: 'afr15', title: '988 Suicide and Crisis Lifeline', url: '988lifeline.org', use: '24/7 crisis support' },
-    { id: 'afr16', title: 'Crisis Text Line', url: 'crisistextline.org', use: 'Text HOME to 741741' },
-    { id: 'afr17', title: 'Trans Lifeline', url: 'translifeline.org', use: 'Trans crisis support, by trans people' },
-    { id: 'afr18', title: 'RAINN', url: 'rainn.org', use: 'Sexual assault hotline' },
-    { id: 'afr19', title: 'Childhelp National Child Abuse Hotline', url: 'childhelp.org', use: '1-800-422-4453' },
-    { id: 'afr20', title: 'SAMHSA Helpline', url: 'samhsa.gov', use: '1-800-662-4357 substance use and mental health' },
-    { id: 'afr21', title: 'Open Path Collective', url: 'openpathcollective.org', use: 'Low-cost therapy' },
-    { id: 'afr22', title: 'Inclusive Therapists', url: 'inclusivetherapists.com', use: 'Identity-affirming therapy directory' },
-    { id: 'afr23', title: 'The Arc', url: 'thearc.org', use: 'IDD advocacy organization' },
-    { id: 'afr24', title: 'AAPD American Association of People with Disabilities', url: 'aapd.com', use: 'Cross-disability advocacy' },
-    { id: 'afr25', title: 'AHEAD Association on Higher Education And Disability', url: 'ahead.org', use: 'College DSS professionals' },
-    { id: 'afr26', title: 'CDC Resource', url: 'cdc.gov/disability', use: 'Disability data and research' },
-    { id: 'afr27', title: 'Pacer Center', url: 'pacer.org', use: 'Parent training and information' },
-    { id: 'afr28', title: 'CADRE Center for Appropriate Dispute Resolution', url: 'cadreworks.org', use: 'IDEA dispute resolution' },
-    { id: 'afr29', title: 'Disability Pride Month', url: 'disabilitypride.org', use: 'July annual celebration' },
-    { id: 'afr30', title: 'OCR Online Complaint', url: 'ed.gov/ocr', use: 'File civil rights complaint' }
-  ];
-
-  var EXPANDED_MENTOR_VOICES = [
-    {
-      id: 'emv1',
-      mentor: 'Composite of late-diagnosed autistic women',
-      voice: 'You are not too late. The years you spent thinking you were broken were also years you were learning. The masking exhausted you because it was protecting you. Now you can stop. Now you can choose what fits.',
-      whenToHearThisVoice: 'When you grieve the years before diagnosis.'
-    },
-    {
-      id: 'emv2',
-      mentor: 'Composite of Black disabled advocates',
-      voice: 'The system was not built for you, AND you belong in every room. Your double-marginalization is double-strength. Document, escalate, build community.',
-      whenToHearThisVoice: 'When the system feels designed against you.'
-    },
-    {
-      id: 'emv3',
-      mentor: 'Composite of trans disabled youth',
-      voice: 'You can be all of who you are. The dual journey is harder AND possible. Find spaces that honor every part. Build them if they do not exist.',
-      whenToHearThisVoice: 'When you feel like you have to choose between identities.'
-    },
-    {
-      id: 'emv4',
-      mentor: 'Composite of chronic illness advocates',
-      voice: 'Your fatigue is real. Your pain is real. Your accommodations are not asking too much. Rest is not failure. The bar is appropriately ambitious, not maximally productive.',
-      whenToHearThisVoice: 'When you are told to push through.'
-    },
-    {
-      id: 'emv5',
-      mentor: 'Composite of late-diagnosed ADHD',
-      voice: 'You were not lazy. You were neurodivergent. Your brain is doing its best. The systems were designed for a different brain. Build the systems that fit you.',
-      whenToHearThisVoice: 'When you call yourself lazy.'
-    },
-    {
-      id: 'emv6',
-      mentor: 'Composite of mobility disabled adults',
-      voice: 'Your wheelchair is wings. Your cane is freedom. Your slowness is wisdom. The environment is the problem, not your body. Demand accessibility as a right.',
-      whenToHearThisVoice: 'When you wish your body was different.'
-    },
-    {
-      id: 'emv7',
-      mentor: 'Composite of Deaf advocates',
-      voice: 'Your Deafness is culture, not loss. Your language is a language. Your community is a community. You are not broken. You are different.',
-      whenToHearThisVoice: 'When you are told to fit into hearing world.'
-    },
-    {
-      id: 'emv8',
-      mentor: 'Composite of mental health survivors',
-      voice: 'Your diagnosis does not define you. AND it is real. Both are true. You have the right to treatment AND the right to live unmedicated if that fits. You decide. With good information.',
-      whenToHearThisVoice: 'When you feel like a diagnosis is a sentence.'
-    },
-    {
-      id: 'emv9',
-      mentor: 'Composite of disability rights elders',
-      voice: 'We fought for you to exist in these rooms. Stay. Get loud. Get strategic. Demand what is yours. We are watching with pride and with hope.',
-      whenToHearThisVoice: 'When you feel small in a meeting.'
-    },
-    {
-      id: 'emv10',
-      mentor: 'Composite of self-advocacy mentors',
-      voice: 'Your voice is the only one that knows your experience from the inside. Trust it. Test it. Refine it. But never silence it.',
-      whenToHearThisVoice: 'When others say they know better.'
-    }
-  ];
-
-  var ADVOCACY_DAILY_PRACTICE_DEEP = [
-    {
-      id: 'adpd1',
-      timeOfDay: 'Morning',
-      practice: 'Body Check-In',
-      duration: '3 min',
-      howTo: 'Lie or sit. Scan from feet to head. Note sensations without judging. Name what your body needs today.',
-      benefits: 'Builds awareness. Catches early warning signs. Establishes self-care as priority.'
-    },
-    {
-      id: 'adpd2',
-      timeOfDay: 'Morning',
-      practice: 'Three Affirmations',
-      duration: '2 min',
-      howTo: 'Speak aloud or write three affirmations that fit today. Look in mirror if able.',
-      benefits: 'Counters internalized ableism. Sets tone for day.'
-    },
-    {
-      id: 'adpd3',
-      timeOfDay: 'Morning',
-      practice: 'Day Preview',
-      duration: '5 min',
-      howTo: 'Look at calendar. Identify hard moments. Plan accommodations needed.',
-      benefits: 'Reduces decision fatigue. Anticipates needs.'
-    },
-    {
-      id: 'adpd4',
-      timeOfDay: 'Morning',
-      practice: 'Intention Setting',
-      duration: '2 min',
-      howTo: 'Pick one specific intention for the day. Say it aloud.',
-      benefits: 'Focus. Self-direction.'
-    },
-    {
-      id: 'adpd5',
-      timeOfDay: 'Midday',
-      practice: 'Regulation Pause',
-      duration: '5 min',
-      howTo: 'Step away from class or task. Move body. Drink water. Reset.',
-      benefits: 'Prevents afternoon crash. Maintains regulation.'
-    },
-    {
-      id: 'adpd6',
-      timeOfDay: 'Midday',
-      practice: 'Lunch Mindfulness',
-      duration: '15 min',
-      howTo: 'Eat slowly. Notice food. Eat with safe people if possible.',
-      benefits: 'Refuels body and mind. Social connection.'
-    },
-    {
-      id: 'adpd7',
-      timeOfDay: 'Afternoon',
-      practice: 'Accommodation Check',
-      duration: '2 min',
-      howTo: 'What accommodation did I use today? Did it work? Any adjustment needed?',
-      benefits: 'Self-monitoring. Optimization.'
-    },
-    {
-      id: 'adpd8',
-      timeOfDay: 'Afternoon',
-      practice: 'Decompression Walk',
-      duration: '10 min',
-      howTo: 'Walk after school. No agenda. No screen.',
-      benefits: 'Transition from school to home. Body movement.'
-    },
-    {
-      id: 'adpd9',
-      timeOfDay: 'Evening',
-      practice: 'Documentation Update',
-      duration: '5 min',
-      howTo: 'Note one thing from today: a win, an issue, a question, an interaction.',
-      benefits: 'Pattern recognition. Documentation habit.'
-    },
-    {
-      id: 'adpd10',
-      timeOfDay: 'Evening',
-      practice: 'Connection Reach',
-      duration: '5 min',
-      howTo: 'Send one message to one person. Text. Call. Note.',
-      benefits: 'Sustains relationships. Combats isolation.'
-    },
-    {
-      id: 'adpd11',
-      timeOfDay: 'Evening',
-      practice: 'Gratitude Journal',
-      duration: '5 min',
-      howTo: 'Write 3 things you are grateful for today.',
-      benefits: 'Shifts focus. Builds positive memory.'
-    },
-    {
-      id: 'adpd12',
-      timeOfDay: 'Evening',
-      practice: 'Tomorrow Prep',
-      duration: '5 min',
-      howTo: 'Lay out clothes. Pack bag. Check tomorrow\'s calendar.',
-      benefits: 'Reduces morning stress.'
-    },
-    {
-      id: 'adpd13',
-      timeOfDay: 'Night',
-      practice: 'Wind Down',
-      duration: '30 min',
-      howTo: 'Dim lights. No screens. Calming activity (reading, music, meditation).',
-      benefits: 'Quality sleep. Nervous system settles.'
-    },
-    {
-      id: 'adpd14',
-      timeOfDay: 'Night',
-      practice: 'Sleep Routine',
-      duration: 'Variable',
-      howTo: 'Consistent bedtime. Aim for 8-9 hours teens, 7-9 adults.',
-      benefits: 'Foundation of all wellness.'
-    },
-    {
-      id: 'adpd15',
-      timeOfDay: 'Weekly',
-      practice: 'Weekly Review',
-      duration: '30 min',
-      howTo: 'Sunday: review last week. What worked? What did not? What needs adjustment?',
-      benefits: 'Course correction. Sustained growth.'
-    },
-    {
-      id: 'adpd16',
-      timeOfDay: 'Weekly',
-      practice: 'Community Connection',
-      duration: '60 min',
-      howTo: 'Spend time with friends, family, or community at least once a week.',
-      benefits: 'Combats isolation. Maintains relationships.'
-    },
-    {
-      id: 'adpd17',
-      timeOfDay: 'Weekly',
-      practice: 'Special Interest Time',
-      duration: '60+ min',
-      howTo: 'Dedicate time to your special interest. Not productive. Just enjoyment.',
-      benefits: 'Joy. Regulation. Identity.'
-    },
-    {
-      id: 'adpd18',
-      timeOfDay: 'Monthly',
-      practice: 'Self-Assessment',
-      duration: '30 min',
-      howTo: 'How are you? Growth? Setbacks? What needs to change?',
-      benefits: 'Self-awareness. Direction.'
-    },
-    {
-      id: 'adpd19',
-      timeOfDay: 'Monthly',
-      practice: 'Goal Check-In',
-      duration: '20 min',
-      howTo: 'Review your goals. Adjust if needed. Celebrate progress.',
-      benefits: 'Stays on track. Motivation.'
-    },
-    {
-      id: 'adpd20',
-      timeOfDay: 'Annually',
-      practice: 'Annual Reflection',
-      duration: '60 min',
-      howTo: 'Look back at the year. Wins. Losses. Growth. Set new direction.',
-      benefits: 'Big-picture view. Direction setting.'
-    }
-  ];
-
-  var ADVOCACY_AFFIRMATION_LIBRARY = [
-    { id: 'af1', affirmation: 'My voice matters.', category: 'voice' },
-    { id: 'af2', affirmation: 'My needs are valid.', category: 'needs' },
-    { id: 'af3', affirmation: 'I am allowed to ask for help.', category: 'help' },
-    { id: 'af4', affirmation: 'I am the expert on me.', category: 'self-knowledge' },
-    { id: 'af5', affirmation: 'My accommodations are tools, not weaknesses.', category: 'tools' },
-    { id: 'af6', affirmation: 'My disability is part of who I am, not all of who I am.', category: 'identity' },
-    { id: 'af7', affirmation: 'I deserve respect.', category: 'dignity' },
-    { id: 'af8', affirmation: 'My pace is mine.', category: 'rhythm' },
-    { id: 'af9', affirmation: 'I belong here.', category: 'belonging' },
-    { id: 'af10', affirmation: 'I am not alone.', category: 'community' },
-    { id: 'af11', affirmation: 'My boundaries are healthy.', category: 'boundaries' },
-    { id: 'af12', affirmation: 'No is a complete sentence.', category: 'boundaries' },
-    { id: 'af13', affirmation: 'I do not have to perform.', category: 'authenticity' },
-    { id: 'af14', affirmation: 'I am allowed to grieve.', category: 'feelings' },
-    { id: 'af15', affirmation: 'I am allowed to celebrate.', category: 'feelings' },
-    { id: 'af16', affirmation: 'My body knows what I need.', category: 'body' },
-    { id: 'af17', affirmation: 'My mind is my mind, and it is mine.', category: 'mind' },
-    { id: 'af18', affirmation: 'I have come further than I realize.', category: 'growth' },
-    { id: 'af19', affirmation: 'I am the answer to someone\'s prayer.', category: 'connection' },
-    { id: 'af20', affirmation: 'My future is mine to shape.', category: 'agency' },
-    { id: 'af21', affirmation: 'I do not have to be ready to begin.', category: 'beginning' },
-    { id: 'af22', affirmation: 'Small steps are still steps.', category: 'progress' },
-    { id: 'af23', affirmation: 'My anger is data.', category: 'emotion' },
-    { id: 'af24', affirmation: 'My joy is data.', category: 'emotion' },
-    { id: 'af25', affirmation: 'I am not too much.', category: 'self-worth' },
-    { id: 'af26', affirmation: 'I am not too little.', category: 'self-worth' },
-    { id: 'af27', affirmation: 'I am enough.', category: 'self-worth' },
-    { id: 'af28', affirmation: 'My past does not predict my future.', category: 'agency' },
-    { id: 'af29', affirmation: 'I get to redefine myself.', category: 'identity' },
-    { id: 'af30', affirmation: 'My differences are my gifts.', category: 'strengths' },
-    { id: 'af31', affirmation: 'I am worth the work.', category: 'self-worth' },
-    { id: 'af32', affirmation: 'I am worth advocating for.', category: 'self-worth' },
-    { id: 'af33', affirmation: 'My truth is mine to tell.', category: 'voice' },
-    { id: 'af34', affirmation: 'I can change my mind.', category: 'flexibility' },
-    { id: 'af35', affirmation: 'I can ask for help and still be strong.', category: 'help' },
-    { id: 'af36', affirmation: 'Rest is allowed.', category: 'rest' },
-    { id: 'af37', affirmation: 'Play is allowed.', category: 'joy' },
-    { id: 'af38', affirmation: 'My community will find me.', category: 'connection' },
-    { id: 'af39', affirmation: 'I have what I need.', category: 'sufficiency' },
-    { id: 'af40', affirmation: 'My disability did not break me. It shaped me.', category: 'identity' },
-    { id: 'af41', affirmation: 'I am my own ally.', category: 'self-relationship' },
-    { id: 'af42', affirmation: 'I forgive myself for past masking.', category: 'self-compassion' },
-    { id: 'af43', affirmation: 'I am proud of who I am becoming.', category: 'becoming' },
-    { id: 'af44', affirmation: 'My pace beats their timeline.', category: 'self-trust' },
-    { id: 'af45', affirmation: 'My needs are not negotiable.', category: 'needs' },
-    { id: 'af46', affirmation: 'I am allowed to take up space.', category: 'presence' },
-    { id: 'af47', affirmation: 'I am allowed to leave a room.', category: 'agency' },
-    { id: 'af48', affirmation: 'I am allowed to come back tomorrow.', category: 'patience' },
-    { id: 'af49', affirmation: 'I am allowed to start over.', category: 'fresh start' },
-    { id: 'af50', affirmation: 'I am allowed to be a beginner.', category: 'growth' },
-    { id: 'af51', affirmation: 'My disability community has my back.', category: 'community' },
-    { id: 'af52', affirmation: 'I am part of a long lineage of advocates.', category: 'history' },
-    { id: 'af53', affirmation: 'I will not be the last.', category: 'continuation' },
-    { id: 'af54', affirmation: 'I have something to teach.', category: 'wisdom' },
-    { id: 'af55', affirmation: 'I have something to learn.', category: 'humility' },
-    { id: 'af56', affirmation: 'My yes is mine.', category: 'agency' },
-    { id: 'af57', affirmation: 'My no is mine.', category: 'agency' },
-    { id: 'af58', affirmation: 'My silence is mine.', category: 'agency' },
-    { id: 'af59', affirmation: 'My speech is mine.', category: 'agency' },
-    { id: 'af60', affirmation: 'My body is mine.', category: 'agency' },
-    { id: 'af61', affirmation: 'I am the author of my own life.', category: 'authorship' },
-    { id: 'af62', affirmation: 'My story matters.', category: 'narrative' },
-    { id: 'af63', affirmation: 'I am writing my next chapter.', category: 'agency' },
-    { id: 'af64', affirmation: 'I am loved.', category: 'love' },
-    { id: 'af65', affirmation: 'I love.', category: 'love' },
-    { id: 'af66', affirmation: 'I am safe right now.', category: 'safety' },
-    { id: 'af67', affirmation: 'I am surviving.', category: 'survival' },
-    { id: 'af68', affirmation: 'I am thriving.', category: 'thriving' },
-    { id: 'af69', affirmation: 'I am healing.', category: 'healing' },
-    { id: 'af70', affirmation: 'I am whole.', category: 'wholeness' },
-    { id: 'af71', affirmation: 'My disability is not my fault.', category: 'release' },
-    { id: 'af72', affirmation: 'My disability is not my failing.', category: 'release' },
-    { id: 'af73', affirmation: 'My disability does not make me less.', category: 'release' },
-    { id: 'af74', affirmation: 'My disability makes me me.', category: 'identity' },
-    { id: 'af75', affirmation: 'My different is my power.', category: 'reframe' },
-    { id: 'af76', affirmation: 'I am not ashamed.', category: 'pride' },
-    { id: 'af77', affirmation: 'I am not sorry for taking what I need.', category: 'release' },
-    { id: 'af78', affirmation: 'I am not sorry for being here.', category: 'belonging' },
-    { id: 'af79', affirmation: 'My presence is a contribution.', category: 'contribution' },
-    { id: 'af80', affirmation: 'I am the answer I have been waiting for.', category: 'agency' },
-    { id: 'af81', affirmation: 'My ancestors fought for me to exist.', category: 'lineage' },
-    { id: 'af82', affirmation: 'I will fight for those who come next.', category: 'continuation' },
-    { id: 'af83', affirmation: 'My disability is older than my diagnosis.', category: 'history' },
-    { id: 'af84', affirmation: 'My identity is older than the label.', category: 'identity' },
-    { id: 'af85', affirmation: 'I do not need to perform happy.', category: 'authenticity' },
-    { id: 'af86', affirmation: 'I do not need to perform sad.', category: 'authenticity' },
-    { id: 'af87', affirmation: 'I do not need to perform.', category: 'authenticity' },
-    { id: 'af88', affirmation: 'My body keeps showing up. So can I.', category: 'continuity' },
-    { id: 'af89', affirmation: 'My brain is doing its best.', category: 'compassion' },
-    { id: 'af90', affirmation: 'My therapist is on my team.', category: 'team' },
-    { id: 'af91', affirmation: 'My case manager is on my team.', category: 'team' },
-    { id: 'af92', affirmation: 'My friends are on my team.', category: 'team' },
-    { id: 'af93', affirmation: 'My family is on my team (sometimes).', category: 'team' },
-    { id: 'af94', affirmation: 'I am on my team.', category: 'self' },
-    { id: 'af95', affirmation: 'I get to redefine success.', category: 'self-definition' },
-    { id: 'af96', affirmation: 'My version of thriving is enough.', category: 'self-definition' },
-    { id: 'af97', affirmation: 'Comparison is not a measurement.', category: 'release' },
-    { id: 'af98', affirmation: 'My timeline is mine.', category: 'pace' },
-    { id: 'af99', affirmation: 'I am still becoming.', category: 'growth' },
-    { id: 'af100', affirmation: 'I am.', category: 'existence' }
-  ];
-
-  var ADVOCACY_DAILY_ROUTINES = [
-    { id: 'dr1', timeOfDay: 'morning', minutes: 5, routine: 'Body check: how am I feeling? Eat. Hydrate. Set intention for the day.' },
-    { id: 'dr2', timeOfDay: 'morning', minutes: 5, routine: 'Mental check: any meetings or hard conversations today? What do I need to prepare?' },
-    { id: 'dr3', timeOfDay: 'morning', minutes: 2, routine: 'Pack: accommodation tools, water, snacks, phone, ID, plan.' },
-    { id: 'dr4', timeOfDay: 'morning', minutes: 2, routine: 'Affirmation: pick one for the day.' },
-    { id: 'dr5', timeOfDay: 'school day', minutes: 1, routine: 'Use one accommodation today. Even small.' },
-    { id: 'dr6', timeOfDay: 'school day', minutes: 5, routine: 'Take one break if needed. Pre-scheduled or as needed.' },
-    { id: 'dr7', timeOfDay: 'school day', minutes: 1, routine: 'Check in with one person.' },
-    { id: 'dr8', timeOfDay: 'school day', minutes: 5, routine: 'Reset between hard transitions.' },
-    { id: 'dr9', timeOfDay: 'after school', minutes: 10, routine: 'Decompress. Snack. Move body. No demands.' },
-    { id: 'dr10', timeOfDay: 'after school', minutes: 5, routine: 'Document one thing about the day (a win, an issue, a question).' },
-    { id: 'dr11', timeOfDay: 'evening', minutes: 30, routine: 'Homework with accommodations. Take breaks.' },
-    { id: 'dr12', timeOfDay: 'evening', minutes: 15, routine: 'Self-care: bath, music, journal, friend.' },
-    { id: 'dr13', timeOfDay: 'evening', minutes: 5, routine: 'Prepare for tomorrow. Bag, clothes, planner.' },
-    { id: 'dr14', timeOfDay: 'evening', minutes: 10, routine: 'Wind down for sleep. No screens 30 min before.' },
-    { id: 'dr15', timeOfDay: 'weekend', minutes: 60, routine: 'Catch up on rest. Sleep in if needed.' },
-    { id: 'dr16', timeOfDay: 'weekend', minutes: 30, routine: 'Connect with a friend or community.' },
-    { id: 'dr17', timeOfDay: 'weekend', minutes: 30, routine: 'Special interest time. Joy practice.' },
-    { id: 'dr18', timeOfDay: 'weekend', minutes: 30, routine: 'Plan for the week. Anticipate hard moments.' },
-    { id: 'dr19', timeOfDay: 'weekend', minutes: 30, routine: 'Body movement: walk, stretch, exercise.' },
-    { id: 'dr20', timeOfDay: 'weekend', minutes: 30, routine: 'Family time on your terms.' }
-  ];
-
-  var COMPREHENSIVE_RESOURCE_GUIDES = [
-    {
-      id: 'crg1',
-      audience: 'Newly diagnosed disabled teen',
-      timeframe: 'First 90 days',
-      tasks: [
-        { week: 1, focus: 'Process the diagnosis', actions: ['Allow feelings', 'Talk to one person', 'Read one identity-affirming piece', 'Avoid alarming Google searches'] },
-        { week: 2, focus: 'Get the basics', actions: ['Schedule follow-up with diagnostician', 'List your questions', 'Note your daily symptoms', 'Identify one safe community space'] },
-        { week: 3, focus: 'Tell selected people', actions: ['Choose 2-3 trusted people', 'Practice your disclosure script', 'Tell them on your timeline', 'Note their responses'] },
-        { week: 4, focus: 'Get accommodations', actions: ['Email case manager', 'List potential accommodations', 'Schedule planning meeting', 'Bring documentation'] },
-        { week: 5, focus: 'Connect with community', actions: ['Find online community', 'Read disability-led writing', 'Watch identity-affirming content', 'Note what resonates'] },
-        { week: 6, focus: 'Build supports', actions: ['Schedule therapist if helpful', 'Connect with school counselor', 'Identify mentor figure', 'Reach out'] },
-        { week: 7, focus: 'Find your language', actions: ['Try identity-first vs person-first', 'Read about your community', 'Decide what feels right (for now)', 'Use the words'] },
-        { week: 8, focus: 'Build advocacy practice', actions: ['Send one advocacy email', 'Use one accommodation actively', 'Track outcomes', 'Adjust as needed'] },
-        { week: 9, focus: 'Plan for school year', actions: ['Update IEP/504 if applicable', 'Email new teachers', 'Stock supplies', 'Mental health plan'] },
-        { week: 10, focus: 'Self-care routines', actions: ['Sleep schedule', 'Movement plan', 'Nutrition basics', 'Joy practice'] },
-        { week: 11, focus: 'Check in with self', actions: ['90-day reflection', 'What has changed?', 'What still feels hard?', 'What is next?'] },
-        { week: 12, focus: 'Look forward', actions: ['Set 6-month goals', 'Plan ongoing support', 'Celebrate what you have done', 'Continue the journey'] }
-      ]
-    },
-    {
-      id: 'crg2',
-      audience: 'Senior year senior with IEP transitioning to college',
-      timeframe: 'Senior year fall to summer',
-      tasks: [
-        { month: 'August', focus: 'Senior year start', actions: ['Confirm IEP/504 is current', 'Meet new teachers', 'Establish routine', 'Sleep and energy management'] },
-        { month: 'September', focus: 'College list', actions: ['Identify 5-10 colleges with strong DSS', 'Visit at least 2', 'Meet DSS counselors during visits', 'Compare DSS quality'] },
-        { month: 'October', focus: 'Applications', actions: ['Begin applications', 'Decide disclosure approach', 'Submit standardized test accommodations request if needed', 'Recommendation letter requests'] },
-        { month: 'November', focus: 'Submit applications', actions: ['Submit by deadlines', 'Apply for disability-specific scholarships', 'Senior year IEP review', 'Mid-year check-in'] },
-        { month: 'December', focus: 'Wait and recover', actions: ['Holiday rest', 'Continue grades', 'Stay connected', 'Manage stress'] },
-        { month: 'January', focus: 'New semester', actions: ['Manage spring courses', 'College decisions coming', 'Final IEP meeting', 'Connect with DSS at top colleges'] },
-        { month: 'February', focus: 'Decision time', actions: ['Compare acceptance letters', 'Compare financial aid', 'Compare DSS quality', 'Visit again if possible'] },
-        { month: 'March', focus: 'Decide', actions: ['Make decision', 'Submit deposit', 'Apply for housing', 'Apply for disability-related housing accommodations'] },
-        { month: 'April', focus: 'Wrap up high school', actions: ['Maintain grades', 'Final IEP', 'Senior activities', 'Mental health support through transition'] },
-        { month: 'May', focus: 'Graduate and prepare', actions: ['Graduate!', 'Apply for college DSS', 'Submit documentation', 'Schedule summer DSS meeting'] },
-        { month: 'June', focus: 'Summer prep', actions: ['DSS intake meeting', 'College orientation', 'Connect with disability student org', 'Practice independent living'] },
-        { month: 'July', focus: 'Final prep', actions: ['Stock supplies', 'Mental health check', 'Pack', 'Confirm accommodations'] },
-        { month: 'August (next year)', focus: 'Start college', actions: ['Move in', 'Meet professors', 'Bring accommodation letters', 'Connect with DSS in first week'] }
-      ]
-    },
-    {
-      id: 'crg3',
-      audience: 'Parent of newly diagnosed child',
-      timeframe: 'First year',
-      tasks: [
-        { month: 'Month 1', focus: 'Process and learn', actions: ['Allow your own grief', 'Talk to one parent who has walked this path', 'Read identity-affirming content', 'Avoid panic-Google'] },
-        { month: 'Month 2', focus: 'Build team', actions: ['Find specialist providers', 'Connect with parent training center', 'Connect with P&A organization', 'Build pediatrician relationship'] },
-        { month: 'Month 3', focus: 'School engagement', actions: ['Request school evaluation if appropriate', 'Bring outside diagnostic information', 'Begin IEP process', 'Document concerns'] },
-        { month: 'Month 4', focus: 'IEP setup', actions: ['Attend eligibility meeting', 'Negotiate goals and services', 'Document agreement', 'Build relationship with case manager'] },
-        { month: 'Month 5', focus: 'Implementation watch', actions: ['Track accommodation use', 'Email teachers proactively', 'Watch for gaps', 'Adjust as needed'] },
-        { month: 'Month 6', focus: 'Mid-year check', actions: ['Mid-year progress review', 'Address any gaps', 'Continue building support', 'Self-care for you'] },
-        { month: 'Months 7-9', focus: 'Sustained support', actions: ['Continue routines', 'Build child\'s self-advocacy', 'Connect with community', 'Plan summer'] },
-        { month: 'Months 10-12', focus: 'Annual review and plan', actions: ['Prepare for annual IEP', 'Document year of progress', 'Set new goals', 'Plan for following year'] }
-      ]
-    }
-  ];
-
-  var ADVOCACY_GLOSSARY_FINAL = [
-    { id: 'glo1', term: 'Adaptive', def: 'Modified to fit a specific person or need.', example: 'Adaptive sports equipment.' },
-    { id: 'glo2', term: 'Advocate', def: 'A person who supports or argues for a cause.', example: 'You are your own best advocate.' },
-    { id: 'glo3', term: 'Aide', def: 'Paraprofessional who supports students in classroom.', example: 'An aide may assist with personal care or academic support.' },
-    { id: 'glo4', term: 'Audism', def: 'Discrimination against deaf or hard-of-hearing people.', example: 'Assuming Deaf people cannot do certain jobs is audism.' },
-    { id: 'glo5', term: 'Behavior Intervention Plan (BIP)', def: 'IEP plan that addresses specific behavior needs.', example: 'A BIP includes prevention strategies and replacement behaviors.' },
-    { id: 'glo6', term: 'Cognitive', def: 'Related to thinking and reasoning.', example: 'Cognitive accommodations include extended time.' },
-    { id: 'glo7', term: 'Compliance', def: 'Following the rules.', example: 'IDEA compliance is monitored by the state.' },
-    { id: 'glo8', term: 'Compensatory services', def: 'Make-up services owed when school failed to deliver.', example: 'If your speech therapy was cancelled 10 times, you may be owed those sessions.' },
-    { id: 'glo9', term: 'Discrimination', def: 'Unfair treatment based on identity.', example: 'Disability discrimination violates ADA.' },
-    { id: 'glo10', term: 'Due process', def: 'Legal procedures for resolving disputes.', example: 'Due process hearing is a formal proceeding.' },
-    { id: 'glo11', term: 'Educational record', def: 'Documents related to your education.', example: 'IEPs, grades, and behavior records are educational records.' },
-    { id: 'glo12', term: 'Eligibility', def: 'Whether you qualify for special education.', example: 'Eligibility requires both disability and need for services.' },
-    { id: 'glo13', term: 'Evaluation', def: 'Comprehensive assessment to determine needs.', example: 'A psychoeducational evaluation may take 5-10 hours.' },
-    { id: 'glo14', term: 'Executive function', def: 'Mental skills like planning, organization, and time management.', example: 'ADHD often affects executive function.' },
-    { id: 'glo15', term: 'Free Appropriate Public Education (FAPE)', def: 'Federal right under IDEA.', example: 'Schools must provide FAPE at no cost.' },
-    { id: 'glo16', term: 'Functional behavior assessment (FBA)', def: 'Structured assessment of behavior.', example: 'FBA precedes BIP.' },
-    { id: 'glo17', term: 'Goals', def: 'Specific, measurable targets for the year.', example: 'IEP goals should be ambitious AND attainable.' },
-    { id: 'glo18', term: 'Highly qualified', def: 'Meeting federal qualifications for teaching role.', example: 'IDEA requires highly qualified teachers.' },
-    { id: 'glo19', term: 'Inclusion', def: 'Education with non-disabled peers.', example: 'Inclusion is preferred under IDEA.' },
-    { id: 'glo20', term: 'Individualized', def: 'Tailored to one student.', example: 'IEP is by definition individualized.' },
-    { id: 'glo21', term: 'Initial evaluation', def: 'First special education evaluation.', example: '60-day federal timeline.' },
-    { id: 'glo22', term: 'Least Restrictive Environment (LRE)', def: 'Education with non-disabled peers to maximum extent appropriate.', example: 'LRE is a federal mandate.' },
-    { id: 'glo23', term: 'Manifestation determination', def: 'Meeting to decide if behavior was disability-related.', example: 'Required for major disciplinary changes.' },
-    { id: 'glo24', term: 'Mediation', def: 'Voluntary dispute resolution with neutral third party.', example: 'Mediation is often faster and cheaper than due process.' },
-    { id: 'glo25', term: 'Modification', def: 'Change to what is being taught.', example: 'Modified curriculum may have lower content expectations.' },
-    { id: 'glo26', term: 'Notice', def: 'Formal communication about changes.', example: 'Prior Written Notice (PWN) is required for IEP changes.' },
-    { id: 'glo27', term: 'OCR (Office for Civil Rights)', def: 'Federal civil rights enforcement.', example: 'File OCR complaint for disability discrimination.' },
-    { id: 'glo28', term: 'P&A (Protection and Advocacy)', def: 'Federally funded disability rights organizations.', example: 'Each state has a P&A. Free advocacy.' },
-    { id: 'glo29', term: 'Paraprofessional', def: 'Support staff in schools.', example: 'Often called aides or paras.' },
-    { id: 'glo30', term: 'Placement', def: 'Where you are educated.', example: 'Placement is on a continuum.' },
-    { id: 'glo31', term: 'Procedural safeguards', def: 'Parent and student rights under IDEA.', example: 'School must provide annually.' },
-    { id: 'glo32', term: 'Progress monitoring', def: 'Regular measurement of goal progress.', example: 'Required for IEP goals.' },
-    { id: 'glo33', term: 'Reasonable accommodation', def: 'Adjustment that allows access.', example: 'Extended time is a reasonable accommodation.' },
-    { id: 'glo34', term: 'Related services', def: 'Services beyond instruction (OT, PT, SLP).', example: 'Listed in IEP.' },
-    { id: 'glo35', term: 'Resource room', def: 'Special education classroom for part of day.', example: 'May be the LRE for some students.' },
-    { id: 'glo36', term: 'School-to-prison pipeline', def: 'Pattern of disabled, Black, and Latine students being pushed from school discipline to criminal justice.', example: 'Pattern is documented across U.S. schools.' },
-    { id: 'glo37', term: 'Section 504', def: 'Civil rights law prohibiting disability discrimination.', example: 'Provides accommodations in schools.' },
-    { id: 'glo38', term: 'Self-determination', def: 'Right to make own decisions about own life.', example: 'Self-determination is a key transition goal.' },
-    { id: 'glo39', term: 'Specific learning disability', def: 'IDEA eligibility category for dyslexia, dysgraphia, etc.', example: 'Most common eligibility category.' },
-    { id: 'glo40', term: 'Stay-put', def: 'Right to maintain placement during dispute.', example: 'Activated by filing due process.' },
-    { id: 'glo41', term: 'Substantially limits', def: 'Standard under ADA for qualifying as disabled.', example: 'ADAAA expanded definition.' },
-    { id: 'glo42', term: 'Transition', def: 'Planning for post-school life.', example: 'Begins by 14-16 depending on state.' },
-    { id: 'glo43', term: 'Triennial evaluation', def: 'Re-evaluation every 3 years.', example: 'Required under IDEA.' },
-    { id: 'glo44', term: 'Universal design', def: 'Design accessible to all from the start.', example: 'Universal design benefits everyone.' },
-    { id: 'glo45', term: 'Unilateral placement', def: 'Parent choice of private placement.', example: 'May be reimbursable if school did not provide FAPE.' },
-    { id: 'glo46', term: 'Vocational rehabilitation', def: 'State agency supporting work for disabled adults.', example: 'May provide training, equipment, job placement.' },
-    { id: 'glo47', term: 'Waiver', def: 'Document waiving certain rights.', example: 'Be cautious before signing.' },
-    { id: 'glo48', term: 'Wraparound', def: 'Comprehensive coordinated support.', example: 'Wraparound services include multiple providers.' },
-    { id: 'glo49', term: 'Zero reject', def: 'Federal principle that schools cannot exclude disabled students.', example: 'PARC and Mills established this.' },
-    { id: 'glo50', term: '504 Coordinator', def: 'School staff responsible for 504 plans.', example: 'Different from special education case manager.' }
-  ];
-
-  var TRAUMA_INFORMED_ADVOCACY = [
-    {
-      id: 'tia1',
-      principle: 'Safety first',
-      whatItMeans: 'Physical and emotional safety must be established before deeper advocacy work.',
-      forStudents: [
-        'Identify safe people and spaces',
-        'Build regulation skills',
-        'Pace yourself in hard work'
-      ],
-      forAdults: [
-        'Predictable environments',
-        'No surprises in big conversations',
-        'Multiple safe people'
-      ]
-    },
-    {
-      id: 'tia2',
-      principle: 'Trust and transparency',
-      whatItMeans: 'Trust is earned through consistency. Information should be shared openly.',
-      forStudents: [
-        'Demand transparency from your team',
-        'Ask why decisions are being made',
-        'Choose providers who explain'
-      ],
-      forAdults: [
-        'Be clear about constraints',
-        'Share information that affects student',
-        'Honor confidentiality'
-      ]
-    },
-    {
-      id: 'tia3',
-      principle: 'Peer support',
-      whatItMeans: 'People with lived experience are often the most healing supports.',
-      forStudents: [
-        'Find peer communities',
-        'Be a peer supporter when ready',
-        'Recognize professional vs peer role'
-      ],
-      forAdults: [
-        'Connect students to peer-led communities',
-        'Hire peers as staff when possible',
-        'Center lived experience'
-      ]
-    },
-    {
-      id: 'tia4',
-      principle: 'Collaboration and mutuality',
-      whatItMeans: 'Power-sharing rather than power-over. Treating students as partners.',
-      forStudents: [
-        'Ask to be partner not patient',
-        'Bring your own data',
-        'Refuse top-down decisions'
-      ],
-      forAdults: [
-        'Listen first',
-        'Honor student priorities',
-        'Co-create plans'
-      ]
-    },
-    {
-      id: 'tia5',
-      principle: 'Empowerment and choice',
-      whatItMeans: 'Restoring agency to those who have lost it.',
-      forStudents: [
-        'Practice making decisions',
-        'Refuse coerced choices',
-        'Build self-trust'
-      ],
-      forAdults: [
-        'Offer real choices',
-        'Avoid coercion',
-        'Trust student knowledge'
-      ]
-    },
-    {
-      id: 'tia6',
-      principle: 'Cultural, historical, gender consideration',
-      whatItMeans: 'Trauma exists in cultural context. Identity matters.',
-      forStudents: [
-        'Find culturally aligned support',
-        'Honor your full identity',
-        'Connect with cultural community'
-      ],
-      forAdults: [
-        'Get culturally informed training',
-        'Hire diverse staff',
-        'Center marginalized students'
-      ]
-    }
-  ];
-
-  var ADVOCACY_TOOL_BUILDER = [
-    {
-      id: 'atb1',
-      tool: 'Annual self-assessment',
-      purpose: 'Track your growth over time',
-      sections: ['Strengths inventory', 'Needs inventory', 'Goals progress', 'Accommodations used', 'Wins this year', 'Areas for growth'],
-      frequency: 'Once a year, summer',
-      timeNeeded: '60 minutes'
-    },
-    {
-      id: 'atb2',
-      tool: 'Pre-meeting prep packet',
-      purpose: 'Walk into every IEP meeting prepared',
-      sections: ['Strengths I want to share', 'Concerns I want to raise', 'Goals I am proposing', 'Accommodations review', 'Questions I have'],
-      frequency: 'Before each major meeting',
-      timeNeeded: '30 minutes'
-    },
-    {
-      id: 'atb3',
-      tool: 'Communication log',
-      purpose: 'Track all advocacy-related communications',
-      sections: ['Date', 'Who', 'Topic', 'Outcome', 'Follow-up needed'],
-      frequency: 'Weekly review',
-      timeNeeded: '10 minutes weekly'
-    },
-    {
-      id: 'atb4',
-      tool: 'Accommodation use tracker',
-      purpose: 'Know which accommodations work and which do not',
-      sections: ['Accommodation', 'When used', 'How well it worked', 'Adjustments needed'],
-      frequency: 'Daily or weekly',
-      timeNeeded: '5 minutes daily'
-    },
-    {
-      id: 'atb5',
-      tool: 'Emotional regulation tracker',
-      purpose: 'Notice patterns in your regulation',
-      sections: ['Mood', 'Sleep', 'Energy', 'Triggers', 'What helped'],
-      frequency: 'Daily',
-      timeNeeded: '5 minutes daily'
-    },
-    {
-      id: 'atb6',
-      tool: 'Goal progress journal',
-      purpose: 'Track IEP goal progress in your own words',
-      sections: ['Goal', 'Today\'s evidence', 'Obstacles', 'What I need'],
-      frequency: 'Weekly',
-      timeNeeded: '15 minutes weekly'
-    },
-    {
-      id: 'atb7',
-      tool: 'Allies and supports map',
-      purpose: 'Know your support network',
-      sections: ['Family', 'School staff', 'Friends', 'Professionals', 'Community'],
-      frequency: 'Annual review',
-      timeNeeded: '20 minutes'
-    },
-    {
-      id: 'atb8',
-      tool: 'Self-advocacy script library',
-      purpose: 'Ready scripts for common situations',
-      sections: ['Asking for help', 'Disagreeing', 'Setting boundaries', 'Apologizing', 'Disclosing'],
-      frequency: 'Build as needed',
-      timeNeeded: 'Ongoing'
-    },
-    {
-      id: 'atb9',
-      tool: 'Triggers and responses card',
-      purpose: 'Know your patterns',
-      sections: ['Common triggers', 'Body cues', 'Coping tools'],
-      frequency: 'Update quarterly',
-      timeNeeded: '20 minutes'
-    },
-    {
-      id: 'atb10',
-      tool: 'Annual celebration list',
-      purpose: 'Remember the wins',
-      sections: ['Big wins', 'Small wins', 'Hard things I did', 'People I thanked'],
-      frequency: 'Year-end',
-      timeNeeded: '30 minutes'
-    }
-  ];
-
-  var ADVOCACY_FAQ_LIBRARY = [
-    {
-      id: 'faq1',
-      question: 'What if I do not know what my diagnosis is?',
-      answer: 'Many students do not know their full diagnosis until they actively ask. Start by asking your case manager or parent. You have a right to know. Sometimes the diagnosis on paper is different from what you have been told. Ask: what is the eligibility category on my IEP? What other diagnoses are documented?',
-      followUp: 'Knowing your diagnosis is foundational. Without it, you cannot fully advocate. Ask.'
-    },
-    {
-      id: 'faq2',
-      question: 'What if my parents do not want me to have an IEP anymore?',
-      answer: 'IEPs are an important legal protection. Talk to your parents about why they want to remove it. Sometimes parents think IEPs limit students. Often they help. Have a family conversation. Bring data on how IEP has helped. Consider counselor mediator. If removed, you have less protection.',
-      followUp: 'Once you are 18, the decision is yours, not theirs.'
-    },
-    {
-      id: 'faq3',
-      question: 'Can I refuse special education services?',
-      answer: 'Yes, parents (or you at 18) can revoke consent. This is a major decision. You lose IDEA protections. You may still have 504 protections. Consult with disability advocate before deciding.',
-      followUp: 'Revocation is a big step. Consider all alternatives first.'
-    },
-    {
-      id: 'faq4',
-      question: 'What is the difference between an IEP and a 504?',
-      answer: 'IEP is for students who qualify under IDEA. Provides specialized instruction and services. More paperwork, more protections. 504 is civil rights protection under Rehabilitation Act. Provides accommodations and modifications. Less paperwork, broader eligibility. Many students qualify for both.',
-      followUp: 'Some students benefit from switching from one to the other as needs change.'
-    },
-    {
-      id: 'faq5',
-      question: 'Do I have to tell my teacher about my disability?',
-      answer: 'Disclosure is your choice. Teachers need to know about accommodations, but not necessarily the underlying diagnosis. You can request accommodations be implemented without disclosing the specific diagnosis.',
-      followUp: 'You can choose what to share. Functional information may be enough.'
-    },
-    {
-      id: 'faq6',
-      question: 'What if I get arrested as a student with a disability?',
-      answer: 'Critical: ask for a lawyer immediately. Do not answer questions without legal counsel. Tell parents (or trusted adult) immediately. Disability may be relevant to defense. Contact disability rights organization for legal help.',
-      followUp: 'Many disabled students face arrest in connection with school discipline. Know your rights.'
-    },
-    {
-      id: 'faq7',
-      question: 'My teacher said I cannot use my accommodation in their class. What do I do?',
-      answer: 'IEPs are legally binding. Teachers cannot override. Calmly state your accommodation is in your IEP. Offer to verify with case manager. If continued, email same day. Loop in case manager. Escalate if pattern.',
-      followUp: 'You have a right to your accommodation. Document any denials.'
-    },
-    {
-      id: 'faq8',
-      question: 'What happens to my IEP when I go to college?',
-      answer: 'It does not transfer. College uses Section 504 / ADA framework. You must self-register with Disability Services (DSS) at your college. Provide current documentation. You will receive accommodation letters to give each professor.',
-      followUp: 'Plan ahead. Visit DSS during senior year of high school.'
-    },
-    {
-      id: 'faq9',
-      question: 'Can my parents read my IEP without my permission?',
-      answer: 'Until you are 18 (in most states), your parents have access to your educational records. After 18, FERPA rights transfer to you. You can sign waivers to share with parents.',
-      followUp: 'Age of majority is a significant transition. Plan for it.'
-    },
-    {
-      id: 'faq10',
-      question: 'What if my IEP team will not consider my input?',
-      answer: 'Federal law requires student input in IEP planning when appropriate. Document your input in writing. Submit it as parent attachment to IEP. If team refuses to consider, that is itself a procedural violation.',
-      followUp: 'Your voice matters. Get it on paper if not heard verbally.'
-    },
-    {
-      id: 'faq11',
-      question: 'My principal is hostile. What do I do?',
-      answer: 'You can escalate within district. Special education director. Superintendent. State complaint if pattern. OCR complaint if civil rights violation. Document everything.',
-      followUp: 'You do not have to accept hostile administration. Escalation paths exist.'
-    },
-    {
-      id: 'faq12',
-      question: 'How do I find a special education attorney?',
-      answer: 'COPAA (Council of Parent Attorneys and Advocates) maintains a directory. State bar associations have referral services. Some attorneys offer free or sliding-scale services. Many will discuss your case for free initially.',
-      followUp: 'Legal representation makes due process more navigable.'
-    },
-    {
-      id: 'faq13',
-      question: 'My school says they cannot afford the services in my IEP. Is this legal?',
-      answer: 'No. Mills v. Board of Education (1972) established that funding cannot be sole reason to deny services. Schools must provide FAPE regardless of cost.',
-      followUp: 'Cost is not a valid IEP denial reason.'
-    },
-    {
-      id: 'faq14',
-      question: 'Can the school force me to take medication?',
-      answer: 'No. Federal IDEA Section 1412(a)(25) prohibits schools from requiring medication as condition of attendance or evaluation.',
-      followUp: 'Medication decisions are between you, family, and healthcare provider.'
-    },
-    {
-      id: 'faq15',
-      question: 'I have an IEP and I am being suspended. What rights do I have?',
-      answer: 'Critical protections: manifestation determination required for suspension exceeding 10 cumulative days. Stay-put rights during disputes. FAPE still required even during suspension. Discipline records subject to FERPA.',
-      followUp: 'Special education students have specific disciplinary protections under IDEA.'
-    }
-  ];
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   var ADVOCACY_LANGUAGE_EVOLUTION = [
     {
       id: 'ale1',
@@ -4782,466 +2597,8 @@ window.SelHub = window.SelHub || {
     }
   ];
 
-  var FINAL_NARRATIVE_LIBRARY = [
-    {
-      id: 'fasl1',
-      title: 'Senior year transition stalled',
-      premise: 'You are senior year. Transition planning has not been happening despite federal requirement.',
-      stepByStep: [
-        '1. Document what is missing from your transition plan',
-        '2. Email case manager requesting transition meeting',
-        '3. If no response in 2 weeks, escalate to special education director',
-        '4. At meeting, bring written goals for post-school',
-        '5. Insist on documentation of transition plan',
-        '6. Follow up monthly until graduation'
-      ],
-      sampleEmail: 'Hi Ms. Park, I am in 12th grade and my transition plan does not include any specific post-school goals or services. Federal law requires transition planning. Could we meet to develop a real plan?',
-      possibleOutcomes: [
-        'Best: case manager apologizes and convenes team',
-        'Likely: team meets and plan is drafted',
-        'Worst: school resists; escalate to state if needed'
-      ],
-      whatToAvoid: ['Waiting until April hoping it will happen', 'Accepting vague promises', 'Forgetting documentation']
-    },
-    {
-      id: 'fasl2',
-      title: 'Bullying not being addressed',
-      premise: 'You have reported bullying multiple times. No action taken.',
-      stepByStep: [
-        '1. Document every incident with dates and witnesses',
-        '2. Email principal in writing referencing previous reports',
-        '3. Cite anti-bullying policy',
-        '4. Request specific actions',
-        '5. If no response in 2 weeks, file with state anti-bullying coordinator',
-        '6. If disability-based, file OCR complaint'
-      ],
-      sampleEmail: 'Dear Principal. I am writing about ongoing bullying that I have reported in [dates]. The bullying has continued. Specifically: [recent incidents]. I am requesting the school follow the anti-bullying policy and take specific action.',
-      possibleOutcomes: [
-        'Best: principal investigates and intervenes',
-        'Likely: pattern requires escalation',
-        'Worst: external complaint required'
-      ],
-      whatToAvoid: ['Verbal reports only', 'Forgetting policy citations', 'Letting it drop']
-    },
-    {
-      id: 'fasl3',
-      title: 'You disagree with your IEP',
-      premise: 'School wrote IEP without significant input from you.',
-      stepByStep: [
-        '1. Read the IEP carefully',
-        '2. Note specific areas of disagreement',
-        '3. Email case manager requesting another meeting',
-        '4. Bring written alternatives to meeting',
-        '5. If not resolved, file disagreement in writing',
-        '6. Consider mediation or due process'
-      ],
-      sampleEmail: 'I disagree with the IEP as written, specifically: [areas]. I would like another team meeting to discuss alternatives. Could we schedule within 14 days?',
-      possibleOutcomes: [
-        'Best: team reconvenes and revises',
-        'Likely: some revisions',
-        'Worst: dispute escalates to mediation or due process'
-      ],
-      whatToAvoid: ['Signing without reading', 'Verbal disagreement only', 'Not bringing alternatives']
-    },
-    {
-      id: 'fasl4',
-      title: 'Mental health crisis at school',
-      premise: 'You are having mental health crisis and need school support.',
-      stepByStep: [
-        '1. Go to counselor or school nurse',
-        '2. Be honest about what is happening',
-        '3. Use crisis line if no school support available',
-        '4. Get to safe person',
-        '5. Develop re-entry plan',
-        '6. Adjust accommodations as needed'
-      ],
-      sampleScript: 'I need to talk to someone. I am having [specific symptoms]. I need support right now.',
-      possibleOutcomes: [
-        'Best: rapid response with safety plan',
-        'Likely: counselor intervention plus follow-up',
-        'Worst: requires hospitalization (which is okay if needed)'
-      ],
-      whatToAvoid: ['Hiding it until acute', 'Trying to push through alone', 'Skipping medication']
-    },
-    {
-      id: 'fasl5',
-      title: 'New teacher does not honor 504',
-      premise: 'You started a new semester. New teacher ignores accommodations.',
-      stepByStep: [
-        '1. Introduce yourself proactively at start of semester',
-        '2. Provide accommodation summary',
-        '3. If not honored, email same-day with specific incident',
-        '4. CC case manager',
-        '5. Follow up if not resolved',
-        '6. Escalate to principal if pattern'
-      ],
-      sampleEmail: 'Hi Mr. Diaz. I noticed today that [accommodation] was not provided. I wanted to make sure we are on the same page. Could we briefly discuss?',
-      possibleOutcomes: [
-        'Best: teacher apologizes and adjusts',
-        'Likely: gentle reminders work',
-        'Worst: pattern requires escalation'
-      ],
-      whatToAvoid: ['Confronting in class', 'Hot tone', 'Not documenting']
-    },
-    {
-      id: 'fasl6',
-      title: 'You need to drop a class',
-      premise: 'A class is harming your mental health. You want to drop.',
-      stepByStep: [
-        '1. Meet with counselor',
-        '2. Discuss alternatives (drop, switch level, add support)',
-        '3. Decide based on impact analysis',
-        '4. If dropping, follow procedure',
-        '5. Update IEP if needed',
-        '6. Plan alternative path forward'
-      ],
-      sampleConversation: 'I want to talk about dropping [class]. The impact on my mental health has been significant: [examples]. I want to explore options.',
-      possibleOutcomes: [
-        'Best: smooth transition to alternative',
-        'Likely: counselor helps weigh options',
-        'Worst: school resists; persistence required'
-      ],
-      whatToAvoid: ['Just stopping attending', 'Not documenting impact', 'Not exploring alternatives first']
-    },
-    {
-      id: 'fasl7',
-      title: 'Standardized test accommodations',
-      premise: 'You need accommodations for SAT or ACT.',
-      stepByStep: [
-        '1. Talk to counselor 8+ weeks before test',
-        '2. Submit application through College Board or ACT',
-        '3. Provide documentation',
-        '4. Wait for approval (4-7 weeks)',
-        '5. If denied, appeal with additional documentation',
-        '6. Confirm accommodations on test day'
-      ],
-      sampleApplication: 'Through SSD: Submit request via your school counselor. Required: documentation of disability and IEP/504 history.',
-      possibleOutcomes: [
-        'Best: approved within timeline',
-        'Likely: 50/50 first try, approved on appeal',
-        'Worst: requires additional documentation'
-      ],
-      whatToAvoid: ['Waiting until 2 weeks before test', 'Going around school counselor', 'Not appealing denials']
-    },
-    {
-      id: 'fasl8',
-      title: 'College DSS registration',
-      premise: 'You are entering college and need to register with disability services.',
-      stepByStep: [
-        '1. Identify DSS office at your college',
-        '2. Schedule intake meeting (summer before)',
-        '3. Provide current documentation (IEP, evaluation, medical)',
-        '4. Discuss potential accommodations',
-        '5. Receive letter of accommodations',
-        '6. Present letter to each professor first week'
-      ],
-      sampleEmail: 'Hi DSS Director, I am [name], an incoming freshman starting [date]. I would like to schedule a registration meeting to discuss accommodations. I have my IEP and recent evaluation. When could we meet?',
-      possibleOutcomes: [
-        'Best: smooth registration before classes',
-        'Likely: standard process, some adjustments along the way',
-        'Worst: difficulty if documentation is outdated'
-      ],
-      whatToAvoid: ['Waiting until problems arise', 'Not providing documentation', 'Forgetting to present letter to professors']
-    },
-    {
-      id: 'fasl9',
-      title: 'First job accommodation request',
-      premise: 'You started a new job. You need to request workplace accommodations.',
-      stepByStep: [
-        '1. Decide timing of disclosure',
-        '2. Write request to HR',
-        '3. Engage in interactive process',
-        '4. Try accommodation',
-        '5. Document outcomes',
-        '6. Adjust as needed'
-      ],
-      sampleEmail: 'I would like to request a workplace accommodation under the ADA. I have a disability that affects [function]. The accommodation I am requesting is [specific]. Could we schedule a meeting?',
-      possibleOutcomes: [
-        'Best: smooth interactive process and accommodation granted',
-        'Likely: some negotiation required',
-        'Worst: requires escalation or EEOC complaint'
-      ],
-      whatToAvoid: ['Asking before establishing performance', 'Not getting in writing', 'Not following up']
-    },
-    {
-      id: 'fasl10',
-      title: 'You are aging out of foster care',
-      premise: 'You are 18 and aging out of foster care with disability.',
-      stepByStep: [
-        '1. Connect with state foster youth transition program',
-        '2. Apply for SSI if eligible',
-        '3. Enroll in Medicaid',
-        '4. Find housing (transitional, college, supported)',
-        '5. Continue special education through 22 if eligible',
-        '6. Build chosen family / support network'
-      ],
-      keyResources: [
-        'State Independent Living Plan',
-        'NAYA (National Association of Youth Advocacy)',
-        'YouthBuild',
-        'Disability rights organizations',
-        'College emancipated student support'
-      ],
-      possibleOutcomes: [
-        'Best: stable transition with multiple supports',
-        'Likely: some instability but recoverable',
-        'Worst: requires extensive support; reach out to multiple agencies'
-      ],
-      whatToAvoid: ['Aging out without plan', 'Not applying for benefits', 'Trying to do it alone']
-    }
-  ];
-
-  var FINAL_NARRATIVE_LIBRARY = [
-    {
-      id: 'fnl1',
-      title: 'The Day I Learned My Voice Mattered',
-      narrative: [
-        'I was 13. My English teacher Mr. Hassan called on me to read aloud. I had been masking for years that I could not read fluently.',
-        '',
-        'I froze. Words on the page swam. I had not told anyone in this class that I had dyslexia.',
-        '',
-        'Mr. Hassan saw my face. He said quietly: "Take your time."',
-        '',
-        'I stuttered through the paragraph. The class was quiet.',
-        '',
-        'After class he asked me to stay. I expected to be scolded.',
-        '',
-        'He said: "I notice reading aloud is hard for you. Would it help if I told you in advance when you would be called on?"',
-        '',
-        'I cried. Not because of embarrassment. Because someone had finally noticed.',
-        '',
-        'We arranged a quiet signal. He would tap his desk twice when my turn was coming. I would have time to prepare.',
-        '',
-        'For the first time, I started looking forward to English.',
-        '',
-        'That day taught me: my voice mattered. My needs mattered. Some adults would actually listen.',
-        '',
-        'I went on to advocate for myself. I now teach other students with dyslexia. Mr. Hassan changed my path.'
-      ]
-    },
-    {
-      id: 'fnl2',
-      title: 'When I Stopped Apologizing',
-      narrative: [
-        'I am autistic. For years I apologized for everything. For being too quiet. For being too loud. For asking too many questions. For not asking enough.',
-        '',
-        'In 11th grade my therapist asked me to count my apologies in one day. I counted 47.',
-        '',
-        'She said: "How many of those were necessary?"',
-        '',
-        'I thought about it. Maybe 5.',
-        '',
-        'For the next month I tracked. Each time I started to say "sorry" I asked: is this necessary?',
-        '',
-        'I cut my apologies in half.',
-        '',
-        'My relationships shifted. People stopped treating me like someone who needed reassurance.',
-        '',
-        'I am still autistic. I still apologize when needed. But I do not apologize for existing.',
-        '',
-        'The shift was small. The result was a different life.'
-      ]
-    },
-    {
-      id: 'fnl3',
-      title: 'The Email That Changed Everything',
-      narrative: [
-        'I was 15. My grades were dropping. I had ADHD. I had not been using my accommodations.',
-        '',
-        'My mom said: "You need to advocate."',
-        '',
-        'I had no idea what that meant practically.',
-        '',
-        'My counselor showed me how to draft an email. We worked on it together. Subject: "I need help."',
-        '',
-        'Body: "Hi Mr. Diaz. I am in your 4th period. My grades have dropped. I have ADHD and have not been using my accommodations. Could we meet to make a plan?"',
-        '',
-        'I hit send. Felt sick. Waited.',
-        '',
-        'He responded the next day. We met. He was kind. We made a plan.',
-        '',
-        'My grades came back up.',
-        '',
-        'I learned: most teachers want to help. They just need to know you want help.',
-        '',
-        'The hardest part was sending the email. Every email since has been easier.'
-      ]
-    },
-    {
-      id: 'fnl4',
-      title: 'I Said No and the World Did Not End',
-      narrative: [
-        'My family was planning a 4-day trip with extended family. 12 people in one house.',
-        '',
-        'I am autistic. I have anxiety. I knew I could not do 4 days.',
-        '',
-        'I had said yes my whole life. I always pushed through.',
-        '',
-        'This time I said: "Mom, I cannot do 4 days. I can come for 1 day. Then I need to come home."',
-        '',
-        'She was upset. She thought I was being selfish.',
-        '',
-        'I did not change my answer. I said it kindly. I said it firmly.',
-        '',
-        'I went for 1 day. I had a great time. I came home.',
-        '',
-        'The next morning my mom said: "I think you handled that well."',
-        '',
-        'A small comment. But it was the moment I knew I could trust myself.',
-        '',
-        'I have said no many times since. The world has not ended. My relationships are healthier.'
-      ]
-    },
-    {
-      id: 'fnl5',
-      title: 'My First Solo IEP Meeting',
-      narrative: [
-        'I am 16. I have been attending IEPs since I was 12.',
-        '',
-        'My parents and I decided I would lead this one alone. They would stay in another room. I would call if I got stuck.',
-        '',
-        'I prepared for two weeks. I drafted my talking points. I practiced with my best friend.',
-        '',
-        'The day came. I walked in. Five adults around the table.',
-        '',
-        'I said: "Hi everyone. Thanks for being here. My parents are here but they are letting me lead today. I will call them if needed."',
-        '',
-        'The case manager smiled. The principal looked surprised.',
-        '',
-        'I read my prepared remarks. I asked questions. I disagreed with one proposal and offered an alternative.',
-        '',
-        'It worked.',
-        '',
-        'The meeting ended. I felt 10 feet tall.',
-        '',
-        'My case manager said: "That was one of the best meetings we have had."',
-        '',
-        'My parents hugged me afterward. They cried.',
-        '',
-        'That was the day I knew: I am the expert on me.'
-      ]
-    },
-    {
-      id: 'fnl6',
-      title: 'When I Met Other Disabled People',
-      narrative: [
-        'I had been the only obviously disabled kid in my school my whole life.',
-        '',
-        'At 17 I went to a disability rights weekend conference. 200 disabled teens from across the country.',
-        '',
-        'I cried in the bathroom for an hour.',
-        '',
-        'I had never been in a room where I was not the only one. Where my accommodations were normal. Where my body and brain were part of the majority.',
-        '',
-        'I made friends I keep to this day.',
-        '',
-        'I learned about disability history I did not know.',
-        '',
-        'I came back changed.',
-        '',
-        'I am 22 now. I have built community across multiple cities. I mentor younger disabled teens.',
-        '',
-        'Finding my people was the most important moment of my life.'
-      ]
-    },
-    {
-      id: 'fnl7',
-      title: 'The Teacher Who Mocked Me',
-      narrative: [
-        'I was 14. Mrs. Chen taught math. I had ADHD.',
-        '',
-        'I had a fidget toy in my IEP. Mrs. Chen rolled her eyes every time I used it. She would say loudly: "Some people are just lazy."',
-        '',
-        'I started hiding the fidget. My grades dropped.',
-        '',
-        'My mom emailed Mrs. Chen. Mrs. Chen denied it.',
-        '',
-        'My mom escalated to the principal. Principal said: "She is a great teacher. Maybe she was joking."',
-        '',
-        'My mom escalated to the special education director. Showed the email pattern.',
-        '',
-        'A new conversation happened. Mrs. Chen was directed to stop. She stopped.',
-        '',
-        'My grades came back up. My fidget came back out.',
-        '',
-        'I learned: escalation is real. Adults can be wrong. Documentation is power.',
-        '',
-        'Mrs. Chen did not become a better person. But she changed her behavior because she had to. That was the win I needed.'
-      ]
-    },
-    {
-      id: 'fnl8',
-      title: 'I Refused to Be the Inspirational One',
-      narrative: [
-        'I use a wheelchair. People constantly tell me I am inspirational.',
-        '',
-        'I have just been existing. Going to school. Doing my homework. Hanging out with friends.',
-        '',
-        'The inspirational label felt off. I could not name why until I read Stella Young\'s essay on inspiration porn.',
-        '',
-        'The next time someone said it I said: "I am just living my life. Like you."',
-        '',
-        'They looked confused.',
-        '',
-        'I had to say it many times in many ways. Some people got it. Some did not.',
-        '',
-        'I started to write about it. My school paper printed one of my essays.',
-        '',
-        'Other disabled students reached out. Some told me they had felt the same way and not known what to call it.',
-        '',
-        'I learned: my words matter. Other people\'s discomfort with my existence is theirs to manage, not mine.'
-      ]
-    },
-    {
-      id: 'fnl9',
-      title: 'The Power of Documentation',
-      narrative: [
-        'I was 16. The school suspended me for "disruption." I had ADHD. The IEP had a break pass and behavior plan.',
-        '',
-        'I had been arguing with a teacher in class. I had been trying to use my break pass.',
-        '',
-        'The school said the BIP was being followed.',
-        '',
-        'My mom and I documented every incident from that semester. Where the BIP had not been followed. Specific dates.',
-        '',
-        'We requested a manifestation determination meeting.',
-        '',
-        'At the meeting, our documentation showed pattern. The team determined the behavior was IEP-related.',
-        '',
-        'The suspension was overturned. The BIP was strengthened.',
-        '',
-        'I learned: documentation wins. Memory is fiction. Pattern is power.',
-        '',
-        'I have kept records ever since. They have saved me three times.'
-      ]
-    },
-    {
-      id: 'fnl10',
-      title: 'When I Discovered I Had ADHD at 18',
-      narrative: [
-        'I was 18 when I got diagnosed with ADHD. I had thought I was lazy my whole life.',
-        '',
-        'The diagnosis was given by my college disability services counselor. He had noticed patterns in my intake forms.',
-        '',
-        'He referred me for evaluation. Two months later: confirmed.',
-        '',
-        'I cried for a week.',
-        '',
-        'Then I started learning. Reading. Listening to ADHD podcasts. Joining online community.',
-        '',
-        'I started medication. It helped, not as a fix, as a tool.',
-        '',
-        'I learned strategies that fit my brain.',
-        '',
-        'My grades, which had always been mid, became A and B.',
-        '',
-        'I learned: it is never too late to know yourself. The diagnosis was a beginning, not an end.',
-        '',
-        'I am now in graduate school. I work with high school students with newly diagnosed ADHD. I tell them: the 18 years before diagnosis are not wasted. They are how you got here.'
-      ]
-    }
-  ];
-
+  
+  
   var SELF_ADVOCACY_FINAL_REFLECTION = [
     { id: 'fr31', prompt: 'In one year, I want my advocacy practice to look like:', category: 'goals' },
     { id: 'fr32', prompt: 'The one habit I will protect this year:', category: 'commitment' },
@@ -5265,2119 +2622,20 @@ window.SelHub = window.SelHub || {
     { id: 'fr50', prompt: 'The thing I want my younger self to know now:', category: 'mentor self' }
   ];
 
-  var ADVOCACY_CLOSING_RESOURCES = [
-    { id: 'cr1', name: 'Disability Visibility Project', url: 'disabilityvisibilityproject.com', focus: 'Disability-led media' },
-    { id: 'cr2', name: 'ASAN', url: 'autisticadvocacy.org', focus: 'Autistic-led advocacy' },
-    { id: 'cr3', name: 'Disability Rights Education and Defense Fund', url: 'dredf.org', focus: 'Disability civil rights legal' },
-    { id: 'cr4', name: 'CommunicationFIRST', url: 'communicationfirst.org', focus: 'AAC users rights' },
-    { id: 'cr5', name: 'Black Disability Magazine', url: 'blackdisabilitymag.com', focus: 'Black disability community' },
-    { id: 'cr6', name: 'Disability After Dark Podcast', url: 'disabilityafterdark.com', focus: 'Sex, dating, disability' },
-    { id: 'cr7', name: 'Disability Rag Magazine archives', url: 'archives.gallaudet.edu', focus: 'Disability history' },
-    { id: 'cr8', name: 'NCD National Council on Disability', url: 'ncd.gov', focus: 'Federal disability policy' },
-    { id: 'cr9', name: 'JAN Job Accommodation Network', url: 'askjan.org', focus: 'Workplace accommodations' },
-    { id: 'cr10', name: 'Disability Justice Collective', url: 'disabilityjusticecollective.com', focus: 'Movement organizing' },
-    { id: 'cr11', name: 'PEAL Center', url: 'pealcenter.org', focus: 'Parent Education and Advocacy Leadership' },
-    { id: 'cr12', name: 'Inclusive Therapists', url: 'inclusivetherapists.com', focus: 'Finding identity-affirming therapy' },
-    { id: 'cr13', name: 'Open Path Collective', url: 'openpathcollective.org', focus: 'Sliding-scale therapy' },
-    { id: 'cr14', name: 'Bookshare', url: 'bookshare.org', focus: 'Accessible reading materials' },
-    { id: 'cr15', name: 'Learning Ally', url: 'learningally.org', focus: 'Audiobooks for dyslexic students' },
-    { id: 'cr16', name: 'Wrightslaw', url: 'wrightslaw.com', focus: 'Special education law for parents' },
-    { id: 'cr17', name: 'Council of Parent Attorneys and Advocates', url: 'copaa.org', focus: 'Special education attorneys' },
-    { id: 'cr18', name: 'National Disability Rights Network', url: 'ndrn.org', focus: 'Federation of P&A organizations' },
-    { id: 'cr19', name: 'Self Advocates Becoming Empowered (SABE)', url: 'sabeusa.org', focus: 'Self-advocacy for people with intellectual disabilities' },
-    { id: 'cr20', name: 'Disability Pride Month resources', url: 'disabilitypride.org', focus: 'July celebrations' }
-  ];
-
-  var ADVOCACY_TIPS_LIBRARY = [
-    { id: 'tip1', area: 'communication', tip: 'Always use specific language. "Extended time on tests" beats "more time".', whyItHelps: 'Specific language is harder to dismiss.' },
-    { id: 'tip2', area: 'communication', tip: 'Email same-day after verbal conversations to confirm what was agreed.', whyItHelps: 'Memory fades. Records survive.' },
-    { id: 'tip3', area: 'communication', tip: 'Use "I" statements: "I feel ___ when ___" instead of "You always ___".', whyItHelps: 'Reduces defensiveness.' },
-    { id: 'tip4', area: 'communication', tip: 'Schedule hard conversations rather than ambushing.', whyItHelps: 'Both parties show up prepared.' },
-    { id: 'tip5', area: 'communication', tip: 'Wait 24 hours before sending hot emails.', whyItHelps: 'Cool emails get better responses.' },
-    { id: 'tip6', area: 'communication', tip: 'Lead with what you want, then provide context.', whyItHelps: 'Reader knows what they are reading toward.' },
-    { id: 'tip7', area: 'meetings', tip: 'Bring written notes to every meeting.', whyItHelps: 'You will not forget key points under pressure.' },
-    { id: 'tip8', area: 'meetings', tip: 'Bring data, not just feelings.', whyItHelps: 'Data is harder to dismiss.' },
-    { id: 'tip9', area: 'meetings', tip: 'Ask for copies of all documents before signing.', whyItHelps: 'You have time to read carefully.' },
-    { id: 'tip10', area: 'meetings', tip: 'Bring another person if possible (parent, friend, advocate).', whyItHelps: 'Witness changes dynamic. Second memory.' },
-    { id: 'tip11', area: 'meetings', tip: 'Take notes during the meeting.', whyItHelps: 'Your record is your record.' },
-    { id: 'tip12', area: 'meetings', tip: 'Confirm meeting outcomes in writing within 48 hours.', whyItHelps: 'Records prevent drift.' },
-    { id: 'tip13', area: 'documentation', tip: 'Keep all email communication with school.', whyItHelps: 'Pattern visible only with records.' },
-    { id: 'tip14', area: 'documentation', tip: 'Log behavior incidents same-day with date, time, who saw.', whyItHelps: 'Memory of incidents fades fast.' },
-    { id: 'tip15', area: 'documentation', tip: 'Save medical records and evaluations.', whyItHelps: 'Schools and colleges require current.' },
-    { id: 'tip16', area: 'documentation', tip: 'Use a notebook or app dedicated to advocacy.', whyItHelps: 'Concentrated record beats scattered.' },
-    { id: 'tip17', area: 'self-care', tip: 'Schedule recovery time after big advocacy moments.', whyItHelps: 'Advocacy is energy-expensive.' },
-    { id: 'tip18', area: 'self-care', tip: 'Sleep, food, water are advocacy infrastructure.', whyItHelps: 'Hungry and tired advocates underperform.' },
-    { id: 'tip19', area: 'self-care', tip: 'Have one trusted person you can vent to after hard advocacy.', whyItHelps: 'Processing is part of the work.' },
-    { id: 'tip20', area: 'self-care', tip: 'Build joy into your week, not just advocacy.', whyItHelps: 'Joy sustains effort.' },
-    { id: 'tip21', area: 'mindset', tip: 'You are not the system. You are not failing if the system fails.', whyItHelps: 'Reframes guilt as systemic critique.' },
-    { id: 'tip22', area: 'mindset', tip: 'Most advocacy is incremental, not transformational.', whyItHelps: 'Avoids burnout from unrealistic expectations.' },
-    { id: 'tip23', area: 'mindset', tip: 'Patience is part of the skill.', whyItHelps: 'Hot reactions cost.' },
-    { id: 'tip24', area: 'mindset', tip: 'Your no is a complete sentence.', whyItHelps: 'You do not owe explanations.' },
-    { id: 'tip25', area: 'mindset', tip: 'You are not alone, even when it feels that way.', whyItHelps: 'Community history matters.' },
-    { id: 'tip26', area: 'mindset', tip: 'Boundaries get easier with practice.', whyItHelps: 'First boundaries are hardest.' },
-    { id: 'tip27', area: 'mindset', tip: 'Your accommodations are not a burden. They are infrastructure.', whyItHelps: 'Reframes shame.' },
-    { id: 'tip28', area: 'mindset', tip: 'Internalized ableism is real. Unlearning takes time.', whyItHelps: 'Self-compassion required.' },
-    { id: 'tip29', area: 'strategy', tip: 'Pick the smallest battle that wins ground.', whyItHelps: 'Conserves energy.' },
-    { id: 'tip30', area: 'strategy', tip: 'Sometimes the most strategic move is leaving the room.', whyItHelps: 'You can come back tomorrow.' },
-    { id: 'tip31', area: 'strategy', tip: 'Escalation is for patterns, not single incidents.', whyItHelps: 'Preserves resources for repeating issues.' },
-    { id: 'tip32', area: 'strategy', tip: 'Build relationships before you need them.', whyItHelps: 'Allies show up when invested.' },
-    { id: 'tip33', area: 'strategy', tip: 'Ask twice. Many no answers are tentative.', whyItHelps: 'Asking again signals importance.' },
-    { id: 'tip34', area: 'strategy', tip: 'Trial periods are easier sells than permanent changes.', whyItHelps: 'Lower-stakes yes.' },
-    { id: 'tip35', area: 'strategy', tip: 'Document everything. Then document some more.', whyItHelps: 'Records win.' },
-    { id: 'tip36', area: 'strategy', tip: 'Use the language of the system to navigate the system.', whyItHelps: 'They hear it when you speak it.' },
-    { id: 'tip37', area: 'strategy', tip: 'Specific compliments to allies build connection.', whyItHelps: 'People remember who noticed them.' },
-    { id: 'tip38', area: 'strategy', tip: 'Decline gracefully. Save the "no" for things that matter.', whyItHelps: 'You do not have to engage every fight.' },
-    { id: 'tip39', area: 'strategy', tip: 'Track patterns. One incident is data. Three is pattern.', whyItHelps: 'Pattern data is what escalates.' },
-    { id: 'tip40', area: 'strategy', tip: 'Match the formality to the stakes.', whyItHelps: 'Formal email for system issues, casual for relationship.' },
-    { id: 'tip41', area: 'identity', tip: 'You decide your identity language. Update over time.', whyItHelps: 'Identity evolves.' },
-    { id: 'tip42', area: 'identity', tip: 'Disclosure is a choice, not a duty.', whyItHelps: 'You owe no one your story.' },
-    { id: 'tip43', area: 'identity', tip: 'Disability is identity, not just diagnosis.', whyItHelps: 'Diagnosis is the medical part. Identity is the human part.' },
-    { id: 'tip44', area: 'identity', tip: 'Community is medicine.', whyItHelps: 'Healing is communal.' },
-    { id: 'tip45', area: 'identity', tip: 'Pride is a practice, not a feeling.', whyItHelps: 'Some days you choose pride even when you do not feel it.' },
-    { id: 'tip46', area: 'crisis', tip: 'Crisis call (988) does not require an active plan.', whyItHelps: 'Reach out before crisis.' },
-    { id: 'tip47', area: 'crisis', tip: 'Tell one person when you are in dark place.', whyItHelps: 'Isolation worsens.' },
-    { id: 'tip48', area: 'crisis', tip: 'Crisis is medical. Get medical help.', whyItHelps: 'Not weakness, illness.' },
-    { id: 'tip49', area: 'crisis', tip: 'After crisis, do a thorough rebuild plan.', whyItHelps: 'Pattern prevention.' },
-    { id: 'tip50', area: 'crisis', tip: 'You are not alone. Many before you have walked through and built lives after.', whyItHelps: 'Hope is a discipline.' }
-  ];
-
-  var ADVANCED_ADVOCACY_TOPICS = [
-    {
-      id: 'aat1',
-      topic: 'Intersectionality in disability advocacy',
-      whatItMeans: 'Recognizing that disabled people often hold multiple identities (race, gender, sexuality, class) that compound experiences.',
-      whyItMatters: 'Single-issue advocacy can miss multiply marginalized people. Solutions must be intersectional.',
-      practicalApplications: [
-        'Notice who is missing from disability spaces you attend',
-        'Read disability writing by multiply marginalized authors',
-        'Support specific advocacy for multiply marginalized students',
-        'Center the most impacted in policy decisions'
-      ],
-      keyAdvocates: ['Kimberle Crenshaw', 'Patty Berne', 'Imani Barbarin', 'Sins Invalid']
-    },
-    {
-      id: 'aat2',
-      topic: 'Disability justice vs disability rights',
-      whatItMeans: 'Disability rights focuses on legal protections; disability justice expands to intersectionality, anti-capitalism, and collective liberation.',
-      whyItMatters: 'Both frameworks have value. Disability justice broadens the analysis.',
-      practicalApplications: [
-        'Read the 10 Principles of Disability Justice',
-        'Examine your own advocacy framework',
-        'Connect with disability justice organizations',
-        'Apply DJ principles in your communities'
-      ],
-      tenPrinciples: [
-        'Intersectionality',
-        'Leadership of the most impacted',
-        'Anti-capitalist politic',
-        'Cross-movement organizing',
-        'Recognizing wholeness',
-        'Sustainability',
-        'Commitment to cross-disability solidarity',
-        'Interdependence',
-        'Collective access',
-        'Collective liberation'
-      ]
-    },
-    {
-      id: 'aat3',
-      topic: 'Mad pride and psychiatric survivor advocacy',
-      whatItMeans: 'Movement that reclaims "mad" and critiques the psychiatric establishment.',
-      whyItMatters: 'Some students are critical of medical model of mental illness. Mad pride offers community.',
-      practicalApplications: [
-        'Read Mad Pride writing',
-        'Connect with Mad community',
-        'Question carceral psychiatric practices',
-        'Support peer-led mental health alternatives'
-      ],
-      cautions: ['Not all mental health framing works for everyone', 'Some need medical treatment urgently', 'Both/and possible']
-    },
-    {
-      id: 'aat4',
-      topic: 'Neurodiversity vs medical model',
-      whatItMeans: 'Neurodiversity views brain difference as natural variation; medical model views it as disorder.',
-      whyItMatters: 'Frame shapes treatment. Identity vs diagnosis matter.',
-      practicalApplications: [
-        'Consider which framing fits your experience',
-        'Both can be true: variation AND need for support',
-        'Choose providers who respect your framing',
-        'Support self-determination'
-      ]
-    },
-    {
-      id: 'aat5',
-      topic: 'Crip time and disability time',
-      whatItMeans: 'Recognition that disabled life often moves at different rhythms than non-disabled life.',
-      whyItMatters: 'Schools and workplaces are designed around non-disabled time. Disabled people may need different pacing.',
-      practicalApplications: [
-        'Honor your own rhythm',
-        'Plan for recovery time',
-        'Negotiate flexible timelines',
-        'Resist productivity pressure'
-      ]
-    },
-    {
-      id: 'aat6',
-      topic: 'Sick and disabled labor organizing',
-      whatItMeans: 'Disabled people organizing for workplace rights, fair pay, accommodation, and workplace power.',
-      whyItMatters: 'Disabled people make up significant percentage of workforce. Labor organizing is disability advocacy.',
-      practicalApplications: [
-        'Connect with disabled labor activists',
-        'Know your workplace rights',
-        'Support union efforts if applicable',
-        'Build worker power'
-      ]
-    },
-    {
-      id: 'aat7',
-      topic: 'Disability as cultural identity',
-      whatItMeans: 'Disability as community, history, language, art, and politics.',
-      whyItMatters: 'Disability is not just medical. It is cultural and political.',
-      practicalApplications: [
-        'Engage with disability art and literature',
-        'Learn disability history',
-        'Use disability cultural language',
-        'Honor disability heritage'
-      ]
-    },
-    {
-      id: 'aat8',
-      topic: 'Climate crisis and disability',
-      whatItMeans: 'Disabled people are disproportionately affected by climate change.',
-      whyItMatters: 'Climate response must include disabled people. Climate disabilities are increasing.',
-      practicalApplications: [
-        'Climate adaptation includes disability access',
-        'Disabled climate activists exist',
-        'Air quality, heat, water access affect disabled people first',
-        'Connect with disabled climate organizations'
-      ]
-    }
-  ];
-
-  var EXPANDED_PROCEDURAL_GUIDE = [
-    {
-      id: 'epg1',
-      procedure: 'Requesting an initial evaluation',
-      whenToUse: 'You suspect your child has a disability and needs special education',
-      step1: 'Write a formal request letter to the district',
-      step2: 'Include: child name, grade, school, your relationship, specific concerns',
-      step3: 'Reference IDEA child-find obligation',
-      step4: 'Request: comprehensive evaluation including specific assessments',
-      step5: 'Submit to district special education director (in writing)',
-      step6: 'School has 60 days from consent to complete evaluation',
-      step7: 'Eligibility meeting follows evaluation',
-      timeline: '60 days from parent consent',
-      tipForSuccess: 'In writing creates record. Date everything.',
-      whatIfDenied: 'School can refuse to evaluate but must provide written reasons. You can appeal.'
-    },
-    {
-      id: 'epg2',
-      procedure: 'Requesting an IEP meeting outside annual review',
-      whenToUse: 'You need to address something that cannot wait until annual review',
-      step1: 'Write to case manager',
-      step2: 'State specific concern and proposed agenda items',
-      step3: 'Request meeting within 30 days',
-      step4: 'Meeting held',
-      step5: 'Decisions documented in PWN',
-      timeline: 'Reasonable time after request (typically 2-4 weeks)',
-      tipForSuccess: 'Bring specific data. Bring written proposals.',
-      whatIfDenied: 'School cannot refuse to hold IEP meeting if parent requests. They can dispute the agenda or attendance.'
-    },
-    {
-      id: 'epg3',
-      procedure: 'Requesting Independent Educational Evaluation (IEE)',
-      whenToUse: 'You disagree with the school\'s evaluation',
-      step1: 'Write formal request citing 34 CFR 300.502',
-      step2: 'State which evaluation you disagree with and why',
-      step3: 'Request IEE at district expense',
-      step4: 'District must either fund or file due process',
-      step5: 'Select evaluator from approved list',
-      step6: 'Evaluation conducted',
-      step7: 'Results brought to IEP team',
-      timeline: 'No federal timeline but should be timely',
-      tipForSuccess: 'Be specific about which evaluation and why you disagree.',
-      whatIfDenied: 'School can fund OR file due process. Cannot just refuse.'
-    },
-    {
-      id: 'epg4',
-      procedure: 'Filing a state complaint',
-      whenToUse: 'School is violating IDEA or state special education law',
-      step1: 'Write formal complaint to state education agency',
-      step2: 'State specific allegations and violations',
-      step3: 'Provide supporting documentation',
-      step4: 'Request specific remedies',
-      step5: 'State investigates within 60 days',
-      step6: 'Written findings issued',
-      step7: 'Compliance plan if violations found',
-      timeline: '60 days for state investigation',
-      tipForSuccess: 'Specificity wins. Multiple violations strengthen the case.',
-      whatIfDenied: 'You can appeal findings or refile.'
-    },
-    {
-      id: 'epg5',
-      procedure: 'Requesting mediation',
-      whenToUse: 'You and school disagree but want to resolve without due process',
-      step1: 'Request mediation through state',
-      step2: 'Both parties must agree',
-      step3: 'Trained mediator assigned',
-      step4: 'Mediation session(s) held',
-      step5: 'Agreement reached or not',
-      step6: 'Written agreement is binding',
-      timeline: 'Typically 30-60 days',
-      tipForSuccess: 'Be open to compromise. Have clear minimum and stretch goals.',
-      whatIfDenied: 'Mediation is voluntary. If school refuses, file due process.'
-    },
-    {
-      id: 'epg6',
-      procedure: 'Filing for due process',
-      whenToUse: 'Disputes cannot be resolved otherwise',
-      step1: 'Write formal due process complaint',
-      step2: 'File with state',
-      step3: 'School has 30-day resolution period',
-      step4: 'If no resolution, hearing scheduled',
-      step5: 'Hearing officer issues decision',
-      step6: 'Decision can be appealed to court',
-      timeline: 'Within statute of limitations (typically 2 years from event)',
-      tipForSuccess: 'Consider attorney. Stakes are high. Documentation is critical.',
-      whatIfDenied: 'Decision can be appealed to state or federal court.'
-    },
-    {
-      id: 'epg7',
-      procedure: 'Filing an OCR complaint',
-      whenToUse: 'Disability discrimination, civil rights violation',
-      step1: 'File OCR complaint within 180 days',
-      step2: 'Use online portal or written submission',
-      step3: 'OCR opens investigation',
-      step4: 'Documentation requested',
-      step5: 'OCR issues findings',
-      step6: 'Resolution agreement if violations found',
-      timeline: 'Investigation can take 6-18 months',
-      tipForSuccess: 'Specific allegations of civil rights violations are key.',
-      whatIfDenied: 'OCR findings can be appealed.'
-    },
-    {
-      id: 'epg8',
-      procedure: 'Requesting a manifestation determination',
-      whenToUse: 'School proposes disciplinary change of placement of 10+ days',
-      step1: 'School schedules meeting within 10 school days',
-      step2: 'IEP team reviews IEP and incident',
-      step3: 'Determine if behavior was caused by disability',
-      step4: 'Determine if IEP was implemented appropriately',
-      step5: 'If manifestation: return to placement, develop new BIP',
-      step6: 'If not manifestation: discipline proceeds; FAPE still required',
-      timeline: 'Within 10 school days of disciplinary decision',
-      tipForSuccess: 'Document IEP implementation gaps. Bring data on behavior pattern.',
-      whatIfDenied: 'You can challenge the manifestation determination through due process.'
-    }
-  ];
-
-  var MENTAL_HEALTH_TOOLKIT = [
-    {
-      id: 'mht1',
-      tool: '5-4-3-2-1 Grounding',
-      whenToUse: 'Panic, anxiety, dissociation',
-      howToUse: [
-        'Name 5 things you can see',
-        'Name 4 things you can touch',
-        'Name 3 things you can hear',
-        'Name 2 things you can smell',
-        'Name 1 thing you can taste'
-      ],
-      whyItWorks: 'Pulls awareness from internal panic to external present.',
-      timeToTake: '2-3 minutes'
-    },
-    {
-      id: 'mht2',
-      tool: '4-7-8 Breath',
-      whenToUse: 'Anxiety, sleep struggles, before hard conversation',
-      howToUse: [
-        'Inhale through nose for 4 counts',
-        'Hold for 7 counts',
-        'Exhale through mouth for 8 counts',
-        'Repeat 3-4 cycles'
-      ],
-      whyItWorks: 'Activates parasympathetic nervous system. Slows heart rate.',
-      timeToTake: '2 minutes'
-    },
-    {
-      id: 'mht3',
-      tool: 'Box Breath',
-      whenToUse: 'Stress, before high-stakes moments',
-      howToUse: [
-        'Inhale for 4 counts',
-        'Hold for 4 counts',
-        'Exhale for 4 counts',
-        'Hold for 4 counts',
-        'Repeat 4 cycles'
-      ],
-      whyItWorks: 'Even-paced breathing. Used by Navy SEALs.',
-      timeToTake: '2-3 minutes'
-    },
-    {
-      id: 'mht4',
-      tool: 'Cold Water Splash',
-      whenToUse: 'Acute panic, dissociation, overwhelm',
-      howToUse: [
-        'Splash cold water on face',
-        'Or hold an ice cube',
-        'Or step outside in cold air'
-      ],
-      whyItWorks: 'Activates mammalian dive reflex. Slows heart rate fast.',
-      timeToTake: '30 seconds'
-    },
-    {
-      id: 'mht5',
-      tool: 'Body Scan',
-      whenToUse: 'Reconnecting with body, sleep prep',
-      howToUse: [
-        'Lie or sit comfortably',
-        'Focus attention on each body part starting at feet',
-        'Notice sensations without judgment',
-        'Move slowly upward to head'
-      ],
-      whyItWorks: 'Brings awareness to body, releases tension.',
-      timeToTake: '10-20 minutes'
-    },
-    {
-      id: 'mht6',
-      tool: 'Progressive Muscle Relaxation',
-      whenToUse: 'Tension, anxiety, sleep prep',
-      howToUse: [
-        'Tense one muscle group for 5 seconds',
-        'Release and notice the relaxation',
-        'Move through each muscle group in body',
-        'End with whole-body release'
-      ],
-      whyItWorks: 'Teaches body to recognize and release tension.',
-      timeToTake: '10-15 minutes'
-    },
-    {
-      id: 'mht7',
-      tool: 'Sensory Reset',
-      whenToUse: 'Sensory overload',
-      howToUse: [
-        'Move to less stimulating space',
-        'Reduce light if too bright',
-        'Reduce sound if too loud',
-        'Use weighted blanket or compression',
-        'Listen to known calming song or silence'
-      ],
-      whyItWorks: 'Lowers sensory input to allow nervous system to settle.',
-      timeToTake: '10-30 minutes'
-    },
-    {
-      id: 'mht8',
-      tool: 'Movement Reset',
-      whenToUse: 'Stuck energy, anxiety, dysregulation',
-      howToUse: [
-        'Walk for 10 minutes',
-        'Stretch in place',
-        'Jump in place 20 times',
-        'Push against a wall hard for 10 seconds'
-      ],
-      whyItWorks: 'Discharges adrenaline, resets nervous system.',
-      timeToTake: '5-15 minutes'
-    },
-    {
-      id: 'mht9',
-      tool: 'Soothing Phone Call',
-      whenToUse: 'Loneliness, distress',
-      howToUse: [
-        'Call one safe person',
-        'Tell them: "I am having a hard time"',
-        'Listen and be listened to',
-        'No advice needed'
-      ],
-      whyItWorks: 'Co-regulation. Borrowing nervous system from a calm person.',
-      timeToTake: '15-30 minutes'
-    },
-    {
-      id: 'mht10',
-      tool: 'Pet Cuddle or Stuffed Animal',
-      whenToUse: 'Loneliness, distress',
-      howToUse: [
-        'Hold pet or stuffed animal',
-        'Notice the texture',
-        'Breath with the body',
-        'No agenda'
-      ],
-      whyItWorks: 'Touch releases oxytocin. Comfort regulation.',
-      timeToTake: '5-30 minutes'
-    },
-    {
-      id: 'mht11',
-      tool: 'Warm Drink Ritual',
-      whenToUse: 'Comfort, transition between tasks',
-      howToUse: [
-        'Make a warm drink slowly',
-        'Notice each step',
-        'Hold the warmth',
-        'Drink slowly'
-      ],
-      whyItWorks: 'Sensory comfort + mindful pause.',
-      timeToTake: '5-10 minutes'
-    },
-    {
-      id: 'mht12',
-      tool: 'Music Therapy DIY',
-      whenToUse: 'Mood regulation',
-      howToUse: [
-        'Have playlists ready: for sadness, anger, calm, energy',
-        'Pick the one that matches your current need',
-        'Listen actively for 10-15 minutes',
-        'Then transition to next state if needed'
-      ],
-      whyItWorks: 'Music regulates emotion. Pre-built playlists make it accessible in crisis.',
-      timeToTake: '10-30 minutes'
-    },
-    {
-      id: 'mht13',
-      tool: 'Distress Tolerance Skills',
-      whenToUse: 'Acute distress that you cannot solve',
-      howToUse: [
-        'TIPP (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation)',
-        'STOP (Stop, Take a breath, Observe, Proceed)',
-        'Half-smile and willing hands'
-      ],
-      whyItWorks: 'DBT-derived skills for surviving acute moments.',
-      timeToTake: '5-15 minutes'
-    },
-    {
-      id: 'mht14',
-      tool: 'Worry Window',
-      whenToUse: 'Generalized worry, racing thoughts',
-      howToUse: [
-        'Schedule 15 minutes per day for worry',
-        'Write down worries during the day to address during window',
-        'During window, name each worry',
-        'Outside window, postpone'
-      ],
-      whyItWorks: 'Contains worry to bounded time, frees rest of day.',
-      timeToTake: '15 minutes per day'
-    },
-    {
-      id: 'mht15',
-      tool: 'Self-Compassion Break',
-      whenToUse: 'Self-criticism spiral',
-      howToUse: [
-        'Place hand on heart',
-        'Say: "This is a moment of suffering."',
-        'Say: "Suffering is part of life. Many people feel this way."',
-        'Say: "May I be kind to myself."'
-      ],
-      whyItWorks: 'Interrupts self-criticism. Activates compassion centers in brain.',
-      timeToTake: '1-2 minutes'
-    },
-    {
-      id: 'mht16',
-      tool: 'Safety Plan',
-      whenToUse: 'For crisis preparation. Have ready before crisis hits.',
-      howToUse: [
-        'List your warning signs (physical, thoughts, behavior)',
-        'List your internal coping strategies',
-        'List people who help (names + numbers)',
-        'List professionals (names + numbers)',
-        'List crisis numbers',
-        'List how to make environment safer'
-      ],
-      whyItWorks: 'Pre-planning. Crisis is too late to plan.',
-      timeToTake: 'Build once, update regularly'
-    }
-  ];
-
-  var REAL_WORLD_PROCEDURES = [
-    {
-      id: 'rwp1',
-      procedure: 'Filing for SSI as a young adult with disability',
-      whenToUse: 'After 18 if disability prevents work',
-      steps: [
-        'Apply at ssa.gov or local office',
-        'Provide medical documentation',
-        'Provide financial documentation',
-        'Attend any required interviews',
-        'Wait for decision (60-90 days)',
-        'Appeal if denied (most are denied initially)'
-      ],
-      tipsForSuccess: [
-        'Save all medical records',
-        'Document daily functional limitations',
-        'Get help from social worker or attorney for appeals',
-        'Most successful applicants persist through appeal'
-      ]
-    },
-    {
-      id: 'rwp2',
-      procedure: 'Registering for accessible voting',
-      whenToUse: 'Before each election',
-      steps: [
-        'Check your state for accessible voting options',
-        'Register if not already',
-        'Request absentee ballot if needed',
-        'Or arrange for accessible polling place',
-        'Bring required ID',
-        'Vote'
-      ],
-      tipsForSuccess: [
-        'Maine has same-day registration',
-        'Curbside voting for mobility',
-        'Magnifiers and headphones often available',
-        'Accessibility complaints to state election office'
-      ]
-    },
-    {
-      id: 'rwp3',
-      procedure: 'Getting a driver\'s permit with disability',
-      whenToUse: 'When ready to drive',
-      steps: [
-        'Read state driver\'s manual',
-        'Apply for accommodations if needed for test',
-        'Pass written and vision tests',
-        'Complete required driving practice',
-        'Take road test (with accommodations if needed)',
-        'Maintain accommodations through licensure'
-      ],
-      tipsForSuccess: [
-        'Permit handbook in audio version often available',
-        'Extended time on written test',
-        'Vision aids permitted',
-        'Some states require disability disclosure'
-      ]
-    },
-    {
-      id: 'rwp4',
-      procedure: 'Opening your first bank account',
-      whenToUse: 'At 16-18',
-      steps: [
-        'Choose bank (compare fees, accessibility)',
-        'Bring ID, parent if under 18',
-        'Fill out forms (may have visual or processing accommodations)',
-        'Deposit minimum',
-        'Set up online banking',
-        'Get debit card'
-      ],
-      tipsForSuccess: [
-        'Many banks have disability-accessible apps',
-        'Direct deposit reduces error',
-        'Auto-pay for recurring bills',
-        'Set up alerts'
-      ]
-    },
-    {
-      id: 'rwp5',
-      procedure: 'Getting first job with disability',
-      whenToUse: 'When ready to work',
-      steps: [
-        'Build resume (work with school career counselor)',
-        'Apply to jobs that match your interests and abilities',
-        'Practice interview answers',
-        'Decide on disclosure timing',
-        'Request interview accommodations if needed',
-        'Accept job + negotiate accommodations'
-      ],
-      tipsForSuccess: [
-        'JAN (Job Accommodation Network) for free consultation',
-        'Vocational Rehabilitation may help',
-        'Start with simpler jobs to build resume',
-        'Customer service experience valuable'
-      ]
-    },
-    {
-      id: 'rwp6',
-      procedure: 'Applying to college with disability',
-      whenToUse: 'Junior to senior year',
-      steps: [
-        'Research colleges with strong DSS',
-        'Visit and meet DSS counselors',
-        'Decide on disclosure in essays',
-        'Apply through Common App or college portals',
-        'Schedule virtual or in-person interviews if offered',
-        'Request testing accommodations for standardized tests',
-        'Submit applications',
-        'Compare financial aid offers',
-        'Accept, register with DSS over summer'
-      ],
-      tipsForSuccess: [
-        'DSS quality matters more than school prestige',
-        'Test-optional schools eliminate one stressor',
-        'Application essays can discuss disability if you choose',
-        'Financial aid offers can be negotiated'
-      ]
-    },
-    {
-      id: 'rwp7',
-      procedure: 'Finding a doctor as adult patient',
-      whenToUse: 'After moving or changing insurance',
-      steps: [
-        'Check your insurance directory',
-        'Filter by specialty if needed',
-        'Read reviews for disability accessibility',
-        'Schedule first appointment',
-        'Bring records to first visit',
-        'Decide if it is a good fit'
-      ],
-      tipsForSuccess: [
-        'It is okay to try multiple doctors',
-        'Disability-friendly providers vary in quality',
-        'Long appointments mean longer wait but more discussion',
-        'Telemedicine for accessibility'
-      ]
-    },
-    {
-      id: 'rwp8',
-      procedure: 'Renting your first apartment',
-      whenToUse: 'When ready for independence',
-      steps: [
-        'Save for first month, last month, security deposit',
-        'Build credit (if possible)',
-        'Decide on city and neighborhood',
-        'Apply with co-signer if needed',
-        'Request reasonable modifications under FHA',
-        'Move in, set up utilities',
-        'Maintain rent payment record'
-      ],
-      tipsForSuccess: [
-        'Federal Fair Housing Act protects disabled tenants',
-        'You can request modifications (grab bars, etc.)',
-        'Landlord cannot deny based on disability',
-        'Section 8 vouchers may be available'
-      ]
-    }
-  ];
-
-  var ANNUAL_PLANNING_TEMPLATES = [
-    {
-      id: 'apt1',
-      term: 'August / Pre-school',
-      checklist: [
-        'Review last year\'s IEP / 504 plan',
-        'Note what worked and what did not',
-        'Email new teachers introducing yourself and accommodations',
-        'Visit school to confirm physical setup',
-        'Update emergency contact info',
-        'Schedule annual physical / vision / hearing checks',
-        'Stock supplies including any sensory tools',
-        'Practice morning routine',
-        'Set up communication systems with parent and case manager',
-        'Pick out outfit for first day that feels good'
-      ],
-      reflectionPrompts: [
-        'How am I feeling about the year ahead?',
-        'What is one fear I want to name?',
-        'What is one hope?'
-      ]
-    },
-    {
-      id: 'apt2',
-      term: 'September / Early Fall',
-      checklist: [
-        'Meet each new teacher in office hours',
-        'Verify all accommodations are set up',
-        'Establish routine with new schedule',
-        'Track sleep, food, mood for first 4 weeks',
-        'Check in with case manager weekly first month',
-        'Make 1-2 new social connections',
-        'Identify safe spaces and people',
-        'Practice using break passes',
-        'Begin homework system that fits this year',
-        'Set up calendar with key dates'
-      ],
-      reflectionPrompts: [
-        'What is working better than expected?',
-        'What is harder than expected?',
-        'What adjustments do I need to make now?'
-      ]
-    },
-    {
-      id: 'apt3',
-      term: 'October / Mid-Fall',
-      checklist: [
-        'First quarter grade check',
-        'Review accommodation use - which used, which not',
-        'Conference with teachers if grades concerning',
-        'Continue sleep and routine consistency',
-        'Plan for upcoming standardized tests if applicable',
-        'Stay connected with friends',
-        'Identify any unmet needs to bring to case manager',
-        'Halloween / holiday energy management plan',
-        'Reset if first month was rough',
-        'Celebrate one win'
-      ],
-      reflectionPrompts: [
-        'What patterns have emerged in 6 weeks?',
-        'What is sustainable?',
-        'What needs to change?'
-      ]
-    },
-    {
-      id: 'apt4',
-      term: 'November / Late Fall',
-      checklist: [
-        'Second quarter midterm check',
-        'Thanksgiving break planning',
-        'Continue homework system',
-        'College application work if senior',
-        'Maintain mental health supports',
-        'Holiday season early planning',
-        'Adjust accommodations if needed',
-        'Connect with extended family if helpful',
-        'Track triggers around holiday changes',
-        'Build winter break plan'
-      ],
-      reflectionPrompts: [
-        'How am I navigating holiday energy?',
-        'What supports do I need extra of?'
-      ]
-    },
-    {
-      id: 'apt5',
-      term: 'December / Winter Break',
-      checklist: [
-        'First semester reflection',
-        'Document accommodations and progress',
-        'Rest plan for break',
-        'Family time planning',
-        'Self-care during unstructured time',
-        'Holiday social management',
-        'Sleep and nutrition baseline',
-        'Set January goals',
-        'Connect with community supports',
-        'Celebrate semester wins'
-      ],
-      reflectionPrompts: [
-        'What worked first semester?',
-        'What needs to be different second semester?',
-        'What am I grateful for?'
-      ]
-    },
-    {
-      id: 'apt6',
-      term: 'January / New Semester',
-      checklist: [
-        'New semester teachers introduction',
-        'Update accommodations for new schedule',
-        'Re-establish routines after break',
-        'Mid-year IEP check if applicable',
-        'New goals for second semester',
-        'College applications follow-up if senior',
-        'Mental health re-check',
-        'Connect with friends after break',
-        'New semester energy plan',
-        'One new growth area'
-      ],
-      reflectionPrompts: [
-        'What am I bringing into this semester?',
-        'What am I leaving behind?'
-      ]
-    },
-    {
-      id: 'apt7',
-      term: 'February / Mid-Winter',
-      checklist: [
-        'Third quarter check',
-        'Standardized test prep if applicable',
-        'Spring break planning',
-        'Mental health winter check',
-        'Self-care during shorter days',
-        'Friend and community connections',
-        'Energy management',
-        'Future planning for next year',
-        'Adjust accommodations if needed',
-        'Celebrate progress'
-      ],
-      reflectionPrompts: [
-        'How is my energy holding up?',
-        'What supports do I need this week?'
-      ]
-    },
-    {
-      id: 'apt8',
-      term: 'March / Early Spring',
-      checklist: [
-        'Standardized testing if applicable',
-        'College acceptances if senior',
-        'IEP annual review preparation if applicable',
-        'Spring break and recovery',
-        'Track sleep and energy',
-        'Mental health support during transitions',
-        'Friend group check-in',
-        'Future planning',
-        'Adjust accommodations',
-        'Celebrate spring'
-      ],
-      reflectionPrompts: [
-        'What does spring mean for me this year?',
-        'What is shifting?'
-      ]
-    },
-    {
-      id: 'apt9',
-      term: 'April / Mid-Spring',
-      checklist: [
-        'IEP annual review (lead it if able)',
-        'Course selection for next year',
-        'AP exam prep if applicable',
-        'Senior decisions if applicable',
-        'College DSS connections if going to college',
-        'Spring activity participation',
-        'Mental health spring check',
-        'Continue routines',
-        'Plan for end of year',
-        'Celebrate growth'
-      ],
-      reflectionPrompts: [
-        'What has changed this year?',
-        'Who has been my biggest support?'
-      ]
-    },
-    {
-      id: 'apt10',
-      term: 'May / End of Year',
-      checklist: [
-        'Final exam prep',
-        'AP exams',
-        'Year-end reflection',
-        'IEP carryover to next year',
-        'Senior wrap-up if applicable',
-        'Mental health support through stress',
-        'Connect with summer plans',
-        'Thank-you notes to supports',
-        'Celebrate completion',
-        'Plan summer maintenance'
-      ],
-      reflectionPrompts: [
-        'What am I most proud of this year?',
-        'What is one piece I want to take into summer?'
-      ]
-    },
-    {
-      id: 'apt11',
-      term: 'June / Early Summer',
-      checklist: [
-        'Year-end documentation',
-        'Summer goals (rest, work, growth)',
-        'Maintain mental health supports',
-        'Time with friends',
-        'Continue accommodations if summer school',
-        'Read for fun',
-        'Process this year',
-        'Sleep recovery if needed',
-        'Connect with community',
-        'Celebrate the school year ending'
-      ],
-      reflectionPrompts: [
-        'What am I grateful for from this school year?',
-        'What was the hardest part? Did I survive it?'
-      ]
-    },
-    {
-      id: 'apt12',
-      term: 'July / Mid-Summer',
-      checklist: [
-        'Mid-summer reset',
-        'Mental health check',
-        'Begin preparing for next school year',
-        'Update IEP if needed',
-        'Job or internship if applicable',
-        'Travel or family time',
-        'Maintain key routines',
-        'Special interests',
-        'Community engagement',
-        'Plan back-to-school transition'
-      ],
-      reflectionPrompts: [
-        'What is my body telling me about rest?',
-        'What is one piece of myself I have reconnected with?'
-      ]
-    }
-  ];
-
-  var DETAILED_DISABILITY_GUIDE = [
-    {
-      id: 'ddg1',
-      category: 'Learning Disabilities',
-      conditions: ['Dyslexia', 'Dysgraphia', 'Dyscalculia', 'Auditory Processing Disorder', 'Visual Processing Disorder'],
-      whatItIs: 'A neurodevelopmental difference affecting specific learning processes (reading, writing, math, processing).',
-      commonMyths: [
-        'Myth: People with LD are not intelligent. Reality: Many have above-average IQ.',
-        'Myth: LD is just laziness. Reality: It is neurological.',
-        'Myth: People grow out of LD. Reality: It is lifelong but skills can be developed.'
-      ],
-      commonAccommodations: [
-        'Extended time',
-        'Audiobooks and text-to-speech',
-        'Speech-to-text dictation',
-        'Spell-check and grammar tools',
-        'Multi-modal instruction',
-        'Visual aids',
-        'Calculators',
-        'Reduced spelling burden'
-      ],
-      famousAdvocates: ['Whoopi Goldberg', 'Richard Branson', 'Henry Winkler', 'Stephen J. Cannell']
-    },
-    {
-      id: 'ddg2',
-      category: 'ADHD',
-      conditions: ['Inattentive', 'Hyperactive', 'Combined'],
-      whatItIs: 'A neurodevelopmental disorder affecting attention regulation, executive function, and impulse control.',
-      commonMyths: [
-        'Myth: Only hyperactive boys have it. Reality: Girls and adults have it too, often inattentive type.',
-        'Myth: It is over-diagnosed. Reality: Diagnostic rates have caught up with epidemiology.',
-        'Myth: Medication is the only treatment. Reality: Behavioral support, accommodations, and therapy all help.'
-      ],
-      commonAccommodations: [
-        'Extended time',
-        'Frequent breaks',
-        'Reduced distractions',
-        'Visual schedules',
-        'Movement allowed',
-        'Fidget tools',
-        'Color-coded organization',
-        'Daily check-ins'
-      ],
-      famousAdvocates: ['Simone Biles', 'Michael Phelps', 'Justin Timberlake', 'Adam Levine']
-    },
-    {
-      id: 'ddg3',
-      category: 'Autism Spectrum',
-      conditions: ['Wide spectrum of autistic experience'],
-      whatItIs: 'A neurodevelopmental difference affecting social communication, sensory processing, special interests, and need for predictability.',
-      commonMyths: [
-        'Myth: Autistic people lack empathy. Reality: Different empathy, often more sensitive.',
-        'Myth: All autistic people are like Rain Man. Reality: Wide spectrum.',
-        'Myth: Vaccines cause autism. Reality: Debunked. Autism is genetic and developmental.'
-      ],
-      commonAccommodations: [
-        'Sensory tools (headphones, fidgets)',
-        'Quiet space access',
-        'Visual schedules',
-        'Reduced sensory environment',
-        'Advance notice of changes',
-        'Communication accommodations (AAC, written, etc.)',
-        'Structured social opportunities',
-        'Special interest integration'
-      ],
-      famousAdvocates: ['Temple Grandin', 'Greta Thunberg', 'Naoki Higashida', 'Hannah Gadsby']
-    },
-    {
-      id: 'ddg4',
-      category: 'Mental Health Conditions',
-      conditions: ['Depression', 'Anxiety', 'Bipolar', 'PTSD', 'OCD', 'Schizophrenia'],
-      whatItIs: 'A range of conditions affecting mood, thought, perception, or behavior.',
-      commonMyths: [
-        'Myth: Mental illness is weakness. Reality: It is medical and neurological.',
-        'Myth: People with mental illness are violent. Reality: They are far more often victims than perpetrators.',
-        'Myth: Therapy and medication do not work. Reality: Most conditions are highly treatable.'
-      ],
-      commonAccommodations: [
-        'Flexible attendance for treatment',
-        'Mental health break passes',
-        'Quiet space access',
-        'Counselor relationship',
-        'Crisis re-entry plans',
-        'Medication management at school',
-        'Extended time on assessments',
-        'Reduced workload during episodes'
-      ],
-      famousAdvocates: ['Demi Lovato', 'Carrie Fisher', 'Glenn Close', 'Prince Harry']
-    },
-    {
-      id: 'ddg5',
-      category: 'Chronic Illness',
-      conditions: ['Diabetes', 'Epilepsy', 'Cystic Fibrosis', 'Crohn\'s', 'Lupus', 'Migraine', 'POTS', 'Endometriosis'],
-      whatItIs: 'A range of medical conditions causing ongoing symptoms and requiring ongoing management.',
-      commonMyths: [
-        'Myth: You do not look sick. Reality: Invisible illness is real.',
-        'Myth: People with chronic illness should not push themselves. Reality: We push ourselves harder than most.',
-        'Myth: You should be over it by now. Reality: Chronic means ongoing.'
-      ],
-      commonAccommodations: [
-        'Flexible attendance',
-        'Medication times allowed',
-        'Bathroom access',
-        'Snack permission',
-        'Water always',
-        'Modified PE',
-        'Quiet space for symptoms',
-        'Doctor appointment time'
-      ],
-      famousAdvocates: ['Selma Blair', 'Sonia Sotomayor', 'Jennifer Stone']
-    },
-    {
-      id: 'ddg6',
-      category: 'Mobility Disabilities',
-      conditions: ['Cerebral palsy', 'Muscular dystrophy', 'Spinal cord injury', 'Amputation', 'Joint conditions'],
-      whatItIs: 'Conditions affecting movement, mobility, and physical function.',
-      commonMyths: [
-        'Myth: Wheelchair users cannot walk. Reality: Many can but find wheelchair more efficient.',
-        'Myth: Mobility disability means lower intelligence. Reality: No connection.',
-        'Myth: People in wheelchairs are bound to them. Reality: Wheelchairs free us.'
-      ],
-      commonAccommodations: [
-        'Physical accessibility (ramps, elevators)',
-        'Accessible restrooms',
-        'Extra time for transitions',
-        'Modified PE',
-        'Adaptive equipment',
-        'Note-taking support',
-        'Accessible field trip planning'
-      ],
-      famousAdvocates: ['Stephen Hawking', 'Ed Roberts', 'Christopher Reeve', 'Patrick Henry Hughes']
-    },
-    {
-      id: 'ddg7',
-      category: 'Deaf and Hard of Hearing',
-      conditions: ['Deaf', 'Hard of hearing', 'Single-sided deafness', 'Auditory neuropathy'],
-      whatItIs: 'A range of hearing differences and Deaf cultural identity.',
-      commonMyths: [
-        'Myth: All Deaf people read lips. Reality: Some do, some do not.',
-        'Myth: Cochlear implants cure deafness. Reality: They are a tool, not a cure.',
-        'Myth: ASL is just signed English. Reality: It is its own language.'
-      ],
-      commonAccommodations: [
-        'ASL interpreter or captioning',
-        'Preferred seating',
-        'Visual notifications',
-        'FM systems',
-        'Written assignments',
-        'Lip-reading accessibility',
-        'Captions on all video',
-        'Phone access'
-      ],
-      famousAdvocates: ['Marlee Matlin', 'Nyle DiMarco', 'Sean Forbes']
-    },
-    {
-      id: 'ddg8',
-      category: 'Blind and Low Vision',
-      conditions: ['Blindness', 'Low vision', 'Visual field loss', 'Color vision deficiency'],
-      whatItIs: 'A range of vision differences and blind cultural identity.',
-      commonMyths: [
-        'Myth: Blind people have super hearing. Reality: We listen more carefully because we have to.',
-        'Myth: Blind people cannot work. Reality: We work in every field.',
-        'Myth: Guide dogs are pets. Reality: They are working animals.'
-      ],
-      commonAccommodations: [
-        'Braille or large print materials',
-        'Text-to-speech',
-        'Audio descriptions',
-        'Cane and orientation training',
-        'Tactile graphics',
-        'Computer screen readers',
-        'High contrast materials',
-        'Audio note-taking'
-      ],
-      famousAdvocates: ['Haben Girma', 'Stevie Wonder', 'Helen Keller']
-    },
-    {
-      id: 'ddg9',
-      category: 'Communication Disabilities',
-      conditions: ['Stuttering', 'Speech sound disorders', 'Selective mutism', 'AAC users', 'Apraxia'],
-      whatItIs: 'Conditions affecting verbal communication.',
-      commonMyths: [
-        'Myth: Stutterers should just slow down. Reality: It is more complex than that.',
-        'Myth: AAC users cannot understand speech. Reality: We understand everything.',
-        'Myth: Selective mutism is just shyness. Reality: It is an anxiety disorder.'
-      ],
-      commonAccommodations: [
-        'AAC use throughout day',
-        'Time to respond',
-        'Alternative response modes',
-        'No-cold-call agreements',
-        'Written response options',
-        'Speech-language therapy',
-        'Patient listeners'
-      ],
-      famousAdvocates: ['Marlee Matlin', 'Joe Biden (recovered stutterer)', 'James Earl Jones']
-    },
-    {
-      id: 'ddg10',
-      category: 'Intellectual and Developmental Disabilities',
-      conditions: ['Down syndrome', 'Fragile X', 'Williams syndrome', 'Other genetic conditions'],
-      whatItIs: 'Conditions affecting cognitive function and adaptive skills.',
-      commonMyths: [
-        'Myth: People with IDD cannot learn. Reality: We can learn throughout our lives.',
-        'Myth: People with IDD should not have relationships. Reality: We have full lives.',
-        'Myth: We need to be protected from everything. Reality: Risk is part of life.'
-      ],
-      commonAccommodations: [
-        'Modified curriculum where appropriate',
-        'Functional skills integrated with academics',
-        'Communication supports',
-        'Vocational training',
-        'Independent living skills',
-        'Inclusive education',
-        'Self-determination support'
-      ],
-      famousAdvocates: ['Frank Stephens', 'Mikayla Holmgren', 'Andrew Solomon']
-    }
-  ];
-
-  var ADVOCACY_RESOURCE_DIRECTORY = [
-    {
-      id: 'rd1',
-      type: 'Federal',
-      name: 'U.S. Department of Education',
-      address: '400 Maryland Avenue SW, Washington, DC 20202',
-      phone: '1-800-872-5327',
-      web: 'ed.gov',
-      whatTheyDo: 'Federal oversight of special education, civil rights, and education policy.'
-    },
-    {
-      id: 'rd2',
-      type: 'Federal',
-      name: 'Office for Civil Rights (OCR)',
-      address: 'Multiple regional offices',
-      phone: '1-800-421-3481',
-      web: 'ed.gov/ocr',
-      whatTheyDo: 'Federal civil rights enforcement in education. File complaints here.'
-    },
-    {
-      id: 'rd3',
-      type: 'Federal',
-      name: 'Office of Special Education Programs (OSEP)',
-      address: 'Department of Education',
-      phone: '202-245-7468',
-      web: 'sites.ed.gov/idea',
-      whatTheyDo: 'Federal IDEA administration and policy.'
-    },
-    {
-      id: 'rd4',
-      type: 'Federal',
-      name: 'Equal Employment Opportunity Commission (EEOC)',
-      address: 'Multiple regional offices',
-      phone: '1-800-669-4000',
-      web: 'eeoc.gov',
-      whatTheyDo: 'Federal employment discrimination enforcement. ADA Title I complaints.'
-    },
-    {
-      id: 'rd5',
-      type: 'Maine state',
-      name: 'Maine Department of Education',
-      address: '23 State House Station, Augusta, ME 04333',
-      phone: '207-624-6600',
-      web: 'maine.gov/doe',
-      whatTheyDo: 'State oversight of education, including special education.'
-    },
-    {
-      id: 'rd6',
-      type: 'Maine state',
-      name: 'Maine Office of Special Services',
-      address: 'Maine DOE',
-      phone: '207-624-6713',
-      web: 'maine.gov/doe/specialed',
-      whatTheyDo: 'Maine special education administration. File state complaints here.'
-    },
-    {
-      id: 'rd7',
-      type: 'Maine advocacy',
-      name: 'Disability Rights Maine',
-      address: '160 Capitol Street, Augusta, ME 04330',
-      phone: '1-800-452-1948',
-      web: 'drme.org',
-      whatTheyDo: 'Maine\'s Protection and Advocacy organization. Free legal advocacy for disabled Mainers.'
-    },
-    {
-      id: 'rd8',
-      type: 'Maine advocacy',
-      name: 'Maine Parent Federation',
-      address: '484 Maine Avenue, Farmingdale, ME 04344',
-      phone: '1-800-870-7746',
-      web: 'mpf.org',
-      whatTheyDo: 'Maine\'s Parent Training and Information Center. Free support for families of children with disabilities.'
-    },
-    {
-      id: 'rd9',
-      type: 'Crisis',
-      name: '988 Suicide and Crisis Lifeline',
-      phone: '988',
-      web: '988lifeline.org',
-      whatTheyDo: '24/7 free crisis support. Call or text.'
-    },
-    {
-      id: 'rd10',
-      type: 'Crisis',
-      name: 'Crisis Text Line',
-      phone: 'Text HOME to 741741',
-      web: 'crisistextline.org',
-      whatTheyDo: '24/7 free text-based crisis support.'
-    },
-    {
-      id: 'rd11',
-      type: 'Maine crisis',
-      name: 'Maine Crisis Line',
-      phone: '1-888-568-1112',
-      web: 'maine.gov/dhhs/obh/programs/crisis',
-      whatTheyDo: 'Maine-specific 24/7 mental health crisis support. Mobile crisis available.'
-    },
-    {
-      id: 'rd12',
-      type: 'National disability',
-      name: 'Autistic Self Advocacy Network (ASAN)',
-      address: 'Washington, DC',
-      web: 'autisticadvocacy.org',
-      whatTheyDo: 'Autistic-led national advocacy. Founded on Nothing About Us Without Us.'
-    },
-    {
-      id: 'rd13',
-      type: 'National disability',
-      name: 'Disability Rights Education and Defense Fund (DREDF)',
-      address: 'Berkeley, CA',
-      web: 'dredf.org',
-      whatTheyDo: 'National disability civil rights legal advocacy.'
-    },
-    {
-      id: 'rd14',
-      type: 'National disability',
-      name: 'Disability Visibility Project',
-      web: 'disabilityvisibilityproject.com',
-      whatTheyDo: 'Disability-led media platform. Founded by Alice Wong.'
-    },
-    {
-      id: 'rd15',
-      type: 'National disability',
-      name: 'The Arc',
-      web: 'thearc.org',
-      whatTheyDo: 'National organization for people with intellectual and developmental disabilities and their families.'
-    },
-    {
-      id: 'rd16',
-      type: 'Mental health',
-      name: 'NAMI (National Alliance on Mental Illness)',
-      phone: '1-800-950-6264',
-      web: 'nami.org',
-      whatTheyDo: 'Mental health support, education, advocacy. Local chapters.'
-    },
-    {
-      id: 'rd17',
-      type: 'LGBTQ',
-      name: 'Trevor Project',
-      phone: '1-866-488-7386 or text START to 678-678',
-      web: 'thetrevorproject.org',
-      whatTheyDo: 'Crisis intervention and suicide prevention for LGBTQ youth.'
-    },
-    {
-      id: 'rd18',
-      type: 'LGBTQ',
-      name: 'Trans Lifeline',
-      phone: '1-877-565-8860',
-      web: 'translifeline.org',
-      whatTheyDo: 'Crisis support for trans community, by trans people.'
-    },
-    {
-      id: 'rd19',
-      type: 'Eating disorder',
-      name: 'NEDA (National Eating Disorders Association)',
-      phone: '1-800-931-2237',
-      web: 'nationaleatingdisorders.org',
-      whatTheyDo: 'Eating disorder support, recovery resources, helpline.'
-    },
-    {
-      id: 'rd20',
-      type: 'Substance use',
-      name: 'SAMHSA National Helpline',
-      phone: '1-800-662-4357',
-      web: 'samhsa.gov',
-      whatTheyDo: '24/7 free treatment referral and information service for mental health and substance use disorders.'
-    }
-  ];
-
-  var SELF_ADVOCACY_LESSON_PLANS = [
-    {
-      id: 'slp1',
-      title: 'Lesson 1: What is Self-Advocacy?',
-      audience: 'middle school',
-      duration: '45 min',
-      learningObjectives: [
-        'Define self-advocacy in their own words',
-        'Identify 3 examples of self-advocacy',
-        'Identify 1 area where they want to grow'
-      ],
-      materials: ['Markers', 'Whiteboard', 'Note cards', 'Worksheet'],
-      lessonStructure: [
-        { phase: 'Opening', time: '5 min', activity: 'Brainstorm: What is advocacy? Self-advocacy?' },
-        { phase: 'Mini-lesson', time: '10 min', activity: 'Teacher explains: Self-advocacy = self-knowledge + rights knowledge + communication. Show video clip of student advocating.' },
-        { phase: 'Group activity', time: '15 min', activity: 'In pairs, list 5 examples of self-advocacy you have seen. Categorize as small, medium, big.' },
-        { phase: 'Personal reflection', time: '10 min', activity: 'Each student writes: one area where they want to grow in self-advocacy.' },
-        { phase: 'Closing', time: '5 min', activity: 'Share-out: one word that comes to mind when you hear self-advocacy.' }
-      ],
-      homework: 'Notice one moment of self-advocacy in your life this week. Write 2 sentences about it.',
-      assessmentRubric: 'Student can define self-advocacy in their own words. Student identifies one area for growth.'
-    },
-    {
-      id: 'slp2',
-      title: 'Lesson 2: Knowing Your IEP',
-      audience: 'middle school',
-      duration: '60 min',
-      learningObjectives: [
-        'Read their IEP or 504 plan',
-        'Identify 3 of their accommodations',
-        'Identify their case manager'
-      ],
-      materials: ['Each student\'s IEP (if comfortable)', 'Highlighters', 'Note cards'],
-      lessonStructure: [
-        { phase: 'Opening', time: '10 min', activity: 'Discuss: What is an IEP? What is a 504? Differences?' },
-        { phase: 'Reading time', time: '25 min', activity: 'Students read their own plans, highlight what they understand, mark what they do not.' },
-        { phase: 'Group activity', time: '15 min', activity: 'Pair share with someone with same disability category if possible. Discuss what was familiar, what was surprising.' },
-        { phase: 'Closing', time: '10 min', activity: 'Each student names 3 of their accommodations.' }
-      ],
-      homework: 'Have a conversation with your parent about your IEP this week.',
-      assessmentRubric: 'Student can name 3 accommodations and case manager.'
-    },
-    {
-      id: 'slp3',
-      title: 'Lesson 3: Communicating Needs',
-      audience: 'middle school',
-      duration: '60 min',
-      learningObjectives: [
-        'Draft a request email',
-        'Practice asking in person',
-        'Identify their preferred communication mode'
-      ],
-      materials: ['Computers', 'Email template handout'],
-      lessonStructure: [
-        { phase: 'Opening', time: '10 min', activity: 'Discuss: when have you wanted to ask for something but did not? What stopped you?' },
-        { phase: 'Mini-lesson', time: '15 min', activity: 'Teacher demonstrates: structure of effective request. Specific, polite, with a thank you.' },
-        { phase: 'Drafting', time: '20 min', activity: 'Students draft one request email to a teacher.' },
-        { phase: 'Peer feedback', time: '15 min', activity: 'Pair students. Each reads other\'s email. Notice what is clear, what could be clearer.' }
-      ],
-      homework: 'Send one of your drafted emails this week.',
-      assessmentRubric: 'Student drafts a complete request email.'
-    },
-    {
-      id: 'slp4',
-      title: 'Lesson 4: Disagreement and Disagreement Well',
-      audience: 'middle school',
-      duration: '45 min',
-      learningObjectives: [
-        'Distinguish productive disagreement from conflict',
-        'Practice disagreement scripts',
-        'Identify a time to use the skill this week'
-      ],
-      materials: ['Script cards', 'Whiteboard'],
-      lessonStructure: [
-        { phase: 'Opening', time: '5 min', activity: 'Brainstorm: when is it okay to disagree?' },
-        { phase: 'Mini-lesson', time: '15 min', activity: 'Teacher introduces scripts: "I see it differently." "Could we look at it another way?" "I want to understand the reasoning."' },
-        { phase: 'Role-play', time: '20 min', activity: 'In pairs, practice disagreement scripts in 3 scenarios.' },
-        { phase: 'Closing', time: '5 min', activity: 'Each student picks one disagreement to have this week.' }
-      ],
-      homework: 'Use one disagreement script this week. Note how it landed.',
-      assessmentRubric: 'Student can demonstrate one disagreement script.'
-    },
-    {
-      id: 'slp5',
-      title: 'Lesson 5: Leading Your IEP Meeting',
-      audience: 'high school',
-      duration: '60 min',
-      learningObjectives: [
-        'Understand the IEP meeting structure',
-        'Plan their opening statement',
-        'Prepare 3 contributions for next meeting'
-      ],
-      materials: ['Meeting agenda template', 'Notes'],
-      lessonStructure: [
-        { phase: 'Opening', time: '10 min', activity: 'Discuss: what was your last IEP meeting like? What was your role?' },
-        { phase: 'Mini-lesson', time: '15 min', activity: 'Teacher shows typical meeting structure. Student-led options.' },
-        { phase: 'Planning', time: '25 min', activity: 'Students draft opening statement and 3 contributions for next meeting.' },
-        { phase: 'Closing', time: '10 min', activity: 'Each student practices their opening statement aloud.' }
-      ],
-      homework: 'Practice your opening 3 times before bedtime. Bring revised version to next class.',
-      assessmentRubric: 'Student delivers opening statement out loud.'
-    },
-    {
-      id: 'slp6',
-      title: 'Lesson 6: Disclosure Decisions',
-      audience: 'high school',
-      duration: '60 min',
-      learningObjectives: [
-        'Articulate reasons to disclose and not to',
-        'Identify 3 contexts where they would or would not disclose',
-        'Practice disclosure scripts'
-      ],
-      materials: ['Discussion handout', 'Practice scripts'],
-      lessonStructure: [
-        { phase: 'Opening', time: '5 min', activity: 'Brainstorm: who knows about your disability?' },
-        { phase: 'Discussion', time: '15 min', activity: 'Pros and cons of disclosure in different contexts: new friend, college, employer.' },
-        { phase: 'Personal map', time: '15 min', activity: 'Students map their own disclosure circles. Closest in, more public outward.' },
-        { phase: 'Script practice', time: '15 min', activity: 'Practice short, medium, long disclosure scripts.' },
-        { phase: 'Closing', time: '10 min', activity: 'Each student names one safe context where they will practice disclosure.' }
-      ],
-      homework: 'Disclose to one new person this month. Note how it felt.',
-      assessmentRubric: 'Student can articulate their own disclosure preferences.'
-    },
-    {
-      id: 'slp7',
-      title: 'Lesson 7: Transition to College or Work',
-      audience: 'high school senior',
-      duration: '60 min',
-      learningObjectives: [
-        'Understand the shift from IEP to DSS or ADA',
-        'Identify next-step institution',
-        'Outline transition tasks'
-      ],
-      materials: ['College DSS info', 'Workplace ADA info', 'Transition checklist'],
-      lessonStructure: [
-        { phase: 'Opening', time: '5 min', activity: 'Discuss: what is your post-school plan?' },
-        { phase: 'Mini-lesson', time: '20 min', activity: 'How DSS works at college. How ADA works at work. Differences from high school IEP.' },
-        { phase: 'Personal planning', time: '25 min', activity: 'Students complete transition checklist for their plan.' },
-        { phase: 'Closing', time: '10 min', activity: 'Each student names 3 transition tasks they will do this semester.' }
-      ],
-      homework: 'Email DSS or HR at your destination this month.',
-      assessmentRubric: 'Student has concrete transition plan with timeline.'
-    },
-    {
-      id: 'slp8',
-      title: 'Lesson 8: Building Your Advocacy Network',
-      audience: 'all levels',
-      duration: '45 min',
-      learningObjectives: [
-        'Map their support network',
-        'Identify 3 people to deepen relationships with',
-        'Plan one new connection'
-      ],
-      materials: ['Network map worksheet'],
-      lessonStructure: [
-        { phase: 'Opening', time: '5 min', activity: 'Discuss: who are your advocates?' },
-        { phase: 'Mapping', time: '20 min', activity: 'Students complete network maps: home, school, professional, community, online.' },
-        { phase: 'Pair share', time: '15 min', activity: 'In pairs, share your map. Notice gaps.' },
-        { phase: 'Closing', time: '5 min', activity: 'Each student names one new connection to try this month.' }
-      ],
-      homework: 'Reach out to one new connection this month.',
-      assessmentRubric: 'Student has complete network map with growth plan.'
-    }
-  ];
-
-  var ADVOCACY_DIALOGUE_LIBRARY = [
-    {
-      id: 'adl1',
-      scenario: 'You want to take a hard class your counselor advised against',
-      person: 'School counselor',
-      yourDialogue: [
-        'Counselor: I do not recommend honors English. Your reading has been below grade level.',
-        'You: I hear that. I have been reading above grade level when I use audiobooks. With that accommodation, I think I can do honors.',
-        'Counselor: That accommodation is not available in honors.',
-        'You: I would like to check with the case manager about that. Could we have a meeting? I want to make this decision with more information.'
-      ],
-      keyMoves: [
-        'Acknowledge their reasoning',
-        'Provide your own data',
-        'Question assumption',
-        'Request team meeting'
-      ]
-    },
-    {
-      id: 'adl2',
-      scenario: 'You want to switch schools',
-      person: 'Parent',
-      yourDialogue: [
-        'You: Mom, I want to talk to you about switching schools.',
-        'Mom: Why?',
-        'You: I have been having a hard time at [current school]. The bullying has not stopped. I have asked the school to address it; they have not. I want a fresh start.',
-        'Mom: Switching is a big deal.',
-        'You: I know. I want to do it carefully. Could we visit [other school] before deciding?',
-        'Mom: Lets schedule a tour.',
-        'You: Thanks.'
-      ],
-      keyMoves: [
-        'Frame as conversation, not demand',
-        'Provide context',
-        'Offer concrete next step',
-        'Thank them for engaging'
-      ]
-    },
-    {
-      id: 'adl3',
-      scenario: 'You want to break up with a friend',
-      person: 'The friend',
-      yourDialogue: [
-        'You: I have been thinking. I want to share something with you.',
-        'Friend: Okay.',
-        'You: I think our friendship has changed. I feel drained more than energized. I want to take some space.',
-        'Friend: Why?',
-        'You: Specific examples: [list]. I am not blaming. I am noticing.',
-        'Friend: Okay.',
-        'You: I want to be honest with you because I care. I am not closing the door forever. I am taking distance now.'
-      ],
-      keyMoves: [
-        'Soft opening',
-        'Specific examples without blame',
-        'Honest naming',
-        'Leave door slightly open if appropriate'
-      ]
-    },
-    {
-      id: 'adl4',
-      scenario: 'You want to ask a stranger for help',
-      person: 'A stranger in public',
-      yourDialogue: [
-        'You: Excuse me. Could you help me with [specific]? I have a [brief reason if comfortable] and I am having a hard time [specific task].',
-        'Stranger: Of course.',
-        'You: Thank you so much.'
-      ],
-      keyMoves: [
-        'Specific ask',
-        'Brief context',
-        'Quick thank you'
-      ]
-    },
-    {
-      id: 'adl5',
-      scenario: 'You want to tell a friend they hurt you',
-      person: 'A close friend',
-      yourDialogue: [
-        'You: I want to share something hard. When you said [specific thing], I felt [specific feeling]. I do not think you meant it the way it landed for me.',
-        'Friend: I am sorry. I did not realize.',
-        'You: Thank you for hearing me.'
-      ],
-      keyMoves: [
-        'Specific behavior, not character',
-        'Your feeling, not their motive',
-        'Soft assumption of good intent',
-        'Receive their apology'
-      ]
-    },
-    {
-      id: 'adl6',
-      scenario: 'You want to apologize for hurting someone',
-      person: 'Someone you hurt',
-      yourDialogue: [
-        'You: I want to apologize for [specific action]. I was wrong. I should have [different action]. I am working on doing better. Is there anything I can do?',
-        'Person: It hurt. I appreciate the apology.',
-        'You: Thank you for hearing me out.'
-      ],
-      keyMoves: [
-        'Specific accountability',
-        'No excuses',
-        'Commitment to change',
-        'Open to repair'
-      ]
-    },
-    {
-      id: 'adl7',
-      scenario: 'You want to set a phone boundary',
-      person: 'Family member',
-      yourDialogue: [
-        'You: I want to talk about phones. I want a new norm: no phones at the dinner table. That includes me. Could we try it for a week?',
-        'Family: I do not see a problem.',
-        'You: I think we connect better without them. I want to try.',
-        'Family: Okay, lets try.'
-      ],
-      keyMoves: [
-        'Universal rule (includes you)',
-        'Trial frame',
-        'Reason given'
-      ]
-    },
-    {
-      id: 'adl8',
-      scenario: 'You want to ask for a raise',
-      person: 'Manager',
-      yourDialogue: [
-        'You: I would like to discuss my compensation. Could we set up 15 minutes?',
-        'Manager: Sure, what is up?',
-        'You: I have been here [time]. I have taken on [responsibilities]. Market rate for my role is [data]. I would like to discuss a raise to [number].',
-        'Manager: Let me think and get back to you.',
-        'You: Thank you for considering it.'
-      ],
-      keyMoves: [
-        'Schedule the conversation, do not surprise',
-        'Bring data',
-        'Specific number',
-        'Polite close'
-      ]
-    },
-    {
-      id: 'adl9',
-      scenario: 'You want to tell your doctor a medication is not working',
-      person: 'Doctor',
-      yourDialogue: [
-        'You: I have been on [medication] for [time]. I have noticed [specific symptoms not improving] and [side effects]. I do not think it is working for me.',
-        'Doctor: Lets adjust the dose.',
-        'You: Could we discuss alternatives? I want to understand my options before increasing the dose.',
-        'Doctor: We could try a different medication. Lets discuss.'
-      ],
-      keyMoves: [
-        'Specific timeframe and observations',
-        'Direct conclusion',
-        'Ask for options not just first suggestion',
-        'Collaborative'
-      ]
-    },
-    {
-      id: 'adl10',
-      scenario: 'You want to leave a party early',
-      person: 'Host or friend',
-      yourDialogue: [
-        'You: Hey, I am going to head out. I am pretty drained.',
-        'Friend: Already? It is early.',
-        'You: I know. I am tired. Catch up with you soon though?',
-        'Friend: Sure.',
-        'You: Thanks for inviting me.'
-      ],
-      keyMoves: [
-        'No need to over-explain',
-        'Honor your energy',
-        'Future-focused',
-        'Polite'
-      ]
-    }
-  ];
-
-  var WORKPLACE_DEEP_SCENARIOS = [
-    {
-      id: 'wds1',
-      title: 'Disclosing ADHD to your first manager',
-      premise: 'You just got hired at your first office job. You have ADHD. You want to disclose to set up accommodations but you are nervous.',
-      cast: ['You', 'Manager (Maria)'],
-      stages: [
-        {
-          stage: 'Preparation',
-          steps: [
-            'Read your company\'s ADA policy',
-            'Write down specific accommodations you want',
-            'Plan timing: not first day, not when she is stressed',
-            'Practice the opening sentence'
-          ]
-        },
-        {
-          stage: 'The conversation',
-          dialogue: [
-            { speaker: 'You', text: 'Maria, could I talk to you about something work-related when you have 15 minutes?' },
-            { speaker: 'Manager', text: 'Sure, what is up?' },
-            { speaker: 'You', text: 'I have ADHD. I want to share that with you because there are a few things that would help me do my best work. Could we talk about workplace accommodations?' },
-            { speaker: 'Manager', text: 'Of course. What are you thinking?' },
-            { speaker: 'You', text: 'Three things specifically. One, written instructions for complex tasks. Two, the option to use headphones during focused work. Three, flexibility on the timing of my breaks. None of these affect my ability to do the work; they help me do better.' },
-            { speaker: 'Manager', text: 'I appreciate you sharing. Let me think about each. I think most are fine. Could we follow up tomorrow?' }
-          ]
-        },
-        {
-          stage: 'Follow-up',
-          steps: [
-            'Same day: send email summarizing what you discussed',
-            'Include the specific accommodations',
-            'Document any HR involvement',
-            'Schedule check-in in 30 days to see if accommodations are working'
-          ]
-        }
-      ],
-      whatItWorks: [
-        'Specific accommodations beat vague disclosure',
-        'Framing as "doing better work" not "needing help"',
-        'Documentation creates record',
-        'Follow-up shows you are professional'
-      ]
-    },
-    {
-      id: 'wds2',
-      title: 'Asking for remote work as accommodation',
-      premise: 'You have chronic illness that makes commuting hard. You want to work remotely 2-3 days per week.',
-      cast: ['You', 'Manager', 'HR'],
-      stages: [
-        {
-          stage: 'Preparation',
-          steps: [
-            'Document specific difficulties you face commuting',
-            'Outline your remote work plan: which days, how you would stay connected',
-            'Gather doctor\'s note if helpful',
-            'Anticipate concerns: collaboration, supervision, equipment'
-          ]
-        },
-        {
-          stage: 'Formal request',
-          dialogue: [
-            { speaker: 'You (email to HR)', text: 'I would like to request a workplace accommodation under the ADA. I have a chronic illness that affects my ability to commute consistently. I am proposing 2-3 remote workdays per week. I have outlined how I would maintain productivity and communication remotely. Could we set up a meeting?' }
-          ]
-        },
-        {
-          stage: 'Negotiation',
-          dialogue: [
-            { speaker: 'Manager', text: 'I am open to it. I worry about team collaboration on Tuesdays.' },
-            { speaker: 'You', text: 'I could be in-person on Tuesdays and remote on Mondays, Wednesdays, and Fridays. Would that work?' },
-            { speaker: 'Manager', text: 'Yes. Lets pilot for 60 days.' }
-          ]
-        },
-        {
-          stage: 'After',
-          steps: [
-            'Get the accommodation in writing',
-            'Track productivity and accommodation effectiveness',
-            'Schedule 60-day check-in',
-            'Renew or adjust as needed'
-          ]
-        }
-      ]
-    },
-    {
-      id: 'wds3',
-      title: 'When your accommodation request is denied',
-      premise: 'You have requested standing desk for your back pain. Manager said no because of cost.',
-      cast: ['You', 'Manager', 'HR'],
-      stages: [
-        {
-          stage: 'Push back at manager level',
-          steps: [
-            'Restate the medical need',
-            'Reference your accommodation paperwork',
-            'Ask manager: "What is the actual concern?"'
-          ]
-        },
-        {
-          stage: 'Escalate to HR',
-          dialogue: [
-            { speaker: 'You (email to HR)', text: 'I requested a standing desk as a workplace accommodation. My manager indicated it would be denied due to cost. I want to confirm the company position on this. Standing desks are a relatively low-cost accommodation. Could we discuss alternatives or confirm this is final?' }
-          ]
-        },
-        {
-          stage: 'Document and consider next steps',
-          steps: [
-            'If HR confirms denial, document it in writing',
-            'Consider EEOC complaint if denial is improper',
-            'Note: companies must engage in interactive process'
-          ]
-        }
-      ],
-      keyPoints: [
-        'Cost alone is rarely sufficient ADA defense',
-        '"Interactive process" is required',
-        'Standing desks are often cited as reasonable accommodation',
-        'Escalation creates documentation'
-      ]
-    },
-    {
-      id: 'wds4',
-      title: 'Coworker harassment based on disability',
-      premise: 'A coworker has been mocking your stim. It is affecting your work and mental health.',
-      cast: ['You', 'Coworker', 'Manager', 'HR'],
-      stages: [
-        {
-          stage: 'Direct conversation if safe',
-          dialogue: [
-            { speaker: 'You', text: 'I need you to stop mocking my movements. It is a stim and it helps me regulate. Mocking it is hurtful and creates a hostile work environment.' }
-          ]
-        },
-        {
-          stage: 'If continues, report',
-          steps: [
-            'Document each incident: date, time, who saw',
-            'Email manager: "I want to report harassment by [coworker]. Here is what has happened: [incidents]. Could we meet to address this?"',
-            'If manager does not respond, escalate to HR',
-            'Disability-based harassment violates the ADA'
-          ]
-        },
-        {
-          stage: 'Document for legal action if needed',
-          steps: [
-            'Keep all emails',
-            'Save documentation of incidents',
-            'EEOC complaint within 180-300 days depending on state',
-            'Consider disability rights attorney'
-          ]
-        }
-      ]
-    },
-    {
-      id: 'wds5',
-      title: 'Performance review concerns related to disability',
-      premise: 'Your performance review criticizes things connected to your disability.',
-      cast: ['You', 'Manager'],
-      stages: [
-        {
-          stage: 'Receive without arguing',
-          steps: [
-            'Read the review fully before responding',
-            'Note: which feedback is fair, which is connected to disability'
-          ]
-        },
-        {
-          stage: 'Respond in writing',
-          dialogue: [
-            { speaker: 'You (email)', text: 'Thank you for the review. I would like to discuss several points with you. Specifically: [feedback] connects to my disability. With accommodations [adjustments], I believe I can address these. Could we schedule a meeting to discuss?' }
-          ]
-        },
-        {
-          stage: 'Negotiate accommodations',
-          steps: [
-            'Identify specific accommodations that address each feedback area',
-            'Propose them concretely',
-            'Document agreed changes',
-            'Set 90-day check-in'
-          ]
-        }
-      ]
-    }
-  ];
-
-  var COMMUNITY_BUILDING_GUIDES = [
-    {
-      id: 'cbg1',
-      goal: 'Find one online disability community',
-      steps: [
-        'Identify your primary identity (autistic, ADHD, deaf, etc.)',
-        'Search: Discord, Reddit, Facebook, Twitter/X for "[identity] community"',
-        'Read for 2 weeks before posting',
-        'Notice tone and norms',
-        'Post once when ready',
-        'Build to weekly engagement'
-      ],
-      whatToLookFor: [
-        'Member-led, not professional-led',
-        'Active moderation',
-        'Diverse voices within community',
-        'Activity in recent weeks'
-      ],
-      redFlags: [
-        'Cure-focused content',
-        'Inspiration porn',
-        'Members of color invisible',
-        'Heavy ads or commercial content'
-      ]
-    },
-    {
-      id: 'cbg2',
-      goal: 'Find local disability community',
-      steps: [
-        'Check state P&A website for events',
-        'Check ARC chapters for groups',
-        'Check NAMI for support groups',
-        'Check disability culture groups at local colleges',
-        'Ask school counselor about peer groups',
-        'Try one event'
-      ],
-      whatToBring: [
-        'Open mind',
-        'Energy for socializing',
-        'Phone numbers of supports if you get overwhelmed',
-        'Plan to leave early if needed'
-      ],
-      tips: [
-        'First time is the hardest',
-        'You do not have to commit on day one',
-        'Bring a friend if it helps'
-      ]
-    },
-    {
-      id: 'cbg3',
-      goal: 'Start your own peer group',
-      steps: [
-        'Identify a need (e.g., "lunch group for IEP kids")',
-        'Ask 2-3 trusted peers if interested',
-        'Propose first meeting',
-        'Identify a quiet space',
-        'Start small (4-8 people)',
-        'Establish norms in first meeting'
-      ],
-      suggestedStructure: [
-        'Open with check-in (one feeling word per person)',
-        'Topic discussion 20-30 min',
-        'Close with one takeaway',
-        'Meet weekly or bi-weekly'
-      ],
-      facilitatorTips: [
-        'You do not have to be the leader forever',
-        'Rotate facilitator',
-        'Confidentiality matters',
-        'Allow silence'
-      ]
-    },
-    {
-      id: 'cbg4',
-      goal: 'Build mentor relationships',
-      steps: [
-        'Identify 1-2 adults with shared identity who you admire',
-        'Reach out: "I have been reading your work. Could I ask you one question?"',
-        'Start small',
-        'Maintain over time',
-        'Update them on your growth'
-      ],
-      goodMentors: [
-        'Have walked your path',
-        'Listen as much as they speak',
-        'Acknowledge their own learning',
-        'Connect you to other resources'
-      ],
-      whatNotToAskFor: [
-        'Ongoing emotional support (that is a friend or therapist role)',
-        'Career placement',
-        'Free legal advice'
-      ]
-    },
-    {
-      id: 'cbg5',
-      goal: 'Become a peer mentor yourself',
-      steps: [
-        'Identify what you have learned that someone earlier on the path needs',
-        'Offer to mentor through a formal program if available',
-        'Or reach out to younger student: "I know you are in 8th grade. I am in 11th. Want to grab coffee sometime?"',
-        'Listen more than talk',
-        'Share your story but center theirs',
-        'Establish boundaries'
-      ],
-      whatYouOffer: [
-        'Lived experience',
-        'Honesty about what worked and did not',
-        'Resource referrals',
-        'Witnessing'
-      ],
-      whatYouShouldNotOffer: [
-        'Therapy',
-        'Legal advice',
-        'Promises you cannot keep'
-      ]
-    },
-    {
-      id: 'cbg6',
-      goal: 'Engage in advocacy at policy level',
-      steps: [
-        'Identify a specific policy you want changed',
-        'Connect with existing organization working on that policy',
-        'Attend a meeting or training',
-        'Share your story if asked',
-        'Build to ongoing involvement'
-      ],
-      waysToContribute: [
-        'Testimony at legislative hearings',
-        'Op-ed writing',
-        'Social media presence',
-        'Mentoring younger advocates',
-        'Behind-the-scenes organizing'
-      ],
-      sustainabilityTips: [
-        'Pace yourself',
-        'Take breaks',
-        'Find what fits your specific gifts',
-        'Celebrate small wins'
-      ]
-    }
-  ];
-
-  var LEGISLATIVE_AND_POLICY_PRIMER = [
-    {
-      id: 'lap1',
-      law: 'Individuals with Disabilities Education Act (IDEA)',
-      year: 1975,
-      whatItDoes: 'Requires free appropriate public education for students with disabilities. Funds special education services. Sets procedural protections.',
-      keyComponents: [
-        'IEP requirement',
-        'FAPE guarantee',
-        'LRE preference',
-        'Procedural safeguards',
-        'Parent and student rights',
-        'Transition planning starting at 14-16'
-      ],
-      whatItDoesNotDo: [
-        'Cover all disabled students (some go to 504)',
-        'Apply after high school',
-        'Cover private schools (unless placed by district)'
-      ],
-      whereToReadMore: 'sites.ed.gov/idea'
-    },
-    {
-      id: 'lap2',
-      law: 'Section 504 of the Rehabilitation Act',
-      year: 1973,
-      whatItDoes: 'Prohibits disability discrimination by any entity receiving federal funds (schools, hospitals, etc.). Predates ADA.',
-      keyComponents: [
-        'Civil rights law (not service entitlement)',
-        '504 plans in schools',
-        'Reasonable modifications required',
-        'Broader definition than some other laws'
-      ],
-      whatItDoesNotDo: [
-        'Provide funding for services like IDEA',
-        'Define specific services'
-      ],
-      whereToReadMore: 'www2.ed.gov/about/offices/list/ocr/504faq.html'
-    },
-    {
-      id: 'lap3',
-      law: 'Americans with Disabilities Act (ADA)',
-      year: 1990,
-      whatItDoes: 'Civil rights law prohibiting disability discrimination in employment, public services, public accommodations, transportation, telecommunications.',
-      keyComponents: [
-        'Title I: Employment',
-        'Title II: State and local government services',
-        'Title III: Public accommodations and commercial facilities',
-        'Title IV: Telecommunications',
-        'Title V: Miscellaneous'
-      ],
-      whatItDoesNotDo: [
-        'Apply to religious institutions',
-        'Apply to private clubs',
-        'Set funding'
-      ],
-      whereToReadMore: 'ada.gov'
-    },
-    {
-      id: 'lap4',
-      law: 'ADA Amendments Act (ADAAA)',
-      year: 2008,
-      whatItDoes: 'Restored broad protection of ADA after Supreme Court had narrowed it. Made it easier to qualify as person with disability.',
-      keyChanges: [
-        'Mitigating measures (medications) no longer considered',
-        'Major life activities expanded',
-        'Episodic conditions covered',
-        'Lower threshold for "substantially limits"'
-      ],
-      practicalImpact: 'Many more conditions now clearly qualify.'
-    },
-    {
-      id: 'lap5',
-      law: 'Title IX',
-      year: 1972,
-      whatItDoes: 'Prohibits sex-based discrimination in education. Often intersects with disability when bullying or harassment is gender-based.',
-      relevanceToDisability: 'Disabled students experience higher rates of sexual harassment and assault. Title IX provides additional protection alongside Section 504.',
-      whereToReadMore: 'www2.ed.gov/about/offices/list/ocr/docs/tix_dis.html'
-    },
-    {
-      id: 'lap6',
-      law: 'Family Educational Rights and Privacy Act (FERPA)',
-      year: 1974,
-      whatItDoes: 'Protects privacy of student educational records. Gives parents (and students 18+) right to access records.',
-      keyRights: [
-        'Right to inspect records',
-        'Right to request corrections',
-        'Right to control disclosure'
-      ],
-      practicalUse: 'Used to access discipline records, behavior logs, evaluation reports.'
-    },
-    {
-      id: 'lap7',
-      law: 'Olmstead v. L.C.',
-      year: 1999,
-      whatItDoes: 'Supreme Court decision requiring states to provide community-based services rather than institutional care when appropriate.',
-      keyImpact: [
-        'Most disabled people now live in community',
-        'States must offer community-based options',
-        'Major shift in adult disability services'
-      ]
-    },
-    {
-      id: 'lap8',
-      law: 'Endrew F. v. Douglas County',
-      year: 2017,
-      whatItDoes: 'Supreme Court decision raising the bar for FAPE. IEPs must enable "appropriately ambitious" progress.',
-      keyChange: 'Earlier standard ("more than de minimis") had been used by schools to justify minimal services. Now must be appropriately ambitious.',
-      practicalUse: 'Common citation in IEP disputes today.'
-    },
-    {
-      id: 'lap9',
-      law: 'Maine Unified Special Education Regulations (MUSER)',
-      year: 'ongoing',
-      whatItDoes: 'Maine\'s state-specific special education regulations under IDEA.',
-      keyMaineSpecifics: [
-        'Earlier transition planning age (14)',
-        'Specific procedures for evaluation timelines',
-        'Maine Chapter 33 on restraint/seclusion',
-        'Maine-specific parent rights'
-      ]
-    },
-    {
-      id: 'lap10',
-      law: 'Maine LGBTQ Student Protections',
-      year: 'various',
-      whatItDoes: 'Maine has strong LGBTQ protections including for students. Discrimination based on sexual orientation and gender identity prohibited.',
-      practicalImpact: 'Chosen name and pronouns can be used at school, often without parent notification.'
-    }
-  ];
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   var ADVOCACY_QUIZ_BANK = [
     {
       id: 'qz1',
@@ -7760,2945 +3018,21 @@ window.SelHub = window.SelHub || {
     });
   })();
 
-  var FAMILY_AND_PARENT_EDUCATION = [
-    {
-      id: 'fpe1',
-      audience: 'Parents new to disability',
-      topic: 'How to talk to your child about their diagnosis',
-      keyPoints: [
-        'Be honest. Hiding the diagnosis is harder than naming it.',
-        'Use the actual word (autistic, ADHD, dyslexic) not euphemisms.',
-        'Talk about what it means functionally, not just clinically.',
-        'Connect them with community of people who share the diagnosis.',
-        'Make space for grief and questions.'
-      ],
-      whatNotToDo: [
-        'Frame it as something to overcome or hide',
-        'Compare to non-disabled siblings',
-        'Promise it will go away',
-        'Frame it primarily as tragedy'
-      ],
-      sampleDialogue: [
-        { speaker: 'Parent', text: 'I want to tell you something. You know how things have been hard at school?' },
-        { speaker: 'Child', text: 'Yeah.' },
-        { speaker: 'Parent', text: 'There is a word for what is going on. You are dyslexic. It means your brain works differently when it reads. It does not mean you are not smart. It just means we need different tools for you. There are lots of dyslexic adults who do amazing things.' }
-      ]
-    },
-    {
-      id: 'fpe2',
-      audience: 'Parents preparing for first IEP',
-      topic: 'What to bring and what to expect',
-      keyPoints: [
-        'Bring: your notebook, any concerns in writing, any data you have, copies of relevant medical info',
-        'Expect: introductions, review of evaluation, discussion of eligibility, drafting of goals, services, and placement',
-        'You can: request copies of documents, ask questions, refuse to sign on the spot',
-        'You should: stay engaged, take notes, ask for clarification'
-      ],
-      timeline: 'Typically 60-90 minutes. May be longer for first meeting.',
-      tips: [
-        'Bring another adult if possible',
-        'Ask for the document in advance',
-        'Do not feel rushed to sign',
-        'Follow up in writing'
-      ]
-    },
-    {
-      id: 'fpe3',
-      audience: 'Parents during a school crisis',
-      topic: 'How to respond to a phone call about your child',
-      keyPoints: [
-        'Stay calm. The school is calling because they need your input.',
-        'Ask specific questions: what happened, who saw, what time, what response',
-        'Do not commit to actions on the phone',
-        'Ask for documentation in writing'
-      ],
-      sampleResponse: [
-        '"Thank you for letting me know. Could you share with me in writing what happened and what action you are proposing? I want to be sure I understand fully before responding."'
-      ],
-      whatNotToSay: [
-        '"I will punish him at home"',
-        '"You can suspend him"',
-        '"I will keep him home"'
-      ]
-    },
-    {
-      id: 'fpe4',
-      audience: 'Parents whose child is transitioning to college',
-      topic: 'Stepping back from advocacy role',
-      keyPoints: [
-        'Your role shifts from primary advocate to coach',
-        'Help your student learn to self-register, self-disclose, self-request',
-        'Resist the urge to call the college on their behalf',
-        'Be the safe place when they call you'
-      ],
-      sampleConversations: [
-        { topic: 'When student asks you to call DSS', response: 'I can help you draft what to say but you need to make the call.' },
-        { topic: 'When student is overwhelmed', response: 'I am here. Let me help you think through what to do.' },
-        { topic: 'When student wants to drop a class', response: 'Tell me more. Have you talked to the professor? To DSS?' }
-      ]
-    },
-    {
-      id: 'fpe5',
-      audience: 'Parents of multiply marginalized students',
-      topic: 'Advocating across identity systems',
-      keyPoints: [
-        'Your child may experience multiple types of bias',
-        'Disability + race, disability + LGBTQ, disability + class - all combine',
-        'Track patterns specifically',
-        'Connect with community organizations that share your identity'
-      ],
-      caution: 'Schools may treat your child differently based on assumptions about their multiple identities. Document. Compare to data on other students.'
-    },
-    {
-      id: 'fpe6',
-      audience: 'Parents with limited English',
-      topic: 'Your rights to translation and interpretation',
-      keyPoints: [
-        'School must provide interpreter on request',
-        'Notice of meetings must be in your native language',
-        'IEP must be translated if requested',
-        'Refuse to sign documents you cannot read',
-        'Connect with bilingual advocate'
-      ],
-      sampleRequest: 'I need an interpreter for our meetings and translated documents. Please confirm in writing how the school will provide this.'
-    },
-    {
-      id: 'fpe7',
-      audience: 'Foster and adoptive parents',
-      topic: 'Special education and foster youth',
-      keyPoints: [
-        'Federal law (Fostering Connections Act) protects educational stability',
-        'Foster youth have priority for special education services',
-        'You may be the educational advocate, even if not legal guardian',
-        'Trauma-informed approach is essential'
-      ],
-      specialConsiderations: [
-        'Records may be incomplete or scattered',
-        'Multiple placements complicate IEP continuity',
-        'You may not have full medical history',
-        'Adverse childhood experiences are common'
-      ]
-    },
-    {
-      id: 'fpe8',
-      audience: 'Grandparents raising grandchildren',
-      topic: 'Your role and rights',
-      keyPoints: [
-        'You may be acting as legal guardian or surrogate parent',
-        'You have right to attend IEP meetings if so',
-        'You may need to update emergency contacts',
-        'Connect with state grandparent support'
-      ],
-      legalNotes: 'Educational rights of grandparents vary by state. Check with local resources.'
-    }
-  ];
-
-  var EXTENDED_CASE_STUDIES = [
-    {
-      id: 'ecs1',
-      name: 'Dario, 11th grader',
-      identity: 'Latine, ADHD, anxiety',
-      situation: 'Dario\'s parents are immigrants from Colombia. His mom does not feel comfortable in IEP meetings because of the English-only setting. The school does not consistently provide interpreters.',
-      challenge: 'Dario has been the family translator since middle school. He is exhausted. He wants his mom to fully participate without him in the middle.',
-      whatHeDid: [
-        'Researched: federal law requires school to provide interpreter on request',
-        'Met with school counselor and asked for translation services in writing',
-        'Followed up when initial request was met with "we will try"',
-        'Asked for written notice of meeting in Spanish for his mom',
-        'Filed a state-level complaint when school continued to skip translation',
-        'State investigation found school in violation. Required to provide translators going forward.'
-      ],
-      outcome: 'Dario\'s mom now attends meetings fully. Dario is no longer the family translator. He focuses on his own advocacy.',
-      lessons: [
-        'Translation is a federal right',
-        'Schools sometimes skip this for "cost" reasons',
-        'State complaints are powerful for systemic issues',
-        'Multiple students benefit from one student\'s complaint'
-      ]
-    },
-    {
-      id: 'ecs2',
-      name: 'Tameka, 9th grader',
-      identity: 'Black, autistic, female',
-      situation: 'Tameka was placed in a self-contained behavioral classroom in 7th grade after a series of conflicts with teachers. She is highly verbal and academic. The placement does not match her profile.',
-      challenge: 'Tameka has been segregated for 2 years. She has lost ground academically. Her mom and grandmother think the placement is racially motivated.',
-      whatTheyDid: [
-        'Mom requested independent educational evaluation (IEE) at district expense',
-        'IEE confirmed Tameka belongs in general education with supports',
-        'Mom requested IEP meeting to change placement',
-        'School resisted; mom filed for due process',
-        'Mediation produced a return-to-general-education plan',
-        'Tameka caught up academically in one year with supports'
-      ],
-      outcome: 'Tameka is now in honors English. Her mom continues to monitor for any pull-back to self-contained.',
-      lessons: [
-        'IEE is a powerful tool when you disagree with school evaluation',
-        'Placement is on a continuum and can change',
-        'Race and disability intersection often produces over-placement in restrictive settings',
-        'Due process can force the conversation'
-      ]
-    },
-    {
-      id: 'ecs3',
-      name: 'Reza, 10th grader',
-      identity: 'Iranian-American, dyslexic',
-      situation: 'Reza was diagnosed with dyslexia at age 7. His parents focused on tutoring and remediation. Reza is now in 10th grade and reads at 6th grade level.',
-      challenge: 'Reza wants to attend college. His parents are skeptical. Reza wants to advocate for technology that allows him to access college-level work without traditional reading.',
-      whatHeDid: [
-        'Connected with college disability services at 3 colleges to learn what technology is available',
-        'Asked his case manager for text-to-speech evaluation',
-        'Got Bookshare membership and listened to college-level books',
-        'Demonstrated to parents he could comprehend college work',
-        'Wrote a letter to parents explaining what he needed',
-        'Family meeting led to support for Reza\'s college plan'
-      ],
-      outcome: 'Reza is now in 11th grade taking honors classes with text-to-speech. He has been accepted to two colleges already.',
-      lessons: [
-        'Technology can level the playing field',
-        'Reading level is not intelligence level',
-        'Parents may need education on what is possible',
-        'College disability services are different from high school'
-      ]
-    },
-    {
-      id: 'ecs4',
-      name: 'Sage, 8th grader',
-      identity: 'non-binary, autistic, depressed',
-      situation: 'Sage came out as non-binary at school but their family is not affirming. They use they/them at school and a different name. Family does not know.',
-      challenge: 'Sage struggles between two identities. Energy is low. They want school to support them without outing them.',
-      whatTheyDid: [
-        'Met with school counselor who confirmed Sage\'s chosen name and pronouns could be used at school',
-        'Wrote a letter to teachers explaining the situation and asking for use of chosen name at school but legal name in family communications',
-        'Identified one trusted teacher to talk to during hard days',
-        'Connected with a local LGBTQ youth group',
-        'Plan with counselor for when Sage is ready to talk to family'
-      ],
-      outcome: 'Sage is using their chosen name at school. They have ongoing counselor support. Family conversation is in progress over time.',
-      lessons: [
-        'Many schools can use chosen name/pronouns without outing student',
-        'Counselors are powerful allies',
-        'LGBTQ community provides support when family does not',
-        'Coming out is a journey, not a single moment'
-      ]
-    },
-    {
-      id: 'ecs5',
-      name: 'Mireya, 12th grader',
-      identity: 'Filipina, chronic illness (lupus)',
-      situation: 'Mireya has lupus. Some days she cannot get out of bed. Her 504 plan has flexible attendance.',
-      challenge: 'Teachers vary in honoring the plan. Some teachers count her absences as truant. Her grades have suffered.',
-      whatSheDid: [
-        'Documented every absence with explanation',
-        'Emailed teachers same-day she would be out',
-        'When teachers marked absences as unexcused, escalated to case manager',
-        'Brought medical documentation to one resistant teacher',
-        'When pattern persisted with one teacher, escalated to principal',
-        'Principal required teacher to honor 504',
-        'Mireya finished senior year with strong grades'
-      ],
-      outcome: 'Mireya is in college now. Has 504 services. Continues to manage chronic illness with documentation as her best tool.',
-      lessons: [
-        'Chronic illness is invisible to most',
-        'Documentation is critical',
-        'Pattern resistance from one teacher warrants escalation',
-        'Same-day communication is more effective than after-the-fact'
-      ]
-    },
-    {
-      id: 'ecs6',
-      name: 'Eli, 6th grader',
-      identity: 'autistic, sensory needs',
-      situation: 'Eli has a hard time in the cafeteria. Loud, smelly, crowded. He skips lunch most days.',
-      challenge: 'Eli is hungry by 3pm. Energy crashes. Performance suffers. He has not told anyone what is happening.',
-      whatHelped: [
-        'Mom noticed Eli was tired at home and not eating well',
-        'Asked Eli specifically about lunch',
-        'Eli described the cafeteria',
-        'Mom emailed case manager',
-        'Case manager added alternative lunch space (counselor office) to 504',
-        'Eli now eats lunch in the counselor office with one friend',
-        'Energy and grades improved'
-      ],
-      outcome: 'Eli now has stable lunch routine. He understands he can advocate for sensory accommodations.',
-      lessons: [
-        'Hunger affects everything',
-        'Sensory needs are real accommodations',
-        'Parents can advocate when child has not yet learned to',
-        'Small space change can transform a day'
-      ]
-    },
-    {
-      id: 'ecs7',
-      name: 'Marcus, 11th grader',
-      identity: 'Black, recovering from depression',
-      situation: 'Marcus was hospitalized in 10th grade for depression. He returned to school without a re-entry plan. He felt isolated.',
-      challenge: 'Marcus needed support but did not know how to ask. His counselor did not check in. His friends did not know what to do.',
-      whatHeDid: [
-        'In 11th grade, Marcus requested a meeting with his counselor',
-        'Asked for a re-entry plan in writing for the future',
-        'Established weekly counselor check-in',
-        'Joined a peer support group at the local NAMI',
-        'Wrote a one-page guide for himself about what to do if he started declining',
-        'Identified 3 safe people at school'
-      ],
-      outcome: 'Marcus has been stable for over a year. He has structures in place for next hard time.',
-      lessons: [
-        'Re-entry from hospitalization needs a plan',
-        'Self-initiated supports work when school does not initiate',
-        'NAMI and similar organizations provide community',
-        'Pre-plan crisis response'
-      ]
-    },
-    {
-      id: 'ecs8',
-      name: 'Pavlina, 9th grader',
-      identity: 'immigrant from Greece, English language learner, dyscalculia',
-      situation: 'Pavlina was placed in math support classes when she arrived in 6th grade. The school assumed her math difficulties were language-based.',
-      challenge: 'In 9th grade Pavlina has strong English. Her math difficulties remain. She has not been evaluated for math disability.',
-      whatHelped: [
-        'Pavlina noticed her math difficulties were different from language',
-        'Asked her tutor about it',
-        'Tutor referred her to school psychologist',
-        'Pavlina requested formal evaluation',
-        'Evaluation revealed dyscalculia',
-        'New IEP with math-specific supports'
-      ],
-      outcome: 'Pavlina now has appropriate math support. She is in algebra with extended time and visual aids.',
-      lessons: [
-        'Language learning and learning disability are different',
-        'Schools sometimes conflate the two',
-        'Self-awareness can drive new evaluations',
-        'Specific diagnoses produce specific supports'
-      ]
-    },
-    {
-      id: 'ecs9',
-      name: 'Jordan, 12th grader',
-      identity: 'rural, deaf, oral education',
-      situation: 'Jordan grew up oral with hearing aids. His school had limited Deaf services. He is the only deaf student.',
-      challenge: 'Jordan struggled all through school. He lipread when teachers faced him. He missed a lot of class. By senior year he was exhausted.',
-      whatHelped: [
-        'Jordan met a Deaf adult through a community event',
-        'Started learning ASL on his own',
-        'Asked for ASL interpreter at school',
-        'School resisted because of cost in rural setting',
-        'Family escalated to state Deaf services',
-        'State found a remote interpreter solution',
-        'Jordan completed senior year with full access to class'
-      ],
-      outcome: 'Jordan is at Gallaudet University. His academic performance there is significantly higher than in high school.',
-      lessons: [
-        'Oral education does not fit every Deaf student',
-        'Rural settings have specific challenges',
-        'Remote interpreters expand access',
-        'State agencies can intervene when district resists'
-      ]
-    },
-    {
-      id: 'ecs10',
-      name: 'Lin, 4th grader',
-      identity: 'Chinese-American, mobility disability',
-      situation: 'Lin uses a wheelchair. Her elementary school has many physical access issues: bathroom not accessible, playground equipment inaccessible.',
-      challenge: 'Lin\'s parents do not feel comfortable advocating in English-only environment. Lin is young but determined.',
-      whatHelped: [
-        'Lin\'s parents connected with a state advocacy organization',
-        'Advocacy organization translated and accompanied parents to meetings',
-        'School audit revealed multiple ADA violations',
-        'Required improvements: bathroom retrofit, playground modifications, accessible drinking fountain',
-        'Lin now has full access to her school'
-      ],
-      outcome: 'Lin\'s school is now fully accessible. Other disabled students benefit. Lin is in 6th grade and an active advocate.',
-      lessons: [
-        'Physical access is non-negotiable under ADA',
-        'Language access barriers compound disability access barriers',
-        'External advocacy organizations multiply individual power',
-        'One family\'s advocacy benefits many'
-      ]
-    },
-    {
-      id: 'ecs11',
-      name: 'Tasha, 17',
-      identity: 'foster youth, ADHD, depression',
-      situation: 'Tasha has been in foster care since age 12. Multiple placements. Multiple schools. Her IEP has not been consistent.',
-      challenge: 'Tasha is about to age out of foster care. She wants to advocate for her own continued support but does not have a stable adult to help.',
-      whatHelped: [
-        'Tasha connected with a foster youth advocate through her caseworker',
-        'Advocate helped her understand Independent Living Plan',
-        'Tasha requested transition planning at school',
-        'Connected with state agency that supports young adults aging out',
-        'Found college that offers single-parent / former foster youth support',
-        'Self-registered for SSI and Medicaid'
-      ],
-      outcome: 'Tasha is in community college, living independently with support. Continues to advocate for herself.',
-      lessons: [
-        'Foster youth have specific transition rights',
-        'Outside advocates can fill the family role',
-        'State and federal programs exist; you have to find them',
-        'Self-advocacy in young adulthood is non-negotiable when family is not stable'
-      ]
-    },
-    {
-      id: 'ecs12',
-      name: 'Bao, 8th grader',
-      identity: 'Hmong-American, anxiety',
-      situation: 'Bao\'s anxiety became severe in 7th grade. Family did not believe in therapy. Bao\'s grades dropped.',
-      challenge: 'Bao wanted therapy but family was opposed. Cultural framing of mental health created tension.',
-      whatHelped: [
-        'Bao spoke with school counselor',
-        'Counselor connected family with Hmong-speaking mental health providers',
-        'Family met with provider once',
-        'Trust built over time',
-        'Bao started therapy, family supportive after seeing the difference'
-      ],
-      outcome: 'Bao manages anxiety with therapy support. Family more open to mental health care.',
-      lessons: [
-        'Cultural context matters in mental health advocacy',
-        'Bridge people can shift family understanding',
-        'School counselors can be cultural bridges',
-        'Patience with family resistance often pays off'
-      ]
-    },
-    {
-      id: 'ecs13',
-      name: 'Wendy, 16',
-      identity: 'gifted with dyslexia (twice-exceptional)',
-      situation: 'Wendy was placed in average classes despite reading struggles. Her IQ test showed gifted range.',
-      challenge: 'Wendy felt unchallenged but also embarrassed about reading difficulty.',
-      whatHelped: [
-        'Wendy researched twice exceptional',
-        'Discussed with case manager',
-        'Requested honors placement with accommodations',
-        'Trial period agreed',
-        'Wendy excelled in honors classes',
-        'Permanent placement'
-      ],
-      outcome: 'Wendy is in AP classes now. Her dyslexia accommodations are part of her toolkit.',
-      lessons: [
-        'Twice exceptional is real and often missed',
-        'Tracking can be reversed',
-        'Self-advocacy in academic placement is appropriate at any age',
-        'Trial periods reduce risk for everyone'
-      ]
-    },
-    {
-      id: 'ecs14',
-      name: 'Cassius, 9th grader',
-      identity: 'gender-fluid, autistic, multiply marginalized',
-      situation: 'Cassius identifies as gender-fluid. They are also autistic. Their school does not have many staff trained on both identities.',
-      challenge: 'Cassius felt like they could not be fully themselves. Their autism diagnosis was made; their gender was less recognized.',
-      whatHelped: [
-        'Cassius found online community of autistic non-binary youth',
-        'Began identifying their needs at school more clearly',
-        'Asked for restroom access aligned with identity',
-        'Counselor helped facilitate',
-        'Connected with PFLAG for family support',
-        'Built a community of similar peers online'
-      ],
-      outcome: 'Cassius is more confident. Their dual identities are both supported.',
-      lessons: [
-        'Multiple marginalized identities are common',
-        'Online community fills gaps when local does not exist',
-        'PFLAG supports families',
-        'You can advocate for multiple identities at once'
-      ]
-    },
-    {
-      id: 'ecs15',
-      name: 'Ahmed, 11th grader',
-      identity: 'Somali-American, refugee, ADHD',
-      situation: 'Ahmed arrived in the U.S. at age 8. He was placed in special education. The placement was based partly on cultural misunderstanding.',
-      challenge: 'Ahmed is in 11th grade. He has internalized the message that he is below his peers academically.',
-      whatHelped: [
-        'A teacher recognized Ahmed\'s potential',
-        'Requested re-evaluation',
-        'New evaluation showed Ahmed was meeting grade level standards with English language support',
-        'IEP changed to focus on ELL services',
-        'Ahmed exited special education',
-        'Caught up academically with English language support'
-      ],
-      outcome: 'Ahmed is now in honors English. Plans to attend college.',
-      lessons: [
-        'Refugee and immigrant students are sometimes misplaced in special education',
-        'Re-evaluation is a right',
-        'Internalized messages need to be unlearned',
-        'Teachers can be powerful catalysts for change'
-      ]
-    }
-  ];
-
-  var FINAL_REFLECTION_PROMPTS = [
-    { id: 'fr1', prompt: 'Looking back on a year of advocacy, what is one thing I am proud of?', category: 'celebration' },
-    { id: 'fr2', prompt: 'What is one thing that grew this year that no one else might notice?', category: 'private growth' },
-    { id: 'fr3', prompt: 'What is one fear that I outgrew this year?', category: 'fear release' },
-    { id: 'fr4', prompt: 'What is one fear that I still carry?', category: 'ongoing' },
-    { id: 'fr5', prompt: 'Who in my life was the biggest support this year? How will I thank them?', category: 'gratitude' },
-    { id: 'fr6', prompt: 'What relationship needs repair?', category: 'mending' },
-    { id: 'fr7', prompt: 'What relationship needs ending?', category: 'release' },
-    { id: 'fr8', prompt: 'What is one boundary I held that I am proud of?', category: 'celebration' },
-    { id: 'fr9', prompt: 'What is one boundary I dropped that I want to rebuild?', category: 'recommitment' },
-    { id: 'fr10', prompt: 'What is one accommodation I used that became routine?', category: 'normalization' },
-    { id: 'fr11', prompt: 'What is one accommodation I tried but did not use?', category: 'reflection' },
-    { id: 'fr12', prompt: 'What is one self-care practice that worked?', category: 'sustainment' },
-    { id: 'fr13', prompt: 'What is one practice that did not work?', category: 'release' },
-    { id: 'fr14', prompt: 'Who do I most want to advocate alongside next year?', category: 'forward' },
-    { id: 'fr15', prompt: 'What is one cause beyond my own that I want to support?', category: 'expansion' },
-    { id: 'fr16', prompt: 'What is one community I want to find or build?', category: 'community' },
-    { id: 'fr17', prompt: 'How has my understanding of disability changed this year?', category: 'evolving' },
-    { id: 'fr18', prompt: 'How has my relationship to my diagnosis changed this year?', category: 'identity' },
-    { id: 'fr19', prompt: 'What is one piece of advice I would give to someone starting this journey?', category: 'mentor' },
-    { id: 'fr20', prompt: 'What is one truth I have grown into this year?', category: 'becoming' },
-    { id: 'fr21', prompt: 'What does freedom mean to me now? How is that different from last year?', category: 'philosophical' },
-    { id: 'fr22', prompt: 'What does community mean to me now?', category: 'philosophical' },
-    { id: 'fr23', prompt: 'What does dignity mean to me now?', category: 'philosophical' },
-    { id: 'fr24', prompt: 'What does power mean to me now?', category: 'philosophical' },
-    { id: 'fr25', prompt: 'What does enough mean to me now?', category: 'philosophical' },
-    { id: 'fr26', prompt: 'What is one thing about myself I have come to love this year?', category: 'self-love' },
-    { id: 'fr27', prompt: 'What is one thing about myself I have come to accept?', category: 'acceptance' },
-    { id: 'fr28', prompt: 'What is one thing about myself I am still working on accepting?', category: 'ongoing' },
-    { id: 'fr29', prompt: 'What is one thing I will not apologize for next year?', category: 'commitment' },
-    { id: 'fr30', prompt: 'What is one promise I will make to my future self?', category: 'forward' }
-  ];
-
-  var ADVOCACY_JOURNAL_PROMPTS = [
-    {
-      id: 'ajp1',
-      week: 1,
-      prompt: 'Write about a time someone asked you what you needed and you actually told them. How did it feel? What did they do?',
-      depth: 'reflective',
-      example: 'In 7th grade my new English teacher asked what would help me with writing. I said I needed extra time and a quiet space. She set it up the next day. I felt seen for the first time at school.'
-    },
-    {
-      id: 'ajp2',
-      week: 1,
-      prompt: 'Write about a time you were spoken FOR when you could have spoken for yourself. What stopped you?',
-      depth: 'reflective',
-      example: 'My mom told my doctor about my anxiety. I let her. I was scared the doctor would think I was being dramatic. Later I realized: she was advocating for me because I had not learned to yet.'
-    },
-    {
-      id: 'ajp3',
-      week: 2,
-      prompt: 'Imagine your 5-year-old self meets your current self. What does young you say? What does current you say back?',
-      depth: 'introspective',
-      example: 'Young me: "Are we okay?" Current me: "We are okay. We are okay enough. We have help."'
-    },
-    {
-      id: 'ajp4',
-      week: 2,
-      prompt: 'What is one accommodation that has saved you? Tell its story.',
-      depth: 'gratitude',
-      example: 'Extended time on tests. It was not until 8th grade that I realized: I had been failing not because I did not know it, but because I could not finish. With extended time my grades shifted from C to A.'
-    },
-    {
-      id: 'ajp5',
-      week: 3,
-      prompt: 'Write about a teacher who really saw you. What did they do?',
-      depth: 'gratitude',
-      example: 'Mr. Hassan in 9th grade noticed when I was overwhelmed. He would catch my eye and tilt his head toward the door. That was my signal I could leave for 5 minutes. He never made me ask. He never made it a big deal.'
-    },
-    {
-      id: 'ajp6',
-      week: 3,
-      prompt: 'Write about a teacher who did not see you. What did they miss?',
-      depth: 'grief',
-      example: 'Mrs. Connor in 6th grade thought my hand-flapping was disrespectful. She kept correcting it. I learned to suppress around her. The cost was migraines from holding it in all day.'
-    },
-    {
-      id: 'ajp7',
-      week: 4,
-      prompt: 'Write a letter to the system that has failed you. Then write a letter to the system from your most powerful future self.',
-      depth: 'transformative',
-      example: 'To IDEA: You promised free appropriate public education. You did not promise easy. Sometimes I wonder if appropriate has been the wrong word. ... Future me to IDEA: I changed you. I added a clause about ___. You are different now because I and others like me did the work.'
-    },
-    {
-      id: 'ajp8',
-      week: 4,
-      prompt: 'What is the conversation you have been avoiding? Write it as a screenplay. Both sides.',
-      depth: 'practice',
-      example: 'Scene: kitchen. Me: Mom, I need to tell you I do not want to go to State next year. Mom: But it is paid for. Me: I know. And I want to take a year to work and figure out what fits me. Mom: ...'
-    },
-    {
-      id: 'ajp9',
-      week: 5,
-      prompt: 'Describe your best advocacy moment. Then describe your worst. What did the best one have that the worst one did not?',
-      depth: 'reflective',
-      example: 'Best: emailed teacher after class to clarify a misunderstanding. Specific, calm, reached out same day. Result: teacher apologized and updated practice. Worst: yelled at sister for teasing. Hot, vague, escalated. Result: she dismissed me. The best one was specific and timely. The worst was reactive and general.'
-    },
-    {
-      id: 'ajp10',
-      week: 5,
-      prompt: 'List 3 places in your life where you wish you had a different role. What would your different role look like?',
-      depth: 'imaginative',
-      example: 'At home: I wish I were not the family translator. In my body: I wish I were not the explainer. With friends: I wish I were less the listener and more the talker.'
-    },
-    {
-      id: 'ajp11',
-      week: 6,
-      prompt: 'Write about a moment you said no when it was hard.',
-      depth: 'celebration',
-      example: 'I told my best friend I would not lie for her about where she was. She was hurt. The next day she said it took her time but she understood. I held the line.'
-    },
-    {
-      id: 'ajp12',
-      week: 6,
-      prompt: 'Write about a moment you said yes when you should have said no.',
-      depth: 'learning',
-      example: 'I agreed to join a club because my parent wanted me to. I hated it. I stuck it out a year. I learned: my yes has to come from me.'
-    },
-    {
-      id: 'ajp13',
-      week: 7,
-      prompt: 'What does freedom mean to you? When are you most free? Least free?',
-      depth: 'introspective',
-      example: 'Most free: walking alone with music. Least free: at family events. Freedom for me has to do with autonomy AND with knowing I am safe to be myself.'
-    },
-    {
-      id: 'ajp14',
-      week: 7,
-      prompt: 'Write about a body cue you have learned to listen to. How did you learn?',
-      depth: 'embodied',
-      example: 'My shoulders tighten before a meltdown. I used to think they were just tense. After 4 meltdowns where I noticed shoulders first, I started taking a break when they tightened. Meltdowns dropped.'
-    },
-    {
-      id: 'ajp15',
-      week: 8,
-      prompt: 'Imagine you are introducing yourself to a roomful of disabled peers your age. What do you say?',
-      depth: 'identity',
-      example: 'Hi. I am ___. I am ___ (disability identifiers). I am here to learn from you. I have something to offer too: ___. Looking forward to being in this room with you.'
-    },
-    {
-      id: 'ajp16',
-      week: 8,
-      prompt: 'Write a love letter to your disability.',
-      depth: 'transformative',
-      example: 'Dear ADHD: We have been together since I can remember. You make me forget my keys. You also make me see connections others miss. You make me distracted. You also make me curious. I would not trade you. I would build my life around you.'
-    },
-    {
-      id: 'ajp17',
-      week: 9,
-      prompt: 'What is your origin story? What event or moment shaped who you are now?',
-      depth: 'narrative',
-      example: 'When I was 7 my teacher told my mom I was "lazy." That word stayed in my mouth like a marble for 10 years. The day I read about ADHD and realized lazy was a lie was the day my real life started.'
-    },
-    {
-      id: 'ajp18',
-      week: 9,
-      prompt: 'What stories about disability did you learn growing up? Were any of them about you?',
-      depth: 'cultural',
-      example: 'Inspirational stories. Tragedy stories. Cure stories. None of them sounded like my life. My life was ordinary and complicated. Then I found Alice Wong\'s book and saw stories that fit.'
-    },
-    {
-      id: 'ajp19',
-      week: 10,
-      prompt: 'List 10 things you wish your past self had known.',
-      depth: 'mentorship',
-      example: '1. You are not broken. 2. You are not faking. 3. Adults can be wrong. 4. ...'
-    },
-    {
-      id: 'ajp20',
-      week: 10,
-      prompt: 'Write about your dream of community. Who is in it? What does it feel like? What do you do together?',
-      depth: 'visionary',
-      example: 'Other autistic adults. Other late-diagnosed people. Quiet spaces. Permission to stim. Conversations about niche interests. Knowing I do not have to mask.'
-    }
-  ];
-
-  var ADVOCACY_GROUP_DISCUSSION_GUIDES = [
-    {
-      id: 'gd1',
-      topic: 'What does self-advocacy mean to me?',
-      duration: '45 min',
-      groupSize: '4-8',
-      materials: ['Markers', 'Paper', 'Sticky notes'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'Name + one thing you advocated for this week (small counts)'] },
-        { phase: 'Brainstorm', time: 10, prompts: ['What words come to mind when you hear "self-advocacy"?', 'Write on sticky notes', 'Cluster on board'] },
-        { phase: 'Discussion', time: 20, prompts: ['What is included in self-advocacy?', 'What is NOT included?', 'Where do you draw lines?'] },
-        { phase: 'Closing', time: 10, prompts: ['One word that fits self-advocacy for you', 'One thing you will try this week'] }
-      ],
-      facilitatorNotes: 'Watch for one person dominating. Pull in quieter voices. Honor the silence.'
-    },
-    {
-      id: 'gd2',
-      topic: 'Disclosure: when do I tell people?',
-      duration: '60 min',
-      groupSize: '4-8',
-      materials: ['Markers', 'Whiteboard or paper'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'Group agreements (confidentiality, respect)'] },
-        { phase: 'Pair share', time: 15, prompts: ['In pairs, share: one time you disclosed and one time you did not'] },
-        { phase: 'Group brainstorm', time: 15, prompts: ['Reasons to disclose (whiteboard)', 'Reasons not to (whiteboard)'] },
-        { phase: 'Scenario discussion', time: 20, prompts: ['New job: when do you tell?', 'New friend: when do you tell?', 'New therapist: when do you tell?'] },
-        { phase: 'Closing', time: 5, prompts: ['One thing you learned', 'One thing you want to think about more'] }
-      ],
-      facilitatorNotes: 'There are no right answers. The point is the deliberation.'
-    },
-    {
-      id: 'gd3',
-      topic: 'My IEP and my voice',
-      duration: '60 min',
-      groupSize: '4-8',
-      materials: ['Copy of each student\'s IEP (if comfortable)', 'Markers'],
-      structure: [
-        { phase: 'Opening', time: 10, prompts: ['Welcome', 'Have you ever read your IEP? When?', 'How did it feel?'] },
-        { phase: 'Reading time', time: 15, prompts: ['Take 15 min to read your own IEP', 'Note what surprises you, what is missing'] },
-        { phase: 'Share', time: 20, prompts: ['Pair share: one thing that surprised you', 'Group share: one thing you would want to change'] },
-        { phase: 'Action planning', time: 10, prompts: ['Pick one thing to bring up at your next IEP meeting'] },
-        { phase: 'Closing', time: 5, prompts: ['Thanks for showing up', 'Bring back what you tried at next group'] }
-      ],
-      facilitatorNotes: 'Some students may not have read their IEP. That is fine. Today is the day they start.'
-    },
-    {
-      id: 'gd4',
-      topic: 'Identity-first vs person-first',
-      duration: '45 min',
-      groupSize: '4-8',
-      materials: ['Articles or excerpts on the topic'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'Quick definitions'] },
-        { phase: 'Reading', time: 10, prompts: ['Read 1-2 short pieces from each perspective'] },
-        { phase: 'Personal reflection', time: 10, prompts: ['Which feels more like you right now? Why?'] },
-        { phase: 'Group discussion', time: 15, prompts: ['Is there a community consensus? Should there be?', 'Can you change what you prefer over time?'] },
-        { phase: 'Closing', time: 5, prompts: ['Today I prefer ___ language for myself.'] }
-      ],
-      facilitatorNotes: 'No right answer. Honor each preference. Watch for someone changing mind during conversation.'
-    },
-    {
-      id: 'gd5',
-      topic: 'Anger as data',
-      duration: '60 min',
-      groupSize: '4-8',
-      materials: ['Markers', 'Paper'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'When did you last get really angry? About what?'] },
-        { phase: 'Mapping', time: 15, prompts: ['Map your anger triggers from this week', 'What categories emerge? (unfairness, dismissal, etc.)'] },
-        { phase: 'Discussion', time: 30, prompts: ['What is your anger telling you?', 'When is anger useful for advocacy?', 'When does it hurt your advocacy?'] },
-        { phase: 'Closing', time: 10, prompts: ['One pattern you noticed', 'One thing you want to do with your anger'] }
-      ],
-      facilitatorNotes: 'Anger is often suppressed in disabled students. Encourage examination, not shame.'
-    },
-    {
-      id: 'gd6',
-      topic: 'Asking for help vs. doing it alone',
-      duration: '45 min',
-      groupSize: '4-8',
-      materials: ['Markers', 'Paper'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'Are you a "do it alone" or "ask for help" person?'] },
-        { phase: 'Trade-offs', time: 15, prompts: ['Costs of "alone": ...', 'Costs of "asking": ...', 'Benefits of each'] },
-        { phase: 'Personal stories', time: 15, prompts: ['Share: a time asking helped. A time it backfired.'] },
-        { phase: 'Closing', time: 10, prompts: ['One area you will ask in this week. One area you will hold.'] }
-      ],
-      facilitatorNotes: 'Many disabled students have learned not to ask. Honor the protective wisdom AND open space for new patterns.'
-    },
-    {
-      id: 'gd7',
-      topic: 'When advocacy fails',
-      duration: '60 min',
-      groupSize: '4-8',
-      materials: ['Markers'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'Group agreement on confidentiality'] },
-        { phase: 'Stories', time: 25, prompts: ['Share: a time you advocated and it did not work', 'What happened?'] },
-        { phase: 'Patterns', time: 20, prompts: ['What patterns do you see in failed advocacy?', 'What is in your control vs. not?'] },
-        { phase: 'Closing', time: 10, prompts: ['What does it mean that you tried?', 'What is one thing you will do differently next time?'] }
-      ],
-      facilitatorNotes: 'Failure stories are important. They keep the room real.'
-    },
-    {
-      id: 'gd8',
-      topic: 'Building disability community',
-      duration: '60 min',
-      groupSize: '4-8',
-      materials: ['Phones or laptops'],
-      structure: [
-        { phase: 'Opening', time: 5, prompts: ['Welcome', 'Where do you feel most like yourself?'] },
-        { phase: 'Community mapping', time: 20, prompts: ['List communities you are part of', 'Which are disability-aware?'] },
-        { phase: 'Research', time: 15, prompts: ['Find one disability-led space (podcast, Discord, in-person group)', 'Check it out'] },
-        { phase: 'Share', time: 15, prompts: ['What did you find?', 'Will you try going to or following it?'] },
-        { phase: 'Closing', time: 5, prompts: ['Goal: connect with one new disability space this month'] }
-      ],
-      facilitatorNotes: 'Community is medicine. Most disabled students do not have it.'
-    }
-  ];
-
-  var EXTENDED_TRIGGERS_AND_RESPONSES = [
-    {
-      id: 'etr1',
-      category: 'school',
-      trigger: 'You are asked to read aloud unexpectedly',
-      whatHappensInYourBody: 'Heart rate spikes. Mouth goes dry. Eyes blur on the page. Words you knew become alien.',
-      whatYourBrainTellsYou: '"They will know I am stupid. I cannot get this out."',
-      whatIsActuallyHappening: 'Stress response is interfering with reading processing. This is neurology, not character.',
-      whatToDoInTheMoment: [
-        'Take a 3-second pause before starting',
-        'Use a finger or paper to follow the line',
-        'If a word is stuck, say "I will skip this and come back" and move on',
-        'It is okay to mispronounce. Keep going.'
-      ],
-      whatToDoAfter: [
-        'Email teacher: "Cold-reading aloud is hard for me. Could we work out a system where you give me notice before calling on me to read?"',
-        'Add no-cold-call to your IEP if recurring',
-        'Practice reading aloud at home with parent to build skill'
-      ],
-      whyItMatters: 'Most reading-aloud anxiety is preventable with simple accommodations.'
-    },
-    {
-      id: 'etr2',
-      category: 'school',
-      trigger: 'You are assigned to a group project',
-      whatHappensInYourBody: 'Stomach knots. Sleep gets worse. Avoidance kicks in.',
-      whatYourBrainTellsYou: '"I will end up doing it all. They will think I am bossy. I will be exhausted."',
-      whatIsActuallyHappening: 'Past experiences of group dysfunction are predicting future ones. Sometimes accurately, sometimes not.',
-      whatToDoInTheMoment: [
-        'Breathe through the initial reaction',
-        'Reach out to one group member proactively',
-        'Suggest a Google Doc with assignments and deadlines',
-        'Schedule check-ins early'
-      ],
-      whatToDoAfter: [
-        'Communicate often with the group',
-        'Document who is doing what',
-        'Talk to teacher proactively if dynamic is dysfunctional, before crisis',
-        'Consider asking for individual alternative if pattern is severe'
-      ],
-      whyItMatters: 'Group projects are often harder for autistic, ADHD, anxious students. Communication and structure help.'
-    },
-    {
-      id: 'etr3',
-      category: 'social',
-      trigger: 'A friend cancels plans last minute',
-      whatHappensInYourBody: 'Pit in stomach. Lonely feeling spreads.',
-      whatYourBrainTellsYou: '"They never really wanted to hang out. I do not have friends."',
-      whatIsActuallyHappening: 'Cancellation is one data point. Brain is making it about identity. Probably exaggerating.',
-      whatToDoInTheMoment: [
-        'Pause before reacting',
-        'Ask: "Has this been a pattern with this person?"',
-        'Respond simply: "Got it, lets reschedule" or "okay" - leave room for connection',
-        'Plan a backup activity for the time'
-      ],
-      whatToDoAfter: [
-        'Notice if there is a pattern across friends',
-        'Pattern: address with the person',
-        'Single incident: let it go',
-        'Reach out to a different friend instead'
-      ],
-      whyItMatters: 'Single cancellation is not abandonment. Pattern matters more than incident.'
-    },
-    {
-      id: 'etr4',
-      category: 'family',
-      trigger: 'Parent compares you to a high-achieving cousin',
-      whatHappensInYourBody: 'Hot face. Hands clench. Want to walk away.',
-      whatYourBrainTellsYou: '"My parent thinks I am less than. I have failed them."',
-      whatIsActuallyHappening: 'Comparison is the parent\'s anxiety speaking, not your worth.',
-      whatToDoInTheMoment: [
-        'Take a breath',
-        'Say: "When you compare me to ___, it makes me feel ___. Could we talk without comparing?"',
-        'If parent escalates, take a break: "I need to step away. Can we come back to this?"'
-      ],
-      whatToDoAfter: [
-        'Process with a trusted person',
-        'Note the pattern',
-        'Plan how to talk about it when calm',
-        'Consider family therapy if pattern continues'
-      ],
-      whyItMatters: 'You are not in competition with cousins. Your path is yours.'
-    },
-    {
-      id: 'etr5',
-      category: 'family',
-      trigger: 'Sibling teasing about your accommodations',
-      whatHappensInYourBody: 'Tension across shoulders. Shame heat in face.',
-      whatYourBrainTellsYou: '"Maybe they are right. Maybe I am weak for needing this."',
-      whatIsActuallyHappening: 'Sibling dynamic. Their teasing is about their own discomfort, not your reality.',
-      whatToDoInTheMoment: [
-        'Say firmly: "Stop. That is not okay."',
-        'If continues, leave the room',
-        'Do NOT put down your accommodation in front of them'
-      ],
-      whatToDoAfter: [
-        'Tell parent specifically: "Sibling teased me about ___ today, here is what they said"',
-        'Ask parent to address the pattern',
-        'Consider family meeting',
-        'Limit time with sibling if pattern persists'
-      ],
-      whyItMatters: 'Your accommodations are not up for sibling vote. They are your tools.'
-    },
-    {
-      id: 'etr6',
-      category: 'sensory',
-      trigger: 'School-wide assembly with loud music',
-      whatHappensInYourBody: 'Ears feel full. Mind shuts down. Want to crawl out of skin.',
-      whatYourBrainTellsYou: '"I have to push through. Everyone else is fine."',
-      whatIsActuallyHappening: 'Your sensory system is overwhelmed. Forcing through causes meltdown or shutdown later.',
-      whatToDoInTheMoment: [
-        'Use earplugs or headphones (advocate for them in your IEP)',
-        'Sit at edge of crowd, near exit',
-        'Pre-arranged exit pass if needed',
-        'Leave if you need to. Do not stay until crisis.'
-      ],
-      whatToDoAfter: [
-        'Tell case manager what helped or did not',
-        'Adjust accommodations',
-        'Recover quietly that evening'
-      ],
-      whyItMatters: 'Forcing through sensory overload teaches your brain to expect punishment. Honoring your needs is healthier.'
-    },
-    {
-      id: 'etr7',
-      category: 'sensory',
-      trigger: 'Strong smell in cafeteria',
-      whatHappensInYourBody: 'Nausea. Headache. Cannot eat.',
-      whatYourBrainTellsYou: '"I will get teased if I sit somewhere else."',
-      whatIsActuallyHappening: 'Sensory aversion is real. Pushing through is not virtuous.',
-      whatToDoInTheMoment: [
-        'Move to less affected area of cafeteria',
-        'Use sensory tools (mint gum, scented Chapstick)',
-        'Eat elsewhere if you have permission (counselor office, library)'
-      ],
-      whatToDoAfter: [
-        'Add alternative lunch space to your IEP',
-        'Tell case manager what triggers',
-        'Plan ahead for high-trigger days'
-      ],
-      whyItMatters: 'Lunch is energy and nutrition. Smell-triggered skipping has real consequences.'
-    },
-    {
-      id: 'etr8',
-      category: 'academic',
-      trigger: 'Receiving a much lower grade than expected',
-      whatHappensInYourBody: 'Stomach drops. Tears welling.',
-      whatYourBrainTellsYou: '"I am stupid. I am bad at this. I will never succeed."',
-      whatIsActuallyHappening: 'One grade is one data point. Your brain is generalizing.',
-      whatToDoInTheMoment: [
-        'Wait 24 hours before responding',
-        'Look at the actual feedback, not just the grade',
-        'Take a breath. You survived previous bad grades.'
-      ],
-      whatToDoAfter: [
-        'Email teacher: "I would like to understand the grade better. Could we meet?"',
-        'Reflect on what could change for next time',
-        'Self-compassion: "One grade is not who I am."'
-      ],
-      whyItMatters: 'Most grade reactions are emotional. Logical response produces better outcomes.'
-    },
-    {
-      id: 'etr9',
-      category: 'medical',
-      trigger: 'Doctor or therapist dismisses your concern',
-      whatHappensInYourBody: 'Frustration heat. Want to give up.',
-      whatYourBrainTellsYou: '"They do not believe me. There is no point."',
-      whatIsActuallyHappening: 'Provider is human and may have biases or just be tired. Does not erase your concern.',
-      whatToDoInTheMoment: [
-        'Restate calmly: "I want to make sure I am being clear. Here is what I am observing: ___."',
-        'Ask: "Could we document my concern in my chart?"',
-        'If still dismissed: "Could I have a second opinion?"'
-      ],
-      whatToDoAfter: [
-        'Document the visit notes',
-        'Find a new provider if pattern repeats',
-        'Tell parent or trusted adult'
-      ],
-      whyItMatters: 'You can fire providers. You do not owe them your continued business.'
-    },
-    {
-      id: 'etr10',
-      category: 'systemic',
-      trigger: 'Long wait for school evaluation results',
-      whatHappensInYourBody: 'Anxiety simmers. Cannot focus on anything else.',
-      whatYourBrainTellsYou: '"Maybe they forgot. Maybe they think I am faking. Maybe nothing will change."',
-      whatIsActuallyHappening: 'School systems are slow. Federal timelines exist for a reason.',
-      whatToDoInTheMoment: [
-        'Take deep breaths',
-        'Look up your state\'s timeline (typically 60 days for evaluation)',
-        'Mark the deadline on your calendar'
-      ],
-      whatToDoAfter: [
-        'Email case manager respectfully checking in around day 45',
-        'Mark day 60 as the federal deadline',
-        'If day 60 passes, escalate to special education director'
-      ],
-      whyItMatters: 'Federal timelines protect you. Knowing them is power.'
-    },
-    {
-      id: 'etr11',
-      category: 'emotional',
-      trigger: 'Anniversary of a hard event',
-      whatHappensInYourBody: 'Mood drops without explanation. Energy crashes.',
-      whatYourBrainTellsYou: '"I should be over this by now."',
-      whatIsActuallyHappening: 'Body keeps anniversary memory. This is normal grief and trauma response.',
-      whatToDoInTheMoment: [
-        'Be gentle with yourself',
-        'Cancel non-essential commitments',
-        'Reach for a trusted person',
-        'Do something that nourishes (favorite food, warm bath, walk)'
-      ],
-      whatToDoAfter: [
-        'Calendar future anniversaries with plans for self-care',
-        'Tell a trusted person what week is hard',
-        'Consider therapy if anniversaries are debilitating'
-      ],
-      whyItMatters: 'Body remembers. Caring for yourself on hard dates is wisdom, not weakness.'
-    },
-    {
-      id: 'etr12',
-      category: 'identity',
-      trigger: 'Being misgendered or misnamed by a teacher',
-      whatHappensInYourBody: 'Tightness. Erasure feeling.',
-      whatYourBrainTellsYou: '"They will never get it right. It is not worth correcting."',
-      whatIsActuallyHappening: 'Misgendering erodes. Each correction matters even if it feels small.',
-      whatToDoInTheMoment: [
-        'Calmly correct: "Actually, it is ___."',
-        'Brief is okay: "It is ___, thanks."',
-        'You do not owe a lecture each time'
-      ],
-      whatToDoAfter: [
-        'Email teacher with specific request',
-        'Loop in counselor if pattern',
-        'Connect with LGBTQ community for support'
-      ],
-      whyItMatters: 'Your name and pronouns are yours. Other people\'s discomfort is not your responsibility.'
-    },
-    {
-      id: 'etr13',
-      category: 'workplace',
-      trigger: 'Manager gives feedback that feels unfair',
-      whatHappensInYourBody: 'Defensive heat. Want to argue.',
-      whatYourBrainTellsYou: '"They are wrong. They do not see what I do."',
-      whatIsActuallyHappening: 'You may be right AND need to process before responding.',
-      whatToDoInTheMoment: [
-        'Receive without arguing',
-        'Ask for specific examples',
-        'Take notes',
-        'Say: "I want to think about this. Can I respond by ___?"'
-      ],
-      whatToDoAfter: [
-        'Cool reflection: what is true, what is unfair',
-        'Document feedback and your response',
-        'Schedule follow-up to discuss action plan',
-        'If feedback is bias-based, escalate to HR'
-      ],
-      whyItMatters: 'Hot reactions to feedback damage careers. Cool reactions produce conversations.'
-    },
-    {
-      id: 'etr14',
-      category: 'workplace',
-      trigger: 'Coworker takes credit for your work',
-      whatHappensInYourBody: 'Anger. Powerlessness.',
-      whatYourBrainTellsYou: '"I cannot do anything about it. I will look petty if I speak up."',
-      whatIsActuallyHappening: 'Credit theft is real. Speaking up is appropriate.',
-      whatToDoInTheMoment: [
-        'In the moment: "Actually, I led that piece. Thanks for highlighting it."',
-        'Note: brief, factual, no anger'
-      ],
-      whatToDoAfter: [
-        'Document your work in writing (emails to yourself, notes)',
-        'CC manager on your work as part of normal communication',
-        'Direct conversation with coworker if pattern continues'
-      ],
-      whyItMatters: 'Your work is yours. Quiet credit theft devalues your career trajectory.'
-    },
-    {
-      id: 'etr15',
-      category: 'community',
-      trigger: 'Online community has a conflict you disagree with',
-      whatHappensInYourBody: 'Adrenaline. Want to argue.',
-      whatYourBrainTellsYou: '"I have to engage. Silence equals agreement."',
-      whatIsActuallyHappening: 'Online conflict often heat without information.',
-      whatToDoInTheMoment: [
-        'Pause before posting',
-        'Ask: "Will this comment change anything?"',
-        'If yes, post calmly. If no, scroll on.',
-        'Step away from the platform if dysregulated'
-      ],
-      whatToDoAfter: [
-        'Notice patterns in what triggers you online',
-        'Curate your feed (mute, unfollow, block)',
-        'Take breaks from social media'
-      ],
-      whyItMatters: 'Your peace is more valuable than winning an internet argument.'
-    }
-  ];
-
-  var SELF_ASSESSMENT_RUBRICS = [
-    {
-      id: 'sar1',
-      area: 'Self-Knowledge',
-      questions: [
-        { q: 'I can name 3 of my strengths in specific terms.', levels: { emerging: 'I can name 1.', developing: 'I can name 2 but generally.', proficient: 'I can name 3 with examples.', advanced: 'I can name 5+ with examples and contexts.' } },
-        { q: 'I can name 3 of my needs without shame.', levels: { emerging: 'I can name 1 but feel embarrassed.', developing: 'I can name 2 if asked.', proficient: 'I can name 3 in specific terms.', advanced: 'I can name 5+ and explain how each shows up.' } },
-        { q: 'I can describe my disability/diagnosis in my own words.', levels: { emerging: 'I know the label.', developing: 'I can explain the basics.', proficient: 'I can describe how it shows up for me specifically.', advanced: 'I can adjust my explanation for different audiences.' } },
-        { q: 'I notice my body cues during the day.', levels: { emerging: 'I notice major ones (pain, hunger).', developing: 'I notice ones that interfere with task.', proficient: 'I notice subtle cues (tension, fatigue building).', advanced: 'I respond to cues before they escalate.' } },
-        { q: 'I know what helps me regulate.', levels: { emerging: 'I have 1 thing I know works.', developing: 'I have 2-3 strategies.', proficient: 'I have a toolkit I can match to situations.', advanced: 'I can teach others my strategies.' } }
-      ]
-    },
-    {
-      id: 'sar2',
-      area: 'Rights Knowledge',
-      questions: [
-        { q: 'I know my disability category (if I have one).', levels: { emerging: 'I have heard the term but cannot define.', developing: 'I know the basics.', proficient: 'I can describe how it qualifies under IDEA.', advanced: 'I can explain to a peer.' } },
-        { q: 'I can list my main accommodations.', levels: { emerging: 'I know I have some.', developing: 'I can list 2-3.', proficient: 'I can list all of them.', advanced: 'I can explain why each one helps me.' } },
-        { q: 'I know who to ask if an accommodation is not being honored.', levels: { emerging: 'I would tell my parent.', developing: 'I would tell my case manager.', proficient: 'I would email same-day with documentation.', advanced: 'I know multiple levels of escalation.' } },
-        { q: 'I know my procedural safeguards.', levels: { emerging: 'I have heard the term.', developing: 'I know 1-2 rights.', proficient: 'I can name 5+ rights.', advanced: 'I have read the full document.' } },
-        { q: 'I know where to find outside advocacy support.', levels: { emerging: 'I do not know.', developing: 'I have heard of one organization.', proficient: 'I have contact info for state P&A and parent center.', advanced: 'I have ongoing contact with one or more.' } }
-      ]
-    },
-    {
-      id: 'sar3',
-      area: 'Communication',
-      questions: [
-        { q: 'I can request an accommodation in person.', levels: { emerging: 'I freeze.', developing: 'I can with prep.', proficient: 'I can on the fly.', advanced: 'I can in front of strangers.' } },
-        { q: 'I can request an accommodation in writing.', levels: { emerging: 'I have not.', developing: 'I have once or twice.', proficient: 'I do it routinely.', advanced: 'I draft for others.' } },
-        { q: 'I can disagree with a teacher respectfully.', levels: { emerging: 'I avoid.', developing: 'I disagree in writing.', proficient: 'I disagree in person.', advanced: 'I model this for peers.' } },
-        { q: 'I can ask a clarifying question.', levels: { emerging: 'I do not in class.', developing: 'I do with safe teachers.', proficient: 'I do in any class.', advanced: 'I help others ask.' } },
-        { q: 'I can advocate for someone else.', levels: { emerging: 'I have not.', developing: 'I have stood by someone.', proficient: 'I have spoken up for someone.', advanced: 'I coach others to advocate for themselves.' } }
-      ]
-    },
-    {
-      id: 'sar4',
-      area: 'Meeting Skills',
-      questions: [
-        { q: 'I have attended at least one IEP meeting.', levels: { emerging: 'No.', developing: 'Yes, but I sat silent.', proficient: 'Yes, and I spoke at least once.', advanced: 'Yes, and I lead parts of the meeting.' } },
-        { q: 'I prepare before meetings.', levels: { emerging: 'No.', developing: 'I read the agenda.', proficient: 'I prepare my own talking points.', advanced: 'I draft my own goals to propose.' } },
-        { q: 'I bring data to meetings.', levels: { emerging: 'No.', developing: 'I bring informal observations.', proficient: 'I bring written data.', advanced: 'I bring multi-source data.' } },
-        { q: 'I document meeting outcomes.', levels: { emerging: 'No.', developing: 'I take some notes.', proficient: 'I take full notes.', advanced: 'I send follow-up emails to confirm agreements.' } }
-      ]
-    },
-    {
-      id: 'sar5',
-      area: 'Self-Regulation',
-      questions: [
-        { q: 'I notice my early warning signs.', levels: { emerging: 'I only notice after crisis.', developing: 'I notice mid-escalation.', proficient: 'I notice early.', advanced: 'I respond at first sign.' } },
-        { q: 'I have regulation strategies.', levels: { emerging: '1 strategy.', developing: '2-3 strategies.', proficient: '5+ strategies for different states.', advanced: 'I match strategy to situation.' } },
-        { q: 'I take breaks when I need them.', levels: { emerging: 'I push through.', developing: 'I take breaks when crisis.', proficient: 'I take preventive breaks.', advanced: 'I schedule them into my day.' } },
-        { q: 'I recover from setbacks.', levels: { emerging: 'I get stuck for days.', developing: 'I recover within a day.', proficient: 'I recover within hours.', advanced: 'I bounce back quickly with self-compassion.' } }
-      ]
-    }
-  ];
-
-  var ADVOCACY_MILESTONES = [
-    { id: 'm1', age: '6-8', milestone: 'Can name 1-2 things they like to do for fun', whyItMatters: 'Foundation of preference and choice.', howToTeach: 'Daily check-ins: "What was your favorite part of today?"' },
-    { id: 'm2', age: '6-8', milestone: 'Can identify body sensations (tired, hungry, hot, cold)', whyItMatters: 'Self-monitoring foundation.', howToTeach: 'Frequent body checks: "How does your body feel?"' },
-    { id: 'm3', age: '6-8', milestone: 'Can name 1 trusted adult', whyItMatters: 'Foundation of help-seeking.', howToTeach: 'Make sure they know who to find for help.' },
-    { id: 'm4', age: '6-8', milestone: 'Can say "no" when uncomfortable', whyItMatters: 'Body autonomy foundation.', howToTeach: 'Honor their no in low-stakes situations.' },
-    { id: 'm5', age: '9-11', milestone: 'Can name their disability or learning style in basic terms', whyItMatters: 'Self-knowledge.', howToTeach: 'Use the actual diagnosis. Explain in age-appropriate terms.' },
-    { id: 'm6', age: '9-11', milestone: 'Can name 1-2 of their accommodations', whyItMatters: 'Rights awareness.', howToTeach: 'Walk through accommodations after each IEP.' },
-    { id: 'm7', age: '9-11', milestone: 'Can ask for help with a specific task', whyItMatters: 'Help-seeking communication.', howToTeach: 'Practice in low-stakes contexts.' },
-    { id: 'm8', age: '9-11', milestone: 'Can attend part of their IEP meeting', whyItMatters: 'Begins ownership.', howToTeach: 'Bring them in for opening introductions.' },
-    { id: 'm9', age: '12-14', milestone: 'Can explain their disability to a new teacher in 1-2 sentences', whyItMatters: 'Disclosure skill.', howToTeach: 'Practice the script. Use a card if needed.' },
-    { id: 'm10', age: '12-14', milestone: 'Can list all of their accommodations', whyItMatters: 'Comprehensive rights awareness.', howToTeach: 'Annual review with case manager.' },
-    { id: 'm11', age: '12-14', milestone: 'Can email a teacher with a specific request', whyItMatters: 'Adult communication.', howToTeach: 'Practice with templates.' },
-    { id: 'm12', age: '12-14', milestone: 'Can introduce themselves at IEP meeting and contribute one statement', whyItMatters: 'Building meeting voice.', howToTeach: 'Practice with parent 3+ times before.' },
-    { id: 'm13', age: '15-17', milestone: 'Can lead part of their IEP meeting', whyItMatters: 'Active ownership.', howToTeach: 'Prepare a script. Build over time.' },
-    { id: 'm14', age: '15-17', milestone: 'Can propose changes to their IEP based on their own data', whyItMatters: 'Self-determination.', howToTeach: 'Coach them to bring evidence.' },
-    { id: 'm15', age: '15-17', milestone: 'Can describe transition plan and post-school goals', whyItMatters: 'Future planning.', howToTeach: 'Regular conversations about after-school plans.' },
-    { id: 'm16', age: '15-17', milestone: 'Can request meetings, evaluations, or services without parent', whyItMatters: 'Independence.', howToTeach: 'Coach them to draft and send.' },
-    { id: 'm17', age: '18+', milestone: 'Can sign their own IEP and educational documents', whyItMatters: 'Adult rights.', howToTeach: 'Prepare for age of majority transition.' },
-    { id: 'm18', age: '18+', milestone: 'Can register with college DSS independently', whyItMatters: 'Post-school self-advocacy.', howToTeach: 'Walk through process in senior year.' },
-    { id: 'm19', age: '18+', milestone: 'Can request workplace accommodations', whyItMatters: 'Adult civil rights.', howToTeach: 'Discuss ADA workplace process.' },
-    { id: 'm20', age: '18+', milestone: 'Can navigate adult disability services', whyItMatters: 'Lifelong self-advocacy.', howToTeach: 'Connect with adult disability community early.' }
-  ];
-
-  var DETAILED_ROLEPLAY_LIBRARY = [
-    {
-      id: 'drp1',
-      title: 'The Cold IEP Meeting',
-      premise: 'You are 14. You are entering your first IEP meeting as a participant, not just attendee. Your case manager has prepped you a little.',
-      cast: ['You', 'Case manager', 'General education teacher (Mr. Bell)', 'Parent', 'School psychologist'],
-      acts: [
-        {
-          act: 1,
-          scene: 'Walking in',
-          dialogue: [
-            { speaker: 'Case manager', line: 'Hi! Glad you are here. Want to sit by me?' },
-            { speaker: 'You', line: '(Sit down. Notice your shoulders tight.)' },
-            { speaker: 'Mr. Bell', line: 'Long week ahead. Lets get started.' },
-            { speaker: 'Parent', line: '(Smiles at you. Sits next to you.)' },
-            { speaker: 'Case manager', line: 'Lets start with introductions. ___, want to introduce yourself?' }
-          ],
-          choices: [
-            { option: 'Hi, I am ___, I am in 8th grade. Thanks for being here.', value: 'best', why: 'Calm, claims space.' },
-            { option: 'Hi. (Look down.)', value: 'okay', why: 'Honest about nerves, but voice was small.' },
-            { option: 'Why am I here?', value: 'avoid', why: 'You are the topic. You should be in the room.' }
-          ]
-        },
-        {
-          act: 2,
-          scene: 'Reviewing PLAAFP',
-          dialogue: [
-            { speaker: 'Case manager', line: 'I have your present levels. Last fall you tested at grade level 7 in reading.' },
-            { speaker: 'Mr. Bell', line: 'Your performance in my class has been consistent.' },
-            { speaker: 'You', line: '(Listen. Want to add: but I have been struggling lately.)' }
-          ],
-          choices: [
-            { option: 'Can I add something? My reading has been harder this semester. I have been listening to audio versions more.', value: 'best', why: 'Names current reality.' },
-            { option: 'Mhmm.', value: 'avoid', why: 'You miss the chance to update the team.' },
-            { option: 'Wait, that is wrong. I am not at grade 7.', value: 'okay', why: 'Honest but adversarial. Use softer entry.' }
-          ]
-        },
-        {
-          act: 3,
-          scene: 'Discussing goals',
-          dialogue: [
-            { speaker: 'Case manager', line: 'For new goals, I am thinking we continue with reading fluency and add a self-advocacy goal.' },
-            { speaker: 'School psych', line: 'Self-advocacy makes sense given his age.' },
-            { speaker: 'Parent', line: 'I like that direction.' },
-            { speaker: 'You', line: '(Pause. You have an idea.)' }
-          ],
-          choices: [
-            { option: 'Could the self-advocacy goal be specific? Like, "I will email a teacher when I am stuck"?', value: 'best', why: 'Specific. Action-oriented. Measurable.' },
-            { option: 'Sure.', value: 'avoid', why: 'You miss the chance to shape the goal.' }
-          ]
-        },
-        {
-          act: 4,
-          scene: 'Closing',
-          dialogue: [
-            { speaker: 'Case manager', line: 'Great meeting. ___, anything else?' },
-            { speaker: 'You', line: '(Think before answering.)' }
-          ],
-          choices: [
-            { option: 'Could I get the meeting notes to review?', value: 'best', why: 'Documents the meeting for you.' },
-            { option: 'When can I attend the next one?', value: 'good', why: 'Signals you want continued involvement.' },
-            { option: 'No.', value: 'okay', why: 'You leave the meeting passive. Try for more.' }
-          ]
-        }
-      ],
-      debrief: [
-        'IEP meetings are where decisions are made about you. Being silent is not a strategy.',
-        'Specific contributions land better than vague ones.',
-        'Asking for notes creates record.',
-        'Each meeting is practice for the next one.'
-      ]
-    },
-    {
-      id: 'drp2',
-      title: 'The Boundary at Home',
-      premise: 'You are 15. You want a phone boundary with your mom but she has full access right now.',
-      cast: ['You', 'Mom'],
-      acts: [
-        {
-          act: 1,
-          scene: 'Choosing the moment',
-          dialogue: [
-            { speaker: 'You', line: '(Friday night. Mom is making dinner.)' }
-          ],
-          choices: [
-            { option: 'Mom, can we talk about something? Just us? Maybe after dinner?', value: 'best', why: 'Asks for time and space.' },
-            { option: '(Bring it up at dinner with brother there)', value: 'avoid', why: 'Wrong setting. Audience.' },
-            { option: 'Wait til she is in a bad mood', value: 'avoid', why: 'Timing matters.' }
-          ]
-        },
-        {
-          act: 2,
-          scene: 'The opener',
-          dialogue: [
-            { speaker: 'Mom', line: 'Sure honey. What is up?' },
-            { speaker: 'You', line: '(Sit on couch. Take a breath.)' }
-          ],
-          choices: [
-            { option: 'I want to ask about my phone. I would like to have my own password and you not look at my messages without asking.', value: 'best', why: 'Direct, specific, ownership.' },
-            { option: 'Why do you always check my phone?', value: 'avoid', why: 'Accusatory opener. She defends.' },
-            { option: 'Can I have privacy?', value: 'okay', why: 'Vague. She does not know what you mean.' }
-          ]
-        },
-        {
-          act: 3,
-          scene: 'Her concern',
-          dialogue: [
-            { speaker: 'Mom', line: 'I worry about who you are talking to.' },
-            { speaker: 'You', line: '(Hear the worry. Respond to it, not just to the words.)' }
-          ],
-          choices: [
-            { option: 'I get that. Could we make a deal? You have access on a designated check-in day. I tell you who is in my regular contacts. But day-to-day messages are mine.', value: 'best', why: 'Honors her concern with structure.' },
-            { option: 'Just trust me!', value: 'avoid', why: 'Does not address her concern.' },
-            { option: 'You should not.', value: 'avoid', why: 'Argument. Lose.' }
-          ]
-        },
-        {
-          act: 4,
-          scene: 'Negotiation',
-          dialogue: [
-            { speaker: 'Mom', line: 'Okay, what if you tell me if anything weird happens?' },
-            { speaker: 'You', line: '(Confirm the agreement.)' }
-          ],
-          choices: [
-            { option: 'Yes. If anything weird happens I will tell you within 24 hours. And weekly we can check in on how it is going.', value: 'best', why: 'Concrete agreement.' },
-            { option: 'Yeah okay.', value: 'okay', why: 'Less concrete but acceptable.' }
-          ]
-        },
-        {
-          act: 5,
-          scene: 'Closing',
-          dialogue: [
-            { speaker: 'Mom', line: 'Lets try it for a month.' },
-            { speaker: 'You', line: '(Thank her.)' }
-          ],
-          choices: [
-            { option: 'Thanks Mom. I will hold up my end.', value: 'best', why: 'Closes the loop. Recognition.' },
-            { option: 'Cool.', value: 'okay', why: 'Misses the chance to deepen.' }
-          ]
-        }
-      ],
-      debrief: [
-        'Family boundaries are easier with framework than ultimatum.',
-        'Honor their concern AS you push back.',
-        'Specific agreements with check-in dates work.',
-        'Maintain your end.'
-      ]
-    },
-    {
-      id: 'drp3',
-      title: 'The Coach Who Doesn\'t Get It',
-      premise: 'You are 16, a runner, and you have hypermobility (joints that easily injure). Coach keeps pushing you to train through pain.',
-      cast: ['You', 'Coach', 'Your athletic trainer'],
-      acts: [
-        {
-          act: 1,
-          scene: 'Practice',
-          dialogue: [
-            { speaker: 'Coach', line: 'Lets go! Push it!' },
-            { speaker: 'You', line: '(Knee gives out. You stop.)' },
-            { speaker: 'Coach', line: 'What are you doing? Run it off.' },
-            { speaker: 'You', line: '(Choose.)' }
-          ],
-          choices: [
-            { option: 'Coach, my knee just gave out. I need to stop.', value: 'best', why: 'Direct, specific, names the limit.' },
-            { option: 'I am okay.', value: 'avoid', why: 'You injure further. Cannot run for 6 weeks.' },
-            { option: '(Walk off without saying anything)', value: 'okay', why: 'Self-care without communication. Coach confused.' }
-          ]
-        },
-        {
-          act: 2,
-          scene: 'Athletic trainer',
-          dialogue: [
-            { speaker: 'Athletic trainer', line: 'What happened?' },
-            { speaker: 'You', line: 'Knee gave out. I think it is the hypermobility.' }
-          ],
-          choices: [
-            { option: 'I should not be running through this. Could you tell coach what hypermobility means?', value: 'best', why: 'Ally building.' },
-            { option: 'I will just stretch more.', value: 'avoid', why: 'Stretching is not the answer for hypermobility.' },
-            { option: 'Maybe I should quit.', value: 'avoid', why: 'Premature. Get info first.' }
-          ]
-        },
-        {
-          act: 3,
-          scene: 'Coach conversation',
-          dialogue: [
-            { speaker: 'You', line: 'Coach, can I talk to you?' },
-            { speaker: 'Coach', line: 'Sure.' },
-            { speaker: 'You', line: '(Explain.)' }
-          ],
-          choices: [
-            { option: 'I have hypermobility. My joints are looser than typical. Pushing through pain causes actual damage, not just discomfort. I need you to trust me when I say I need to stop.', value: 'best', why: 'Educative + specific ask.' },
-            { option: 'I just cant do what other runners do.', value: 'avoid', why: 'Undersells. Sounds like quitting.' }
-          ]
-        },
-        {
-          act: 4,
-          scene: 'Coach response',
-          dialogue: [
-            { speaker: 'Coach', line: 'I had no idea. What should I do differently?' }
-          ],
-          choices: [
-            { option: 'Three things. Believe me when I say I need to stop. Do not call me out in front of the team if I sit. Trust my body knows.', value: 'best', why: 'Specific list.' },
-            { option: 'Just be careful with me.', value: 'okay', why: 'Vague.' }
-          ]
-        }
-      ],
-      debrief: [
-        'Coaches often need education about your specific condition.',
-        'Trainers are powerful allies.',
-        'Three specific asks beats vague accommodation request.',
-        'Most coaches respond well to education.'
-      ]
-    },
-    {
-      id: 'drp4',
-      title: 'The Sibling Tease',
-      premise: 'You are 13. Your older sibling teases you about your accommodations regularly.',
-      cast: ['You', 'Older sibling (Maya, 17)', 'Mom'],
-      acts: [
-        {
-          act: 1,
-          scene: 'The tease',
-          dialogue: [
-            { speaker: 'Maya', line: 'Oh look, special help needs his special chair.' },
-            { speaker: 'You', line: '(Choose.)' }
-          ],
-          choices: [
-            { option: 'Stop.', value: 'best', why: 'Direct, clear, no escalation.' },
-            { option: 'Shut up.', value: 'okay', why: 'Defensive. Escalates.' },
-            { option: '(Silent)', value: 'avoid', why: 'You feel small.' }
-          ]
-        },
-        {
-          act: 2,
-          scene: 'She continues',
-          dialogue: [
-            { speaker: 'Maya', line: 'Touchy today.' },
-            { speaker: 'You', line: '(Choose.)' }
-          ],
-          choices: [
-            { option: 'It hurts when you mock me. I am asking you to stop.', value: 'best', why: 'Names impact and request.' },
-            { option: 'You are not funny.', value: 'okay', why: 'Defensive.' }
-          ]
-        },
-        {
-          act: 3,
-          scene: 'Later, with Mom',
-          dialogue: [
-            { speaker: 'You', line: 'Mom, I want to tell you something. Maya keeps teasing me about my accommodations.' },
-            { speaker: 'Mom', line: '(Listening.)' }
-          ],
-          choices: [
-            { option: 'It happens like 3 times a week. I have asked her to stop. She has not. I need backup.', value: 'best', why: 'Specific, ask for backup.' },
-            { option: 'She is so mean.', value: 'avoid', why: 'Vague. Mom may not know what to do.' }
-          ]
-        },
-        {
-          act: 4,
-          scene: 'Family meeting',
-          dialogue: [
-            { speaker: 'Mom', line: 'Lets have a family talk about this.' },
-            { speaker: 'Maya', line: 'I was just joking.' },
-            { speaker: 'You', line: '(Stay in the room. Hold ground.)' }
-          ],
-          choices: [
-            { option: 'Joking can hurt. I am asking you to stop. That is non-negotiable.', value: 'best', why: 'Names the limit.' },
-            { option: 'Whatever.', value: 'avoid', why: 'You back off. She wins.' }
-          ]
-        }
-      ],
-      debrief: [
-        'Siblings teasing about accommodations is common.',
-        'Direct asking first, then parent backup.',
-        'Family meetings can shift dynamic.',
-        'Hold the limit even when sibling minimizes.'
-      ]
-    },
-    {
-      id: 'drp5',
-      title: 'The Doctor Who Won\'t Listen',
-      premise: 'You are 16. You have ADHD. Your doctor wants to reduce your medication because "you seem fine." You disagree.',
-      cast: ['You', 'Doctor', 'Parent'],
-      acts: [
-        {
-          act: 1,
-          scene: 'The proposal',
-          dialogue: [
-            { speaker: 'Doctor', line: 'You are doing well. Lets try reducing your dose.' },
-            { speaker: 'You', line: '(Choose.)' }
-          ],
-          choices: [
-            { option: 'Could I share what I have been observing?', value: 'best', why: 'Asks permission. Centers your data.' },
-            { option: 'No.', value: 'okay', why: 'Blunt. Could lose conversation.' },
-            { option: '(Look at parent for help)', value: 'avoid', why: 'You give up your voice.' }
-          ]
-        },
-        {
-          act: 2,
-          scene: 'Your data',
-          dialogue: [
-            { speaker: 'Doctor', line: 'Sure.' },
-            { speaker: 'You', line: '(Choose.)' }
-          ],
-          choices: [
-            { option: 'I am doing well on the current dose. Last 3 months: grades up, fewer behavior incidents, better sleep. I do not want to risk losing that.', value: 'best', why: 'Specific data. Tied to outcome.' },
-            { option: 'I just like the dose I am on.', value: 'avoid', why: 'Sounds like preference, not medical reason.' }
-          ]
-        },
-        {
-          act: 3,
-          scene: 'Doctor pushes back',
-          dialogue: [
-            { speaker: 'Doctor', line: 'Reducing now will help us see if you still need this dose later.' },
-            { speaker: 'You', line: '(Choose.)' }
-          ],
-          choices: [
-            { option: 'I understand the medical reasoning. Could we wait until summer break? That way if there is regression, it does not cost me grades.', value: 'best', why: 'Compromise. Names risk.' },
-            { option: 'No.', value: 'okay', why: 'Could win but loses doctor.' },
-            { option: 'Okay.', value: 'avoid', why: 'You did not advocate.' }
-          ]
-        },
-        {
-          act: 4,
-          scene: 'Parent supports',
-          dialogue: [
-            { speaker: 'Parent', line: 'Doctor, my child has been so much more stable on this dose. Could we wait until summer?' },
-            { speaker: 'Doctor', line: 'Okay, lets revisit in June.' }
-          ],
-          choices: [
-            { option: 'Thanks. Could you write a note in my chart that I had concerns about reducing?', value: 'best', why: 'Documentation.' },
-            { option: 'Thanks.', value: 'okay', why: 'Misses documentation chance.' }
-          ]
-        }
-      ],
-      debrief: [
-        'Doctors can be moved with data and family backup.',
-        'Specific outcomes carry weight.',
-        'Compromise (delay) often easier than refuse.',
-        'Documentation in chart protects you.'
-      ]
-    }
-  ];
-
-  var WEEKLY_CURRICULUM_LIBRARY = [
-    {
-      id: 'wc1',
-      week: 1,
-      theme: 'Knowing Yourself',
-      objective: 'Identify 5 strengths and 5 needs in your own words.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Strength inventory',
-          duration: '30 min',
-          materials: ['Strength inventory worksheet', 'Pen'],
-          steps: [
-            'Read through list of 30 strengths',
-            'Pick 10 that fit you',
-            'Narrow to 5 that fit you BEST',
-            'Write one sentence for each: "I am ___ because ___"'
-          ],
-          reflection: 'Which strength surprised you to claim? Why?'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Needs inventory',
-          duration: '30 min',
-          materials: ['Needs inventory worksheet', 'Pen'],
-          steps: [
-            'Read through list of 30 needs',
-            'Mark which need you have in different contexts',
-            'Identify your top 5 needs',
-            'For each, write what helps and what hurts'
-          ],
-          reflection: 'Which need have you been hiding? Why?'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'Strength-need pairing',
-          duration: '20 min',
-          materials: ['Yesterday\'s lists'],
-          steps: [
-            'Look at your 5 strengths and 5 needs',
-            'For each pair, notice: where do they connect?',
-            'How does your need allow your strength to show up?',
-            'How might your strength help with your need?'
-          ],
-          reflection: 'Strengths and needs are not separate. They are companions.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Tell one safe person',
-          duration: '30 min',
-          materials: ['Your lists'],
-          steps: [
-            'Pick one safe person (friend, parent, counselor)',
-            'Share your 5 strengths and 5 needs',
-            'Ask: "What would you add or change?"',
-            'Listen without defending'
-          ],
-          reflection: 'How did sharing change your view?'
-        },
-        {
-          day: 'Friday',
-          activity: 'First micro-advocacy',
-          duration: '30 min',
-          materials: ['Your lists', 'Journal'],
-          steps: [
-            'Pick ONE need from your list',
-            'Identify one place this week to advocate for it',
-            'Plan: who to talk to, what to say, when',
-            'Write the plan in your journal'
-          ],
-          reflection: 'You are not behind. You are starting.'
-        }
-      ]
-    },
-    {
-      id: 'wc2',
-      week: 2,
-      theme: 'Knowing Your Rights',
-      objective: 'Identify 3 rights you have that you did not know about.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'IEP reading',
-          duration: '45 min',
-          materials: ['Your current IEP', 'Highlighter'],
-          steps: [
-            'Read your full IEP, page by page',
-            'Highlight things you do not understand',
-            'Highlight things that surprise you',
-            'Note what is missing'
-          ],
-          reflection: 'What do you wish you had known before you read this?'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Rights research',
-          duration: '30 min',
-          materials: ['Procedural safeguards', 'Notes app'],
-          steps: [
-            'Find and read your state\'s procedural safeguards document',
-            'Note 5 rights you did not know you had',
-            'Pick 3 that feel most important'
-          ],
-          reflection: 'Which right would you most want to use?'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'Resource map',
-          duration: '30 min',
-          materials: ['Notes app', 'Phone'],
-          steps: [
-            'Find phone number of your state\'s P&A organization',
-            'Find your state\'s Parent Training and Information Center',
-            'Find your nearest disability rights organization',
-            'Save all three in your phone contacts'
-          ],
-          reflection: 'You are not alone. The system has supports if you know where to look.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Self-quiz',
-          duration: '20 min',
-          materials: ['Phone or notebook'],
-          steps: [
-            'Can you name 3 of your accommodations from memory?',
-            'Can you name your case manager?',
-            'Can you name your IEP review date?',
-            'Can you name your top goal?',
-            'Whichever you missed, find them today.'
-          ],
-          reflection: 'These are basics. Building blocks.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Email your case manager',
-          duration: '20 min',
-          materials: ['Computer'],
-          steps: [
-            'Send a "thanks and check in" email',
-            'Subject: "Quick check-in"',
-            'Body: "Hi ___, I have been reading my IEP and procedural safeguards. Could we set up 15 minutes to discuss any updates?"'
-          ],
-          reflection: 'Taking initiative is half of self-advocacy.'
-        }
-      ]
-    },
-    {
-      id: 'wc3',
-      week: 3,
-      theme: 'Building Voice',
-      objective: 'Speak up in one new context.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Voice warm-up',
-          duration: '15 min',
-          materials: ['Mirror'],
-          steps: [
-            'Stand in front of mirror',
-            'Say out loud: "I matter."',
-            'Say: "I deserve to be heard."',
-            'Say: "I am allowed to ask."',
-            'Repeat 3 times each'
-          ],
-          reflection: 'Sounds silly. Works.'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Practice the disagree script',
-          duration: '20 min',
-          materials: ['Mirror'],
-          steps: [
-            'Practice saying: "I see it differently."',
-            'Practice: "I disagree."',
-            'Practice: "Could we look at it another way?"',
-            'Say each 3 ways: gentle, firm, neutral'
-          ],
-          reflection: 'Disagreement is a skill. Practice off-stage.'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'Ask one question in class',
-          duration: '5 min (in class)',
-          materials: ['Pre-written question'],
-          steps: [
-            'Pre-write one question for one class',
-            'Ask it in that class today',
-            'Note how it felt',
-            'Note teacher\'s response'
-          ],
-          reflection: 'The first question is the hardest.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Voice journal',
-          duration: '15 min',
-          materials: ['Notebook'],
-          steps: [
-            'List every moment today where you almost spoke up but did not',
-            'For each, write what stopped you',
-            'For each, write what you would say next time',
-            'Save the list'
-          ],
-          reflection: 'Your unspoken words are data, not failure.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Tell one truth',
-          duration: '5 min',
-          materials: ['One safe person'],
-          steps: [
-            'Tell one safe person one true thing you have been holding inside',
-            'It can be small',
-            'Notice how you feel after'
-          ],
-          reflection: 'Truth-telling builds the muscle.'
-        }
-      ]
-    },
-    {
-      id: 'wc4',
-      week: 4,
-      theme: 'Building Documentation',
-      objective: 'Establish a documentation habit.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Set up your advocacy log',
-          duration: '30 min',
-          materials: ['Notebook or app'],
-          steps: [
-            'Choose your format: paper notebook, phone notes app, doc',
-            'Set up sections: Conversations, Emails, Incidents, Wins',
-            'Date today.'
-          ],
-          reflection: 'A tool that helps you remember.'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Log one conversation',
-          duration: '10 min',
-          materials: ['Your log'],
-          steps: [
-            'After one conversation today, write: date, person, what was discussed, what was agreed',
-            'Be brief but specific'
-          ],
-          reflection: 'Memory fades. Records survive.'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'Send one follow-up email',
-          duration: '15 min',
-          materials: ['Computer'],
-          steps: [
-            'After a verbal conversation, send a short email summary',
-            '"Hi ___, thanks for the conversation. To make sure I have it: we agreed ___. Let me know if I missed anything."'
-          ],
-          reflection: 'Writing turns memory into evidence.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Document one win',
-          duration: '10 min',
-          materials: ['Your log'],
-          steps: [
-            'Find ONE win from this week',
-            'Write it down with specifics',
-            'Date it',
-            'Save it for low days'
-          ],
-          reflection: 'You have wins. You just have not been tracking them.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Documentation audit',
-          duration: '20 min',
-          materials: ['Your week of logs'],
-          steps: [
-            'Look at what you logged this week',
-            'Patterns?',
-            'What is missing?',
-            'What did you forget to write down?'
-          ],
-          reflection: 'Documentation gets better with practice.'
-        }
-      ]
-    },
-    {
-      id: 'wc5',
-      week: 5,
-      theme: 'Building Allies',
-      objective: 'Identify 3 allies and ask for a specific thing from each.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Map your allies',
-          duration: '20 min',
-          materials: ['Paper'],
-          steps: [
-            'Draw a circle in the center: YOU',
-            'Around it, name people who support you',
-            'Color-code: family, school, friends, professionals',
-            'Note one thing each does for you'
-          ],
-          reflection: 'You have more allies than you think.'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Pick 3 allies to deepen',
-          duration: '15 min',
-          materials: ['Your map'],
-          steps: [
-            'From your map, pick 3 you want closer',
-            'For each, identify one specific support you could ask for',
-            'Plan when to ask each'
-          ],
-          reflection: 'Asking is also giving them a chance to know you better.'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'First ally ask',
-          duration: '20 min',
-          materials: ['Phone or in person'],
-          steps: [
-            'Ask one of your 3 allies for something specific',
-            'Be clear: "Could you ___?"',
-            'Thank them whether or not they say yes'
-          ],
-          reflection: 'First asks are awkward and necessary.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Second ally ask',
-          duration: '20 min',
-          materials: ['Phone or in person'],
-          steps: [
-            'Repeat with second ally',
-            'Notice patterns in your asks',
-            'Refine your phrasing'
-          ],
-          reflection: 'Asking gets easier with practice.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Third ally + thank you',
-          duration: '20 min',
-          materials: ['Phone or in person'],
-          steps: [
-            'Make third ask',
-            'Send thank you to each of the three allies',
-            'Even if they said no, thank them for considering'
-          ],
-          reflection: 'Allies are an ecosystem you tend.'
-        }
-      ]
-    },
-    {
-      id: 'wc6',
-      week: 6,
-      theme: 'Hard Conversations',
-      objective: 'Have one hard conversation with preparation.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Identify the conversation',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'Write down 3 conversations you have been avoiding',
-            'Pick the one that, if done well, would change the most',
-            'Identify the person'
-          ],
-          reflection: 'Avoidance is a cost. Naming the conversation reduces the cost.'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Draft the conversation',
-          duration: '30 min',
-          materials: ['Journal'],
-          steps: [
-            'Write your opening sentence',
-            'Write 3 main points you want to make',
-            'Write what you want to ask for',
-            'Write your closing'
-          ],
-          reflection: 'Preparation is half of skill.'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'Anticipate their response',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'List 3 likely responses',
-            'For each, plan your follow-up',
-            'Include: positive, neutral, negative responses'
-          ],
-          reflection: 'Most conversations are predictable. Plan beats wing.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Have the conversation',
-          duration: '20-60 min',
-          materials: ['Your notes'],
-          steps: [
-            'Schedule it earlier in day if possible',
-            'Bring your notes (it is okay)',
-            'Open with your prepared sentence',
-            'Listen, respond, stick to your asks',
-            'Close with your closing'
-          ],
-          reflection: 'You did the thing.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Debrief and document',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'Write what happened',
-            'Write what worked',
-            'Write what you would change',
-            'Document any agreements in writing',
-            'Send a follow-up email if appropriate'
-          ],
-          reflection: 'Every hard conversation teaches you for the next one.'
-        }
-      ]
-    },
-    {
-      id: 'wc7',
-      week: 7,
-      theme: 'Self-Care as Foundation',
-      objective: 'Establish 3 self-care practices that survive a hard week.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Self-care inventory',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'List what you currently do for self-care',
-            'Honestly note which are sustaining vs. just numbing',
-            'List 3 you want to start or strengthen'
-          ],
-          reflection: 'Self-care is foundation, not luxury.'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Sleep audit',
-          duration: '15 min',
-          materials: ['Journal'],
-          steps: [
-            'Track your sleep this week',
-            'Note bedtime, wake time, quality',
-            'Identify one improvement you could make'
-          ],
-          reflection: 'Sleep is advocacy.'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'Movement audit',
-          duration: '15 min',
-          materials: ['Journal'],
-          steps: [
-            'Track your movement this week',
-            'Note what you did, how it felt',
-            'Identify one form of movement that feels good to you'
-          ],
-          reflection: 'Body care is mental health.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Joy inventory',
-          duration: '15 min',
-          materials: ['Journal'],
-          steps: [
-            'List 10 things that bring you joy',
-            'They can be small',
-            'For each, last time you did it',
-            'Pick 2 to schedule this week'
-          ],
-          reflection: 'Joy is also resistance.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Self-care commitment',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'Pick 3 self-care practices to maintain through next 4 weeks',
-            'Write them down',
-            'Set phone reminders',
-            'Tell one accountability person'
-          ],
-          reflection: 'Commitment beats willpower.'
-        }
-      ]
-    },
-    {
-      id: 'wc8',
-      week: 8,
-      theme: 'Owning Your Story',
-      objective: 'Write a 1-page personal advocacy story.',
-      lessons: [
-        {
-          day: 'Monday',
-          activity: 'Story brainstorm',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'Brainstorm: when did your advocacy journey start?',
-            'List 5 moments along the way',
-            'Pick one moment that feels most defining'
-          ],
-          reflection: 'Your story matters. Tell it.'
-        },
-        {
-          day: 'Tuesday',
-          activity: 'Story structure',
-          duration: '20 min',
-          materials: ['Journal'],
-          steps: [
-            'Write a 3-part outline: before, the moment, after',
-            'Note what changed because of the moment',
-            'Note what you would tell your past self'
-          ],
-          reflection: 'Stories teach us, even our own.'
-        },
-        {
-          day: 'Wednesday',
-          activity: 'First draft',
-          duration: '30 min',
-          materials: ['Computer or paper'],
-          steps: [
-            'Write the first draft',
-            'Do not edit yet',
-            'Aim for 1 page'
-          ],
-          reflection: 'First drafts are first drafts.'
-        },
-        {
-          day: 'Thursday',
-          activity: 'Edit and refine',
-          duration: '20 min',
-          materials: ['Yesterday\'s draft'],
-          steps: [
-            'Read aloud',
-            'Notice where it could be clearer',
-            'Cut what is not essential',
-            'Add what is missing'
-          ],
-          reflection: 'Editing is rewriting.'
-        },
-        {
-          day: 'Friday',
-          activity: 'Share',
-          duration: '20 min',
-          materials: ['Your story'],
-          steps: [
-            'Choose one trusted person to share with',
-            'Send them the story',
-            'Notice how it feels',
-            'Save the story for future low days'
-          ],
-          reflection: 'Sharing your story is itself advocacy.'
-        }
-      ]
-    }
-  ];
-
-  var CASE_LAW_DEEP_DIVE = [
-    {
-      id: 'cld1',
-      caseName: 'Brown v. Board of Education',
-      year: 1954,
-      court: 'U.S. Supreme Court',
-      holding: 'Racial segregation in public schools is unconstitutional.',
-      whyItMatters: 'Not a disability case directly. But Brown established the principle that "separate but equal" is inherently unequal. This principle later applied to disability segregation.',
-      keyQuotes: ['"Separate educational facilities are inherently unequal."'],
-      currentRelevance: 'Foundation for inclusion arguments. When schools propose segregated placements for disabled students, Brown is invoked.',
-      whatItChanged: [
-        'Federal authority over state school decisions established',
-        'Education as fundamental right reinforced',
-        'Equal protection applied to education',
-        'Template for later civil rights cases'
-      ]
-    },
-    {
-      id: 'cld2',
-      caseName: 'Pennsylvania Association for Retarded Children (PARC) v. Pennsylvania',
-      year: 1972,
-      court: 'U.S. District Court (consent decree)',
-      holding: 'Children with intellectual disabilities have a right to public education.',
-      whyItMatters: 'First major federal case establishing right to education for disabled children. Led directly to federal special education law.',
-      keyOutcomes: [
-        'PA could not exclude students with intellectual disabilities',
-        'Required notice to families about exclusion',
-        'Required regular re-evaluation of student placement'
-      ],
-      currentRelevance: 'PARC was a building block of IDEA. Every IEP today traces back to this case.',
-      whatItChanged: [
-        'Right to education for disabled students established',
-        'Notice requirements pioneered',
-        'Federal court oversight of state special education established'
-      ]
-    },
-    {
-      id: 'cld3',
-      caseName: 'Mills v. Board of Education',
-      year: 1972,
-      court: 'U.S. District Court',
-      holding: 'D.C. could not exclude students with disabilities from public schools due to lack of funds.',
-      whyItMatters: 'Companion case to PARC. Established that funding shortages cannot be used to exclude disabled students.',
-      keyOutcomes: [
-        'Schools cannot deny education based on cost',
-        'Procedural protections established',
-        'Right to free appropriate education affirmed'
-      ],
-      currentRelevance: 'Funding excuses are still used. Mills says they are not legal.',
-      whatItChanged: [
-        'Funding cannot be sole reason to deny services',
-        'Constitutional protections for disabled students',
-        'Foundation for FAPE'
-      ]
-    },
-    {
-      id: 'cld4',
-      caseName: 'Board of Education v. Rowley',
-      year: 1982,
-      court: 'U.S. Supreme Court',
-      holding: 'FAPE requires schools to provide instruction reasonably calculated to provide educational benefit, but not maximum potential.',
-      whyItMatters: 'For 35 years, schools used Rowley as justification to provide minimal services. Endrew F. later raised the bar.',
-      keyQuotes: ['Schools must provide "some educational benefit" but are not required to maximize student potential.'],
-      currentRelevance: 'Combined with Endrew F. (2017), schools must now provide "appropriately ambitious" progress.',
-      whatItChanged: [
-        'Defined "appropriate" in FAPE',
-        'Established benefit standard',
-        'Limited what families could legally demand'
-      ]
-    },
-    {
-      id: 'cld5',
-      caseName: 'Burlington School Committee v. Department of Education',
-      year: 1985,
-      court: 'U.S. Supreme Court',
-      holding: 'Parents who unilaterally place their child in private school can be reimbursed if the public school did not provide FAPE.',
-      whyItMatters: 'Established remedy of tuition reimbursement.',
-      currentRelevance: 'Major leverage for parents in disputes. Schools fear having to reimburse private placement.',
-      whatItChanged: [
-        'Private placement as remedy established',
-        'Financial pressure on schools to provide FAPE',
-        'Procedural pathway for private placement reimbursement'
-      ]
-    },
-    {
-      id: 'cld6',
-      caseName: 'Honig v. Doe',
-      year: 1988,
-      court: 'U.S. Supreme Court',
-      holding: 'Schools cannot indefinitely suspend or expel disabled students for behavior related to their disability.',
-      whyItMatters: 'Major protection against discipline-based exclusion.',
-      keyOutcomes: [
-        '10-day suspension cap before manifestation determination required',
-        'Stay-put protections during disputes',
-        'Long-term exclusion requires due process'
-      ],
-      currentRelevance: 'Every manifestation determination today traces to Honig.',
-      whatItChanged: [
-        'Discipline procedures for disabled students transformed',
-        'Stay-put doctrine established',
-        'Limits on school disciplinary power'
-      ]
-    },
-    {
-      id: 'cld7',
-      caseName: 'Florence County School District Four v. Carter',
-      year: 1993,
-      court: 'U.S. Supreme Court',
-      holding: 'Parents can be reimbursed for private placement even if the private school is not state-approved.',
-      whyItMatters: 'Strengthened Burlington remedy.',
-      currentRelevance: 'Schools cannot use "unapproved private school" as defense to reimbursement claim.',
-      whatItChanged: [
-        'Expanded private placement remedies',
-        'State approval not required for reimbursement',
-        'Parent choice protected'
-      ]
-    },
-    {
-      id: 'cld8',
-      caseName: 'Sutton v. United Airlines',
-      year: 1999,
-      court: 'U.S. Supreme Court',
-      holding: 'Mitigating measures (medications, prosthetics) should be considered in determining whether someone has an ADA-protected disability.',
-      whyItMatters: 'Narrowed ADA protection significantly. Overruled by ADAAA 2008.',
-      currentRelevance: 'Historical interest. ADAAA reversed.',
-      whatItChanged: [
-        'Narrowed ADA coverage temporarily',
-        'Created body of "mitigated impairment" jurisprudence',
-        'Sparked the ADA Amendments Act of 2008'
-      ]
-    },
-    {
-      id: 'cld9',
-      caseName: 'Olmstead v. L.C.',
-      year: 1999,
-      court: 'U.S. Supreme Court',
-      holding: 'States must provide community-based services rather than institutional care when appropriate.',
-      whyItMatters: 'Massive impact on disability service delivery.',
-      keyQuotes: ['"Unjustified isolation of disabled people is a form of discrimination."'],
-      currentRelevance: 'Foundation for community-based services and inclusion in adult settings.',
-      whatItChanged: [
-        'Most disabled people now live in community, not institutions',
-        'States must offer community-based options',
-        'Major shift in adult disability services'
-      ]
-    },
-    {
-      id: 'cld10',
-      caseName: 'Endrew F. v. Douglas County School District',
-      year: 2017,
-      court: 'U.S. Supreme Court',
-      holding: 'IEPs must enable "appropriately ambitious" progress, not merely "more than de minimis."',
-      whyItMatters: 'Raised the bar for what an IEP must provide.',
-      keyQuotes: ['"A student offered an educational program providing merely more than de minimis progress from year to year can hardly be said to have been offered an education at all."'],
-      currentRelevance: 'Common citation in current IEP disputes.',
-      whatItChanged: [
-        'Raised legal standard for IEP quality',
-        'Made many existing IEPs vulnerable to legal challenge',
-        'Reaffirmed importance of meaningful progress'
-      ]
-    },
-    {
-      id: 'cld11',
-      caseName: 'Fry v. Napoleon Community Schools',
-      year: 2017,
-      court: 'U.S. Supreme Court',
-      holding: 'Plaintiffs do not have to exhaust IDEA procedures before bringing ADA/504 claims if the gravamen is not denial of FAPE.',
-      whyItMatters: 'Made it easier to bring civil rights claims for disabled students.',
-      currentRelevance: 'Used in cases involving disability discrimination outside denial-of-FAPE.',
-      whatItChanged: [
-        'Civil rights claims more accessible',
-        'IDEA exhaustion no longer always required',
-        'Stronger ADA enforcement in schools'
-      ]
-    },
-    {
-      id: 'cld12',
-      caseName: 'Tatel v. Mt. Lebanon School District',
-      year: 'various circuit cases',
-      court: 'U.S. Courts of Appeals',
-      holding: 'Restraint and seclusion can constitute disability discrimination and FAPE denial.',
-      whyItMatters: 'Restraint/seclusion litigation becoming more common.',
-      currentRelevance: 'Maine Chapter 33 and other state laws reflect concern.',
-      whatItChanged: [
-        'Increased accountability for restraint/seclusion',
-        'State laws strengthening',
-        'Growing litigation around traumatic school practices'
-      ]
-    }
-  ];
-
-  var DISABILITY_HISTORY_DEEP = [
-    {
-      id: 'dhd1',
-      era: '1800s',
-      title: 'Institutionalization Era',
-      summary: 'Disabled people, particularly those with intellectual or psychiatric disabilities, were widely placed in large institutions. Conditions were often dehumanizing.',
-      keyEvents: [
-        '1817: American School for the Deaf opens',
-        '1848: First state institution for "feeble-minded" opens in Massachusetts',
-        '1870s-1900s: Massive expansion of state institutions',
-        'Many disabled people spent entire lives in institutions'
-      ],
-      voicesOfTheEra: ['Helen Keller', 'Laura Bridgman (first Deafblind student to learn language)'],
-      whatToRemember: 'For most of American history, the default for many disabled people was lifelong institutional confinement. Many of those institutions were brutal.'
-    },
-    {
-      id: 'dhd2',
-      era: 'early 1900s',
-      title: 'Eugenics Era',
-      summary: 'Pseudo-scientific movement that argued disability and other traits were genetic flaws to be eliminated. Led to forced sterilization, immigration restrictions, and influence on Nazi policies.',
-      keyEvents: [
-        '1907: First state sterilization law (Indiana)',
-        '1927: Supreme Court rules in Buck v. Bell that forced sterilization is constitutional',
-        '1930s-1940s: U.S. eugenics movement influences Nazi Germany',
-        '60,000+ Americans forcibly sterilized in eugenics era'
-      ],
-      voicesOfTheEra: ['Carrie Buck (forced sterilization victim)'],
-      whatToRemember: 'Disability rights advocacy emerged in part from this history. The forced sterilization wing of eugenics targeted disabled women especially. Buck v. Bell has never been overturned.'
-    },
-    {
-      id: 'dhd3',
-      era: '1930s-1940s',
-      title: 'Disabled World War II Veterans',
-      summary: 'Massive influx of disabled veterans began to shift public attitudes. Rehabilitation movement gained ground.',
-      keyEvents: [
-        '1944: GI Bill includes disabled veteran provisions',
-        '1948: Paralympics precursor begins',
-        'Disabled veterans become visible in workforce'
-      ],
-      voicesOfTheEra: ['Disabled WW2 veterans organizing'],
-      whatToRemember: 'Disabled veterans were the first large group of disabled adults to actively organize. Many later civil rights victories were built on veteran advocacy.'
-    },
-    {
-      id: 'dhd4',
-      era: '1950s-1960s',
-      title: 'Parent Movement and Early Rights Organizing',
-      summary: 'Parents of disabled children began organizing for school inclusion. Disabled adults began articulating independent living.',
-      keyEvents: [
-        '1950: Association for Retarded Children (now The Arc) founded',
-        '1962: Ed Roberts admitted to UC Berkeley',
-        '1968: Architectural Barriers Act passes',
-        'Independent Living philosophy emerges'
-      ],
-      voicesOfTheEra: ['Ed Roberts', 'Frank Bowe', 'Judy Heumann beginning'],
-      whatToRemember: 'Parents started the fight. Disabled adults expanded it to their own rights. Both threads continue today.'
-    },
-    {
-      id: 'dhd5',
-      era: '1970s',
-      title: 'Federal Disability Rights Laws',
-      summary: 'Federal laws established education rights and civil rights for disabled people.',
-      keyEvents: [
-        '1972: PARC and Mills decisions',
-        '1973: Section 504 of the Rehabilitation Act',
-        '1975: Education for All Handicapped Children Act (later IDEA)',
-        '1977: 504 sit-in forces signing of regulations'
-      ],
-      voicesOfTheEra: ['Judy Heumann', 'Kitty Cone', 'Brad Lomax', 'Frank Kameny'],
-      whatToRemember: 'The 1970s laid the legal foundation. Direct action made the laws enforceable.'
-    },
-    {
-      id: 'dhd6',
-      era: '1980s',
-      title: 'ADA Movement Builds',
-      summary: 'Disability rights movement organized for comprehensive civil rights legislation.',
-      keyEvents: [
-        '1980: Disability Rag (independent disability magazine)',
-        '1988: Deaf President Now',
-        '1990: ADA passes'
-      ],
-      voicesOfTheEra: ['Justin Dart', 'Patrisha Wright', 'Evan Kemp', 'Lex Frieden', 'Mary Lou Breslin'],
-      whatToRemember: 'The ADA did not come from politicians. It came from decades of disabled activism.'
-    },
-    {
-      id: 'dhd7',
-      era: '1990s',
-      title: 'Implementation and Olmstead',
-      summary: 'ADA enforcement, IDEA amendments, and Olmstead decision shifted services toward community.',
-      keyEvents: [
-        '1990: ADA passes',
-        '1990: IDEA name change from EHA',
-        '1999: Olmstead v. L.C.',
-        'Inclusion movement gains momentum in schools'
-      ],
-      voicesOfTheEra: ['Lois Curtis and Elaine Wilson (Olmstead plaintiffs)'],
-      whatToRemember: 'Laws need implementation. The 90s was implementation decade.'
-    },
-    {
-      id: 'dhd8',
-      era: '2000s',
-      title: 'Identity and Neurodiversity',
-      summary: 'Disability identity movements grow. Neurodiversity emerges as concept and movement.',
-      keyEvents: [
-        '2003: ASAN founded',
-        '2006: UN Convention on Rights of Persons with Disabilities',
-        '2008: ADA Amendments Act',
-        'Self-advocacy movements expand for many disabilities'
-      ],
-      voicesOfTheEra: ['Ari Neeman', 'Mel Baggs', 'Amanda Baggs'],
-      whatToRemember: 'Identity-based organizing changed disability discourse. "Nothing about us without us" became foundational.'
-    },
-    {
-      id: 'dhd9',
-      era: '2010s',
-      title: 'Disability Justice and Intersectionality',
-      summary: 'Disability justice framework emerges. Intersectional organizing gains ground.',
-      keyEvents: [
-        '2011-2015: Disability justice principles articulated',
-        '2014: NotDeadYet pushes back on assisted dying movement',
-        '2017: Endrew F. raises IEP standard',
-        '2017: ADAPT activists arrested protesting Medicaid cuts'
-      ],
-      voicesOfTheEra: ['Patty Berne', 'Mia Mingus', 'Stacey Park Milbern', 'Alice Wong', 'Imani Barbarin'],
-      whatToRemember: 'Disability justice expanded movement focus to multiply marginalized people and structural change.'
-    },
-    {
-      id: 'dhd10',
-      era: '2020s',
-      title: 'COVID and Beyond',
-      summary: 'COVID-19 pandemic exposed deep ableism in society. Disability community led on mask, vaccine, work accessibility.',
-      keyEvents: [
-        '2020: COVID-19 pandemic',
-        '2020: Mass remote work proves accommodations were always possible',
-        '2023: Judy Heumann dies',
-        'Disability community continues organizing'
-      ],
-      voicesOfTheEra: ['Imani Barbarin', 'Alice Wong (continuing)', 'Andrew Pulrang', 'many emerging'],
-      whatToRemember: 'COVID was both crisis and opportunity. Many accommodations long denied as impossible became standard overnight.'
-    }
-  ];
-
-  var FULL_ADVOCACY_SCENARIO_LIBRARY = [
-    {
-      id: 'fas1',
-      title: 'Day-of accommodation failure',
-      context: 'You arrive at an exam and discover the proctor does not have your accommodation paperwork.',
-      stakeholders: ['You', 'Proctor', 'Test coordinator', 'Case manager'],
-      whatYouNeedToKnow: [
-        'Your accommodations are listed in your IEP/504',
-        'You can request to wait while the paperwork is verified',
-        'You can refuse to take the test without your accommodations',
-        'You can document the issue for follow-up'
-      ],
-      stepByStep: [
-        '1. Stay calm. The proctor is not personally trying to deny you.',
-        '2. Politely state: "I have accommodations that should be reflected here. Could we verify with the test coordinator?"',
-        '3. Wait while they check. Bring your own copy of accommodations if you have one.',
-        '4. If accommodations cannot be provided that day, request to reschedule.',
-        '5. After the incident, email your case manager same-day with full timeline.',
-        '6. Follow up to ensure systems are updated for next test.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'Hi. I have accommodations that should be listed here. Could we verify with the test coordinator?' },
-        { speaker: 'Proctor', text: 'I do not see anything on my sheet.' },
-        { speaker: 'You', text: 'Could we call the test coordinator? My case manager is Ms. ___ and she can confirm.' },
-        { speaker: 'Proctor', text: 'Hold on, let me check.' }
-      ],
-      whatNot: [
-        'Do not just take the test without your accommodations and hope for the best',
-        'Do not get hostile with the proctor',
-        'Do not skip the follow-up email'
-      ],
-      whatToLearn: 'Always carry a paper or screenshot copy of your accommodations. Always email same-day to document.'
-    },
-    {
-      id: 'fas2',
-      title: 'Teacher denies request to use a tool',
-      context: 'A teacher refuses to let you use a fidget tool that is in your accommodations.',
-      stakeholders: ['You', 'Teacher', 'Case manager', 'Principal if escalated'],
-      whatYouNeedToKnow: [
-        'Accommodations are legally binding',
-        'Teachers cannot override IEPs',
-        'You can escalate'
-      ],
-      stepByStep: [
-        '1. Calmly state your accommodation.',
-        '2. Offer to verify with case manager.',
-        '3. If teacher persists, leave it for the moment and document.',
-        '4. Email case manager same day.',
-        '5. Case manager follows up with teacher.',
-        '6. Use accommodation next day.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'Could I use this? It is in my IEP.' },
-        { speaker: 'Teacher', text: 'No, it is too distracting.' },
-        { speaker: 'You', text: 'It is in my IEP. Could we check with the case manager?' },
-        { speaker: 'Teacher', text: 'Just put it away.' },
-        { speaker: 'You', text: '(Put it away. Email case manager that night.)' }
-      ],
-      whatNot: [
-        'Do not argue in front of the class',
-        'Do not stop using your accommodation forever'
-      ],
-      whatToLearn: 'Pick your battles in the moment. Document. Let case manager resolve.'
-    },
-    {
-      id: 'fas3',
-      title: 'Friend asks you to mask',
-      context: 'A friend you trust asks you to "stop being so awkward" at the party next weekend.',
-      stakeholders: ['You', 'Friend'],
-      whatYouNeedToKnow: [
-        'Masking has a cost',
-        'Friends who require masking are not full friends',
-        'Direct conversation is your tool'
-      ],
-      stepByStep: [
-        '1. Pause and feel what came up.',
-        '2. Decide: address now, address later, address never.',
-        '3. If now: name what they asked. Name the cost. Name what you can offer.',
-        '4. Listen to their side.',
-        '5. Decide what you do at the party.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'You asked me to "stop being so awkward." What does that mean to you?' },
-        { speaker: 'Friend', text: 'You know, just like, do not flap your hands and stuff.' },
-        { speaker: 'You', text: 'Flapping is how I regulate. I will do my best to be social. I am not going to stop being autistic.' },
-        { speaker: 'Friend', text: 'I just want you to fit in.' },
-        { speaker: 'You', text: 'I appreciate that you want that for me. I have to be okay with myself first. Are you with me on that?' }
-      ],
-      whatNot: [
-        'Do not promise to mask',
-        'Do not get into a fight',
-        'Do not end the friendship without thinking about it'
-      ],
-      whatToLearn: 'Friends who push you to mask need to be reckoned with. Sometimes they can grow. Sometimes the friendship has limits.'
-    },
-    {
-      id: 'fas4',
-      title: 'Your case manager is on leave',
-      context: 'Your case manager is on extended leave and you cannot get accommodations sorted.',
-      stakeholders: ['You', 'Substitute case manager', 'Department head', 'Parent'],
-      whatYouNeedToKnow: [
-        'A case manager change does not change your rights',
-        'There should be a substitute case manager',
-        'You can escalate to department head'
-      ],
-      stepByStep: [
-        '1. Find out who is covering. If unclear, ask main office.',
-        '2. Send introduction email to substitute case manager.',
-        '3. Attach your IEP and recent accommodations log.',
-        '4. Schedule a 15-minute meeting.',
-        '5. Repeat your needs concretely.',
-        '6. If substitute is not responsive, escalate to department head or parent.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: '(Email) Hi Mr./Ms. ___. I am ___, one of Ms. Park\'s students. I understand you are covering during her leave. Could we set up 15 minutes to go over my IEP? Thanks!' }
-      ],
-      whatNot: [
-        'Do not assume your accommodations are paused',
-        'Do not wait silently for them to figure it out'
-      ],
-      whatToLearn: 'Take initiative when there are transitions. Send the email yourself.'
-    },
-    {
-      id: 'fas5',
-      title: 'Parent disagrees with you about your needs',
-      context: 'You believe you need an accommodation. Your parent thinks you should "push through."',
-      stakeholders: ['You', 'Parent', 'Case manager', 'Counselor'],
-      whatYouNeedToKnow: [
-        'Your parent may have outdated info about your needs',
-        'Most IEP teams want student input',
-        'You can have a meeting with team that includes parent AND you'
-      ],
-      stepByStep: [
-        '1. Have a calm conversation with parent first. Bring specific examples.',
-        '2. If parent still disagrees, request a meeting with case manager that includes both of you.',
-        '3. Bring data: your grades, your sleep, your reports.',
-        '4. Let case manager weigh in.',
-        '5. Family compromise or parent updates view.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'Mom, I want to talk to you about my IEP. I think I need ___.' },
-        { speaker: 'Parent', text: 'I think you can handle it without that.' },
-        { speaker: 'You', text: 'Could we go to Ms. Park together and talk about what she sees? I want to hear both of your perspectives.' }
-      ],
-      whatNot: [
-        'Do not abandon the conversation',
-        'Do not lie to parent',
-        'Do not go around parent without trying first'
-      ],
-      whatToLearn: 'Bring third party (case manager, counselor) into family disagreements about your needs.'
-    },
-    {
-      id: 'fas6',
-      title: 'Mid-semester teacher change',
-      context: 'Your favorite teacher is leaving mid-year. New teacher does not know about your accommodations.',
-      stakeholders: ['You', 'New teacher', 'Case manager'],
-      whatYouNeedToKnow: [
-        'Teacher changes happen',
-        'Mid-year transitions are high-risk for accommodation lapses',
-        'You can introduce yourself proactively'
-      ],
-      stepByStep: [
-        '1. Find out who is replacing teacher.',
-        '2. Send introduction email week before they start.',
-        '3. Reattach your accommodation summary.',
-        '4. Offer to meet briefly first week.',
-        '5. Watch for accommodation gaps in first month. Email same-day if any.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: '(Email) Hi Mr./Ms. ___. I am ___ in your upcoming class. I have an IEP/504 with these accommodations: ___. I wanted to introduce myself before the start. Could we chat briefly on Monday?' }
-      ],
-      whatNot: [
-        'Do not assume the case manager has briefed them',
-        'Do not wait passively for issues to arise'
-      ],
-      whatToLearn: 'Pre-introduce yourself with every teacher change. Same-day documentation of any gaps.'
-    },
-    {
-      id: 'fas7',
-      title: 'You forgot to use your accommodation',
-      context: 'You took a test without your extended time and the grade is bad.',
-      stakeholders: ['You', 'Teacher', 'Case manager'],
-      whatYouNeedToKnow: [
-        'You can ask for retest',
-        'Most teachers are willing if accommodations were genuinely missed',
-        'Do not beat yourself up'
-      ],
-      stepByStep: [
-        '1. Email teacher within 24 hours.',
-        '2. Explain you did not use your accommodation. Ask for retest.',
-        '3. Cite IEP/504 accommodations.',
-        '4. Email case manager copy.',
-        '5. Pre-plan next test: set phone reminder to use accommodation.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You (email)', text: 'Hi Ms. ___. I took the test yesterday without using my extended time accommodation. I know this is partly on me. Could we discuss whether a retest is possible? I want to demonstrate my actual understanding. Thanks.' }
-      ],
-      whatNot: [
-        'Do not just accept the bad grade silently',
-        'Do not blame yourself for the system'
-      ],
-      whatToLearn: 'Accommodations require active use. Set reminders. Email when forgotten.'
-    },
-    {
-      id: 'fas8',
-      title: 'A peer copies your accommodation tools',
-      context: 'A classmate without an IEP uses a fidget tool similar to yours. They complain when teacher tells them no.',
-      stakeholders: ['You', 'Classmate', 'Teacher'],
-      whatYouNeedToKnow: [
-        'Your accommodations are not undermined by peer use',
-        'You do not have to explain your accommodations to peers',
-        'Universal design > exclusive accommodation'
-      ],
-      stepByStep: [
-        '1. Mind your own business. Their conversation with the teacher is not yours.',
-        '2. If peer asks why you get the tool: "It is in my IEP."',
-        '3. If peer mocks you: address it directly or report to counselor.',
-        '4. Internally: do not feel guilty for having access others want.'
-      ],
-      sampleDialogue: [
-        { speaker: 'Peer', text: 'Why do you get to have a fidget but I cannot?' },
-        { speaker: 'You', text: 'It is in my IEP. I have it for a specific reason.' },
-        { speaker: 'Peer', text: 'That is unfair.' },
-        { speaker: 'You', text: 'I think more kids should have access to tools that help them learn. You could request one with your teacher.' }
-      ],
-      whatNot: [
-        'Do not feel guilty',
-        'Do not minimize your need for the tool'
-      ],
-      whatToLearn: 'Your accommodation is yours. Peer envy is their issue, not yours.'
-    },
-    {
-      id: 'fas9',
-      title: 'Your IEP goal is not being addressed',
-      context: 'You have an IEP goal you have not worked on at all this year.',
-      stakeholders: ['You', 'Case manager', 'IEP team'],
-      whatYouNeedToKnow: [
-        'IEP goals are commitments, not suggestions',
-        'You can ask for progress reports',
-        'You can request an IEP meeting'
-      ],
-      stepByStep: [
-        '1. Look at your current IEP.',
-        '2. Identify goals you have not been working on.',
-        '3. Email case manager: "I want to understand progress on my goal ___. Could you share where we are?"',
-        '4. Request IEP meeting if response is unsatisfactory.',
-        '5. Bring data to meeting.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You (email)', text: 'Hi Ms. ___. I want to understand where we are on my goal "___". Could you share the progress reports? Thanks.' }
-      ],
-      whatNot: [
-        'Do not assume goals are happening invisibly',
-        'Do not wait until annual review to question'
-      ],
-      whatToLearn: 'You are entitled to know progress on your own goals. Ask.'
-    },
-    {
-      id: 'fas10',
-      title: 'You want to drop a service',
-      context: 'You have been receiving speech-language therapy for years. You want to discontinue.',
-      stakeholders: ['You', 'SLP', 'Case manager', 'Parent'],
-      whatYouNeedToKnow: [
-        'You can ask for IEP team to review',
-        'Discontinuing a service is a serious decision',
-        'Reduction may be option short of discontinuation'
-      ],
-      stepByStep: [
-        '1. Talk to your SLP first. Share your perspective.',
-        '2. Discuss with parent.',
-        '3. Request IEP meeting to discuss reducing or ending service.',
-        '4. SLP may share data team should consider.',
-        '5. Decision documented in IEP.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'I have been thinking about my speech therapy. I feel like I am not making new progress. Could we look at whether to reduce sessions?' }
-      ],
-      whatNot: [
-        'Do not just stop showing up',
-        'Do not refuse without reflection'
-      ],
-      whatToLearn: 'Services should serve YOU. If they do not, you can revisit.'
-    },
-    {
-      id: 'fas11',
-      title: 'You need to take medication at school',
-      context: 'Your prescription needs to be taken during the school day.',
-      stakeholders: ['You', 'Nurse', 'Parent', 'Doctor'],
-      whatYouNeedToKnow: [
-        'School can administer medications with parent permission and doctor order',
-        'Nurse is usually the point person',
-        'You may be able to self-administer with permission'
-      ],
-      stepByStep: [
-        '1. Doctor writes medication order.',
-        '2. Parent signs school medication form.',
-        '3. Medication delivered to nurse in pharmacy bottle.',
-        '4. You go to nurse at specified time.',
-        '5. Pattern established.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'Hi nurse. I am ___ here for my ___ medication.' }
-      ],
-      whatNot: [
-        'Do not bring medication in unlabeled containers',
-        'Do not share medication with peers'
-      ],
-      whatToLearn: 'Routinize the process. Make it part of your day.'
-    },
-    {
-      id: 'fas12',
-      title: 'Your phone is your accommodation tool',
-      context: 'You use your phone for AAC, scheduling, reminders. School has a no-phone policy.',
-      stakeholders: ['You', 'Teachers', 'Principal', 'Case manager'],
-      whatYouNeedToKnow: [
-        'Your phone can be in your IEP as an accommodation tool',
-        'Schools must allow if specified',
-        'Many districts have phone use exemptions for IEP students'
-      ],
-      stepByStep: [
-        '1. Add phone use to IEP if not already.',
-        '2. Specify what apps and uses.',
-        '3. Inform teachers at start of semester.',
-        '4. Show your accommodation card if questioned.',
-        '5. Use only as authorized; abuse risks the accommodation.'
-      ],
-      sampleDialogue: [
-        { speaker: 'You', text: 'I use my phone as part of my IEP. Could we go to the office and check with the case manager?' }
-      ],
-      whatNot: [
-        'Do not use the accommodation card to scroll TikTok',
-        'Do not abuse the accommodation'
-      ],
-      whatToLearn: 'Phone-as-accommodation requires explicit IEP language and good faith use.'
-    }
-  ];
-
-  var ADVOCACY_FOR_FAMILIES = [
-    {
-      id: 'aff1',
-      audience: 'Parents new to IEPs',
-      keyMessage: 'You are not alone. The IEP process is overwhelming for everyone at first.',
-      whatToKnow: [
-        'You have rights and so does your child',
-        'Bring a notebook to every meeting',
-        'You do not have to sign anything on the spot',
-        'You can request copies of all documents',
-        'You can bring another person'
-      ],
-      firstSteps: [
-        'Read your state\'s Parent Rights handbook (free)',
-        'Find your state\'s Parent Training and Information Center',
-        'Find your state\'s P&A organization',
-        'Connect with other parents (online, support groups)',
-        'Start keeping a log of school communications'
-      ],
-      commonPitfalls: [
-        'Signing IEPs without reading them carefully',
-        'Believing what is said is what is in the document (read the document)',
-        'Not bringing data to meetings',
-        'Letting the team rush'
-      ]
-    },
-    {
-      id: 'aff2',
-      audience: 'Parents whose child just got diagnosed',
-      keyMessage: 'The diagnosis is information, not judgment. Take time to grieve, then take time to learn.',
-      whatToKnow: [
-        'You will grieve the child you imagined. This is normal.',
-        'Your child is the same person they were yesterday',
-        'Communities exist of other families with the same diagnosis',
-        'Most diagnoses do NOT predict a single life trajectory'
-      ],
-      firstSteps: [
-        'Find one parent-mentor with the same diagnosis',
-        'Read or watch one resource from a self-advocate with the same diagnosis',
-        'Avoid pseudoscience cure marketing',
-        'Talk to your pediatrician about evidence-based supports',
-        'Pace yourself; the first year is heavy'
-      ],
-      commonPitfalls: [
-        'Trying every intervention at once',
-        'Believing fear-based marketing',
-        'Hiding the diagnosis from your child as they grow',
-        'Letting one trajectory narrative crowd out others'
-      ]
-    },
-    {
-      id: 'aff3',
-      audience: 'Parents of teenagers transitioning to leading IEP',
-      keyMessage: 'Stepping back is hard. Your role becomes coach, not lead.',
-      whatToKnow: [
-        'Your teen needs to learn to lead',
-        'You can coach behind the scenes',
-        'You can speak when invited',
-        'You should advocate for their voice to be heard'
-      ],
-      firstSteps: [
-        'Practice IEP meetings at home',
-        'Have your teen draft their goals',
-        'Email teachers WITH your teen, not for them',
-        'Step back from making the appointments',
-        'Be the soft place to land when things go wrong'
-      ],
-      commonPitfalls: [
-        'Stepping back too fast',
-        'Not stepping back at all',
-        'Speaking for them in meetings',
-        'Punishing their advocacy mistakes instead of learning from them'
-      ]
-    },
-    {
-      id: 'aff4',
-      audience: 'Parents whose child is having a behavior crisis at school',
-      keyMessage: 'Behavior is communication. Find the message.',
-      whatToKnow: [
-        'Punishment without understanding rarely works',
-        'FBA + BIP is the structured approach',
-        'Manifestation determination protects against unfair discipline',
-        'You can request services and supports'
-      ],
-      firstSteps: [
-        'Request FBA in writing',
-        'Document each incident from your child\'s perspective',
-        'Request meetings before discipline finalized',
-        'Connect with mental health support'
-      ],
-      commonPitfalls: [
-        'Accepting suspensions as inevitable',
-        'Not requesting manifestation determination when discipline accumulates',
-        'Punishing at home for school behavior (often makes it worse)',
-        'Believing the school is the only narrative'
-      ]
-    },
-    {
-      id: 'aff5',
-      audience: 'Parents of multiply marginalized students',
-      keyMessage: 'Schools may treat your child differently based on multiple identities.',
-      whatToKnow: [
-        'Discipline disparities are documented across race and disability',
-        'LGBTQ disabled students face specific risks',
-        'Multiple identities = multiple advocacy fronts',
-        'You may need outside advocates'
-      ],
-      firstSteps: [
-        'Connect with community organizations that share your identity',
-        'Document patterns of discipline or treatment',
-        'Find a Black Disability or LGBTQ Disability community',
-        'Build relationships before crises'
-      ],
-      commonPitfalls: [
-        'Believing the school cannot be biased',
-        'Picking one identity to focus advocacy on',
-        'Not finding outside advocates until crisis hits'
-      ]
-    }
-  ];
-
-  var ADVOCACY_FOR_EDUCATORS = [
-    {
-      id: 'afe1',
-      audience: 'New special education teachers',
-      keyMessage: 'You are part of the team. Your job is to support, not to fix.',
-      whatToKnow: [
-        'Students have rights you must honor',
-        'Parents are partners, not adversaries',
-        'IEPs are legally binding',
-        'Documentation protects everyone'
-      ],
-      firstSteps: [
-        'Read each student\'s IEP fully in week one',
-        'Meet each student individually in first 2 weeks',
-        'Establish communication channels with families',
-        'Set up systems for accommodation tracking'
-      ],
-      commonPitfalls: [
-        'Treating IEP as paperwork',
-        'Not implementing accommodations consistently',
-        'Defensive posture with families',
-        'Not documenting incidents in real-time'
-      ]
-    },
-    {
-      id: 'afe2',
-      audience: 'General education teachers with IEP students',
-      keyMessage: 'You are critical to IEP success. Without you, accommodations do not happen.',
-      whatToKnow: [
-        'IEPs are legally binding for you too',
-        'You can request training and support',
-        'Students cannot succeed without your buy-in',
-        'You are not expected to know everything'
-      ],
-      firstSteps: [
-        'Read IEPs of your students',
-        'Meet case manager early',
-        'Set up accommodation tracking system',
-        'Ask questions of case manager when unsure'
-      ],
-      commonPitfalls: [
-        'Forgetting accommodations',
-        'Treating IEP students differently in ways that single them out',
-        'Not communicating with case manager about issues',
-        'Believing accommodations are unfair to other students'
-      ]
-    },
-    {
-      id: 'afe3',
-      audience: 'School counselors',
-      keyMessage: 'You are the bridge between mental health, academic, and family systems.',
-      whatToKnow: [
-        'Many disabled students need mental health support',
-        'Your role in IEP meetings can be powerful',
-        'Crisis response protocols matter',
-        'You hold student trust'
-      ],
-      firstSteps: [
-        'Build relationships with disability community',
-        'Stay current on disability identity research',
-        'Establish school-wide crisis response',
-        'Make office an actually accessible space'
-      ],
-      commonPitfalls: [
-        'Centering parents instead of students',
-        'Outing LGBTQ students',
-        'Not communicating with special education team',
-        'Not following through after crisis'
-      ]
-    },
-    {
-      id: 'afe4',
-      audience: 'Principals and administrators',
-      keyMessage: 'Your school\'s climate for disabled students is shaped by your leadership.',
-      whatToKnow: [
-        'Discipline disparities are your responsibility',
-        'IDEA compliance is non-negotiable',
-        'Disability is core to school equity work',
-        'Disabled student voice matters in policy'
-      ],
-      firstSteps: [
-        'Audit discipline data by disability and race',
-        'Establish parent and student advisory groups',
-        'Train all staff annually on disability rights',
-        'Set climate goals around inclusion'
-      ],
-      commonPitfalls: [
-        'Letting individual teachers override IEPs',
-        'Not addressing discipline patterns',
-        'Token inclusion without systems change',
-        'Avoiding hard family conversations'
-      ]
-    }
-  ];
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   var IDENTITY_NARRATIVES_PART2 = [
     {
       id: 'in13',
@@ -11027,1321 +3361,14 @@ window.SelHub = window.SelHub || {
   ];
   IDENTITY_NARRATIVES = IDENTITY_NARRATIVES.concat(IDENTITY_NARRATIVES_PART2);
 
-  var ADVOCACY_SCRIPT_LIBRARY_EXTENDED = [
-    {
-      id: 'asl1',
-      context: 'Calling a doctor\'s office for the first time',
-      script: 'Hi. My name is ___. I am calling because I would like to schedule an appointment. I have insurance through ___. The reason for the visit is ___. Could you tell me what dates are available?'
-    },
-    {
-      id: 'asl2',
-      context: 'Asking a teacher for a specific accommodation in a new class',
-      script: 'Hi Mr./Ms. ___. I am ___ in your ___ period. I have an IEP/504 and one of my accommodations is ___. I just wanted to introduce myself and make sure we are on the same page about it. Could we set up a time to chat briefly?'
-    },
-    {
-      id: 'asl3',
-      context: 'Reporting a peer who is bullying you',
-      script: 'I would like to report something. ___ has been doing ___ to me. Examples: [dates and what happened]. I would like the school to address it. I am not asking for them to be expelled. I am asking for it to stop and to be safe.'
-    },
-    {
-      id: 'asl4',
-      context: 'Asking your parent for privacy or a boundary',
-      script: 'Mom/Dad, can we talk? I want to ask for ___. I love you. I know you care about ___. Here is what I propose: ___. Could we try for ___ days and see how it goes?'
-    },
-    {
-      id: 'asl5',
-      context: 'Telling a friend you cannot do something',
-      script: 'Hey, I cannot do ___. I am ___ (tired/busy/not feeling well). Can we do ___ instead? Thanks for understanding.'
-    },
-    {
-      id: 'asl6',
-      context: 'Sticking with a no when pressured',
-      script: 'I appreciate you wanting to spend time together. The answer is still no. I will see you ___.'
-    },
-    {
-      id: 'asl7',
-      context: 'Asking for a meeting with a teacher about your grade',
-      script: 'Hi Mr./Ms. ___. Could I have 10 minutes to talk about my recent assignment? I want to understand the grade better and what I can do to improve. When works for you?'
-    },
-    {
-      id: 'asl8',
-      context: 'Asking for time in class to think before answering',
-      script: 'Could I have a moment to think about that?'
-    },
-    {
-      id: 'asl9',
-      context: 'Telling someone they got something wrong about you',
-      script: 'I want to clarify something. When you said ___, that is not quite right. Here is what is actually true: ___. I wanted you to know.'
-    },
-    {
-      id: 'asl10',
-      context: 'Asking for help when you are overwhelmed',
-      script: 'I am overwhelmed. I need help. Can you help me with ___? Or can you help me figure out what to ask for?'
-    },
-    {
-      id: 'asl11',
-      context: 'Telling someone you need a break in a conversation',
-      script: 'I need to take a break. Can we come back to this in 10 minutes? I want to keep talking but I am dysregulating.'
-    },
-    {
-      id: 'asl12',
-      context: 'Re-entering after a break',
-      script: 'Thanks for waiting. I am ready to keep going. Where were we?'
-    },
-    {
-      id: 'asl13',
-      context: 'Asking your parent to attend something for you',
-      script: 'Could you come with me to ___? I am nervous to go alone. You do not have to do anything except be there.'
-    },
-    {
-      id: 'asl14',
-      context: 'Asking your parent NOT to attend something',
-      script: 'Mom/Dad, I want to handle ___ myself. I know you want to help. Could you let me try, and I will tell you how it goes after?'
-    },
-    {
-      id: 'asl15',
-      context: 'Telling your teacher you are struggling with the material',
-      script: 'Mr./Ms. ___, I am struggling with ___. I have tried ___. I am still confused. Could you point me to a resource or help me with one example?'
-    },
-    {
-      id: 'asl16',
-      context: 'Telling your coach you cannot do a workout',
-      script: 'Coach, I cannot do today\'s workout. I am ___ (sick / injured / not well). I will modify or sit out. I will be back tomorrow.'
-    },
-    {
-      id: 'asl17',
-      context: 'Saying yes to something you are scared of',
-      script: 'Yes. I am scared but I want to try. Can you support me by ___?'
-    },
-    {
-      id: 'asl18',
-      context: 'Closing a hard conversation',
-      script: 'Thank you for talking through this with me. I learned ___. Can we check in again in ___ days?'
-    },
-    {
-      id: 'asl19',
-      context: 'Following up after an unanswered email',
-      script: 'Hi ___. Following up on my email from ___. Could you let me know your timeline for response? Thanks.'
-    },
-    {
-      id: 'asl20',
-      context: 'Asking your boss for an accommodation',
-      script: 'Hi ___. I would like to request an accommodation under the ADA. Could we set up a time to discuss? I have ___ that affects ___ and the accommodation would allow me to ___.'
-    },
-    {
-      id: 'asl21',
-      context: 'Disagreeing with a teacher in writing',
-      script: 'Dear Mr./Ms. ___, I want to share my perspective on ___. I respectfully disagree because ___. Could we discuss?'
-    },
-    {
-      id: 'asl22',
-      context: 'Volunteering an answer when you are not 100% sure',
-      script: 'I am not 100% sure but I think ___. Could someone else add or correct?'
-    },
-    {
-      id: 'asl23',
-      context: 'Asking for a quieter environment',
-      script: 'I am having trouble focusing with the noise. Could I move to ___? Or could we lower the volume on ___?'
-    },
-    {
-      id: 'asl24',
-      context: 'Telling someone they hurt you',
-      script: 'When you ___, I felt ___. I am telling you because I want to keep this relationship working.'
-    },
-    {
-      id: 'asl25',
-      context: 'Apologizing well',
-      script: 'I am sorry for ___. I did not mean to ___. Here is what I will do differently: ___. Is there anything you need from me?'
-    },
-    {
-      id: 'asl26',
-      context: 'Asking for help finding a therapist',
-      script: 'Mom/Dad, I would like to find a therapist. Could you help me look at my insurance directory? Or I can call my pediatrician for a referral.'
-    },
-    {
-      id: 'asl27',
-      context: 'Asking your therapist for a change in approach',
-      script: 'I want to share that ___ is not working for me. Could we try ___ instead? Or could we explore why?'
-    },
-    {
-      id: 'asl28',
-      context: 'Texting a friend you are worried about them',
-      script: 'Hey. I have been thinking about you. You have seemed ___. Are you okay? I am here if you want to talk.'
-    },
-    {
-      id: 'asl29',
-      context: 'Texting a friend about a crisis',
-      script: 'I need help. I am ___. Can you talk?'
-    },
-    {
-      id: 'asl30',
-      context: 'Asking a stranger for help in public',
-      script: 'Excuse me. I am having a hard time. Could you help me by ___? Or could you point me to ___?'
-    }
-  ];
-
-  var ADVOCACY_QUOTES_LIBRARY = [
-    { id: 'aq1', quote: 'Disability is a part of the human condition. Not the worst part. Not the best part. Part.', author: 'Anonymous' },
-    { id: 'aq2', quote: 'You are not too sensitive. You are exactly sensitive enough for the life you are living.', author: 'Anonymous' },
-    { id: 'aq3', quote: 'Asking for help is the most underrated form of leadership.', author: 'Anonymous' },
-    { id: 'aq4', quote: 'The system was designed for someone else. Your existence is a sign that the design is incomplete.', author: 'Anonymous' },
-    { id: 'aq5', quote: 'Self-advocacy is not selfish. It is the foundation of every other right.', author: 'Anonymous' },
-    { id: 'aq6', quote: 'You do not have to be ready to be moving forward.', author: 'Anonymous' },
-    { id: 'aq7', quote: 'Some battles are won by showing up. Some are won by leaving the room.', author: 'Anonymous' },
-    { id: 'aq8', quote: 'Documentation is power. Memory is fiction.', author: 'Anonymous' },
-    { id: 'aq9', quote: 'The opposite of self-advocacy is not other-advocacy. It is silence.', author: 'Anonymous' },
-    { id: 'aq10', quote: 'No is a complete sentence.', author: 'Anne Lamott' },
-    { id: 'aq11', quote: 'You teach people how to treat you by what you accept.', author: 'Anonymous' },
-    { id: 'aq12', quote: 'The diagnosis is not the prognosis.', author: 'Anonymous' },
-    { id: 'aq13', quote: 'Every accommodation is a Lego brick. You are not building yourself smaller. You are building yourself a path.', author: 'Anonymous' },
-    { id: 'aq14', quote: 'Healing is not a solo sport.', author: 'Anonymous' },
-    { id: 'aq15', quote: 'Your worst day is not your truth.', author: 'Anonymous' },
-    { id: 'aq16', quote: 'Rest is not the reward for hard work. It is the requirement for it.', author: 'Anonymous' },
-    { id: 'aq17', quote: 'You are not behind. You are on your own timeline.', author: 'Anonymous' },
-    { id: 'aq18', quote: 'Boundaries are not walls. They are doors with knobs you control.', author: 'Anonymous' },
-    { id: 'aq19', quote: 'Self-knowledge is the prerequisite for self-advocacy.', author: 'Anonymous' },
-    { id: 'aq20', quote: 'You do not need permission to ask for what you need.', author: 'Anonymous' },
-    { id: 'aq21', quote: 'Your accommodations are not training wheels. They are the bicycle.', author: 'Anonymous' },
-    { id: 'aq22', quote: 'When the system fails, you are not the failure.', author: 'Anonymous' },
-    { id: 'aq23', quote: 'The right to be wrong is the foundation of growth.', author: 'Anonymous' },
-    { id: 'aq24', quote: 'Apologizing well is harder than apologizing often.', author: 'Anonymous' },
-    { id: 'aq25', quote: 'Tomorrow is not a guarantee, but it is a high probability.', author: 'Anonymous' },
-    { id: 'aq26', quote: 'Most fears are bigger before than during.', author: 'Anonymous' },
-    { id: 'aq27', quote: 'The person who quits the gentlest is often the bravest.', author: 'Anonymous' },
-    { id: 'aq28', quote: 'You can grieve and grow at the same time.', author: 'Anonymous' },
-    { id: 'aq29', quote: 'Your stim is your wisdom externalized.', author: 'Anonymous' },
-    { id: 'aq30', quote: 'Most adults underestimate young advocates. Use it.', author: 'Anonymous' },
-    { id: 'aq31', quote: 'Calling out is one tool. Calling in is another.', author: 'Anonymous' },
-    { id: 'aq32', quote: 'Crying is not weakness. It is hydration plus information.', author: 'Anonymous' },
-    { id: 'aq33', quote: 'You can leave a meeting. You can come back tomorrow.', author: 'Anonymous' },
-    { id: 'aq34', quote: 'Hot replies cost more than they buy.', author: 'Anonymous' },
-    { id: 'aq35', quote: 'Sleep is advocacy.', author: 'Anonymous' },
-    { id: 'aq36', quote: 'Food is advocacy.', author: 'Anonymous' },
-    { id: 'aq37', quote: 'Water is advocacy.', author: 'Anonymous' },
-    { id: 'aq38', quote: 'Naming the room you are in is the first step to changing it.', author: 'Anonymous' },
-    { id: 'aq39', quote: 'You are allowed to grieve who you thought you would be.', author: 'Anonymous' },
-    { id: 'aq40', quote: 'You are also allowed to fall in love with who you are.', author: 'Anonymous' },
-    { id: 'aq41', quote: 'Diagnoses are language. Use the language that serves you.', author: 'Anonymous' },
-    { id: 'aq42', quote: 'Your case manager works for you, not over you.', author: 'Anonymous' },
-    { id: 'aq43', quote: 'Most school problems are solved by an email at the right time.', author: 'Anonymous' },
-    { id: 'aq44', quote: 'You do not have to be confident to act confident enough.', author: 'Anonymous' },
-    { id: 'aq45', quote: 'Anxious AND brave is a thing.', author: 'Anonymous' },
-    { id: 'aq46', quote: 'Disclosure is a key. Keep some keys in your pocket.', author: 'Anonymous' },
-    { id: 'aq47', quote: 'Identity-first or person-first is your call. Both are valid. So are you.', author: 'Anonymous' },
-    { id: 'aq48', quote: 'The IEP is a contract, not a wish list. Treat it like one.', author: 'Anonymous' },
-    { id: 'aq49', quote: 'The 504 is a wedge. Use it.', author: 'Anonymous' },
-    { id: 'aq50', quote: 'Your right to be in the room is older than the room.', author: 'Anonymous' }
-  ];
-
-  var WORKPLACE_ADVOCACY_SCENARIOS = [
-    {
-      id: 'wa1',
-      stage: 'application',
-      situation: 'Should I disclose my disability on a job application?',
-      youDoNotHaveTo: 'You are not required to disclose at the application stage. The only exception is if the job has specific physical requirements you cannot do.',
-      considerations: [
-        'Most jobs do not require disclosure',
-        'Some employers screen out by disability if they know early',
-        'You may want to wait until interview or offer',
-        'For accommodations to be required, you need to disclose at some point'
-      ],
-      whatToWatch: [
-        'Voluntary disclosure forms (legally optional)',
-        'Drug test forms (some prescription disclosures may be needed)',
-        'Background check forms (mental health may be asked but is not required to disclose)'
-      ]
-    },
-    {
-      id: 'wa2',
-      stage: 'interview',
-      situation: 'Asking for accommodations during interview itself',
-      youCanRequest: 'You can request interview accommodations under ADA. Common ones:',
-      examples: [
-        'Extended interview time',
-        'Quiet interview space',
-        'Written interview format',
-        'Sign language interpreter',
-        'Video call instead of in-person'
-      ],
-      howToAsk: 'Email HR before interview: "I would like to request an accommodation for our interview on [date]. I would benefit from [specific accommodation]. Could we arrange this?"',
-      protection: 'Refusing to provide reasonable interview accommodation is illegal discrimination.'
-    },
-    {
-      id: 'wa3',
-      stage: 'offer',
-      situation: 'Negotiating after a job offer',
-      whatYouCanNegotiate: [
-        'Start date (delayed start for medical reasons)',
-        'Remote work options',
-        'Schedule flexibility',
-        'Accommodations in writing',
-        'Specific equipment'
-      ],
-      howToNegotiate: 'After receiving offer, respond: "Thank you for the offer. Before I accept, I would like to discuss [specific items]. When could we have a conversation?"',
-      tips: [
-        'Most offers can be negotiated more than people think',
-        'Written accommodations agreement is your protection',
-        'Salary negotiation is fair game too'
-      ]
-    },
-    {
-      id: 'wa4',
-      stage: 'first-day',
-      situation: 'Setting up accommodations on day one',
-      yourFirstSteps: [
-        'Meet with HR to confirm accommodations in writing',
-        'Set up workspace per accommodation needs',
-        'Identify supervisor and chain of command',
-        'Identify the emergency point person',
-        'Save key contacts in phone'
-      ],
-      whoNeedsToKnow: [
-        'HR (full disclosure for accommodations)',
-        'Direct supervisor (functional information, not full diagnosis)',
-        'Coworkers (only what you choose to share)',
-        'Emergency contact at work (only what is necessary)'
-      ]
-    },
-    {
-      id: 'wa5',
-      stage: 'ongoing',
-      situation: 'When an accommodation is not being honored',
-      sequence: [
-        'Bring it up directly with the supervisor first',
-        'If not resolved, email HR documenting the issue',
-        'If still not resolved, escalate within the company (HR director, ombudsperson)',
-        'If still not resolved, contact EEOC',
-        'Document everything throughout'
-      ],
-      timing: 'Document within 24 hours of each incident. EEOC has 180-day or 300-day filing limits depending on state.'
-    },
-    {
-      id: 'wa6',
-      stage: 'ongoing',
-      situation: 'Asking for additional accommodations',
-      youCanAsk: 'You can request additional accommodations at any time. The interactive process is ongoing.',
-      howToAsk: 'Email: "I would like to discuss adding an accommodation. My situation has changed in [way]. I would benefit from [specific request]. Could we meet?"',
-      processSteps: [
-        'Interactive dialogue with HR',
-        'Discussion of alternatives',
-        'Possible medical documentation if not already on file',
-        'Written agreement on accommodation',
-        'Trial period and check-in'
-      ]
-    },
-    {
-      id: 'wa7',
-      stage: 'crisis',
-      situation: 'You had a mental health crisis at work',
-      stepOne: 'Get to safe location',
-      stepTwo: 'Use existing accommodations or take medical leave if needed',
-      stepThree: 'Communicate with HR (not just supervisor)',
-      stepFour: 'Get medical documentation if leave needed',
-      yourRights: [
-        'FMLA (12 weeks unpaid job-protected leave if you qualify)',
-        'Short-term disability insurance if you have it',
-        'Reasonable accommodation for return-to-work',
-        'Protection from retaliation'
-      ]
-    },
-    {
-      id: 'wa8',
-      stage: 'crisis',
-      situation: 'You were fired and you believe it was disability-related',
-      immediate: 'Save all emails, performance reviews, accommodation requests, communications.',
-      firstStep: 'File for unemployment if applicable.',
-      formalProcess: [
-        'EEOC complaint (free, federal)',
-        'State human rights complaint (free, state)',
-        'Consult disability rights attorney (often free initial)',
-        'Document timeline of disability disclosure and adverse actions'
-      ],
-      timeline: 'EEOC has 180-day or 300-day filing limit depending on state.'
-    }
-  ];
-
-  var COLLEGE_PREP_CHECKLIST = [
-    {
-      id: 'cp1',
-      timing: 'sophomore year',
-      tasks: [
-        'Start exploring colleges that have strong disability services',
-        'Visit at least 2 colleges during a campus tour day',
-        'Schedule a meeting with a disability services counselor during visits',
-        'Take notes on what you observed',
-        'Start tracking your IEP accommodations and which you actually use',
-        'Begin attending part of your IEP meetings'
-      ],
-      whyItMatters: 'Sophomore year is when most students start narrowing college lists. Disability services should be part of the criteria, not an afterthought.'
-    },
-    {
-      id: 'cp2',
-      timing: 'junior year fall',
-      tasks: [
-        'Schedule any updated evaluations needed for college DSS registration',
-        'Take PSAT or SAT/ACT with accommodations (apply 8 weeks ahead)',
-        'Visit 5-10 colleges; meet with DSS at each',
-        'Ask DSS specific questions: how do you process accommodations, what is your turnaround time, do you offer peer mentoring',
-        'Compile a college list ranked by disability services quality',
-        'Lead more of your IEP meetings'
-      ],
-      whyItMatters: 'Junior year is when most students take standardized tests and start narrowing colleges. Documentation must be current for many DSS offices.'
-    },
-    {
-      id: 'cp3',
-      timing: 'junior year spring',
-      tasks: [
-        'Take standardized tests with accommodations',
-        'Continue narrowing college list',
-        'Begin writing college essays; consider how to discuss disability if you want',
-        'Identify 2-3 teachers who can write recommendation letters',
-        'Have a "disability conversation" with your school counselor about college fit'
-      ],
-      whyItMatters: 'College essays are a place to discuss disability if you want. Counselor knows colleges that fit students like you.'
-    },
-    {
-      id: 'cp4',
-      timing: 'senior year fall',
-      tasks: [
-        'Submit applications by deadlines',
-        'Decide whether to disclose disability on application',
-        'Apply to scholarships specific to disability or special interest',
-        'Take a closer look at financial aid for disability-related costs',
-        'Continue leading IEP meetings; document senior year accommodations',
-        'Start drafting a transition plan to college DSS'
-      ],
-      whyItMatters: 'Senior fall is when colleges make many decisions. Scholarships specific to disability exist and are often under-applied for.'
-    },
-    {
-      id: 'cp5',
-      timing: 'senior year spring',
-      tasks: [
-        'Review acceptance letters',
-        'Visit accepted colleges again, especially DSS office',
-        'Make final decision based on full fit including DSS quality',
-        'Submit deposits and housing forms',
-        'Apply to DSS at your chosen college (often summer before)',
-        'Apply for any disability-specific housing accommodations'
-      ],
-      whyItMatters: 'Decision time. Visiting accepted colleges again clarifies the choice. DSS registration is separate from college admission.'
-    },
-    {
-      id: 'cp6',
-      timing: 'summer before college',
-      tasks: [
-        'Complete DSS intake process',
-        'Submit current evaluation and documentation',
-        'Schedule meeting with DSS counselor for fall',
-        'Connect with disability student organization if exists',
-        'Practice independent living skills (cooking, laundry, scheduling)',
-        'Pack accommodation tools (AT, sensory tools, fidgets)',
-        'Make appointment with college health center and counseling center'
-      ],
-      whyItMatters: 'Summer is the only buffer time. Most accommodations need to be set up before classes start.'
-    },
-    {
-      id: 'cp7',
-      timing: 'freshman year fall',
-      tasks: [
-        'Attend DSS orientation if offered',
-        'Meet with each professor in office hours within first 2 weeks',
-        'Bring accommodation letter to each professor',
-        'Establish backup plans if accommodations fail (DSS contact, dean of students)',
-        'Identify safe spaces on campus',
-        'Join disability culture group',
-        'Set up regular check-ins with DSS or campus counselor'
-      ],
-      whyItMatters: 'Freshman fall is the highest-risk semester. Setting up supports early prevents crisis later.'
-    },
-    {
-      id: 'cp8',
-      timing: 'freshman year spring',
-      tasks: [
-        'Review what worked / did not work first semester',
-        'Adjust accommodations as needed',
-        'Build deeper relationships with professors and DSS staff',
-        'Apply for summer internships or work',
-        'Plan summer housing',
-        'Maintain mental health supports through finals'
-      ],
-      whyItMatters: 'Spring is for refinement. Most freshmen need adjustments after first semester.'
-    }
-  ];
-
-  var ALLY_SCRIPTS = [
-    {
-      id: 'ally1',
-      whoIsAlly: 'Friend',
-      situation: 'Your disabled friend is being teased',
-      yourScript: 'Walk over and stand next to your friend. Say to the teaser: "That is not okay. Knock it off." Look at your friend: "You ok?"',
-      whyItWorks: 'Physical presence is half the intervention. Stand by your friend before the verbal.'
-    },
-    {
-      id: 'ally2',
-      whoIsAlly: 'Friend',
-      situation: 'A peer is making a joke that includes ableist language',
-      yourScript: 'Calmly: "Hey, that word is not it. We can pick something else." Then move conversation along.',
-      whyItWorks: 'Brief, calm, redirective. Does not require the speaker to be a monster, just to update language.'
-    },
-    {
-      id: 'ally3',
-      whoIsAlly: 'Friend',
-      situation: 'Your disabled friend\'s accommodation is being denied by a teacher in real time',
-      yourScript: 'Address the teacher: "Could you check with the case manager Ms. ___? My friend has it in their IEP." Or to your friend: "I have your back here, I am calling the office."',
-      whyItWorks: 'Witnessing the moment changes the dynamic. Most teachers back off when watched.'
-    },
-    {
-      id: 'ally4',
-      whoIsAlly: 'Teacher',
-      situation: 'A student in your class has an accommodation but is too shy to invoke it',
-      yourScript: 'Privately: "I noticed you have access to ___. Just want you to know it is here if you want it. No pressure either way."',
-      whyItWorks: 'Reminds student. Removes shame. Does not force.'
-    },
-    {
-      id: 'ally5',
-      whoIsAlly: 'Teacher',
-      situation: 'Another teacher is being dismissive of a student\'s disability',
-      yourScript: 'Privately to colleague: "I think I might be missing some context here. What do you think is going on with ___?" Listen first. Then: "I have noticed they really benefit from ___."',
-      whyItWorks: 'Builds shared understanding without confrontation. Most colleagues respond to curiosity.'
-    },
-    {
-      id: 'ally6',
-      whoIsAlly: 'Parent',
-      situation: 'Another parent at school is mocking your child\'s accommodations',
-      yourScript: 'Directly: "These accommodations level the playing field. They are not advantages." If continued: "I am going to step away from this conversation."',
-      whyItWorks: 'Defends without inviting argument. Limits give you exit.'
-    },
-    {
-      id: 'ally7',
-      whoIsAlly: 'Sibling',
-      situation: 'Your disabled sibling is being talked about as if they are not present',
-      yourScript: 'Out loud, to the speaker: "You should ask them. They can answer." Then to your sibling: "What do you think?"',
-      whyItWorks: 'Centers your sibling\'s voice. Trains adults to address them directly.'
-    },
-    {
-      id: 'ally8',
-      whoIsAlly: 'Doctor',
-      situation: 'A patient is being talked over by their parent',
-      yourScript: 'To the patient: "Could I hear from you first? Your parent\'s perspective is helpful too, but I want to hear from you about your body."',
-      whyItWorks: 'Centers patient autonomy. Most parents respect this if framed as medical practice.'
-    },
-    {
-      id: 'ally9',
-      whoIsAlly: 'Boss / Coworker',
-      situation: 'A disabled coworker is being assigned tasks that violate their accommodations',
-      yourScript: 'To the assigner: "I think ___ has an accommodation around that. Could we redistribute?" Or to your coworker: "I have got that one if you need to switch."',
-      whyItWorks: 'Solves the problem without singling out. Spreads the labor of accommodation.'
-    },
-    {
-      id: 'ally10',
-      whoIsAlly: 'Online friend',
-      situation: 'A disabled friend is being attacked in a thread',
-      yourScript: 'In thread: "I disagree with the way this conversation is going. Let me step in." Then DM your friend: "I saw what happened. Are you ok? I am here."',
-      whyItWorks: 'Public presence + private support. Both matter.'
-    }
-  ];
-
-  var SCAFFOLDED_PRACTICE_LIBRARY = [
-    {
-      id: 'sp1',
-      skill: 'Asking for help in class',
-      whyItMatters: 'Help-seeking is the foundational self-advocacy skill. Most students never learn it explicitly.',
-      tiers: {
-        warmup: [
-          { task: 'Say the words "Could you help me?" out loud to yourself, 3 times.', evidence: 'You said the words.' },
-          { task: 'Say "Could you help me?" to a friend or family member, in a low-stakes situation.', evidence: 'You said it to a person.' },
-          { task: 'Identify ONE class where you would like to ask for help in the next week.', evidence: 'You named the class.' }
-        ],
-        practice: [
-          { task: 'Raise your hand once in class. Just to be present. You do not have to have a question.', evidence: 'Hand went up.' },
-          { task: 'Ask one clarifying question in class: "Could you say that another way?"', evidence: 'You asked.' },
-          { task: 'Email one teacher with one question. Subject line: "Question about today\'s lesson."', evidence: 'Email sent.' },
-          { task: 'After class, ask the teacher: "Could I have 2 minutes to ask about ___?"', evidence: 'You did it.' }
-        ],
-        mastery: [
-          { task: 'Schedule a 15-minute meeting with a teacher to discuss your understanding of a unit.', evidence: 'Meeting on calendar.' },
-          { task: 'In an unfamiliar class with a substitute, ask for help with a specific concept.', evidence: 'You did it under harder conditions.' },
-          { task: 'Help a peer formulate THEIR question to ask a teacher.', evidence: 'You taught the skill.' }
-        ]
-      },
-      commonObstacles: [
-        'Fear of looking dumb. Reframe: every question makes you smarter, not less.',
-        'Worry about taking teacher time. Teacher chose to teach. Asking is what teachers want.',
-        'Past bad experience where help-asking went sideways. Real. Try with a teacher who has built trust.'
-      ],
-      celebrationCue: 'Mark the date and what happened. The first ask is the hardest.'
-    },
-    {
-      id: 'sp2',
-      skill: 'Saying no to peer pressure',
-      whyItMatters: 'No is a complete sentence. Most students need to practice saying it.',
-      tiers: {
-        warmup: [
-          { task: 'Say "no, thanks" out loud, 5 different ways: gentle, firm, neutral, playful, curious.', evidence: 'You said it.' },
-          { task: 'Identify one situation in the past week where you said yes and wish you had said no.', evidence: 'You named the situation.' },
-          { task: 'Plan one sentence you could use in that situation next time.', evidence: 'Sentence drafted.' }
-        ],
-        practice: [
-          { task: 'Decline one small invitation this week. "No thanks, I have other plans."', evidence: 'You declined.' },
-          { task: 'Walk away from one social pressure situation. No explanation required.', evidence: 'You walked.' },
-          { task: 'Tell a peer: "I do not want to do that. Lets do something else."', evidence: 'You offered the redirect.' }
-        ],
-        mastery: [
-          { task: 'Decline a higher-stakes social request (party with substances, group with bullying dynamic).', evidence: 'You held the limit.' },
-          { task: 'Help a peer say no to a third party.', evidence: 'You backed them up.' },
-          { task: 'Communicate a no in a friend group where everyone else said yes.', evidence: 'You stood out.' }
-        ]
-      },
-      commonObstacles: [
-        'Fear of losing friends. Friends who require yes-only are not friends.',
-        'No feels rude. Adding "no thanks" softens; the message is the same.',
-        'Body floods with anxiety when saying no. Practice in low-stakes builds tolerance.'
-      ],
-      celebrationCue: 'Note how you felt 15 minutes after saying no. Usually better than expected.'
-    },
-    {
-      id: 'sp3',
-      skill: 'Telling a teacher you do not understand',
-      whyItMatters: 'Pretending you understand costs everyone. Saying you do not is the bravest thing.',
-      tiers: {
-        warmup: [
-          { task: 'Say "I do not understand" out loud 3 times.', evidence: 'You said it.' },
-          { task: 'Identify one concept in your current schoolwork you do not fully understand.', evidence: 'You named it.' },
-          { task: 'Decide what teacher you would tell first.', evidence: 'Teacher named.' }
-        ],
-        practice: [
-          { task: 'Email one teacher: "I am stuck on ___. Could we set up a few minutes to talk?"', evidence: 'Email sent.' },
-          { task: 'In class, when you do not understand, raise your hand: "Could you explain that one more way?"', evidence: 'You asked publicly.' },
-          { task: 'During individual work time, signal teacher: "I am not sure I am doing this right."', evidence: 'You named uncertainty.' }
-        ],
-        mastery: [
-          { task: 'Volunteer in class: "Could I check my understanding?" then state your understanding out loud.', evidence: 'You externalized your thinking.' },
-          { task: 'In group, ask: "Can someone explain what they think the question is asking?" before answering.', evidence: 'You modeled inquiry.' },
-          { task: 'After a unit, write a 3-sentence summary of what you understood and what is still unclear.', evidence: 'You self-assessed.' }
-        ]
-      },
-      commonObstacles: [
-        'Fear of looking like you are not paying attention.',
-        'Worry teacher will think less of you.',
-        'Most teachers think MORE of students who name their not-understanding.'
-      ],
-      celebrationCue: 'Track teacher reactions over time. Patterns emerge.'
-    },
-    {
-      id: 'sp4',
-      skill: 'Apologizing well after a mistake',
-      whyItMatters: 'A real apology repairs. A bad apology damages further.',
-      tiers: {
-        warmup: [
-          { task: 'Write out the 5 parts of a real apology: regret, responsibility, explanation, repair, change.', evidence: 'List written.' },
-          { task: 'Write a draft apology for one past mistake. Apply the 5 parts.', evidence: 'Draft complete.' },
-          { task: 'Identify one current relationship where a real apology is overdue.', evidence: 'Person named.' }
-        ],
-        practice: [
-          { task: 'Apologize to a family member for one small thing this week, using all 5 parts.', evidence: 'You apologized.' },
-          { task: 'Apologize to a friend in writing for something specific.', evidence: 'Message sent.' },
-          { task: 'Apologize publicly (in group setting) for something you did wrong.', evidence: 'You did it.' }
-        ],
-        mastery: [
-          { task: 'Apologize for something where you are partly wrong but not entirely. Take your part cleanly.', evidence: 'Nuance held.' },
-          { task: 'Apologize to a teacher or adult after a conflict, even if they did not apologize to you.', evidence: 'You went first.' },
-          { task: 'Help a peer practice an apology before they give it.', evidence: 'You taught the skill.' }
-        ]
-      },
-      commonObstacles: [
-        'Fear of admitting fault. Owning your part does not erase their part.',
-        'Apologizing for things that are not your fault. Specific to part you own.',
-        'Apology becomes excuse. Skip the "but."'
-      ],
-      celebrationCue: 'Track how relationships shift after a real apology. Most strengthen.'
-    },
-    {
-      id: 'sp5',
-      skill: 'Receiving a compliment without deflecting',
-      whyItMatters: 'Deflecting compliments trains people to stop giving them. Receiving builds connection.',
-      tiers: {
-        warmup: [
-          { task: 'Practice saying "Thank you" to a mirror, after imagining someone complimented you.', evidence: 'You said it.' },
-          { task: 'Notice one compliment you received recently and what you said back.', evidence: 'You noticed.' },
-          { task: 'Decide your stock response for next compliment.', evidence: 'Response chosen.' }
-        ],
-        practice: [
-          { task: 'Receive next compliment with just "Thank you." No deflection.', evidence: 'Received.' },
-          { task: 'Receive next compliment with "Thank you, that means a lot."', evidence: 'Added warmth.' },
-          { task: 'Receive next compliment with a specific response: "Thank you, I worked hard on that."', evidence: 'Owned the work.' }
-        ],
-        mastery: [
-          { task: 'Compliment yourself out loud to a friend: "I am proud of how I handled ___."', evidence: 'You self-validated.' },
-          { task: 'Give a specific compliment to one person daily for a week. Notice the impact.', evidence: 'Compliments given.' },
-          { task: 'After a compliment, ask: "What specifically made you say that?" Receive the data.', evidence: 'Information received.' }
-        ]
-      },
-      commonObstacles: [
-        'Cultural training to deflect (especially gendered).',
-        'Imposter feeling makes compliments feel unearned.',
-        'Deflection feels humble; it is actually distancing.'
-      ],
-      celebrationCue: 'Track how compliment frequency changes when you receive them well.'
-    },
-    {
-      id: 'sp6',
-      skill: 'Pre-emailing before a difficult conversation',
-      whyItMatters: 'Cool letters before hot conversations land better than improvising.',
-      tiers: {
-        warmup: [
-          { task: 'Draft one email for a future hard conversation, but do not send.', evidence: 'Draft exists.' },
-          { task: 'Show the draft to one trusted person for feedback.', evidence: 'Reviewed.' },
-          { task: 'Revise and save.', evidence: 'Revision saved.' }
-        ],
-        practice: [
-          { task: 'Send one pre-conversation email this week. Subject: "Want to talk about ___ when you have a few minutes."', evidence: 'Email sent.' },
-          { task: 'Send a follow-up email after a conversation summarizing what was agreed.', evidence: 'Summary email sent.' },
-          { task: 'Send an email to apologize or to thank, where the in-person version was awkward.', evidence: 'Email sent.' }
-        ],
-        mastery: [
-          { task: 'Send a pre-conversation email to a teacher or coach to set up a hard talk.', evidence: 'Email sent.' },
-          { task: 'Send a follow-up email to a meeting where you were not heard, restating your points.', evidence: 'Restated in writing.' },
-          { task: 'Help a friend draft their pre-conversation email.', evidence: 'You coached.' }
-        ]
-      },
-      commonObstacles: [
-        'Worry email is less personal than in-person.',
-        'Email gets ignored.',
-        'Email is documented. That is both pro and con.'
-      ],
-      celebrationCue: 'Track response rate and quality. Most emails get better responses than expected.'
-    },
-    {
-      id: 'sp7',
-      skill: 'Naming a body cue out loud',
-      whyItMatters: 'Body cues drive behavior whether or not you name them. Naming them gives you choice.',
-      tiers: {
-        warmup: [
-          { task: 'List 5 body sensations you noticed today (tight shoulders, racing heart, dry mouth, etc.).', evidence: 'List written.' },
-          { task: 'For each, name what the situation was. Make a pattern map.', evidence: 'Map drawn.' },
-          { task: 'Pick one body cue to track this week.', evidence: 'Cue chosen.' }
-        ],
-        practice: [
-          { task: 'Each time you notice the cue, name it aloud or in a notes app.', evidence: 'You logged.' },
-          { task: 'Notice and respond: "My shoulders are tight. I will roll them."', evidence: 'You did the response.' },
-          { task: 'Notice in conversation: "My body is escalating. I need a pause."', evidence: 'You exited regulated.' }
-        ],
-        mastery: [
-          { task: 'Use body cues to advocate: "My body is telling me this is not okay. Let me think before responding."', evidence: 'You used the data.' },
-          { task: 'Teach a friend to track their body cues.', evidence: 'Skill shared.' },
-          { task: 'Track for a month. Notice trigger patterns.', evidence: 'Pattern observed.' }
-        ]
-      },
-      commonObstacles: [
-        'Disconnected from body.',
-        'Past trauma makes body cues overwhelming. Go slow. Therapist may help.'
-      ],
-      celebrationCue: 'Notice the difference between catching a cue early vs. late.'
-    },
-    {
-      id: 'sp8',
-      skill: 'Asking for an accommodation you have not used before',
-      whyItMatters: 'Many accommodations sit unused because students do not know how to invoke them.',
-      tiers: {
-        warmup: [
-          { task: 'Read your IEP. List 3 accommodations you have not actively used.', evidence: 'List written.' },
-          { task: 'For each, draft 1 sentence you would say to invoke it.', evidence: 'Sentences drafted.' },
-          { task: 'Pick one to try this week.', evidence: 'One chosen.' }
-        ],
-        practice: [
-          { task: 'Invoke the accommodation in one class.', evidence: 'You used it.' },
-          { task: 'Email the teacher afterward to confirm: "Thanks for honoring ___ today."', evidence: 'Email sent.' },
-          { task: 'Use the same accommodation a second time, in a different class or with a different teacher.', evidence: 'Used twice.' }
-        ],
-        mastery: [
-          { task: 'Use 3 different accommodations across one week.', evidence: 'Multi-accommodation week.' },
-          { task: 'Update your case manager: "Here is what I tried this month. Here is what worked."', evidence: 'Status update.' },
-          { task: 'Bring data to next IEP: which accommodations you actually used, which need adjustment.', evidence: 'Data brought.' }
-        ]
-      },
-      commonObstacles: [
-        'Forgetting in the moment.',
-        'Feeling self-conscious. Reframe: it is your right and tool, not special treatment.'
-      ],
-      celebrationCue: 'Track first use of each accommodation. Mark with a star.'
-    },
-    {
-      id: 'sp9',
-      skill: 'Disclosing a diagnosis to one new person',
-      whyItMatters: 'Disclosure decisions are personal. Practice builds wisdom about who, when, how.',
-      tiers: {
-        warmup: [
-          { task: 'Write down what you would want a stranger to know about your diagnosis.', evidence: 'Written.' },
-          { task: 'Write down what you would NOT want a stranger to know.', evidence: 'Written.' },
-          { task: 'Identify one safe person to practice with.', evidence: 'Person named.' }
-        ],
-        practice: [
-          { task: 'Disclose to one safe person this month. Watch their reaction.', evidence: 'You disclosed.' },
-          { task: 'Disclose to one new person (new friend, new teacher) within a month.', evidence: 'You disclosed.' },
-          { task: 'Practice the short version (1 sentence) and the long version (2-3 sentences).', evidence: 'Both drafted.' }
-        ],
-        mastery: [
-          { task: 'Disclose to someone you anticipate may have a negative reaction.', evidence: 'You went anyway.' },
-          { task: 'Respond to a question about your diagnosis with grace, regardless of how it is asked.', evidence: 'You held your composure.' },
-          { task: 'Help a friend prepare for their own disclosure.', evidence: 'You coached.' }
-        ]
-      },
-      commonObstacles: [
-        'Fear of judgment.',
-        'Disclosure regret.',
-        'Right person, wrong time.'
-      ],
-      celebrationCue: 'After each disclosure, journal what happened. Build wisdom.'
-    },
-    {
-      id: 'sp10',
-      skill: 'Writing a thank-you note',
-      whyItMatters: 'Gratitude is glue. Thank-you notes strengthen the people who help you.',
-      tiers: {
-        warmup: [
-          { task: 'List 5 people you owe thanks to.', evidence: 'List written.' },
-          { task: 'Draft one thank-you note. 3 sentences.', evidence: 'Draft written.' },
-          { task: 'Decide who to send to first.', evidence: 'Recipient picked.' }
-        ],
-        practice: [
-          { task: 'Send 1 thank-you per week for 4 weeks.', evidence: 'Notes sent.' },
-          { task: 'Hand-deliver one thank-you. Watch the impact.', evidence: 'Delivered.' },
-          { task: 'Send a thank-you to someone who probably does not know you noticed.', evidence: 'Noticed.' }
-        ],
-        mastery: [
-          { task: 'Send a thank-you after a hard interaction, naming what worked.', evidence: 'Repair note.' },
-          { task: 'Help a peer write their thank-you note.', evidence: 'You coached.' },
-          { task: 'Maintain a 1-thank-you-per-week practice for a semester.', evidence: 'Habit built.' }
-        ]
-      },
-      commonObstacles: [
-        'Embarrassed by the formality. Just write it.',
-        'Worried it is too much. Specific is enough.'
-      ],
-      celebrationCue: 'Watch how relationships shift when gratitude is regular.'
-    }
-  ];
-
-  var REFLECTION_PROMPTS_EXTENDED = [
-    {
-      id: 'rpe1',
-      depth: 'surface',
-      prompt: 'What was one moment today when you advocated for yourself?',
-      followUps: ['Where were you?', 'Who was involved?', 'How did it feel after?']
-    },
-    {
-      id: 'rpe2',
-      depth: 'surface',
-      prompt: 'What is one thing you wish you had said today?',
-      followUps: ['Who would you have said it to?', 'What stopped you?', 'Would you say it tomorrow if given another chance?']
-    },
-    {
-      id: 'rpe3',
-      depth: 'mid',
-      prompt: 'Describe a pattern in how you respond to authority figures. Where does it come from?',
-      followUps: ['When did you first notice this pattern?', 'Who taught you (consciously or not)?', 'Does the pattern serve you now?']
-    },
-    {
-      id: 'rpe4',
-      depth: 'mid',
-      prompt: 'Who are 3 people whose voice you carry inside your own head? What do they say?',
-      followUps: ['Are these voices kind?', 'Are they accurate?', 'Whose voices are missing?']
-    },
-    {
-      id: 'rpe5',
-      depth: 'mid',
-      prompt: 'When you imagine being fully yourself at school, what would change?',
-      followUps: ['What is the smallest step toward that?', 'Who would notice first?', 'Who would resist?']
-    },
-    {
-      id: 'rpe6',
-      depth: 'deep',
-      prompt: 'What is one belief about yourself that you would describe as inherited? When did you first take it on?',
-      followUps: ['Who passed it down?', 'Was it true for them? Is it true for you?', 'What would it take to put it down?']
-    },
-    {
-      id: 'rpe7',
-      depth: 'deep',
-      prompt: 'Describe a moment when you betrayed yourself to please someone else. What did it cost?',
-      followUps: ['Was the relationship worth that cost?', 'What sign would tell you to choose yourself next time?', 'Have you grieved the cost?']
-    },
-    {
-      id: 'rpe8',
-      depth: 'deep',
-      prompt: 'What is one accommodation you do not have but think you need? Why have you not asked?',
-      followUps: ['What is the actual fear?', 'What would you tell a friend in your position?', 'Could you ask in writing rather than in person?']
-    },
-    {
-      id: 'rpe9',
-      depth: 'deep',
-      prompt: 'Imagine yourself in 10 years. What 3 things would you tell your 16-year-old self?',
-      followUps: ['What does your 26-year-old know that you do not?', 'What did your 26-year-old wish someone had told you?', 'What can you do today, on behalf of that future self?']
-    },
-    {
-      id: 'rpe10',
-      depth: 'surface',
-      prompt: 'What is one accommodation you used today? Did it work?',
-      followUps: ['How could it work better?', 'Who else helped make it work?', 'Did anyone get in the way?']
-    },
-    {
-      id: 'rpe11',
-      depth: 'mid',
-      prompt: 'Who are your top 3 supports right now? What does each one do?',
-      followUps: ['How did you find each one?', 'How would you replace each if they left?', 'Who do you support in return?']
-    },
-    {
-      id: 'rpe12',
-      depth: 'deep',
-      prompt: 'When did you first know you were different from your peers? How did adults respond?',
-      followUps: ['Was the response kind?', 'How did it shape what you hid or showed?', 'What would you want the adults to have done differently?']
-    },
-    {
-      id: 'rpe13',
-      depth: 'surface',
-      prompt: 'What is one thing you noticed about your body today?',
-      followUps: ['What was happening when you noticed it?', 'What did your body need?', 'Did you give it what it needed?']
-    },
-    {
-      id: 'rpe14',
-      depth: 'mid',
-      prompt: 'Describe a time when you said something hard and it was received well. What made it land?',
-      followUps: ['What was different from times that did not land?', 'Could you recreate those conditions?', 'What does it tell you about your audience?']
-    },
-    {
-      id: 'rpe15',
-      depth: 'mid',
-      prompt: 'What is one thing you are proud of from this week that no one else noticed?',
-      followUps: ['Why was it invisible?', 'Could you share it with one person?', 'What does it teach you about hidden growth?']
-    },
-    {
-      id: 'rpe16',
-      depth: 'deep',
-      prompt: 'What does freedom mean to you? Where in your life are you free? Where are you not?',
-      followUps: ['What freedoms have you never had?', 'What freedoms have you earned?', 'What freedoms can you advocate for?']
-    },
-    {
-      id: 'rpe17',
-      depth: 'deep',
-      prompt: 'Who in your life thinks you are smaller than you are? How can you correct their map?',
-      followUps: ['What evidence have they ignored?', 'What evidence could you present?', 'Is the correction worth the cost?']
-    },
-    {
-      id: 'rpe18',
-      depth: 'surface',
-      prompt: 'What was the easiest part of today?',
-      followUps: ['What made it easy?', 'Could you build on that?', 'Was the ease helpful or numbing?']
-    },
-    {
-      id: 'rpe19',
-      depth: 'mid',
-      prompt: 'List 3 patterns you notice in your own behavior. Are they serving you?',
-      followUps: ['Which pattern do you want to change?', 'Which pattern is sacred?', 'How will you protect the sacred ones?']
-    },
-    {
-      id: 'rpe20',
-      depth: 'deep',
-      prompt: 'What is one community you have always wanted to find? What would it take to find them?',
-      followUps: ['Who would be there?', 'What would you bring?', 'What might they ask of you?']
-    }
-  ];
-
-  var INDEPENDENT_LIVING_SKILLS = [
-    {
-      id: 'il1',
-      area: 'health',
-      skill: 'Scheduling your own doctor appointments',
-      ageRange: '14+',
-      whyItMatters: 'Adult healthcare requires self-scheduling. Practice early.',
-      steps: [
-        'Find phone number of the office',
-        'Call during business hours (M-F, 9-4 typical)',
-        'When receptionist answers: "Hi, my name is ___, I would like to schedule a [type] appointment."',
-        'Have your insurance card, date of birth, and reason for visit ready',
-        'Write down the appointment date, time, address',
-        'Set 2 phone reminders (1 week before, day before)'
-      ],
-      practiceTips: [
-        'Practice the call with a parent or sibling first',
-        'Have a script written out near the phone',
-        'It is okay to ask the receptionist to repeat slowly'
-      ]
-    },
-    {
-      id: 'il2',
-      area: 'health',
-      skill: 'Tracking your own medications',
-      ageRange: '14+',
-      whyItMatters: 'Medication independence is critical for college and adulthood.',
-      steps: [
-        'Know your medication name, dose, and time',
-        'Use a pill organizer (weekly)',
-        'Set phone alarm for each dose',
-        'Track in app or notebook when you took each',
-        'Know what each medication does (in plain language)',
-        'Know main side effects to watch for',
-        'Know when to refill (typically 7 days before running out)'
-      ],
-      practiceTips: [
-        'Start with 1 medication if you take multiple',
-        'Use the same time each day for routine',
-        'Backup: parent or partner reminds if you miss 2 in a row'
-      ]
-    },
-    {
-      id: 'il3',
-      area: 'health',
-      skill: 'Self-monitoring symptoms',
-      ageRange: '14+',
-      whyItMatters: 'Knowing your own patterns helps doctors and helps you advocate.',
-      steps: [
-        'Pick 3 symptoms to track (e.g., mood, energy, sleep)',
-        'Rate each daily on a 1-10 scale',
-        'Note any triggers or notable events',
-        'Bring data to doctor appointments',
-        'Look for patterns weekly and monthly'
-      ],
-      practiceTips: [
-        'Apps: Bearable, Daylio, eMoods',
-        'Notebook works too',
-        'Consistency > completeness'
-      ]
-    },
-    {
-      id: 'il4',
-      area: 'money',
-      skill: 'Reading your own pay stub',
-      ageRange: '16+',
-      whyItMatters: 'Pay stub literacy is foundation of financial independence.',
-      steps: [
-        'Find Gross Pay (total before deductions)',
-        'Find Federal Tax withheld',
-        'Find State Tax withheld',
-        'Find FICA (Social Security + Medicare)',
-        'Find any other deductions (health insurance, retirement)',
-        'Net Pay = Gross minus all deductions',
-        'Year to Date (YTD) column tracks annual totals'
-      ],
-      practiceTips: [
-        'Ask manager or HR if anything is unclear',
-        'Save all pay stubs through tax season',
-        'Compare to your hours worked to verify accuracy'
-      ]
-    },
-    {
-      id: 'il5',
-      area: 'money',
-      skill: 'Setting up a savings habit',
-      ageRange: '14+',
-      whyItMatters: 'Early savings habits compound dramatically.',
-      steps: [
-        'Open a savings account (parent may need to co-sign if under 18)',
-        'Decide a percentage to save (10% is a starting target)',
-        'Set up auto-transfer if possible',
-        'Pick a savings goal (emergency fund, car, college)',
-        'Track monthly progress',
-        'Celebrate milestones'
-      ],
-      practiceTips: [
-        'Start small ($10/week is meaningful)',
-        'Pay yourself first',
-        'Use a separate account from spending'
-      ]
-    },
-    {
-      id: 'il6',
-      area: 'money',
-      skill: 'Building credit responsibly',
-      ageRange: '18+',
-      whyItMatters: 'Credit history affects apartment, car, employment in adulthood.',
-      steps: [
-        'Get a secured credit card or be added as authorized user on parent\'s card',
-        'Use for small recurring expenses',
-        'Pay in full each month',
-        'Never use more than 30% of credit limit',
-        'Check credit report annually (free at annualcreditreport.com)',
-        'Watch credit score grow over time'
-      ],
-      practiceTips: [
-        'Set autopay to full balance',
-        'Treat credit card as debit card',
-        'Avoid store credit cards initially'
-      ]
-    },
-    {
-      id: 'il7',
-      area: 'food',
-      skill: 'Grocery shopping on a budget',
-      ageRange: '14+',
-      whyItMatters: 'Food is largest controllable expense for most adults.',
-      steps: [
-        'Plan meals for the week',
-        'Make a list before going',
-        'Set a budget',
-        'Compare unit prices, not just sticker prices',
-        'Buy generic when quality is comparable',
-        'Track spending vs budget afterward'
-      ],
-      practiceTips: [
-        'Apps: Mealime, Out of Milk',
-        'Shop with a full stomach',
-        'Avoid the snack aisle if budget is tight'
-      ]
-    },
-    {
-      id: 'il8',
-      area: 'food',
-      skill: 'Cooking 5 basic meals',
-      ageRange: '14+',
-      whyItMatters: 'Take-out is expensive and often less nutritious.',
-      steps: [
-        'Pick 5 meals you would happily eat (start simple)',
-        'Learn one at a time',
-        'Practice each at least 3 times to build muscle memory',
-        'Keep ingredients stocked',
-        'Rotate so you do not get bored'
-      ],
-      practiceTips: [
-        'Start with: pasta + sauce, rice bowls, scrambled eggs, sandwich, simple stir-fry',
-        'YouTube tutorials are your friend',
-        'Mistakes are educational and still usually edible'
-      ]
-    },
-    {
-      id: 'il9',
-      area: 'self-care',
-      skill: 'Daily hygiene routine',
-      ageRange: '12+',
-      whyItMatters: 'Routines that work for YOUR body and brain prevent shame and overwhelm.',
-      steps: [
-        'List what hygiene tasks need to happen (varies by person)',
-        'Decide what is daily vs weekly',
-        'Set up a visual checklist if helpful',
-        'Stock supplies in accessible locations',
-        'Adjust for sensory needs (textures, scents)'
-      ],
-      practiceTips: [
-        'Sensory-friendly products exist (no scent, no foam, etc.)',
-        'Shower benches are not just for elderly',
-        'Asking what works for YOU is okay'
-      ]
-    },
-    {
-      id: 'il10',
-      area: 'self-care',
-      skill: 'Sleep hygiene',
-      ageRange: '14+',
-      whyItMatters: 'Sleep deficits worsen every mental health and disability symptom.',
-      steps: [
-        'Set a target bedtime (count back 7-9 hours from wake)',
-        'Phone away 30 minutes before bed',
-        'Cool, dark room',
-        'No caffeine after 2pm',
-        'Wind-down routine: dim lights, no screens, calming activity'
-      ],
-      practiceTips: [
-        'Track sleep with apps if helpful',
-        'Weighted blankets help some',
-        'Insomnia is medical; see a doctor if chronic'
-      ]
-    },
-    {
-      id: 'il11',
-      area: 'transport',
-      skill: 'Using public transportation independently',
-      ageRange: '14+',
-      whyItMatters: 'Public transit independence opens job, school, social options.',
-      steps: [
-        'Plan route in advance (Google Maps, transit apps)',
-        'Know cost and how to pay',
-        'Know first and last stop',
-        'Save offline map in case of no signal',
-        'Have backup plan if route disrupted',
-        'Practice route with someone first'
-      ],
-      practiceTips: [
-        'Start with familiar destinations',
-        'Carry phone charger',
-        'Headphones for sensory regulation'
-      ]
-    },
-    {
-      id: 'il12',
-      area: 'transport',
-      skill: 'Reading your driving permit study guide',
-      ageRange: '15+',
-      whyItMatters: 'Driving independence is a major life skill in most US contexts.',
-      steps: [
-        'Get state\'s permit handbook',
-        'Schedule study time (small chunks better than cramming)',
-        'Take online practice tests',
-        'Track which questions you miss',
-        'Schedule permit test when consistently scoring 90%+'
-      ],
-      practiceTips: [
-        'Audiobook version may help dyslexic students',
-        'Accommodations available for permit tests (call DMV)',
-        'Maine handbook free at maine.gov/dmv'
-      ]
-    },
-    {
-      id: 'il13',
-      area: 'home',
-      skill: 'Laundry',
-      ageRange: '12+',
-      whyItMatters: 'Clean clothes signal self-respect; lack of clean clothes worsens everything.',
-      steps: [
-        'Sort: lights, darks, delicates',
-        'Read clothing tags',
-        'Use correct water temperature',
-        'Use correct soap amount',
-        'Dry or hang based on tag',
-        'Fold or hang within 1 hour of drying',
-        'Put away same day'
-      ],
-      practiceTips: [
-        'Visual checklist on washer/dryer if helpful',
-        'Pods avoid measuring',
-        'Mesh bags for small items'
-      ]
-    },
-    {
-      id: 'il14',
-      area: 'home',
-      skill: 'Basic cleaning routine',
-      ageRange: '12+',
-      whyItMatters: 'Clean space supports mental health and reduces decision fatigue.',
-      steps: [
-        'Daily: tidy 5 minutes',
-        'Weekly: bathroom, kitchen, vacuum',
-        'Monthly: deep clean one area',
-        'Annually: declutter',
-        'Have basic supplies always stocked'
-      ],
-      practiceTips: [
-        'Body-doubling helps if you have ADHD',
-        'Music or podcast makes cleaning bearable',
-        'Cleaning when overwhelmed: pick smallest task'
-      ]
-    },
-    {
-      id: 'il15',
-      area: 'social',
-      skill: 'Setting up and maintaining friendships in adulthood',
-      ageRange: '16+',
-      whyItMatters: 'Adult friendship requires more initiation than school proximity.',
-      steps: [
-        'Schedule recurring check-ins with close friends',
-        'Initiate sometimes; do not always wait',
-        'Tolerate the lag time of busy lives',
-        'Friend audit: keep the ones that energize',
-        'New friend muscle: introduce yourself in shared interest spaces'
-      ],
-      practiceTips: [
-        'Phone calendar reminders',
-        'Apps that nudge you to text close friends',
-        'Hobbies are friend pipelines'
-      ]
-    },
-    {
-      id: 'il16',
-      area: 'mental-health',
-      skill: 'Booking and using therapy as adult',
-      ageRange: '16+',
-      whyItMatters: 'Therapy is one of the most powerful adult tools available.',
-      steps: [
-        'Find therapist through insurance directory, Psychology Today, or referral',
-        'Verify they take your insurance',
-        'Schedule initial consult (often free 15 min)',
-        'Try at least 2 sessions before deciding',
-        'It is okay to switch if not the right fit',
-        'Track your own goals and progress'
-      ],
-      practiceTips: [
-        'Open Path Collective for low-cost ($30-60/session)',
-        'Inclusive Therapists for identity-affirming care',
-        'Ask therapist about cancellation and sliding scale'
-      ]
-    },
-    {
-      id: 'il17',
-      area: 'work',
-      skill: 'Writing a first resume',
-      ageRange: '14+',
-      whyItMatters: 'Resumes are the gatekeeper of job opportunities.',
-      steps: [
-        'List everything: jobs, volunteer, school, certifications',
-        'Choose 1-page format',
-        'Lead with most relevant',
-        'Use action verbs (managed, organized, created)',
-        'Get feedback from 2 adults',
-        'Tailor for each job application'
-      ],
-      practiceTips: [
-        'Indeed and Canva have free templates',
-        'School counselor often reviews resumes',
-        'Save as PDF before sending'
-      ]
-    },
-    {
-      id: 'il18',
-      area: 'work',
-      skill: 'Interview preparation',
-      ageRange: '14+',
-      whyItMatters: 'Interview skill is learnable. Practice produces confidence.',
-      steps: [
-        'Research the company',
-        'Prepare answers to common questions (tell me about yourself, why this job)',
-        'Practice with a friend or in mirror',
-        'Plan outfit, route, arrival time (15 min early)',
-        'Bring resume copies, pen, notebook',
-        'Prepare questions to ask'
-      ],
-      practiceTips: [
-        'STAR method (Situation, Task, Action, Result) for behavioral questions',
-        'Practice eye contact alternatives if needed (look at forehead)',
-        'Bring water, breathe'
-      ]
-    },
-    {
-      id: 'il19',
-      area: 'work',
-      skill: 'Disclosing disability at work (or not)',
-      ageRange: '16+',
-      whyItMatters: 'You are NOT required to disclose unless requesting accommodations under ADA.',
-      steps: [
-        'Decide YOUR comfort with disclosure',
-        'Decide WHO needs to know (HR for accommodations vs. coworker chat)',
-        'Document any accommodations in writing',
-        'Know your rights under ADA',
-        'Watch for retaliation after disclosure (illegal)'
-      ],
-      practiceTips: [
-        'JAN (Job Accommodation Network) free consultation',
-        'Disability-led organizations on accommodations',
-        'EEOC for discrimination complaints'
-      ]
-    },
-    {
-      id: 'il20',
-      area: 'civic',
-      skill: 'Voting',
-      ageRange: '17.5+',
-      whyItMatters: 'Voting is core civic right. Many disability-related issues on ballots.',
-      steps: [
-        'Register by deadline (varies by state)',
-        'Research candidates and ballot measures',
-        'Plan your vote: where, when, how',
-        'Verify ID requirements in your state',
-        'Bring ID, registration, voting plan to polls'
-      ],
-      practiceTips: [
-        'Maine has Election Day registration',
-        'Absentee ballots available in most states',
-        'Curbside voting for mobility-disabled voters'
-      ]
-    }
-  ];
-
+  
+  
+  
+  
+  
+  
+  
+  
   var ADVOCACY_VOCABULARY_EXTENDED2 = [
     { id: 'av51', term: 'Procedural Safeguards', cat: 'legal', def: 'The federal protections written into IDEA that guarantee parents and students rights in the special education process.', why: 'Knowing these is the foundation of advocacy. They are in writing for a reason.', example: 'When you disagree with an IEP decision, you have the right to mediation or due process. That is in procedural safeguards.' },
     { id: 'av52', term: 'Manifestation Determination', cat: 'legal', def: 'A meeting required by IDEA when a school proposes a disciplinary change of placement of more than 10 days, to decide whether the behavior was caused by the student\'s disability.', why: 'Protects disabled students from being punished for disability-driven behavior.', example: 'If you got a 12-day suspension and have an IEP, the school MUST hold a manifestation determination.' },
@@ -12842,195 +3869,7 @@ window.SelHub = window.SelHub || {
   ];
   ACCOMMODATIONS_LIBRARY = ACCOMMODATIONS_LIBRARY.concat(ACCOMMODATIONS_LIBRARY_EXTENDED);
 
-  var MAINE_SPECIFIC_RIGHTS = [
-    {
-      id: 'me1',
-      law: 'Maine Unified Special Education Regulations (MUSER)',
-      shortName: 'MUSER',
-      citation: '05-071 CMR Chapter 101',
-      whatItCovers: 'Maine\'s implementation of federal IDEA. Sets state-specific procedures, timelines, and rights for special education in Maine.',
-      whyItMatters: 'MUSER applies in addition to federal IDEA. Some MUSER provisions are stronger than federal floor.',
-      keyProvisions: [
-        'IEP development and review timelines',
-        'Parent rights and procedural safeguards in Maine context',
-        'Special education evaluation standards',
-        'LRE expectations'
-      ],
-      whereToFind: 'Maine Department of Education website > Special Education > Statutes and Rules.',
-      whoCanHelp: 'Disability Rights Maine (Maine P&A), Maine Parent Federation, ABA-credentialed special education attorneys in Maine.'
-    },
-    {
-      id: 'me2',
-      law: 'Maine Chapter 33: Use of Restraint and Seclusion',
-      shortName: 'Chapter 33',
-      citation: '05-071 CMR Chapter 33',
-      whatItCovers: 'Use of physical restraint and seclusion in Maine schools. Sets strict limits, training requirements, documentation, and parent notification.',
-      whyItMatters: 'Restraint and seclusion are traumatic events. Chapter 33 limits their use to emergencies and requires accountability.',
-      keyProvisions: [
-        'Restraint and seclusion only for emergencies threatening physical safety',
-        'Trained staff only',
-        '24-hour parent notification',
-        'Written incident reports'
-      ],
-      whereToFind: 'Maine Department of Education website > Restraint and Seclusion.',
-      whoCanHelp: 'Disability Rights Maine. Maine DOE Office of Special Services.'
-    },
-    {
-      id: 'me3',
-      law: 'Maine Civil Rights Act',
-      shortName: 'MCRA',
-      citation: '5 M.R.S. § 4684-A et seq.',
-      whatItCovers: 'Civil rights protections in Maine, including disability discrimination.',
-      whyItMatters: 'Provides state-level legal protection in addition to federal civil rights laws.',
-      keyProvisions: [
-        'Disability discrimination prohibited',
-        'Public accommodations covered',
-        'Education settings covered'
-      ],
-      whereToFind: 'Maine Attorney General\'s office, Civil Rights Division.',
-      whoCanHelp: 'Maine Attorney General Civil Rights Team.'
-    },
-    {
-      id: 'me4',
-      law: 'Maine Anti-Bullying Law',
-      shortName: 'Maine Anti-Bullying',
-      citation: '20-A M.R.S. § 6554',
-      whatItCovers: 'Defines bullying and cyberbullying. Requires every school to have anti-bullying policy and investigation procedures.',
-      whyItMatters: 'Schools must investigate reports and follow procedure. Failure can be reported to DOE.',
-      keyProvisions: [
-        'Annual training for staff',
-        'Reporting procedures',
-        'Investigation timeline',
-        'Disciplinary procedures'
-      ],
-      whereToFind: 'Each school\'s anti-bullying policy. Maine DOE website.',
-      whoCanHelp: 'Disability Rights Maine. State DOE Office of Safe and Drug-Free Schools.'
-    },
-    {
-      id: 'me5',
-      law: 'Maine LGBTQ Student Protections',
-      shortName: 'Maine LGBTQ',
-      citation: 'Various, including 5 M.R.S. § 4571 (Maine Human Rights Act) and DOE guidance',
-      whatItCovers: 'Discrimination based on sexual orientation and gender identity prohibited in Maine schools. Districts must allow chosen name and pronouns in many cases.',
-      whyItMatters: 'Maine has strong LGBTQ protections compared to many states. Use them.',
-      keyProvisions: [
-        'No discrimination based on SOGI',
-        'Bathroom and facility access',
-        'Chosen name and pronouns can be used at school',
-        'Confidentiality protections for non-disclosure to parents in specific circumstances'
-      ],
-      whereToFind: 'Maine Human Rights Commission. Maine DOE LGBTQ guidance.',
-      whoCanHelp: 'EqualityMaine. ACLU of Maine.'
-    },
-    {
-      id: 'me6',
-      law: 'Maine 504 vs IEP Standards',
-      shortName: 'Maine 504',
-      citation: 'Maine DOE 504 guidance + 34 CFR Part 104',
-      whatItCovers: 'Maine\'s implementation of Section 504. Some provisions Maine-specific.',
-      whyItMatters: 'Not all disabilities qualify for IEP. 504 is broader and faster.',
-      keyProvisions: [
-        '504 plans for students with substantial limitation in major life activity',
-        'Annual review',
-        'Procedural safeguards in district policy'
-      ],
-      whereToFind: 'Maine DOE 504 guidance.',
-      whoCanHelp: 'Disability Rights Maine. Maine Parent Federation.'
-    },
-    {
-      id: 'me7',
-      law: 'Maine Compulsory Attendance and Truancy',
-      shortName: 'Maine Truancy',
-      citation: '20-A M.R.S. § 5051-A',
-      whatItCovers: 'Maine attendance requirements. Definitions of excused vs unexcused absence. Truancy procedures.',
-      whyItMatters: 'Mental health absences often misclassified as truancy. Knowing the rules protects you.',
-      keyProvisions: [
-        'Defined excused absences',
-        'Notification and intervention requirements',
-        'Court involvement thresholds'
-      ],
-      whereToFind: 'Each district\'s attendance policy. Maine DOE.',
-      whoCanHelp: 'Disability Rights Maine. School counselor.'
-    },
-    {
-      id: 'me8',
-      law: 'Disability Rights Maine (state P&A)',
-      shortName: 'DRM',
-      citation: 'N/A (organization)',
-      whatItCovers: 'Free legal advocacy for Maine residents with disabilities. Includes special education, employment, housing, criminal justice.',
-      whyItMatters: 'Free advocacy. No income limits for special education cases.',
-      keyProvisions: [
-        'Intake and consultation',
-        'Representation in due process',
-        'Systemic advocacy',
-        'Training and information'
-      ],
-      whereToFind: 'drme.org.',
-      whoCanHelp: 'DRM itself. 1-800-452-1948.'
-    },
-    {
-      id: 'me9',
-      law: 'Maine Parent Federation',
-      shortName: 'MPF',
-      citation: 'N/A (organization)',
-      whatItCovers: 'Maine\'s Parent Training and Information Center. Helps families navigate special education.',
-      whyItMatters: 'Free training, information, and support for parents of children with disabilities.',
-      keyProvisions: [
-        'IEP support',
-        'Parent training',
-        'Workshops',
-        'Phone consultations'
-      ],
-      whereToFind: 'mpf.org.',
-      whoCanHelp: 'MPF itself. 1-800-870-7746.'
-    },
-    {
-      id: 'me10',
-      law: 'NAMI Maine',
-      shortName: 'NAMI ME',
-      citation: 'N/A (organization)',
-      whatItCovers: 'Mental health support, education, and advocacy in Maine.',
-      whyItMatters: 'Mental health resources. Family-to-family classes. Peer support.',
-      keyProvisions: [
-        'Family-to-Family education',
-        'Peer support groups',
-        'Helpline'
-      ],
-      whereToFind: 'namimaine.org.',
-      whoCanHelp: 'NAMI Maine. 1-800-464-5767.'
-    },
-    {
-      id: 'me11',
-      law: 'Maine Crisis Line',
-      shortName: 'Maine Crisis Line',
-      citation: 'N/A (service)',
-      whatItCovers: '24/7 mental health crisis support specific to Maine.',
-      whyItMatters: 'Statewide. Free. Trained crisis counselors. Can dispatch mobile crisis if needed.',
-      keyProvisions: [
-        '24/7 phone line',
-        'Mobile crisis dispatch',
-        'Followup services'
-      ],
-      whereToFind: '1-888-568-1112.',
-      whoCanHelp: 'Maine Behavioral Health Crisis Line.'
-    },
-    {
-      id: 'me12',
-      law: 'Maine Department of Education Special Education',
-      shortName: 'Maine DOE SpEd',
-      citation: 'N/A (state agency)',
-      whatItCovers: 'State-level oversight of special education. Filing complaints. Dispute resolution.',
-      whyItMatters: 'When district fails, state DOE can investigate.',
-      keyProvisions: [
-        'State complaint investigation',
-        'Mediation services',
-        'Due process oversight'
-      ],
-      whereToFind: 'maine.gov/doe/specialed.',
-      whoCanHelp: 'Maine DOE Office of Special Services.'
-    }
-  ];
-
+  
   var IEP_ROLEPLAY_SCENES_EXTENDED = [
     {
       id: 'rp31',
@@ -14084,590 +4923,8 @@ window.SelHub = window.SelHub || {
   ];
   LETTER_TEMPLATE_LIBRARY = LETTER_TEMPLATE_LIBRARY.concat(LETTER_TEMPLATE_LIBRARY_EXTENDED);
 
-  var ADVOCACY_HISTORY_TIMELINE = [
-    {
-      id: 'ht1',
-      year: 1817,
-      event: 'American School for the Deaf founded',
-      who: 'Thomas Hopkins Gallaudet, Laurent Clerc, Mason Cogswell',
-      location: 'Hartford, CT',
-      significance: 'First school for disabled students in America. Established the principle that disabled people deserve education.',
-      modernRelevance: 'Every IEP and 504 plan traces back to the radical idea that schools should teach disabled students.',
-      remember: 'Laurent Clerc was the first Deaf teacher in America. Without him, this school would not exist.'
-    },
-    {
-      id: 'ht2',
-      year: 1864,
-      event: 'Gallaudet University authorized by Congress',
-      who: 'Abraham Lincoln signed the charter',
-      location: 'Washington, DC',
-      significance: 'World\'s only university for Deaf and hard-of-hearing students. Set the precedent that higher education must be accessible.',
-      modernRelevance: 'Today, Deaf students may attend any college with accommodations. The model started at Gallaudet.',
-      remember: 'Edward Miner Gallaudet was the first president and the son of Thomas Hopkins Gallaudet.'
-    },
-    {
-      id: 'ht3',
-      year: 1935,
-      event: 'League for the Physically Handicapped pickets WPA',
-      who: 'Disabled New Yorkers including Florence Haskell, Sylvia Flexer',
-      location: 'New York City',
-      significance: 'First organized disability rights protest in the U.S. They demanded jobs from the Works Progress Administration that excluded disabled people.',
-      modernRelevance: 'Direct ancestor of all modern disability rights protests. Showed that disabled people would not wait passively for change.',
-      remember: 'They picketed for 9 days. They won. The WPA created jobs for disabled workers.'
-    },
-    {
-      id: 'ht4',
-      year: 1962,
-      event: 'Ed Roberts admitted to UC Berkeley',
-      who: 'Ed Roberts, with help from his mother Zona',
-      location: 'Berkeley, CA',
-      significance: 'First student with significant physical disability admitted to UC Berkeley. Required iron lung. Lived in campus hospital because dorms inaccessible.',
-      modernRelevance: 'Sparked the Independent Living Movement and the Berkeley Center for Independent Living, which is the model for ILCs nationwide.',
-      remember: 'A counselor told Ed: "We have never had disabled students before." Ed replied: "Now you do."'
-    },
-    {
-      id: 'ht5',
-      year: 1970,
-      event: 'Judy Heumann sues NYC Board of Education and wins',
-      who: 'Judy Heumann',
-      location: 'New York City',
-      significance: 'NYC denied her teaching license because she used a wheelchair. She sued and won. Became the first wheelchair-user teacher in NYC.',
-      modernRelevance: 'Established that disability cannot be sole basis for denying employment. Foundation for ADA Title I.',
-      remember: 'Judy died in 2023. Her memoir is "Being Heumann."'
-    },
-    {
-      id: 'ht6',
-      year: 1972,
-      event: 'PARC v. Pennsylvania consent decree',
-      who: 'Pennsylvania Association for Retarded Children (now The Arc)',
-      location: 'Pennsylvania',
-      significance: 'Federal court agreed that children with intellectual disabilities have a right to public education. State could no longer exclude them.',
-      modernRelevance: 'Helped pave the way for the Education for All Handicapped Children Act of 1975 (now IDEA).',
-      remember: 'Mills v. Board of Education (DC) ruled the same way the same year.'
-    },
-    {
-      id: 'ht7',
-      year: 1973,
-      event: 'Rehabilitation Act Section 504 passes',
-      who: 'Congress, advocates including Eunice Fiorito',
-      location: 'Washington, DC',
-      significance: 'First federal civil rights law for disabled people. Prohibited discrimination by any organization receiving federal funds.',
-      modernRelevance: 'Section 504 plans in schools come from this law. ADA built on its foundation.',
-      remember: 'Section 504 was passed but not enforced for 4 years until disabled people forced regulations to be signed.'
-    },
-    {
-      id: 'ht8',
-      year: 1975,
-      event: 'Education for All Handicapped Children Act passes (PL 94-142)',
-      who: 'Congress, advocates including PARC parents',
-      location: 'Washington, DC',
-      significance: 'Required free appropriate public education (FAPE) for children with disabilities, in least restrictive environment (LRE).',
-      modernRelevance: 'Renamed IDEA in 1990. Every IEP is a direct descendant of this law.',
-      remember: 'Before 1975, over 1 million disabled children were excluded from public schools.'
-    },
-    {
-      id: 'ht9',
-      year: 1977,
-      event: '504 sit-in at HEW headquarters',
-      who: 'Judy Heumann, Kitty Cone, others led 28-day sit-in',
-      location: 'San Francisco, CA',
-      significance: 'Disabled activists occupied HEW office for 28 days to force Section 504 regulations to be signed. Longest sit-in at a federal building in U.S. history.',
-      modernRelevance: 'Disability rights movement\'s most iconic protest. Featured in "Crip Camp" documentary.',
-      remember: 'The Black Panthers brought food daily. Solidarity across movements made this possible.'
-    },
-    {
-      id: 'ht10',
-      year: 1988,
-      event: 'Deaf President Now (DPN)',
-      who: 'Gallaudet University students',
-      location: 'Washington, DC',
-      significance: 'Students shut down campus to protest hiring of hearing president over Deaf candidates. After 8 days, Gallaudet hired first Deaf president, I. King Jordan.',
-      modernRelevance: 'Modeled student-led civil disobedience. Established that Deaf community must lead Deaf institutions.',
-      remember: 'Greg Hlibok, Bridgetta Bourne-Firl, Jerry Covell, and Tim Rarus led the protest.'
-    },
-    {
-      id: 'ht11',
-      year: 1990,
-      event: 'Americans with Disabilities Act (ADA) passes',
-      who: 'Congress, advocates including Patrisha Wright, Justin Dart, Evan Kemp',
-      location: 'Washington, DC',
-      significance: 'Most comprehensive disability civil rights law in the world. Banned discrimination in employment, public services, public accommodations, telecommunications, and transportation.',
-      modernRelevance: 'Every accessibility ramp, every workplace accommodation, every wheelchair-accessible bus traces back to ADA.',
-      remember: 'President George H.W. Bush signed it July 26, 1990. Considered "the most important civil rights law since 1964."'
-    },
-    {
-      id: 'ht12',
-      year: 1990,
-      event: 'Capitol Crawl',
-      who: 'ADAPT, including Jennifer Keelan-Chaffins',
-      location: 'Washington, DC',
-      significance: 'Disabled activists abandoned wheelchairs and crawled up Capitol steps to demand passage of ADA. 8-year-old Jennifer Keelan-Chaffins became iconic image.',
-      modernRelevance: 'Showed physical inaccessibility of even the Capitol. ADA passed soon after.',
-      remember: 'Jennifer said: "I want to grow up to be a strong-willed advocate." She did.'
-    },
-    {
-      id: 'ht13',
-      year: 1990,
-      event: 'IDEA name change (formerly EHA)',
-      who: 'Congress',
-      location: 'Washington, DC',
-      significance: 'Education for All Handicapped Children Act renamed Individuals with Disabilities Education Act. Person-first language signaled cultural shift.',
-      modernRelevance: 'IDEA is the federal law governing every IEP today.',
-      remember: 'Same law, evolved language. Words shape understanding.'
-    },
-    {
-      id: 'ht14',
-      year: 1999,
-      event: 'Olmstead v. L.C.',
-      who: 'Lois Curtis, Elaine Wilson, Atlanta Legal Aid',
-      location: 'Supreme Court',
-      significance: 'Supreme Court ruled that disabled people have right to live in the community, not institutions. "Most integrated setting" requirement under ADA.',
-      modernRelevance: 'Closed institutions across the country. Funded community-based services. Most disabled people now live in homes, not institutions.',
-      remember: 'Lois Curtis became an artist after winning her freedom from institutionalization.'
-    },
-    {
-      id: 'ht15',
-      year: 2004,
-      event: 'IDEA reauthorized',
-      who: 'Congress',
-      location: 'Washington, DC',
-      significance: 'Strengthened transition planning requirements (starting at age 16, now 14 in many states). Aligned with No Child Left Behind.',
-      modernRelevance: 'Transition planning requirements come from this version. Connects high school to post-school life.',
-      remember: 'The next time IDEA gets reauthorized, advocates will be pushing for more rights, not less.'
-    },
-    {
-      id: 'ht16',
-      year: 2008,
-      event: 'ADA Amendments Act (ADAAA)',
-      who: 'Congress',
-      location: 'Washington, DC',
-      significance: 'Reversed Supreme Court rulings that had narrowed ADA. Broadened definition of disability to be more inclusive.',
-      modernRelevance: 'Many more conditions now clearly qualify under ADA. Chronic illness, mental health, learning disabilities better protected.',
-      remember: 'Often called "ADA fix."'
-    },
-    {
-      id: 'ht17',
-      year: 2017,
-      event: 'Endrew F. v. Douglas County',
-      who: 'Endrew F. (autistic student) and his parents',
-      location: 'Supreme Court',
-      significance: 'Supreme Court ruled IEPs must enable "appropriately ambitious progress," not just minimal benefit.',
-      modernRelevance: 'Raised the bar for what an IEP must provide. Common ammunition in IEP disputes today.',
-      remember: 'Endrew was a real autistic kid. His name is the law now.'
-    },
-    {
-      id: 'ht18',
-      year: 2019,
-      event: 'Disability Visibility Project anthology published',
-      who: 'Alice Wong',
-      location: 'Nationwide',
-      significance: '"Disability Visibility: First-Person Stories from the 21st Century" became canonical text. Disabled writers narrating their own lives.',
-      modernRelevance: 'Centered disabled voices in disability discourse. Modeled multiply marginalized authorship.',
-      remember: 'Alice Wong continues to lead the Disability Visibility Project.'
-    },
-    {
-      id: 'ht19',
-      year: 2020,
-      event: 'COVID-19 pandemic exposes ableism and creates new accessibility',
-      who: 'Disability community',
-      location: 'Globally',
-      significance: 'Mass remote work proved accommodations long denied as "impossible" were possible all along. Disability community led on mask, vaccine, and disability justice advocacy.',
-      modernRelevance: 'Permanent shifts in remote work, telemedicine, digital accessibility. Still unfinished, but precedent set.',
-      remember: 'Many disabled people died from COVID neglect. The same community that fought for accommodations had to fight for the right to medical care.'
-    },
-    {
-      id: 'ht20',
-      year: 2020,
-      event: 'Crip Camp documentary released',
-      who: 'James LeBrecht, Nicole Newnham, Higher Ground Productions',
-      location: 'Streaming on Netflix',
-      significance: 'Documentary about Camp Jened and the disability rights movement. Brought disability history to mass audiences.',
-      modernRelevance: 'Required watching for understanding the movement. Reignited interest in disability history.',
-      remember: 'Available free with discussion guide at cripcamp.com.'
-    },
-    {
-      id: 'ht21',
-      year: 2023,
-      event: 'Judy Heumann dies',
-      who: 'Judy Heumann (1947-2023)',
-      location: 'Washington, DC',
-      significance: 'Mother of the disability rights movement died. Her legacy spans 504 sit-in, ADA, international disability rights.',
-      modernRelevance: 'Her work continues through Heumann Perspective podcast (her sister continues it), Disability Visibility, and every IEP that protects a child today.',
-      remember: 'Read "Being Heumann." Watch "Crip Camp." Continue the work.'
-    },
-    {
-      id: 'ht22',
-      year: 1909,
-      event: 'Helen Keller writes "The World I Live In"',
-      who: 'Helen Keller',
-      location: 'Massachusetts',
-      significance: 'Influential book by a Deafblind author. Established that disabled people are sources of insight, not just objects of charity.',
-      modernRelevance: 'Helen Keller is often reduced to her childhood story. Her adult radicalism and writings are largely forgotten.',
-      remember: 'She was a socialist, suffragist, and lifelong disability rights advocate. The story stops at age 7 in textbooks for a reason.'
-    },
-    {
-      id: 'ht23',
-      year: 1932,
-      event: 'NAACP-led suit against Negro Boys Industrial School',
-      who: 'NAACP, Black disabled boys',
-      location: 'Oklahoma',
-      significance: 'Early case connecting race and disability discrimination. Documented brutal conditions at "training school" for disabled Black boys.',
-      modernRelevance: 'Reminder that the school-to-prison pipeline has always disproportionately targeted disabled children of color.',
-      remember: 'Many disability rights battles have been won by Black advocates first. Movement history often forgets.'
-    },
-    {
-      id: 'ht24',
-      year: 1980,
-      event: 'Disability Rag magazine founded',
-      who: 'Mary Johnson and others',
-      location: 'Louisville, KY',
-      significance: 'First independent disability rights publication. Centered disability perspective without medical or charity frame.',
-      modernRelevance: 'Predecessor to all disability-led media (New Mobility, Disability Visibility, etc.).',
-      remember: 'Disabled-led publishing was rare in 1980. It is normal today.'
-    },
-    {
-      id: 'ht25',
-      year: 2003,
-      event: 'Autistic Self Advocacy Network (ASAN) founded',
-      who: 'Ari Neeman, Scott Robertson',
-      location: 'Washington, DC',
-      significance: 'First autistic-led national advocacy organization. Pioneered "Nothing About Us Without Us" autistic representation.',
-      modernRelevance: 'Center of identity-first language movement. Pushes back against parent-led organizations that speak for autistic people.',
-      remember: 'Ari Neeman became the first autistic person appointed to the National Council on Disability.'
-    },
-    {
-      id: 'ht26',
-      year: 2015,
-      event: 'Patty Berne writes Disability Justice 10 Principles',
-      who: 'Patty Berne, Sins Invalid',
-      location: 'San Francisco Bay Area',
-      significance: 'Articulated disability justice framework: anti-capitalist, intersectional, cross-movement solidarity. Critique of mainstream disability rights for single-issue, white-led, professional-class focus.',
-      modernRelevance: 'Disability justice has become the prevailing framework in disability-led organizing today.',
-      remember: 'The 10 principles include: intersectionality, leadership of the most impacted, anti-capitalism, cross-movement organizing, recognizing wholeness, sustainability, commitment to cross-disability solidarity, interdependence, collective access, and collective liberation.'
-    },
-    {
-      id: 'ht27',
-      year: 2014,
-      event: 'Schools begin shifting away from restraint and seclusion',
-      who: 'Various states, advocates',
-      location: 'Nationwide',
-      significance: 'Multiple state laws passed restricting use of restraint and seclusion in schools. Some, like Maine\'s Chapter 33, became national models.',
-      modernRelevance: 'Restraint and seclusion still happen. Documentation, reporting, and advocacy still needed.',
-      remember: 'If your school uses restraint or seclusion, you have rights. Document and report.'
-    },
-    {
-      id: 'ht28',
-      year: 2016,
-      event: 'Anti-Filicide Day established',
-      who: 'Autistic Self Advocacy Network',
-      location: 'Internationally',
-      significance: 'Day of mourning for disabled people murdered by their caregivers. Demanded acknowledgment that disabled lives are valued.',
-      modernRelevance: 'Coverage of disability murder still often centers killers\' alleged "stress" rather than the lives of victims.',
-      remember: 'March 1 each year. Light a candle. Remember the names.'
-    }
-  ];
-
-  var SCENARIO_BANK = [
-    {
-      id: 'sb1',
-      title: 'The Forgotten Accommodation',
-      grade: '7th',
-      who: 'Maya, autistic 7th grader with sensory accommodations',
-      situation: 'Maya has an IEP accommodation to wear noise-canceling headphones in study hall. A new aide tells her she cannot wear them because "they distract other students."',
-      whatHappensIfNoAdvocacy: 'Maya complies. Spends study hall overstimulated. Cannot complete assignments. Performance dips for weeks before anyone notices.',
-      strongResponse: [
-        'Maya says: "These are in my IEP. Could we ask Ms. Park (case manager) to confirm?"',
-        'Aide can call Ms. Park or email her right then.',
-        'After study hall, Maya emails Ms. Park: "Today the aide told me I could not wear my headphones. I told her they are in my IEP. We did not call you. Could you check with her so this does not happen again?"'
-      ],
-      adultRole: 'Case manager Ms. Park responds within 24 hours, clarifies with the aide, and asks Maya: "Did you feel okay handling that in the moment? Want to walk through it with me for next time?"',
-      keyMoves: [
-        'Specific naming of the accommodation',
-        'Asks to verify rather than just argue',
-        'Same-day email creates record',
-        'Adult responds quickly and reinforces the advocacy attempt'
-      ],
-      reflectionQuestions: [
-        'What would Maya have to know in advance to respond this way?',
-        'Where in her IEP would she find this accommodation?',
-        'What is the difference between "I have a right to this" and "Could we check"?'
-      ]
-    },
-    {
-      id: 'sb2',
-      title: 'The Group Project Carrier',
-      grade: '10th',
-      who: 'Jamal, ADHD 10th grader',
-      situation: 'Jamal\'s group project group has 2 students who are not pulling their weight. Project is due Friday. Jamal has been picking up the slack but is exhausted and falling behind on his own homework.',
-      whatHappensIfNoAdvocacy: 'Jamal does most of the project alone. Misses sleep. Gets an A on the project but a C on other class work because of the time spent.',
-      strongResponse: [
-        'Jamal emails his teacher Wednesday: "Hi Ms. Reyes, I want to give you a heads up. In our group project, two members have not been contributing. I have been picking up extra. I am not asking you to grade them differently. I am asking for permission to step back so it does not affect my work in other classes. Could we talk before Friday?"',
-        'Ms. Reyes meets with Jamal and the group. Helps redistribute.',
-        'Jamal protects his sleep and other work.'
-      ],
-      adultRole: 'Teacher steps in to help redistribute, not to punish. Names the pattern for the team.',
-      keyMoves: [
-        'Proactive communication (Wednesday vs. Friday)',
-        'Boundary statement: "I am not asking for X. I am asking for Y."',
-        'Frames as protecting other classwork, not as complaint about peers'
-      ],
-      reflectionQuestions: [
-        'What is the difference between snitching and self-advocating?',
-        'How do you push back on a group dynamic without making enemies?',
-        'When does picking up the slack become bad for you?'
-      ]
-    },
-    {
-      id: 'sb3',
-      title: 'The Wrong Diagnosis',
-      grade: '9th',
-      who: 'Avery, recently diagnosed with anxiety, also has undiagnosed ADHD',
-      situation: 'Avery\'s 504 plan was written for anxiety, but they suspect ADHD is the bigger driver of academic struggles. Mom is reluctant to push for more evaluation.',
-      whatHappensIfNoAdvocacy: 'Avery continues struggling. Plan accommodates anxiety but not the executive function piece. Grades dip, anxiety worsens because of the dipping grades.',
-      strongResponse: [
-        'Avery talks to school counselor: "I have been doing more research and I think I have ADHD. The anxiety accommodations help but they are not enough. Can we add an ADHD evaluation?"',
-        'Counselor explains the process.',
-        'Avery talks to mom: "Mom, I have been thinking about this. The anxiety accommodations help, AND I think there is more going on. Could we ask for an ADHD evaluation? Even if it comes back negative, then we know."'
-      ],
-      adultRole: 'Counselor walks Avery through the evaluation request. Helps Avery frame the conversation with parent. Does not dismiss the self-suspicion.',
-      keyMoves: [
-        'Trusting your own observation',
-        'Asking for evaluation, not diagnosis - school does the evaluation',
-        'Framing parent conversation as "we already have data, lets get more"'
-      ],
-      reflectionQuestions: [
-        'When should you trust your own sense of yourself over what adults say?',
-        'How do you ask for a new evaluation without seeming like you are giving up on the current plan?',
-        'What does it mean to take your own data seriously?'
-      ]
-    },
-    {
-      id: 'sb4',
-      title: 'The Behavior Incident',
-      grade: '8th',
-      who: 'Damien, Black 8th grader with anxiety and ADHD',
-      situation: 'Damien got into a verbal argument with a teacher. Teacher wrote a referral. Principal is considering suspension.',
-      whatHappensIfNoAdvocacy: 'Damien gets suspended. The school year derails. The incident becomes a defining narrative.',
-      strongResponse: [
-        'Damien tells parents and case manager what happened from his perspective IN WRITING within 24 hours.',
-        'Parent requests a manifestation determination meeting before any disciplinary decision.',
-        'At the meeting, parent points out that the IEP was not being implemented (no break pass available in that class). Behavior was disability-related.',
-        'Suspension is reduced or removed. Plan is adjusted to ensure break passes are available.'
-      ],
-      adultRole: 'Special education team conducts manifestation determination as required by law. Case manager and parent partner.',
-      keyMoves: [
-        'Written record of student perspective same-day',
-        'Manifestation determination is a federal right',
-        'Frame: "Was the IEP being implemented? If not, the behavior is school-related, not student-misconduct."'
-      ],
-      reflectionQuestions: [
-        'Why do disabled students of color get more severe discipline?',
-        'What is the difference between consequence and discipline?',
-        'How does documentation protect you in disciplinary contexts?'
-      ]
-    },
-    {
-      id: 'sb5',
-      title: 'The Excluded Student',
-      grade: '6th',
-      who: 'Lin, mobility-disabled 6th grader',
-      situation: 'Class field trip is going to a destination that is not wheelchair accessible. Teacher tells Lin she will "stay back" with another adult.',
-      whatHappensIfNoAdvocacy: 'Lin misses the field trip. Misses the social bonding. Feels segregated. Possibly missed academic content.',
-      strongResponse: [
-        'Lin tells parent that night.',
-        'Parent emails teacher and principal: "We just learned about the field trip plan. Lin should be included. Under ADA, the school must provide an equally accessible alternative if the destination cannot be made accessible. Could we work together on a plan?"',
-        'School re-plans the trip with accessible venue, or arranges accessible transportation to the same venue.'
-      ],
-      adultRole: 'Parent invokes ADA. Principal calls central office. Trip is replanned.',
-      keyMoves: [
-        '"Stay back" is not a legal accommodation',
-        'ADA requires equal access, not equivalent activities',
-        'Same-day documentation prevents drift'
-      ],
-      reflectionQuestions: [
-        'What is the difference between accommodation and segregation?',
-        'When is "alternative arrangement" code for exclusion?',
-        'What rights does Lin have here?'
-      ]
-    },
-    {
-      id: 'sb6',
-      title: 'The Transition Slip',
-      grade: '12th',
-      who: 'Tasha, 12th grader transitioning to college',
-      situation: 'Tasha has had an IEP for 9 years. She is applying to colleges. She has not yet thought about how college disability services differ from high school IEP.',
-      whatHappensIfNoAdvocacy: 'Tasha enters freshman year without DSS registration. Falls apart academically by midterms.',
-      strongResponse: [
-        'In senior year, Tasha meets with her case manager. Asks about transition.',
-        'Case manager gives her a checklist: 1) Current evaluation needed for college. 2) Schedule eval if needed. 3) Visit each college\'s DSS office during senior year tour. 4) Save all IEP documents. 5) Register with DSS over summer.',
-        'Tasha visits 3 college DSS offices. Picks the one that feels supportive.',
-        'Tasha registers with DSS in July. Has accommodations ready before freshman year starts.'
-      ],
-      adultRole: 'Case manager initiates transition conversation. Provides checklist. Does not let it slip.',
-      keyMoves: [
-        'IEP does NOT transfer to college',
-        'College DSS requires active student registration',
-        'Visit DSS during college search',
-        'Documentation requirements differ'
-      ],
-      reflectionQuestions: [
-        'What is the difference between IEP and DSS?',
-        'Why does college disability services use different language?',
-        'How can high school case managers prepare students for this transition?'
-      ]
-    },
-    {
-      id: 'sb7',
-      title: 'The Substitute Disaster',
-      grade: '5th',
-      who: 'Eli, autistic 5th grader',
-      situation: 'Eli\'s regular teacher is out for a week. The substitute does not know about Eli\'s accommodations. By day 2, Eli has had a meltdown.',
-      whatHappensIfNoAdvocacy: 'Eli is mislabeled as a "behavior problem" by the substitute. Disciplinary referral. Parents called in.',
-      strongResponse: [
-        'Eli\'s parents email principal and case manager: "We are concerned that the substitute is not aware of Eli\'s accommodations. Could we arrange a 10-minute briefing for the sub each morning, or a written one-page handout?"',
-        'School provides accommodation card to substitute',
-        'Eli\'s behavior returns to baseline',
-        'A protocol is established for future sub coverage'
-      ],
-      adultRole: 'Principal and case manager establish sub-handoff protocol. Substitute receives accommodation summary.',
-      keyMoves: [
-        'Sub coverage is a known failure point',
-        'One-page accommodation card prevents most issues',
-        'Parents can email Sunday night so it is ready Monday'
-      ],
-      reflectionQuestions: [
-        'What happens when accommodations require staff knowledge that does not transfer?',
-        'How does the school ensure IEP follows the student, not the staff?',
-        'What would a "sub-proof" IEP look like?'
-      ]
-    },
-    {
-      id: 'sb8',
-      title: 'The Coming Out',
-      grade: '10th',
-      who: 'River, non-binary 10th grader',
-      situation: 'River wants to ask teachers to use they/them pronouns and a chosen name. Family does not know yet.',
-      whatHappensIfNoAdvocacy: 'River is misgendered all year. Mental health declines.',
-      strongResponse: [
-        'River talks to school counselor first about safety: "I want to use they/them at school but my family does not know. Can teachers use my chosen name and pronouns at school but use my legal name in any communication home?"',
-        'Counselor confirms this is possible (many districts have this policy).',
-        'Counselor helps River draft an email to teachers.',
-        'River sends emails one at a time, then meets briefly with each teacher.',
-        'River has weekly check-ins with counselor to track how it is going.'
-      ],
-      adultRole: 'Counselor protects student safety. Confirms school can use chosen name without outing to family. Coordinates with teachers.',
-      keyMoves: [
-        'Many schools can use chosen name/pronouns without outing student to family',
-        'Counselor as trusted ally and coordinator',
-        'One-at-a-time teacher contact reduces overwhelm'
-      ],
-      reflectionQuestions: [
-        'What does it mean for school to be a safer space than home?',
-        'How does the law protect or fail to protect trans and non-binary students?',
-        'What does it cost to be misgendered all day?'
-      ]
-    },
-    {
-      id: 'sb9',
-      title: 'The Sensory Crisis',
-      grade: '7th',
-      who: 'Lex, autistic 7th grader',
-      situation: 'Lex\'s school is doing a fire drill. The piercing alarm causes a meltdown. Lex sits in the hallway with hands over ears for 20 minutes, then refuses to go back to class.',
-      whatHappensIfNoAdvocacy: 'Lex is labeled as defiant. School year worsens.',
-      strongResponse: [
-        'Parent emails: "Fire drills are a known sensory trigger for Lex. Could we get 24-hour advance notice and noise-reducing earplugs ready before drill days?"',
-        'School establishes pre-drill protocol: text Lex\'s parent the morning of, give Lex earplugs at start of period, have aide ready to escort if needed.',
-        'Next drill: Lex is regulated, manages the drill, goes back to class.'
-      ],
-      adultRole: 'Special education team establishes accommodation. Communications coordinator ensures Lex\'s family gets notice.',
-      keyMoves: [
-        'Sensory triggers are real accommodations',
-        'Advance notice is a free accommodation that costs nothing',
-        'Earplugs (or loops) are inexpensive and effective'
-      ],
-      reflectionQuestions: [
-        'What other school routines have hidden sensory cost?',
-        'What is the difference between "defiance" and "regulation failure"?',
-        'Should fire drills be quieter in 2026?'
-      ]
-    },
-    {
-      id: 'sb10',
-      title: 'The Mental Health Day',
-      grade: '11th',
-      who: 'Sam, 11th grader with depression',
-      situation: 'Sam wakes up and cannot face school. Depression is heavy. The day before, an essay was assigned that is due in 3 days.',
-      whatHappensIfNoAdvocacy: 'Sam stays home and lies about feeling sick. Loses access to friends and supports for the day. Sleep cycle gets worse.',
-      strongResponse: [
-        'Sam tells parent honestly: "Mom/Dad, my depression is heavy. I cannot face school today. Can we make a plan?"',
-        'Parent: "Okay. Lets do half day. You go in after lunch. Or, lets schedule the doctor."',
-        'Sam emails 1st period teacher: "I am taking a mental health day. I will be in for the second half. Could I get the notes from class?"',
-        'Sam goes in for second half. Stays connected. Gets the work.'
-      ],
-      adultRole: 'Parent supports honest communication. Teacher receives student email without judgment. Counselor follow-up scheduled.',
-      keyMoves: [
-        'Honesty with parent (when safe)',
-        'Half-day vs. all-day softens the cost',
-        'Email to teacher creates record and asks for support'
-      ],
-      reflectionQuestions: [
-        'When is a mental health day appropriate?',
-        'How do you know if a mental health day is a one-off or a pattern needing more support?',
-        'What does it cost to keep performing okay?'
-      ]
-    },
-    {
-      id: 'sb11',
-      title: 'The Wrong Class Level',
-      grade: '9th',
-      who: 'Cami, gifted with dyslexia',
-      situation: 'Cami\'s school placed her in regular English because of her dyslexia. She is bored. She wants honors English with accommodations.',
-      whatHappensIfNoAdvocacy: 'Cami is under-challenged. Disengages. Falls into the false narrative that dyslexia means lower-track.',
-      strongResponse: [
-        'Cami emails her counselor: "I want to move to honors English. I have dyslexia but I can do honors work with extended time and audiobook access. Can we talk about it?"',
-        'Counselor convenes parent, English teachers, case manager.',
-        'Cami presents her reading data and her writing portfolio.',
-        'Team agrees to a trial period. Cami succeeds with accommodations.'
-      ],
-      adultRole: 'Counselor coordinates team. English teachers open to the trial. Case manager confirms accommodations transfer.',
-      keyMoves: [
-        'Disability does not mean lower-track placement',
-        'Trial periods reduce risk for everyone',
-        'Bring your own data (reading scores, writing samples)'
-      ],
-      reflectionQuestions: [
-        'How does placement become destiny?',
-        'What is the difference between learning ability and learning style?',
-        'How can twice-exceptional students push back on under-placement?'
-      ]
-    },
-    {
-      id: 'sb12',
-      title: 'The Hospital Discharge',
-      grade: '10th',
-      who: 'Drew, 10th grader returning to school after a mental health hospitalization',
-      situation: 'Drew is being discharged from a 5-day inpatient stay. School re-entry is in 2 days. There is no plan.',
-      whatHappensIfNoAdvocacy: 'Drew returns cold. Pretends nothing happened. Mental health declines again.',
-      strongResponse: [
-        'Parent emails school counselor: "Drew is returning Wednesday from a mental health hospitalization. Could we have a brief re-entry meeting with Drew before they return to classes? Drew wants to plan."',
-        'Re-entry meeting: counselor, Drew, parent.',
-        'Plan: missed work timeline, safe person in school, regulation pass, weekly check-ins for 1 month, communication with teachers (without disclosing specifics).',
-        'Drew returns with a plan. Has check-ins. Recovers.'
-      ],
-      adultRole: 'Counselor coordinates re-entry. Teachers receive general "Drew was out, please be flexible" without specifics.',
-      keyMoves: [
-        'Re-entry planning saves the year',
-        'Drew leads, with parent and counselor support',
-        'Teachers get help-language without medical specifics'
-      ],
-      reflectionQuestions: [
-        'Why is hospital re-entry one of the highest-risk transitions?',
-        'What does Drew control? What does the school control?',
-        'What might Drew need that is not on the standard list?'
-      ]
-    }
-  ];
-
+  
+  
   var CONVERSATION_SIMULATIONS_EXTENDED = [
     {
       id: 'cs4',
@@ -15330,39 +5587,7 @@ window.SelHub = window.SelHub || {
   ];
   CONVERSATION_SIMULATIONS = CONVERSATION_SIMULATIONS.concat(CONVERSATION_SIMULATIONS_EXTENDED);
 
-  var CRISIS_FIRST_AID = [
-    { id: 'cfa1', situation: 'I just got bad news and I am about to lose it in public', plan: ['Step outside. Bathroom, hallway, car.', 'Wash hands in cold water. Push past wrist.', '4-7-8 breath: in 4, hold 7, out 8. Repeat 3x.', 'Text one person. One word: "Tough."', 'Decide: re-enter or go home. Whichever is safer for you.'], whyItHelps: 'Cold water + breath activates parasympathetic. Texting reaches for connection. Decision-making restores agency.' },
-    { id: 'cfa2', situation: 'I am about to send an angry message I will regret', plan: ['Write it. Do not send.', 'Save as draft. Walk away.', 'Drink water. 5 deep breaths.', 'Re-read in 24 hours. Edit or delete.', 'If you must respond now, send: "I want to think about this. I will respond by ___."'], whyItHelps: 'Most regret in advocacy comes from hot replies. Cold replies preserve relationships and outcomes.' },
-    { id: 'cfa3', situation: 'I cannot breathe normally during a panic attack', plan: ['Name 5 things you can see.', 'Name 4 things you can touch.', 'Name 3 things you can hear.', 'Name 2 things you can smell.', 'Name 1 thing you can taste.'], whyItHelps: 'Grounding pulls you out of catastrophic thinking and into present sensory experience. Slows breath naturally.' },
-    { id: 'cfa4', situation: 'I want to hurt myself', plan: ['Tell someone. Now. Adult. Friend. Crisis line.', 'Crisis Text Line: text HOME to 741741.', 'Suicide and Crisis Lifeline: 988.', 'Stay with someone until the urge passes. Do not be alone.', 'Remove access to means if possible.'], whyItHelps: 'Self-harm urge is not always permanent. Most urges pass within 90 minutes. Connection and time are protective.' },
-    { id: 'cfa5', situation: 'I am thinking about suicide', plan: ['Call 988 NOW.', 'Tell one safe person right now.', 'Stay with them. Do not be alone.', 'Remove access to means.', 'Get to ER if no other support is available.'], whyItHelps: 'Suicide is preventable. Crisis intervention works. You deserve help.' },
-    { id: 'cfa6', situation: 'I cannot face going to school today', plan: ['Tell someone honestly. Parent or guardian first.', 'Is it acute (one bad day) or chronic (pattern)?', 'If acute: take 1 day. Plan a soft return tomorrow.', 'If chronic: schedule meeting with counselor THIS WEEK.', 'Do not try to push through chronic without help.'], whyItHelps: 'Distinguishing acute from chronic prevents 1 bad day from becoming a month of avoidance. Builds in support.' },
-    { id: 'cfa7', situation: 'I just had a meltdown in front of people', plan: ['Find a quiet place. Recover fully before re-emerging.', 'Drink water. Eat something.', 'Tell yourself: "That was overload, not failure."', 'Decide when to re-engage. Could be hours.', 'Tomorrow: think about what triggered it. Adjust supports.'], whyItHelps: 'Meltdowns are nervous system events, not character flaws. Recovery first, analysis second.' },
-    { id: 'cfa8', situation: 'I just embarrassed myself in class', plan: ['Take 10 breaths.', 'Tell yourself: "Everyone has this. They forgot in 10 minutes. I will too."', 'If you can: laugh once. Even fake. It tells your nervous system you survive.', 'If you cannot: silent acknowledgment. Move on.', 'Tonight: write 3 things that went well today, unrelated.'], whyItHelps: 'Shame loops require interruption. Action and reframe break the loop.' },
-    { id: 'cfa9', situation: 'A teacher just yelled at me', plan: ['Do not respond in the moment. Wait.', 'After class: go to bathroom or counselor. Regulate first.', 'Document: what was said, when, who saw.', 'Tell a trusted adult within 24 hours.', 'If pattern: escalate to principal in writing.'], whyItHelps: 'Yelling is rarely about you. Documentation creates record. Trusted adult interrupts isolation.' },
-    { id: 'cfa10', situation: 'I just got a much lower grade than expected', plan: ['Wait 1 hour before responding.', 'Look at the actual feedback, not just the grade.', 'Email teacher: "I would like to understand. Can we meet?"', 'Plan: what could you change? Or appeal?', 'Self-compassion: 1 grade is data, not identity.'], whyItHelps: 'Hot reactions to grades damage relationships. Cool ones produce conversations.' },
-    { id: 'cfa11', situation: 'I am being ghosted by a friend', plan: ['Send 1 message. Direct. "Hi, I noticed we have not talked. Is everything okay?"', 'Wait 5 days.', 'If no response, do not send again. Do not chase.', 'Mourn the loss internally. It is real.', 'Reach out to other friends. Build wider net.'], whyItHelps: 'Chasing hurts you and confirms low value. One direct ask preserves dignity. Wider net is the long-term answer.' },
-    { id: 'cfa12', situation: 'I am being left out of a group plan', plan: ['Decide: do you want to be there or not?', 'If yes: ask one person directly. "I noticed I was not included. I would like to be."', 'If they say it was an oversight: accept.', 'If they shrug: it tells you something. Adjust.', 'Plan one of your own. Invite who matters.'], whyItHelps: 'Direct asks clarify the friendship. Building your own thing reclaims agency.' },
-    { id: 'cfa13', situation: 'A parent or family member just said something hurtful', plan: ['Walk away. Do not respond in the moment.', 'Tell a trusted outside person. Vent.', 'Tomorrow: address it. "When you said ___, I felt ___."', 'Do not let it sit in silence.', 'If pattern: family counseling or own therapy.'], whyItHelps: 'In-the-moment family conflict escalates. Cool address preserves relationship and names the harm.' },
-    { id: 'cfa14', situation: 'I just got a diagnosis I did not expect', plan: ['Allow shock. It is real.', 'Do not Google for 24 hours. Misinformation everywhere.', 'Get the doctor or specialist information from trusted source.', 'Find one community of people with this diagnosis.', 'Tell 1 trusted person.'], whyItHelps: 'Diagnosis shock is normal. Community shifts the meaning from "wrong with me" to "this is part of me." Time before information protects.' },
-    { id: 'cfa15', situation: 'I just lost something important', plan: ['Sit with it. Crying is allowed.', 'Tell 1 person.', 'Do not make major decisions for 48 hours.', 'Plan one small act of self-care today.', 'Schedule a longer talk with a trusted person within the week.'], whyItHelps: 'Grief moves through. Forcing it makes it stuck. Witness is part of moving.' },
-    { id: 'cfa16', situation: 'I just realized I have been being abused', plan: ['You are not alone. This was not your fault.', 'Tell 1 safe adult IMMEDIATELY. Counselor, doctor, trusted family.', 'If unsafe at home: school counselor can connect you to resources.', 'Document if possible.', 'Childhelp: 1-800-422-4453.'], whyItHelps: 'Naming abuse is the first step out. Safe disclosure is essential. You deserve help.' },
-    { id: 'cfa17', situation: 'I am being sexually pressured', plan: ['You always have the right to say no.', 'No is a complete sentence.', 'Tell 1 safe adult.', 'Get to a safe space.', 'RAINN: 1-800-656-4673.'], whyItHelps: 'Coercion is real. Help exists. Your no does not need to be explained.' },
-    { id: 'cfa18', situation: 'I am being cyberbullied', plan: ['Screenshot everything. Date stamps.', 'Block the person.', 'Tell 1 trusted adult.', 'Report to platform.', 'Report to school if peer-based.'], whyItHelps: 'Documentation is power. Adults can intervene. Most platforms respond to reports.' },
-    { id: 'cfa19', situation: 'I just broke up with someone or they broke up with me', plan: ['Allow it to hurt. Do not skip.', 'Tell 2 trusted people.', 'Avoid social media for a few days.', 'Plan structure: school, sleep, food, exercise.', 'Be patient. It takes time.'], whyItHelps: 'Breakup grief is real. Skipping the feeling postpones it. Structure protects you while you grieve.' },
-    { id: 'cfa20', situation: 'I am scared of an upcoming meeting or test', plan: ['Name the specific fear in writing.', 'Test the fear: what is the actual worst case? How likely?', 'Plan: what would you do if the worst happened?', 'Practice your part. Out loud.', 'Sleep and eat well the night before.'], whyItHelps: 'Generic fear is overwhelming. Specific fear is manageable. Naming and planning shrink it.' },
-    { id: 'cfa21', situation: 'I am stuck in a comparison spiral with classmates', plan: ['Close the platform that triggers it.', 'List 3 of your own wins this month.', 'Remember: their highlight reel is not their full life.', 'Reach out to someone you love. Real connection beats parasocial.', 'Self-compassion: "I am on my own timeline."'], whyItHelps: 'Comparison spirals are pattern-locked. Breaking the pattern is the intervention.' },
-    { id: 'cfa22', situation: 'I just got into a fight with my best friend', plan: ['Do not text them in anger. 24-hour rule.', 'Write what you wanted to say. Do not send.', 'Tomorrow: re-read. Edit.', 'Reach out: "I want to talk. Are you up for it tomorrow?"', 'Have the conversation when both calm.'], whyItHelps: 'Hot fights become permanent rifts. Cool fights repair.' },
-    { id: 'cfa23', situation: 'A trusted adult disappointed me', plan: ['Allow disappointment. It is real.', 'Decide: tell them, or note for yourself?', 'If tell: "When you ___, I felt ___."', 'If just note: write it down, save it, watch for pattern.', 'Build wider net of trusted adults.'], whyItHelps: 'Adults are not perfect. Naming the harm preserves the relationship if it can be saved. Building wider net prevents collapse.' },
-    { id: 'cfa24', situation: 'I am questioning my whole identity', plan: ['It is okay to not know.', 'Talk to one person who is further along.', 'Read or watch 1 community-led piece.', 'Do not decide right now.', 'Schedule longer reflection with counselor or therapist.'], whyItHelps: 'Identity work is gradual. Premature commitment causes problems. Community accelerates clarity.' },
-    { id: 'cfa25', situation: 'I am stuck in a job, class, or relationship I cannot leave yet', plan: ['Accept the constraint for now.', 'Make 1 list: what is working. Even tiny.', 'Make 1 list: what needs to change when you can.', 'Plan: when CAN you leave? Date. Steps.', 'Reach for support inside the constraint.'], whyItHelps: 'Forced acceptance leads to depression. Strategic acceptance plus planning leads to escape.' },
-    { id: 'cfa26', situation: 'I am being misgendered repeatedly', plan: ['Decide your stance: educate, correct, or disengage.', 'If pattern with one person, address directly. "I have asked. Please use ___ for me."', 'If pattern with institution, document and escalate.', 'Find community where you are seen correctly. Restore.', 'Self-compassion: their mistake is not your failure.'], whyItHelps: 'Misgendering accumulates. Naming it interrupts the pattern. Community restores.' },
-    { id: 'cfa27', situation: 'I just got rejected from something important', plan: ['Allow disappointment.', 'Do NOT spiral on "what is wrong with me."', 'Look at the rejection coldly: was it about fit, timing, randomness?', 'Reach out to someone who loves you.', 'Pick the next move. Apply elsewhere, retry, pivot.'], whyItHelps: 'Rejection is data, not identity. Most rejection is timing or fit, not worth.' },
-    { id: 'cfa28', situation: 'I am about to enter a confrontation', plan: ['Write down what you want to say.', 'Practice it once aloud.', 'Bring a witness if possible.', 'Set a time limit: "I have 20 minutes."', 'Have a backup adult to call after.'], whyItHelps: 'Confrontation prepared is half-won. Confrontation alone, escalates.' },
-    { id: 'cfa29', situation: 'I just received negative feedback in writing', plan: ['Read it once. Do not respond.', 'Wait 24 hours.', 'Re-read. Highlight what is true, even if hard.', 'Highlight what is unfair or wrong.', 'Respond only to the true parts. Address the unfair separately if needed.'], whyItHelps: 'Written feedback feels worse than verbal. Time and parsing make it digestible.' },
-    { id: 'cfa30', situation: 'I am overwhelmed by everything at once', plan: ['Step away. Walk if possible.', 'Pick the smallest thing. Just that.', 'Tell 1 person you trust: "I am drowning."', 'Schedule a longer support conversation.', 'Skip what can be skipped. Today is survival.'], whyItHelps: 'Overwhelm freezes problem-solving. Smallest action restores agency. Naming it activates support.' }
-  ];
-
+  
   var SCRIPT_TEMPLATES = {
     elementary: [
       { id: 'st1', title: 'Asking for Help', context: 'Use this when you need help understanding something in class.',
@@ -17049,6 +7274,3794 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // ─── Content libraries wired 2026-09-13 (archived Aug 25 as never-read; each now has a view) ───
+var POWER_UP_CARDS = [
+    { id: 'pc1', name: 'The Pause', icon: '⏸️', rarity: 'common', useWhen: 'Before responding to a hard question or accusation.', howTo: 'Count to 3. Then say: "I want to think about that for a moment." Then 3 more seconds. THEN respond.', whyItWorks: 'Buys regulation time. Models thoughtfulness instead of impulsivity. Most adults respect a pause more than a fast answer.', unlocksWith: 'Use it 3 times in real life.' },
+    { id: 'pc2', name: 'The Reframe', icon: '🔄', rarity: 'common', useWhen: 'When someone labels you as the problem.', howTo: 'Say: "That\'s one way to see it. From where I sit, what is happening is ___."', whyItWorks: 'You do not have to fight the label. You just have to offer the alternative narrative in their hearing.', unlocksWith: 'Use it once with a teacher.' },
+    { id: 'pc3', name: 'The Ask-Twice', icon: '🎯', rarity: 'common', useWhen: 'When a no is given without an explanation.', howTo: 'Ask: "Can you help me understand why not?" Wait. If they redirect, ask again: "I just want to know the reason. What is it?"', whyItWorks: 'Most no answers are based on assumptions you can address if you hear them. Many a no melts when the asker is calm and curious.', unlocksWith: 'Use it once. Most students never ask twice.' },
+    { id: 'pc4', name: 'The Document', icon: '📝', rarity: 'common', useWhen: 'After any meeting, conversation, or incident that matters.', howTo: 'Write 3 sentences in a notes app: Date, what happened, what was agreed. Save it. Repeat.', whyItWorks: 'Memory fades. Records survive. Most advocacy disputes hinge on who has documentation.', unlocksWith: 'Document 5 events.' },
+    { id: 'pc5', name: 'The Email-Same-Day', icon: '📧', rarity: 'common', useWhen: 'After a verbal agreement with a teacher or parent.', howTo: 'Same day: send an email summarizing what you agreed. "Just to make sure I understand: we said ___. Let me know if I have it right."', whyItWorks: 'Turns memory into paper trail. Lets them correct you if you got it wrong, before it costs anyone.', unlocksWith: 'Send 3 confirmation emails.' },
+    { id: 'pc6', name: 'The Specific Ask', icon: '🎯', rarity: 'uncommon', useWhen: 'When you have been vague about what you need.', howTo: 'Replace "I need more help" with "I need extra time on tests OR a quiet space OR weekly check-ins." Pick one concrete option.', whyItWorks: 'Vague asks get vague responses. Concrete asks get tracked. Test by trying the same need vague vs. specific in two contexts.', unlocksWith: 'Make 5 specific asks instead of vague ones.' },
+    { id: 'pc7', name: 'The Reason Statement', icon: '💡', rarity: 'uncommon', useWhen: 'When you ask for something and someone questions whether it is necessary.', howTo: 'Pair the ask with a one-sentence why: "I need a break pass because when I get overstimulated I shut down and miss the rest of class."', whyItWorks: 'Reasons make the ask harder to refuse. They show forethought and de-personalize the request.', unlocksWith: 'Pair 5 asks with reasons.' },
+    { id: 'pc8', name: 'The Yes-And', icon: '➕', rarity: 'uncommon', useWhen: 'When someone proposes a fix that is not quite right.', howTo: 'Say: "Yes, that helps with X AND I also need ___ for the part of the issue where Y."', whyItWorks: 'Does not reject their offer. Keeps relationship. Adds the missing piece.', unlocksWith: 'Use it twice. Notice how rarely conversation breaks down.' },
+    { id: 'pc9', name: 'The Concrete Story', icon: '📖', rarity: 'uncommon', useWhen: 'When you are told your need is exaggerated.', howTo: 'Tell a specific incident: "Two weeks ago in 3rd period, when X happened, here is what I did, here is what got missed. That is why ___ would help."', whyItWorks: 'Abstract complaints get dismissed. Concrete stories get tracked.', unlocksWith: 'Tell 3 concrete stories in advocacy meetings.' },
+    { id: 'pc10', name: 'The Permission Slip', icon: '🪪', rarity: 'uncommon', useWhen: 'You are about to do something brave that scares you.', howTo: 'Write yourself a permission slip on paper: "I am allowed to ask for ___. I am allowed to feel ___. I am allowed to leave if ___." Keep it in your pocket.', whyItWorks: 'External permission lowers internal resistance. Especially helpful for masking students.', unlocksWith: 'Write 5 permission slips.' },
+    { id: 'pc11', name: 'The Time Box', icon: '⏰', rarity: 'uncommon', useWhen: 'A conversation is going in circles.', howTo: 'Say: "Can we set 10 more minutes on this and then come back to it tomorrow if we are still stuck?"', whyItWorks: 'Removes the pressure to resolve everything now. Most disputes get easier with sleep.', unlocksWith: 'Time-box 3 hard conversations.' },
+    { id: 'pc12', name: 'The Person-Behind-Me', icon: '👤', rarity: 'uncommon', useWhen: 'You are too tired to advocate for just yourself.', howTo: 'Think: "If I do not ask, who is the next student who will need this and not get it?" Ask for them.', whyItWorks: 'Externalizing the stake makes the ask feel less personal and more important.', unlocksWith: 'Ask in honor of someone else once.' },
+    { id: 'pc13', name: 'The Witness', icon: '👁️', rarity: 'uncommon', useWhen: 'A hard meeting is ahead.', howTo: 'Bring a witness: friend, advocate, parent, or just a notetaker. They do not have to speak. Their presence changes the dynamic.', whyItWorks: 'Adults speak more carefully when others listen. You get a second memory of the meeting.', unlocksWith: 'Bring a witness to one meeting.' },
+    { id: 'pc14', name: 'The Cool Letter', icon: '✉️', rarity: 'uncommon', useWhen: 'You want to advocate but get too dysregulated face-to-face.', howTo: 'Write the letter when you are calm. Read it back tomorrow. Edit if needed. Send.', whyItWorks: 'Letters let you choose your words. Verbal arguments do not.', unlocksWith: 'Send 3 cool letters.' },
+    { id: 'pc15', name: 'The Other Person', icon: '🪞', rarity: 'rare', useWhen: 'You feel attacked in a meeting.', howTo: 'Pause and say: "I want to hear what you are seeing. Tell me what you are noticing." Listen first. Speak second.', whyItWorks: 'Defensive mode escalates. Curiosity de-escalates. You also get information about what they actually think.', unlocksWith: 'Try it 3 times. Notice the temperature drop.' },
+    { id: 'pc16', name: 'The Body Pause', icon: '🌬️', rarity: 'rare', useWhen: 'Your body is escalating mid-conversation.', howTo: 'Excuse yourself: "I need 2 minutes for water." Step outside. 5 deep breaths. Come back.', whyItWorks: 'Cannot advocate from a flooded nervous system. Regulation precedes negotiation.', unlocksWith: 'Use a body pause 3 times.' },
+    { id: 'pc17', name: 'The Pre-Written Sentence', icon: '📃', rarity: 'rare', useWhen: 'You freeze in front of authority figures.', howTo: 'Write one sentence on an index card before the meeting. Take it out. Read it word for word.', whyItWorks: 'Removes the cognitive load of generating language under stress.', unlocksWith: 'Use a pre-written sentence in 3 hard meetings.' },
+    { id: 'pc18', name: 'The Power-Up Stack', icon: '🃏', rarity: 'rare', useWhen: 'A big meeting is coming.', howTo: 'Pick 3 power-up cards before the meeting. Plan how to use each one. After the meeting, mark which ones you used.', whyItWorks: 'Planning beats improvising. Patterns become habits faster.', unlocksWith: 'Stack 3 power-ups for 2 separate meetings.' },
+    { id: 'pc19', name: 'The Follow-Up', icon: '🔁', rarity: 'rare', useWhen: 'After 2 weeks with no response.', howTo: 'Email: "Hi ___, following up on my email from [date]. Could you let me know your timeline? Thanks."', whyItWorks: 'Most things get lost, not denied. The follow-up surfaces them. Most adults respect a polite follow-up.', unlocksWith: 'Send 5 follow-ups.' },
+    { id: 'pc20', name: 'The Plus-One', icon: '➕👤', rarity: 'rare', useWhen: 'You need backup for a system-level ask.', howTo: 'Invite a teacher, counselor, parent, or peer who agrees with you to co-sign or co-attend.', whyItWorks: 'Solo asks can be dismissed. Two voices double the weight.', unlocksWith: 'Recruit one plus-one.' },
+    { id: 'pc21', name: 'The Visual Aid', icon: '📊', rarity: 'rare', useWhen: 'Words are not landing.', howTo: 'Bring a graph, a timeline, a list of incidents. Numbers and pictures get tracked. Words get lost.', whyItWorks: 'Adults trained in compliance respond to data. Use the tool that fits the audience.', unlocksWith: 'Bring a visual to one meeting.' },
+    { id: 'pc22', name: 'The Reasonable Tone', icon: '🕊️', rarity: 'rare', useWhen: 'You are about to be dismissed as "too emotional."', howTo: 'Lower your voice, slow your pace, name one specific fact. "On Tuesday at 10:15am, X happened."', whyItWorks: 'You may not be allowed your anger in their room. You can be calm AND firm.', unlocksWith: 'Use it 3 times.' },
+    { id: 'pc23', name: 'The Permission to Disagree', icon: '🤝', rarity: 'rare', useWhen: 'A team has decided against you.', howTo: 'Say: "I respect this team. I disagree with this decision. I want to put my disagreement in writing for the record."', whyItWorks: 'You preserve the relationship AND mark the disagreement. Required for some legal escalations.', unlocksWith: 'Use it once.' },
+    { id: 'pc24', name: 'The Trial Period', icon: '🧪', rarity: 'epic', useWhen: 'A no is based on uncertainty about whether your accommodation will work.', howTo: 'Say: "Can we try it for 3 weeks and check back? If it does not help, I will let you know."', whyItWorks: 'Trial periods feel lower-risk to administrators. They almost always become permanent.', unlocksWith: 'Negotiate a trial period.' },
+    { id: 'pc25', name: 'The Bridge', icon: '🌉', rarity: 'epic', useWhen: 'A teacher is invested in a stance you cannot accept.', howTo: 'Find a third person they respect. Ask: "Could we get ___ to weigh in?" The bridge person de-escalates without forcing them to lose face.', whyItWorks: 'Most authority figures budge if face-saving is preserved.', unlocksWith: 'Use a bridge person once.' },
+    { id: 'pc26', name: 'The Honest Friend', icon: '💬', rarity: 'epic', useWhen: 'You suspect you are being unreasonable.', howTo: 'Ask one trusted friend to play devil\'s advocate before you send the email. Listen to their pushback.', whyItWorks: 'Most advocates are too close to their own case. A friend can spot what looks weak.', unlocksWith: 'Run 3 cases past an honest friend.' },
+    { id: 'pc27', name: 'The Whole Picture', icon: '🖼️', rarity: 'epic', useWhen: 'You are told the problem is bigger than your needs.', howTo: 'Acknowledge their problem first. Then add yours: "I hear the staffing constraint. AND, here is what changes if I do not get this accommodation."', whyItWorks: 'Validating their problem un-locks their hearing of yours.', unlocksWith: 'Try the whole picture once.' },
+    { id: 'pc28', name: 'The Reversal', icon: '🔃', rarity: 'epic', useWhen: 'Someone has accused you of doing what they are doing.', howTo: 'Stay calm. Name what is actually happening: "I notice when I asked for X, the conversation turned to Y. Can we come back to X?"', whyItWorks: 'Brings the deflection out of the shadows without escalating.', unlocksWith: 'Reverse a deflection in real life.' },
+    { id: 'pc29', name: 'The Boundary Restate', icon: '🚧', rarity: 'epic', useWhen: 'Someone repeatedly violates a boundary you set.', howTo: 'Restate the boundary EXACTLY as before, plus the consequence: "I said no calls after 9pm. If it continues, I will block the number for the night."', whyItWorks: 'Repeating identical language is not weakness. It is stability. Boundaries with no consequence are wishes.', unlocksWith: 'Restate one boundary 3 times.' },
+    { id: 'pc30', name: 'The Strategic Retreat', icon: '🚪', rarity: 'epic', useWhen: 'You are losing the argument AND being escalated.', howTo: 'Say: "I want to think about this and come back tomorrow." Leave. Do not promise anything.', whyItWorks: 'Most arguments are won by the last person in the room. The one who leaves first does not lose; the one who stays in dysregulation does.', unlocksWith: 'Strategically retreat once.' },
+    { id: 'pc31', name: 'The Yes-And-No', icon: '⚖️', rarity: 'epic', useWhen: 'You want part of what is being offered, not all of it.', howTo: 'Be specific: "Yes to the seating change. No to the schedule change. Here is why."', whyItWorks: 'Splitting the offer prevents you from rejecting good parts to avoid bad parts.', unlocksWith: 'Yes-and-no once in a real meeting.' },
+    { id: 'pc32', name: 'The Compound Ask', icon: '🔗', rarity: 'epic', useWhen: 'A small ask has been refused but you have leverage for a related one.', howTo: 'Ask the smaller adjacent ask: "Can we just try [smaller piece]?" Many noes split when asked piecemeal.', whyItWorks: 'Foot-in-the-door works in both directions. Use it for good.', unlocksWith: 'Compound-ask once.' },
+    { id: 'pc33', name: 'The Higher-Up', icon: '⬆️', rarity: 'legendary', useWhen: 'Your first line of contact has shut you down.', howTo: 'Politely escalate: "I appreciate the response. I would like to talk to ___ about this. Could you connect me?"', whyItWorks: 'Asking who their boss is, in writing, in calm tones, is a known move that produces faster responses.', unlocksWith: 'Escalate one issue.' },
+    { id: 'pc34', name: 'The Outside Witness', icon: '🌐', rarity: 'legendary', useWhen: 'The system inside school will not respond.', howTo: 'Bring in a parent, advocate, lawyer, community organization, or media person. Be careful with public exposure but do not be afraid of it.', whyItWorks: 'External pressure changes the calculus inside.', unlocksWith: 'Bring in one outside witness.' },
+    { id: 'pc35', name: 'The OCR Complaint', icon: '🛡️', rarity: 'legendary', useWhen: 'Civil rights violation, last resort.', howTo: 'File with the U.S. Department of Education Office for Civil Rights. Free. Does not require a lawyer.', whyItWorks: 'Federal investigation. Schools take it seriously. Should not be a first move but is a real one.', unlocksWith: 'Only use when needed. Know it exists.' },
+    { id: 'pc36', name: 'The Self-Compassion', icon: '🤗', rarity: 'common', useWhen: 'You messed up an advocacy attempt.', howTo: 'Say to yourself: "That was a hard thing I tried. I learned ___. Next time I will ___."', whyItWorks: 'Self-criticism kills future advocacy. Compassion preserves it.', unlocksWith: 'Practice once a day for a week.' },
+    { id: 'pc37', name: 'The Replay', icon: '🎞️', rarity: 'common', useWhen: 'After a hard advocacy moment.', howTo: 'Replay it once. Note: what worked, what bombed, what you would change. Write it down. Move on.', whyItWorks: 'Reflection without rumination. Set a time limit (15 minutes).', unlocksWith: 'Do 5 replays.' },
+    { id: 'pc38', name: 'The Question Behind The Question', icon: '❔', rarity: 'rare', useWhen: 'A teacher asks a question that feels weird or off.', howTo: 'Pause. Ask back: "What is making you ask?" Most weird questions come from concerns the teacher has not named directly.', whyItWorks: 'Names the elephant. Gets the real conversation started.', unlocksWith: 'Ask QBQ once.' },
+    { id: 'pc39', name: 'The Reciprocal', icon: '🤝', rarity: 'rare', useWhen: 'You ask for help often from one person.', howTo: 'Find one small way to help them back: a thank-you note, sharing a useful resource, asking how they are.', whyItWorks: 'Sustainable relationships are reciprocal. Pure-asks burn out the helper.', unlocksWith: 'Give one reciprocal gift this week.' },
+    { id: 'pc40', name: 'The Annual Review', icon: '📅', rarity: 'epic', useWhen: 'End of year or annual IEP.', howTo: 'Bring data from your whole year. What worked. What did not. What you want next year. Lead the meeting.', whyItWorks: 'Annual review is your big moment. Do not waste it as a passenger.', unlocksWith: 'Lead one annual review.' },
+    { id: 'pc41', name: 'The Future Tense', icon: '🔮', rarity: 'rare', useWhen: 'Stuck arguing about the past.', howTo: 'Pivot: "I hear what happened. Going forward, what will be different?"', whyItWorks: 'Forward focus de-escalates and gets to action.', unlocksWith: 'Pivot to future once.' },
+    { id: 'pc42', name: 'The Re-Ask Later', icon: '🔁', rarity: 'common', useWhen: 'A no was given but the context will change soon (new semester, new teacher).', howTo: 'Wait. Re-ask in the new context. Many noes are temporary.', whyItWorks: 'Stable noes are rare. Most depend on who is in the room. New room, new chance.', unlocksWith: 'Re-ask once and notice the result.' },
+    { id: 'pc43', name: 'The Sandwich Check', icon: '🥪', rarity: 'common', useWhen: 'Someone gives you criticism that does not feel quite true.', howTo: 'Ask: "Can you give me 2 specific examples?" Vague criticism is often inaccurate.', whyItWorks: 'Specifics test the claim. Examples often do not exist.', unlocksWith: 'Ask for examples 3 times.' },
+    { id: 'pc44', name: 'The Witness-To-Self', icon: '🪞', rarity: 'common', useWhen: 'You are about to do something hard.', howTo: 'Imagine watching yourself from outside. Notice your fear. Notice your strength. Choose what to do.', whyItWorks: 'External perspective is regulating. The witness self is the one who can choose.', unlocksWith: 'Witness yourself once.' },
+    { id: 'pc45', name: 'The After-Care', icon: '🛁', rarity: 'common', useWhen: 'After a heavy advocacy moment.', howTo: 'Plan in advance: snack, walk, music, friend, soft clothes. Recovery is part of the work.', whyItWorks: 'Sustainable advocacy requires care after the act, not just before.', unlocksWith: 'Plan after-care for 3 events.' },
+    { id: 'pc46', name: 'The 24-Hour Rule', icon: '⏳', rarity: 'rare', useWhen: 'You want to send a hot reply.', howTo: 'Write the reply. Save as draft. Sleep on it. Re-read. Send tomorrow.', whyItWorks: 'Hot replies do not change minds. Cool replies often do.', unlocksWith: 'Use the 24-hour rule 3 times.' },
+    { id: 'pc47', name: 'The Multiple Channels', icon: '📡', rarity: 'rare', useWhen: 'One channel of communication is failing.', howTo: 'Email AND call AND in-person request. Same content, different routes.', whyItWorks: 'People respond to different channels. Redundancy works.', unlocksWith: 'Try 3 channels for 1 ask.' },
+    { id: 'pc48', name: 'The Public Record', icon: '📜', rarity: 'legendary', useWhen: 'You want to escalate from private to documented.', howTo: 'Make your communication public-record style: written, dated, copied to multiple people. Or copy a board member.', whyItWorks: 'Schools track who is on the cc line. The audience changes the response.', unlocksWith: 'Send one public-record-style email.' },
+    { id: 'pc49', name: 'The Yes-First', icon: '✅', rarity: 'rare', useWhen: 'You are about to push back hard.', howTo: 'Find one thing to agree with first. Even just: "I agree this is hard." Then push.', whyItWorks: 'Listening lubricates pushback. People hear better after being heard.', unlocksWith: 'Yes-first 5 times.' },
+    { id: 'pc50', name: 'The Resource Audit', icon: '📦', rarity: 'common', useWhen: 'You are stuck on what to ask for.', howTo: 'List: people, money, time, space, support, equipment. What do you need MORE of, LESS of, DIFFERENT of?', whyItWorks: 'Structures the ask. Reveals options.', unlocksWith: 'Do one resource audit before a meeting.' }
+  ];
+var SCAFFOLDED_PRACTICE_LIBRARY = [
+    {
+      id: 'sp1',
+      skill: 'Asking for help in class',
+      whyItMatters: 'Help-seeking is the foundational self-advocacy skill. Most students never learn it explicitly.',
+      tiers: {
+        warmup: [
+          { task: 'Say the words "Could you help me?" out loud to yourself, 3 times.', evidence: 'You said the words.' },
+          { task: 'Say "Could you help me?" to a friend or family member, in a low-stakes situation.', evidence: 'You said it to a person.' },
+          { task: 'Identify ONE class where you would like to ask for help in the next week.', evidence: 'You named the class.' }
+        ],
+        practice: [
+          { task: 'Raise your hand once in class. Just to be present. You do not have to have a question.', evidence: 'Hand went up.' },
+          { task: 'Ask one clarifying question in class: "Could you say that another way?"', evidence: 'You asked.' },
+          { task: 'Email one teacher with one question. Subject line: "Question about today\'s lesson."', evidence: 'Email sent.' },
+          { task: 'After class, ask the teacher: "Could I have 2 minutes to ask about ___?"', evidence: 'You did it.' }
+        ],
+        mastery: [
+          { task: 'Schedule a 15-minute meeting with a teacher to discuss your understanding of a unit.', evidence: 'Meeting on calendar.' },
+          { task: 'In an unfamiliar class with a substitute, ask for help with a specific concept.', evidence: 'You did it under harder conditions.' },
+          { task: 'Help a peer formulate THEIR question to ask a teacher.', evidence: 'You taught the skill.' }
+        ]
+      },
+      commonObstacles: [
+        'Fear of looking dumb. Reframe: every question makes you smarter, not less.',
+        'Worry about taking teacher time. Teacher chose to teach. Asking is what teachers want.',
+        'Past bad experience where help-asking went sideways. Real. Try with a teacher who has built trust.'
+      ],
+      celebrationCue: 'Mark the date and what happened. The first ask is the hardest.'
+    },
+    {
+      id: 'sp2',
+      skill: 'Saying no to peer pressure',
+      whyItMatters: 'No is a complete sentence. Most students need to practice saying it.',
+      tiers: {
+        warmup: [
+          { task: 'Say "no, thanks" out loud, 5 different ways: gentle, firm, neutral, playful, curious.', evidence: 'You said it.' },
+          { task: 'Identify one situation in the past week where you said yes and wish you had said no.', evidence: 'You named the situation.' },
+          { task: 'Plan one sentence you could use in that situation next time.', evidence: 'Sentence drafted.' }
+        ],
+        practice: [
+          { task: 'Decline one small invitation this week. "No thanks, I have other plans."', evidence: 'You declined.' },
+          { task: 'Walk away from one social pressure situation. No explanation required.', evidence: 'You walked.' },
+          { task: 'Tell a peer: "I do not want to do that. Lets do something else."', evidence: 'You offered the redirect.' }
+        ],
+        mastery: [
+          { task: 'Decline a higher-stakes social request (party with substances, group with bullying dynamic).', evidence: 'You held the limit.' },
+          { task: 'Help a peer say no to a third party.', evidence: 'You backed them up.' },
+          { task: 'Communicate a no in a friend group where everyone else said yes.', evidence: 'You stood out.' }
+        ]
+      },
+      commonObstacles: [
+        'Fear of losing friends. Friends who require yes-only are not friends.',
+        'No feels rude. Adding "no thanks" softens; the message is the same.',
+        'Body floods with anxiety when saying no. Practice in low-stakes builds tolerance.'
+      ],
+      celebrationCue: 'Note how you felt 15 minutes after saying no. Usually better than expected.'
+    },
+    {
+      id: 'sp3',
+      skill: 'Telling a teacher you do not understand',
+      whyItMatters: 'Pretending you understand costs everyone. Saying you do not is the bravest thing.',
+      tiers: {
+        warmup: [
+          { task: 'Say "I do not understand" out loud 3 times.', evidence: 'You said it.' },
+          { task: 'Identify one concept in your current schoolwork you do not fully understand.', evidence: 'You named it.' },
+          { task: 'Decide what teacher you would tell first.', evidence: 'Teacher named.' }
+        ],
+        practice: [
+          { task: 'Email one teacher: "I am stuck on ___. Could we set up a few minutes to talk?"', evidence: 'Email sent.' },
+          { task: 'In class, when you do not understand, raise your hand: "Could you explain that one more way?"', evidence: 'You asked publicly.' },
+          { task: 'During individual work time, signal teacher: "I am not sure I am doing this right."', evidence: 'You named uncertainty.' }
+        ],
+        mastery: [
+          { task: 'Volunteer in class: "Could I check my understanding?" then state your understanding out loud.', evidence: 'You externalized your thinking.' },
+          { task: 'In group, ask: "Can someone explain what they think the question is asking?" before answering.', evidence: 'You modeled inquiry.' },
+          { task: 'After a unit, write a 3-sentence summary of what you understood and what is still unclear.', evidence: 'You self-assessed.' }
+        ]
+      },
+      commonObstacles: [
+        'Fear of looking like you are not paying attention.',
+        'Worry teacher will think less of you.',
+        'Most teachers think MORE of students who name their not-understanding.'
+      ],
+      celebrationCue: 'Track teacher reactions over time. Patterns emerge.'
+    },
+    {
+      id: 'sp4',
+      skill: 'Apologizing well after a mistake',
+      whyItMatters: 'A real apology repairs. A bad apology damages further.',
+      tiers: {
+        warmup: [
+          { task: 'Write out the 5 parts of a real apology: regret, responsibility, explanation, repair, change.', evidence: 'List written.' },
+          { task: 'Write a draft apology for one past mistake. Apply the 5 parts.', evidence: 'Draft complete.' },
+          { task: 'Identify one current relationship where a real apology is overdue.', evidence: 'Person named.' }
+        ],
+        practice: [
+          { task: 'Apologize to a family member for one small thing this week, using all 5 parts.', evidence: 'You apologized.' },
+          { task: 'Apologize to a friend in writing for something specific.', evidence: 'Message sent.' },
+          { task: 'Apologize publicly (in group setting) for something you did wrong.', evidence: 'You did it.' }
+        ],
+        mastery: [
+          { task: 'Apologize for something where you are partly wrong but not entirely. Take your part cleanly.', evidence: 'Nuance held.' },
+          { task: 'Apologize to a teacher or adult after a conflict, even if they did not apologize to you.', evidence: 'You went first.' },
+          { task: 'Help a peer practice an apology before they give it.', evidence: 'You taught the skill.' }
+        ]
+      },
+      commonObstacles: [
+        'Fear of admitting fault. Owning your part does not erase their part.',
+        'Apologizing for things that are not your fault. Specific to part you own.',
+        'Apology becomes excuse. Skip the "but."'
+      ],
+      celebrationCue: 'Track how relationships shift after a real apology. Most strengthen.'
+    },
+    {
+      id: 'sp5',
+      skill: 'Receiving a compliment without deflecting',
+      whyItMatters: 'Deflecting compliments trains people to stop giving them. Receiving builds connection.',
+      tiers: {
+        warmup: [
+          { task: 'Practice saying "Thank you" to a mirror, after imagining someone complimented you.', evidence: 'You said it.' },
+          { task: 'Notice one compliment you received recently and what you said back.', evidence: 'You noticed.' },
+          { task: 'Decide your stock response for next compliment.', evidence: 'Response chosen.' }
+        ],
+        practice: [
+          { task: 'Receive next compliment with just "Thank you." No deflection.', evidence: 'Received.' },
+          { task: 'Receive next compliment with "Thank you, that means a lot."', evidence: 'Added warmth.' },
+          { task: 'Receive next compliment with a specific response: "Thank you, I worked hard on that."', evidence: 'Owned the work.' }
+        ],
+        mastery: [
+          { task: 'Compliment yourself out loud to a friend: "I am proud of how I handled ___."', evidence: 'You self-validated.' },
+          { task: 'Give a specific compliment to one person daily for a week. Notice the impact.', evidence: 'Compliments given.' },
+          { task: 'After a compliment, ask: "What specifically made you say that?" Receive the data.', evidence: 'Information received.' }
+        ]
+      },
+      commonObstacles: [
+        'Cultural training to deflect (especially gendered).',
+        'Imposter feeling makes compliments feel unearned.',
+        'Deflection feels humble; it is actually distancing.'
+      ],
+      celebrationCue: 'Track how compliment frequency changes when you receive them well.'
+    },
+    {
+      id: 'sp6',
+      skill: 'Pre-emailing before a difficult conversation',
+      whyItMatters: 'Cool letters before hot conversations land better than improvising.',
+      tiers: {
+        warmup: [
+          { task: 'Draft one email for a future hard conversation, but do not send.', evidence: 'Draft exists.' },
+          { task: 'Show the draft to one trusted person for feedback.', evidence: 'Reviewed.' },
+          { task: 'Revise and save.', evidence: 'Revision saved.' }
+        ],
+        practice: [
+          { task: 'Send one pre-conversation email this week. Subject: "Want to talk about ___ when you have a few minutes."', evidence: 'Email sent.' },
+          { task: 'Send a follow-up email after a conversation summarizing what was agreed.', evidence: 'Summary email sent.' },
+          { task: 'Send an email to apologize or to thank, where the in-person version was awkward.', evidence: 'Email sent.' }
+        ],
+        mastery: [
+          { task: 'Send a pre-conversation email to a teacher or coach to set up a hard talk.', evidence: 'Email sent.' },
+          { task: 'Send a follow-up email to a meeting where you were not heard, restating your points.', evidence: 'Restated in writing.' },
+          { task: 'Help a friend draft their pre-conversation email.', evidence: 'You coached.' }
+        ]
+      },
+      commonObstacles: [
+        'Worry email is less personal than in-person.',
+        'Email gets ignored.',
+        'Email is documented. That is both pro and con.'
+      ],
+      celebrationCue: 'Track response rate and quality. Most emails get better responses than expected.'
+    },
+    {
+      id: 'sp7',
+      skill: 'Naming a body cue out loud',
+      whyItMatters: 'Body cues drive behavior whether or not you name them. Naming them gives you choice.',
+      tiers: {
+        warmup: [
+          { task: 'List 5 body sensations you noticed today (tight shoulders, racing heart, dry mouth, etc.).', evidence: 'List written.' },
+          { task: 'For each, name what the situation was. Make a pattern map.', evidence: 'Map drawn.' },
+          { task: 'Pick one body cue to track this week.', evidence: 'Cue chosen.' }
+        ],
+        practice: [
+          { task: 'Each time you notice the cue, name it aloud or in a notes app.', evidence: 'You logged.' },
+          { task: 'Notice and respond: "My shoulders are tight. I will roll them."', evidence: 'You did the response.' },
+          { task: 'Notice in conversation: "My body is escalating. I need a pause."', evidence: 'You exited regulated.' }
+        ],
+        mastery: [
+          { task: 'Use body cues to advocate: "My body is telling me this is not okay. Let me think before responding."', evidence: 'You used the data.' },
+          { task: 'Teach a friend to track their body cues.', evidence: 'Skill shared.' },
+          { task: 'Track for a month. Notice trigger patterns.', evidence: 'Pattern observed.' }
+        ]
+      },
+      commonObstacles: [
+        'Disconnected from body.',
+        'Past trauma makes body cues overwhelming. Go slow. Therapist may help.'
+      ],
+      celebrationCue: 'Notice the difference between catching a cue early vs. late.'
+    },
+    {
+      id: 'sp8',
+      skill: 'Asking for an accommodation you have not used before',
+      whyItMatters: 'Many accommodations sit unused because students do not know how to invoke them.',
+      tiers: {
+        warmup: [
+          { task: 'Read your IEP. List 3 accommodations you have not actively used.', evidence: 'List written.' },
+          { task: 'For each, draft 1 sentence you would say to invoke it.', evidence: 'Sentences drafted.' },
+          { task: 'Pick one to try this week.', evidence: 'One chosen.' }
+        ],
+        practice: [
+          { task: 'Invoke the accommodation in one class.', evidence: 'You used it.' },
+          { task: 'Email the teacher afterward to confirm: "Thanks for honoring ___ today."', evidence: 'Email sent.' },
+          { task: 'Use the same accommodation a second time, in a different class or with a different teacher.', evidence: 'Used twice.' }
+        ],
+        mastery: [
+          { task: 'Use 3 different accommodations across one week.', evidence: 'Multi-accommodation week.' },
+          { task: 'Update your case manager: "Here is what I tried this month. Here is what worked."', evidence: 'Status update.' },
+          { task: 'Bring data to next IEP: which accommodations you actually used, which need adjustment.', evidence: 'Data brought.' }
+        ]
+      },
+      commonObstacles: [
+        'Forgetting in the moment.',
+        'Feeling self-conscious. Reframe: it is your right and tool, not special treatment.'
+      ],
+      celebrationCue: 'Track first use of each accommodation. Mark with a star.'
+    },
+    {
+      id: 'sp9',
+      skill: 'Disclosing a diagnosis to one new person',
+      whyItMatters: 'Disclosure decisions are personal. Practice builds wisdom about who, when, how.',
+      tiers: {
+        warmup: [
+          { task: 'Write down what you would want a stranger to know about your diagnosis.', evidence: 'Written.' },
+          { task: 'Write down what you would NOT want a stranger to know.', evidence: 'Written.' },
+          { task: 'Identify one safe person to practice with.', evidence: 'Person named.' }
+        ],
+        practice: [
+          { task: 'Disclose to one safe person this month. Watch their reaction.', evidence: 'You disclosed.' },
+          { task: 'Disclose to one new person (new friend, new teacher) within a month.', evidence: 'You disclosed.' },
+          { task: 'Practice the short version (1 sentence) and the long version (2-3 sentences).', evidence: 'Both drafted.' }
+        ],
+        mastery: [
+          { task: 'Disclose to someone you anticipate may have a negative reaction.', evidence: 'You went anyway.' },
+          { task: 'Respond to a question about your diagnosis with grace, regardless of how it is asked.', evidence: 'You held your composure.' },
+          { task: 'Help a friend prepare for their own disclosure.', evidence: 'You coached.' }
+        ]
+      },
+      commonObstacles: [
+        'Fear of judgment.',
+        'Disclosure regret.',
+        'Right person, wrong time.'
+      ],
+      celebrationCue: 'After each disclosure, journal what happened. Build wisdom.'
+    },
+    {
+      id: 'sp10',
+      skill: 'Writing a thank-you note',
+      whyItMatters: 'Gratitude is glue. Thank-you notes strengthen the people who help you.',
+      tiers: {
+        warmup: [
+          { task: 'List 5 people you owe thanks to.', evidence: 'List written.' },
+          { task: 'Draft one thank-you note. 3 sentences.', evidence: 'Draft written.' },
+          { task: 'Decide who to send to first.', evidence: 'Recipient picked.' }
+        ],
+        practice: [
+          { task: 'Send 1 thank-you per week for 4 weeks.', evidence: 'Notes sent.' },
+          { task: 'Hand-deliver one thank-you. Watch the impact.', evidence: 'Delivered.' },
+          { task: 'Send a thank-you to someone who probably does not know you noticed.', evidence: 'Noticed.' }
+        ],
+        mastery: [
+          { task: 'Send a thank-you after a hard interaction, naming what worked.', evidence: 'Repair note.' },
+          { task: 'Help a peer write their thank-you note.', evidence: 'You coached.' },
+          { task: 'Maintain a 1-thank-you-per-week practice for a semester.', evidence: 'Habit built.' }
+        ]
+      },
+      commonObstacles: [
+        'Embarrassed by the formality. Just write it.',
+        'Worried it is too much. Specific is enough.'
+      ],
+      celebrationCue: 'Watch how relationships shift when gratitude is regular.'
+    }
+  ];
+var DAILY_PRACTICE_PROMPTS = [
+    { id: 'dp1', focus: 'voice', prompt: 'Today, finish this sentence out loud: "What I need more of is ____." Say it three times.' },
+    { id: 'dp2', focus: 'voice', prompt: 'Practice the phrase "I disagree" in a mirror. Say it 5 different ways: gentle, firm, curious, playful, neutral.' },
+    { id: 'dp3', focus: 'voice', prompt: 'Speak one sentence about your needs to one trusted person today. Just one. Notice how you feel after.' },
+    { id: 'dp4', focus: 'voice', prompt: 'Record yourself reading one of your scripts. Listen back. Where do you sound confident? Where do you sound apologetic?' },
+    { id: 'dp5', focus: 'voice', prompt: 'In a class today, raise your hand once. Just to be present. You do not have to have the right answer.' },
+    { id: 'dp6', focus: 'rights', prompt: 'Look up one right that you have at school today. Write it on an index card. Carry it.' },
+    { id: 'dp7', focus: 'rights', prompt: 'Find your IEP or 504 plan. Read one section. Note one accommodation you forgot you had.' },
+    { id: 'dp8', focus: 'rights', prompt: 'Find out the name of the principal, special education coordinator, and your case manager.' },
+    { id: 'dp9', focus: 'rights', prompt: 'Find out where the closest counselor office is.' },
+    { id: 'dp10', focus: 'rights', prompt: 'Find a copy of the school discipline policy. Read it.' },
+    { id: 'dp11', focus: 'self', prompt: 'Write 3 strengths you have today. Not from a survey, from your own observation.' },
+    { id: 'dp12', focus: 'self', prompt: 'Name one accommodation you wish more people offered you. Add it to your wish list.' },
+    { id: 'dp13', focus: 'self', prompt: 'Name one trigger you noticed today. What was happening right before it?' },
+    { id: 'dp14', focus: 'self', prompt: 'Eat a meal today without checking your phone. Notice the food.' },
+    { id: 'dp15', focus: 'self', prompt: 'Take 5 minutes of silence today. No music, no talking, no scrolling.' },
+    { id: 'dp16', focus: 'practice', prompt: 'Send one email today that you have been putting off. Even if it is short. Even if it is imperfect.' },
+    { id: 'dp17', focus: 'practice', prompt: 'Ask one clarifying question in class today: "Can you say that another way?"' },
+    { id: 'dp18', focus: 'practice', prompt: 'Disagree once with a peer today, kindly. Not just to argue, but to practice the muscle.' },
+    { id: 'dp19', focus: 'practice', prompt: 'Find one boundary you have wanted to set. State it to one person today.' },
+    { id: 'dp20', focus: 'practice', prompt: 'Make one request that scares you a little. Notice what happens after.' },
+    { id: 'dp21', focus: 'reflect', prompt: 'At the end of today, write down: What did I ask for? What did I avoid asking for? Why?' },
+    { id: 'dp22', focus: 'reflect', prompt: 'Notice once today when you almost spoke up but did not. What was the fear? Was it accurate?' },
+    { id: 'dp23', focus: 'reflect', prompt: 'Track one accommodation. Did it help? How? What is missing?' },
+    { id: 'dp24', focus: 'reflect', prompt: 'Notice one moment of disempowerment today. What was the trigger? What would have helped?' },
+    { id: 'dp25', focus: 'reflect', prompt: 'Notice one moment of agency today. What did you do? What allowed it?' },
+    { id: 'dp26', focus: 'community', prompt: 'Tell one classmate you are glad they are in school today.' },
+    { id: 'dp27', focus: 'community', prompt: 'Find one person with a different accommodation than yours. Ask them how it works for them.' },
+    { id: 'dp28', focus: 'community', prompt: 'Sit with someone different at lunch today.' },
+    { id: 'dp29', focus: 'community', prompt: 'Ask a friend for help with something small.' },
+    { id: 'dp30', focus: 'community', prompt: 'Thank a teacher who has been good to you. In writing. Today.' },
+    { id: 'dp31', focus: 'voice', prompt: 'Practice saying "I need a break" out loud. 3 different tones: tired, firm, playful.' },
+    { id: 'dp32', focus: 'voice', prompt: 'Try one sentence you have only thought, not said: "When you ___, I feel ___." Write it. Maybe say it.' },
+    { id: 'dp33', focus: 'rights', prompt: 'Look up the name of your state\'s special education law. Skim it for 5 minutes.' },
+    { id: 'dp34', focus: 'rights', prompt: 'Find out: who is your IEP case manager and what is their email?' },
+    { id: 'dp35', focus: 'self', prompt: 'Track your energy across the day. When is it highest? Lowest? What patterns emerge?' },
+    { id: 'dp36', focus: 'self', prompt: 'Name a sensory input that helps you (texture, sound, smell). Bring more of it today.' },
+    { id: 'dp37', focus: 'self', prompt: 'Name a sensory input that overwhelms you. Reduce it today.' },
+    { id: 'dp38', focus: 'practice', prompt: 'Apologize once today, well. "I\'m sorry I ___. Here\'s what I\'ll do differently."' },
+    { id: 'dp39', focus: 'practice', prompt: 'Accept a compliment without deflecting. Just say "Thank you."' },
+    { id: 'dp40', focus: 'reflect', prompt: 'Re-read your IEP today. Note one accommodation that has not been working.' },
+    { id: 'dp41', focus: 'reflect', prompt: 'Look at last year\'s grades. What patterns do you see in classes that worked vs. did not?' },
+    { id: 'dp42', focus: 'community', prompt: 'Compliment a teacher today, specifically. "I really learned ___ when you ___."' },
+    { id: 'dp43', focus: 'community', prompt: 'Bring a small kindness to school today. A note, a snack to share, a saved seat.' },
+    { id: 'dp44', focus: 'community', prompt: 'Notice one student who seems to be alone today. Decide if you can do something.' },
+    { id: 'dp45', focus: 'voice', prompt: 'Practice saying "no, thank you" 3 times in a mirror.' },
+    { id: 'dp46', focus: 'voice', prompt: 'Practice saying "I changed my mind" out loud. It is a complete sentence.' },
+    { id: 'dp47', focus: 'rights', prompt: 'Identify ONE adult at school you would trust with a hard story. Name them.' },
+    { id: 'dp48', focus: 'rights', prompt: 'Identify ONE adult outside of school you would trust with a hard story. Name them.' },
+    { id: 'dp49', focus: 'self', prompt: 'Write one boundary you wish your family respected. Just write it. Sharing is optional.' },
+    { id: 'dp50', focus: 'self', prompt: 'Notice one body sensation today (tight shoulders, dry mouth, knot in stomach). What was happening?' },
+    { id: 'dp51', focus: 'practice', prompt: 'Make eye contact with one person you usually avoid. Even briefly.' },
+    { id: 'dp52', focus: 'practice', prompt: 'Hold a pause for 5 full seconds before responding to a question today.' },
+    { id: 'dp53', focus: 'reflect', prompt: 'Notice which class is hardest today. Why? What would help by 25%?' },
+    { id: 'dp54', focus: 'reflect', prompt: 'Notice which class is easiest today. Why? What can you take FROM it INTO the hard class?' },
+    { id: 'dp55', focus: 'community', prompt: 'Send a text or letter to one person who matters to you and tell them why.' },
+    { id: 'dp56', focus: 'voice', prompt: 'Disagree with one adult today, respectfully. Use: "I see it differently. Here is why."' },
+    { id: 'dp57', focus: 'rights', prompt: 'Read one accommodation in your IEP closely. What does it actually mean in real life?' },
+    { id: 'dp58', focus: 'self', prompt: 'Pick one trigger and write your early warning signs (e.g., before I meltdown, I usually ___).' },
+    { id: 'dp59', focus: 'practice', prompt: 'Try a new script today. Even if awkward. Note what part felt strange.' },
+    { id: 'dp60', focus: 'reflect', prompt: 'Track 24 hours of accommodation usage. Which were available? Which were used?' },
+    { id: 'dp61', focus: 'voice', prompt: 'Tell someone what you are good at today. Out loud. Without softening it.' },
+    { id: 'dp62', focus: 'voice', prompt: 'Tell someone what you are struggling with today. Pick a safe person.' },
+    { id: 'dp63', focus: 'rights', prompt: 'Note your right to a free appropriate public education (FAPE). Say it out loud.' },
+    { id: 'dp64', focus: 'self', prompt: 'Identify one mask you wear at school. What does it cost you?' },
+    { id: 'dp65', focus: 'practice', prompt: 'Hold a boundary you have set for at least 24 hours. Notice the discomfort. Hold anyway.' },
+    { id: 'dp66', focus: 'reflect', prompt: 'Notice once today: was that anxiety, or excitement? They feel similar but are different.' },
+    { id: 'dp67', focus: 'community', prompt: 'Find one community space (online or in-person) where someone with your identity shares their experience.' },
+    { id: 'dp68', focus: 'voice', prompt: 'Ask a question in class that you would normally not. Even a small one.' },
+    { id: 'dp69', focus: 'rights', prompt: 'Print or screenshot one section of your IEP. Carry it for a week.' },
+    { id: 'dp70', focus: 'self', prompt: 'Plan one small joy for tomorrow. Schedule it. Defend it.' },
+    { id: 'dp71', focus: 'practice', prompt: 'Refuse one thing today that you would have said yes to last week. Just one.' },
+    { id: 'dp72', focus: 'reflect', prompt: 'What is one fear that has been driving your masking? Name it. Is it still true?' },
+    { id: 'dp73', focus: 'community', prompt: 'Make plans with one person this week. Initiating beats hoping.' },
+    { id: 'dp74', focus: 'voice', prompt: 'Practice this sentence: "I am not finished talking." Use it once today.' },
+    { id: 'dp75', focus: 'rights', prompt: 'Read a 1-page summary of the ADA today.' },
+    { id: 'dp76', focus: 'self', prompt: 'Take an inventory of your supports. Who? What? When? What is missing?' },
+    { id: 'dp77', focus: 'practice', prompt: 'Set one alarm reminder today for a regulation break. Honor it when it rings.' },
+    { id: 'dp78', focus: 'reflect', prompt: 'Notice one assumption you made today that turned out to be wrong.' },
+    { id: 'dp79', focus: 'community', prompt: 'Find one historical self-advocate with your identity. Read their bio. Save it.' },
+    { id: 'dp80', focus: 'voice', prompt: 'Lower your voice once today. Slower. Steadier. Notice how others respond.' },
+    { id: 'dp81', focus: 'rights', prompt: 'Find the parent rights or procedural safeguards document for your state. Bookmark it.' },
+    { id: 'dp82', focus: 'self', prompt: 'Forgive yourself for one thing today. Out loud. Now.' },
+    { id: 'dp83', focus: 'practice', prompt: 'Try the sandwich: agree, push, agree. "I hear ___. I want ___. I appreciate ___."' },
+    { id: 'dp84', focus: 'reflect', prompt: 'What is one belief about yourself you have outgrown? Notice the new belief.' },
+    { id: 'dp85', focus: 'community', prompt: 'Reach out to a person from your past who supported you. Thank them now.' },
+    { id: 'dp86', focus: 'voice', prompt: 'In a group today, say one thing that no one else has said yet.' },
+    { id: 'dp87', focus: 'rights', prompt: 'Identify your school\'s formal complaint process. Just look. Bookmark.' },
+    { id: 'dp88', focus: 'self', prompt: 'Schedule a full hour of solitude this week. Defend it.' },
+    { id: 'dp89', focus: 'practice', prompt: 'Try to ask the same thing 3 times in 3 different ways. Notice which works.' },
+    { id: 'dp90', focus: 'reflect', prompt: 'Looking back at this week: what is one thing you would do differently?' },
+    { id: 'dp91', focus: 'community', prompt: 'Recommend one resource to one person today. Pay forward.' },
+    { id: 'dp92', focus: 'voice', prompt: 'Express gratitude out loud to one adult today, specifically: "When you ___, I felt ___."' },
+    { id: 'dp93', focus: 'rights', prompt: 'Note: you have a right to refuse to consent to a new evaluation. What do you actually want evaluated?' },
+    { id: 'dp94', focus: 'self', prompt: 'Identify one talent of yours that has nothing to do with school. Make space for it this week.' },
+    { id: 'dp95', focus: 'practice', prompt: 'Practice one scripted phrase with a friend or family member before the real meeting.' },
+    { id: 'dp96', focus: 'reflect', prompt: 'Identify the last time you felt fully seen at school. What conditions made that possible?' },
+    { id: 'dp97', focus: 'community', prompt: 'Read one disability rights essay today. Take 5 notes.' },
+    { id: 'dp98', focus: 'voice', prompt: 'Write a 1-page letter to yourself from your future advocate self. Save it.' },
+    { id: 'dp99', focus: 'rights', prompt: 'Identify what part of your IEP is most often ignored. Document the next ignored instance.' },
+    { id: 'dp100', focus: 'self', prompt: 'Compliment yourself out loud today. Be specific. "I did ___ well today."' },
+    { id: 'dp101', focus: 'practice', prompt: 'Negotiate one small thing today. Snack, screen time, seat choice. Practice the muscle.' },
+    { id: 'dp102', focus: 'reflect', prompt: 'Compare yourself one year ago to today. List 3 things that are different.' },
+    { id: 'dp103', focus: 'community', prompt: 'Find one disability-led organization. Sign up for their newsletter.' },
+    { id: 'dp104', focus: 'voice', prompt: 'Practice the most important sentence you have not yet said.' },
+    { id: 'dp105', focus: 'self', prompt: 'Pick one thing you have been blaming yourself for and instead blame the system. Notice what shifts.' },
+    { id: 'dp106', focus: 'practice', prompt: 'Reach out to one new ally today.' },
+    { id: 'dp107', focus: 'reflect', prompt: 'Name a recurring pattern in your school year. What might break it?' },
+    { id: 'dp108', focus: 'rights', prompt: 'Memorize the name of your state\'s parent training and information center.' },
+    { id: 'dp109', focus: 'community', prompt: 'Volunteer for one small thing today. Setting up, cleaning, lending, helping.' },
+    { id: 'dp110', focus: 'voice', prompt: 'Say no to one thing today. Even a small thing.' },
+    { id: 'dp111', focus: 'self', prompt: 'Try eating slower today.' },
+    { id: 'dp112', focus: 'practice', prompt: 'Send a 1-line check-in to a friend today.' },
+    { id: 'dp113', focus: 'reflect', prompt: 'Notice the difference between a need and a want today. List 3 of each.' },
+    { id: 'dp114', focus: 'rights', prompt: 'Look up: how many days does your school have to respond to an evaluation request?' },
+    { id: 'dp115', focus: 'community', prompt: 'Smile at a stranger today.' },
+    { id: 'dp116', focus: 'voice', prompt: 'Speak up when an injustice happens, even quietly. To one peer. To one teacher.' },
+    { id: 'dp117', focus: 'self', prompt: 'Forgive yourself for the masking you did today. It was survival.' },
+    { id: 'dp118', focus: 'practice', prompt: 'Have a hard conversation today, well-prepared.' },
+    { id: 'dp119', focus: 'reflect', prompt: 'Note one assumption about your future you have been holding. Examine it.' },
+    { id: 'dp120', focus: 'rights', prompt: 'Find the email of one school board member. Subscribe to board agendas.' },
+    { id: 'dp121', focus: 'community', prompt: 'Reach out to one disability-led group online. Even just to read.' },
+    { id: 'dp122', focus: 'voice', prompt: 'Use the word "boundary" in a sentence today. Like a tool, not an accusation.' },
+    { id: 'dp123', focus: 'self', prompt: 'Practice receiving help today. Without immediately offering to repay it.' },
+    { id: 'dp124', focus: 'practice', prompt: 'Set one goal for this week. Write it down. Tell one person.' },
+    { id: 'dp125', focus: 'reflect', prompt: 'What is one core value you have? When does that value cost you something?' },
+    { id: 'dp126', focus: 'rights', prompt: 'Find: the office for civil rights regional office for your state.' },
+    { id: 'dp127', focus: 'community', prompt: 'Watch one disability rights documentary this week.' },
+    { id: 'dp128', focus: 'voice', prompt: 'Write a 3-line speech to yourself before the next hard moment.' },
+    { id: 'dp129', focus: 'self', prompt: 'Pick one piece of clothing today that you wear for YOU, not for camouflage.' },
+    { id: 'dp130', focus: 'practice', prompt: 'Practice 1 minute of breath-controlled silence in a tense conversation.' },
+    { id: 'dp131', focus: 'reflect', prompt: 'What is one shame you carry that is not actually yours?' },
+    { id: 'dp132', focus: 'rights', prompt: 'Find: the special education ombudsperson for your state, if there is one.' },
+    { id: 'dp133', focus: 'community', prompt: 'Befriend a peer with a different accommodation than yours.' },
+    { id: 'dp134', focus: 'voice', prompt: 'Say goodbye well today. To one person. With specific gratitude.' },
+    { id: 'dp135', focus: 'self', prompt: 'Pick one piece of feedback you have received and ask: was that true?' },
+    { id: 'dp136', focus: 'practice', prompt: 'Take an action that scares you a little today.' },
+    { id: 'dp137', focus: 'reflect', prompt: 'Read your IEP goals. Which is real progress? Which is meaningless to you?' },
+    { id: 'dp138', focus: 'rights', prompt: 'Note: you can have your IEP meeting attendees include who YOU want.' },
+    { id: 'dp139', focus: 'community', prompt: 'Find one person you can text when you need to vent. Confirm with them today.' },
+    { id: 'dp140', focus: 'voice', prompt: 'Write the truth about something you have been hiding. You do not have to share it.' },
+    { id: 'dp141', focus: 'self', prompt: 'Schedule a doctor or therapy appointment you have been putting off.' },
+    { id: 'dp142', focus: 'practice', prompt: 'Practice the phrase "Tell me more." It is a complete advocacy move.' },
+    { id: 'dp143', focus: 'reflect', prompt: 'Notice one boundary someone else holds well. Learn from it.' },
+    { id: 'dp144', focus: 'rights', prompt: 'Find: your state\'s P&A organization (Protection and Advocacy).' },
+    { id: 'dp145', focus: 'community', prompt: 'Recommend a book, movie, or song to one person today.' },
+    { id: 'dp146', focus: 'voice', prompt: 'Send a written request, however brief, today.' },
+    { id: 'dp147', focus: 'self', prompt: 'Pick one form of media that drains you and skip it today.' },
+    { id: 'dp148', focus: 'practice', prompt: 'Try the phrase "I am going to think about it overnight." Buy yourself time.' },
+    { id: 'dp149', focus: 'reflect', prompt: 'Pick one part of your life where you are NOT advocating. Why? Choose: keep silent, or speak.' },
+    { id: 'dp150', focus: 'rights', prompt: 'Recall: you have a right to be at your IEP meeting. Plan to attend.' },
+    { id: 'dp151', focus: 'community', prompt: 'Help one classmate with something today.' },
+    { id: 'dp152', focus: 'voice', prompt: 'Make a long-overdue phone call today.' },
+    { id: 'dp153', focus: 'self', prompt: 'Notice one body cue you have been ignoring (hunger, thirst, fatigue). Honor it.' },
+    { id: 'dp154', focus: 'practice', prompt: 'Practice asking for a specific accommodation in a low-stakes situation.' },
+    { id: 'dp155', focus: 'reflect', prompt: 'Name one thing in your life that is working. Just one. Acknowledge it.' },
+    { id: 'dp156', focus: 'rights', prompt: 'Print: this 1-pager of your rights. Carry it.' },
+    { id: 'dp157', focus: 'community', prompt: 'Invite one person to do something with you today.' },
+    { id: 'dp158', focus: 'voice', prompt: 'Speak the name of an emotion out loud: "I am feeling ___." Multiple times today.' },
+    { id: 'dp159', focus: 'self', prompt: 'Choose one part of yourself you have been ashamed of. Tell it: "You are not the enemy."' },
+    { id: 'dp160', focus: 'practice', prompt: 'Try one new boundary today. Even tiny.' },
+    { id: 'dp161', focus: 'reflect', prompt: 'List the last 3 things you said yes to that you should have said no to. Pattern?' },
+    { id: 'dp162', focus: 'rights', prompt: 'Confirm: who has access to your IEP? Limit it if needed.' },
+    { id: 'dp163', focus: 'community', prompt: 'Engage with one online community of self-advocates this week.' },
+    { id: 'dp164', focus: 'voice', prompt: 'Tell a teacher one thing they could change that would help. Not a complaint. A request.' },
+    { id: 'dp165', focus: 'self', prompt: 'Plan one thing you can look forward to. Defend it from interruption.' },
+    { id: 'dp166', focus: 'practice', prompt: 'Try the open-ended ask: "What ideas do YOU have?"' },
+    { id: 'dp167', focus: 'reflect', prompt: 'Audit your week. Where did you grow? Where did you shrink?' },
+    { id: 'dp168', focus: 'rights', prompt: 'Note: you can REVOKE consent to special education in writing. (Be careful but know it.)' },
+    { id: 'dp169', focus: 'community', prompt: 'Send a thank-you note to a former teacher.' },
+    { id: 'dp170', focus: 'voice', prompt: 'Try the phrase "I changed my mind." It does not require an explanation.' },
+    { id: 'dp171', focus: 'self', prompt: 'Identify 1 way you self-soothe that hurts you. Replace it with one that does not.' },
+    { id: 'dp172', focus: 'practice', prompt: 'Practice introducing yourself to a new person today.' },
+    { id: 'dp173', focus: 'reflect', prompt: 'Identify what was different in your last good day. Recreate one piece tomorrow.' },
+    { id: 'dp174', focus: 'rights', prompt: 'Verify: is your IEP up to date? Find the last review date.' },
+    { id: 'dp175', focus: 'community', prompt: 'Show up to a school event you have been avoiding.' },
+    { id: 'dp176', focus: 'voice', prompt: 'Speak in your strongest voice: "I deserve to be here."' },
+    { id: 'dp177', focus: 'self', prompt: 'Pick one habit to start. One habit to stop. Both are advocacy.' },
+    { id: 'dp178', focus: 'practice', prompt: 'Practice a hard apology today. Specific. No excuse.' },
+    { id: 'dp179', focus: 'reflect', prompt: 'Name an unprocessed feeling. Where is it in your body?' },
+    { id: 'dp180', focus: 'rights', prompt: 'Save: the phone number of your district office.' },
+    { id: 'dp181', focus: 'community', prompt: 'Hug one person who needs it (with consent).' },
+    { id: 'dp182', focus: 'voice', prompt: 'Speak truthfully about one thing you have been performing.' },
+    { id: 'dp183', focus: 'self', prompt: 'Honor one rest you have been resisting.' },
+    { id: 'dp184', focus: 'practice', prompt: 'Make a call you have been avoiding. Even a short one.' },
+    { id: 'dp185', focus: 'reflect', prompt: 'List 3 things you are afraid will happen if you advocate. Examine each: is it likely?' },
+    { id: 'dp186', focus: 'rights', prompt: 'Identify: a free legal aid organization for special education in your area.' },
+    { id: 'dp187', focus: 'community', prompt: 'Reach out across a difference today.' },
+    { id: 'dp188', focus: 'voice', prompt: 'Try the phrase "I appreciate that AND ___" today.' },
+    { id: 'dp189', focus: 'self', prompt: 'Sit with one feeling for 5 minutes before reacting.' },
+    { id: 'dp190', focus: 'practice', prompt: 'Make a request without softening it with "if it\'s not too much trouble."' },
+    { id: 'dp191', focus: 'reflect', prompt: 'Imagine yourself in 5 years. What does that person want you to do this week?' },
+    { id: 'dp192', focus: 'rights', prompt: 'Note: you have a right to a fair hearing if you disagree with IEP decisions.' },
+    { id: 'dp193', focus: 'community', prompt: 'Send a kind anonymous note today.' },
+    { id: 'dp194', focus: 'voice', prompt: 'Use the phrase "This isn\'t working for me." Once today. No more, no less.' },
+    { id: 'dp195', focus: 'self', prompt: 'Plan a small reward for an upcoming hard advocacy moment.' },
+    { id: 'dp196', focus: 'practice', prompt: 'Reach out to an old mentor. Just to say hi.' },
+    { id: 'dp197', focus: 'reflect', prompt: 'What is the kindest sentence you could say to yourself right now? Say it.' },
+    { id: 'dp198', focus: 'rights', prompt: 'Find your school\'s nondiscrimination policy. Read it once.' },
+    { id: 'dp199', focus: 'community', prompt: 'Show up to a community event in your city, even briefly.' },
+    { id: 'dp200', focus: 'voice', prompt: 'End today with one sentence aloud: "I matter."' }
+  ];
+var CRISIS_FIRST_AID = [
+    { id: 'cfa1', situation: 'I just got bad news and I am about to lose it in public', plan: ['Step outside. Bathroom, hallway, car.', 'Wash hands in cold water. Push past wrist.', '4-7-8 breath: in 4, hold 7, out 8. Repeat 3x.', 'Text one person. One word: "Tough."', 'Decide: re-enter or go home. Whichever is safer for you.'], whyItHelps: 'Cold water + breath activates parasympathetic. Texting reaches for connection. Decision-making restores agency.' },
+    { id: 'cfa2', situation: 'I am about to send an angry message I will regret', plan: ['Write it. Do not send.', 'Save as draft. Walk away.', 'Drink water. 5 deep breaths.', 'Re-read in 24 hours. Edit or delete.', 'If you must respond now, send: "I want to think about this. I will respond by ___."'], whyItHelps: 'Most regret in advocacy comes from hot replies. Cold replies preserve relationships and outcomes.' },
+    { id: 'cfa3', situation: 'I cannot breathe normally during a panic attack', plan: ['Name 5 things you can see.', 'Name 4 things you can touch.', 'Name 3 things you can hear.', 'Name 2 things you can smell.', 'Name 1 thing you can taste.'], whyItHelps: 'Grounding pulls you out of catastrophic thinking and into present sensory experience. Slows breath naturally.' },
+    { id: 'cfa4', situation: 'I want to hurt myself', plan: ['Tell someone. Now. Adult. Friend. Crisis line.', 'Crisis Text Line: text HOME to 741741.', 'Suicide and Crisis Lifeline: 988.', 'Stay with someone until the urge passes. Do not be alone.', 'Remove access to means if possible.'], whyItHelps: 'Self-harm urge is not always permanent. Most urges pass within 90 minutes. Connection and time are protective.' },
+    { id: 'cfa5', situation: 'I am thinking about suicide', plan: ['Call 988 NOW.', 'Tell one safe person right now.', 'Stay with them. Do not be alone.', 'Remove access to means.', 'Get to ER if no other support is available.'], whyItHelps: 'Suicide is preventable. Crisis intervention works. You deserve help.' },
+    { id: 'cfa6', situation: 'I cannot face going to school today', plan: ['Tell someone honestly. Parent or guardian first.', 'Is it acute (one bad day) or chronic (pattern)?', 'If acute: take 1 day. Plan a soft return tomorrow.', 'If chronic: schedule meeting with counselor THIS WEEK.', 'Do not try to push through chronic without help.'], whyItHelps: 'Distinguishing acute from chronic prevents 1 bad day from becoming a month of avoidance. Builds in support.' },
+    { id: 'cfa7', situation: 'I just had a meltdown in front of people', plan: ['Find a quiet place. Recover fully before re-emerging.', 'Drink water. Eat something.', 'Tell yourself: "That was overload, not failure."', 'Decide when to re-engage. Could be hours.', 'Tomorrow: think about what triggered it. Adjust supports.'], whyItHelps: 'Meltdowns are nervous system events, not character flaws. Recovery first, analysis second.' },
+    { id: 'cfa8', situation: 'I just embarrassed myself in class', plan: ['Take 10 breaths.', 'Tell yourself: "Everyone has this. They forgot in 10 minutes. I will too."', 'If you can: laugh once. Even fake. It tells your nervous system you survive.', 'If you cannot: silent acknowledgment. Move on.', 'Tonight: write 3 things that went well today, unrelated.'], whyItHelps: 'Shame loops require interruption. Action and reframe break the loop.' },
+    { id: 'cfa9', situation: 'A teacher just yelled at me', plan: ['Do not respond in the moment. Wait.', 'After class: go to bathroom or counselor. Regulate first.', 'Document: what was said, when, who saw.', 'Tell a trusted adult within 24 hours.', 'If pattern: escalate to principal in writing.'], whyItHelps: 'Yelling is rarely about you. Documentation creates record. Trusted adult interrupts isolation.' },
+    { id: 'cfa10', situation: 'I just got a much lower grade than expected', plan: ['Wait 1 hour before responding.', 'Look at the actual feedback, not just the grade.', 'Email teacher: "I would like to understand. Can we meet?"', 'Plan: what could you change? Or appeal?', 'Self-compassion: 1 grade is data, not identity.'], whyItHelps: 'Hot reactions to grades damage relationships. Cool ones produce conversations.' },
+    { id: 'cfa11', situation: 'I am being ghosted by a friend', plan: ['Send 1 message. Direct. "Hi, I noticed we have not talked. Is everything okay?"', 'Wait 5 days.', 'If no response, do not send again. Do not chase.', 'Mourn the loss internally. It is real.', 'Reach out to other friends. Build wider net.'], whyItHelps: 'Chasing hurts you and confirms low value. One direct ask preserves dignity. Wider net is the long-term answer.' },
+    { id: 'cfa12', situation: 'I am being left out of a group plan', plan: ['Decide: do you want to be there or not?', 'If yes: ask one person directly. "I noticed I was not included. I would like to be."', 'If they say it was an oversight: accept.', 'If they shrug: it tells you something. Adjust.', 'Plan one of your own. Invite who matters.'], whyItHelps: 'Direct asks clarify the friendship. Building your own thing reclaims agency.' },
+    { id: 'cfa13', situation: 'A parent or family member just said something hurtful', plan: ['Walk away. Do not respond in the moment.', 'Tell a trusted outside person. Vent.', 'Tomorrow: address it. "When you said ___, I felt ___."', 'Do not let it sit in silence.', 'If pattern: family counseling or own therapy.'], whyItHelps: 'In-the-moment family conflict escalates. Cool address preserves relationship and names the harm.' },
+    { id: 'cfa14', situation: 'I just got a diagnosis I did not expect', plan: ['Allow shock. It is real.', 'Do not Google for 24 hours. Misinformation everywhere.', 'Get the doctor or specialist information from trusted source.', 'Find one community of people with this diagnosis.', 'Tell 1 trusted person.'], whyItHelps: 'Diagnosis shock is normal. Community shifts the meaning from "wrong with me" to "this is part of me." Time before information protects.' },
+    { id: 'cfa15', situation: 'I just lost something important', plan: ['Sit with it. Crying is allowed.', 'Tell 1 person.', 'Do not make major decisions for 48 hours.', 'Plan one small act of self-care today.', 'Schedule a longer talk with a trusted person within the week.'], whyItHelps: 'Grief moves through. Forcing it makes it stuck. Witness is part of moving.' },
+    { id: 'cfa16', situation: 'I just realized I have been being abused', plan: ['You are not alone. This was not your fault.', 'Tell 1 safe adult IMMEDIATELY. Counselor, doctor, trusted family.', 'If unsafe at home: school counselor can connect you to resources.', 'Document if possible.', 'Childhelp: 1-800-422-4453.'], whyItHelps: 'Naming abuse is the first step out. Safe disclosure is essential. You deserve help.' },
+    { id: 'cfa17', situation: 'I am being sexually pressured', plan: ['You always have the right to say no.', 'No is a complete sentence.', 'Tell 1 safe adult.', 'Get to a safe space.', 'RAINN: 1-800-656-4673.'], whyItHelps: 'Coercion is real. Help exists. Your no does not need to be explained.' },
+    { id: 'cfa18', situation: 'I am being cyberbullied', plan: ['Screenshot everything. Date stamps.', 'Block the person.', 'Tell 1 trusted adult.', 'Report to platform.', 'Report to school if peer-based.'], whyItHelps: 'Documentation is power. Adults can intervene. Most platforms respond to reports.' },
+    { id: 'cfa19', situation: 'I just broke up with someone or they broke up with me', plan: ['Allow it to hurt. Do not skip.', 'Tell 2 trusted people.', 'Avoid social media for a few days.', 'Plan structure: school, sleep, food, exercise.', 'Be patient. It takes time.'], whyItHelps: 'Breakup grief is real. Skipping the feeling postpones it. Structure protects you while you grieve.' },
+    { id: 'cfa20', situation: 'I am scared of an upcoming meeting or test', plan: ['Name the specific fear in writing.', 'Test the fear: what is the actual worst case? How likely?', 'Plan: what would you do if the worst happened?', 'Practice your part. Out loud.', 'Sleep and eat well the night before.'], whyItHelps: 'Generic fear is overwhelming. Specific fear is manageable. Naming and planning shrink it.' },
+    { id: 'cfa21', situation: 'I am stuck in a comparison spiral with classmates', plan: ['Close the platform that triggers it.', 'List 3 of your own wins this month.', 'Remember: their highlight reel is not their full life.', 'Reach out to someone you love. Real connection beats parasocial.', 'Self-compassion: "I am on my own timeline."'], whyItHelps: 'Comparison spirals are pattern-locked. Breaking the pattern is the intervention.' },
+    { id: 'cfa22', situation: 'I just got into a fight with my best friend', plan: ['Do not text them in anger. 24-hour rule.', 'Write what you wanted to say. Do not send.', 'Tomorrow: re-read. Edit.', 'Reach out: "I want to talk. Are you up for it tomorrow?"', 'Have the conversation when both calm.'], whyItHelps: 'Hot fights become permanent rifts. Cool fights repair.' },
+    { id: 'cfa23', situation: 'A trusted adult disappointed me', plan: ['Allow disappointment. It is real.', 'Decide: tell them, or note for yourself?', 'If tell: "When you ___, I felt ___."', 'If just note: write it down, save it, watch for pattern.', 'Build wider net of trusted adults.'], whyItHelps: 'Adults are not perfect. Naming the harm preserves the relationship if it can be saved. Building wider net prevents collapse.' },
+    { id: 'cfa24', situation: 'I am questioning my whole identity', plan: ['It is okay to not know.', 'Talk to one person who is further along.', 'Read or watch 1 community-led piece.', 'Do not decide right now.', 'Schedule longer reflection with counselor or therapist.'], whyItHelps: 'Identity work is gradual. Premature commitment causes problems. Community accelerates clarity.' },
+    { id: 'cfa25', situation: 'I am stuck in a job, class, or relationship I cannot leave yet', plan: ['Accept the constraint for now.', 'Make 1 list: what is working. Even tiny.', 'Make 1 list: what needs to change when you can.', 'Plan: when CAN you leave? Date. Steps.', 'Reach for support inside the constraint.'], whyItHelps: 'Forced acceptance leads to depression. Strategic acceptance plus planning leads to escape.' },
+    { id: 'cfa26', situation: 'I am being misgendered repeatedly', plan: ['Decide your stance: educate, correct, or disengage.', 'If pattern with one person, address directly. "I have asked. Please use ___ for me."', 'If pattern with institution, document and escalate.', 'Find community where you are seen correctly. Restore.', 'Self-compassion: their mistake is not your failure.'], whyItHelps: 'Misgendering accumulates. Naming it interrupts the pattern. Community restores.' },
+    { id: 'cfa27', situation: 'I just got rejected from something important', plan: ['Allow disappointment.', 'Do NOT spiral on "what is wrong with me."', 'Look at the rejection coldly: was it about fit, timing, randomness?', 'Reach out to someone who loves you.', 'Pick the next move. Apply elsewhere, retry, pivot.'], whyItHelps: 'Rejection is data, not identity. Most rejection is timing or fit, not worth.' },
+    { id: 'cfa28', situation: 'I am about to enter a confrontation', plan: ['Write down what you want to say.', 'Practice it once aloud.', 'Bring a witness if possible.', 'Set a time limit: "I have 20 minutes."', 'Have a backup adult to call after.'], whyItHelps: 'Confrontation prepared is half-won. Confrontation alone, escalates.' },
+    { id: 'cfa29', situation: 'I just received negative feedback in writing', plan: ['Read it once. Do not respond.', 'Wait 24 hours.', 'Re-read. Highlight what is true, even if hard.', 'Highlight what is unfair or wrong.', 'Respond only to the true parts. Address the unfair separately if needed.'], whyItHelps: 'Written feedback feels worse than verbal. Time and parsing make it digestible.' },
+    { id: 'cfa30', situation: 'I am overwhelmed by everything at once', plan: ['Step away. Walk if possible.', 'Pick the smallest thing. Just that.', 'Tell 1 person you trust: "I am drowning."', 'Schedule a longer support conversation.', 'Skip what can be skipped. Today is survival.'], whyItHelps: 'Overwhelm freezes problem-solving. Smallest action restores agency. Naming it activates support.' }
+  ];
+var SCENARIO_BANK = [
+    {
+      id: 'sb1',
+      title: 'The Forgotten Accommodation',
+      grade: '7th',
+      who: 'Maya, autistic 7th grader with sensory accommodations',
+      situation: 'Maya has an IEP accommodation to wear noise-canceling headphones in study hall. A new aide tells her she cannot wear them because "they distract other students."',
+      whatHappensIfNoAdvocacy: 'Maya complies. Spends study hall overstimulated. Cannot complete assignments. Performance dips for weeks before anyone notices.',
+      strongResponse: [
+        'Maya says: "These are in my IEP. Could we ask Ms. Park (case manager) to confirm?"',
+        'Aide can call Ms. Park or email her right then.',
+        'After study hall, Maya emails Ms. Park: "Today the aide told me I could not wear my headphones. I told her they are in my IEP. We did not call you. Could you check with her so this does not happen again?"'
+      ],
+      adultRole: 'Case manager Ms. Park responds within 24 hours, clarifies with the aide, and asks Maya: "Did you feel okay handling that in the moment? Want to walk through it with me for next time?"',
+      keyMoves: [
+        'Specific naming of the accommodation',
+        'Asks to verify rather than just argue',
+        'Same-day email creates record',
+        'Adult responds quickly and reinforces the advocacy attempt'
+      ],
+      reflectionQuestions: [
+        'What would Maya have to know in advance to respond this way?',
+        'Where in her IEP would she find this accommodation?',
+        'What is the difference between "I have a right to this" and "Could we check"?'
+      ]
+    },
+    {
+      id: 'sb2',
+      title: 'The Group Project Carrier',
+      grade: '10th',
+      who: 'Jamal, ADHD 10th grader',
+      situation: 'Jamal\'s group project group has 2 students who are not pulling their weight. Project is due Friday. Jamal has been picking up the slack but is exhausted and falling behind on his own homework.',
+      whatHappensIfNoAdvocacy: 'Jamal does most of the project alone. Misses sleep. Gets an A on the project but a C on other class work because of the time spent.',
+      strongResponse: [
+        'Jamal emails his teacher Wednesday: "Hi Ms. Reyes, I want to give you a heads up. In our group project, two members have not been contributing. I have been picking up extra. I am not asking you to grade them differently. I am asking for permission to step back so it does not affect my work in other classes. Could we talk before Friday?"',
+        'Ms. Reyes meets with Jamal and the group. Helps redistribute.',
+        'Jamal protects his sleep and other work.'
+      ],
+      adultRole: 'Teacher steps in to help redistribute, not to punish. Names the pattern for the team.',
+      keyMoves: [
+        'Proactive communication (Wednesday vs. Friday)',
+        'Boundary statement: "I am not asking for X. I am asking for Y."',
+        'Frames as protecting other classwork, not as complaint about peers'
+      ],
+      reflectionQuestions: [
+        'What is the difference between snitching and self-advocating?',
+        'How do you push back on a group dynamic without making enemies?',
+        'When does picking up the slack become bad for you?'
+      ]
+    },
+    {
+      id: 'sb3',
+      title: 'The Wrong Diagnosis',
+      grade: '9th',
+      who: 'Avery, recently diagnosed with anxiety, also has undiagnosed ADHD',
+      situation: 'Avery\'s 504 plan was written for anxiety, but they suspect ADHD is the bigger driver of academic struggles. Mom is reluctant to push for more evaluation.',
+      whatHappensIfNoAdvocacy: 'Avery continues struggling. Plan accommodates anxiety but not the executive function piece. Grades dip, anxiety worsens because of the dipping grades.',
+      strongResponse: [
+        'Avery talks to school counselor: "I have been doing more research and I think I have ADHD. The anxiety accommodations help but they are not enough. Can we add an ADHD evaluation?"',
+        'Counselor explains the process.',
+        'Avery talks to mom: "Mom, I have been thinking about this. The anxiety accommodations help, AND I think there is more going on. Could we ask for an ADHD evaluation? Even if it comes back negative, then we know."'
+      ],
+      adultRole: 'Counselor walks Avery through the evaluation request. Helps Avery frame the conversation with parent. Does not dismiss the self-suspicion.',
+      keyMoves: [
+        'Trusting your own observation',
+        'Asking for evaluation, not diagnosis - school does the evaluation',
+        'Framing parent conversation as "we already have data, lets get more"'
+      ],
+      reflectionQuestions: [
+        'When should you trust your own sense of yourself over what adults say?',
+        'How do you ask for a new evaluation without seeming like you are giving up on the current plan?',
+        'What does it mean to take your own data seriously?'
+      ]
+    },
+    {
+      id: 'sb4',
+      title: 'The Behavior Incident',
+      grade: '8th',
+      who: 'Damien, Black 8th grader with anxiety and ADHD',
+      situation: 'Damien got into a verbal argument with a teacher. Teacher wrote a referral. Principal is considering suspension.',
+      whatHappensIfNoAdvocacy: 'Damien gets suspended. The school year derails. The incident becomes a defining narrative.',
+      strongResponse: [
+        'Damien tells parents and case manager what happened from his perspective IN WRITING within 24 hours.',
+        'Parent requests a manifestation determination meeting before any disciplinary decision.',
+        'At the meeting, parent points out that the IEP was not being implemented (no break pass available in that class). Behavior was disability-related.',
+        'Suspension is reduced or removed. Plan is adjusted to ensure break passes are available.'
+      ],
+      adultRole: 'Special education team conducts manifestation determination as required by law. Case manager and parent partner.',
+      keyMoves: [
+        'Written record of student perspective same-day',
+        'Manifestation determination is a federal right',
+        'Frame: "Was the IEP being implemented? If not, the behavior is school-related, not student-misconduct."'
+      ],
+      reflectionQuestions: [
+        'Why do disabled students of color get more severe discipline?',
+        'What is the difference between consequence and discipline?',
+        'How does documentation protect you in disciplinary contexts?'
+      ]
+    },
+    {
+      id: 'sb5',
+      title: 'The Excluded Student',
+      grade: '6th',
+      who: 'Lin, mobility-disabled 6th grader',
+      situation: 'Class field trip is going to a destination that is not wheelchair accessible. Teacher tells Lin she will "stay back" with another adult.',
+      whatHappensIfNoAdvocacy: 'Lin misses the field trip. Misses the social bonding. Feels segregated. Possibly missed academic content.',
+      strongResponse: [
+        'Lin tells parent that night.',
+        'Parent emails teacher and principal: "We just learned about the field trip plan. Lin should be included. Under ADA, the school must provide an equally accessible alternative if the destination cannot be made accessible. Could we work together on a plan?"',
+        'School re-plans the trip with accessible venue, or arranges accessible transportation to the same venue.'
+      ],
+      adultRole: 'Parent invokes ADA. Principal calls central office. Trip is replanned.',
+      keyMoves: [
+        '"Stay back" is not a legal accommodation',
+        'ADA requires equal access, not equivalent activities',
+        'Same-day documentation prevents drift'
+      ],
+      reflectionQuestions: [
+        'What is the difference between accommodation and segregation?',
+        'When is "alternative arrangement" code for exclusion?',
+        'What rights does Lin have here?'
+      ]
+    },
+    {
+      id: 'sb6',
+      title: 'The Transition Slip',
+      grade: '12th',
+      who: 'Tasha, 12th grader transitioning to college',
+      situation: 'Tasha has had an IEP for 9 years. She is applying to colleges. She has not yet thought about how college disability services differ from high school IEP.',
+      whatHappensIfNoAdvocacy: 'Tasha enters freshman year without DSS registration. Falls apart academically by midterms.',
+      strongResponse: [
+        'In senior year, Tasha meets with her case manager. Asks about transition.',
+        'Case manager gives her a checklist: 1) Current evaluation needed for college. 2) Schedule eval if needed. 3) Visit each college\'s DSS office during senior year tour. 4) Save all IEP documents. 5) Register with DSS over summer.',
+        'Tasha visits 3 college DSS offices. Picks the one that feels supportive.',
+        'Tasha registers with DSS in July. Has accommodations ready before freshman year starts.'
+      ],
+      adultRole: 'Case manager initiates transition conversation. Provides checklist. Does not let it slip.',
+      keyMoves: [
+        'IEP does NOT transfer to college',
+        'College DSS requires active student registration',
+        'Visit DSS during college search',
+        'Documentation requirements differ'
+      ],
+      reflectionQuestions: [
+        'What is the difference between IEP and DSS?',
+        'Why does college disability services use different language?',
+        'How can high school case managers prepare students for this transition?'
+      ]
+    },
+    {
+      id: 'sb7',
+      title: 'The Substitute Disaster',
+      grade: '5th',
+      who: 'Eli, autistic 5th grader',
+      situation: 'Eli\'s regular teacher is out for a week. The substitute does not know about Eli\'s accommodations. By day 2, Eli has had a meltdown.',
+      whatHappensIfNoAdvocacy: 'Eli is mislabeled as a "behavior problem" by the substitute. Disciplinary referral. Parents called in.',
+      strongResponse: [
+        'Eli\'s parents email principal and case manager: "We are concerned that the substitute is not aware of Eli\'s accommodations. Could we arrange a 10-minute briefing for the sub each morning, or a written one-page handout?"',
+        'School provides accommodation card to substitute',
+        'Eli\'s behavior returns to baseline',
+        'A protocol is established for future sub coverage'
+      ],
+      adultRole: 'Principal and case manager establish sub-handoff protocol. Substitute receives accommodation summary.',
+      keyMoves: [
+        'Sub coverage is a known failure point',
+        'One-page accommodation card prevents most issues',
+        'Parents can email Sunday night so it is ready Monday'
+      ],
+      reflectionQuestions: [
+        'What happens when accommodations require staff knowledge that does not transfer?',
+        'How does the school ensure IEP follows the student, not the staff?',
+        'What would a "sub-proof" IEP look like?'
+      ]
+    },
+    {
+      id: 'sb8',
+      title: 'The Coming Out',
+      grade: '10th',
+      who: 'River, non-binary 10th grader',
+      situation: 'River wants to ask teachers to use they/them pronouns and a chosen name. Family does not know yet.',
+      whatHappensIfNoAdvocacy: 'River is misgendered all year. Mental health declines.',
+      strongResponse: [
+        'River talks to school counselor first about safety: "I want to use they/them at school but my family does not know. Can teachers use my chosen name and pronouns at school but use my legal name in any communication home?"',
+        'Counselor confirms this is possible (many districts have this policy).',
+        'Counselor helps River draft an email to teachers.',
+        'River sends emails one at a time, then meets briefly with each teacher.',
+        'River has weekly check-ins with counselor to track how it is going.'
+      ],
+      adultRole: 'Counselor protects student safety. Confirms school can use chosen name without outing to family. Coordinates with teachers.',
+      keyMoves: [
+        'Many schools can use chosen name/pronouns without outing student to family',
+        'Counselor as trusted ally and coordinator',
+        'One-at-a-time teacher contact reduces overwhelm'
+      ],
+      reflectionQuestions: [
+        'What does it mean for school to be a safer space than home?',
+        'How does the law protect or fail to protect trans and non-binary students?',
+        'What does it cost to be misgendered all day?'
+      ]
+    },
+    {
+      id: 'sb9',
+      title: 'The Sensory Crisis',
+      grade: '7th',
+      who: 'Lex, autistic 7th grader',
+      situation: 'Lex\'s school is doing a fire drill. The piercing alarm causes a meltdown. Lex sits in the hallway with hands over ears for 20 minutes, then refuses to go back to class.',
+      whatHappensIfNoAdvocacy: 'Lex is labeled as defiant. School year worsens.',
+      strongResponse: [
+        'Parent emails: "Fire drills are a known sensory trigger for Lex. Could we get 24-hour advance notice and noise-reducing earplugs ready before drill days?"',
+        'School establishes pre-drill protocol: text Lex\'s parent the morning of, give Lex earplugs at start of period, have aide ready to escort if needed.',
+        'Next drill: Lex is regulated, manages the drill, goes back to class.'
+      ],
+      adultRole: 'Special education team establishes accommodation. Communications coordinator ensures Lex\'s family gets notice.',
+      keyMoves: [
+        'Sensory triggers are real accommodations',
+        'Advance notice is a free accommodation that costs nothing',
+        'Earplugs (or loops) are inexpensive and effective'
+      ],
+      reflectionQuestions: [
+        'What other school routines have hidden sensory cost?',
+        'What is the difference between "defiance" and "regulation failure"?',
+        'Should fire drills be quieter in 2026?'
+      ]
+    },
+    {
+      id: 'sb10',
+      title: 'The Mental Health Day',
+      grade: '11th',
+      who: 'Sam, 11th grader with depression',
+      situation: 'Sam wakes up and cannot face school. Depression is heavy. The day before, an essay was assigned that is due in 3 days.',
+      whatHappensIfNoAdvocacy: 'Sam stays home and lies about feeling sick. Loses access to friends and supports for the day. Sleep cycle gets worse.',
+      strongResponse: [
+        'Sam tells parent honestly: "Mom/Dad, my depression is heavy. I cannot face school today. Can we make a plan?"',
+        'Parent: "Okay. Lets do half day. You go in after lunch. Or, lets schedule the doctor."',
+        'Sam emails 1st period teacher: "I am taking a mental health day. I will be in for the second half. Could I get the notes from class?"',
+        'Sam goes in for second half. Stays connected. Gets the work.'
+      ],
+      adultRole: 'Parent supports honest communication. Teacher receives student email without judgment. Counselor follow-up scheduled.',
+      keyMoves: [
+        'Honesty with parent (when safe)',
+        'Half-day vs. all-day softens the cost',
+        'Email to teacher creates record and asks for support'
+      ],
+      reflectionQuestions: [
+        'When is a mental health day appropriate?',
+        'How do you know if a mental health day is a one-off or a pattern needing more support?',
+        'What does it cost to keep performing okay?'
+      ]
+    },
+    {
+      id: 'sb11',
+      title: 'The Wrong Class Level',
+      grade: '9th',
+      who: 'Cami, gifted with dyslexia',
+      situation: 'Cami\'s school placed her in regular English because of her dyslexia. She is bored. She wants honors English with accommodations.',
+      whatHappensIfNoAdvocacy: 'Cami is under-challenged. Disengages. Falls into the false narrative that dyslexia means lower-track.',
+      strongResponse: [
+        'Cami emails her counselor: "I want to move to honors English. I have dyslexia but I can do honors work with extended time and audiobook access. Can we talk about it?"',
+        'Counselor convenes parent, English teachers, case manager.',
+        'Cami presents her reading data and her writing portfolio.',
+        'Team agrees to a trial period. Cami succeeds with accommodations.'
+      ],
+      adultRole: 'Counselor coordinates team. English teachers open to the trial. Case manager confirms accommodations transfer.',
+      keyMoves: [
+        'Disability does not mean lower-track placement',
+        'Trial periods reduce risk for everyone',
+        'Bring your own data (reading scores, writing samples)'
+      ],
+      reflectionQuestions: [
+        'How does placement become destiny?',
+        'What is the difference between learning ability and learning style?',
+        'How can twice-exceptional students push back on under-placement?'
+      ]
+    },
+    {
+      id: 'sb12',
+      title: 'The Hospital Discharge',
+      grade: '10th',
+      who: 'Drew, 10th grader returning to school after a mental health hospitalization',
+      situation: 'Drew is being discharged from a 5-day inpatient stay. School re-entry is in 2 days. There is no plan.',
+      whatHappensIfNoAdvocacy: 'Drew returns cold. Pretends nothing happened. Mental health declines again.',
+      strongResponse: [
+        'Parent emails school counselor: "Drew is returning Wednesday from a mental health hospitalization. Could we have a brief re-entry meeting with Drew before they return to classes? Drew wants to plan."',
+        'Re-entry meeting: counselor, Drew, parent.',
+        'Plan: missed work timeline, safe person in school, regulation pass, weekly check-ins for 1 month, communication with teachers (without disclosing specifics).',
+        'Drew returns with a plan. Has check-ins. Recovers.'
+      ],
+      adultRole: 'Counselor coordinates re-entry. Teachers receive general "Drew was out, please be flexible" without specifics.',
+      keyMoves: [
+        'Re-entry planning saves the year',
+        'Drew leads, with parent and counselor support',
+        'Teachers get help-language without medical specifics'
+      ],
+      reflectionQuestions: [
+        'Why is hospital re-entry one of the highest-risk transitions?',
+        'What does Drew control? What does the school control?',
+        'What might Drew need that is not on the standard list?'
+      ]
+    }
+  ];
+var FULL_ADVOCACY_SCENARIO_LIBRARY = [
+    {
+      id: 'fas1',
+      title: 'Day-of accommodation failure',
+      context: 'You arrive at an exam and discover the proctor does not have your accommodation paperwork.',
+      stakeholders: ['You', 'Proctor', 'Test coordinator', 'Case manager'],
+      whatYouNeedToKnow: [
+        'Your accommodations are listed in your IEP/504',
+        'You can request to wait while the paperwork is verified',
+        'You can refuse to take the test without your accommodations',
+        'You can document the issue for follow-up'
+      ],
+      stepByStep: [
+        '1. Stay calm. The proctor is not personally trying to deny you.',
+        '2. Politely state: "I have accommodations that should be reflected here. Could we verify with the test coordinator?"',
+        '3. Wait while they check. Bring your own copy of accommodations if you have one.',
+        '4. If accommodations cannot be provided that day, request to reschedule.',
+        '5. After the incident, email your case manager same-day with full timeline.',
+        '6. Follow up to ensure systems are updated for next test.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'Hi. I have accommodations that should be listed here. Could we verify with the test coordinator?' },
+        { speaker: 'Proctor', text: 'I do not see anything on my sheet.' },
+        { speaker: 'You', text: 'Could we call the test coordinator? My case manager is Ms. ___ and she can confirm.' },
+        { speaker: 'Proctor', text: 'Hold on, let me check.' }
+      ],
+      whatNot: [
+        'Do not just take the test without your accommodations and hope for the best',
+        'Do not get hostile with the proctor',
+        'Do not skip the follow-up email'
+      ],
+      whatToLearn: 'Always carry a paper or screenshot copy of your accommodations. Always email same-day to document.'
+    },
+    {
+      id: 'fas2',
+      title: 'Teacher denies request to use a tool',
+      context: 'A teacher refuses to let you use a fidget tool that is in your accommodations.',
+      stakeholders: ['You', 'Teacher', 'Case manager', 'Principal if escalated'],
+      whatYouNeedToKnow: [
+        'Accommodations are legally binding',
+        'Teachers cannot override IEPs',
+        'You can escalate'
+      ],
+      stepByStep: [
+        '1. Calmly state your accommodation.',
+        '2. Offer to verify with case manager.',
+        '3. If teacher persists, leave it for the moment and document.',
+        '4. Email case manager same day.',
+        '5. Case manager follows up with teacher.',
+        '6. Use accommodation next day.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'Could I use this? It is in my IEP.' },
+        { speaker: 'Teacher', text: 'No, it is too distracting.' },
+        { speaker: 'You', text: 'It is in my IEP. Could we check with the case manager?' },
+        { speaker: 'Teacher', text: 'Just put it away.' },
+        { speaker: 'You', text: '(Put it away. Email case manager that night.)' }
+      ],
+      whatNot: [
+        'Do not argue in front of the class',
+        'Do not stop using your accommodation forever'
+      ],
+      whatToLearn: 'Pick your battles in the moment. Document. Let case manager resolve.'
+    },
+    {
+      id: 'fas3',
+      title: 'Friend asks you to mask',
+      context: 'A friend you trust asks you to "stop being so awkward" at the party next weekend.',
+      stakeholders: ['You', 'Friend'],
+      whatYouNeedToKnow: [
+        'Masking has a cost',
+        'Friends who require masking are not full friends',
+        'Direct conversation is your tool'
+      ],
+      stepByStep: [
+        '1. Pause and feel what came up.',
+        '2. Decide: address now, address later, address never.',
+        '3. If now: name what they asked. Name the cost. Name what you can offer.',
+        '4. Listen to their side.',
+        '5. Decide what you do at the party.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'You asked me to "stop being so awkward." What does that mean to you?' },
+        { speaker: 'Friend', text: 'You know, just like, do not flap your hands and stuff.' },
+        { speaker: 'You', text: 'Flapping is how I regulate. I will do my best to be social. I am not going to stop being autistic.' },
+        { speaker: 'Friend', text: 'I just want you to fit in.' },
+        { speaker: 'You', text: 'I appreciate that you want that for me. I have to be okay with myself first. Are you with me on that?' }
+      ],
+      whatNot: [
+        'Do not promise to mask',
+        'Do not get into a fight',
+        'Do not end the friendship without thinking about it'
+      ],
+      whatToLearn: 'Friends who push you to mask need to be reckoned with. Sometimes they can grow. Sometimes the friendship has limits.'
+    },
+    {
+      id: 'fas4',
+      title: 'Your case manager is on leave',
+      context: 'Your case manager is on extended leave and you cannot get accommodations sorted.',
+      stakeholders: ['You', 'Substitute case manager', 'Department head', 'Parent'],
+      whatYouNeedToKnow: [
+        'A case manager change does not change your rights',
+        'There should be a substitute case manager',
+        'You can escalate to department head'
+      ],
+      stepByStep: [
+        '1. Find out who is covering. If unclear, ask main office.',
+        '2. Send introduction email to substitute case manager.',
+        '3. Attach your IEP and recent accommodations log.',
+        '4. Schedule a 15-minute meeting.',
+        '5. Repeat your needs concretely.',
+        '6. If substitute is not responsive, escalate to department head or parent.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: '(Email) Hi Mr./Ms. ___. I am ___, one of Ms. Park\'s students. I understand you are covering during her leave. Could we set up 15 minutes to go over my IEP? Thanks!' }
+      ],
+      whatNot: [
+        'Do not assume your accommodations are paused',
+        'Do not wait silently for them to figure it out'
+      ],
+      whatToLearn: 'Take initiative when there are transitions. Send the email yourself.'
+    },
+    {
+      id: 'fas5',
+      title: 'Parent disagrees with you about your needs',
+      context: 'You believe you need an accommodation. Your parent thinks you should "push through."',
+      stakeholders: ['You', 'Parent', 'Case manager', 'Counselor'],
+      whatYouNeedToKnow: [
+        'Your parent may have outdated info about your needs',
+        'Most IEP teams want student input',
+        'You can have a meeting with team that includes parent AND you'
+      ],
+      stepByStep: [
+        '1. Have a calm conversation with parent first. Bring specific examples.',
+        '2. If parent still disagrees, request a meeting with case manager that includes both of you.',
+        '3. Bring data: your grades, your sleep, your reports.',
+        '4. Let case manager weigh in.',
+        '5. Family compromise or parent updates view.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'Mom, I want to talk to you about my IEP. I think I need ___.' },
+        { speaker: 'Parent', text: 'I think you can handle it without that.' },
+        { speaker: 'You', text: 'Could we go to Ms. Park together and talk about what she sees? I want to hear both of your perspectives.' }
+      ],
+      whatNot: [
+        'Do not abandon the conversation',
+        'Do not lie to parent',
+        'Do not go around parent without trying first'
+      ],
+      whatToLearn: 'Bring third party (case manager, counselor) into family disagreements about your needs.'
+    },
+    {
+      id: 'fas6',
+      title: 'Mid-semester teacher change',
+      context: 'Your favorite teacher is leaving mid-year. New teacher does not know about your accommodations.',
+      stakeholders: ['You', 'New teacher', 'Case manager'],
+      whatYouNeedToKnow: [
+        'Teacher changes happen',
+        'Mid-year transitions are high-risk for accommodation lapses',
+        'You can introduce yourself proactively'
+      ],
+      stepByStep: [
+        '1. Find out who is replacing teacher.',
+        '2. Send introduction email week before they start.',
+        '3. Reattach your accommodation summary.',
+        '4. Offer to meet briefly first week.',
+        '5. Watch for accommodation gaps in first month. Email same-day if any.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: '(Email) Hi Mr./Ms. ___. I am ___ in your upcoming class. I have an IEP/504 with these accommodations: ___. I wanted to introduce myself before the start. Could we chat briefly on Monday?' }
+      ],
+      whatNot: [
+        'Do not assume the case manager has briefed them',
+        'Do not wait passively for issues to arise'
+      ],
+      whatToLearn: 'Pre-introduce yourself with every teacher change. Same-day documentation of any gaps.'
+    },
+    {
+      id: 'fas7',
+      title: 'You forgot to use your accommodation',
+      context: 'You took a test without your extended time and the grade is bad.',
+      stakeholders: ['You', 'Teacher', 'Case manager'],
+      whatYouNeedToKnow: [
+        'You can ask for retest',
+        'Most teachers are willing if accommodations were genuinely missed',
+        'Do not beat yourself up'
+      ],
+      stepByStep: [
+        '1. Email teacher within 24 hours.',
+        '2. Explain you did not use your accommodation. Ask for retest.',
+        '3. Cite IEP/504 accommodations.',
+        '4. Email case manager copy.',
+        '5. Pre-plan next test: set phone reminder to use accommodation.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You (email)', text: 'Hi Ms. ___. I took the test yesterday without using my extended time accommodation. I know this is partly on me. Could we discuss whether a retest is possible? I want to demonstrate my actual understanding. Thanks.' }
+      ],
+      whatNot: [
+        'Do not just accept the bad grade silently',
+        'Do not blame yourself for the system'
+      ],
+      whatToLearn: 'Accommodations require active use. Set reminders. Email when forgotten.'
+    },
+    {
+      id: 'fas8',
+      title: 'A peer copies your accommodation tools',
+      context: 'A classmate without an IEP uses a fidget tool similar to yours. They complain when teacher tells them no.',
+      stakeholders: ['You', 'Classmate', 'Teacher'],
+      whatYouNeedToKnow: [
+        'Your accommodations are not undermined by peer use',
+        'You do not have to explain your accommodations to peers',
+        'Universal design > exclusive accommodation'
+      ],
+      stepByStep: [
+        '1. Mind your own business. Their conversation with the teacher is not yours.',
+        '2. If peer asks why you get the tool: "It is in my IEP."',
+        '3. If peer mocks you: address it directly or report to counselor.',
+        '4. Internally: do not feel guilty for having access others want.'
+      ],
+      sampleDialogue: [
+        { speaker: 'Peer', text: 'Why do you get to have a fidget but I cannot?' },
+        { speaker: 'You', text: 'It is in my IEP. I have it for a specific reason.' },
+        { speaker: 'Peer', text: 'That is unfair.' },
+        { speaker: 'You', text: 'I think more kids should have access to tools that help them learn. You could request one with your teacher.' }
+      ],
+      whatNot: [
+        'Do not feel guilty',
+        'Do not minimize your need for the tool'
+      ],
+      whatToLearn: 'Your accommodation is yours. Peer envy is their issue, not yours.'
+    },
+    {
+      id: 'fas9',
+      title: 'Your IEP goal is not being addressed',
+      context: 'You have an IEP goal you have not worked on at all this year.',
+      stakeholders: ['You', 'Case manager', 'IEP team'],
+      whatYouNeedToKnow: [
+        'IEP goals are commitments, not suggestions',
+        'You can ask for progress reports',
+        'You can request an IEP meeting'
+      ],
+      stepByStep: [
+        '1. Look at your current IEP.',
+        '2. Identify goals you have not been working on.',
+        '3. Email case manager: "I want to understand progress on my goal ___. Could you share where we are?"',
+        '4. Request IEP meeting if response is unsatisfactory.',
+        '5. Bring data to meeting.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You (email)', text: 'Hi Ms. ___. I want to understand where we are on my goal "___". Could you share the progress reports? Thanks.' }
+      ],
+      whatNot: [
+        'Do not assume goals are happening invisibly',
+        'Do not wait until annual review to question'
+      ],
+      whatToLearn: 'You are entitled to know progress on your own goals. Ask.'
+    },
+    {
+      id: 'fas10',
+      title: 'You want to drop a service',
+      context: 'You have been receiving speech-language therapy for years. You want to discontinue.',
+      stakeholders: ['You', 'SLP', 'Case manager', 'Parent'],
+      whatYouNeedToKnow: [
+        'You can ask for IEP team to review',
+        'Discontinuing a service is a serious decision',
+        'Reduction may be option short of discontinuation'
+      ],
+      stepByStep: [
+        '1. Talk to your SLP first. Share your perspective.',
+        '2. Discuss with parent.',
+        '3. Request IEP meeting to discuss reducing or ending service.',
+        '4. SLP may share data team should consider.',
+        '5. Decision documented in IEP.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'I have been thinking about my speech therapy. I feel like I am not making new progress. Could we look at whether to reduce sessions?' }
+      ],
+      whatNot: [
+        'Do not just stop showing up',
+        'Do not refuse without reflection'
+      ],
+      whatToLearn: 'Services should serve YOU. If they do not, you can revisit.'
+    },
+    {
+      id: 'fas11',
+      title: 'You need to take medication at school',
+      context: 'Your prescription needs to be taken during the school day.',
+      stakeholders: ['You', 'Nurse', 'Parent', 'Doctor'],
+      whatYouNeedToKnow: [
+        'School can administer medications with parent permission and doctor order',
+        'Nurse is usually the point person',
+        'You may be able to self-administer with permission'
+      ],
+      stepByStep: [
+        '1. Doctor writes medication order.',
+        '2. Parent signs school medication form.',
+        '3. Medication delivered to nurse in pharmacy bottle.',
+        '4. You go to nurse at specified time.',
+        '5. Pattern established.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'Hi nurse. I am ___ here for my ___ medication.' }
+      ],
+      whatNot: [
+        'Do not bring medication in unlabeled containers',
+        'Do not share medication with peers'
+      ],
+      whatToLearn: 'Routinize the process. Make it part of your day.'
+    },
+    {
+      id: 'fas12',
+      title: 'Your phone is your accommodation tool',
+      context: 'You use your phone for AAC, scheduling, reminders. School has a no-phone policy.',
+      stakeholders: ['You', 'Teachers', 'Principal', 'Case manager'],
+      whatYouNeedToKnow: [
+        'Your phone can be in your IEP as an accommodation tool',
+        'Schools must allow if specified',
+        'Many districts have phone use exemptions for IEP students'
+      ],
+      stepByStep: [
+        '1. Add phone use to IEP if not already.',
+        '2. Specify what apps and uses.',
+        '3. Inform teachers at start of semester.',
+        '4. Show your accommodation card if questioned.',
+        '5. Use only as authorized; abuse risks the accommodation.'
+      ],
+      sampleDialogue: [
+        { speaker: 'You', text: 'I use my phone as part of my IEP. Could we go to the office and check with the case manager?' }
+      ],
+      whatNot: [
+        'Do not use the accommodation card to scroll TikTok',
+        'Do not abuse the accommodation'
+      ],
+      whatToLearn: 'Phone-as-accommodation requires explicit IEP language and good faith use.'
+    }
+  ];
+var TRIGGERS_AND_RESPONSES = [
+    { id: 'tr1', category: 'sensory', trigger: 'Fluorescent lights flickering', earlyWarn: 'Eyes start watering. Squinting. Slight headache behind eyes.', shutdownLook: 'Hands over eyes. Hood up. Cannot read board.', respond: 'Sunglasses pass. Move to window seat. Tint extension on screen.', accomToAsk: 'Permission to wear sunglasses or hat indoors during fluorescent classroom hours.', backupPlan: 'Step out to nurse for 5 min reset. Re-enter when settled.' },
+    { id: 'tr2', category: 'sensory', trigger: 'Cafeteria noise level', earlyWarn: 'Hands cover ears reflexively. Cannot follow what friend is saying.', shutdownLook: 'Stops eating. Stares at table. Tears up without explanation.', respond: 'Noise-canceling earbuds. Eat in library or counselor office instead.', accomToAsk: 'Alternate lunch location in IEP. Or stagger lunch by 10 minutes.', backupPlan: 'Eat in scheduled quiet space 3+ days per week regardless.' },
+    { id: 'tr3', category: 'sensory', trigger: 'Tag in shirt or seam in sock', earlyWarn: 'Constant fidgeting at one spot. Hand keeps returning.', shutdownLook: 'Refusing to wear the clothing. Late for school.', respond: 'Cut tags out. Seamless socks. Stick with brands that work.', accomToAsk: 'Family accommodation, not school. But explain absences truthfully if late.', backupPlan: 'Keep emergency change of clothes in locker.' },
+    { id: 'tr4', category: 'sensory', trigger: 'Smell of cafeteria food cooking', earlyWarn: 'Nausea. Pushing food away. Pale face.', shutdownLook: 'Leaving cafeteria. Possible vomiting.', respond: 'Eat earlier or later. Carry mints. Permission to leave when triggered.', accomToAsk: 'Modified lunch schedule.', backupPlan: 'Snack stash in locker for missed lunches.' },
+    { id: 'tr5', category: 'sensory', trigger: 'Sudden loud noises (slamming doors, announcements)', earlyWarn: 'Startle response. Shoulders to ears. Frozen.', shutdownLook: 'Cannot return to task for 10+ min. Possible flashback if PTSD.', respond: 'Loop earplugs (low-level filter). Headphones in non-instruction time.', accomToAsk: 'Reduced sensory load classroom. Advance warning for fire drills.', backupPlan: 'Designate one staff to text before fire drills.' },
+    { id: 'tr6', category: 'sensory', trigger: 'Crowded hallway between classes', earlyWarn: 'Heart racing before bell. Avoidance of getting books from locker.', shutdownLook: 'Late to class repeatedly. Tardy slips piling up.', respond: 'Leave 2 min early or arrive 2 min late.', accomToAsk: 'Early-release pass in 504.', backupPlan: 'Mapped quiet route through building.' },
+    { id: 'tr7', category: 'sensory', trigger: 'Strong perfume or cologne from teacher or seatmate', earlyWarn: 'Sneezing. Itchy eyes. Difficulty concentrating.', shutdownLook: 'Migraine. Has to leave class.', respond: 'Seat change away from source. Speak privately to teacher.', accomToAsk: 'Fragrance-free request in plan.', backupPlan: 'Allergy meds available with nurse.' },
+    { id: 'tr8', category: 'sensory', trigger: 'Bright sunlight through windows', earlyWarn: 'Eye strain. Holding paper up to block light.', shutdownLook: 'Cannot read what teacher writes. Falling behind on notes.', respond: 'Window blinds adjusted. Seat reassignment.', accomToAsk: 'Lighting adjustment.', backupPlan: 'Tinted glasses or visor.' },
+    { id: 'tr9', category: 'sensory', trigger: 'Texture of certain papers or pencils', earlyWarn: 'Refuses to use specific materials. Hands shake.', shutdownLook: 'Writing illegible. Marks "I did not do it" on assignments.', respond: 'Bring own preferred materials. Permission to type instead.', accomToAsk: 'Materials accommodation.', backupPlan: 'Laptop or tablet always available.' },
+    { id: 'tr10', category: 'sensory', trigger: 'Wet, slimy, or mushy food texture', earlyWarn: 'Gagging. Pushing tray away.', shutdownLook: 'Skipping lunch entirely. Energy crash by 5th period.', respond: 'Bring own lunch. Microwave or dry options.', accomToAsk: 'Permission to bring lunch and store in nurse fridge.', backupPlan: 'Protein bars and crackers in locker.' },
+    { id: 'tr11', category: 'social', trigger: 'Being called on in class without warning', earlyWarn: 'Heart pounds. Mouth dry. Mind blank.', shutdownLook: 'Stammering. Saying "I dont know" to questions you knew.', respond: 'Hand signal with teacher: "I need to think for 30 seconds."', accomToAsk: 'Pre-signal before cold-call.', backupPlan: 'Sit further back. Pre-prep one answer per day.' },
+    { id: 'tr12', category: 'social', trigger: 'Group project assignment', earlyWarn: 'Stomach knots. Already imagining failure.', shutdownLook: 'Group falls apart. Last-minute panic. Lower grade than working alone.', respond: 'Ask to choose own group. Or ask for individual alternative.', accomToAsk: 'Individual project alternative for group assignments.', backupPlan: 'Pre-build a script for group-work check-in: "Where are we, what is next, who is doing what?"' },
+    { id: 'tr13', category: 'social', trigger: 'Unstructured time (recess, free period, between activities)', earlyWarn: 'Aimless wandering. Pretending to read.', shutdownLook: 'Crying in bathroom. Sneaking phone usage.', respond: 'Pre-plan: book, journal, drawing, library, club.', accomToAsk: 'Lunch club or special interest group enrollment.', backupPlan: 'Identify 1 staff member to check in during these times.' },
+    { id: 'tr14', category: 'social', trigger: 'Group chat or text message blowup', earlyWarn: 'Phone buzzes nonstop. Reading every message. Cannot focus.', shutdownLook: 'Up all night. Anxious all day. Stomach pain.', respond: 'Mute notifications. Set check-in times.', accomToAsk: 'School counselor support for digital boundary planning.', backupPlan: 'Hand phone to parent at 9pm if needed.' },
+    { id: 'tr15', category: 'social', trigger: 'Conflict with friend', earlyWarn: 'Cant stop rehearsing the conversation in your head.', shutdownLook: 'Missing class to avoid the friend. Skipping meals.', respond: 'Text one trusted person. Schedule conversation with friend within 48 hours.', accomToAsk: 'Counselor mediation option.', backupPlan: 'Pre-written letter to friend if voice talk feels impossible.' },
+    { id: 'tr16', category: 'social', trigger: 'Being misunderstood after speaking up', earlyWarn: 'Hot face. Wanting to take it back.', shutdownLook: 'Mute for rest of day. Apologizing in writing later for being clear.', respond: 'Practice: "I said it the way I meant it. Can you tell me what you heard?"', accomToAsk: 'Restated clarification chance, not retraction.', backupPlan: 'Bring witness or write follow-up email same day.' },
+    { id: 'tr17', category: 'social', trigger: 'Forgetting someones name or face', earlyWarn: 'Panic. Avoiding eye contact.', shutdownLook: 'Pretending you do not know them. Hurting their feelings.', respond: 'Script: "I am bad with names. Can you tell me yours again?"', accomToAsk: 'No accommodation needed. Skill to practice.', backupPlan: 'Phone notes app: keep a low-key list of names + faces.' },
+    { id: 'tr18', category: 'social', trigger: 'Sarcasm or teasing that you cant decode', earlyWarn: 'Confusion. Laughing nervously to hide it.', shutdownLook: 'Hurt feelings later when you realize the joke.', respond: 'Practice: "Im not sure if youre joking. Can you tell me directly?"', accomToAsk: 'Direct communication norm with key adults.', backupPlan: 'Trust your read. If it felt mean, it probably was.' },
+    { id: 'tr19', category: 'social', trigger: 'Being touched without warning', earlyWarn: 'Body freezes. Cannot speak.', shutdownLook: 'Avoid the person. Possible flashback.', respond: 'Practice firm sentence: "Please dont touch me. I would tell you if I wanted that."', accomToAsk: 'Schoolwide consent culture. May require admin support.', backupPlan: 'Report unwanted touching. Schools must respond.' },
+    { id: 'tr20', category: 'social', trigger: 'Eye contact pressure', earlyWarn: 'Brain freezes. Cannot listen and look.', shutdownLook: 'Looking away looks dishonest to NT adults.', respond: 'Explain: "I listen better when I do not have to look at you. I am paying attention."', accomToAsk: 'Educate key teachers about autism + eye contact.', backupPlan: 'Look at their forehead or mouth as substitute.' },
+    { id: 'tr21', category: 'academic', trigger: 'Pop quiz or unexpected test', earlyWarn: 'Stomach drop. Tears welling.', shutdownLook: 'Blank paper. Failed assessment that does not reflect knowledge.', respond: 'Advance notice accommodation in IEP. No pop quizzes for you.', accomToAsk: '24-hour notice for all assessments.', backupPlan: 'Permission to retake or alternate format.' },
+    { id: 'tr22', category: 'academic', trigger: 'Long multi-step word problem', earlyWarn: 'Re-reading sentence #1 five times.', shutdownLook: 'Skipping problems entirely. Test left half blank.', respond: 'Highlighter to break into chunks. Read aloud option.', accomToAsk: 'Read-aloud or text-to-speech for long passages.', backupPlan: 'Practice multi-step decoding strategies in advance.' },
+    { id: 'tr23', category: 'academic', trigger: 'Timed writing prompt', earlyWarn: 'Stuck on first sentence for 5+ minutes.', shutdownLook: 'Three sentences submitted in 25 minutes.', respond: 'Extended time. Speech-to-text. Outline before writing.', accomToAsk: 'Extended time, scribe, or speech-to-text accommodation.', backupPlan: 'Pre-write opener templates for typical prompts.' },
+    { id: 'tr24', category: 'academic', trigger: 'Math word problem with multiple variables', earlyWarn: 'Confused about what is being asked.', shutdownLook: 'Skipping. Getting low grades on otherwise easy concepts.', respond: 'Highlight the question first. Translate to numbers second.', accomToAsk: 'Visual or graphical aids permitted on tests.', backupPlan: 'Index card with translation steps in pencil case.' },
+    { id: 'tr25', category: 'academic', trigger: 'Reading aloud in class', earlyWarn: 'Sweating. Counting paragraphs to estimate when your turn.', shutdownLook: 'Voice freezing. Misreading words you know.', respond: 'No-cold-call agreement with teacher. Pre-arranged passages.', accomToAsk: 'No-cold-read accommodation. Volunteer-only.', backupPlan: 'Practice the passage in advance with parent.' },
+    { id: 'tr26', category: 'academic', trigger: 'Switching classrooms between periods', earlyWarn: 'Forgetting what you needed for next class.', shutdownLook: 'Half-assignments. Late to class. Lost materials.', respond: 'Checklist taped to inside locker door. Set phone reminders.', accomToAsk: 'Visual schedule. Transition support.', backupPlan: 'Buddy system: classmate to walk with you.' },
+    { id: 'tr27', category: 'academic', trigger: 'Substitute teacher', earlyWarn: 'Heart sinks when you walk in.', shutdownLook: 'Whole day lost. Refusal to engage.', respond: 'Pre-printed card explaining your accommodations to hand to sub.', accomToAsk: 'Sub accommodation card on file with main teacher.', backupPlan: 'Permission to call main teacher or counselor if sub does not honor plan.' },
+    { id: 'tr28', category: 'academic', trigger: 'Project deadline you forgot until day-of', earlyWarn: 'Hits you at breakfast. Stomach drops.', shutdownLook: 'Skipping school. Lying to teacher.', respond: 'Honest email NOW: "I forgot. I will have it Friday."', accomToAsk: 'Extension accommodation. Most teachers grant if asked early.', backupPlan: 'Phone calendar with 1-week and 1-day reminders for all assignments.' },
+    { id: 'tr29', category: 'academic', trigger: 'Grade lower than expected', earlyWarn: 'Spiral starts. "Im stupid. Whats the point."', shutdownLook: 'Avoiding the class. Effort drop for weeks.', respond: 'Email teacher: "Can we talk about what I missed and how to improve?"', accomToAsk: 'Grade conversation in counselor office.', backupPlan: 'Self-compassion script: "One grade is not who I am."' },
+    { id: 'tr30', category: 'academic', trigger: 'Open-ended question with no right answer', earlyWarn: 'Paralysis. Cannot pick a direction.', shutdownLook: 'Blank page or random off-topic answer.', respond: 'Structured prompts. Pre-built thesis templates.', accomToAsk: 'Graphic organizers as accommodation.', backupPlan: 'Carry 3 fall-back thesis frames in notebook.' },
+    { id: 'tr31', category: 'family', trigger: 'Parent forgets your accommodation', earlyWarn: 'Tightness in chest at home dinner.', shutdownLook: 'Outburst that feels disproportionate to event.', respond: 'Family meeting. Print accommodations and post on fridge.', accomToAsk: 'Counselor session including parent.', backupPlan: 'Trusted adult outside family who can advocate when home falters.' },
+    { id: 'tr32', category: 'family', trigger: 'Sibling teasing about your needs', earlyWarn: 'Body tenses at first joke.', shutdownLook: 'Hiding accommodations. Refusing tools that help.', respond: 'Direct sentence: "It hurts. Stop." If continues, parent involvement.', accomToAsk: 'Family therapy if pattern persists.', backupPlan: 'Private accommodation tools (e.g., headphones at home) for self-regulation.' },
+    { id: 'tr33', category: 'family', trigger: 'Parent compares you to neurotypical sibling', earlyWarn: 'Internal "I am the broken one" script activates.', shutdownLook: 'Withdrawal. Resentment.', respond: 'Plan one sentence: "When you compare me to ___, it makes me feel ___."', accomToAsk: 'Family counseling.', backupPlan: 'Outside witness (counselor, relative) who sees your strengths.' },
+    { id: 'tr34', category: 'family', trigger: 'Family event with unfamiliar relatives', earlyWarn: 'Dread starts days ahead.', shutdownLook: 'Hiding in bedroom. Tears at relative house.', respond: 'Pre-plan exit. Buddy assignment. Time-limited stay.', accomToAsk: 'Family accommodation, not school.', backupPlan: 'Quiet activity (book, headphones) brought along.' },
+    { id: 'tr35', category: 'family', trigger: 'Family meal at restaurant with menu surprises', earlyWarn: 'Anxiety about food choices.', shutdownLook: 'Refusing to order. Tears.', respond: 'Review menu online before going. Pre-pick option.', accomToAsk: 'None. Plan.', backupPlan: 'Granola bar in bag if dish does not work out.' },
+    { id: 'tr36', category: 'family', trigger: 'Parent overrides your accommodation choice', earlyWarn: 'Voice gets small. Body slumps.', shutdownLook: 'Meeting outcome doesnt fit. School year worse.', respond: 'Practice: "Mom, I want to lead this. Can I try first?"', accomToAsk: 'Pre-meeting parent-child agreement.', backupPlan: 'Side conversation with case manager about what YOU want.' },
+    { id: 'tr37', category: 'family', trigger: 'Family rule changes without warning', earlyWarn: 'Cant find footing. Frustration spike.', shutdownLook: 'Argument with parent that escalates.', respond: 'Family contract: rule changes get 24-hour notice.', accomToAsk: 'Family-level. School can suggest.', backupPlan: 'Visual schedule at home.' },
+    { id: 'tr38', category: 'family', trigger: 'Holiday or break with unstructured time', earlyWarn: 'Dread about empty days.', shutdownLook: 'Sleeping all day. Mood drops.', respond: 'Pre-plan: 3 anchors per day (meal, activity, social).', accomToAsk: 'School counselor pre-break plan.', backupPlan: 'Daily check-in text with trusted friend.' },
+    { id: 'tr39', category: 'family', trigger: 'Parent has hard day and cant fully show up', earlyWarn: 'Parent short-tempered or distracted.', shutdownLook: 'You take on too much emotional labor.', respond: 'Permission to use other supports today. Be a kid.', accomToAsk: 'External adult support.', backupPlan: 'Backup adult: aunt, coach, counselor.' },
+    { id: 'tr40', category: 'family', trigger: 'Family conflict before school morning', earlyWarn: 'Crying. Cant get out of bed.', shutdownLook: 'School day ruined before it starts.', respond: 'Email teacher: "Had a rough morning, may need quiet today."', accomToAsk: 'Sign-in pass at counselor on rough days.', backupPlan: 'Pre-arranged regulation room.' },
+    { id: 'tr41', category: 'emotional', trigger: 'Criticism from authority figure', earlyWarn: 'Tears within 30 sec. Inner voice says "I am bad."', shutdownLook: 'Shutdown. Cant explain self. Avoidance.', respond: 'Practice: "Thank you. Can I have a few minutes to process?"', accomToAsk: 'Receive feedback in writing first when possible.', backupPlan: 'Self-compassion script: "Feedback is data, not identity."' },
+    { id: 'tr42', category: 'emotional', trigger: 'Public failure (wrong answer, fall, etc.)', earlyWarn: 'Hot face. Wanting to disappear.', shutdownLook: 'Mask drops. Possible meltdown or freeze.', respond: 'Pre-built script: "I made a mistake. Moving on." Move on.', accomToAsk: 'Permission to recover privately.', backupPlan: 'Step out for 2 min. Come back.' },
+    { id: 'tr43', category: 'emotional', trigger: 'Anniversary of hard event', earlyWarn: 'Mood drops without external cause.', shutdownLook: 'Cant function. Cant explain why.', respond: 'Calendar your anniversaries. Plan extra support.', accomToAsk: 'Pre-arranged extended time on anniversary week.', backupPlan: 'Trusted adult knows the anniversary too.' },
+    { id: 'tr44', category: 'emotional', trigger: 'Comparing yourself to a high-achieving peer', earlyWarn: 'Spiral. "Why cant I be like that?"', shutdownLook: 'Effort drops. Disengagement.', respond: 'Reality check: "What do I not know about their hidden struggle? What is my own measure?"', accomToAsk: 'None. Self-work.', backupPlan: 'List your own growth this year.' },
+    { id: 'tr45', category: 'emotional', trigger: 'Loneliness in a crowded room', earlyWarn: 'Looking around and nobody seeing you.', shutdownLook: 'Withdrawal. Refusing future invitations.', respond: 'Quality > quantity. Reach out to ONE person you trust.', accomToAsk: 'Lunch buddy match.', backupPlan: 'One online community where you do feel seen.' },
+    { id: 'tr46', category: 'emotional', trigger: 'Hopelessness about future', earlyWarn: '"Whats the point" looping in mind.', shutdownLook: 'Suicidal ideation or self-harm urge.', respond: 'IMMEDIATE: tell someone. 988 if safer than in-person.', accomToAsk: 'Mental health crisis plan with school.', backupPlan: 'Crisis Companion tool in SEL Hub. Trusted adult numbers in phone.' },
+    { id: 'tr47', category: 'emotional', trigger: 'Imposter syndrome at honors meeting', earlyWarn: '"They will figure out I dont belong."', shutdownLook: 'Underperform on purpose. Skip the event.', respond: 'Bring your file of evidence (grades, work, feedback).', accomToAsk: 'None. Re-anchor in evidence.', backupPlan: 'Pre-event affirmation: "I earned this seat."' },
+    { id: 'tr48', category: 'emotional', trigger: 'Burnout from masking all week', earlyWarn: 'Friday night cant get off bed.', shutdownLook: 'Weekend lost to recovery.', respond: 'Schedule de-masking time. Less verbal interaction.', accomToAsk: 'Monday slow-start accommodation.', backupPlan: 'Sensory-friendly weekend plan: 1 social, 2 rest, 1 special interest.' },
+    { id: 'tr49', category: 'emotional', trigger: 'Feeling like a burden to your support team', earlyWarn: 'Apologizing for every request.', shutdownLook: 'Refusing accommodations you need.', respond: 'Counter-script: "My team chose this job. They get paid. I am not a burden."', accomToAsk: 'None. Mindset work.', backupPlan: 'Counselor session.' },
+    { id: 'tr50', category: 'emotional', trigger: 'Wave of anger you cant explain', earlyWarn: 'Hands clenched. Jaw tight.', shutdownLook: 'Outburst that doesnt fit situation.', respond: 'Step out. 5 deep breaths. Note what the anger is protecting.', accomToAsk: 'Trauma-informed regulation plan.', backupPlan: 'Pre-arranged break pass.' },
+    { id: 'tr51', category: 'systemic', trigger: 'IEP meeting where adults talk over you', earlyWarn: 'Body shrinking in chair.', shutdownLook: 'Decisions made without your input. Whole year off-track.', respond: 'Pre-write: 3 sentences YOU will say first. Read them.', accomToAsk: 'Student-led IEP. Possible in nearly any state.', backupPlan: 'Email your input to the team before the meeting.' },
+    { id: 'tr52', category: 'systemic', trigger: 'Teacher does not implement accommodation', earlyWarn: 'You sit through class without your tool.', shutdownLook: 'Frustration. Class grade drops. Helpless feeling.', respond: 'Same-day email to case manager. Documentation.', accomToAsk: 'Documentation pattern in IEP.', backupPlan: 'Loop in counselor as second escalation.' },
+    { id: 'tr53', category: 'systemic', trigger: 'Test accommodation lost on test day', earlyWarn: 'You walk in and table is gone.', shutdownLook: 'You take test under wrong conditions.', respond: 'STOP. Find proctor. "I have an accommodation that is not here. I need to wait."', accomToAsk: 'Test accommodation reminder protocol.', backupPlan: 'Bring written copy of your IEP accommodations to all tests.' },
+    { id: 'tr54', category: 'systemic', trigger: 'New school, new staff, plan forgotten', earlyWarn: 'Confusion about who knows you.', shutdownLook: 'Misunderstandings. Discipline events.', respond: 'Personal accommodation packet you carry with you.', accomToAsk: 'Transition meeting before first day.', backupPlan: 'Print copies of your IEP for week 1.' },
+    { id: 'tr55', category: 'systemic', trigger: 'Disciplinary referral that did not consider your IEP', earlyWarn: 'Notification you got referred.', shutdownLook: 'Punishment without consideration of disability.', respond: 'Request a manifestation determination meeting.', accomToAsk: 'Discipline-specific procedural safeguards.', backupPlan: 'Outside advocate, parent organization, P&A.' },
+    { id: 'tr56', category: 'systemic', trigger: 'School calls home about behavior, parent panics', earlyWarn: 'Parent texts: "What did you do."', shutdownLook: 'Family conflict on top of school issue.', respond: 'Your version in writing. Send to parent before they call you.', accomToAsk: 'Communication chain with parent before discipline calls.', backupPlan: 'Trusted adult to mediate.' },
+    { id: 'tr57', category: 'systemic', trigger: 'Annual review going by quickly with no discussion of YOU', earlyWarn: 'Form-driven meeting. Boxes checked.', shutdownLook: 'Whole year of accommodations same as last year, regardless of fit.', respond: 'Pre-meeting: prepare 3 things to change. Bring them.', accomToAsk: 'Student-led annual review.', backupPlan: 'Schedule supplemental meeting if annual rushed.' },
+    { id: 'tr58', category: 'systemic', trigger: 'Specialist (OT, SLP) not coming to sessions', earlyWarn: 'Sessions cancelled or rescheduled repeatedly.', shutdownLook: 'Service minutes not delivered. Goals not progressing.', respond: 'Log all missed sessions. Email case manager.', accomToAsk: 'Compensatory services for missed time.', backupPlan: 'P&A or OCR if pattern persists.' },
+    { id: 'tr59', category: 'systemic', trigger: 'Standardized test season', earlyWarn: 'Stress about high-stakes test.', shutdownLook: 'Crashed performance. Inaccurate results.', respond: 'Confirm all accommodations 6 weeks ahead.', accomToAsk: 'Testing accommodations in writing 6+ weeks before testing.', backupPlan: 'Practice tests with accommodations in real conditions.' },
+    { id: 'tr60', category: 'systemic', trigger: 'Transition to college or workforce', earlyWarn: 'IEP ends. ADA is the new rule. Different system.', shutdownLook: 'Lost accommodations. Crashed first semester.', respond: 'Senior year: visit disability services at college early. Apply for accommodations.', accomToAsk: 'Transition plan starting at 14 (federal floor).', backupPlan: 'Self-advocacy toolkit ready for adult systems.' }
+  ];
+var ADVOCACY_SCRIPT_LIBRARY_EXTENDED = [
+    {
+      id: 'asl1',
+      context: 'Calling a doctor\'s office for the first time',
+      script: 'Hi. My name is ___. I am calling because I would like to schedule an appointment. I have insurance through ___. The reason for the visit is ___. Could you tell me what dates are available?'
+    },
+    {
+      id: 'asl2',
+      context: 'Asking a teacher for a specific accommodation in a new class',
+      script: 'Hi Mr./Ms. ___. I am ___ in your ___ period. I have an IEP/504 and one of my accommodations is ___. I just wanted to introduce myself and make sure we are on the same page about it. Could we set up a time to chat briefly?'
+    },
+    {
+      id: 'asl3',
+      context: 'Reporting a peer who is bullying you',
+      script: 'I would like to report something. ___ has been doing ___ to me. Examples: [dates and what happened]. I would like the school to address it. I am not asking for them to be expelled. I am asking for it to stop and to be safe.'
+    },
+    {
+      id: 'asl4',
+      context: 'Asking your parent for privacy or a boundary',
+      script: 'Mom/Dad, can we talk? I want to ask for ___. I love you. I know you care about ___. Here is what I propose: ___. Could we try for ___ days and see how it goes?'
+    },
+    {
+      id: 'asl5',
+      context: 'Telling a friend you cannot do something',
+      script: 'Hey, I cannot do ___. I am ___ (tired/busy/not feeling well). Can we do ___ instead? Thanks for understanding.'
+    },
+    {
+      id: 'asl6',
+      context: 'Sticking with a no when pressured',
+      script: 'I appreciate you wanting to spend time together. The answer is still no. I will see you ___.'
+    },
+    {
+      id: 'asl7',
+      context: 'Asking for a meeting with a teacher about your grade',
+      script: 'Hi Mr./Ms. ___. Could I have 10 minutes to talk about my recent assignment? I want to understand the grade better and what I can do to improve. When works for you?'
+    },
+    {
+      id: 'asl8',
+      context: 'Asking for time in class to think before answering',
+      script: 'Could I have a moment to think about that?'
+    },
+    {
+      id: 'asl9',
+      context: 'Telling someone they got something wrong about you',
+      script: 'I want to clarify something. When you said ___, that is not quite right. Here is what is actually true: ___. I wanted you to know.'
+    },
+    {
+      id: 'asl10',
+      context: 'Asking for help when you are overwhelmed',
+      script: 'I am overwhelmed. I need help. Can you help me with ___? Or can you help me figure out what to ask for?'
+    },
+    {
+      id: 'asl11',
+      context: 'Telling someone you need a break in a conversation',
+      script: 'I need to take a break. Can we come back to this in 10 minutes? I want to keep talking but I am dysregulating.'
+    },
+    {
+      id: 'asl12',
+      context: 'Re-entering after a break',
+      script: 'Thanks for waiting. I am ready to keep going. Where were we?'
+    },
+    {
+      id: 'asl13',
+      context: 'Asking your parent to attend something for you',
+      script: 'Could you come with me to ___? I am nervous to go alone. You do not have to do anything except be there.'
+    },
+    {
+      id: 'asl14',
+      context: 'Asking your parent NOT to attend something',
+      script: 'Mom/Dad, I want to handle ___ myself. I know you want to help. Could you let me try, and I will tell you how it goes after?'
+    },
+    {
+      id: 'asl15',
+      context: 'Telling your teacher you are struggling with the material',
+      script: 'Mr./Ms. ___, I am struggling with ___. I have tried ___. I am still confused. Could you point me to a resource or help me with one example?'
+    },
+    {
+      id: 'asl16',
+      context: 'Telling your coach you cannot do a workout',
+      script: 'Coach, I cannot do today\'s workout. I am ___ (sick / injured / not well). I will modify or sit out. I will be back tomorrow.'
+    },
+    {
+      id: 'asl17',
+      context: 'Saying yes to something you are scared of',
+      script: 'Yes. I am scared but I want to try. Can you support me by ___?'
+    },
+    {
+      id: 'asl18',
+      context: 'Closing a hard conversation',
+      script: 'Thank you for talking through this with me. I learned ___. Can we check in again in ___ days?'
+    },
+    {
+      id: 'asl19',
+      context: 'Following up after an unanswered email',
+      script: 'Hi ___. Following up on my email from ___. Could you let me know your timeline for response? Thanks.'
+    },
+    {
+      id: 'asl20',
+      context: 'Asking your boss for an accommodation',
+      script: 'Hi ___. I would like to request an accommodation under the ADA. Could we set up a time to discuss? I have ___ that affects ___ and the accommodation would allow me to ___.'
+    },
+    {
+      id: 'asl21',
+      context: 'Disagreeing with a teacher in writing',
+      script: 'Dear Mr./Ms. ___, I want to share my perspective on ___. I respectfully disagree because ___. Could we discuss?'
+    },
+    {
+      id: 'asl22',
+      context: 'Volunteering an answer when you are not 100% sure',
+      script: 'I am not 100% sure but I think ___. Could someone else add or correct?'
+    },
+    {
+      id: 'asl23',
+      context: 'Asking for a quieter environment',
+      script: 'I am having trouble focusing with the noise. Could I move to ___? Or could we lower the volume on ___?'
+    },
+    {
+      id: 'asl24',
+      context: 'Telling someone they hurt you',
+      script: 'When you ___, I felt ___. I am telling you because I want to keep this relationship working.'
+    },
+    {
+      id: 'asl25',
+      context: 'Apologizing well',
+      script: 'I am sorry for ___. I did not mean to ___. Here is what I will do differently: ___. Is there anything you need from me?'
+    },
+    {
+      id: 'asl26',
+      context: 'Asking for help finding a therapist',
+      script: 'Mom/Dad, I would like to find a therapist. Could you help me look at my insurance directory? Or I can call my pediatrician for a referral.'
+    },
+    {
+      id: 'asl27',
+      context: 'Asking your therapist for a change in approach',
+      script: 'I want to share that ___ is not working for me. Could we try ___ instead? Or could we explore why?'
+    },
+    {
+      id: 'asl28',
+      context: 'Texting a friend you are worried about them',
+      script: 'Hey. I have been thinking about you. You have seemed ___. Are you okay? I am here if you want to talk.'
+    },
+    {
+      id: 'asl29',
+      context: 'Texting a friend about a crisis',
+      script: 'I need help. I am ___. Can you talk?'
+    },
+    {
+      id: 'asl30',
+      context: 'Asking a stranger for help in public',
+      script: 'Excuse me. I am having a hard time. Could you help me by ___? Or could you point me to ___?'
+    }
+  ];
+var ADVOCACY_DIALOGUE_LIBRARY = [
+    {
+      id: 'adl1',
+      scenario: 'You want to take a hard class your counselor advised against',
+      person: 'School counselor',
+      yourDialogue: [
+        'Counselor: I do not recommend honors English. Your reading has been below grade level.',
+        'You: I hear that. I have been reading above grade level when I use audiobooks. With that accommodation, I think I can do honors.',
+        'Counselor: That accommodation is not available in honors.',
+        'You: I would like to check with the case manager about that. Could we have a meeting? I want to make this decision with more information.'
+      ],
+      keyMoves: [
+        'Acknowledge their reasoning',
+        'Provide your own data',
+        'Question assumption',
+        'Request team meeting'
+      ]
+    },
+    {
+      id: 'adl2',
+      scenario: 'You want to switch schools',
+      person: 'Parent',
+      yourDialogue: [
+        'You: Mom, I want to talk to you about switching schools.',
+        'Mom: Why?',
+        'You: I have been having a hard time at [current school]. The bullying has not stopped. I have asked the school to address it; they have not. I want a fresh start.',
+        'Mom: Switching is a big deal.',
+        'You: I know. I want to do it carefully. Could we visit [other school] before deciding?',
+        'Mom: Lets schedule a tour.',
+        'You: Thanks.'
+      ],
+      keyMoves: [
+        'Frame as conversation, not demand',
+        'Provide context',
+        'Offer concrete next step',
+        'Thank them for engaging'
+      ]
+    },
+    {
+      id: 'adl3',
+      scenario: 'You want to break up with a friend',
+      person: 'The friend',
+      yourDialogue: [
+        'You: I have been thinking. I want to share something with you.',
+        'Friend: Okay.',
+        'You: I think our friendship has changed. I feel drained more than energized. I want to take some space.',
+        'Friend: Why?',
+        'You: Specific examples: [list]. I am not blaming. I am noticing.',
+        'Friend: Okay.',
+        'You: I want to be honest with you because I care. I am not closing the door forever. I am taking distance now.'
+      ],
+      keyMoves: [
+        'Soft opening',
+        'Specific examples without blame',
+        'Honest naming',
+        'Leave door slightly open if appropriate'
+      ]
+    },
+    {
+      id: 'adl4',
+      scenario: 'You want to ask a stranger for help',
+      person: 'A stranger in public',
+      yourDialogue: [
+        'You: Excuse me. Could you help me with [specific]? I have a [brief reason if comfortable] and I am having a hard time [specific task].',
+        'Stranger: Of course.',
+        'You: Thank you so much.'
+      ],
+      keyMoves: [
+        'Specific ask',
+        'Brief context',
+        'Quick thank you'
+      ]
+    },
+    {
+      id: 'adl5',
+      scenario: 'You want to tell a friend they hurt you',
+      person: 'A close friend',
+      yourDialogue: [
+        'You: I want to share something hard. When you said [specific thing], I felt [specific feeling]. I do not think you meant it the way it landed for me.',
+        'Friend: I am sorry. I did not realize.',
+        'You: Thank you for hearing me.'
+      ],
+      keyMoves: [
+        'Specific behavior, not character',
+        'Your feeling, not their motive',
+        'Soft assumption of good intent',
+        'Receive their apology'
+      ]
+    },
+    {
+      id: 'adl6',
+      scenario: 'You want to apologize for hurting someone',
+      person: 'Someone you hurt',
+      yourDialogue: [
+        'You: I want to apologize for [specific action]. I was wrong. I should have [different action]. I am working on doing better. Is there anything I can do?',
+        'Person: It hurt. I appreciate the apology.',
+        'You: Thank you for hearing me out.'
+      ],
+      keyMoves: [
+        'Specific accountability',
+        'No excuses',
+        'Commitment to change',
+        'Open to repair'
+      ]
+    },
+    {
+      id: 'adl7',
+      scenario: 'You want to set a phone boundary',
+      person: 'Family member',
+      yourDialogue: [
+        'You: I want to talk about phones. I want a new norm: no phones at the dinner table. That includes me. Could we try it for a week?',
+        'Family: I do not see a problem.',
+        'You: I think we connect better without them. I want to try.',
+        'Family: Okay, lets try.'
+      ],
+      keyMoves: [
+        'Universal rule (includes you)',
+        'Trial frame',
+        'Reason given'
+      ]
+    },
+    {
+      id: 'adl8',
+      scenario: 'You want to ask for a raise',
+      person: 'Manager',
+      yourDialogue: [
+        'You: I would like to discuss my compensation. Could we set up 15 minutes?',
+        'Manager: Sure, what is up?',
+        'You: I have been here [time]. I have taken on [responsibilities]. Market rate for my role is [data]. I would like to discuss a raise to [number].',
+        'Manager: Let me think and get back to you.',
+        'You: Thank you for considering it.'
+      ],
+      keyMoves: [
+        'Schedule the conversation, do not surprise',
+        'Bring data',
+        'Specific number',
+        'Polite close'
+      ]
+    },
+    {
+      id: 'adl9',
+      scenario: 'You want to tell your doctor a medication is not working',
+      person: 'Doctor',
+      yourDialogue: [
+        'You: I have been on [medication] for [time]. I have noticed [specific symptoms not improving] and [side effects]. I do not think it is working for me.',
+        'Doctor: Lets adjust the dose.',
+        'You: Could we discuss alternatives? I want to understand my options before increasing the dose.',
+        'Doctor: We could try a different medication. Lets discuss.'
+      ],
+      keyMoves: [
+        'Specific timeframe and observations',
+        'Direct conclusion',
+        'Ask for options not just first suggestion',
+        'Collaborative'
+      ]
+    },
+    {
+      id: 'adl10',
+      scenario: 'You want to leave a party early',
+      person: 'Host or friend',
+      yourDialogue: [
+        'You: Hey, I am going to head out. I am pretty drained.',
+        'Friend: Already? It is early.',
+        'You: I know. I am tired. Catch up with you soon though?',
+        'Friend: Sure.',
+        'You: Thanks for inviting me.'
+      ],
+      keyMoves: [
+        'No need to over-explain',
+        'Honor your energy',
+        'Future-focused',
+        'Polite'
+      ]
+    }
+  ];
+var ALLY_SCRIPTS = [
+    {
+      id: 'ally1',
+      whoIsAlly: 'Friend',
+      situation: 'Your disabled friend is being teased',
+      yourScript: 'Walk over and stand next to your friend. Say to the teaser: "That is not okay. Knock it off." Look at your friend: "You ok?"',
+      whyItWorks: 'Physical presence is half the intervention. Stand by your friend before the verbal.'
+    },
+    {
+      id: 'ally2',
+      whoIsAlly: 'Friend',
+      situation: 'A peer is making a joke that includes ableist language',
+      yourScript: 'Calmly: "Hey, that word is not it. We can pick something else." Then move conversation along.',
+      whyItWorks: 'Brief, calm, redirective. Does not require the speaker to be a monster, just to update language.'
+    },
+    {
+      id: 'ally3',
+      whoIsAlly: 'Friend',
+      situation: 'Your disabled friend\'s accommodation is being denied by a teacher in real time',
+      yourScript: 'Address the teacher: "Could you check with the case manager Ms. ___? My friend has it in their IEP." Or to your friend: "I have your back here, I am calling the office."',
+      whyItWorks: 'Witnessing the moment changes the dynamic. Most teachers back off when watched.'
+    },
+    {
+      id: 'ally4',
+      whoIsAlly: 'Teacher',
+      situation: 'A student in your class has an accommodation but is too shy to invoke it',
+      yourScript: 'Privately: "I noticed you have access to ___. Just want you to know it is here if you want it. No pressure either way."',
+      whyItWorks: 'Reminds student. Removes shame. Does not force.'
+    },
+    {
+      id: 'ally5',
+      whoIsAlly: 'Teacher',
+      situation: 'Another teacher is being dismissive of a student\'s disability',
+      yourScript: 'Privately to colleague: "I think I might be missing some context here. What do you think is going on with ___?" Listen first. Then: "I have noticed they really benefit from ___."',
+      whyItWorks: 'Builds shared understanding without confrontation. Most colleagues respond to curiosity.'
+    },
+    {
+      id: 'ally6',
+      whoIsAlly: 'Parent',
+      situation: 'Another parent at school is mocking your child\'s accommodations',
+      yourScript: 'Directly: "These accommodations level the playing field. They are not advantages." If continued: "I am going to step away from this conversation."',
+      whyItWorks: 'Defends without inviting argument. Limits give you exit.'
+    },
+    {
+      id: 'ally7',
+      whoIsAlly: 'Sibling',
+      situation: 'Your disabled sibling is being talked about as if they are not present',
+      yourScript: 'Out loud, to the speaker: "You should ask them. They can answer." Then to your sibling: "What do you think?"',
+      whyItWorks: 'Centers your sibling\'s voice. Trains adults to address them directly.'
+    },
+    {
+      id: 'ally8',
+      whoIsAlly: 'Doctor',
+      situation: 'A patient is being talked over by their parent',
+      yourScript: 'To the patient: "Could I hear from you first? Your parent\'s perspective is helpful too, but I want to hear from you about your body."',
+      whyItWorks: 'Centers patient autonomy. Most parents respect this if framed as medical practice.'
+    },
+    {
+      id: 'ally9',
+      whoIsAlly: 'Boss / Coworker',
+      situation: 'A disabled coworker is being assigned tasks that violate their accommodations',
+      yourScript: 'To the assigner: "I think ___ has an accommodation around that. Could we redistribute?" Or to your coworker: "I have got that one if you need to switch."',
+      whyItWorks: 'Solves the problem without singling out. Spreads the labor of accommodation.'
+    },
+    {
+      id: 'ally10',
+      whoIsAlly: 'Online friend',
+      situation: 'A disabled friend is being attacked in a thread',
+      yourScript: 'In thread: "I disagree with the way this conversation is going. Let me step in." Then DM your friend: "I saw what happened. Are you ok? I am here."',
+      whyItWorks: 'Public presence + private support. Both matter.'
+    }
+  ];
+var MAINE_SPECIFIC_RIGHTS = [
+    {
+      id: 'me1',
+      law: 'Maine Unified Special Education Regulations (MUSER)',
+      shortName: 'MUSER',
+      citation: '05-071 CMR Chapter 101',
+      whatItCovers: 'Maine\'s implementation of federal IDEA. Sets state-specific procedures, timelines, and rights for special education in Maine.',
+      whyItMatters: 'MUSER applies in addition to federal IDEA. Some MUSER provisions are stronger than federal floor.',
+      keyProvisions: [
+        'IEP development and review timelines',
+        'Parent rights and procedural safeguards in Maine context',
+        'Special education evaluation standards',
+        'LRE expectations'
+      ],
+      whereToFind: 'Maine Department of Education website > Special Education > Statutes and Rules.',
+      whoCanHelp: 'Disability Rights Maine (Maine P&A), Maine Parent Federation, ABA-credentialed special education attorneys in Maine.'
+    },
+    {
+      id: 'me2',
+      law: 'Maine Chapter 33: Use of Restraint and Seclusion',
+      shortName: 'Chapter 33',
+      citation: '05-071 CMR Chapter 33',
+      whatItCovers: 'Use of physical restraint and seclusion in Maine schools. Sets strict limits, training requirements, documentation, and parent notification.',
+      whyItMatters: 'Restraint and seclusion are traumatic events. Chapter 33 limits their use to emergencies and requires accountability.',
+      keyProvisions: [
+        'Restraint and seclusion only for emergencies threatening physical safety',
+        'Trained staff only',
+        '24-hour parent notification',
+        'Written incident reports'
+      ],
+      whereToFind: 'Maine Department of Education website > Restraint and Seclusion.',
+      whoCanHelp: 'Disability Rights Maine. Maine DOE Office of Special Services.'
+    },
+    {
+      id: 'me3',
+      law: 'Maine Civil Rights Act',
+      shortName: 'MCRA',
+      citation: '5 M.R.S. § 4684-A et seq.',
+      whatItCovers: 'Civil rights protections in Maine, including disability discrimination.',
+      whyItMatters: 'Provides state-level legal protection in addition to federal civil rights laws.',
+      keyProvisions: [
+        'Disability discrimination prohibited',
+        'Public accommodations covered',
+        'Education settings covered'
+      ],
+      whereToFind: 'Maine Attorney General\'s office, Civil Rights Division.',
+      whoCanHelp: 'Maine Attorney General Civil Rights Team.'
+    },
+    {
+      id: 'me4',
+      law: 'Maine Anti-Bullying Law',
+      shortName: 'Maine Anti-Bullying',
+      citation: '20-A M.R.S. § 6554',
+      whatItCovers: 'Defines bullying and cyberbullying. Requires every school to have anti-bullying policy and investigation procedures.',
+      whyItMatters: 'Schools must investigate reports and follow procedure. Failure can be reported to DOE.',
+      keyProvisions: [
+        'Annual training for staff',
+        'Reporting procedures',
+        'Investigation timeline',
+        'Disciplinary procedures'
+      ],
+      whereToFind: 'Each school\'s anti-bullying policy. Maine DOE website.',
+      whoCanHelp: 'Disability Rights Maine. State DOE Office of Safe and Drug-Free Schools.'
+    },
+    {
+      id: 'me5',
+      law: 'Maine LGBTQ Student Protections',
+      shortName: 'Maine LGBTQ',
+      citation: 'Various, including 5 M.R.S. § 4571 (Maine Human Rights Act) and DOE guidance',
+      whatItCovers: 'Discrimination based on sexual orientation and gender identity prohibited in Maine schools. Districts must allow chosen name and pronouns in many cases.',
+      whyItMatters: 'Maine has strong LGBTQ protections compared to many states. Use them.',
+      keyProvisions: [
+        'No discrimination based on SOGI',
+        'Bathroom and facility access',
+        'Chosen name and pronouns can be used at school',
+        'Confidentiality protections for non-disclosure to parents in specific circumstances'
+      ],
+      whereToFind: 'Maine Human Rights Commission. Maine DOE LGBTQ guidance.',
+      whoCanHelp: 'EqualityMaine. ACLU of Maine.'
+    },
+    {
+      id: 'me6',
+      law: 'Maine 504 vs IEP Standards',
+      shortName: 'Maine 504',
+      citation: 'Maine DOE 504 guidance + 34 CFR Part 104',
+      whatItCovers: 'Maine\'s implementation of Section 504. Some provisions Maine-specific.',
+      whyItMatters: 'Not all disabilities qualify for IEP. 504 is broader and faster.',
+      keyProvisions: [
+        '504 plans for students with substantial limitation in major life activity',
+        'Annual review',
+        'Procedural safeguards in district policy'
+      ],
+      whereToFind: 'Maine DOE 504 guidance.',
+      whoCanHelp: 'Disability Rights Maine. Maine Parent Federation.'
+    },
+    {
+      id: 'me7',
+      law: 'Maine Compulsory Attendance and Truancy',
+      shortName: 'Maine Truancy',
+      citation: '20-A M.R.S. § 5051-A',
+      whatItCovers: 'Maine attendance requirements. Definitions of excused vs unexcused absence. Truancy procedures.',
+      whyItMatters: 'Mental health absences often misclassified as truancy. Knowing the rules protects you.',
+      keyProvisions: [
+        'Defined excused absences',
+        'Notification and intervention requirements',
+        'Court involvement thresholds'
+      ],
+      whereToFind: 'Each district\'s attendance policy. Maine DOE.',
+      whoCanHelp: 'Disability Rights Maine. School counselor.'
+    },
+    {
+      id: 'me8',
+      law: 'Disability Rights Maine (state P&A)',
+      shortName: 'DRM',
+      citation: 'N/A (organization)',
+      whatItCovers: 'Free legal advocacy for Maine residents with disabilities. Includes special education, employment, housing, criminal justice.',
+      whyItMatters: 'Free advocacy. No income limits for special education cases.',
+      keyProvisions: [
+        'Intake and consultation',
+        'Representation in due process',
+        'Systemic advocacy',
+        'Training and information'
+      ],
+      whereToFind: 'drme.org.',
+      whoCanHelp: 'DRM itself. 1-800-452-1948.'
+    },
+    {
+      id: 'me9',
+      law: 'Maine Parent Federation',
+      shortName: 'MPF',
+      citation: 'N/A (organization)',
+      whatItCovers: 'Maine\'s Parent Training and Information Center. Helps families navigate special education.',
+      whyItMatters: 'Free training, information, and support for parents of children with disabilities.',
+      keyProvisions: [
+        'IEP support',
+        'Parent training',
+        'Workshops',
+        'Phone consultations'
+      ],
+      whereToFind: 'mpf.org.',
+      whoCanHelp: 'MPF itself. 1-800-870-7746.'
+    },
+    {
+      id: 'me10',
+      law: 'NAMI Maine',
+      shortName: 'NAMI ME',
+      citation: 'N/A (organization)',
+      whatItCovers: 'Mental health support, education, and advocacy in Maine.',
+      whyItMatters: 'Mental health resources. Family-to-family classes. Peer support.',
+      keyProvisions: [
+        'Family-to-Family education',
+        'Peer support groups',
+        'Helpline'
+      ],
+      whereToFind: 'namimaine.org.',
+      whoCanHelp: 'NAMI Maine. 1-800-464-5767.'
+    },
+    {
+      id: 'me11',
+      law: 'Maine Crisis Line',
+      shortName: 'Maine Crisis Line',
+      citation: 'N/A (service)',
+      whatItCovers: '24/7 mental health crisis support specific to Maine.',
+      whyItMatters: 'Statewide. Free. Trained crisis counselors. Can dispatch mobile crisis if needed.',
+      keyProvisions: [
+        '24/7 phone line',
+        'Mobile crisis dispatch',
+        'Followup services'
+      ],
+      whereToFind: '1-888-568-1112.',
+      whoCanHelp: 'Maine Behavioral Health Crisis Line.'
+    },
+    {
+      id: 'me12',
+      law: 'Maine Department of Education Special Education',
+      shortName: 'Maine DOE SpEd',
+      citation: 'N/A (state agency)',
+      whatItCovers: 'State-level oversight of special education. Filing complaints. Dispute resolution.',
+      whyItMatters: 'When district fails, state DOE can investigate.',
+      keyProvisions: [
+        'State complaint investigation',
+        'Mediation services',
+        'Due process oversight'
+      ],
+      whereToFind: 'maine.gov/doe/specialed.',
+      whoCanHelp: 'Maine DOE Office of Special Services.'
+    }
+  ];
+var LEGISLATIVE_AND_POLICY_PRIMER = [
+    {
+      id: 'lap1',
+      law: 'Individuals with Disabilities Education Act (IDEA)',
+      year: 1975,
+      whatItDoes: 'Requires free appropriate public education for students with disabilities. Funds special education services. Sets procedural protections.',
+      keyComponents: [
+        'IEP requirement',
+        'FAPE guarantee',
+        'LRE preference',
+        'Procedural safeguards',
+        'Parent and student rights',
+        'Transition planning starting at 14-16'
+      ],
+      whatItDoesNotDo: [
+        'Cover all disabled students (some go to 504)',
+        'Apply after high school',
+        'Cover private schools (unless placed by district)'
+      ],
+      whereToReadMore: 'sites.ed.gov/idea'
+    },
+    {
+      id: 'lap2',
+      law: 'Section 504 of the Rehabilitation Act',
+      year: 1973,
+      whatItDoes: 'Prohibits disability discrimination by any entity receiving federal funds (schools, hospitals, etc.). Predates ADA.',
+      keyComponents: [
+        'Civil rights law (not service entitlement)',
+        '504 plans in schools',
+        'Reasonable modifications required',
+        'Broader definition than some other laws'
+      ],
+      whatItDoesNotDo: [
+        'Provide funding for services like IDEA',
+        'Define specific services'
+      ],
+      whereToReadMore: 'www2.ed.gov/about/offices/list/ocr/504faq.html'
+    },
+    {
+      id: 'lap3',
+      law: 'Americans with Disabilities Act (ADA)',
+      year: 1990,
+      whatItDoes: 'Civil rights law prohibiting disability discrimination in employment, public services, public accommodations, transportation, telecommunications.',
+      keyComponents: [
+        'Title I: Employment',
+        'Title II: State and local government services',
+        'Title III: Public accommodations and commercial facilities',
+        'Title IV: Telecommunications',
+        'Title V: Miscellaneous'
+      ],
+      whatItDoesNotDo: [
+        'Apply to religious institutions',
+        'Apply to private clubs',
+        'Set funding'
+      ],
+      whereToReadMore: 'ada.gov'
+    },
+    {
+      id: 'lap4',
+      law: 'ADA Amendments Act (ADAAA)',
+      year: 2008,
+      whatItDoes: 'Restored broad protection of ADA after Supreme Court had narrowed it. Made it easier to qualify as person with disability.',
+      keyChanges: [
+        'Mitigating measures (medications) no longer considered',
+        'Major life activities expanded',
+        'Episodic conditions covered',
+        'Lower threshold for "substantially limits"'
+      ],
+      practicalImpact: 'Many more conditions now clearly qualify.'
+    },
+    {
+      id: 'lap5',
+      law: 'Title IX',
+      year: 1972,
+      whatItDoes: 'Prohibits sex-based discrimination in education. Often intersects with disability when bullying or harassment is gender-based.',
+      relevanceToDisability: 'Disabled students experience higher rates of sexual harassment and assault. Title IX provides additional protection alongside Section 504.',
+      whereToReadMore: 'www2.ed.gov/about/offices/list/ocr/docs/tix_dis.html'
+    },
+    {
+      id: 'lap6',
+      law: 'Family Educational Rights and Privacy Act (FERPA)',
+      year: 1974,
+      whatItDoes: 'Protects privacy of student educational records. Gives parents (and students 18+) right to access records.',
+      keyRights: [
+        'Right to inspect records',
+        'Right to request corrections',
+        'Right to control disclosure'
+      ],
+      practicalUse: 'Used to access discipline records, behavior logs, evaluation reports.'
+    },
+    {
+      id: 'lap7',
+      law: 'Olmstead v. L.C.',
+      year: 1999,
+      whatItDoes: 'Supreme Court decision requiring states to provide community-based services rather than institutional care when appropriate.',
+      keyImpact: [
+        'Most disabled people now live in community',
+        'States must offer community-based options',
+        'Major shift in adult disability services'
+      ]
+    },
+    {
+      id: 'lap8',
+      law: 'Endrew F. v. Douglas County',
+      year: 2017,
+      whatItDoes: 'Supreme Court decision raising the bar for FAPE. IEPs must enable "appropriately ambitious" progress.',
+      keyChange: 'Earlier standard ("more than de minimis") had been used by schools to justify minimal services. Now must be appropriately ambitious.',
+      practicalUse: 'Common citation in IEP disputes today.'
+    },
+    {
+      id: 'lap9',
+      law: 'Maine Unified Special Education Regulations (MUSER)',
+      year: 'ongoing',
+      whatItDoes: 'Maine\'s state-specific special education regulations under IDEA.',
+      keyMaineSpecifics: [
+        'Earlier transition planning age (14)',
+        'Specific procedures for evaluation timelines',
+        'Maine Chapter 33 on restraint/seclusion',
+        'Maine-specific parent rights'
+      ]
+    },
+    {
+      id: 'lap10',
+      law: 'Maine LGBTQ Student Protections',
+      year: 'various',
+      whatItDoes: 'Maine has strong LGBTQ protections including for students. Discrimination based on sexual orientation and gender identity prohibited.',
+      practicalImpact: 'Chosen name and pronouns can be used at school, often without parent notification.'
+    }
+  ];
+var IEP_GLOSSARY_DEEP = [
+    {
+      id: 'ig1',
+      term: 'Present Levels of Performance (PLP / PLAAFP)',
+      shortDef: 'The section of an IEP that describes what the student can currently do and what they need.',
+      fullDef: 'PLAAFP stands for Present Levels of Academic Achievement and Functional Performance. It is the foundation of an IEP because every goal, service, and accommodation must connect to a present level. PLAAFP should include strengths, needs, and how the disability affects involvement in general education.',
+      whyItMatters: 'Many IEPs have weak PLAAFP. If your PLAAFP just lists deficits, push back. Strengths matter. Specific data matters.',
+      whatToLookFor: [
+        'Specific data, not vague statements',
+        'Strengths AND needs',
+        'How disability affects general education involvement',
+        'Recent (within past year)',
+        'Multiple sources of data'
+      ],
+      redFlags: [
+        'Only deficits listed',
+        'Vague statements ("difficulty with academics")',
+        'Same wording year over year (copy-paste)',
+        'No data citations'
+      ]
+    },
+    {
+      id: 'ig2',
+      term: 'Measurable Annual Goals',
+      shortDef: 'Specific goals your IEP team writes for what you should be able to do in one year.',
+      fullDef: 'Goals must be measurable, meaning they specify what skill, in what conditions, at what level. Federal law requires goals to be ambitious AND attainable.',
+      whyItMatters: 'Goals drive everything. If goals are weak, services and progress reporting are weak too.',
+      whatToLookFor: [
+        'Specific skill named',
+        'Conditions stated (where, how, with what supports)',
+        'Mastery criteria (e.g., 80% accuracy in 4 of 5 trials)',
+        'Method of measurement specified',
+        'Realistic timeline'
+      ],
+      redFlags: [
+        'Vague goals ("will improve reading")',
+        'No mastery criteria',
+        'Same goal year over year',
+        'Goals that just maintain rather than progress'
+      ],
+      sampleGoodGoal: 'Student will read grade-level passages and answer comprehension questions with 80% accuracy across 4 of 5 weekly probes, with text-to-speech accommodation provided.',
+      sampleBadGoal: 'Student will improve in reading.'
+    },
+    {
+      id: 'ig3',
+      term: 'Accommodations',
+      shortDef: 'Adjustments to HOW you do work, without changing WHAT you do.',
+      fullDef: 'Accommodations level the playing field. They do not change the curriculum or the standard. Examples: extended time, quiet space, audio books, scribe.',
+      whyItMatters: 'Accommodations should be used, not just listed. If accommodations are not being used, IEP team needs to know.',
+      vsModifications: 'Modifications change WHAT you do. Accommodations change HOW. Modifications affect grade-level expectations; accommodations preserve them.'
+    },
+    {
+      id: 'ig4',
+      term: 'Modifications',
+      shortDef: 'Changes to WHAT you do, the curriculum or expectations themselves.',
+      fullDef: 'Modifications are appropriate when the student cannot access grade-level work even with accommodations. Examples: reduced number of problems, different reading level, alternate assessment.',
+      whyItMatters: 'Modifications affect grade-level expectations. Consider carefully whether they are appropriate. Sometimes modifications are over-used and limit student potential. Sometimes they are necessary.',
+      vsAccommodations: 'See accommodations entry.'
+    },
+    {
+      id: 'ig5',
+      term: 'Related Services',
+      shortDef: 'Services provided in addition to special education instruction, like speech-language therapy, OT, PT, counseling.',
+      fullDef: 'Related services support student\'s ability to benefit from special education. Each service should be specified in IEP: frequency, duration, location, provider type.',
+      whyItMatters: 'Related services are often where accommodations fall short. If service is "30 min per week" but actually provided 15 minutes 2 of 4 weeks, that is a violation.',
+      whatToLookFor: [
+        'Frequency and duration specified',
+        'Direct vs. consult service noted',
+        'Provider credentials',
+        'Location (push-in vs. pull-out)',
+        'Coordination with classroom teachers'
+      ]
+    },
+    {
+      id: 'ig6',
+      term: 'Least Restrictive Environment (LRE)',
+      shortDef: 'Federal mandate that students with disabilities be educated with non-disabled peers to the maximum extent appropriate.',
+      fullDef: 'LRE is a continuum from full general education to specialized settings. Decisions must be individualized and supported by data. Removal from general education requires justification.',
+      whyItMatters: 'LRE protects against unnecessary segregation. School cannot just decide to put you in self-contained because it is convenient.',
+      whatToLookFor: [
+        'Why is more restrictive environment proposed?',
+        'What has been tried in less restrictive environment?',
+        'How will progress be measured?',
+        'How will you return to less restrictive environment?'
+      ]
+    },
+    {
+      id: 'ig7',
+      term: 'Free Appropriate Public Education (FAPE)',
+      shortDef: 'Federal mandate that all students with disabilities receive education appropriate to their unique needs at no cost.',
+      fullDef: 'FAPE is the core promise of IDEA. The Endrew F. Supreme Court decision (2017) clarified that FAPE means appropriately ambitious progress, not just minimal benefit.',
+      whyItMatters: 'FAPE is what your IEP is for. If your school is not providing FAPE, you have legal remedy.',
+      keyComponents: [
+        'Special education designed to meet unique needs',
+        'Related services as needed',
+        'Free (no cost to family)',
+        'Public (not requiring private placement)',
+        'In conformity with IEP'
+      ]
+    },
+    {
+      id: 'ig8',
+      term: 'Procedural Safeguards',
+      shortDef: 'Parent and student rights under IDEA.',
+      fullDef: 'Procedural safeguards include rights to prior written notice, parental consent, access to records, dispute resolution, independent educational evaluation, and more. School must provide annually.',
+      whyItMatters: 'Knowing procedural safeguards is the foundation of advocacy.',
+      keyRights: [
+        'Right to prior written notice before changes',
+        'Right to refuse consent to evaluations or services',
+        'Right to access educational records',
+        'Right to independent educational evaluation',
+        'Right to mediation and due process',
+        'Right to attorney',
+        'Right to participation in IEP process'
+      ]
+    },
+    {
+      id: 'ig9',
+      term: 'Prior Written Notice (PWN)',
+      shortDef: 'School must provide written notice before proposing or refusing changes to IEP, identification, evaluation, or placement.',
+      fullDef: 'PWN must explain what is proposed or refused, why, what data was considered, what alternatives were considered. Cannot be a single-paragraph summary.',
+      whyItMatters: 'PWN forces school to articulate decisions in writing. Vague PWN may indicate weak decision.',
+      whatToLookFor: [
+        'Specific description of proposal',
+        'Reasons (with data)',
+        'Alternatives considered',
+        'Other relevant information',
+        'Parent\'s rights to disagree'
+      ]
+    },
+    {
+      id: 'ig10',
+      term: 'Eligibility Determination',
+      shortDef: 'Process by which school determines whether student qualifies for special education.',
+      fullDef: 'Federal IDEA defines 13 disability categories. School team (including parent) reviews evaluation data and determines whether student meets criteria for one or more categories and needs special education.',
+      whyItMatters: 'Eligibility determines whether you get an IEP. If denied, you may have right to ask why and appeal.',
+      categories: [
+        'Autism',
+        'Deaf-Blindness',
+        'Deafness',
+        'Emotional Disturbance',
+        'Hearing Impairment',
+        'Intellectual Disability',
+        'Multiple Disabilities',
+        'Orthopedic Impairment',
+        'Other Health Impairment (OHI)',
+        'Specific Learning Disability',
+        'Speech or Language Impairment',
+        'Traumatic Brain Injury',
+        'Visual Impairment'
+      ]
+    },
+    {
+      id: 'ig11',
+      term: 'Transition Planning',
+      shortDef: 'IDEA-required planning for life after high school.',
+      fullDef: 'Starts at age 14 in many states (16 federal floor). Must include measurable post-school goals in education, employment, and independent living. Updated annually.',
+      whyItMatters: 'High school passes fast. Transition planning is the bridge to your adult life.',
+      whatToLookFor: [
+        'Post-school goals (your goals)',
+        'Transition assessments documenting interests, preferences',
+        'Course of study aligned with goals',
+        'Connections to adult services',
+        'Self-advocacy goals'
+      ]
+    },
+    {
+      id: 'ig12',
+      term: 'Age of Majority',
+      shortDef: 'Age at which rights transfer from parent to student (18 in most states).',
+      fullDef: 'When student turns 18, IEP rights transfer to them unless court has appointed guardian. School must notify of rights transfer in advance.',
+      whyItMatters: 'You become the legal IEP signer at 18. Most students need to actively learn how to lead their IEP before then.',
+      keyConsiderations: [
+        'You can still want parent input',
+        'You can sign waivers to share information with parents',
+        'Some students choose guardianship; others reject it',
+        'Supported decision-making is alternative to guardianship'
+      ]
+    }
+  ];
+var WORDS_THAT_HURT = [
+    { id: 'wh1', term: 'Retarded (as insult)', why: 'A word that has been used to dehumanize people with intellectual disabilities for over a century. When used casually or as an insult, it tells anyone with intellectual disability that they are the lowest possible thing one can be called.', whatToSayInstead: 'Use the specific word for what you mean: "That is unfair." "That is annoying." "That is silly." Be specific.', howToRespondIfTargeted: 'You do not have to engage with the word. You can say: "That word is hurtful. Please dont use it around me." If safe, name why: "It hurts because ___."', communityPosition: 'Both Self Advocacy International and AAIDD have led the campaign against the R-word for over 15 years.' },
+    { id: 'wh2', term: 'Crazy / insane / nuts (about mental health)', why: 'Casually using mental health terms as insults teaches that mental illness equals dangerous, illogical, or bad. People with actual mental health conditions hear it as: I am the worst thing you can be.', whatToSayInstead: 'Specific words: "ridiculous, wild, unbelievable, frustrating, intense."', howToRespondIfTargeted: 'You can name it. "I have a mental health condition. That word is loaded for me." Or simply: "Lets pick a different word."', communityPosition: 'NAMI and most mental health orgs encourage moving away from these terms.' },
+    { id: 'wh3', term: 'Spaz / spastic', why: 'Originally a medical term describing involuntary muscle movement. Casually means clumsy or out of control. Hurtful to people with cerebral palsy and similar conditions.', whatToSayInstead: '"Clumsy" if you mean dropped something. "Excited" if you mean energetic. Be specific.', howToRespondIfTargeted: 'Direct: "That word is loaded. Please dont use it."', communityPosition: 'Considered a slur in the UK; growing awareness in US disability communities.' },
+    { id: 'wh4', term: 'Lame', why: 'Originally a word for someone with physical disability affecting walking. Casually means uncool or bad. The connection between disability and bad runs deep when we use this word.', whatToSayInstead: '"Disappointing, boring, not what I wanted." Pick the actual feeling.', howToRespondIfTargeted: 'You can correct casually: "Could we use a different word?"', communityPosition: 'Widely understood in disability advocacy as ableist; replacement urged.' },
+    { id: 'wh5', term: 'Wheelchair-bound', why: 'Wheelchairs free people. They are tools for mobility. Calling someone bound to one frames the tool as a prison instead of as wings.', whatToSayInstead: '"Uses a wheelchair." That is the accurate and respectful phrase.', howToRespondIfTargeted: 'If used about you: "Actually, my wheelchair is freedom. I use a wheelchair."', communityPosition: 'Universal preference in wheelchair-using community.' },
+    { id: 'wh6', term: 'Suffers from', why: 'Implies the person is constantly suffering and defines them by the condition. Many of us live well WITH our conditions, not in suffering FROM them.', whatToSayInstead: '"Has." "Lives with." "Manages."', howToRespondIfTargeted: 'Educate: "I have ___. I dont suffer from it. I live with it."', communityPosition: 'Person-first or identity-first; either is preferred over suffers-from.' },
+    { id: 'wh7', term: 'Special needs', why: 'Tries to be polite but sets people apart as having needs that are special, when actually all people have needs and disabled people just need different ones. Many disability rights leaders reject the term.', whatToSayInstead: '"Disabled" or "with a disability" or specific (autistic, deaf, mobility disability).', howToRespondIfTargeted: 'Direct: "I prefer disabled. My needs are not special. They are just needs."', communityPosition: 'Identity-first advocates actively push back against this; some communities still use it.' },
+    { id: 'wh8', term: 'Differently-abled', why: 'Same problem as special needs. Tries to soften but conveys that disabled is somehow shameful, requiring euphemism.', whatToSayInstead: 'Disabled. Use the actual word.', howToRespondIfTargeted: '"I am disabled. It is not a bad word."', communityPosition: 'Largely rejected by disability rights movement.' },
+    { id: 'wh9', term: 'Handicapped', why: 'Etymology myth (cap-in-hand begging) is overstated, but the word is dated and replaced by disabled in modern usage and law.', whatToSayInstead: 'Disabled. Or accessible (for spaces and parking).', howToRespondIfTargeted: 'Mild correction: "Modern term is disabled or accessible."', communityPosition: 'Outdated but not slur-level.' },
+    { id: 'wh10', term: 'Confined to a wheelchair', why: 'Same problem as wheelchair-bound. Frames the wheelchair as a prison.', whatToSayInstead: '"Uses a wheelchair."', howToRespondIfTargeted: 'Same correction.', communityPosition: 'Universally preferred phrasing exists.' },
+    { id: 'wh11', term: 'Brave / inspirational (for ordinary activities)', why: 'Calling a disabled person brave for going to school or work is inspiration porn. It tells us our existence is so unusual that ordinary acts are heroic. It centers nondisabled feelings.', whatToSayInstead: 'Compliment specific actions: "That was a hard test. Nice work." "You handled that well."', howToRespondIfTargeted: 'Polite correction: "Thanks. I am just doing my thing."', communityPosition: 'Stella Young\'s TED talk on inspiration porn is canonical.' },
+    { id: 'wh12', term: 'OCD (as casual habit)', why: 'When someone with mild preferences says they are "so OCD" they erase the reality of OCD as a disabling mental illness with intrusive thoughts and compulsions.', whatToSayInstead: '"Particular. Organized. Prefer things tidy." Pick the actual word.', howToRespondIfTargeted: 'Educate: "OCD is intrusive thoughts and compulsions. What you mean is ___."', communityPosition: 'IOCDF actively campaigns against casual use.' },
+    { id: 'wh13', term: 'Bipolar (as moodiness)', why: 'Bipolar is a serious mental illness with specific clinical criteria. Casual use makes it harder for people with bipolar to get help.', whatToSayInstead: '"Moody. Unpredictable. Changeable."', howToRespondIfTargeted: 'Educate.', communityPosition: 'DBSA and mental health advocacy.' },
+    { id: 'wh14', term: 'PTSD (as common stress)', why: 'PTSD is a trauma response with specific clinical criteria. Casual use trivializes a serious condition and erases people with actual PTSD.', whatToSayInstead: '"Stressed. Overwhelmed. Anxious."', howToRespondIfTargeted: 'Educate.', communityPosition: 'PTSD advocacy groups.' },
+    { id: 'wh15', term: 'Triggered (as casual annoyance)', why: 'Triggered originally meant a trauma response. Casual use mocks the people who actually experience trauma triggers.', whatToSayInstead: '"Annoyed. Bothered. Irritated."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Mental health advocacy.' },
+    { id: 'wh16', term: 'Schizo / split personality (mocking)', why: 'Schizophrenia is a serious mental illness with specific symptoms. It is NOT split personality (different condition). Mocking use stigmatizes people who already face dangerous stereotypes.', whatToSayInstead: '"Inconsistent. Contradicts itself."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Schizophrenia & Related Disorders Alliance of America.' },
+    { id: 'wh17', term: 'Midget', why: 'Considered a slur by Little People of America. The preferred terms are little person or person with dwarfism.', whatToSayInstead: 'Little person. Person with dwarfism.', howToRespondIfTargeted: 'Polite correction.', communityPosition: 'Little People of America has actively campaigned for term retirement.' },
+    { id: 'wh18', term: 'Gypsy / gypped (as ripped off)', why: 'Gypsy is a slur for Romani people. Gypped comes from the stereotype that Romani people cheat. Both are anti-Romani racism.', whatToSayInstead: '"Cheated. Robbed. Defrauded."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Romani advocacy.' },
+    { id: 'wh19', term: 'Indian giver', why: 'Racist term that mocks Indigenous people based on inaccurate historical caricature. Has nothing to do with actual Indigenous practices.', whatToSayInstead: '"Someone who took back a gift."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Native American advocacy.' },
+    { id: 'wh20', term: 'Off the reservation', why: 'Originally a term for Native Americans who left their forced reservations, often resulting in violence by the U.S. government. Casual use erases that violence.', whatToSayInstead: '"Off-script. Off-topic. Going rogue."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Native American advocacy.' },
+    { id: 'wh21', term: 'Tone-deaf', why: 'Tone-deafness is a real condition (amusia). Using it as a metaphor for being insensitive equates disability with being a bad person.', whatToSayInstead: '"Insensitive. Out of touch. Missing the moment."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Emerging disability advocacy.' },
+    { id: 'wh22', term: 'Falling on deaf ears', why: 'Equates deafness with not listening or not caring. Deaf people listen with their eyes and hands. The metaphor erases their listening.', whatToSayInstead: '"Ignored. Not heard out. Brushed off."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Deaf community advocacy.' },
+    { id: 'wh23', term: 'Blind to (something)', why: 'Equates blindness with not understanding. Blind people understand. The metaphor is ableist.', whatToSayInstead: '"Ignorant of. Unaware of. Missing."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Blind community advocacy.' },
+    { id: 'wh24', term: 'Crippling (debt, anxiety, etc.)', why: 'Equates physical disability with the worst possible state. Even casual use stigmatizes physical disability.', whatToSayInstead: '"Overwhelming. Severe. Disabling-in-the-clinical-sense if you mean clinical."', howToRespondIfTargeted: 'Soft correction.', communityPosition: 'Disability community.' },
+    { id: 'wh25', term: 'Psycho / psychotic (as scary/violent)', why: 'Psychosis is a mental health symptom. Most people with psychosis are not violent and are far more likely to be victims of violence than perpetrators.', whatToSayInstead: '"Scary. Aggressive. Out of control."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Schizophrenia advocacy.' },
+    { id: 'wh26', term: 'Anorexic / bulimic (as thin or watching weight)', why: 'These are serious eating disorders with high mortality rates. Casual use trivializes life-threatening illness.', whatToSayInstead: '"Slim. Careful about food. Restricting."', howToRespondIfTargeted: 'Educate.', communityPosition: 'NEDA actively campaigns.' },
+    { id: 'wh27', term: 'High-functioning / low-functioning (autism)', why: 'High-functioning erases the actual struggles of articulate autistic people. Low-functioning denies the humanity and intelligence of autistic people with higher support needs. Functioning labels are used to deny services to those labeled high and to deny humanity to those labeled low.', whatToSayInstead: '"Autistic with X support needs in Y area."', howToRespondIfTargeted: 'Educate: "I prefer not to use functioning labels. They flatten me."', communityPosition: 'ASAN and most autistic-led orgs reject functioning labels.' },
+    { id: 'wh28', term: 'Aspergers (used as separate from autism)', why: 'Aspergers is now part of the autism spectrum (DSM-5). Using it separately can imply "the acceptable kind of autism." The eponym Hans Asperger\'s history with Nazi child welfare has also led many to drop the term.', whatToSayInstead: '"Autistic."', howToRespondIfTargeted: 'Use the term you prefer for yourself.', communityPosition: 'Mixed; community trending away from Aspergers.' },
+    { id: 'wh29', term: 'Mongoloid (about Down syndrome)', why: 'Outdated racist term once used for Down syndrome. Now a slur on multiple axes.', whatToSayInstead: 'Down syndrome. Person with Down syndrome.', howToRespondIfTargeted: 'Direct: "That word is racist and ableist. Please dont use it."', communityPosition: 'NDSS and similar orgs reject term.' },
+    { id: 'wh30', term: 'Vegetable (about coma or severe disability)', why: 'Dehumanizes people. Asserts they are not people.', whatToSayInstead: 'Person in a coma. Person with severe disability.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Disability community.' },
+    { id: 'wh31', term: 'Tard / R-word abbreviated', why: 'Same as full word. The shortening does not make it less harmful.', whatToSayInstead: 'See entry wh1.', howToRespondIfTargeted: 'Same as wh1.', communityPosition: 'Same as wh1.' },
+    { id: 'wh32', term: 'Lazy (about disability)', why: 'People with chronic fatigue, depression, ADHD, executive function disorders are often called lazy when they are managing invisible disability symptoms.', whatToSayInstead: '"Struggling. Overwhelmed. Burned out."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Chronic illness advocacy.' },
+    { id: 'wh33', term: 'Faking it (about disability)', why: 'Implies disability is performance. For people with invisible disabilities especially, this is harmful and disbelieving.', whatToSayInstead: 'Believe the person.', howToRespondIfTargeted: 'Direct: "You dont believe me. That is a problem."', communityPosition: 'Disability advocacy.' },
+    { id: 'wh34', term: 'Attention-seeker (about distress)', why: 'When someone shows distress, "attention-seeking" implies they should be ignored. But attention can be exactly what is needed in mental health crisis.', whatToSayInstead: '"Asking for help. Calling for connection. In distress."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Mental health advocacy.' },
+    { id: 'wh35', term: 'Drama queen / drama king', why: 'Dismisses emotional response as performative. Often used to silence people whose emotions are gendered or racialized differently.', whatToSayInstead: '"Reacting intensely." Maybe ask: "What is happening?"', howToRespondIfTargeted: 'Direct.', communityPosition: 'Mental health and gender advocacy.' },
+    { id: 'wh36', term: 'Hysterical (about womens emotion)', why: 'Etymology: hyster = uterus. Used historically to invalidate womens medical complaints.', whatToSayInstead: '"Upset. Distressed. Angry."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Feminist and disability advocacy.' },
+    { id: 'wh37', term: 'Sissy / pansy (about boys feelings)', why: 'Teaches boys that feeling = feminine = bad. Hurts boys, hurts girls, hurts non-binary kids.', whatToSayInstead: 'Use the actual feeling word.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Gender advocacy.' },
+    { id: 'wh38', term: 'Man up (about emotional response)', why: 'Same issue. Equates manhood with not feeling.', whatToSayInstead: '"Handle this. Stay grounded. Take care."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Gender advocacy.' },
+    { id: 'wh39', term: 'Acting out / behavior issues (about distress)', why: 'Often used to describe Black students and disabled students experiencing distress, where similar reactions in other students would be called "having a bad day."', whatToSayInstead: '"In distress. Needing support. Communicating need."', howToRespondIfTargeted: 'Educate. Use the data.', communityPosition: 'Education advocacy.' },
+    { id: 'wh40', term: 'Defiant (about saying no)', why: 'Often coded language. Children of color and disabled children are described as defiant when they self-advocate. Pathologizes appropriate boundaries.', whatToSayInstead: '"Said no. Refused. Disagreed."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Education advocacy.' },
+    { id: 'wh41', term: 'Manipulative (about asking for what one needs)', why: 'When marginalized people ask for accommodations using different communication styles, they are sometimes called manipulative.', whatToSayInstead: '"Asking for what they need. Advocating."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Mental health and disability advocacy.' },
+    { id: 'wh42', term: 'Aggressive (about assertive)', why: 'Often racialized and gendered. Women of color especially face this label for assertive communication.', whatToSayInstead: '"Direct. Assertive. Clear."', howToRespondIfTargeted: 'Educate.', communityPosition: 'Anti-racism advocacy.' },
+    { id: 'wh43', term: 'Acting white / acting black', why: 'Reifies racial stereotypes about how people of any race should behave. Hurts people across all groups.', whatToSayInstead: 'Describe the actual behavior without race.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Anti-racism advocacy.' },
+    { id: 'wh44', term: 'Real American / where are you really from?', why: 'Implies some Americans are more real than others, usually based on race or accent.', whatToSayInstead: 'Be specific without race: "Where did you grow up?" if you actually want to know.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Anti-racism advocacy.' },
+    { id: 'wh45', term: 'Articulate (as compliment to person of color)', why: 'Often given to Black or brown professionals as if articulateness were a surprise. Backhanded compliment.', whatToSayInstead: 'Comment on the substance: "I learned a lot from what you said."', howToRespondIfTargeted: 'Direct.', communityPosition: 'Anti-racism advocacy.' },
+    { id: 'wh46', term: 'Tranny / transvestite (as slur)', why: 'Tranny is widely considered a slur by trans community. Transvestite is medical and dated.', whatToSayInstead: 'Trans. Transgender. Or specific (trans woman, trans man, non-binary).', howToRespondIfTargeted: 'Direct.', communityPosition: 'GLAAD style guide.' },
+    { id: 'wh47', term: 'That is so gay (negative)', why: 'Equates gay with bad. Tells gay students they are inherently bad.', whatToSayInstead: 'Use the actual feeling word.', howToRespondIfTargeted: 'Direct or educate.', communityPosition: 'GLSEN actively campaigns.' },
+    { id: 'wh48', term: 'No-homo', why: 'Treats gay attraction as something to disavow.', whatToSayInstead: 'Just say the thing without the disclaimer.', howToRespondIfTargeted: 'Educate.', communityPosition: 'LGBTQ advocacy.' },
+    { id: 'wh49', term: 'Deadname (using birth name of trans person)', why: 'Uses a name the person has actively rejected. Outs them. Invalidates their identity.', whatToSayInstead: 'Their current name. Apologize once and move on.', howToRespondIfTargeted: 'Direct.', communityPosition: 'GLAAD style guide.' },
+    { id: 'wh50', term: 'Born a man / born a woman (about trans)', why: 'Asserts that gender is fixed at birth. Trans people are not born their assigned gender; they are born trans.', whatToSayInstead: '"Assigned male at birth (AMAB)" or "assigned female at birth (AFAB)" if relevant.', howToRespondIfTargeted: 'Direct.', communityPosition: 'GLAAD style guide.' },
+    { id: 'wh51', term: 'Illegal alien (about people)', why: 'No human is illegal. Reduces a person to a single legal status.', whatToSayInstead: 'Undocumented person.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Immigration advocacy.' },
+    { id: 'wh52', term: 'Anchor baby', why: 'Slur for U.S.-born children of immigrants. Implies the child exists to manipulate.', whatToSayInstead: 'U.S.-born child of immigrants.', howToRespondIfTargeted: 'Direct.', communityPosition: 'Immigration advocacy.' },
+    { id: 'wh53', term: 'Reverse racism', why: 'Misuses the term racism. Most academic and advocacy frameworks define racism as prejudice plus power.', whatToSayInstead: '"Racial prejudice." Then talk about which direction.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Anti-racism advocacy.' },
+    { id: 'wh54', term: 'You guys (in mixed-gender or all-female groups)', why: 'Defaults to male as universal. Erases non-male people in the group.', whatToSayInstead: 'Yall. Folks. Everyone. Team.', howToRespondIfTargeted: 'Optional polite reminder.', communityPosition: 'Gender inclusive language guides.' },
+    { id: 'wh55', term: 'Female (as noun for women)', why: 'Reduces women to biology. Compare: we say men, not males. So women, not females.', whatToSayInstead: 'Women. Girls. People.', howToRespondIfTargeted: 'Educate.', communityPosition: 'Feminist advocacy.' }
+  ];
+var ADVOCACY_GLOSSARY_FINAL = [
+    { id: 'glo1', term: 'Adaptive', def: 'Modified to fit a specific person or need.', example: 'Adaptive sports equipment.' },
+    { id: 'glo2', term: 'Advocate', def: 'A person who supports or argues for a cause.', example: 'You are your own best advocate.' },
+    { id: 'glo3', term: 'Aide', def: 'Paraprofessional who supports students in classroom.', example: 'An aide may assist with personal care or academic support.' },
+    { id: 'glo4', term: 'Audism', def: 'Discrimination against deaf or hard-of-hearing people.', example: 'Assuming Deaf people cannot do certain jobs is audism.' },
+    { id: 'glo5', term: 'Behavior Intervention Plan (BIP)', def: 'IEP plan that addresses specific behavior needs.', example: 'A BIP includes prevention strategies and replacement behaviors.' },
+    { id: 'glo6', term: 'Cognitive', def: 'Related to thinking and reasoning.', example: 'Cognitive accommodations include extended time.' },
+    { id: 'glo7', term: 'Compliance', def: 'Following the rules.', example: 'IDEA compliance is monitored by the state.' },
+    { id: 'glo8', term: 'Compensatory services', def: 'Make-up services owed when school failed to deliver.', example: 'If your speech therapy was cancelled 10 times, you may be owed those sessions.' },
+    { id: 'glo9', term: 'Discrimination', def: 'Unfair treatment based on identity.', example: 'Disability discrimination violates ADA.' },
+    { id: 'glo10', term: 'Due process', def: 'Legal procedures for resolving disputes.', example: 'Due process hearing is a formal proceeding.' },
+    { id: 'glo11', term: 'Educational record', def: 'Documents related to your education.', example: 'IEPs, grades, and behavior records are educational records.' },
+    { id: 'glo12', term: 'Eligibility', def: 'Whether you qualify for special education.', example: 'Eligibility requires both disability and need for services.' },
+    { id: 'glo13', term: 'Evaluation', def: 'Comprehensive assessment to determine needs.', example: 'A psychoeducational evaluation may take 5-10 hours.' },
+    { id: 'glo14', term: 'Executive function', def: 'Mental skills like planning, organization, and time management.', example: 'ADHD often affects executive function.' },
+    { id: 'glo15', term: 'Free Appropriate Public Education (FAPE)', def: 'Federal right under IDEA.', example: 'Schools must provide FAPE at no cost.' },
+    { id: 'glo16', term: 'Functional behavior assessment (FBA)', def: 'Structured assessment of behavior.', example: 'FBA precedes BIP.' },
+    { id: 'glo17', term: 'Goals', def: 'Specific, measurable targets for the year.', example: 'IEP goals should be ambitious AND attainable.' },
+    { id: 'glo18', term: 'Highly qualified', def: 'Meeting federal qualifications for teaching role.', example: 'IDEA requires highly qualified teachers.' },
+    { id: 'glo19', term: 'Inclusion', def: 'Education with non-disabled peers.', example: 'Inclusion is preferred under IDEA.' },
+    { id: 'glo20', term: 'Individualized', def: 'Tailored to one student.', example: 'IEP is by definition individualized.' },
+    { id: 'glo21', term: 'Initial evaluation', def: 'First special education evaluation.', example: '60-day federal timeline.' },
+    { id: 'glo22', term: 'Least Restrictive Environment (LRE)', def: 'Education with non-disabled peers to maximum extent appropriate.', example: 'LRE is a federal mandate.' },
+    { id: 'glo23', term: 'Manifestation determination', def: 'Meeting to decide if behavior was disability-related.', example: 'Required for major disciplinary changes.' },
+    { id: 'glo24', term: 'Mediation', def: 'Voluntary dispute resolution with neutral third party.', example: 'Mediation is often faster and cheaper than due process.' },
+    { id: 'glo25', term: 'Modification', def: 'Change to what is being taught.', example: 'Modified curriculum may have lower content expectations.' },
+    { id: 'glo26', term: 'Notice', def: 'Formal communication about changes.', example: 'Prior Written Notice (PWN) is required for IEP changes.' },
+    { id: 'glo27', term: 'OCR (Office for Civil Rights)', def: 'Federal civil rights enforcement.', example: 'File OCR complaint for disability discrimination.' },
+    { id: 'glo28', term: 'P&A (Protection and Advocacy)', def: 'Federally funded disability rights organizations.', example: 'Each state has a P&A. Free advocacy.' },
+    { id: 'glo29', term: 'Paraprofessional', def: 'Support staff in schools.', example: 'Often called aides or paras.' },
+    { id: 'glo30', term: 'Placement', def: 'Where you are educated.', example: 'Placement is on a continuum.' },
+    { id: 'glo31', term: 'Procedural safeguards', def: 'Parent and student rights under IDEA.', example: 'School must provide annually.' },
+    { id: 'glo32', term: 'Progress monitoring', def: 'Regular measurement of goal progress.', example: 'Required for IEP goals.' },
+    { id: 'glo33', term: 'Reasonable accommodation', def: 'Adjustment that allows access.', example: 'Extended time is a reasonable accommodation.' },
+    { id: 'glo34', term: 'Related services', def: 'Services beyond instruction (OT, PT, SLP).', example: 'Listed in IEP.' },
+    { id: 'glo35', term: 'Resource room', def: 'Special education classroom for part of day.', example: 'May be the LRE for some students.' },
+    { id: 'glo36', term: 'School-to-prison pipeline', def: 'Pattern of disabled, Black, and Latine students being pushed from school discipline to criminal justice.', example: 'Pattern is documented across U.S. schools.' },
+    { id: 'glo37', term: 'Section 504', def: 'Civil rights law prohibiting disability discrimination.', example: 'Provides accommodations in schools.' },
+    { id: 'glo38', term: 'Self-determination', def: 'Right to make own decisions about own life.', example: 'Self-determination is a key transition goal.' },
+    { id: 'glo39', term: 'Specific learning disability', def: 'IDEA eligibility category for dyslexia, dysgraphia, etc.', example: 'Most common eligibility category.' },
+    { id: 'glo40', term: 'Stay-put', def: 'Right to maintain placement during dispute.', example: 'Activated by filing due process.' },
+    { id: 'glo41', term: 'Substantially limits', def: 'Standard under ADA for qualifying as disabled.', example: 'ADAAA expanded definition.' },
+    { id: 'glo42', term: 'Transition', def: 'Planning for post-school life.', example: 'Begins by 14-16 depending on state.' },
+    { id: 'glo43', term: 'Triennial evaluation', def: 'Re-evaluation every 3 years.', example: 'Required under IDEA.' },
+    { id: 'glo44', term: 'Universal design', def: 'Design accessible to all from the start.', example: 'Universal design benefits everyone.' },
+    { id: 'glo45', term: 'Unilateral placement', def: 'Parent choice of private placement.', example: 'May be reimbursable if school did not provide FAPE.' },
+    { id: 'glo46', term: 'Vocational rehabilitation', def: 'State agency supporting work for disabled adults.', example: 'May provide training, equipment, job placement.' },
+    { id: 'glo47', term: 'Waiver', def: 'Document waiving certain rights.', example: 'Be cautious before signing.' },
+    { id: 'glo48', term: 'Wraparound', def: 'Comprehensive coordinated support.', example: 'Wraparound services include multiple providers.' },
+    { id: 'glo49', term: 'Zero reject', def: 'Federal principle that schools cannot exclude disabled students.', example: 'PARC and Mills established this.' },
+    { id: 'glo50', term: '504 Coordinator', def: 'School staff responsible for 504 plans.', example: 'Different from special education case manager.' }
+  ];
+var ADVOCACY_JOURNAL_PROMPTS = [
+    {
+      id: 'ajp1',
+      week: 1,
+      prompt: 'Write about a time someone asked you what you needed and you actually told them. How did it feel? What did they do?',
+      depth: 'reflective',
+      example: 'In 7th grade my new English teacher asked what would help me with writing. I said I needed extra time and a quiet space. She set it up the next day. I felt seen for the first time at school.'
+    },
+    {
+      id: 'ajp2',
+      week: 1,
+      prompt: 'Write about a time you were spoken FOR when you could have spoken for yourself. What stopped you?',
+      depth: 'reflective',
+      example: 'My mom told my doctor about my anxiety. I let her. I was scared the doctor would think I was being dramatic. Later I realized: she was advocating for me because I had not learned to yet.'
+    },
+    {
+      id: 'ajp3',
+      week: 2,
+      prompt: 'Imagine your 5-year-old self meets your current self. What does young you say? What does current you say back?',
+      depth: 'introspective',
+      example: 'Young me: "Are we okay?" Current me: "We are okay. We are okay enough. We have help."'
+    },
+    {
+      id: 'ajp4',
+      week: 2,
+      prompt: 'What is one accommodation that has saved you? Tell its story.',
+      depth: 'gratitude',
+      example: 'Extended time on tests. It was not until 8th grade that I realized: I had been failing not because I did not know it, but because I could not finish. With extended time my grades shifted from C to A.'
+    },
+    {
+      id: 'ajp5',
+      week: 3,
+      prompt: 'Write about a teacher who really saw you. What did they do?',
+      depth: 'gratitude',
+      example: 'Mr. Hassan in 9th grade noticed when I was overwhelmed. He would catch my eye and tilt his head toward the door. That was my signal I could leave for 5 minutes. He never made me ask. He never made it a big deal.'
+    },
+    {
+      id: 'ajp6',
+      week: 3,
+      prompt: 'Write about a teacher who did not see you. What did they miss?',
+      depth: 'grief',
+      example: 'Mrs. Connor in 6th grade thought my hand-flapping was disrespectful. She kept correcting it. I learned to suppress around her. The cost was migraines from holding it in all day.'
+    },
+    {
+      id: 'ajp7',
+      week: 4,
+      prompt: 'Write a letter to the system that has failed you. Then write a letter to the system from your most powerful future self.',
+      depth: 'transformative',
+      example: 'To IDEA: You promised free appropriate public education. You did not promise easy. Sometimes I wonder if appropriate has been the wrong word. ... Future me to IDEA: I changed you. I added a clause about ___. You are different now because I and others like me did the work.'
+    },
+    {
+      id: 'ajp8',
+      week: 4,
+      prompt: 'What is the conversation you have been avoiding? Write it as a screenplay. Both sides.',
+      depth: 'practice',
+      example: 'Scene: kitchen. Me: Mom, I need to tell you I do not want to go to State next year. Mom: But it is paid for. Me: I know. And I want to take a year to work and figure out what fits me. Mom: ...'
+    },
+    {
+      id: 'ajp9',
+      week: 5,
+      prompt: 'Describe your best advocacy moment. Then describe your worst. What did the best one have that the worst one did not?',
+      depth: 'reflective',
+      example: 'Best: emailed teacher after class to clarify a misunderstanding. Specific, calm, reached out same day. Result: teacher apologized and updated practice. Worst: yelled at sister for teasing. Hot, vague, escalated. Result: she dismissed me. The best one was specific and timely. The worst was reactive and general.'
+    },
+    {
+      id: 'ajp10',
+      week: 5,
+      prompt: 'List 3 places in your life where you wish you had a different role. What would your different role look like?',
+      depth: 'imaginative',
+      example: 'At home: I wish I were not the family translator. In my body: I wish I were not the explainer. With friends: I wish I were less the listener and more the talker.'
+    },
+    {
+      id: 'ajp11',
+      week: 6,
+      prompt: 'Write about a moment you said no when it was hard.',
+      depth: 'celebration',
+      example: 'I told my best friend I would not lie for her about where she was. She was hurt. The next day she said it took her time but she understood. I held the line.'
+    },
+    {
+      id: 'ajp12',
+      week: 6,
+      prompt: 'Write about a moment you said yes when you should have said no.',
+      depth: 'learning',
+      example: 'I agreed to join a club because my parent wanted me to. I hated it. I stuck it out a year. I learned: my yes has to come from me.'
+    },
+    {
+      id: 'ajp13',
+      week: 7,
+      prompt: 'What does freedom mean to you? When are you most free? Least free?',
+      depth: 'introspective',
+      example: 'Most free: walking alone with music. Least free: at family events. Freedom for me has to do with autonomy AND with knowing I am safe to be myself.'
+    },
+    {
+      id: 'ajp14',
+      week: 7,
+      prompt: 'Write about a body cue you have learned to listen to. How did you learn?',
+      depth: 'embodied',
+      example: 'My shoulders tighten before a meltdown. I used to think they were just tense. After 4 meltdowns where I noticed shoulders first, I started taking a break when they tightened. Meltdowns dropped.'
+    },
+    {
+      id: 'ajp15',
+      week: 8,
+      prompt: 'Imagine you are introducing yourself to a roomful of disabled peers your age. What do you say?',
+      depth: 'identity',
+      example: 'Hi. I am ___. I am ___ (disability identifiers). I am here to learn from you. I have something to offer too: ___. Looking forward to being in this room with you.'
+    },
+    {
+      id: 'ajp16',
+      week: 8,
+      prompt: 'Write a love letter to your disability.',
+      depth: 'transformative',
+      example: 'Dear ADHD: We have been together since I can remember. You make me forget my keys. You also make me see connections others miss. You make me distracted. You also make me curious. I would not trade you. I would build my life around you.'
+    },
+    {
+      id: 'ajp17',
+      week: 9,
+      prompt: 'What is your origin story? What event or moment shaped who you are now?',
+      depth: 'narrative',
+      example: 'When I was 7 my teacher told my mom I was "lazy." That word stayed in my mouth like a marble for 10 years. The day I read about ADHD and realized lazy was a lie was the day my real life started.'
+    },
+    {
+      id: 'ajp18',
+      week: 9,
+      prompt: 'What stories about disability did you learn growing up? Were any of them about you?',
+      depth: 'cultural',
+      example: 'Inspirational stories. Tragedy stories. Cure stories. None of them sounded like my life. My life was ordinary and complicated. Then I found Alice Wong\'s book and saw stories that fit.'
+    },
+    {
+      id: 'ajp19',
+      week: 10,
+      prompt: 'List 10 things you wish your past self had known.',
+      depth: 'mentorship',
+      example: '1. You are not broken. 2. You are not faking. 3. Adults can be wrong. 4. ...'
+    },
+    {
+      id: 'ajp20',
+      week: 10,
+      prompt: 'Write about your dream of community. Who is in it? What does it feel like? What do you do together?',
+      depth: 'visionary',
+      example: 'Other autistic adults. Other late-diagnosed people. Quiet spaces. Permission to stim. Conversations about niche interests. Knowing I do not have to mask.'
+    }
+  ];
+var REFLECTION_PROMPTS_EXTENDED = [
+    {
+      id: 'rpe1',
+      depth: 'surface',
+      prompt: 'What was one moment today when you advocated for yourself?',
+      followUps: ['Where were you?', 'Who was involved?', 'How did it feel after?']
+    },
+    {
+      id: 'rpe2',
+      depth: 'surface',
+      prompt: 'What is one thing you wish you had said today?',
+      followUps: ['Who would you have said it to?', 'What stopped you?', 'Would you say it tomorrow if given another chance?']
+    },
+    {
+      id: 'rpe3',
+      depth: 'mid',
+      prompt: 'Describe a pattern in how you respond to authority figures. Where does it come from?',
+      followUps: ['When did you first notice this pattern?', 'Who taught you (consciously or not)?', 'Does the pattern serve you now?']
+    },
+    {
+      id: 'rpe4',
+      depth: 'mid',
+      prompt: 'Who are 3 people whose voice you carry inside your own head? What do they say?',
+      followUps: ['Are these voices kind?', 'Are they accurate?', 'Whose voices are missing?']
+    },
+    {
+      id: 'rpe5',
+      depth: 'mid',
+      prompt: 'When you imagine being fully yourself at school, what would change?',
+      followUps: ['What is the smallest step toward that?', 'Who would notice first?', 'Who would resist?']
+    },
+    {
+      id: 'rpe6',
+      depth: 'deep',
+      prompt: 'What is one belief about yourself that you would describe as inherited? When did you first take it on?',
+      followUps: ['Who passed it down?', 'Was it true for them? Is it true for you?', 'What would it take to put it down?']
+    },
+    {
+      id: 'rpe7',
+      depth: 'deep',
+      prompt: 'Describe a moment when you betrayed yourself to please someone else. What did it cost?',
+      followUps: ['Was the relationship worth that cost?', 'What sign would tell you to choose yourself next time?', 'Have you grieved the cost?']
+    },
+    {
+      id: 'rpe8',
+      depth: 'deep',
+      prompt: 'What is one accommodation you do not have but think you need? Why have you not asked?',
+      followUps: ['What is the actual fear?', 'What would you tell a friend in your position?', 'Could you ask in writing rather than in person?']
+    },
+    {
+      id: 'rpe9',
+      depth: 'deep',
+      prompt: 'Imagine yourself in 10 years. What 3 things would you tell your 16-year-old self?',
+      followUps: ['What does your 26-year-old know that you do not?', 'What did your 26-year-old wish someone had told you?', 'What can you do today, on behalf of that future self?']
+    },
+    {
+      id: 'rpe10',
+      depth: 'surface',
+      prompt: 'What is one accommodation you used today? Did it work?',
+      followUps: ['How could it work better?', 'Who else helped make it work?', 'Did anyone get in the way?']
+    },
+    {
+      id: 'rpe11',
+      depth: 'mid',
+      prompt: 'Who are your top 3 supports right now? What does each one do?',
+      followUps: ['How did you find each one?', 'How would you replace each if they left?', 'Who do you support in return?']
+    },
+    {
+      id: 'rpe12',
+      depth: 'deep',
+      prompt: 'When did you first know you were different from your peers? How did adults respond?',
+      followUps: ['Was the response kind?', 'How did it shape what you hid or showed?', 'What would you want the adults to have done differently?']
+    },
+    {
+      id: 'rpe13',
+      depth: 'surface',
+      prompt: 'What is one thing you noticed about your body today?',
+      followUps: ['What was happening when you noticed it?', 'What did your body need?', 'Did you give it what it needed?']
+    },
+    {
+      id: 'rpe14',
+      depth: 'mid',
+      prompt: 'Describe a time when you said something hard and it was received well. What made it land?',
+      followUps: ['What was different from times that did not land?', 'Could you recreate those conditions?', 'What does it tell you about your audience?']
+    },
+    {
+      id: 'rpe15',
+      depth: 'mid',
+      prompt: 'What is one thing you are proud of from this week that no one else noticed?',
+      followUps: ['Why was it invisible?', 'Could you share it with one person?', 'What does it teach you about hidden growth?']
+    },
+    {
+      id: 'rpe16',
+      depth: 'deep',
+      prompt: 'What does freedom mean to you? Where in your life are you free? Where are you not?',
+      followUps: ['What freedoms have you never had?', 'What freedoms have you earned?', 'What freedoms can you advocate for?']
+    },
+    {
+      id: 'rpe17',
+      depth: 'deep',
+      prompt: 'Who in your life thinks you are smaller than you are? How can you correct their map?',
+      followUps: ['What evidence have they ignored?', 'What evidence could you present?', 'Is the correction worth the cost?']
+    },
+    {
+      id: 'rpe18',
+      depth: 'surface',
+      prompt: 'What was the easiest part of today?',
+      followUps: ['What made it easy?', 'Could you build on that?', 'Was the ease helpful or numbing?']
+    },
+    {
+      id: 'rpe19',
+      depth: 'mid',
+      prompt: 'List 3 patterns you notice in your own behavior. Are they serving you?',
+      followUps: ['Which pattern do you want to change?', 'Which pattern is sacred?', 'How will you protect the sacred ones?']
+    },
+    {
+      id: 'rpe20',
+      depth: 'deep',
+      prompt: 'What is one community you have always wanted to find? What would it take to find them?',
+      followUps: ['Who would be there?', 'What would you bring?', 'What might they ask of you?']
+    }
+  ];
+var FINAL_REFLECTION_PROMPTS = [
+    { id: 'fr1', prompt: 'Looking back on a year of advocacy, what is one thing I am proud of?', category: 'celebration' },
+    { id: 'fr2', prompt: 'What is one thing that grew this year that no one else might notice?', category: 'private growth' },
+    { id: 'fr3', prompt: 'What is one fear that I outgrew this year?', category: 'fear release' },
+    { id: 'fr4', prompt: 'What is one fear that I still carry?', category: 'ongoing' },
+    { id: 'fr5', prompt: 'Who in my life was the biggest support this year? How will I thank them?', category: 'gratitude' },
+    { id: 'fr6', prompt: 'What relationship needs repair?', category: 'mending' },
+    { id: 'fr7', prompt: 'What relationship needs ending?', category: 'release' },
+    { id: 'fr8', prompt: 'What is one boundary I held that I am proud of?', category: 'celebration' },
+    { id: 'fr9', prompt: 'What is one boundary I dropped that I want to rebuild?', category: 'recommitment' },
+    { id: 'fr10', prompt: 'What is one accommodation I used that became routine?', category: 'normalization' },
+    { id: 'fr11', prompt: 'What is one accommodation I tried but did not use?', category: 'reflection' },
+    { id: 'fr12', prompt: 'What is one self-care practice that worked?', category: 'sustainment' },
+    { id: 'fr13', prompt: 'What is one practice that did not work?', category: 'release' },
+    { id: 'fr14', prompt: 'Who do I most want to advocate alongside next year?', category: 'forward' },
+    { id: 'fr15', prompt: 'What is one cause beyond my own that I want to support?', category: 'expansion' },
+    { id: 'fr16', prompt: 'What is one community I want to find or build?', category: 'community' },
+    { id: 'fr17', prompt: 'How has my understanding of disability changed this year?', category: 'evolving' },
+    { id: 'fr18', prompt: 'How has my relationship to my diagnosis changed this year?', category: 'identity' },
+    { id: 'fr19', prompt: 'What is one piece of advice I would give to someone starting this journey?', category: 'mentor' },
+    { id: 'fr20', prompt: 'What is one truth I have grown into this year?', category: 'becoming' },
+    { id: 'fr21', prompt: 'What does freedom mean to me now? How is that different from last year?', category: 'philosophical' },
+    { id: 'fr22', prompt: 'What does community mean to me now?', category: 'philosophical' },
+    { id: 'fr23', prompt: 'What does dignity mean to me now?', category: 'philosophical' },
+    { id: 'fr24', prompt: 'What does power mean to me now?', category: 'philosophical' },
+    { id: 'fr25', prompt: 'What does enough mean to me now?', category: 'philosophical' },
+    { id: 'fr26', prompt: 'What is one thing about myself I have come to love this year?', category: 'self-love' },
+    { id: 'fr27', prompt: 'What is one thing about myself I have come to accept?', category: 'acceptance' },
+    { id: 'fr28', prompt: 'What is one thing about myself I am still working on accepting?', category: 'ongoing' },
+    { id: 'fr29', prompt: 'What is one thing I will not apologize for next year?', category: 'commitment' },
+    { id: 'fr30', prompt: 'What is one promise I will make to my future self?', category: 'forward' }
+  ];
+var MENTOR_QUOTES = [
+    { id: 'mq1', mentor: 'Judy Heumann', context: 'On disability rights', quote: 'Disability only becomes a tragedy when society fails to provide the things we need to lead our lives.', useWhen: 'When you feel like the problem is YOU instead of the system.', followup: 'What part of your environment, not your body or mind, is making this hard right now?' },
+    { id: 'mq2', mentor: 'Judy Heumann', context: 'On asking', quote: "We don't have to look to the world to confirm that we're equal. We are.", useWhen: 'When you feel like you have to prove you deserve accommodations.', followup: "What would you do today if you didn't have to prove you deserve it?" },
+    { id: 'mq3', mentor: 'Temple Grandin', context: 'On being different', quote: 'I am different, not less.', useWhen: 'When you compare yourself to neurotypical peers.', followup: 'What does your brain do BETTER than others, not just differently?' },
+    { id: 'mq4', mentor: 'Temple Grandin', context: 'On masking', quote: 'The world needs all kinds of minds.', useWhen: 'When you feel pressure to act more "normal."', followup: 'What part of yourself have you been hiding this week that you wish you could show?' },
+    { id: 'mq5', mentor: 'Haben Girma', context: 'On access', quote: 'Disability is an opportunity for innovation.', useWhen: 'When an accommodation request feels like a burden you are placing on others.', followup: 'What new thing could exist BECAUSE of what you need?' },
+    { id: 'mq6', mentor: 'Haben Girma', context: 'On lawyering', quote: "When access is denied, fight back. The law is on your side.", useWhen: 'When you are told no and not given a reason.', followup: 'Whose job is it to tell you the legal reason? Not yours.' },
+    { id: 'mq7', mentor: 'Ed Roberts', context: 'On the Berkeley sit-in', quote: 'If we have learned one thing from the civil rights movement, it is that when others speak for you, you lose.', useWhen: 'When you let a parent or teacher answer for you in a meeting.', followup: 'What is one sentence YOU could say in your next meeting, before anyone else jumps in?' },
+    { id: 'mq8', mentor: 'Alice Wong', context: 'On disabled wisdom', quote: 'Disabled people are the experts on our own lives.', useWhen: 'When a professional tells you they know your experience better than you.', followup: 'You can disagree with experts. What is one thing you know about yourself that they got wrong?' },
+    { id: 'mq9', mentor: 'Lydia X.Z. Brown', context: 'On the autistic community', quote: 'Nothing about us without us.', useWhen: 'When decisions about your supports happen in a room you are not in.', followup: 'Whose meeting are you missing? Can you ask to be invited?' },
+    { id: 'mq10', mentor: 'Greta Thunberg', context: 'On being underestimated', quote: 'I have Aspergers and that means I\'m sometimes a bit different from the norm. And, given the right circumstances, being different is a superpower.', useWhen: 'When you wonder if your neurodivergence stops you from leading.', followup: 'Pick one circumstance where being different IS the strength. Use it today.' },
+    { id: 'mq11', mentor: 'Malala Yousafzai', context: 'On the right to learn', quote: 'One child, one teacher, one book, one pen can change the world.', useWhen: 'When you feel too small to push back on a school decision.', followup: 'Write one sentence to one teacher this week. Save it. Read it back if you doubt your voice.' },
+    { id: 'mq12', mentor: 'Malala Yousafzai', context: 'On fear', quote: 'I raise up my voice, not so I can shout, but so that those without a voice can be heard.', useWhen: 'When advocating for yourself feels selfish.', followup: 'Who else benefits when YOU ask for what you need? Name one classmate who needs the same thing.' },
+    { id: 'mq13', mentor: 'Fred Korematsu', context: 'On lifelong resistance', quote: 'If you have the feeling something is wrong, don\'t be afraid to speak up.', useWhen: 'When the rule sounds wrong but everyone else is following it.', followup: 'What is the rule and what feels off about it? Write it down.' },
+    { id: 'mq14', mentor: 'Patrick Henry Hughes', context: 'On parents', quote: 'My father has been my legs my whole life. Now I want to use my voice.', useWhen: 'When you are ready to lead the conversation that your parent has always led.', followup: 'Pick one sentence in your next IEP you will say yourself. Just one.' },
+    { id: 'mq15', mentor: 'Marlee Matlin', context: 'On bilingual identity', quote: 'I think this is just another reminder that everyone is human and we all have a story.', useWhen: 'When someone treats you like a problem to solve.', followup: 'What is one part of your story that explains why this accommodation matters to you?' },
+    { id: 'mq16', mentor: 'Stephen Hawking', context: 'On limits', quote: 'However difficult life may seem, there is always something you can do and succeed at.', useWhen: 'When everything feels stuck.', followup: 'What is the smallest thing you could do in the next 10 minutes that would still count?' },
+    { id: 'mq17', mentor: 'Helen Keller', context: 'On vision', quote: 'The only thing worse than being blind is having sight but no vision.', useWhen: 'When peers tease you for caring about something they don\'t see yet.', followup: 'What do you see that they don\'t yet? Write it down. Save it for later.' },
+    { id: 'mq18', mentor: 'Frida Kahlo', context: 'On chronic pain', quote: 'Feet, what do I need them for if I have wings to fly?', useWhen: 'When you grieve what your body cannot do today.', followup: 'What is one strength you have that does NOT depend on a body part that hurts?' },
+    { id: 'mq19', mentor: 'Stevie Wonder', context: 'On joy', quote: 'Just because a man lacks the use of his eyes does not mean he lacks vision.', useWhen: 'When people define you by what is missing.', followup: 'What do you HAVE? Make a list of three things by name.' },
+    { id: 'mq20', mentor: 'Andrew Solomon', context: 'On the right to be unwell', quote: 'Depression is the flaw in love.', useWhen: 'When you feel like you are broken for grieving.', followup: 'What did you love that you are missing? It is okay to name it.' },
+    { id: 'mq21', mentor: 'Carrie Fisher', context: 'On mental health stigma', quote: 'I am mentally ill. I can say that. I am not ashamed of that.', useWhen: 'When you are told to hide your diagnosis.', followup: 'Who is one safe person you could be honest with this week?' },
+    { id: 'mq22', mentor: 'Demi Lovato', context: 'On treatment', quote: 'You have to learn to love yourself before you can be loved.', useWhen: 'When the school says fix yourself before they will help.', followup: 'Loving yourself does not mean fixing yourself. What is one piece of yourself you will not try to change today?' },
+    { id: 'mq23', mentor: 'Glennon Doyle', context: 'On the inside voice', quote: 'We can do hard things.', useWhen: 'When you are about to enter a meeting that scares you.', followup: 'Say it three times before the meeting starts. Out loud if you can.' },
+    { id: 'mq24', mentor: 'Brene Brown', context: 'On vulnerability', quote: 'Vulnerability is not winning or losing; it is having the courage to show up when you cannot control the outcome.', useWhen: 'When you want to advocate but cannot guarantee you will get a yes.', followup: 'A no does not erase the asking. What will you still ask, even if the answer is no?' },
+    { id: 'mq25', mentor: 'Audre Lorde', context: 'On speaking up', quote: 'Your silence will not protect you.', useWhen: 'When you think keeping quiet will keep you safe.', followup: 'In one sentence, what is the truth that is loudest in your head right now?' },
+    { id: 'mq26', mentor: 'Audre Lorde', context: 'On self-care', quote: 'Caring for myself is not self-indulgence, it is self-preservation, and that is an act of political warfare.', useWhen: 'When taking a regulation break feels selfish.', followup: 'You are not the support team. What is one thing you will do for YOU before you help anyone else today?' },
+    { id: 'mq27', mentor: 'Cesar Chavez', context: 'On grassroots power', quote: 'You are never strong enough that you don\'t need help.', useWhen: 'When you think asking for help means you are weak.', followup: 'Who is one person you have refused to ask? Just one ask, today.' },
+    { id: 'mq28', mentor: 'Dolores Huerta', context: 'On organizing', quote: 'Every moment is an organizing opportunity, every person a potential activist, every minute a chance to change the world.', useWhen: 'When you feel like one student cannot change a school policy.', followup: 'Name one classmate who could ask the same thing with you. Talk to them this week.' },
+    { id: 'mq29', mentor: 'Yuri Kochiyama', context: 'On solidarity', quote: 'Each one of us can make a difference, but together we can change the world.', useWhen: 'When your needs feel separate from other students.', followup: 'Whose accommodations would also be made easier by yours? Whose would be made easier by you speaking up?' },
+    { id: 'mq30', mentor: 'Bayard Rustin', context: 'On organizing', quote: 'The only weapon we have is our bodies, and we need to tuck them in places so wheels don\'t turn.', useWhen: 'When you think you need a microphone to be heard.', followup: 'Your presence in a room is a statement. What room will you walk into this week?' },
+    { id: 'mq31', mentor: 'Rosa Parks', context: 'On tired', quote: 'People always say that I didn\'t give up my seat because I was tired, but that isn\'t true. The only tired I was, was tired of giving in.', useWhen: 'When you have backed down so many times the next no feels impossible.', followup: 'What is one place you have given in too long? Today, you do not have to.' },
+    { id: 'mq32', mentor: 'Fannie Lou Hamer', context: 'On fatigue', quote: 'I am sick and tired of being sick and tired.', useWhen: 'When you can barely lift the words to ask anymore.', followup: 'The exhaustion is data, not failure. What does your tired tell you to change?' },
+    { id: 'mq33', mentor: 'Ella Baker', context: 'On youth leadership', quote: 'Strong people don\'t need strong leaders.', useWhen: 'When you wait for an adult to start the conversation you need.', followup: 'What words will YOU say first? Before any adult speaks?' },
+    { id: 'mq34', mentor: 'Frederick Douglass', context: 'On power', quote: 'Power concedes nothing without a demand. It never did and it never will.', useWhen: 'When you hope politely waiting will work.', followup: 'What is your demand in writing? One sentence.' },
+    { id: 'mq35', mentor: 'James Baldwin', context: 'On naming truth', quote: 'Not everything that is faced can be changed, but nothing can be changed until it is faced.', useWhen: 'When you avoid naming what is wrong.', followup: 'Say the hard sentence out loud, even just to yourself. Now write it down.' },
+    { id: 'mq36', mentor: 'Maya Angelou', context: 'On surviving', quote: 'You may not control all the events that happen to you, but you can decide not to be reduced by them.', useWhen: 'When something happened to you that you did not choose.', followup: 'What is one piece of you that this event did NOT touch?' },
+    { id: 'mq37', mentor: 'Maya Angelou', context: 'On being underestimated', quote: 'I can be changed by what happens to me. But I refuse to be reduced by it.', useWhen: 'When a hard thing keeps making you smaller.', followup: 'How can what happened to you grow you instead of shrink you? Write one sentence.' },
+    { id: 'mq38', mentor: 'Marsha P. Johnson', context: 'On showing up loud', quote: 'No pride for some of us without liberation for all of us.', useWhen: 'When you advocate only for yourself, never for others.', followup: 'Whose accommodation would you fight for today, even if you do not need it?' },
+    { id: 'mq39', mentor: 'Sylvia Rivera', context: 'On being heard', quote: 'We have to be visible. We should not be ashamed of who we are.', useWhen: 'When you camouflage your identity to fit in.', followup: 'What is one piece of you that you have been hiding? Could you uncover it for one hour today?' },
+    { id: 'mq40', mentor: 'Marlee Matlin', context: 'On Deaf identity', quote: 'The handicap of deafness is not in the ear; it is in the mind.', useWhen: 'When you feel your disability is the problem.', followup: 'What attitude in the room is making this harder than the disability itself?' },
+    { id: 'mq41', mentor: 'Nyle DiMarco', context: 'On bilingual brain', quote: 'Sign language is my native language. English is my second.', useWhen: 'When school treats your accommodations like a translation problem instead of a culture.', followup: 'What language, format, or rhythm fits how YOU think? Ask for that, not for what fits them.' },
+    { id: 'mq42', mentor: 'Ryan Haddad', context: 'On bodies on stage', quote: 'My body is the most political thing about me.', useWhen: 'When you wish you could just blend in.', followup: 'Your visibility is part of the work. What would change if one classmate saw YOUR body as normal because of yours?' },
+    { id: 'mq43', mentor: 'Aimi Hamraie', context: 'On universal design', quote: 'Accessibility is a relationship, not a checklist.', useWhen: 'When the school says they already comply with the law.', followup: 'Compliance is not access. What is one accommodation you have that is still not actually accessible? Name it.' },
+    { id: 'mq44', mentor: 'Imani Barbarin', context: 'On disabled rage', quote: 'My anger is the proof that I deserve better.', useWhen: 'When you are told you are being too emotional.', followup: 'What did your anger correctly notice? Write the data underneath the feeling.' },
+    { id: 'mq45', mentor: 'Mia Mingus', context: 'On disability justice', quote: 'We do not want crumbs; we want the whole table.', useWhen: 'When you are offered the bare minimum.', followup: 'What is the full accommodation you actually need, not the one you have settled for?' },
+    { id: 'mq46', mentor: 'Patty Berne', context: 'On collective access', quote: 'Disability justice centers people who experience overlapping forms of oppression.', useWhen: 'When you feel like your needs compete with someone else\'s.', followup: 'Whose access ALSO helps yours? Can you ask together?' },
+    { id: 'mq47', mentor: 'Stella Young', context: 'On inspiration porn', quote: 'I am not your inspiration. I am here to live my life.', useWhen: 'When a teacher praises you for doing ordinary things.', followup: 'You do not exist to teach others. What do YOU want to do for YOU today?' },
+    { id: 'mq48', mentor: 'Wong Kim Ark', context: 'On birthright', quote: 'I am American by birth. I will not be denied.', useWhen: 'When someone questions whether you really belong here.', followup: 'You belong here. Write it down where you can see it.' },
+    { id: 'mq49', mentor: 'Sandra Day O\'Connor', context: 'On dyslexia in law school', quote: 'When you are afraid, ask a question. When you don\'t know, ask twice.', useWhen: 'When you are scared to look dumb by asking.', followup: 'You do not have to understand everything before asking. What is your first question?' },
+    { id: 'mq50', mentor: 'Steve Jobs', context: 'On dyslexia and design', quote: 'Stay hungry, stay foolish.', useWhen: 'When playing it safe feels easier than asking for what you need.', followup: 'What is the bold ask you have been afraid to make this week? Now make it small enough to do today.' },
+    { id: 'mq51', mentor: 'Richard Branson', context: 'On dyslexia and business', quote: 'My biggest motivation? Just to keep challenging myself.', useWhen: 'When school tells you what you cannot do.', followup: 'What is one challenge you set for YOURSELF, separate from anyone\'s expectations?' },
+    { id: 'mq52', mentor: 'Whoopi Goldberg', context: 'On being labeled', quote: 'I think it\'s good to be smart. I think it\'s good to be a smart-ass.', useWhen: 'When you have been called difficult for asking.', followup: 'Difficult is not the worst word. Use it once today.' },
+    { id: 'mq53', mentor: 'Henry Winkler', context: 'On late dyslexia diagnosis', quote: 'Your destiny is going to unfold in front of you no matter what people tell you.', useWhen: 'When you wonder if your diagnosis came too late.', followup: 'It is not too late. What is the next single step regardless?' },
+    { id: 'mq54', mentor: 'Selma Blair', context: 'On chronic illness', quote: 'I will not be silent.', useWhen: 'When you are told you are exaggerating.', followup: 'You are not exaggerating. What is one symptom you have been minimizing this week?' },
+    { id: 'mq55', mentor: 'Selma Blair', context: 'On dignity', quote: 'I have always been afraid of being thought too needy.', useWhen: 'When you worry that asking makes you a burden.', followup: 'Asking is not needy. What is one ask you have been swallowing?' },
+    { id: 'mq56', mentor: 'Christopher Reeve', context: 'On hope after injury', quote: 'A hero is an ordinary individual who finds strength to persevere and endure in spite of overwhelming obstacles.', useWhen: 'When you doubt you have anything in you for one more meeting.', followup: 'You are the hero, not the bystander. What is the next ordinary thing only you can do?' },
+    { id: 'mq57', mentor: 'Bessel van der Kolk', context: 'On trauma', quote: 'The body keeps the score.', useWhen: 'When your body acts up before your mind catches up.', followup: 'What is your body trying to tell you about this situation? Listen first, advocate second.' },
+    { id: 'mq58', mentor: 'Peter Levine', context: 'On self-regulation', quote: 'The greatest predictor of resilience is regulation, not toughness.', useWhen: 'When you push through instead of pause.', followup: 'What is one regulation tool you have skipped because you felt you should be tougher?' },
+    { id: 'mq59', mentor: 'Naoki Higashida', context: 'On autistic experience', quote: 'Please do not let us suffer in silence.', useWhen: 'When you wonder if the meltdown means you are broken.', followup: 'It means you are overwhelmed, not broken. What support did you not have access to before it happened?' },
+    { id: 'mq60', mentor: 'Erin Manning', context: 'On the dance of difference', quote: 'There is more than one rhythm of being.', useWhen: 'When you feel out of step with peers.', followup: 'What rhythm fits YOU? Schedule one hour of it today.' },
+    { id: 'mq61', mentor: 'Eric Garcia', context: 'On autism advocacy', quote: 'Autistic people don\'t need awareness. We need accommodation.', useWhen: 'When the school says they are aware but nothing changes.', followup: 'Awareness without access is just performance. What is one concrete access change you need this week?' },
+    { id: 'mq62', mentor: 'Jen White-Johnson', context: 'On Black neurodivergent identity', quote: 'My identity is not a deficit.', useWhen: 'When you feel like the things that make you, you are also what is wrong.', followup: 'What part of your identity will you celebrate, not apologize for, this week?' },
+    { id: 'mq63', mentor: 'Morenike Giwa Onaiwu', context: 'On multiply marginalized advocacy', quote: 'I do not get to choose which oppression to fight first.', useWhen: 'When you are told to pick one identity to advocate from.', followup: 'You are all of you. Whose advocacy spaces are missing the full you? Notice them this week.' },
+    { id: 'mq64', mentor: 'Nick Walker', context: 'On neurodiversity', quote: 'Neurodiversity is the diversity of brains and minds, just like biodiversity.', useWhen: 'When you feel like a deviation instead of a variant.', followup: 'You are not the exception. You are part of the diversity. Say it three times.' },
+    { id: 'mq65', mentor: 'Devon Price', context: 'On unmasking', quote: 'It is not your job to perform normal.', useWhen: 'When the cost of masking is breaking you.', followup: 'What is one small thing you will stop performing today, just for the next hour?' },
+    { id: 'mq66', mentor: 'Sara Luterman', context: 'On adult autistic identity', quote: 'Acceptance is the opposite of cure.', useWhen: 'When you are told you can be okay only if you change.', followup: 'What is one part of you that you are tired of being told to fix?' },
+    { id: 'mq67', mentor: 'Helena Donato-Sapp', context: 'On youth disability journalism', quote: 'My disability is not a story for inspiration. It is my actual life.', useWhen: 'When you are featured but not consulted.', followup: 'Who gets to tell your story? You do. Who needs reminding?' },
+    { id: 'mq68', mentor: 'Akemi Tomoda', context: 'On youth-led council', quote: 'I learned that no one will hand you the microphone. You have to ask for it.', useWhen: 'When you are waiting to be invited to speak.', followup: 'Who could you ask for the mic this week? Just ask.' },
+    { id: 'mq69', mentor: 'Greta Gerwig', context: 'On directing', quote: 'I always want my characters, especially women, to be fully realized.', useWhen: 'When others reduce you to one trait.', followup: 'What are three traits of yours that the school never names? Name them.' },
+    { id: 'mq70', mentor: 'Ai Weiwei', context: 'On dissent', quote: 'A small act is worth a million thoughts.', useWhen: 'When you are paralyzed planning the perfect protest.', followup: 'What is the smallest act you could take in the next 30 minutes?' },
+    { id: 'mq71', mentor: 'Bell Hooks', context: 'On voice', quote: 'I will not have my life narrowed down.', useWhen: 'When someone tells you the path you must take.', followup: 'What path do YOU want? Sketch the next 5 years for YOU, not them.' },
+    { id: 'mq72', mentor: 'Bell Hooks', context: 'On love and politics', quote: 'The practice of love offers no place of safety.', useWhen: 'When you are afraid to show up loudly for the people you love.', followup: 'Who needs you to advocate for them this week? Even if it costs you something.' },
+    { id: 'mq73', mentor: 'Roxane Gay', context: 'On a complicated body', quote: 'I am a bad feminist. I would rather be a bad feminist than no feminist at all.', useWhen: 'When you are afraid of being an imperfect advocate.', followup: 'You do not have to be a perfect advocate. What is one imperfect thing you will still say?' },
+    { id: 'mq74', mentor: 'Tarana Burke', context: 'On me too', quote: 'Empowerment through empathy.', useWhen: 'When you cannot describe your own story but you can name what happened to someone else.', followup: 'Start there. Whose story echoes yours? You are not alone.' },
+    { id: 'mq75', mentor: 'Patrisse Cullors', context: 'On Black liberation', quote: 'Black lives mattering is a starting point.', useWhen: 'When you feel like advocacy is supposed to be polite.', followup: 'What is the loudest sentence you have been quiet about? Speak it once today.' },
+    { id: 'mq76', mentor: 'Vashti McKenzie', context: 'On faith leadership', quote: 'When you do enough, you have done enough.', useWhen: 'When you keep extending yourself past empty.', followup: 'What is enough for today, not for everyone else\'s standards?' },
+    { id: 'mq77', mentor: 'Wilma Mankiller', context: 'On Cherokee leadership', quote: 'The hardest part of any task is starting.', useWhen: 'When the meeting is in 3 days and you cannot bring yourself to prepare.', followup: 'Write one sentence of preparation. Right now. Just one.' },
+    { id: 'mq78', mentor: 'Yuri Kochiyama', context: 'On chosen family', quote: 'We are all part of one another.', useWhen: 'When you feel like your needs are isolated.', followup: 'Who else in your life has shared this need? Reach out.' },
+    { id: 'mq79', mentor: 'Liz Murray', context: 'On homeless to Harvard', quote: 'I can do it. I will do it. I am doing it.', useWhen: 'When the path feels impossible.', followup: 'You do not have to do all of it. What is the one thing you ARE doing right now?' },
+    { id: 'mq80', mentor: 'Mae Jemison', context: 'On being the first', quote: 'Never be limited by other people\'s limited imaginations.', useWhen: 'When everyone in your meeting tells you what you cannot do.', followup: 'Imagine what they cannot. Sketch it on paper before the next meeting.' },
+    { id: 'mq81', mentor: 'Misty Copeland', context: 'On breaking the mold', quote: 'You can do anything when you have passion and drive.', useWhen: 'When you have been told your interest is not appropriate for someone like you.', followup: 'What is the thing you keep being told is not for you? Try one piece of it this week.' },
+    { id: 'mq82', mentor: 'Sonia Sotomayor', context: 'On juvenile diabetes and the bench', quote: 'I am an ordinary person who has been blessed with extraordinary opportunities.', useWhen: 'When you feel like the accommodations you need are too special.', followup: 'Accommodations are not special treatment. They are the floor. Name one accommodation that is non-negotiable for you.' },
+    { id: 'mq83', mentor: 'Ruth Bader Ginsburg', context: 'On dissent', quote: 'Fight for the things that you care about, but do it in a way that will lead others to join you.', useWhen: 'When you advocate alone and burn out.', followup: 'Who could join you next week? One person. Invite them.' },
+    { id: 'mq84', mentor: 'Thurgood Marshall', context: 'On the long arc', quote: 'You can\'t legislate change in attitudes, but you can legislate change in behavior.', useWhen: 'When you wait for adults to feel differently.', followup: 'Stop waiting for the feeling. Ask for the behavior change in writing.' },
+    { id: 'mq85', mentor: 'Cesar Chavez', context: 'On non-violence', quote: 'Non-violence is not inaction. It is not for the timid or the weak. It is hard work.', useWhen: 'When you confuse calm advocacy for weak advocacy.', followup: 'You can be calm AND demanding. What is the firm, polite sentence?' },
+    { id: 'mq86', mentor: 'Howard Zinn', context: 'On the people\'s history', quote: 'You can\'t be neutral on a moving train.', useWhen: 'When you decide not to advocate because you do not want to take a side.', followup: 'Silence is a side. What direction is the train moving without you?' },
+    { id: 'mq87', mentor: 'Paolo Freire', context: 'On the banking model', quote: 'No one educates anyone. We educate each other in community.', useWhen: 'When you wait for an adult to teach you advocacy.', followup: 'You are also the teacher. Who could you teach this week?' },
+    { id: 'mq88', mentor: 'bell hooks', context: 'On engaged pedagogy', quote: 'To educate as a practice of freedom is to teach in a way that students can choose to be courageous.', useWhen: 'When you do not feel courageous.', followup: 'You do not need to feel courageous. You just need to ACT courageously. What is one act?' },
+    { id: 'mq89', mentor: 'Octavia Butler', context: 'On change', quote: 'All that you touch you change. All that you change changes you.', useWhen: 'When you are afraid changing the system will change YOU in scary ways.', followup: 'Yes, you will change. Probably for the better. What part of you is ready to be different?' },
+    { id: 'mq90', mentor: 'Octavia Butler', context: 'On survival', quote: 'You don\'t start out writing good stuff. You start out writing crap and thinking it\'s good stuff, and then gradually you get better at it.', useWhen: 'When your first letter to a teacher sounds bad.', followup: 'Send a bad letter. Editing comes later. Write the bad version now.' },
+    { id: 'mq91', mentor: 'Ursula K. Le Guin', context: 'On dissent', quote: 'We live in capitalism. Its power seems inescapable. But so did the divine right of kings.', useWhen: 'When the school system feels eternal and unchangeable.', followup: 'No system is eternal. What one piece of yours could be different next year?' },
+    { id: 'mq92', mentor: 'Toni Morrison', context: 'On freedom', quote: 'The function of freedom is to free someone else.', useWhen: 'When you only advocate for yourself.', followup: 'Whose advocacy is your advocacy? Name them.' },
+    { id: 'mq93', mentor: 'Toni Morrison', context: 'On the gaze', quote: 'If you are free, you need to free somebody else.', useWhen: 'When you have got your accommodations and forgotten others.', followup: 'Who in your school is still waiting for what you got? Could you help them ask?' },
+    { id: 'mq94', mentor: 'Audre Lorde', context: 'On the master\'s tools', quote: 'The master\'s tools will never dismantle the master\'s house.', useWhen: 'When you use only the system\'s vocabulary in a complaint.', followup: 'What words from YOUR experience, not theirs, would tell the truth?' },
+    { id: 'mq95', mentor: 'Adrienne Rich', context: 'On lies', quote: 'Lying is done with words, and also with silence.', useWhen: 'When you stay quiet about a hard truth.', followup: 'What silence have you been telling? Could you break it once, just to one person?' },
+    { id: 'mq96', mentor: 'Adrienne Rich', context: 'On poetry of resistance', quote: 'You cannot speak for me. I must speak for myself.', useWhen: 'When you let a parent dominate your meeting.', followup: 'Plan one sentence YOU will say first in the next meeting.' },
+    { id: 'mq97', mentor: 'Susan Sontag', context: 'On illness', quote: 'Illness is the night-side of life.', useWhen: 'When you are tired of pretending you are fine.', followup: 'Tonight, you do not have to perform okay. Who could see the un-okay version?' },
+    { id: 'mq98', mentor: 'Cherrie Moraga', context: 'On Chicana feminism', quote: 'We are all stories. Some of us are still becoming.', useWhen: 'When you feel stuck in one identity.', followup: 'Who are you becoming? Name the next version of yourself.' },
+    { id: 'mq99', mentor: 'Gloria Anzaldua', context: 'On borderlands', quote: 'I will no longer be made to feel ashamed of existing.', useWhen: 'When you apologize for your own existence.', followup: 'Stop apologizing for one thing today. Just one.' },
+    { id: 'mq100', mentor: 'Gloria Anzaldua', context: 'On the wound', quote: 'A woman who writes has power, and a woman with power is feared.', useWhen: 'When your written advocacy is being dismissed.', followup: 'Send the letter anyway. The fear is theirs, not yours.' },
+    { id: 'mq101', mentor: 'Octavia Butler', context: 'On worldbuilding', quote: 'In order to rise from its own ashes, a phoenix first must burn.', useWhen: 'When everything seems to be on fire.', followup: 'What needs to end so you can begin? Write it down.' },
+    { id: 'mq101b', mentor: 'James Baldwin', context: 'On love and politics', quote: 'Love takes off the masks that we fear we cannot live without and know we cannot live within.', useWhen: 'When you wonder if it is safer to keep masking.', followup: 'Pick one place this week where you do not mask. Just one hour.' },
+    { id: 'mq102', mentor: 'Maxine Hong Kingston', context: 'On voice and silence', quote: 'In a time of destruction, create something.', useWhen: 'When you cannot stop the harm. Find what you CAN make instead.', followup: 'Make one tiny thing today. A letter, a doodle, a sentence. Just create.' },
+    { id: 'mq103', mentor: 'Howard Thurman', context: 'On vocation', quote: 'Ask yourself what makes you come alive, and go do that.', useWhen: 'When you feel pressure to chase a path that drains you.', followup: 'What is alive in you? Schedule 30 minutes of it tomorrow.' },
+    { id: 'mq104', mentor: 'Robin Wall Kimmerer', context: 'On Indigenous science', quote: 'Knowing the names of plants is one of the first ways we say I see you.', useWhen: 'When you wish someone would see you.', followup: 'Whose existence have you been ignoring? See them today.' },
+    { id: 'mq105', mentor: 'Joy Harjo', context: 'On Mvskoke poetry', quote: 'Remember you are all people, and all people are you.', useWhen: 'When you feel isolated in your struggle.', followup: 'Who is also you, this week? Reach out to one.' },
+    { id: 'mq106', mentor: 'Joy Harjo', context: 'On survival', quote: 'Remember your birth.', useWhen: 'When you have forgotten your own beginning.', followup: 'Ask someone who knew you young. Hear their story of you. Save it.' },
+    { id: 'mq107', mentor: 'Mary Oliver', context: 'On attention', quote: 'Pay attention. Be astonished. Tell about it.', useWhen: 'When advocacy feels too big.', followup: 'Notice one specific thing today. Tell one person. That is advocacy.' },
+    { id: 'mq108', mentor: 'Mary Oliver', context: 'On wild life', quote: 'Tell me, what is it you plan to do with your one wild and precious life?', useWhen: 'When the path others picked for you feels small.', followup: 'Write what is wild and precious about YOUR plan. Even if just one sentence.' },
+    { id: 'mq109', mentor: 'Ross Gay', context: 'On joy as politics', quote: 'Joy is the surest sign of revolutionary love.', useWhen: 'When you think you have to be serious to be taken seriously.', followup: 'Bring joy into one part of advocacy this week. A sticker, a song, a dance break.' },
+    { id: 'mq110', mentor: 'Adrienne Maree Brown', context: 'On emergent strategy', quote: 'Move at the speed of trust.', useWhen: 'When you push faster than your relationships can hold.', followup: 'Who do you not yet trust enough to ask? Build that first. The ask comes after.' },
+    { id: 'mq111', mentor: 'Adrienne Maree Brown', context: 'On pleasure activism', quote: 'Pleasure is the measure of freedom.', useWhen: 'When you have stripped joy from your routine to advocate harder.', followup: 'What gives you pleasure that you have postponed? Reclaim 15 minutes of it.' },
+    { id: 'mq112', mentor: 'Brittney Cooper', context: 'On rage', quote: 'My rage is full of love.', useWhen: 'When you are told your anger is the problem.', followup: 'What love is at the bottom of your anger? Name it. Say it before the anger.' },
+    { id: 'mq113', mentor: 'Mariame Kaba', context: 'On abolition', quote: 'Hope is a discipline.', useWhen: 'When you wait to feel hopeful before you advocate.', followup: 'Hope is action, not feeling. What is one action you will take regardless of how you feel?' },
+    { id: 'mq114', mentor: 'Mariame Kaba', context: 'On community accountability', quote: 'Nothing we do is wasted.', useWhen: 'When a letter you sent got no response.', followup: 'That letter is still working. Send another to a different person.' },
+    { id: 'mq115', mentor: 'Toni Cade Bambara', context: 'On the role of the artist', quote: 'The role of the artist is to make the revolution irresistible.', useWhen: 'When advocacy feels heavy and dull.', followup: 'How could you make your next ask creative, beautiful, or surprising? Try once this week.' },
+    { id: 'mq116', mentor: 'Bryan Stevenson', context: 'On proximity', quote: 'You can\'t be an effective problem solver from a distance.', useWhen: 'When you study a problem instead of getting close to one person.', followup: 'Who is one person closer to this problem than you? Listen to them this week.' },
+    { id: 'mq117', mentor: 'Bryan Stevenson', context: 'On dignity', quote: 'Each of us is more than the worst thing we\'ve ever done.', useWhen: 'When a single mistake makes you feel like that is who you are.', followup: 'What is one true thing about you that has nothing to do with the worst thing? Say it out loud.' },
+    { id: 'mq118', mentor: 'Ta-Nehisi Coates', context: 'On the body', quote: 'You are growing into consciousness, and my wish for you is that you feel no need to constrict yourself to make other people comfortable.', useWhen: 'When you shrink so others feel okay.', followup: 'What is one place you have been shrinking? Stand at full size today.' },
+    { id: 'mq119', mentor: 'Michelle Obama', context: 'On going high', quote: 'When they go low, we go high.', useWhen: 'When you want to match someone\'s cruelty.', followup: 'What is the response that costs them more and you less? Say that one.' },
+    { id: 'mq120', mentor: 'Michelle Obama', context: 'On reading', quote: 'No country can ever truly flourish if it stifles the potential of its women.', useWhen: 'When you doubt whether your access to school is a global question.', followup: 'You are part of a long line of people fighting to learn. Add your name to that line, in writing.' },
+    { id: 'mq121', mentor: 'Yara Shahidi', context: 'On Black girl genius', quote: 'My representation matters.', useWhen: 'When you wonder if your presence in the room is enough.', followup: 'It is enough. Show up. The being seen is the work.' },
+    { id: 'mq122', mentor: 'Amanda Gorman', context: 'On young poets', quote: 'There is always light, if only we\'re brave enough to see it. If only we\'re brave enough to be it.', useWhen: 'When you are exhausted of being the example.', followup: 'You do not have to be the light all day. Be it for 10 minutes. Then rest.' },
+    { id: 'mq123', mentor: 'Marley Dias', context: 'On 1000 Black girl books', quote: 'See yourself, find yourself, be yourself.', useWhen: 'When your school library does not include who you are.', followup: 'Ask for one book this week that has someone like you on the cover.' },
+    { id: 'mq124', mentor: 'Mari Copeny', context: 'On Flint water', quote: 'I am Little Miss Flint. And I will not be ignored.', useWhen: 'When adults tell you to wait until you are older.', followup: 'What is one thing you will not wait to advocate for? Schedule it now.' },
+    { id: 'mq125', mentor: 'Naomi Wadler', context: 'On gun violence', quote: 'I am here today to acknowledge and represent the African-American girls whose stories don\'t make the front page of every national newspaper.', useWhen: 'When you advocate for yourself but feel guilty for not representing others.', followup: 'You can name BOTH. Whose name will you say alongside yours?' },
+    { id: 'mq126', mentor: 'Greta Thunberg', context: 'On urgency', quote: 'I want you to act as if the house is on fire. Because it is.', useWhen: 'When you delay because you are not in crisis YET.', followup: 'You do not have to be in crisis to advocate. What is the small step before crisis?' },
+    { id: 'mq127', mentor: 'Anuradha Vittachi', context: 'On youth voice', quote: 'When children have their own voice, they want to use it well.', useWhen: 'When adults say you do not know what you want.', followup: 'Write down what you want in your own words. Bring it. Read it.' },
+    { id: 'mq128', mentor: 'Kid President', context: 'On dreaming', quote: 'It\'s everybody\'s duty to give the world a reason to dance.', useWhen: 'When advocacy gets too heavy.', followup: 'Take a 5-minute dance break before your next ask. Yes, really.' },
+    { id: 'mq129', mentor: 'Jaylen Arnold', context: 'On bullying with Tourette\'s', quote: 'Walking away from a bully is not weak. It is strong.', useWhen: 'When someone tells you to fight back instead of disengage.', followup: 'You do not have to engage every fight. Which one will you walk away from today?' },
+    { id: 'mq130', mentor: 'Mikayla Holmgren', context: 'On Down syndrome and pageants', quote: 'There is nothing I cannot do.', useWhen: 'When you have absorbed the message that there are doors closed to you.', followup: 'Which door have you not even tried because you assumed no? Knock once this week.' }
+  ];
+var ADVOCACY_QUOTES_LIBRARY = [
+    { id: 'aq1', quote: 'Disability is a part of the human condition. Not the worst part. Not the best part. Part.', author: 'Anonymous' },
+    { id: 'aq2', quote: 'You are not too sensitive. You are exactly sensitive enough for the life you are living.', author: 'Anonymous' },
+    { id: 'aq3', quote: 'Asking for help is the most underrated form of leadership.', author: 'Anonymous' },
+    { id: 'aq4', quote: 'The system was designed for someone else. Your existence is a sign that the design is incomplete.', author: 'Anonymous' },
+    { id: 'aq5', quote: 'Self-advocacy is not selfish. It is the foundation of every other right.', author: 'Anonymous' },
+    { id: 'aq6', quote: 'You do not have to be ready to be moving forward.', author: 'Anonymous' },
+    { id: 'aq7', quote: 'Some battles are won by showing up. Some are won by leaving the room.', author: 'Anonymous' },
+    { id: 'aq8', quote: 'Documentation is power. Memory is fiction.', author: 'Anonymous' },
+    { id: 'aq9', quote: 'The opposite of self-advocacy is not other-advocacy. It is silence.', author: 'Anonymous' },
+    { id: 'aq10', quote: 'No is a complete sentence.', author: 'Anne Lamott' },
+    { id: 'aq11', quote: 'You teach people how to treat you by what you accept.', author: 'Anonymous' },
+    { id: 'aq12', quote: 'The diagnosis is not the prognosis.', author: 'Anonymous' },
+    { id: 'aq13', quote: 'Every accommodation is a Lego brick. You are not building yourself smaller. You are building yourself a path.', author: 'Anonymous' },
+    { id: 'aq14', quote: 'Healing is not a solo sport.', author: 'Anonymous' },
+    { id: 'aq15', quote: 'Your worst day is not your truth.', author: 'Anonymous' },
+    { id: 'aq16', quote: 'Rest is not the reward for hard work. It is the requirement for it.', author: 'Anonymous' },
+    { id: 'aq17', quote: 'You are not behind. You are on your own timeline.', author: 'Anonymous' },
+    { id: 'aq18', quote: 'Boundaries are not walls. They are doors with knobs you control.', author: 'Anonymous' },
+    { id: 'aq19', quote: 'Self-knowledge is the prerequisite for self-advocacy.', author: 'Anonymous' },
+    { id: 'aq20', quote: 'You do not need permission to ask for what you need.', author: 'Anonymous' },
+    { id: 'aq21', quote: 'Your accommodations are not training wheels. They are the bicycle.', author: 'Anonymous' },
+    { id: 'aq22', quote: 'When the system fails, you are not the failure.', author: 'Anonymous' },
+    { id: 'aq23', quote: 'The right to be wrong is the foundation of growth.', author: 'Anonymous' },
+    { id: 'aq24', quote: 'Apologizing well is harder than apologizing often.', author: 'Anonymous' },
+    { id: 'aq25', quote: 'Tomorrow is not a guarantee, but it is a high probability.', author: 'Anonymous' },
+    { id: 'aq26', quote: 'Most fears are bigger before than during.', author: 'Anonymous' },
+    { id: 'aq27', quote: 'The person who quits the gentlest is often the bravest.', author: 'Anonymous' },
+    { id: 'aq28', quote: 'You can grieve and grow at the same time.', author: 'Anonymous' },
+    { id: 'aq29', quote: 'Your stim is your wisdom externalized.', author: 'Anonymous' },
+    { id: 'aq30', quote: 'Most adults underestimate young advocates. Use it.', author: 'Anonymous' },
+    { id: 'aq31', quote: 'Calling out is one tool. Calling in is another.', author: 'Anonymous' },
+    { id: 'aq32', quote: 'Crying is not weakness. It is hydration plus information.', author: 'Anonymous' },
+    { id: 'aq33', quote: 'You can leave a meeting. You can come back tomorrow.', author: 'Anonymous' },
+    { id: 'aq34', quote: 'Hot replies cost more than they buy.', author: 'Anonymous' },
+    { id: 'aq35', quote: 'Sleep is advocacy.', author: 'Anonymous' },
+    { id: 'aq36', quote: 'Food is advocacy.', author: 'Anonymous' },
+    { id: 'aq37', quote: 'Water is advocacy.', author: 'Anonymous' },
+    { id: 'aq38', quote: 'Naming the room you are in is the first step to changing it.', author: 'Anonymous' },
+    { id: 'aq39', quote: 'You are allowed to grieve who you thought you would be.', author: 'Anonymous' },
+    { id: 'aq40', quote: 'You are also allowed to fall in love with who you are.', author: 'Anonymous' },
+    { id: 'aq41', quote: 'Diagnoses are language. Use the language that serves you.', author: 'Anonymous' },
+    { id: 'aq42', quote: 'Your case manager works for you, not over you.', author: 'Anonymous' },
+    { id: 'aq43', quote: 'Most school problems are solved by an email at the right time.', author: 'Anonymous' },
+    { id: 'aq44', quote: 'You do not have to be confident to act confident enough.', author: 'Anonymous' },
+    { id: 'aq45', quote: 'Anxious AND brave is a thing.', author: 'Anonymous' },
+    { id: 'aq46', quote: 'Disclosure is a key. Keep some keys in your pocket.', author: 'Anonymous' },
+    { id: 'aq47', quote: 'Identity-first or person-first is your call. Both are valid. So are you.', author: 'Anonymous' },
+    { id: 'aq48', quote: 'The IEP is a contract, not a wish list. Treat it like one.', author: 'Anonymous' },
+    { id: 'aq49', quote: 'The 504 is a wedge. Use it.', author: 'Anonymous' },
+    { id: 'aq50', quote: 'Your right to be in the room is older than the room.', author: 'Anonymous' }
+  ];
+var ADVOCACY_AFFIRMATION_LIBRARY = [
+    { id: 'af1', affirmation: 'My voice matters.', category: 'voice' },
+    { id: 'af2', affirmation: 'My needs are valid.', category: 'needs' },
+    { id: 'af3', affirmation: 'I am allowed to ask for help.', category: 'help' },
+    { id: 'af4', affirmation: 'I am the expert on me.', category: 'self-knowledge' },
+    { id: 'af5', affirmation: 'My accommodations are tools, not weaknesses.', category: 'tools' },
+    { id: 'af6', affirmation: 'My disability is part of who I am, not all of who I am.', category: 'identity' },
+    { id: 'af7', affirmation: 'I deserve respect.', category: 'dignity' },
+    { id: 'af8', affirmation: 'My pace is mine.', category: 'rhythm' },
+    { id: 'af9', affirmation: 'I belong here.', category: 'belonging' },
+    { id: 'af10', affirmation: 'I am not alone.', category: 'community' },
+    { id: 'af11', affirmation: 'My boundaries are healthy.', category: 'boundaries' },
+    { id: 'af12', affirmation: 'No is a complete sentence.', category: 'boundaries' },
+    { id: 'af13', affirmation: 'I do not have to perform.', category: 'authenticity' },
+    { id: 'af14', affirmation: 'I am allowed to grieve.', category: 'feelings' },
+    { id: 'af15', affirmation: 'I am allowed to celebrate.', category: 'feelings' },
+    { id: 'af16', affirmation: 'My body knows what I need.', category: 'body' },
+    { id: 'af17', affirmation: 'My mind is my mind, and it is mine.', category: 'mind' },
+    { id: 'af18', affirmation: 'I have come further than I realize.', category: 'growth' },
+    { id: 'af19', affirmation: 'I am the answer to someone\'s prayer.', category: 'connection' },
+    { id: 'af20', affirmation: 'My future is mine to shape.', category: 'agency' },
+    { id: 'af21', affirmation: 'I do not have to be ready to begin.', category: 'beginning' },
+    { id: 'af22', affirmation: 'Small steps are still steps.', category: 'progress' },
+    { id: 'af23', affirmation: 'My anger is data.', category: 'emotion' },
+    { id: 'af24', affirmation: 'My joy is data.', category: 'emotion' },
+    { id: 'af25', affirmation: 'I am not too much.', category: 'self-worth' },
+    { id: 'af26', affirmation: 'I am not too little.', category: 'self-worth' },
+    { id: 'af27', affirmation: 'I am enough.', category: 'self-worth' },
+    { id: 'af28', affirmation: 'My past does not predict my future.', category: 'agency' },
+    { id: 'af29', affirmation: 'I get to redefine myself.', category: 'identity' },
+    { id: 'af30', affirmation: 'My differences are my gifts.', category: 'strengths' },
+    { id: 'af31', affirmation: 'I am worth the work.', category: 'self-worth' },
+    { id: 'af32', affirmation: 'I am worth advocating for.', category: 'self-worth' },
+    { id: 'af33', affirmation: 'My truth is mine to tell.', category: 'voice' },
+    { id: 'af34', affirmation: 'I can change my mind.', category: 'flexibility' },
+    { id: 'af35', affirmation: 'I can ask for help and still be strong.', category: 'help' },
+    { id: 'af36', affirmation: 'Rest is allowed.', category: 'rest' },
+    { id: 'af37', affirmation: 'Play is allowed.', category: 'joy' },
+    { id: 'af38', affirmation: 'My community will find me.', category: 'connection' },
+    { id: 'af39', affirmation: 'I have what I need.', category: 'sufficiency' },
+    { id: 'af40', affirmation: 'My disability did not break me. It shaped me.', category: 'identity' },
+    { id: 'af41', affirmation: 'I am my own ally.', category: 'self-relationship' },
+    { id: 'af42', affirmation: 'I forgive myself for past masking.', category: 'self-compassion' },
+    { id: 'af43', affirmation: 'I am proud of who I am becoming.', category: 'becoming' },
+    { id: 'af44', affirmation: 'My pace beats their timeline.', category: 'self-trust' },
+    { id: 'af45', affirmation: 'My needs are not negotiable.', category: 'needs' },
+    { id: 'af46', affirmation: 'I am allowed to take up space.', category: 'presence' },
+    { id: 'af47', affirmation: 'I am allowed to leave a room.', category: 'agency' },
+    { id: 'af48', affirmation: 'I am allowed to come back tomorrow.', category: 'patience' },
+    { id: 'af49', affirmation: 'I am allowed to start over.', category: 'fresh start' },
+    { id: 'af50', affirmation: 'I am allowed to be a beginner.', category: 'growth' },
+    { id: 'af51', affirmation: 'My disability community has my back.', category: 'community' },
+    { id: 'af52', affirmation: 'I am part of a long lineage of advocates.', category: 'history' },
+    { id: 'af53', affirmation: 'I will not be the last.', category: 'continuation' },
+    { id: 'af54', affirmation: 'I have something to teach.', category: 'wisdom' },
+    { id: 'af55', affirmation: 'I have something to learn.', category: 'humility' },
+    { id: 'af56', affirmation: 'My yes is mine.', category: 'agency' },
+    { id: 'af57', affirmation: 'My no is mine.', category: 'agency' },
+    { id: 'af58', affirmation: 'My silence is mine.', category: 'agency' },
+    { id: 'af59', affirmation: 'My speech is mine.', category: 'agency' },
+    { id: 'af60', affirmation: 'My body is mine.', category: 'agency' },
+    { id: 'af61', affirmation: 'I am the author of my own life.', category: 'authorship' },
+    { id: 'af62', affirmation: 'My story matters.', category: 'narrative' },
+    { id: 'af63', affirmation: 'I am writing my next chapter.', category: 'agency' },
+    { id: 'af64', affirmation: 'I am loved.', category: 'love' },
+    { id: 'af65', affirmation: 'I love.', category: 'love' },
+    { id: 'af66', affirmation: 'I am safe right now.', category: 'safety' },
+    { id: 'af67', affirmation: 'I am surviving.', category: 'survival' },
+    { id: 'af68', affirmation: 'I am thriving.', category: 'thriving' },
+    { id: 'af69', affirmation: 'I am healing.', category: 'healing' },
+    { id: 'af70', affirmation: 'I am whole.', category: 'wholeness' },
+    { id: 'af71', affirmation: 'My disability is not my fault.', category: 'release' },
+    { id: 'af72', affirmation: 'My disability is not my failing.', category: 'release' },
+    { id: 'af73', affirmation: 'My disability does not make me less.', category: 'release' },
+    { id: 'af74', affirmation: 'My disability makes me me.', category: 'identity' },
+    { id: 'af75', affirmation: 'My different is my power.', category: 'reframe' },
+    { id: 'af76', affirmation: 'I am not ashamed.', category: 'pride' },
+    { id: 'af77', affirmation: 'I am not sorry for taking what I need.', category: 'release' },
+    { id: 'af78', affirmation: 'I am not sorry for being here.', category: 'belonging' },
+    { id: 'af79', affirmation: 'My presence is a contribution.', category: 'contribution' },
+    { id: 'af80', affirmation: 'I am the answer I have been waiting for.', category: 'agency' },
+    { id: 'af81', affirmation: 'My ancestors fought for me to exist.', category: 'lineage' },
+    { id: 'af82', affirmation: 'I will fight for those who come next.', category: 'continuation' },
+    { id: 'af83', affirmation: 'My disability is older than my diagnosis.', category: 'history' },
+    { id: 'af84', affirmation: 'My identity is older than the label.', category: 'identity' },
+    { id: 'af85', affirmation: 'I do not need to perform happy.', category: 'authenticity' },
+    { id: 'af86', affirmation: 'I do not need to perform sad.', category: 'authenticity' },
+    { id: 'af87', affirmation: 'I do not need to perform.', category: 'authenticity' },
+    { id: 'af88', affirmation: 'My body keeps showing up. So can I.', category: 'continuity' },
+    { id: 'af89', affirmation: 'My brain is doing its best.', category: 'compassion' },
+    { id: 'af90', affirmation: 'My therapist is on my team.', category: 'team' },
+    { id: 'af91', affirmation: 'My case manager is on my team.', category: 'team' },
+    { id: 'af92', affirmation: 'My friends are on my team.', category: 'team' },
+    { id: 'af93', affirmation: 'My family is on my team (sometimes).', category: 'team' },
+    { id: 'af94', affirmation: 'I am on my team.', category: 'self' },
+    { id: 'af95', affirmation: 'I get to redefine success.', category: 'self-definition' },
+    { id: 'af96', affirmation: 'My version of thriving is enough.', category: 'self-definition' },
+    { id: 'af97', affirmation: 'Comparison is not a measurement.', category: 'release' },
+    { id: 'af98', affirmation: 'My timeline is mine.', category: 'pace' },
+    { id: 'af99', affirmation: 'I am still becoming.', category: 'growth' },
+    { id: 'af100', affirmation: 'I am.', category: 'existence' }
+  ];
+var ADVOCACY_HISTORY_TIMELINE = [
+    {
+      id: 'ht1',
+      year: 1817,
+      event: 'American School for the Deaf founded',
+      who: 'Thomas Hopkins Gallaudet, Laurent Clerc, Mason Cogswell',
+      location: 'Hartford, CT',
+      significance: 'First school for disabled students in America. Established the principle that disabled people deserve education.',
+      modernRelevance: 'Every IEP and 504 plan traces back to the radical idea that schools should teach disabled students.',
+      remember: 'Laurent Clerc was the first Deaf teacher in America. Without him, this school would not exist.'
+    },
+    {
+      id: 'ht2',
+      year: 1864,
+      event: 'Gallaudet University authorized by Congress',
+      who: 'Abraham Lincoln signed the charter',
+      location: 'Washington, DC',
+      significance: 'World\'s only university for Deaf and hard-of-hearing students. Set the precedent that higher education must be accessible.',
+      modernRelevance: 'Today, Deaf students may attend any college with accommodations. The model started at Gallaudet.',
+      remember: 'Edward Miner Gallaudet was the first president and the son of Thomas Hopkins Gallaudet.'
+    },
+    {
+      id: 'ht3',
+      year: 1935,
+      event: 'League for the Physically Handicapped pickets WPA',
+      who: 'Disabled New Yorkers including Florence Haskell, Sylvia Flexer',
+      location: 'New York City',
+      significance: 'First organized disability rights protest in the U.S. They demanded jobs from the Works Progress Administration that excluded disabled people.',
+      modernRelevance: 'Direct ancestor of all modern disability rights protests. Showed that disabled people would not wait passively for change.',
+      remember: 'They picketed for 9 days. They won. The WPA created jobs for disabled workers.'
+    },
+    {
+      id: 'ht4',
+      year: 1962,
+      event: 'Ed Roberts admitted to UC Berkeley',
+      who: 'Ed Roberts, with help from his mother Zona',
+      location: 'Berkeley, CA',
+      significance: 'First student with significant physical disability admitted to UC Berkeley. Required iron lung. Lived in campus hospital because dorms inaccessible.',
+      modernRelevance: 'Sparked the Independent Living Movement and the Berkeley Center for Independent Living, which is the model for ILCs nationwide.',
+      remember: 'A counselor told Ed: "We have never had disabled students before." Ed replied: "Now you do."'
+    },
+    {
+      id: 'ht5',
+      year: 1970,
+      event: 'Judy Heumann sues NYC Board of Education and wins',
+      who: 'Judy Heumann',
+      location: 'New York City',
+      significance: 'NYC denied her teaching license because she used a wheelchair. She sued and won. Became the first wheelchair-user teacher in NYC.',
+      modernRelevance: 'Established that disability cannot be sole basis for denying employment. Foundation for ADA Title I.',
+      remember: 'Judy died in 2023. Her memoir is "Being Heumann."'
+    },
+    {
+      id: 'ht6',
+      year: 1972,
+      event: 'PARC v. Pennsylvania consent decree',
+      who: 'Pennsylvania Association for Retarded Children (now The Arc)',
+      location: 'Pennsylvania',
+      significance: 'Federal court agreed that children with intellectual disabilities have a right to public education. State could no longer exclude them.',
+      modernRelevance: 'Helped pave the way for the Education for All Handicapped Children Act of 1975 (now IDEA).',
+      remember: 'Mills v. Board of Education (DC) ruled the same way the same year.'
+    },
+    {
+      id: 'ht7',
+      year: 1973,
+      event: 'Rehabilitation Act Section 504 passes',
+      who: 'Congress, advocates including Eunice Fiorito',
+      location: 'Washington, DC',
+      significance: 'First federal civil rights law for disabled people. Prohibited discrimination by any organization receiving federal funds.',
+      modernRelevance: 'Section 504 plans in schools come from this law. ADA built on its foundation.',
+      remember: 'Section 504 was passed but not enforced for 4 years until disabled people forced regulations to be signed.'
+    },
+    {
+      id: 'ht8',
+      year: 1975,
+      event: 'Education for All Handicapped Children Act passes (PL 94-142)',
+      who: 'Congress, advocates including PARC parents',
+      location: 'Washington, DC',
+      significance: 'Required free appropriate public education (FAPE) for children with disabilities, in least restrictive environment (LRE).',
+      modernRelevance: 'Renamed IDEA in 1990. Every IEP is a direct descendant of this law.',
+      remember: 'Before 1975, over 1 million disabled children were excluded from public schools.'
+    },
+    {
+      id: 'ht9',
+      year: 1977,
+      event: '504 sit-in at HEW headquarters',
+      who: 'Judy Heumann, Kitty Cone, others led 28-day sit-in',
+      location: 'San Francisco, CA',
+      significance: 'Disabled activists occupied HEW office for 28 days to force Section 504 regulations to be signed. Longest sit-in at a federal building in U.S. history.',
+      modernRelevance: 'Disability rights movement\'s most iconic protest. Featured in "Crip Camp" documentary.',
+      remember: 'The Black Panthers brought food daily. Solidarity across movements made this possible.'
+    },
+    {
+      id: 'ht10',
+      year: 1988,
+      event: 'Deaf President Now (DPN)',
+      who: 'Gallaudet University students',
+      location: 'Washington, DC',
+      significance: 'Students shut down campus to protest hiring of hearing president over Deaf candidates. After 8 days, Gallaudet hired first Deaf president, I. King Jordan.',
+      modernRelevance: 'Modeled student-led civil disobedience. Established that Deaf community must lead Deaf institutions.',
+      remember: 'Greg Hlibok, Bridgetta Bourne-Firl, Jerry Covell, and Tim Rarus led the protest.'
+    },
+    {
+      id: 'ht11',
+      year: 1990,
+      event: 'Americans with Disabilities Act (ADA) passes',
+      who: 'Congress, advocates including Patrisha Wright, Justin Dart, Evan Kemp',
+      location: 'Washington, DC',
+      significance: 'Most comprehensive disability civil rights law in the world. Banned discrimination in employment, public services, public accommodations, telecommunications, and transportation.',
+      modernRelevance: 'Every accessibility ramp, every workplace accommodation, every wheelchair-accessible bus traces back to ADA.',
+      remember: 'President George H.W. Bush signed it July 26, 1990. Considered "the most important civil rights law since 1964."'
+    },
+    {
+      id: 'ht12',
+      year: 1990,
+      event: 'Capitol Crawl',
+      who: 'ADAPT, including Jennifer Keelan-Chaffins',
+      location: 'Washington, DC',
+      significance: 'Disabled activists abandoned wheelchairs and crawled up Capitol steps to demand passage of ADA. 8-year-old Jennifer Keelan-Chaffins became iconic image.',
+      modernRelevance: 'Showed physical inaccessibility of even the Capitol. ADA passed soon after.',
+      remember: 'Jennifer said: "I want to grow up to be a strong-willed advocate." She did.'
+    },
+    {
+      id: 'ht13',
+      year: 1990,
+      event: 'IDEA name change (formerly EHA)',
+      who: 'Congress',
+      location: 'Washington, DC',
+      significance: 'Education for All Handicapped Children Act renamed Individuals with Disabilities Education Act. Person-first language signaled cultural shift.',
+      modernRelevance: 'IDEA is the federal law governing every IEP today.',
+      remember: 'Same law, evolved language. Words shape understanding.'
+    },
+    {
+      id: 'ht14',
+      year: 1999,
+      event: 'Olmstead v. L.C.',
+      who: 'Lois Curtis, Elaine Wilson, Atlanta Legal Aid',
+      location: 'Supreme Court',
+      significance: 'Supreme Court ruled that disabled people have right to live in the community, not institutions. "Most integrated setting" requirement under ADA.',
+      modernRelevance: 'Closed institutions across the country. Funded community-based services. Most disabled people now live in homes, not institutions.',
+      remember: 'Lois Curtis became an artist after winning her freedom from institutionalization.'
+    },
+    {
+      id: 'ht15',
+      year: 2004,
+      event: 'IDEA reauthorized',
+      who: 'Congress',
+      location: 'Washington, DC',
+      significance: 'Strengthened transition planning requirements (starting at age 16, now 14 in many states). Aligned with No Child Left Behind.',
+      modernRelevance: 'Transition planning requirements come from this version. Connects high school to post-school life.',
+      remember: 'The next time IDEA gets reauthorized, advocates will be pushing for more rights, not less.'
+    },
+    {
+      id: 'ht16',
+      year: 2008,
+      event: 'ADA Amendments Act (ADAAA)',
+      who: 'Congress',
+      location: 'Washington, DC',
+      significance: 'Reversed Supreme Court rulings that had narrowed ADA. Broadened definition of disability to be more inclusive.',
+      modernRelevance: 'Many more conditions now clearly qualify under ADA. Chronic illness, mental health, learning disabilities better protected.',
+      remember: 'Often called "ADA fix."'
+    },
+    {
+      id: 'ht17',
+      year: 2017,
+      event: 'Endrew F. v. Douglas County',
+      who: 'Endrew F. (autistic student) and his parents',
+      location: 'Supreme Court',
+      significance: 'Supreme Court ruled IEPs must enable "appropriately ambitious progress," not just minimal benefit.',
+      modernRelevance: 'Raised the bar for what an IEP must provide. Common ammunition in IEP disputes today.',
+      remember: 'Endrew was a real autistic kid. His name is the law now.'
+    },
+    {
+      id: 'ht18',
+      year: 2019,
+      event: 'Disability Visibility Project anthology published',
+      who: 'Alice Wong',
+      location: 'Nationwide',
+      significance: '"Disability Visibility: First-Person Stories from the 21st Century" became canonical text. Disabled writers narrating their own lives.',
+      modernRelevance: 'Centered disabled voices in disability discourse. Modeled multiply marginalized authorship.',
+      remember: 'Alice Wong continues to lead the Disability Visibility Project.'
+    },
+    {
+      id: 'ht19',
+      year: 2020,
+      event: 'COVID-19 pandemic exposes ableism and creates new accessibility',
+      who: 'Disability community',
+      location: 'Globally',
+      significance: 'Mass remote work proved accommodations long denied as "impossible" were possible all along. Disability community led on mask, vaccine, and disability justice advocacy.',
+      modernRelevance: 'Permanent shifts in remote work, telemedicine, digital accessibility. Still unfinished, but precedent set.',
+      remember: 'Many disabled people died from COVID neglect. The same community that fought for accommodations had to fight for the right to medical care.'
+    },
+    {
+      id: 'ht20',
+      year: 2020,
+      event: 'Crip Camp documentary released',
+      who: 'James LeBrecht, Nicole Newnham, Higher Ground Productions',
+      location: 'Streaming on Netflix',
+      significance: 'Documentary about Camp Jened and the disability rights movement. Brought disability history to mass audiences.',
+      modernRelevance: 'Required watching for understanding the movement. Reignited interest in disability history.',
+      remember: 'Available free with discussion guide at cripcamp.com.'
+    },
+    {
+      id: 'ht21',
+      year: 2023,
+      event: 'Judy Heumann dies',
+      who: 'Judy Heumann (1947-2023)',
+      location: 'Washington, DC',
+      significance: 'Mother of the disability rights movement died. Her legacy spans 504 sit-in, ADA, international disability rights.',
+      modernRelevance: 'Her work continues through Heumann Perspective podcast (her sister continues it), Disability Visibility, and every IEP that protects a child today.',
+      remember: 'Read "Being Heumann." Watch "Crip Camp." Continue the work.'
+    },
+    {
+      id: 'ht22',
+      year: 1909,
+      event: 'Helen Keller writes "The World I Live In"',
+      who: 'Helen Keller',
+      location: 'Massachusetts',
+      significance: 'Influential book by a Deafblind author. Established that disabled people are sources of insight, not just objects of charity.',
+      modernRelevance: 'Helen Keller is often reduced to her childhood story. Her adult radicalism and writings are largely forgotten.',
+      remember: 'She was a socialist, suffragist, and lifelong disability rights advocate. The story stops at age 7 in textbooks for a reason.'
+    },
+    {
+      id: 'ht23',
+      year: 1932,
+      event: 'NAACP-led suit against Negro Boys Industrial School',
+      who: 'NAACP, Black disabled boys',
+      location: 'Oklahoma',
+      significance: 'Early case connecting race and disability discrimination. Documented brutal conditions at "training school" for disabled Black boys.',
+      modernRelevance: 'Reminder that the school-to-prison pipeline has always disproportionately targeted disabled children of color.',
+      remember: 'Many disability rights battles have been won by Black advocates first. Movement history often forgets.'
+    },
+    {
+      id: 'ht24',
+      year: 1980,
+      event: 'Disability Rag magazine founded',
+      who: 'Mary Johnson and others',
+      location: 'Louisville, KY',
+      significance: 'First independent disability rights publication. Centered disability perspective without medical or charity frame.',
+      modernRelevance: 'Predecessor to all disability-led media (New Mobility, Disability Visibility, etc.).',
+      remember: 'Disabled-led publishing was rare in 1980. It is normal today.'
+    },
+    {
+      id: 'ht25',
+      year: 2003,
+      event: 'Autistic Self Advocacy Network (ASAN) founded',
+      who: 'Ari Neeman, Scott Robertson',
+      location: 'Washington, DC',
+      significance: 'First autistic-led national advocacy organization. Pioneered "Nothing About Us Without Us" autistic representation.',
+      modernRelevance: 'Center of identity-first language movement. Pushes back against parent-led organizations that speak for autistic people.',
+      remember: 'Ari Neeman became the first autistic person appointed to the National Council on Disability.'
+    },
+    {
+      id: 'ht26',
+      year: 2015,
+      event: 'Patty Berne writes Disability Justice 10 Principles',
+      who: 'Patty Berne, Sins Invalid',
+      location: 'San Francisco Bay Area',
+      significance: 'Articulated disability justice framework: anti-capitalist, intersectional, cross-movement solidarity. Critique of mainstream disability rights for single-issue, white-led, professional-class focus.',
+      modernRelevance: 'Disability justice has become the prevailing framework in disability-led organizing today.',
+      remember: 'The 10 principles include: intersectionality, leadership of the most impacted, anti-capitalism, cross-movement organizing, recognizing wholeness, sustainability, commitment to cross-disability solidarity, interdependence, collective access, and collective liberation.'
+    },
+    {
+      id: 'ht27',
+      year: 2014,
+      event: 'Schools begin shifting away from restraint and seclusion',
+      who: 'Various states, advocates',
+      location: 'Nationwide',
+      significance: 'Multiple state laws passed restricting use of restraint and seclusion in schools. Some, like Maine\'s Chapter 33, became national models.',
+      modernRelevance: 'Restraint and seclusion still happen. Documentation, reporting, and advocacy still needed.',
+      remember: 'If your school uses restraint or seclusion, you have rights. Document and report.'
+    },
+    {
+      id: 'ht28',
+      year: 2016,
+      event: 'Anti-Filicide Day established',
+      who: 'Autistic Self Advocacy Network',
+      location: 'Internationally',
+      significance: 'Day of mourning for disabled people murdered by their caregivers. Demanded acknowledgment that disabled lives are valued.',
+      modernRelevance: 'Coverage of disability murder still often centers killers\' alleged "stress" rather than the lives of victims.',
+      remember: 'March 1 each year. Light a candle. Remember the names.'
+    }
+  ];
+var DISABILITY_HISTORY_DEEP = [
+    {
+      id: 'dhd1',
+      era: '1800s',
+      title: 'Institutionalization Era',
+      summary: 'Disabled people, particularly those with intellectual or psychiatric disabilities, were widely placed in large institutions. Conditions were often dehumanizing.',
+      keyEvents: [
+        '1817: American School for the Deaf opens',
+        '1848: First state institution for "feeble-minded" opens in Massachusetts',
+        '1870s-1900s: Massive expansion of state institutions',
+        'Many disabled people spent entire lives in institutions'
+      ],
+      voicesOfTheEra: ['Helen Keller', 'Laura Bridgman (first Deafblind student to learn language)'],
+      whatToRemember: 'For most of American history, the default for many disabled people was lifelong institutional confinement. Many of those institutions were brutal.'
+    },
+    {
+      id: 'dhd2',
+      era: 'early 1900s',
+      title: 'Eugenics Era',
+      summary: 'Pseudo-scientific movement that argued disability and other traits were genetic flaws to be eliminated. Led to forced sterilization, immigration restrictions, and influence on Nazi policies.',
+      keyEvents: [
+        '1907: First state sterilization law (Indiana)',
+        '1927: Supreme Court rules in Buck v. Bell that forced sterilization is constitutional',
+        '1930s-1940s: U.S. eugenics movement influences Nazi Germany',
+        '60,000+ Americans forcibly sterilized in eugenics era'
+      ],
+      voicesOfTheEra: ['Carrie Buck (forced sterilization victim)'],
+      whatToRemember: 'Disability rights advocacy emerged in part from this history. The forced sterilization wing of eugenics targeted disabled women especially. Buck v. Bell has never been overturned.'
+    },
+    {
+      id: 'dhd3',
+      era: '1930s-1940s',
+      title: 'Disabled World War II Veterans',
+      summary: 'Massive influx of disabled veterans began to shift public attitudes. Rehabilitation movement gained ground.',
+      keyEvents: [
+        '1944: GI Bill includes disabled veteran provisions',
+        '1948: Paralympics precursor begins',
+        'Disabled veterans become visible in workforce'
+      ],
+      voicesOfTheEra: ['Disabled WW2 veterans organizing'],
+      whatToRemember: 'Disabled veterans were the first large group of disabled adults to actively organize. Many later civil rights victories were built on veteran advocacy.'
+    },
+    {
+      id: 'dhd4',
+      era: '1950s-1960s',
+      title: 'Parent Movement and Early Rights Organizing',
+      summary: 'Parents of disabled children began organizing for school inclusion. Disabled adults began articulating independent living.',
+      keyEvents: [
+        '1950: Association for Retarded Children (now The Arc) founded',
+        '1962: Ed Roberts admitted to UC Berkeley',
+        '1968: Architectural Barriers Act passes',
+        'Independent Living philosophy emerges'
+      ],
+      voicesOfTheEra: ['Ed Roberts', 'Frank Bowe', 'Judy Heumann beginning'],
+      whatToRemember: 'Parents started the fight. Disabled adults expanded it to their own rights. Both threads continue today.'
+    },
+    {
+      id: 'dhd5',
+      era: '1970s',
+      title: 'Federal Disability Rights Laws',
+      summary: 'Federal laws established education rights and civil rights for disabled people.',
+      keyEvents: [
+        '1972: PARC and Mills decisions',
+        '1973: Section 504 of the Rehabilitation Act',
+        '1975: Education for All Handicapped Children Act (later IDEA)',
+        '1977: 504 sit-in forces signing of regulations'
+      ],
+      voicesOfTheEra: ['Judy Heumann', 'Kitty Cone', 'Brad Lomax', 'Frank Kameny'],
+      whatToRemember: 'The 1970s laid the legal foundation. Direct action made the laws enforceable.'
+    },
+    {
+      id: 'dhd6',
+      era: '1980s',
+      title: 'ADA Movement Builds',
+      summary: 'Disability rights movement organized for comprehensive civil rights legislation.',
+      keyEvents: [
+        '1980: Disability Rag (independent disability magazine)',
+        '1988: Deaf President Now',
+        '1990: ADA passes'
+      ],
+      voicesOfTheEra: ['Justin Dart', 'Patrisha Wright', 'Evan Kemp', 'Lex Frieden', 'Mary Lou Breslin'],
+      whatToRemember: 'The ADA did not come from politicians. It came from decades of disabled activism.'
+    },
+    {
+      id: 'dhd7',
+      era: '1990s',
+      title: 'Implementation and Olmstead',
+      summary: 'ADA enforcement, IDEA amendments, and Olmstead decision shifted services toward community.',
+      keyEvents: [
+        '1990: ADA passes',
+        '1990: IDEA name change from EHA',
+        '1999: Olmstead v. L.C.',
+        'Inclusion movement gains momentum in schools'
+      ],
+      voicesOfTheEra: ['Lois Curtis and Elaine Wilson (Olmstead plaintiffs)'],
+      whatToRemember: 'Laws need implementation. The 90s was implementation decade.'
+    },
+    {
+      id: 'dhd8',
+      era: '2000s',
+      title: 'Identity and Neurodiversity',
+      summary: 'Disability identity movements grow. Neurodiversity emerges as concept and movement.',
+      keyEvents: [
+        '2003: ASAN founded',
+        '2006: UN Convention on Rights of Persons with Disabilities',
+        '2008: ADA Amendments Act',
+        'Self-advocacy movements expand for many disabilities'
+      ],
+      voicesOfTheEra: ['Ari Neeman', 'Mel Baggs', 'Amanda Baggs'],
+      whatToRemember: 'Identity-based organizing changed disability discourse. "Nothing about us without us" became foundational.'
+    },
+    {
+      id: 'dhd9',
+      era: '2010s',
+      title: 'Disability Justice and Intersectionality',
+      summary: 'Disability justice framework emerges. Intersectional organizing gains ground.',
+      keyEvents: [
+        '2011-2015: Disability justice principles articulated',
+        '2014: NotDeadYet pushes back on assisted dying movement',
+        '2017: Endrew F. raises IEP standard',
+        '2017: ADAPT activists arrested protesting Medicaid cuts'
+      ],
+      voicesOfTheEra: ['Patty Berne', 'Mia Mingus', 'Stacey Park Milbern', 'Alice Wong', 'Imani Barbarin'],
+      whatToRemember: 'Disability justice expanded movement focus to multiply marginalized people and structural change.'
+    },
+    {
+      id: 'dhd10',
+      era: '2020s',
+      title: 'COVID and Beyond',
+      summary: 'COVID-19 pandemic exposed deep ableism in society. Disability community led on mask, vaccine, work accessibility.',
+      keyEvents: [
+        '2020: COVID-19 pandemic',
+        '2020: Mass remote work proves accommodations were always possible',
+        '2023: Judy Heumann dies',
+        'Disability community continues organizing'
+      ],
+      voicesOfTheEra: ['Imani Barbarin', 'Alice Wong (continuing)', 'Andrew Pulrang', 'many emerging'],
+      whatToRemember: 'COVID was both crisis and opportunity. Many accommodations long denied as impossible became standard overnight.'
+    }
+  ];
+var FAMILY_CONVERSATION_PREP = [
+    { id: 'fc1', topic: 'I want to lead my next IEP meeting', openWith: 'Mom/Dad, I want to talk about something important to me. Is now an okay time?', mainPoint: 'I want to lead my next IEP meeting. Not all of it, but I want to introduce myself, share my goals, and pick at least one accommodation. I am not trying to replace you. I want to learn how to do this.', anticipate: ['"You are too young." Answer: "Federal law says I can attend at any age. Many students start as young as 8. Lets pick what fits me."', '"You will get nervous." Answer: "I might. Thats why I want to practice. Will you help me practice?"', '"You wont remember everything." Answer: "Thats why we make notes and bring them. You can fill in where I forget."'], support: 'Practice the meeting with parent at least 3 times before the actual meeting. Read your prep aloud.', closeWith: 'Will you let me try? I might mess up some parts. But I want to start practicing while you are still here to help.' },
+    { id: 'fc2', topic: 'I am questioning my gender or sexuality', openWith: 'Mom/Dad, I want to share something. I love you. I am still me. Can we talk?', mainPoint: 'Take your time naming it. You do not have to label yourself in this conversation. You can say: I am exploring. I am questioning. I am ___ (term you have chosen).', anticipate: ['"How do you know?" Answer: "I have been thinking about this for a while. I am still figuring some things out. I wanted to tell you because you matter to me."', '"You are too young to know." Answer: "Some people figure this out young. Some figure it out later. I am where I am. Please trust me."', 'Possible denial, anger, sadness. Allow them their reaction without taking it as the final word.'], support: 'Have a backup adult ready to call after the conversation. Tell them: "I am about to come out. I might need to call you in an hour."', closeWith: 'I love you. I am the same person. I just told you something true.' },
+    { id: 'fc3', topic: 'I am struggling with my mental health', openWith: 'Mom/Dad, I want to be honest about how I am doing. Can we sit somewhere quiet?', mainPoint: 'For the last ___ weeks, I have been feeling ___. It is affecting my sleep / school / appetite / thoughts. I want to see a therapist or talk to my doctor.', anticipate: ['"It is just stress." Answer: "Maybe. But I want a professional opinion. Will you help me make an appointment?"', '"You are being dramatic." Answer: "I am telling you the truth. Please believe me. If it turns out to be nothing, that is okay. I would rather check."', '"What did we do wrong?" Answer: "Nothing. This is not about blame. It is about getting help."'], support: 'Have your symptoms list written down so you do not have to invent it on the spot. Crisis Companion tool has trackers.', closeWith: 'Thank you for listening. Can we make an appointment this week?' },
+    { id: 'fc4', topic: 'I want to drop a hard class or change my schedule', openWith: 'Mom/Dad, I want to talk about my classes. Can we look at my schedule together?', mainPoint: 'I am in ___ class. Here are the grades, the time I spend, and how I feel about it. I want to drop / switch / move to a different level. Here is why.', anticipate: ['"You should push through." Answer: "I have been pushing through for ___ months. Pushing more is breaking me. I need a smarter strategy, not more grit."', '"You will regret this." Answer: "Maybe. But staying in this is hurting me now. We can re-add later if I want."', '"What about college?" Answer: "I will take an additional class next year or summer if needed. Right now I need air."'], support: 'Bring data: grades, time spent, sleep affected.', closeWith: 'I want to make a smart choice. Can we look at this together?' },
+    { id: 'fc5', topic: 'A teacher is treating me unfairly', openWith: 'Mom/Dad, I need help with something at school. It is about ___ teacher.', mainPoint: 'For the last ___ weeks, ___ has been happening. Examples: [give 2-3 specific dated examples]. I have tried [list what you have tried]. It is affecting [list impacts]. I want to ___.', anticipate: ['"Are you sure?" Answer: "Yes. Here are my dated examples."', '"Maybe you are misreading." Answer: "Maybe. But the pattern is consistent across 5 incidents. That is data, not feeling."', '"Lets just deal with it." Answer: "It is affecting my grades and my mental health. I need it addressed."'], support: 'Document everything in writing before the conversation. Bring it printed.', closeWith: 'Will you email the principal with me? Or come to a meeting with the teacher?' },
+    { id: 'fc6', topic: 'I do not want to go to college', openWith: 'Mom/Dad, I want to talk about after high school. Can we sit?', mainPoint: 'College is not the right fit for me right now. Here is what I am considering instead: [trade school, gap year, employment, etc.]. Here is what I know about it. Here is what I am still figuring out.', anticipate: ['"You will fall behind." Answer: "Or I will get ahead in something else. Lets compare paths."', '"You can always go back." Answer: "Yes. And many people do. I want to start where I am ready."', 'Family expectations or generational pride about college.'], support: 'Research your alternative thoroughly. Bring data: salaries, training time, growth.', closeWith: 'I am not closing the door forever. I am picking the right door for now.' },
+    { id: 'fc7', topic: 'I want to attend a school event that scares my family', openWith: 'Mom/Dad, can we talk about ___ event?', mainPoint: 'I want to go to ___. Here is the plan: who is going, when, where, transportation, check-in plan. Here is what I will do if ___ happens.', anticipate: ['"It is not safe." Answer: "Here is the safety plan: [details]. What additional safety would you want?"', '"Why does this matter?" Answer: "Because [specific reason]. Other kids go. I want to go too."', 'Family-specific worry: address the actual worry, not the generic version.'], support: 'Plan with details. Sketch ride home, check-in times, what-if scenarios.', closeWith: 'Will you trust me with this one? Here is how I will earn that trust.' },
+    { id: 'fc8', topic: 'I want to date someone', openWith: 'Mom/Dad, can I tell you about someone?', mainPoint: 'I have been spending time with ___. I want to ___ (date them, go to dance with them, etc.). Here is what I know about them: [character traits, interests]. Here are the boundaries I will hold.', anticipate: ['"You are too young." Answer: "Here are my boundaries: [list]. I am asking for [specific permission]."', '"I do not approve of this person." Answer: "Tell me why specifically. Is it about their identity? Their family? Their behavior? Lets talk through it."', '"Wait." Answer: "How long? What needs to be true for the answer to change?"'], support: 'Be honest about your boundaries and your awareness of risks.', closeWith: 'Can we start with [smaller step] and see how it goes?' },
+    { id: 'fc9', topic: 'I want to set a phone or screen boundary with family', openWith: 'Mom/Dad, I want to ask about something. Can we make a rule about phones together?', mainPoint: 'I have noticed [pattern: phone-checked-during-dinner, late-night-texts, etc.]. I would like for us to ___ together (phones off at dinner, etc.). I will do my part. I am asking you to do yours.', anticipate: ['"You are the one who is always on it." Answer: "Yes, I am too. Lets both work on this. I will go first if you will."', 'Defensiveness.'], support: 'Propose a small step. Easier yes than big change.', closeWith: 'Will you do this with me?' },
+    { id: 'fc10', topic: 'A sibling is teasing me about my accommodations', openWith: 'Mom/Dad, I need help with ___ (sibling).', mainPoint: 'For the last ___ weeks, ___ has been ___. Examples: [give 2-3]. It is hurting me. I have asked them to stop. They have not. I want you to help.', anticipate: ['"Just ignore it." Answer: "I have. It has not stopped. I need backup from you."', '"They do not mean it." Answer: "Maybe. But the impact is real. Can we address the impact?"'], support: 'Tell the parent what specific actions you want them to take.', closeWith: 'Will you have a conversation with them? Or can we have a family meeting?' },
+    { id: 'fc11', topic: 'I want privacy in my room or with my devices', openWith: 'Mom/Dad, I want to talk about privacy. Can we sit?', mainPoint: 'I am ___ years old. I want ___ (privacy in my room, password on my phone, etc.). I understand you care about me. Here is what I propose to give you peace of mind: [transparency, check-ins, etc.] in exchange for the privacy.', anticipate: ['"We do not have secrets in this family." Answer: "Privacy is not secrecy. I will keep ___ open with you. I am asking for ___ private."', 'Worry about safety. Address it specifically.'], support: 'Offer a trial period. 2 weeks. Re-evaluate.', closeWith: 'Will you let us try?' },
+    { id: 'fc12', topic: 'A medication is not working for me', openWith: 'Mom/Dad, I want to talk about my medication. Can we plan a call to the doctor together?', mainPoint: 'I have been on ___ for ___ weeks. Here is what is working: [list]. Here is what is not: [list]. I would like to discuss changing or stopping.', anticipate: ['"Give it more time." Answer: "Maybe. But the doctor said to call if [specific concerns]. I think we are at that point."', 'Worry about stigma or dependence.'], support: 'Track your symptoms in writing. Bring data.', closeWith: 'Can we call the doctor this week?' },
+    { id: 'fc13', topic: 'I am being bullied', openWith: 'Mom/Dad, something is happening at school. I have not told you. I need to now.', mainPoint: 'For ___ weeks, ___ has been happening. Examples: [list]. It is affecting [school, sleep, mental health]. I want you to know. I want help.', anticipate: ['"Why did you not tell me?" Answer: "I was scared / ashamed / hoping it would stop. I am telling you now."', '"Just ignore them." Answer: "It is past that point. I need you to help me handle this."'], support: 'Bring documentation: dates, places, names, witnesses.', closeWith: 'Will you help me report this and protect me?' },
+    { id: 'fc14', topic: 'I want to get a job', openWith: 'Mom/Dad, can we talk about working part-time?', mainPoint: 'I want to start working ___. Here is the plan: [hours, location, transportation, school impact]. Here is what I want to earn for: [savings, college, car]. Here is what I will keep up: [school, chores, family time].', anticipate: ['"You will fall behind in school." Answer: "Here is my plan to protect study time."', '"You are too young." Answer: "I am ___. Here are the labor laws and what I am allowed to do."'], support: 'Bring a written plan with hours mapped against school week.', closeWith: 'Can we start with [trial period]?' },
+    { id: 'fc15', topic: 'I want to ask about money or financial transparency', openWith: 'Mom/Dad, can we talk about money? I want to understand more.', mainPoint: 'I am at the age where I want to learn ___ (budgeting, saving, our family situation). Can you teach me ___?', anticipate: ['"You do not need to worry." Answer: "I want to learn. It will help me when I am out of the house."', 'Family privacy norms.'], support: 'Offer to learn alongside them. Suggest a book or online resource.', closeWith: 'Will you teach me one thing per month?' },
+    { id: 'fc16', topic: 'My faith or beliefs are changing', openWith: 'Mom/Dad, I have been thinking about something important. I love you. I want to share.', mainPoint: 'My understanding of ___ (our faith, beliefs, values) has been changing. I am thinking about ___. I am not rejecting you or what you taught me. I am exploring.', anticipate: ['"This is a phase." Answer: "Maybe. But it is real right now. Will you walk with me?"', 'Strong religious or cultural reaction. Stay calm. State your love clearly.'], support: 'Have a trusted outside adult ready to call after.', closeWith: 'I am not closing this conversation. I am opening it. I want to talk again.' },
+    { id: 'fc17', topic: 'I want to talk about race/identity in our family', openWith: 'Mom/Dad, I want to ask about something hard. Can we sit?', mainPoint: 'I am navigating ___ (race, ethnicity, mixed identity, etc.) and I have questions or things to share.', anticipate: ['Discomfort. Family history pain. Generational silence.', '"We do not talk about that." Answer: "I know. And I am asking now."'], support: 'Have an outside ally (counselor, community leader) for follow-up.', closeWith: 'Thank you for listening, even if it was hard.' },
+    { id: 'fc18', topic: 'I want to plan for after-graduation independence', openWith: 'Mom/Dad, can we plan for after high school together?', mainPoint: 'I want to start practicing ___ (cooking, banking, transportation, scheduling appointments) so I am ready. Will you teach me one new skill per month?', anticipate: ['"There is plenty of time." Answer: "I want to start now. Time goes faster than we think."', '"I will just keep doing it for you." Answer: "I love that. AND I want to learn. Lets do it together."'], support: 'Make a list of life skills. Pick 1-2 per month.', closeWith: 'Can we start with ___ this week?' },
+    { id: 'fc19', topic: 'I want to be referred to by different name or pronouns', openWith: 'Mom/Dad, I want to ask you to use ___ for me. It feels right.', mainPoint: 'My name will be ___. My pronouns are ___. I would like you to use them. I know it might take adjusting. I will be patient.', anticipate: ['"This is hard for me." Answer: "I know. It is also important to me. Will you try?"', '"What about your given name?" Answer: "It is still on paper. But this is what I want to be called."'], support: 'Backup adult or community ready.', closeWith: 'Thank you for hearing me.' },
+    { id: 'fc20', topic: 'I need help with a substance issue', openWith: 'Mom/Dad, I have been using ___. I am asking for help.', mainPoint: 'I have been using ___ for ___. Here is what is happening. I want to stop or get help. I need ___.', anticipate: ['Anger, fear, blame. Allow it.', '"How could you?" Answer: "I am scared too. I am telling you because I trust you."'], support: 'Have a counselor or trusted adult on standby.', closeWith: 'Will you help me get connected to ___ (treatment, support group)?' }
+  ];
+var ADVOCACY_FOR_FAMILIES = [
+    {
+      id: 'aff1',
+      audience: 'Parents new to IEPs',
+      keyMessage: 'You are not alone. The IEP process is overwhelming for everyone at first.',
+      whatToKnow: [
+        'You have rights and so does your child',
+        'Bring a notebook to every meeting',
+        'You do not have to sign anything on the spot',
+        'You can request copies of all documents',
+        'You can bring another person'
+      ],
+      firstSteps: [
+        'Read your state\'s Parent Rights handbook (free)',
+        'Find your state\'s Parent Training and Information Center',
+        'Find your state\'s P&A organization',
+        'Connect with other parents (online, support groups)',
+        'Start keeping a log of school communications'
+      ],
+      commonPitfalls: [
+        'Signing IEPs without reading them carefully',
+        'Believing what is said is what is in the document (read the document)',
+        'Not bringing data to meetings',
+        'Letting the team rush'
+      ]
+    },
+    {
+      id: 'aff2',
+      audience: 'Parents whose child just got diagnosed',
+      keyMessage: 'The diagnosis is information, not judgment. Take time to grieve, then take time to learn.',
+      whatToKnow: [
+        'You will grieve the child you imagined. This is normal.',
+        'Your child is the same person they were yesterday',
+        'Communities exist of other families with the same diagnosis',
+        'Most diagnoses do NOT predict a single life trajectory'
+      ],
+      firstSteps: [
+        'Find one parent-mentor with the same diagnosis',
+        'Read or watch one resource from a self-advocate with the same diagnosis',
+        'Avoid pseudoscience cure marketing',
+        'Talk to your pediatrician about evidence-based supports',
+        'Pace yourself; the first year is heavy'
+      ],
+      commonPitfalls: [
+        'Trying every intervention at once',
+        'Believing fear-based marketing',
+        'Hiding the diagnosis from your child as they grow',
+        'Letting one trajectory narrative crowd out others'
+      ]
+    },
+    {
+      id: 'aff3',
+      audience: 'Parents of teenagers transitioning to leading IEP',
+      keyMessage: 'Stepping back is hard. Your role becomes coach, not lead.',
+      whatToKnow: [
+        'Your teen needs to learn to lead',
+        'You can coach behind the scenes',
+        'You can speak when invited',
+        'You should advocate for their voice to be heard'
+      ],
+      firstSteps: [
+        'Practice IEP meetings at home',
+        'Have your teen draft their goals',
+        'Email teachers WITH your teen, not for them',
+        'Step back from making the appointments',
+        'Be the soft place to land when things go wrong'
+      ],
+      commonPitfalls: [
+        'Stepping back too fast',
+        'Not stepping back at all',
+        'Speaking for them in meetings',
+        'Punishing their advocacy mistakes instead of learning from them'
+      ]
+    },
+    {
+      id: 'aff4',
+      audience: 'Parents whose child is having a behavior crisis at school',
+      keyMessage: 'Behavior is communication. Find the message.',
+      whatToKnow: [
+        'Punishment without understanding rarely works',
+        'FBA + BIP is the structured approach',
+        'Manifestation determination protects against unfair discipline',
+        'You can request services and supports'
+      ],
+      firstSteps: [
+        'Request FBA in writing',
+        'Document each incident from your child\'s perspective',
+        'Request meetings before discipline finalized',
+        'Connect with mental health support'
+      ],
+      commonPitfalls: [
+        'Accepting suspensions as inevitable',
+        'Not requesting manifestation determination when discipline accumulates',
+        'Punishing at home for school behavior (often makes it worse)',
+        'Believing the school is the only narrative'
+      ]
+    },
+    {
+      id: 'aff5',
+      audience: 'Parents of multiply marginalized students',
+      keyMessage: 'Schools may treat your child differently based on multiple identities.',
+      whatToKnow: [
+        'Discipline disparities are documented across race and disability',
+        'LGBTQ disabled students face specific risks',
+        'Multiple identities = multiple advocacy fronts',
+        'You may need outside advocates'
+      ],
+      firstSteps: [
+        'Connect with community organizations that share your identity',
+        'Document patterns of discipline or treatment',
+        'Find a Black Disability or LGBTQ Disability community',
+        'Build relationships before crises'
+      ],
+      commonPitfalls: [
+        'Believing the school cannot be biased',
+        'Picking one identity to focus advocacy on',
+        'Not finding outside advocates until crisis hits'
+      ]
+    }
+  ];
+var ADVOCACY_FOR_EDUCATORS = [
+    {
+      id: 'afe1',
+      audience: 'New special education teachers',
+      keyMessage: 'You are part of the team. Your job is to support, not to fix.',
+      whatToKnow: [
+        'Students have rights you must honor',
+        'Parents are partners, not adversaries',
+        'IEPs are legally binding',
+        'Documentation protects everyone'
+      ],
+      firstSteps: [
+        'Read each student\'s IEP fully in week one',
+        'Meet each student individually in first 2 weeks',
+        'Establish communication channels with families',
+        'Set up systems for accommodation tracking'
+      ],
+      commonPitfalls: [
+        'Treating IEP as paperwork',
+        'Not implementing accommodations consistently',
+        'Defensive posture with families',
+        'Not documenting incidents in real-time'
+      ]
+    },
+    {
+      id: 'afe2',
+      audience: 'General education teachers with IEP students',
+      keyMessage: 'You are critical to IEP success. Without you, accommodations do not happen.',
+      whatToKnow: [
+        'IEPs are legally binding for you too',
+        'You can request training and support',
+        'Students cannot succeed without your buy-in',
+        'You are not expected to know everything'
+      ],
+      firstSteps: [
+        'Read IEPs of your students',
+        'Meet case manager early',
+        'Set up accommodation tracking system',
+        'Ask questions of case manager when unsure'
+      ],
+      commonPitfalls: [
+        'Forgetting accommodations',
+        'Treating IEP students differently in ways that single them out',
+        'Not communicating with case manager about issues',
+        'Believing accommodations are unfair to other students'
+      ]
+    },
+    {
+      id: 'afe3',
+      audience: 'School counselors',
+      keyMessage: 'You are the bridge between mental health, academic, and family systems.',
+      whatToKnow: [
+        'Many disabled students need mental health support',
+        'Your role in IEP meetings can be powerful',
+        'Crisis response protocols matter',
+        'You hold student trust'
+      ],
+      firstSteps: [
+        'Build relationships with disability community',
+        'Stay current on disability identity research',
+        'Establish school-wide crisis response',
+        'Make office an actually accessible space'
+      ],
+      commonPitfalls: [
+        'Centering parents instead of students',
+        'Outing LGBTQ students',
+        'Not communicating with special education team',
+        'Not following through after crisis'
+      ]
+    },
+    {
+      id: 'afe4',
+      audience: 'Principals and administrators',
+      keyMessage: 'Your school\'s climate for disabled students is shaped by your leadership.',
+      whatToKnow: [
+        'Discipline disparities are your responsibility',
+        'IDEA compliance is non-negotiable',
+        'Disability is core to school equity work',
+        'Disabled student voice matters in policy'
+      ],
+      firstSteps: [
+        'Audit discipline data by disability and race',
+        'Establish parent and student advisory groups',
+        'Train all staff annually on disability rights',
+        'Set climate goals around inclusion'
+      ],
+      commonPitfalls: [
+        'Letting individual teachers override IEPs',
+        'Not addressing discipline patterns',
+        'Token inclusion without systems change',
+        'Avoiding hard family conversations'
+      ]
+    }
+  ];
+var FAMILY_AND_PARENT_EDUCATION = [
+    {
+      id: 'fpe1',
+      audience: 'Parents new to disability',
+      topic: 'How to talk to your child about their diagnosis',
+      keyPoints: [
+        'Be honest. Hiding the diagnosis is harder than naming it.',
+        'Use the actual word (autistic, ADHD, dyslexic) not euphemisms.',
+        'Talk about what it means functionally, not just clinically.',
+        'Connect them with community of people who share the diagnosis.',
+        'Make space for grief and questions.'
+      ],
+      whatNotToDo: [
+        'Frame it as something to overcome or hide',
+        'Compare to non-disabled siblings',
+        'Promise it will go away',
+        'Frame it primarily as tragedy'
+      ],
+      sampleDialogue: [
+        { speaker: 'Parent', text: 'I want to tell you something. You know how things have been hard at school?' },
+        { speaker: 'Child', text: 'Yeah.' },
+        { speaker: 'Parent', text: 'There is a word for what is going on. You are dyslexic. It means your brain works differently when it reads. It does not mean you are not smart. It just means we need different tools for you. There are lots of dyslexic adults who do amazing things.' }
+      ]
+    },
+    {
+      id: 'fpe2',
+      audience: 'Parents preparing for first IEP',
+      topic: 'What to bring and what to expect',
+      keyPoints: [
+        'Bring: your notebook, any concerns in writing, any data you have, copies of relevant medical info',
+        'Expect: introductions, review of evaluation, discussion of eligibility, drafting of goals, services, and placement',
+        'You can: request copies of documents, ask questions, refuse to sign on the spot',
+        'You should: stay engaged, take notes, ask for clarification'
+      ],
+      timeline: 'Typically 60-90 minutes. May be longer for first meeting.',
+      tips: [
+        'Bring another adult if possible',
+        'Ask for the document in advance',
+        'Do not feel rushed to sign',
+        'Follow up in writing'
+      ]
+    },
+    {
+      id: 'fpe3',
+      audience: 'Parents during a school crisis',
+      topic: 'How to respond to a phone call about your child',
+      keyPoints: [
+        'Stay calm. The school is calling because they need your input.',
+        'Ask specific questions: what happened, who saw, what time, what response',
+        'Do not commit to actions on the phone',
+        'Ask for documentation in writing'
+      ],
+      sampleResponse: [
+        '"Thank you for letting me know. Could you share with me in writing what happened and what action you are proposing? I want to be sure I understand fully before responding."'
+      ],
+      whatNotToSay: [
+        '"I will punish him at home"',
+        '"You can suspend him"',
+        '"I will keep him home"'
+      ]
+    },
+    {
+      id: 'fpe4',
+      audience: 'Parents whose child is transitioning to college',
+      topic: 'Stepping back from advocacy role',
+      keyPoints: [
+        'Your role shifts from primary advocate to coach',
+        'Help your student learn to self-register, self-disclose, self-request',
+        'Resist the urge to call the college on their behalf',
+        'Be the safe place when they call you'
+      ],
+      sampleConversations: [
+        { topic: 'When student asks you to call DSS', response: 'I can help you draft what to say but you need to make the call.' },
+        { topic: 'When student is overwhelmed', response: 'I am here. Let me help you think through what to do.' },
+        { topic: 'When student wants to drop a class', response: 'Tell me more. Have you talked to the professor? To DSS?' }
+      ]
+    },
+    {
+      id: 'fpe5',
+      audience: 'Parents of multiply marginalized students',
+      topic: 'Advocating across identity systems',
+      keyPoints: [
+        'Your child may experience multiple types of bias',
+        'Disability + race, disability + LGBTQ, disability + class - all combine',
+        'Track patterns specifically',
+        'Connect with community organizations that share your identity'
+      ],
+      caution: 'Schools may treat your child differently based on assumptions about their multiple identities. Document. Compare to data on other students.'
+    },
+    {
+      id: 'fpe6',
+      audience: 'Parents with limited English',
+      topic: 'Your rights to translation and interpretation',
+      keyPoints: [
+        'School must provide interpreter on request',
+        'Notice of meetings must be in your native language',
+        'IEP must be translated if requested',
+        'Refuse to sign documents you cannot read',
+        'Connect with bilingual advocate'
+      ],
+      sampleRequest: 'I need an interpreter for our meetings and translated documents. Please confirm in writing how the school will provide this.'
+    },
+    {
+      id: 'fpe7',
+      audience: 'Foster and adoptive parents',
+      topic: 'Special education and foster youth',
+      keyPoints: [
+        'Federal law (Fostering Connections Act) protects educational stability',
+        'Foster youth have priority for special education services',
+        'You may be the educational advocate, even if not legal guardian',
+        'Trauma-informed approach is essential'
+      ],
+      specialConsiderations: [
+        'Records may be incomplete or scattered',
+        'Multiple placements complicate IEP continuity',
+        'You may not have full medical history',
+        'Adverse childhood experiences are common'
+      ]
+    },
+    {
+      id: 'fpe8',
+      audience: 'Grandparents raising grandchildren',
+      topic: 'Your role and rights',
+      keyPoints: [
+        'You may be acting as legal guardian or surrogate parent',
+        'You have right to attend IEP meetings if so',
+        'You may need to update emergency contacts',
+        'Connect with state grandparent support'
+      ],
+      legalNotes: 'Educational rights of grandparents vary by state. Check with local resources.'
+    }
+  ];
+var FRIENDSHIP_AUDIT_QUESTIONS = [
+    { id: 'fa1', category: 'safety', q: 'Does this person make me feel physically safe?' },
+    { id: 'fa2', category: 'safety', q: 'Does this person respect my no?' },
+    { id: 'fa3', category: 'safety', q: 'Does this person stop touching me when I ask?' },
+    { id: 'fa4', category: 'safety', q: 'Does this person pressure me to do things I would not choose alone?' },
+    { id: 'fa5', category: 'safety', q: 'Can I tell this person something hard without fear of being mocked?' },
+    { id: 'fa6', category: 'reciprocity', q: 'Does this person ask about me, not just talk about themselves?' },
+    { id: 'fa7', category: 'reciprocity', q: 'When I share something hard, does this person sit with it?' },
+    { id: 'fa8', category: 'reciprocity', q: 'Does this person celebrate my wins?' },
+    { id: 'fa9', category: 'reciprocity', q: 'Does this person help when I need help, or only when convenient for them?' },
+    { id: 'fa10', category: 'reciprocity', q: 'Have I helped them recently? Did they receive it well?' },
+    { id: 'fa11', category: 'reciprocity', q: 'Do we both bring up plans, or only one of us?' },
+    { id: 'fa12', category: 'truth', q: 'Does this person tell me hard truths when I need them?' },
+    { id: 'fa13', category: 'truth', q: 'Does this person let me tell hard truths back?' },
+    { id: 'fa14', category: 'truth', q: 'Can we apologize to each other and move forward?' },
+    { id: 'fa15', category: 'truth', q: 'Does this person try to control my view of myself?' },
+    { id: 'fa16', category: 'truth', q: 'Does this person try to control my view of others I love?' },
+    { id: 'fa17', category: 'identity', q: 'Does this person know my disability / identity / story?' },
+    { id: 'fa18', category: 'identity', q: 'Does this person respect that knowledge?' },
+    { id: 'fa19', category: 'identity', q: 'Does this person treat my accommodations as normal?' },
+    { id: 'fa20', category: 'identity', q: 'Does this person introduce me to others well?' },
+    { id: 'fa21', category: 'identity', q: 'Does this person speak well of me when I am not in the room?' },
+    { id: 'fa22', category: 'growth', q: 'Am I growing in this friendship?' },
+    { id: 'fa23', category: 'growth', q: 'Is this person growing in this friendship?' },
+    { id: 'fa24', category: 'growth', q: 'Do I dread seeing this person sometimes?' },
+    { id: 'fa25', category: 'growth', q: 'Do I leave conversations with them feeling better or worse?' },
+    { id: 'fa26', category: 'growth', q: 'In a year, do I want to be more like this person?' },
+    { id: 'fa27', category: 'community', q: 'Does this person know my other friends?' },
+    { id: 'fa28', category: 'community', q: 'Is this person jealous of other friends?' },
+    { id: 'fa29', category: 'community', q: 'Has this person tried to isolate me?' },
+    { id: 'fa30', category: 'community', q: 'Does this person fit into the larger network of people I want around me?' },
+    { id: 'fa31', category: 'time', q: 'Have we spent quality (not just quantity) time recently?' },
+    { id: 'fa32', category: 'time', q: 'Is this person a daily friend, a weekly friend, a monthly friend, or a yearly friend? Is that right?' },
+    { id: 'fa33', category: 'time', q: 'Have we drifted? Is the drift natural or worrying?' },
+    { id: 'fa34', category: 'effort', q: 'Who initiates most often?' },
+    { id: 'fa35', category: 'effort', q: 'Is the effort even? If not, am I okay with that?' },
+    { id: 'fa36', category: 'conflict', q: 'How do we handle conflict?' },
+    { id: 'fa37', category: 'conflict', q: 'Have we ever repaired after a fight?' },
+    { id: 'fa38', category: 'conflict', q: 'Does this person give me silent treatment?' },
+    { id: 'fa39', category: 'conflict', q: 'Have I given them silent treatment?' },
+    { id: 'fa40', category: 'conflict', q: 'Can we disagree and still be friends?' },
+    { id: 'fa41', category: 'energy', q: 'Do I feel energized after spending time with this person?' },
+    { id: 'fa42', category: 'energy', q: 'Do I feel drained after spending time with this person?' },
+    { id: 'fa43', category: 'energy', q: 'If drained, is it the type of drained I can recover from?' },
+    { id: 'fa44', category: 'patterns', q: 'Is there a pattern of forgetting my needs?' },
+    { id: 'fa45', category: 'patterns', q: 'Is there a pattern of canceling on me?' },
+    { id: 'fa46', category: 'patterns', q: 'Is there a pattern of crisis that I am asked to manage?' },
+    { id: 'fa47', category: 'patterns', q: 'Is there a pattern of mocking or putting me down?' },
+    { id: 'fa48', category: 'patterns', q: 'Is there a pattern of love-bombing followed by withdrawal?' },
+    { id: 'fa49', category: 'final', q: 'If I had no history with this person, would I choose them today?' },
+    { id: 'fa50', category: 'final', q: 'What is the friendship I deserve? Does this match?' }
+  ];
+var TRAUMA_INFORMED_ADVOCACY = [
+    {
+      id: 'tia1',
+      principle: 'Safety first',
+      whatItMeans: 'Physical and emotional safety must be established before deeper advocacy work.',
+      forStudents: [
+        'Identify safe people and spaces',
+        'Build regulation skills',
+        'Pace yourself in hard work'
+      ],
+      forAdults: [
+        'Predictable environments',
+        'No surprises in big conversations',
+        'Multiple safe people'
+      ]
+    },
+    {
+      id: 'tia2',
+      principle: 'Trust and transparency',
+      whatItMeans: 'Trust is earned through consistency. Information should be shared openly.',
+      forStudents: [
+        'Demand transparency from your team',
+        'Ask why decisions are being made',
+        'Choose providers who explain'
+      ],
+      forAdults: [
+        'Be clear about constraints',
+        'Share information that affects student',
+        'Honor confidentiality'
+      ]
+    },
+    {
+      id: 'tia3',
+      principle: 'Peer support',
+      whatItMeans: 'People with lived experience are often the most healing supports.',
+      forStudents: [
+        'Find peer communities',
+        'Be a peer supporter when ready',
+        'Recognize professional vs peer role'
+      ],
+      forAdults: [
+        'Connect students to peer-led communities',
+        'Hire peers as staff when possible',
+        'Center lived experience'
+      ]
+    },
+    {
+      id: 'tia4',
+      principle: 'Collaboration and mutuality',
+      whatItMeans: 'Power-sharing rather than power-over. Treating students as partners.',
+      forStudents: [
+        'Ask to be partner not patient',
+        'Bring your own data',
+        'Refuse top-down decisions'
+      ],
+      forAdults: [
+        'Listen first',
+        'Honor student priorities',
+        'Co-create plans'
+      ]
+    },
+    {
+      id: 'tia5',
+      principle: 'Empowerment and choice',
+      whatItMeans: 'Restoring agency to those who have lost it.',
+      forStudents: [
+        'Practice making decisions',
+        'Refuse coerced choices',
+        'Build self-trust'
+      ],
+      forAdults: [
+        'Offer real choices',
+        'Avoid coercion',
+        'Trust student knowledge'
+      ]
+    },
+    {
+      id: 'tia6',
+      principle: 'Cultural, historical, gender consideration',
+      whatItMeans: 'Trauma exists in cultural context. Identity matters.',
+      forStudents: [
+        'Find culturally aligned support',
+        'Honor your full identity',
+        'Connect with cultural community'
+      ],
+      forAdults: [
+        'Get culturally informed training',
+        'Hire diverse staff',
+        'Center marginalized students'
+      ]
+    }
+  ];
+
   window.SelHub.registerTool('advocacy', {
     icon: '\uD83D\uDCE2',
     label: 'Self-Advocacy Workshop',
@@ -20327,6 +14340,239 @@ window.SelHub = window.SelHub || {
             )
           )
         );
+      }
+
+
+      // ─── Wired-content helpers (2026-09-13) ─────────────────────────────
+      // Plain headings, lists and disclosures; buttons carry names and pressed
+      // state; every colour goes through the tool's theme mapper; no motion.
+      function _advW_txt(x) { return x && typeof x === 'object' && !Array.isArray(x) ? (x[band] || x.middle || x.elementary || x.high || '') : (x == null ? '' : String(x)); }
+      function _advW_label(k) { return String(k).replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, function(c) { return c.toUpperCase(); }); }
+      function _advW_panel(key, title, blurb, children, accent) {
+        var hid = '_advW-wired-' + key;
+        return h('section', { 'aria-labelledby': hid, style: { margin: '18px 12px 0', padding: 14, borderRadius: 12, background: _advBg('#1e293b'), borderLeft: '4px solid ' + (accent || '#a78bfa') } },
+          h('h3', { id: hid, style: { margin: '0 0 4px', fontSize: 15, fontWeight: 900, color: _advFg('#f1f5f9') } }, title),
+          blurb ? h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _advFg('#94a3b8'), lineHeight: 1.5 } }, blurb) : null,
+          children
+        );
+      }
+      function _advW_details(summary, body, key) {
+        return h('details', { key: key, style: { marginBottom: 6, borderRadius: 8, border: '1px solid ' + _advBd('#334155'), background: _advBg('#0f172a') } },
+          h('summary', { style: { cursor: 'pointer', padding: '10px 12px', fontSize: 13, fontWeight: 700, color: _advFg('#e2e8f0'), minHeight: 44, display: 'flex', alignItems: 'center' } }, summary),
+          h('div', { style: { padding: '0 12px 12px', fontSize: 12.5, color: _advFg('#cbd5e1'), lineHeight: 1.6 } }, body)
+        );
+      }
+      function _advW_any(v) {
+        if (v == null || v === '') return null;
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return h('p', { style: { margin: '2px 0' } }, String(v));
+        if (Array.isArray(v)) {
+          if (v.every(function(x) { return typeof x === 'string'; })) return h('ul', { style: { margin: '2px 0', paddingLeft: 18 } }, v.map(function(x, i) { return h('li', { key: i }, x); }));
+          return h('div', null, v.map(function(x, i) { return h('div', { key: i, style: { marginBottom: 6 } }, _advW_any(x)); }));
+        }
+        return h('dl', { style: { margin: '2px 0' } }, Object.keys(v).filter(function(k) { return k !== 'id'; }).map(function(k) {
+          return h('div', { key: k, style: { marginBottom: 4 } }, h('dt', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: _advFg('#94a3b8') } }, _advW_label(k)), h('dd', { style: { margin: 0 } }, _advW_any(v[k])));
+        }));
+      }
+      function _advW_kv(label, value, tone) {
+        if (value == null || value === '' || (Array.isArray(value) && !value.length)) return null;
+        return h('div', { style: { marginTop: 6 } },
+          h('div', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: _advFg(tone || '#94a3b8') } }, label),
+          _advW_any(value)
+        );
+      }
+      // One library entry as a disclosure: the first present title key is the summary,
+      // every other field is a labelled block (arrays as lists, nested objects as term lists).
+      function _advW_entry(item, titleKeys, key) {
+        var tk = null;
+        for (var i = 0; i < titleKeys.length; i++) { if (item[titleKeys[i]]) { tk = titleKeys[i]; break; } }
+        var title = tk ? _advW_txt(item[tk]) : ('Entry ' + (key || ''));
+        var body = Object.keys(item).filter(function(k) { return k !== 'id' && k !== tk; }).map(function(k) {
+          var v = item[k];
+          if (Array.isArray(v) && v.length && typeof v[0] === 'string' && v.every(function(x) { return x === '' || typeof x === 'string'; }) && k === 'narrative') {
+            return h('div', { key: k, style: { marginTop: 6 } }, v.filter(Boolean).map(function(line, j) { return h('p', { key: j, style: { margin: '0 0 6px' } }, line); }));
+          }
+          return h('div', { key: k }, _advW_kv(_advW_label(k), v));
+        });
+        return _advW_details(title, h('div', null, body), key || title);
+      }
+      function _advW_library(list, titleKeys, cap) {
+        var arr = Array.isArray(list) ? list : [];
+        var seen = {};
+        var out = [];
+        for (var i = 0; i < arr.length && out.length < (cap || 60); i++) {
+          var it = arr[i]; if (!it || typeof it !== 'object') continue;
+          var t = ''; for (var j = 0; j < titleKeys.length; j++) { if (it[titleKeys[j]]) { t = _advW_txt(it[titleKeys[j]]); break; } }
+          if (t && seen[t]) continue; seen[t] = true;
+          out.push(_advW_entry(it, titleKeys, it.id || ('e' + i)));
+        }
+        return out;
+      }
+      // A single card drawn from a bank, with "Another one". Seed lives in tool data so it survives re-render.
+      function _advW_deck(key, items, mainKey, subKeys, blurb, accent) {
+        var arr = (Array.isArray(items) ? items : []).filter(Boolean);
+        if (!arr.length) return null;
+        var seedKey = 'wiredSeed_' + key;
+        var idx = ((d[seedKey] || 0) + Math.floor(Date.now() / 86400000)) % arr.length;
+        var it = arr[idx];
+        var main = typeof it === 'string' ? it : _advW_txt(it[mainKey]);
+        return h('div', { style: { padding: 12, borderRadius: 10, background: _advBg('#0f172a'), border: '1px solid ' + _advBd('#334155') } },
+          blurb ? h('p', { style: { margin: '0 0 6px', fontSize: 11, color: _advFg('#94a3b8') } }, blurb) : null,
+          h('p', { style: { margin: '0 0 8px', fontSize: 15, fontStyle: 'italic', color: _advFg('#f1f5f9'), lineHeight: 1.5 } }, '\u201C' + main + '\u201D'),
+          typeof it === 'object' ? (subKeys || []).map(function(k) { return it[k] ? h('div', { key: k, style: { fontSize: 12, color: _advFg('#cbd5e1'), marginBottom: 2 } }, h('strong', null, _advW_label(k) + ': '), _advW_txt(it[k])) : null; }) : null,
+          h('button', { onClick: function() { var patch = {}; patch[seedKey] = (d[seedKey] || 0) + 1; upd(patch); if (typeof announceToSR === 'function') announceToSR('Showing another one'); },
+            style: { marginTop: 6, minHeight: 40, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _advBd('#475569'), background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Another one')
+        );
+      }
+      function _advW_chips(key, options, current, onPick, label) {
+        return h('div', { role: 'group', 'aria-label': label, style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+          options.map(function(o) {
+            var on = current === o;
+            return h('button', { key: o, onClick: function() { onPick(o); }, 'aria-pressed': on ? 'true' : 'false',
+              style: { minHeight: 36, padding: '6px 12px', borderRadius: 999, border: '1px solid ' + (on ? _advFg('#5eead4') : _advBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : _advBg('#0f172a'), color: on ? _advFg('#5eead4') : _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, _advW_label(o));
+          })
+        );
+      }
+
+      // My Kit: power-up cards and a practice ladder.
+      if (activeTab === 'mykit' && myKitContent) {
+        var used = Array.isArray(d.powerUpsUsed) ? d.powerUpsUsed : [];
+        var rarity = d.powerRarity || 'all';
+        var cards = POWER_UP_CARDS.filter(function(c) { return rarity === 'all' || c.rarity === rarity; });
+        var rarities = ['all'].concat(POWER_UP_CARDS.map(function(c) { return c.rarity; }).filter(function(x, i, a) { return x && a.indexOf(x) === i; }));
+        var pool = DAILY_PRACTICE_PROMPTS;
+        myKitContent = h('div', null, myKitContent,
+          _advW_panel('powerups', 'Power-up cards', 'Small moves you can pull out in a hard moment. Open one, try it in real life, then mark it used. Three real uses unlock it for good.',
+            h('div', null,
+              _advW_chips('rarity', rarities, rarity, function(o) { upd({ powerRarity: o }); }, 'Card rarity'),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: _advFg('#94a3b8') } }, used.length + ' of ' + POWER_UP_CARDS.length + ' cards used at least once'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
+                cards.slice(0, 24).map(function(c) {
+                  var on = used.indexOf(c.id) !== -1;
+                  return h('div', { key: c.id, style: { padding: 10, borderRadius: 10, background: _advBg('#0f172a'), border: '1px solid ' + (on ? _advFg('#5eead4') : _advBd('#334155')) } },
+                    h('div', { style: { fontWeight: 800, fontSize: 13, color: _advFg('#f1f5f9') } }, (c.icon || '') + ' ' + c.name, h('span', { style: { fontSize: 10, marginLeft: 6, color: _advFg('#94a3b8'), fontWeight: 600 } }, c.rarity)),
+                    h('div', { style: { fontSize: 12, color: _advFg('#cbd5e1'), marginTop: 4 } }, c.useWhen),
+                    _advW_details('How to use it', h('div', null, _advW_kv('How to', c.howTo), _advW_kv('Why it works', c.whyItWorks), _advW_kv('Unlocks with', c.unlocksWith)), c.id + '-d'),
+                    h('button', { onClick: function() { upd({ powerUpsUsed: on ? used.filter(function(x) { return x !== c.id; }) : used.concat([c.id]) }); if (typeof announceToSR === 'function') announceToSR((on ? 'Unmarked ' : 'Marked used: ') + c.name); }, 'aria-pressed': on ? 'true' : 'false',
+                      style: { marginTop: 6, minHeight: 36, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (on ? _advFg('#5eead4') : _advBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : 'transparent', color: on ? _advFg('#5eead4') : _advFg('#e2e8f0'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, on ? '\u2713 Used it' : 'I used this')
+                  );
+                })
+              )
+            ), '#a78bfa'),
+          _advW_panel('ladder', 'Practice ladder', 'Each skill has a warm-up, a real task, and the evidence that you did it. Start at the rung you can reach today.',
+            _advW_library(SCAFFOLDED_PRACTICE_LIBRARY, ['skill'], 12), '#fbbf24'),
+          _advW_panel('daily', 'One practice for today', null, _advW_deck('daily', pool, 'prompt', ['focus'], 'A small thing to try before the day is out.', null), '#22c55e'));
+      }
+      // Scenarios: what to do when things go wrong.
+      if (activeTab === 'scenarios' && scenariosContent) {
+        var trigCat = d.trigCategory || 'all';
+        var trigCats = ['all'].concat(TRIGGERS_AND_RESPONSES.map(function(t) { return t.category; }).filter(function(x, i, a) { return x && a.indexOf(x) === i; }));
+        scenariosContent = h('div', null, scenariosContent,
+          _advW_panel('firstaid', 'Right now: first aid for hard moments', 'Short plans for the next ten minutes. Pick the one that matches, do the first step, then decide the next.',
+            _advW_library(CRISIS_FIRST_AID, ['situation'], 30), '#ef4444'),
+          _advW_panel('triggers', 'Triggers and what to do', 'What tends to set things off, what it looks like from the outside, and the support you could ask for.',
+            h('div', null, _advW_chips('trigcat', trigCats, trigCat, function(o) { upd({ trigCategory: o }); }, 'Trigger category'),
+              _advW_library(TRIGGERS_AND_RESPONSES.filter(function(t) { return trigCat === 'all' || t.category === trigCat; }), ['trigger'], 30)), '#f59e0b'),
+          _advW_panel('morescen', 'More situations, step by step', 'Longer scenarios with who is involved, what you need to know, and a strong response.',
+            _advW_library([].concat(SCENARIO_BANK, FULL_ADVOCACY_SCENARIO_LIBRARY), ['title', 'situation'], 24), '#0ea5e9'));
+      }
+      // Scripts: more words for real moments.
+      if (activeTab === 'advocacy_scripts' && advocacyScriptsContent) {
+        advocacyScriptsContent = h('div', null, advocacyScriptsContent,
+          _advW_panel('scripts', 'More scripts for real moments', 'Say them out loud once before you need them. Change any word that does not sound like you.',
+            h('div', null,
+              _advW_library(ADVOCACY_SCRIPT_LIBRARY_EXTENDED, ['context'], 30),
+              h('h4', { style: { margin: '12px 0 6px', fontSize: 13, color: _advFg('#e2e8f0') } }, 'Dialogues with the key moves marked'),
+              _advW_library(ADVOCACY_DIALOGUE_LIBRARY, ['scenario'], 10),
+              h('h4', { style: { margin: '12px 0 6px', fontSize: 13, color: _advFg('#e2e8f0') } }, 'When you are the ally'),
+              _advW_library(ALLY_SCRIPTS, ['situation'], 10)
+            ), '#22c55e'));
+      }
+      // Rights: Maine and federal, with the caveat that matters.
+      if (activeTab === 'rights' && rightsContent) {
+        rightsContent = h('div', null, rightsContent,
+          _advW_panel('maine', 'Know your rights in Maine', 'Written for students and families in Maine. Laws and regulations change; treat this as a map of what to ask about, not legal advice, and check the current text at the source each entry names.',
+            h('div', null,
+              _advW_library(MAINE_SPECIFIC_RIGHTS, ['shortName', 'law'], 12),
+              h('h4', { style: { margin: '12px 0 6px', fontSize: 13, color: _advFg('#e2e8f0') } }, 'Federal laws in plain words'),
+              _advW_library(LEGISLATIVE_AND_POLICY_PRIMER, ['law'], 10),
+              h('h4', { style: { margin: '12px 0 6px', fontSize: 13, color: _advFg('#e2e8f0') } }, 'IEP words, explained'),
+              _advW_library(IEP_GLOSSARY_DEEP, ['term'], 12),
+              h('h4', { style: { margin: '12px 0 6px', fontSize: 13, color: _advFg('#e2e8f0') } }, 'Trauma-informed advocacy'),
+              _advW_library(TRAUMA_INFORMED_ADVOCACY, ['principle'], 6)
+            ), '#0ea5e9'));
+      }
+      // Vocabulary: words that hurt, and a fuller glossary.
+      if (activeTab === 'vocabulary' && vocabContent) {
+        vocabContent = h('div', null, vocabContent,
+          _advW_panel('hurt', 'Words that hurt, and what to say instead', 'Why a word lands the way it does, what to say instead, and how to respond if it is aimed at you.',
+            _advW_library(WORDS_THAT_HURT, ['term'], 55), '#ef4444'),
+          _advW_panel('glossary', 'More advocacy words', null, _advW_library(ADVOCACY_GLOSSARY_FINAL, ['term'], 50), '#94a3b8'));
+      }
+      // Journal: prompts with depth.
+      if (activeTab === 'journal' && journalContent) {
+        journalContent = h('div', null, journalContent,
+          _advW_panel('prompts', 'A prompt to write from', null,
+            h('div', null,
+              _advW_deck('journal', [].concat(ADVOCACY_JOURNAL_PROMPTS, REFLECTION_PROMPTS_EXTENDED, FINAL_REFLECTION_PROMPTS), 'prompt', ['depth', 'category', 'example'], 'Weekly and reflection prompts, drawn at random.', null),
+              _advW_details('Browse all prompts', h('div', null, _advW_library([].concat(ADVOCACY_JOURNAL_PROMPTS, REFLECTION_PROMPTS_EXTENDED, FINAL_REFLECTION_PROMPTS), ['prompt'], 70)), 'all-prompts')
+            ), '#a78bfa'));
+      }
+      // Voice: mentors, quotes, affirmations.
+      if (activeTab === 'voice' && voiceContent) {
+        voiceContent = h('div', null, voiceContent,
+          _advW_panel('voices', 'Voices to borrow when yours is quiet', 'Words from people who advocated before you. Use them when you need them; put them down when you do not.',
+            h('div', null,
+              _advW_deck('mentor', MENTOR_QUOTES, 'quote', ['mentor', 'context', 'useWhen', 'followup'], 'A mentor quote.', null),
+              h('div', { style: { height: 8 } }),
+              _advW_deck('quote', ADVOCACY_QUOTES_LIBRARY, 'quote', ['author'], 'A quote from the movement.', null),
+              h('div', { style: { height: 8 } }),
+              _advW_deck('affirm', ADVOCACY_AFFIRMATION_LIBRARY, 'affirmation', ['category'], 'An affirmation. Say it once, out loud.', null)
+            ), '#f59e0b'));
+      }
+      // Case studies: history.
+      if (activeTab === 'casestudies' && caseStudiesContent) {
+        caseStudiesContent = h('div', null, caseStudiesContent,
+          _advW_panel('history', 'How we got here: disability advocacy history', 'Moments and eras, with why each still matters. Dates are as authored; check a source before quoting one.',
+            h('div', null, _advW_library(ADVOCACY_HISTORY_TIMELINE, ['event'], 28), h('h4', { style: { margin: '12px 0 6px', fontSize: 13, color: _advFg('#e2e8f0') } }, 'Eras'), _advW_library(DISABILITY_HISTORY_DEEP, ['title', 'era'], 10)), '#94a3b8'));
+      }
+      // Letters: talking with family; guidance for adults.
+      if (activeTab === 'letterLib' && letterLibContent) {
+        letterLibContent = h('div', null, letterLibContent,
+          _advW_panel('family', 'Talking with your family about what you need', 'How to open, the main point, and what they might say back.',
+            _advW_library(FAMILY_CONVERSATION_PREP, ['topic'], 20), '#22c55e'),
+          _advW_panel('adults', 'For families and educators', 'Written for the adults in a student\u2019s life.',
+            _advW_library([].concat(ADVOCACY_FOR_FAMILIES, ADVOCACY_FOR_EDUCATORS, FAMILY_AND_PARENT_EDUCATION), ['topic', 'audience'], 20), '#0ea5e9'));
+      }
+      // Strengths: a friendship audit.
+      if (activeTab === 'strengths' && strengthsContent) {
+        var fa = d.friendshipAudit && typeof d.friendshipAudit === 'object' ? d.friendshipAudit : {};
+        var faCat = d.faCategory || 'all';
+        var faCats = ['all'].concat(FRIENDSHIP_AUDIT_QUESTIONS.map(function(q) { return q.category; }).filter(function(x, i, a) { return x && a.indexOf(x) === i; }));
+        var faList = FRIENDSHIP_AUDIT_QUESTIONS.filter(function(q) { return faCat === 'all' || q.category === faCat; });
+        var yes = FRIENDSHIP_AUDIT_QUESTIONS.filter(function(q) { return fa[q.id] === 'yes'; }).length;
+        var no = FRIENDSHIP_AUDIT_QUESTIONS.filter(function(q) { return fa[q.id] === 'no'; }).length;
+        strengthsContent = h('div', null, strengthsContent,
+          _advW_panel('friendship', 'Friendship audit', 'Think of one friendship. Answer honestly; nobody sees this but you. A lot of "no" answers is information, not a verdict on you.',
+            h('div', null,
+              _advW_chips('facat', faCats, faCat, function(o) { upd({ faCategory: o }); }, 'Question category'),
+              h('p', { role: 'status', style: { margin: '0 0 8px', fontSize: 12, color: _advFg('#cbd5e1') } }, yes + ' yes, ' + no + ' no, ' + (FRIENDSHIP_AUDIT_QUESTIONS.length - yes - no) + ' unanswered'),
+              h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } },
+                faList.map(function(q) {
+                  var v = fa[q.id] || '';
+                  function set(val) { var next = Object.assign({}, fa); if (v === val) delete next[q.id]; else next[q.id] = val; upd({ friendshipAudit: next }); }
+                  return h('li', { key: q.id, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' } },
+                    h('span', { id: 'fa-' + q.id, style: { flex: '1 1 220px', fontSize: 13, color: _advFg('#e2e8f0') } }, q.q),
+                    h('div', { role: 'group', 'aria-labelledby': 'fa-' + q.id, style: { display: 'flex', gap: 4 } },
+                      ['yes', 'no'].map(function(val) {
+                        var on = v === val;
+                        return h('button', { key: val, onClick: function() { set(val); }, 'aria-pressed': on ? 'true' : 'false',
+                          style: { minHeight: 36, minWidth: 48, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (on ? _advFg('#5eead4') : _advBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : _advBg('#0f172a'), color: on ? _advFg('#5eead4') : _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, val === 'yes' ? 'Yes' : 'No');
+                      })
+                    )
+                  );
+                })
+              )
+            ), '#ec4899'));
       }
 
       var content = myKitContent || strengthsContent || phraseLibContent || accomLibContent || caseStudiesContent || vocabContent || journalContent || convoSimContent || bingoContent || identityCardsContent || letterLibContent || scenariosContent || roleplayContent || accomContent || disclosureContent || scriptsContent || advocacyScriptsContent || rightsContent || knowquizContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent || printContent;

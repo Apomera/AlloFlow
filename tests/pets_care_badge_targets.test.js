@@ -28,8 +28,10 @@ function extractFunction(name) {
 }
 
 const evaluateCareWelfare = extractFunction('evaluateCareWelfare');
+// Every domain above the 70 floor AND averaging above the 80 floor, but
+// with one domain under 80 so the verdict is "target met", not "excellent".
 const strongWelfare = {
-  phys: 75, ment: 75, soc: 75, env: 75,
+  phys: 78, ment: 84, soc: 86, env: 82,
   money: 100, lowMoney: false, en: 50, tiredCare: 0,
 };
 
@@ -44,9 +46,19 @@ describe('Pets Lab - Care Sim badge target clarity', () => {
     expect(SRC).toContain('This check is provisional until the week ends');
   });
 
+  it('an adequate week that clears 70 everywhere but averages under 80 is not a successful week', () => {
+    const adequate = evaluateCareWelfare({ ...strongWelfare, phys: 72, ment: 75, soc: 78, env: 74 });
+    expect(adequate.minimum).toBe(72);
+    expect(adequate.welfareTarget).toBe(false);
+    expect(adequate.sustainable).toBe(true);
+    expect(adequate.verdict).toContain('Adequate is not the same as good');
+    expect(adequate.verdict).not.toContain('Badge target met');
+    expect(SRC).toContain('and average 80% or more');
+  });
+
   it('does not describe an energy-only miss as a successful week', () => {
     const outcome = evaluateCareWelfare({ ...strongWelfare, en: 20 });
-    expect(outcome.minimum).toBe(75);
+    expect(outcome.minimum).toBe(78);
     expect(outcome.moneySustainable).toBe(true);
     expect(outcome.finishedAboveEnergyTarget).toBe(false);
     expect(outcome.avoidedExhaustedCare).toBe(true);

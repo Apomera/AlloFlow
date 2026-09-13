@@ -65,6 +65,47 @@ window.SelHub = window.SelHub || {
   // ── Emotion Wheel Data ──
   // Each primary emotion has secondary/nuanced emotions beneath it
   // ══════════════════════════════════════════════════════════════
+  // ─── Optional illustrations (2026-09-13) ───────────────────────────────
+  // Emoji are the built-in glyphs. If sel_hub/media/emotions/manifest.json is
+  // published next to this script, feelings and families that have an image
+  // there render the image instead (text-free art, one per feeling; see
+  // docs/SEL_EMOTIONS_IMAGES.md for the shot list). No manifest, or a feeling
+  // missing from it, falls back to the emoji. Emoji are aria-hidden either way:
+  // the feeling word is always printed beside the glyph, so a screen reader
+  // hears "proud", not "smiling face with smiling eyes proud".
+  var __alloEmotionsScriptUrl = (function() {
+    try { var c = document.currentScript; return c && c.src ? c.src : ''; } catch (e) { return ''; }
+  })();
+  var _emoImages = null; // null = not requested; false = requested (none yet); object = ready
+  function _emoManifestUrl() {
+    try {
+      if (__alloEmotionsScriptUrl) return new URL('media/emotions/manifest.json', __alloEmotionsScriptUrl).href;
+      return new URL('sel_hub/media/emotions/manifest.json', document.baseURI).href;
+    } catch (e) { return ''; }
+  }
+  function _emoLoadImages(onReady) {
+    if (_emoImages !== null) return;
+    _emoImages = false;
+    var url = _emoManifestUrl();
+    if (!url || typeof fetch !== 'function') return;
+    fetch(url, { cache: 'force-cache' }).then(function(r) { return r.ok ? r.json() : null; }).then(function(m) {
+      if (!m || typeof m !== 'object') return;
+      var families = m.families && typeof m.families === 'object' ? m.families : {};
+      var feelings = m.feelings && typeof m.feelings === 'object' ? m.feelings : {};
+      if (!Object.keys(families).length && !Object.keys(feelings).length) return;
+      _emoImages = { base: url.replace(/manifest\.json$/, ''), families: families, feelings: feelings };
+      if (typeof onReady === 'function') onReady();
+    }).catch(function() {});
+  }
+  // kind: 'families' | 'feelings'; key: family id or feeling word; alt: '' when the word is printed beside it.
+  function _emoGlyph(h, kind, key, emoji, size, alt) {
+    var file = _emoImages && _emoImages[kind] && _emoImages[kind][String(key).toLowerCase()];
+    if (file && /^[A-Za-z0-9_.-]+\.(webp|png|jpg|jpeg|svg)$/i.test(file)) {
+      return h('img', { src: _emoImages.base + file, alt: alt || '', width: size, height: size, loading: 'lazy', style: { width: size, height: size, objectFit: 'contain', borderRadius: Math.round(size / 5), flexShrink: 0 } });
+    }
+    return h('span', { 'aria-hidden': 'true', style: { fontSize: size, flexShrink: 0, lineHeight: 1 } }, emoji);
+  }
+
   var EMOTION_FAMILIES = [
     {
       id: 'happy', label: 'Happy', emoji: '\uD83D\uDE04', color: '#22c55e', bgLight: '#dcfce7',
@@ -14438,362 +14479,7 @@ window.SelHub = window.SelHub || {
 
   // ── Emotion Reflection Journal Templates ──
   // Templates for structured emotion journaling
-  var EMOTION_JOURNAL_TEMPLATES = [
-    {
-      id: 'quick_daily_checkin',
-      name: 'Quick Daily Check-In',
-      forWhat: 'A 2-3 minute daily entry to build emotional awareness without overhead',
-      prompts: [
-        { label: 'Date and time', placeholder: 'e.g., Tuesday morning', expectedLength: 'short' },
-        { label: 'Body weather (one word or image)', placeholder: 'e.g., heavy, foggy, light', expectedLength: 'short' },
-        { label: 'Top feeling right now', placeholder: 'one word', expectedLength: 'short' },
-        { label: 'Intensity 1-10', placeholder: 'just a number', expectedLength: 'short' },
-        { label: 'One thing happening today connected to this feeling', placeholder: 'one sentence', expectedLength: 'short' },
-        { label: 'One small thing I will do for myself today', placeholder: 'concrete', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Did naming the feeling shift it at all? (Even 1 percent counts.)',
-      variations: ['Voice memo version', 'Drawing version (no words)', 'Three-word version (state, body, need)'],
-      research: 'Daily emotion check-ins build emotional granularity (Barrett, 2017); affect labeling (Lieberman, 2007).'
-    },
-    {
-      id: 'end_of_day',
-      name: 'End-of-Day Reflection',
-      forWhat: 'Before sleep, to process and release the day',
-      prompts: [
-        { label: 'Strongest feeling of the day', placeholder: 'and when it peaked', expectedLength: 'short' },
-        { label: 'What triggered it', placeholder: 'specific event or context', expectedLength: 'medium' },
-        { label: 'What I felt I had to suppress today', placeholder: 'feelings I did not have space for', expectedLength: 'medium' },
-        { label: 'A moment I want to remember', placeholder: 'small or large', expectedLength: 'medium' },
-        { label: 'A moment I want to release', placeholder: 'something to set down before sleep', expectedLength: 'medium' },
-        { label: 'One person I am grateful for today', placeholder: 'and what they did or are', expectedLength: 'short' },
-        { label: 'What my body needs tonight', placeholder: 'rest, warmth, water, etc.', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Is there anything unfinished that I need to write down so I can sleep?',
-      variations: ['3-line version (high/low/lesson)', 'Audio version recorded before bed', 'Weekly version on Sundays'],
-      research: 'Expressive writing (Pennebaker, 1986); gratitude before sleep (Wood et al., 2009).'
-    },
-    {
-      id: 'after_a_fight',
-      name: 'After-a-Fight Processing',
-      forWhat: 'After a conflict, before sending a text or making a decision',
-      prompts: [
-        { label: 'What happened, in 3 sentences max', placeholder: 'just facts', expectedLength: 'medium' },
-        { label: 'What I felt during', placeholder: 'name all the feelings', expectedLength: 'medium' },
-        { label: 'What I feel now', placeholder: 'often different from during', expectedLength: 'medium' },
-        { label: 'What I wanted that I did not get', placeholder: 'be specific', expectedLength: 'medium' },
-        { label: 'What I think they wanted that they did not get', placeholder: 'generous interpretation', expectedLength: 'medium' },
-        { label: 'What I said or did that I wish I had not', placeholder: 'honest accounting', expectedLength: 'medium' },
-        { label: 'What I said or did that I am proud of', placeholder: 'even one thing', expectedLength: 'short' },
-        { label: 'What I want next, when I am calm', placeholder: 'repair, distance, conversation', expectedLength: 'medium' },
-        { label: 'What I will NOT do in the next 24 hours', placeholder: 'do not send, do not post, etc.', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Is there anything I need to say to myself before I can think about them?',
-      variations: ['Letter to the other person, unsent', 'Two-column: my view / their view', 'Voice memo to process aloud'],
-      research: 'Gottman repair work; expressive writing for conflict (Pennebaker); NVC (Rosenberg, 2003).'
-    },
-    {
-      id: 'after_a_loss',
-      name: 'After-a-Loss Processing',
-      forWhat: 'After a death, breakup, job loss, move, or major identity loss',
-      prompts: [
-        { label: 'What was lost', placeholder: 'name it specifically', expectedLength: 'short' },
-        { label: 'When did the loss happen', placeholder: 'time and context', expectedLength: 'short' },
-        { label: 'How does my body feel right now', placeholder: 'physical sensations', expectedLength: 'medium' },
-        { label: 'What feelings are present', placeholder: 'multiple are normal', expectedLength: 'medium' },
-        { label: 'What I miss most', placeholder: 'specific moments, sounds, smells', expectedLength: 'long' },
-        { label: 'What I am most grateful for', placeholder: 'about what was', expectedLength: 'long' },
-        { label: 'What feels unresolved', placeholder: 'words unsaid, things undone', expectedLength: 'medium' },
-        { label: 'What I want to carry forward', placeholder: 'continuing bond, lesson, value', expectedLength: 'medium' },
-        { label: 'What I need this week', placeholder: 'help, space, ritual, witness', expectedLength: 'medium' }
-      ],
-      closingQuestion: 'Who can I tell about this loss who will simply witness, not fix?',
-      variations: ['Letter to the lost (person, role, place)', 'Ritual planning version', 'Anniversary version'],
-      research: 'Worden\'s tasks of mourning (1991); continuing bonds (Klass, 1996); expressive writing and bereavement.'
-    },
-    {
-      id: 'anxious_spiral_interrupt',
-      name: 'Anxious-Spiral Interrupt',
-      forWhat: 'When you are catastrophizing, mind racing through worst cases',
-      prompts: [
-        { label: 'What thought is repeating', placeholder: 'write the exact thought', expectedLength: 'medium' },
-        { label: 'What is the feared outcome', placeholder: 'name worst case', expectedLength: 'medium' },
-        { label: 'Probability of feared outcome (0-100 percent)', placeholder: 'honest estimate', expectedLength: 'short' },
-        { label: 'Evidence for', placeholder: 'list facts', expectedLength: 'medium' },
-        { label: 'Evidence against', placeholder: 'list facts', expectedLength: 'medium' },
-        { label: 'Most likely outcome (not worst, not best)', placeholder: 'realistic', expectedLength: 'medium' },
-        { label: 'If feared outcome happened, how would I cope', placeholder: 'specific steps', expectedLength: 'long' },
-        { label: 'What I can do in the next hour', placeholder: 'concrete action', expectedLength: 'short' },
-        { label: 'What is NOT mine to solve right now', placeholder: 'name and release', expectedLength: 'medium' }
-      ],
-      closingQuestion: 'Has writing this lowered the spiral, even 10 percent?',
-      variations: ['Worry tree (control / no control sorter)', 'Cope-ahead script', 'Body-first version (no thoughts, just body care)'],
-      research: 'CBT cognitive restructuring (Beck, 1976); decatastrophizing (Burns, 1980); cope-ahead (Linehan).'
-    },
-    {
-      id: 'gratitude_3_things',
-      name: 'Three Good Things',
-      forWhat: 'Daily practice, evidence-based for mood lift and well-being',
-      prompts: [
-        { label: 'Date', placeholder: 'today', expectedLength: 'short' },
-        { label: 'Good thing 1', placeholder: 'specific, can be tiny', expectedLength: 'short' },
-        { label: 'Why did this go well or feel good', placeholder: 'one sentence', expectedLength: 'medium' },
-        { label: 'Good thing 2', placeholder: 'specific', expectedLength: 'short' },
-        { label: 'Why', placeholder: 'one sentence', expectedLength: 'medium' },
-        { label: 'Good thing 3', placeholder: 'specific', expectedLength: 'short' },
-        { label: 'Why', placeholder: 'one sentence', expectedLength: 'medium' }
-      ],
-      closingQuestion: 'Is there anyone I want to thank directly this week?',
-      variations: ['Gratitude letter (full)', 'Photo gratitude (one image per day)', 'Counter-factual gratitude (what if this had not happened)'],
-      research: 'Three Good Things (Seligman et al., 2005); gratitude interventions (Emmons, 2003); mental subtraction (Koo et al., 2008).'
-    },
-    {
-      id: 'future_self_letter',
-      name: 'Letter to Future Self',
-      forWhat: 'Building hope, perspective, and commitment to your own arc',
-      prompts: [
-        { label: 'Date you are writing from', placeholder: 'today', expectedLength: 'short' },
-        { label: 'Date you are writing to', placeholder: '1 month, 1 year, 5 years out', expectedLength: 'short' },
-        { label: 'Dear Future Self,', placeholder: 'opening', expectedLength: 'short' },
-        { label: 'Here is what I am facing right now', placeholder: 'context', expectedLength: 'long' },
-        { label: 'Here is what I am working toward', placeholder: 'goals, hopes', expectedLength: 'long' },
-        { label: 'What I want you to remember about who I am right now', placeholder: 'values, strengths', expectedLength: 'long' },
-        { label: 'What I hope you have learned by the time you read this', placeholder: 'wishes for growth', expectedLength: 'long' },
-        { label: 'Permission I am giving you', placeholder: 'to change, fail, grow, choose', expectedLength: 'medium' }
-      ],
-      closingQuestion: 'Will you put this somewhere your future self will actually find it?',
-      variations: ['Letter from future self to current self', '10-year version', 'Annual letter ritual'],
-      research: 'Future self continuity (Hershfield, 2011); narrative identity (McAdams, 2001).'
-    },
-    {
-      id: 'past_self_compassion',
-      name: 'Letter to Past Self',
-      forWhat: 'Healing self-criticism about past actions; integrating earlier versions of you',
-      prompts: [
-        { label: 'Age or period you are writing to', placeholder: 'e.g., 14-year-old me', expectedLength: 'short' },
-        { label: 'What was happening for you then', placeholder: 'context with compassion', expectedLength: 'long' },
-        { label: 'What you did not know yet', placeholder: 'fairly, with love', expectedLength: 'long' },
-        { label: 'What you got through, even when it was unfair', placeholder: 'honor it', expectedLength: 'long' },
-        { label: 'What I forgive you for', placeholder: 'specific acts', expectedLength: 'long' },
-        { label: 'What I want to thank you for', placeholder: 'how you helped me get here', expectedLength: 'long' },
-        { label: 'What I want you to know now', placeholder: 'the message they needed', expectedLength: 'long' }
-      ],
-      closingQuestion: 'Is there a younger self who needs more letters than this one?',
-      variations: ['Letter from older wise self', 'Photograph-prompted version', 'IFS-style "exile" letter'],
-      research: 'Self-compassion (Neff, 2003); IFS (Schwartz, 1995); inner child work (Bradshaw, 1990).'
-    },
-    {
-      id: 'anger_processing_dbt',
-      name: 'Anger Processing (DBT-Aligned)',
-      forWhat: 'For working through anger fully before acting',
-      prompts: [
-        { label: 'What I am angry about', placeholder: 'specific situation', expectedLength: 'medium' },
-        { label: 'What value or boundary was crossed', placeholder: 'name it', expectedLength: 'medium' },
-        { label: 'What I felt before the anger', placeholder: 'often hurt, fear, or shame', expectedLength: 'medium' },
-        { label: 'What I want to do (action urge, no filter)', placeholder: 'be honest', expectedLength: 'medium' },
-        { label: 'What would actually happen if I did that', placeholder: 'consequences', expectedLength: 'long' },
-        { label: 'What I will do instead', placeholder: 'aligned with my values', expectedLength: 'medium' },
-        { label: 'What I want the other person to know (later, calmly)', placeholder: 'I-statement', expectedLength: 'medium' },
-        { label: 'What I need to do for my body in the next hour', placeholder: 'discharge, regulate', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Did writing through the anger lower the urge to act now?',
-      variations: ['Unsent letter version', 'Voice memo version (vent out loud, do not send)', 'Worksheet with checkboxes'],
-      research: 'DBT emotion regulation (Linehan, 1993); anger as secondary emotion (Greenberg, 2002); NVC (Rosenberg).'
-    },
-    {
-      id: 'jealousy_processing',
-      name: 'Jealousy Processing',
-      forWhat: 'For working through jealousy without acting on it',
-      prompts: [
-        { label: 'Who I am jealous of', placeholder: 'name', expectedLength: 'short' },
-        { label: 'What they have that I want', placeholder: 'specific', expectedLength: 'medium' },
-        { label: 'What it represents to me', placeholder: 'underlying need', expectedLength: 'medium' },
-        { label: 'What story I am telling myself about why they have it and I do not', placeholder: 'be honest', expectedLength: 'long' },
-        { label: 'What is true about my own path that I am ignoring', placeholder: 'what I have, what I have done', expectedLength: 'long' },
-        { label: 'What can I do toward the underlying want', placeholder: 'concrete action', expectedLength: 'medium' },
-        { label: 'Can I genuinely wish them well', placeholder: 'mudita practice', expectedLength: 'medium' }
-      ],
-      closingQuestion: 'Is the jealousy mostly about them, or mostly about my own insecurity?',
-      variations: ['Envy version (want what they have, no rivalry)', 'Comparison detox week (no social media)', 'Letter of celebration to them'],
-      research: 'Benign vs malicious envy (Van de Ven, 2009); social comparison (Festinger); mudita.'
-    },
-    {
-      id: 'shame_processing_brown',
-      name: 'Shame Processing (Brown-Aligned)',
-      forWhat: 'For working through shame, with empathy and witness',
-      prompts: [
-        { label: 'The story I am telling myself about who I am', placeholder: 'be honest', expectedLength: 'long' },
-        { label: 'Is this about something I did (guilt) or about who I am (shame)', placeholder: 'sort', expectedLength: 'medium' },
-        { label: 'Where did this story come from', placeholder: 'origin, voice, message', expectedLength: 'long' },
-        { label: 'What is the global word I am using (always, never, broken, worthless)', placeholder: 'spot the distortion', expectedLength: 'short' },
-        { label: 'What would I say to a friend in this exact situation', placeholder: 'word for word', expectedLength: 'long' },
-        { label: 'Self-compassion phrase (try aloud)', placeholder: 'this is shame, many feel this, may I be kind to myself', expectedLength: 'short' },
-        { label: 'One safe person I can tell about this shame', placeholder: 'name', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Will I tell that person within 48 hours? Shame dies in witnessed empathy.',
-      variations: ['Audio version (saying it counts more than writing)', 'IFS parts version (the shamer, the shamed, the self)', 'Letter to shame as a visitor'],
-      research: 'Brown (2006) on shame; self-compassion (Neff, 2003); IFS (Schwartz).'
-    },
-    {
-      id: 'mixed_emotions_sorter',
-      name: 'Mixed-Emotions Sorter',
-      forWhat: 'When you feel multiple, possibly contradicting things at once',
-      prompts: [
-        { label: 'List every feeling you can name right now', placeholder: 'as many as you can', expectedLength: 'medium' },
-        { label: 'Which feeling is loudest', placeholder: 'in front', expectedLength: 'short' },
-        { label: 'Which feeling is quietest', placeholder: 'underneath', expectedLength: 'short' },
-        { label: 'Are they about the same thing or different things', placeholder: 'name what each is about', expectedLength: 'long' },
-        { label: 'Which feeling needs attention first', placeholder: 'often the loudest or the most stuck', expectedLength: 'short' },
-        { label: 'Can I let all of them be true at once', placeholder: 'permission slip', expectedLength: 'medium' },
-        { label: 'What does each feeling need from me', placeholder: 'one need per feeling', expectedLength: 'long' }
-      ],
-      closingQuestion: 'Do I need to do anything, or just witness the complexity?',
-      variations: ['Color-coded version (each feeling gets a color)', 'Map version (draw the feelings as territory)', 'Two-column comparison'],
-      research: 'Mixed emotions and maturity (Larsen et al., 2001); emotional granularity (Barrett); ACT acceptance.'
-    },
-    {
-      id: 'grief_rolling',
-      name: 'Rolling Grief Journal',
-      forWhat: 'For ongoing grief over weeks, months, or years',
-      prompts: [
-        { label: 'Date', placeholder: 'today', expectedLength: 'short' },
-        { label: 'Time since loss', placeholder: 'days, weeks, months, years', expectedLength: 'short' },
-        { label: 'How grief showed up today', placeholder: 'wave, ache, numbness, peace', expectedLength: 'medium' },
-        { label: 'What triggered it (if anything)', placeholder: 'song, smell, place, date', expectedLength: 'medium' },
-        { label: 'A memory of them I want to record', placeholder: 'specific', expectedLength: 'long' },
-        { label: 'Something they would have liked about today', placeholder: 'continuing bond', expectedLength: 'medium' },
-        { label: 'What I need from people this week', placeholder: 'witness, space, help', expectedLength: 'medium' },
-        { label: 'How I am taking care of my body in this grief', placeholder: 'sleep, food, movement', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Is there a ritual that would honor today, even small?',
-      variations: ['Letter-to-them version', 'Anniversary entry', 'Group grief journal (shared with others who knew them)'],
-      research: 'Continuing bonds (Klass, 1996); Worden\'s tasks of mourning; expressive writing and grief (Pennebaker).'
-    },
-    {
-      id: 'worry_tree',
-      name: 'Worry Tree: Control / No Control Sorter',
-      forWhat: 'When worries are stacking and you cannot separate actionable from unactionable',
-      prompts: [
-        { label: 'List every worry currently in your head', placeholder: 'brain dump, no order', expectedLength: 'long' },
-        { label: 'For each: can I do something about it right now? (yes / no / not yet)', placeholder: 'sort each', expectedLength: 'long' },
-        { label: 'Yes worries: what is one action for each', placeholder: 'concrete next step', expectedLength: 'long' },
-        { label: 'No worries (cannot control): can I release these for now', placeholder: 'permission to set down', expectedLength: 'medium' },
-        { label: 'Not-yet worries: when will I revisit', placeholder: 'put on calendar', expectedLength: 'medium' },
-        { label: 'Which yes action will I do in the next 24 hours', placeholder: 'commit to one', expectedLength: 'short' }
-      ],
-      closingQuestion: 'What do I do with the no-control worries now that I have named them?',
-      variations: ['Drawing version (literal tree with branches)', 'Spreadsheet version', 'Audio version'],
-      research: 'CBT worry management (Borkovec, 2002); worry postponement; locus of control (Rotter, 1966).'
-    },
-    {
-      id: 'strengths_reflection',
-      name: 'Strengths-Based Reflection',
-      forWhat: 'When you feel diminished and need to reconnect to capacity',
-      prompts: [
-        { label: 'One thing I did this week I am proud of', placeholder: 'any size', expectedLength: 'medium' },
-        { label: 'What strength did that require', placeholder: 'courage, patience, kindness, skill', expectedLength: 'medium' },
-        { label: 'One time someone has thanked me or relied on me', placeholder: 'evidence of my capacity', expectedLength: 'medium' },
-        { label: 'What people close to me would say I am good at', placeholder: 'be generous', expectedLength: 'medium' },
-        { label: 'A hard thing I have survived in the past', placeholder: 'and how I did it', expectedLength: 'long' },
-        { label: 'A challenge I have right now I can apply my strengths to', placeholder: 'concrete', expectedLength: 'long' }
-      ],
-      closingQuestion: 'What is one strength I want to use more this week?',
-      variations: ['VIA Character Strengths quiz integration', 'Strengths from past selves', 'Strengths witnessed by others'],
-      research: 'Positive psychology (Seligman); VIA strengths (Peterson & Seligman, 2004); narrative identity.'
-    },
-    {
-      id: 'body_checkin_no_words',
-      name: 'Body-Based Check-In (No Words)',
-      forWhat: 'For alexithymic users, somatic processors, or when words feel wrong',
-      prompts: [
-        { label: 'Draw or describe your body weather today (image, color, shape, no words required)', placeholder: 'free form', expectedLength: 'medium' },
-        { label: 'Where is the most attention in your body', placeholder: 'point or shade in', expectedLength: 'short' },
-        { label: 'Temperature: hot, warm, neutral, cool, cold (circle one)', placeholder: 'just one', expectedLength: 'short' },
-        { label: 'Texture: tight, loose, sharp, dull, smooth, rough (circle any)', placeholder: 'any that fit', expectedLength: 'short' },
-        { label: 'Movement: still, expanding, contracting, swirling, pulsing (circle any)', placeholder: 'any that fit', expectedLength: 'short' },
-        { label: 'Intensity 1-10', placeholder: 'number', expectedLength: 'short' },
-        { label: 'What does my body want right now', placeholder: 'rest, movement, food, water, touch, quiet', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Will I give my body what it asked for, even one item?',
-      variations: ['Pure drawing version', 'Body scan audio guided', 'Movement-based response (no writing)'],
-      research: 'Interoception (Craig, 2009); alexithymia (Bird & Cook, 2013); somatic experiencing (Levine).'
-    },
-    {
-      id: 'conflict_resolution_prep',
-      name: 'Conflict Resolution Prep',
-      forWhat: 'Before having a hard conversation; clarifies what you want to say and need',
-      prompts: [
-        { label: 'Who am I going to talk to', placeholder: 'name', expectedLength: 'short' },
-        { label: 'What is the situation in 2 sentences', placeholder: 'facts only', expectedLength: 'medium' },
-        { label: 'How I felt (use I-feel-X-when-Y format)', placeholder: 'I felt hurt when...', expectedLength: 'medium' },
-        { label: 'What I think they may have felt (generous guess)', placeholder: 'try', expectedLength: 'medium' },
-        { label: 'What I want them to understand', placeholder: 'one main point', expectedLength: 'medium' },
-        { label: 'What I want to know from them', placeholder: 'specific question', expectedLength: 'medium' },
-        { label: 'What outcome would feel like repair', placeholder: 'realistic', expectedLength: 'medium' },
-        { label: 'What I am NOT going to say (because it would escalate)', placeholder: 'self-discipline', expectedLength: 'medium' },
-        { label: 'When and where we will talk', placeholder: 'set it up', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Am I calm enough to have this conversation now, or do I need more time?',
-      variations: ['Two-column (my points / their possible points)', 'Practice-aloud version', 'Letter version if conversation not possible'],
-      research: 'NVC (Rosenberg, 2003); Gottman conflict research; assertiveness training.'
-    },
-    {
-      id: 'apology_prep',
-      name: 'Apology Preparation',
-      forWhat: 'Before apologizing, to make repair real instead of performative',
-      prompts: [
-        { label: 'Who am I apologizing to', placeholder: 'name', expectedLength: 'short' },
-        { label: 'What I did (specific action, no minimizing)', placeholder: 'name it', expectedLength: 'medium' },
-        { label: 'What impact it had on them (acknowledge without excusing)', placeholder: 'their experience', expectedLength: 'medium' },
-        { label: 'Why I did it (reason, not excuse)', placeholder: 'context', expectedLength: 'medium' },
-        { label: 'What I will do differently going forward', placeholder: 'concrete change', expectedLength: 'medium' },
-        { label: 'What I am NOT going to say (excuses, deflections, "but you...")', placeholder: 'self-discipline', expectedLength: 'medium' },
-        { label: 'How I will deliver the apology (in person, call, text, letter)', placeholder: 'choose', expectedLength: 'short' },
-        { label: 'What I will do if they are not ready to receive it', placeholder: 'plan', expectedLength: 'medium' }
-      ],
-      closingQuestion: 'Is this apology for them, or for me to feel better? (Both is okay, them must be first.)',
-      variations: ['Letter version', 'Self-apology version (forgiving self)', 'Group apology version'],
-      research: 'Effective apology research (Lewicki et al., 2016); restorative justice frameworks; Brown on apology.'
-    },
-    {
-      id: 'boundary_setting_clarification',
-      name: 'Boundary-Setting Clarification',
-      forWhat: 'Before setting or holding a boundary; clarifies the what and why',
-      prompts: [
-        { label: 'What is the situation that needs a boundary', placeholder: 'specific', expectedLength: 'medium' },
-        { label: 'What is happening that does not work for me', placeholder: 'name it', expectedLength: 'medium' },
-        { label: 'What I need instead', placeholder: 'specific request', expectedLength: 'medium' },
-        { label: 'Why this matters to me (value, need, limit)', placeholder: 'the why', expectedLength: 'long' },
-        { label: 'How I will communicate the boundary', placeholder: 'words I will use', expectedLength: 'medium' },
-        { label: 'What I will do if the boundary is not respected', placeholder: 'consequence I will hold', expectedLength: 'medium' },
-        { label: 'What I expect to feel (guilt, fear, relief) and what I will do with it', placeholder: 'plan', expectedLength: 'medium' },
-        { label: 'Who supports me in holding this', placeholder: 'name', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Am I setting a boundary or making a demand? (Boundary is about what I will do.)',
-      variations: ['Family-of-origin boundary version', 'Workplace version', 'Friendship version'],
-      research: 'Boundary theory (Cloud & Townsend, 1992); NVC; assertiveness; codependency research.'
-    },
-    {
-      id: 'decision_with_emotions',
-      name: 'Decision-Making With Emotions',
-      forWhat: 'When making a hard choice and emotions are loud',
-      prompts: [
-        { label: 'The decision I am facing', placeholder: 'specific', expectedLength: 'medium' },
-        { label: 'The options I see', placeholder: 'list', expectedLength: 'medium' },
-        { label: 'How each option makes my body feel', placeholder: 'sit with each', expectedLength: 'long' },
-        { label: 'What feelings come up about each', placeholder: 'fear, hope, dread, excitement', expectedLength: 'long' },
-        { label: 'Which feeling am I trying to avoid', placeholder: 'often this drives the choice', expectedLength: 'medium' },
-        { label: 'What would I choose if I were not afraid', placeholder: 'fear-removed scenario', expectedLength: 'medium' },
-        { label: 'What would my future self (5 years out) want me to choose', placeholder: 'time perspective', expectedLength: 'medium' },
-        { label: 'What values are most important to me here', placeholder: 'name them', expectedLength: 'medium' },
-        { label: 'Which option aligns with my values', placeholder: 'connect', expectedLength: 'medium' },
-        { label: 'What I will do, and by when', placeholder: 'commit', expectedLength: 'short' }
-      ],
-      closingQuestion: 'Am I deciding from values or from fear? Both inform; values lead.',
-      variations: ['Pros/cons version', 'Body-based version (which feels like a yes in my body)', 'Trusted advisor version (what would X say)'],
-      research: 'Affective forecasting (Gilbert, 2006); somatic markers (Damasio, 1994); values-based action (ACT).'
-    }
-  ];
-
+  
 
 
 
@@ -17924,6 +17610,363 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // ─── Content library wired 2026-09-13 (archived Aug 25 as never-read; now has a view) ───
+var EMOTION_JOURNAL_TEMPLATES = [
+    {
+      id: 'quick_daily_checkin',
+      name: 'Quick Daily Check-In',
+      forWhat: 'A 2-3 minute daily entry to build emotional awareness without overhead',
+      prompts: [
+        { label: 'Date and time', placeholder: 'e.g., Tuesday morning', expectedLength: 'short' },
+        { label: 'Body weather (one word or image)', placeholder: 'e.g., heavy, foggy, light', expectedLength: 'short' },
+        { label: 'Top feeling right now', placeholder: 'one word', expectedLength: 'short' },
+        { label: 'Intensity 1-10', placeholder: 'just a number', expectedLength: 'short' },
+        { label: 'One thing happening today connected to this feeling', placeholder: 'one sentence', expectedLength: 'short' },
+        { label: 'One small thing I will do for myself today', placeholder: 'concrete', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Did naming the feeling shift it at all? (Even 1 percent counts.)',
+      variations: ['Voice memo version', 'Drawing version (no words)', 'Three-word version (state, body, need)'],
+      research: 'Daily emotion check-ins build emotional granularity (Barrett, 2017); affect labeling (Lieberman, 2007).'
+    },
+    {
+      id: 'end_of_day',
+      name: 'End-of-Day Reflection',
+      forWhat: 'Before sleep, to process and release the day',
+      prompts: [
+        { label: 'Strongest feeling of the day', placeholder: 'and when it peaked', expectedLength: 'short' },
+        { label: 'What triggered it', placeholder: 'specific event or context', expectedLength: 'medium' },
+        { label: 'What I felt I had to suppress today', placeholder: 'feelings I did not have space for', expectedLength: 'medium' },
+        { label: 'A moment I want to remember', placeholder: 'small or large', expectedLength: 'medium' },
+        { label: 'A moment I want to release', placeholder: 'something to set down before sleep', expectedLength: 'medium' },
+        { label: 'One person I am grateful for today', placeholder: 'and what they did or are', expectedLength: 'short' },
+        { label: 'What my body needs tonight', placeholder: 'rest, warmth, water, etc.', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Is there anything unfinished that I need to write down so I can sleep?',
+      variations: ['3-line version (high/low/lesson)', 'Audio version recorded before bed', 'Weekly version on Sundays'],
+      research: 'Expressive writing (Pennebaker, 1986); gratitude before sleep (Wood et al., 2009).'
+    },
+    {
+      id: 'after_a_fight',
+      name: 'After-a-Fight Processing',
+      forWhat: 'After a conflict, before sending a text or making a decision',
+      prompts: [
+        { label: 'What happened, in 3 sentences max', placeholder: 'just facts', expectedLength: 'medium' },
+        { label: 'What I felt during', placeholder: 'name all the feelings', expectedLength: 'medium' },
+        { label: 'What I feel now', placeholder: 'often different from during', expectedLength: 'medium' },
+        { label: 'What I wanted that I did not get', placeholder: 'be specific', expectedLength: 'medium' },
+        { label: 'What I think they wanted that they did not get', placeholder: 'generous interpretation', expectedLength: 'medium' },
+        { label: 'What I said or did that I wish I had not', placeholder: 'honest accounting', expectedLength: 'medium' },
+        { label: 'What I said or did that I am proud of', placeholder: 'even one thing', expectedLength: 'short' },
+        { label: 'What I want next, when I am calm', placeholder: 'repair, distance, conversation', expectedLength: 'medium' },
+        { label: 'What I will NOT do in the next 24 hours', placeholder: 'do not send, do not post, etc.', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Is there anything I need to say to myself before I can think about them?',
+      variations: ['Letter to the other person, unsent', 'Two-column: my view / their view', 'Voice memo to process aloud'],
+      research: 'Gottman repair work; expressive writing for conflict (Pennebaker); NVC (Rosenberg, 2003).'
+    },
+    {
+      id: 'after_a_loss',
+      name: 'After-a-Loss Processing',
+      forWhat: 'After a death, breakup, job loss, move, or major identity loss',
+      prompts: [
+        { label: 'What was lost', placeholder: 'name it specifically', expectedLength: 'short' },
+        { label: 'When did the loss happen', placeholder: 'time and context', expectedLength: 'short' },
+        { label: 'How does my body feel right now', placeholder: 'physical sensations', expectedLength: 'medium' },
+        { label: 'What feelings are present', placeholder: 'multiple are normal', expectedLength: 'medium' },
+        { label: 'What I miss most', placeholder: 'specific moments, sounds, smells', expectedLength: 'long' },
+        { label: 'What I am most grateful for', placeholder: 'about what was', expectedLength: 'long' },
+        { label: 'What feels unresolved', placeholder: 'words unsaid, things undone', expectedLength: 'medium' },
+        { label: 'What I want to carry forward', placeholder: 'continuing bond, lesson, value', expectedLength: 'medium' },
+        { label: 'What I need this week', placeholder: 'help, space, ritual, witness', expectedLength: 'medium' }
+      ],
+      closingQuestion: 'Who can I tell about this loss who will simply witness, not fix?',
+      variations: ['Letter to the lost (person, role, place)', 'Ritual planning version', 'Anniversary version'],
+      research: 'Worden\'s tasks of mourning (1991); continuing bonds (Klass, 1996); expressive writing and bereavement.'
+    },
+    {
+      id: 'anxious_spiral_interrupt',
+      name: 'Anxious-Spiral Interrupt',
+      forWhat: 'When you are catastrophizing, mind racing through worst cases',
+      prompts: [
+        { label: 'What thought is repeating', placeholder: 'write the exact thought', expectedLength: 'medium' },
+        { label: 'What is the feared outcome', placeholder: 'name worst case', expectedLength: 'medium' },
+        { label: 'Probability of feared outcome (0-100 percent)', placeholder: 'honest estimate', expectedLength: 'short' },
+        { label: 'Evidence for', placeholder: 'list facts', expectedLength: 'medium' },
+        { label: 'Evidence against', placeholder: 'list facts', expectedLength: 'medium' },
+        { label: 'Most likely outcome (not worst, not best)', placeholder: 'realistic', expectedLength: 'medium' },
+        { label: 'If feared outcome happened, how would I cope', placeholder: 'specific steps', expectedLength: 'long' },
+        { label: 'What I can do in the next hour', placeholder: 'concrete action', expectedLength: 'short' },
+        { label: 'What is NOT mine to solve right now', placeholder: 'name and release', expectedLength: 'medium' }
+      ],
+      closingQuestion: 'Has writing this lowered the spiral, even 10 percent?',
+      variations: ['Worry tree (control / no control sorter)', 'Cope-ahead script', 'Body-first version (no thoughts, just body care)'],
+      research: 'CBT cognitive restructuring (Beck, 1976); decatastrophizing (Burns, 1980); cope-ahead (Linehan).'
+    },
+    {
+      id: 'gratitude_3_things',
+      name: 'Three Good Things',
+      forWhat: 'Daily practice, evidence-based for mood lift and well-being',
+      prompts: [
+        { label: 'Date', placeholder: 'today', expectedLength: 'short' },
+        { label: 'Good thing 1', placeholder: 'specific, can be tiny', expectedLength: 'short' },
+        { label: 'Why did this go well or feel good', placeholder: 'one sentence', expectedLength: 'medium' },
+        { label: 'Good thing 2', placeholder: 'specific', expectedLength: 'short' },
+        { label: 'Why', placeholder: 'one sentence', expectedLength: 'medium' },
+        { label: 'Good thing 3', placeholder: 'specific', expectedLength: 'short' },
+        { label: 'Why', placeholder: 'one sentence', expectedLength: 'medium' }
+      ],
+      closingQuestion: 'Is there anyone I want to thank directly this week?',
+      variations: ['Gratitude letter (full)', 'Photo gratitude (one image per day)', 'Counter-factual gratitude (what if this had not happened)'],
+      research: 'Three Good Things (Seligman et al., 2005); gratitude interventions (Emmons, 2003); mental subtraction (Koo et al., 2008).'
+    },
+    {
+      id: 'future_self_letter',
+      name: 'Letter to Future Self',
+      forWhat: 'Building hope, perspective, and commitment to your own arc',
+      prompts: [
+        { label: 'Date you are writing from', placeholder: 'today', expectedLength: 'short' },
+        { label: 'Date you are writing to', placeholder: '1 month, 1 year, 5 years out', expectedLength: 'short' },
+        { label: 'Dear Future Self,', placeholder: 'opening', expectedLength: 'short' },
+        { label: 'Here is what I am facing right now', placeholder: 'context', expectedLength: 'long' },
+        { label: 'Here is what I am working toward', placeholder: 'goals, hopes', expectedLength: 'long' },
+        { label: 'What I want you to remember about who I am right now', placeholder: 'values, strengths', expectedLength: 'long' },
+        { label: 'What I hope you have learned by the time you read this', placeholder: 'wishes for growth', expectedLength: 'long' },
+        { label: 'Permission I am giving you', placeholder: 'to change, fail, grow, choose', expectedLength: 'medium' }
+      ],
+      closingQuestion: 'Will you put this somewhere your future self will actually find it?',
+      variations: ['Letter from future self to current self', '10-year version', 'Annual letter ritual'],
+      research: 'Future self continuity (Hershfield, 2011); narrative identity (McAdams, 2001).'
+    },
+    {
+      id: 'past_self_compassion',
+      name: 'Letter to Past Self',
+      forWhat: 'Healing self-criticism about past actions; integrating earlier versions of you',
+      prompts: [
+        { label: 'Age or period you are writing to', placeholder: 'e.g., 14-year-old me', expectedLength: 'short' },
+        { label: 'What was happening for you then', placeholder: 'context with compassion', expectedLength: 'long' },
+        { label: 'What you did not know yet', placeholder: 'fairly, with love', expectedLength: 'long' },
+        { label: 'What you got through, even when it was unfair', placeholder: 'honor it', expectedLength: 'long' },
+        { label: 'What I forgive you for', placeholder: 'specific acts', expectedLength: 'long' },
+        { label: 'What I want to thank you for', placeholder: 'how you helped me get here', expectedLength: 'long' },
+        { label: 'What I want you to know now', placeholder: 'the message they needed', expectedLength: 'long' }
+      ],
+      closingQuestion: 'Is there a younger self who needs more letters than this one?',
+      variations: ['Letter from older wise self', 'Photograph-prompted version', 'IFS-style "exile" letter'],
+      research: 'Self-compassion (Neff, 2003); IFS (Schwartz, 1995); inner child work (Bradshaw, 1990).'
+    },
+    {
+      id: 'anger_processing_dbt',
+      name: 'Anger Processing (DBT-Aligned)',
+      forWhat: 'For working through anger fully before acting',
+      prompts: [
+        { label: 'What I am angry about', placeholder: 'specific situation', expectedLength: 'medium' },
+        { label: 'What value or boundary was crossed', placeholder: 'name it', expectedLength: 'medium' },
+        { label: 'What I felt before the anger', placeholder: 'often hurt, fear, or shame', expectedLength: 'medium' },
+        { label: 'What I want to do (action urge, no filter)', placeholder: 'be honest', expectedLength: 'medium' },
+        { label: 'What would actually happen if I did that', placeholder: 'consequences', expectedLength: 'long' },
+        { label: 'What I will do instead', placeholder: 'aligned with my values', expectedLength: 'medium' },
+        { label: 'What I want the other person to know (later, calmly)', placeholder: 'I-statement', expectedLength: 'medium' },
+        { label: 'What I need to do for my body in the next hour', placeholder: 'discharge, regulate', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Did writing through the anger lower the urge to act now?',
+      variations: ['Unsent letter version', 'Voice memo version (vent out loud, do not send)', 'Worksheet with checkboxes'],
+      research: 'DBT emotion regulation (Linehan, 1993); anger as secondary emotion (Greenberg, 2002); NVC (Rosenberg).'
+    },
+    {
+      id: 'jealousy_processing',
+      name: 'Jealousy Processing',
+      forWhat: 'For working through jealousy without acting on it',
+      prompts: [
+        { label: 'Who I am jealous of', placeholder: 'name', expectedLength: 'short' },
+        { label: 'What they have that I want', placeholder: 'specific', expectedLength: 'medium' },
+        { label: 'What it represents to me', placeholder: 'underlying need', expectedLength: 'medium' },
+        { label: 'What story I am telling myself about why they have it and I do not', placeholder: 'be honest', expectedLength: 'long' },
+        { label: 'What is true about my own path that I am ignoring', placeholder: 'what I have, what I have done', expectedLength: 'long' },
+        { label: 'What can I do toward the underlying want', placeholder: 'concrete action', expectedLength: 'medium' },
+        { label: 'Can I genuinely wish them well', placeholder: 'mudita practice', expectedLength: 'medium' }
+      ],
+      closingQuestion: 'Is the jealousy mostly about them, or mostly about my own insecurity?',
+      variations: ['Envy version (want what they have, no rivalry)', 'Comparison detox week (no social media)', 'Letter of celebration to them'],
+      research: 'Benign vs malicious envy (Van de Ven, 2009); social comparison (Festinger); mudita.'
+    },
+    {
+      id: 'shame_processing_brown',
+      name: 'Shame Processing (Brown-Aligned)',
+      forWhat: 'For working through shame, with empathy and witness',
+      prompts: [
+        { label: 'The story I am telling myself about who I am', placeholder: 'be honest', expectedLength: 'long' },
+        { label: 'Is this about something I did (guilt) or about who I am (shame)', placeholder: 'sort', expectedLength: 'medium' },
+        { label: 'Where did this story come from', placeholder: 'origin, voice, message', expectedLength: 'long' },
+        { label: 'What is the global word I am using (always, never, broken, worthless)', placeholder: 'spot the distortion', expectedLength: 'short' },
+        { label: 'What would I say to a friend in this exact situation', placeholder: 'word for word', expectedLength: 'long' },
+        { label: 'Self-compassion phrase (try aloud)', placeholder: 'this is shame, many feel this, may I be kind to myself', expectedLength: 'short' },
+        { label: 'One safe person I can tell about this shame', placeholder: 'name', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Will I tell that person within 48 hours? Shame dies in witnessed empathy.',
+      variations: ['Audio version (saying it counts more than writing)', 'IFS parts version (the shamer, the shamed, the self)', 'Letter to shame as a visitor'],
+      research: 'Brown (2006) on shame; self-compassion (Neff, 2003); IFS (Schwartz).'
+    },
+    {
+      id: 'mixed_emotions_sorter',
+      name: 'Mixed-Emotions Sorter',
+      forWhat: 'When you feel multiple, possibly contradicting things at once',
+      prompts: [
+        { label: 'List every feeling you can name right now', placeholder: 'as many as you can', expectedLength: 'medium' },
+        { label: 'Which feeling is loudest', placeholder: 'in front', expectedLength: 'short' },
+        { label: 'Which feeling is quietest', placeholder: 'underneath', expectedLength: 'short' },
+        { label: 'Are they about the same thing or different things', placeholder: 'name what each is about', expectedLength: 'long' },
+        { label: 'Which feeling needs attention first', placeholder: 'often the loudest or the most stuck', expectedLength: 'short' },
+        { label: 'Can I let all of them be true at once', placeholder: 'permission slip', expectedLength: 'medium' },
+        { label: 'What does each feeling need from me', placeholder: 'one need per feeling', expectedLength: 'long' }
+      ],
+      closingQuestion: 'Do I need to do anything, or just witness the complexity?',
+      variations: ['Color-coded version (each feeling gets a color)', 'Map version (draw the feelings as territory)', 'Two-column comparison'],
+      research: 'Mixed emotions and maturity (Larsen et al., 2001); emotional granularity (Barrett); ACT acceptance.'
+    },
+    {
+      id: 'grief_rolling',
+      name: 'Rolling Grief Journal',
+      forWhat: 'For ongoing grief over weeks, months, or years',
+      prompts: [
+        { label: 'Date', placeholder: 'today', expectedLength: 'short' },
+        { label: 'Time since loss', placeholder: 'days, weeks, months, years', expectedLength: 'short' },
+        { label: 'How grief showed up today', placeholder: 'wave, ache, numbness, peace', expectedLength: 'medium' },
+        { label: 'What triggered it (if anything)', placeholder: 'song, smell, place, date', expectedLength: 'medium' },
+        { label: 'A memory of them I want to record', placeholder: 'specific', expectedLength: 'long' },
+        { label: 'Something they would have liked about today', placeholder: 'continuing bond', expectedLength: 'medium' },
+        { label: 'What I need from people this week', placeholder: 'witness, space, help', expectedLength: 'medium' },
+        { label: 'How I am taking care of my body in this grief', placeholder: 'sleep, food, movement', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Is there a ritual that would honor today, even small?',
+      variations: ['Letter-to-them version', 'Anniversary entry', 'Group grief journal (shared with others who knew them)'],
+      research: 'Continuing bonds (Klass, 1996); Worden\'s tasks of mourning; expressive writing and grief (Pennebaker).'
+    },
+    {
+      id: 'worry_tree',
+      name: 'Worry Tree: Control / No Control Sorter',
+      forWhat: 'When worries are stacking and you cannot separate actionable from unactionable',
+      prompts: [
+        { label: 'List every worry currently in your head', placeholder: 'brain dump, no order', expectedLength: 'long' },
+        { label: 'For each: can I do something about it right now? (yes / no / not yet)', placeholder: 'sort each', expectedLength: 'long' },
+        { label: 'Yes worries: what is one action for each', placeholder: 'concrete next step', expectedLength: 'long' },
+        { label: 'No worries (cannot control): can I release these for now', placeholder: 'permission to set down', expectedLength: 'medium' },
+        { label: 'Not-yet worries: when will I revisit', placeholder: 'put on calendar', expectedLength: 'medium' },
+        { label: 'Which yes action will I do in the next 24 hours', placeholder: 'commit to one', expectedLength: 'short' }
+      ],
+      closingQuestion: 'What do I do with the no-control worries now that I have named them?',
+      variations: ['Drawing version (literal tree with branches)', 'Spreadsheet version', 'Audio version'],
+      research: 'CBT worry management (Borkovec, 2002); worry postponement; locus of control (Rotter, 1966).'
+    },
+    {
+      id: 'strengths_reflection',
+      name: 'Strengths-Based Reflection',
+      forWhat: 'When you feel diminished and need to reconnect to capacity',
+      prompts: [
+        { label: 'One thing I did this week I am proud of', placeholder: 'any size', expectedLength: 'medium' },
+        { label: 'What strength did that require', placeholder: 'courage, patience, kindness, skill', expectedLength: 'medium' },
+        { label: 'One time someone has thanked me or relied on me', placeholder: 'evidence of my capacity', expectedLength: 'medium' },
+        { label: 'What people close to me would say I am good at', placeholder: 'be generous', expectedLength: 'medium' },
+        { label: 'A hard thing I have survived in the past', placeholder: 'and how I did it', expectedLength: 'long' },
+        { label: 'A challenge I have right now I can apply my strengths to', placeholder: 'concrete', expectedLength: 'long' }
+      ],
+      closingQuestion: 'What is one strength I want to use more this week?',
+      variations: ['VIA Character Strengths quiz integration', 'Strengths from past selves', 'Strengths witnessed by others'],
+      research: 'Positive psychology (Seligman); VIA strengths (Peterson & Seligman, 2004); narrative identity.'
+    },
+    {
+      id: 'body_checkin_no_words',
+      name: 'Body-Based Check-In (No Words)',
+      forWhat: 'For alexithymic users, somatic processors, or when words feel wrong',
+      prompts: [
+        { label: 'Draw or describe your body weather today (image, color, shape, no words required)', placeholder: 'free form', expectedLength: 'medium' },
+        { label: 'Where is the most attention in your body', placeholder: 'point or shade in', expectedLength: 'short' },
+        { label: 'Temperature: hot, warm, neutral, cool, cold (circle one)', placeholder: 'just one', expectedLength: 'short' },
+        { label: 'Texture: tight, loose, sharp, dull, smooth, rough (circle any)', placeholder: 'any that fit', expectedLength: 'short' },
+        { label: 'Movement: still, expanding, contracting, swirling, pulsing (circle any)', placeholder: 'any that fit', expectedLength: 'short' },
+        { label: 'Intensity 1-10', placeholder: 'number', expectedLength: 'short' },
+        { label: 'What does my body want right now', placeholder: 'rest, movement, food, water, touch, quiet', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Will I give my body what it asked for, even one item?',
+      variations: ['Pure drawing version', 'Body scan audio guided', 'Movement-based response (no writing)'],
+      research: 'Interoception (Craig, 2009); alexithymia (Bird & Cook, 2013); somatic experiencing (Levine).'
+    },
+    {
+      id: 'conflict_resolution_prep',
+      name: 'Conflict Resolution Prep',
+      forWhat: 'Before having a hard conversation; clarifies what you want to say and need',
+      prompts: [
+        { label: 'Who am I going to talk to', placeholder: 'name', expectedLength: 'short' },
+        { label: 'What is the situation in 2 sentences', placeholder: 'facts only', expectedLength: 'medium' },
+        { label: 'How I felt (use I-feel-X-when-Y format)', placeholder: 'I felt hurt when...', expectedLength: 'medium' },
+        { label: 'What I think they may have felt (generous guess)', placeholder: 'try', expectedLength: 'medium' },
+        { label: 'What I want them to understand', placeholder: 'one main point', expectedLength: 'medium' },
+        { label: 'What I want to know from them', placeholder: 'specific question', expectedLength: 'medium' },
+        { label: 'What outcome would feel like repair', placeholder: 'realistic', expectedLength: 'medium' },
+        { label: 'What I am NOT going to say (because it would escalate)', placeholder: 'self-discipline', expectedLength: 'medium' },
+        { label: 'When and where we will talk', placeholder: 'set it up', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Am I calm enough to have this conversation now, or do I need more time?',
+      variations: ['Two-column (my points / their possible points)', 'Practice-aloud version', 'Letter version if conversation not possible'],
+      research: 'NVC (Rosenberg, 2003); Gottman conflict research; assertiveness training.'
+    },
+    {
+      id: 'apology_prep',
+      name: 'Apology Preparation',
+      forWhat: 'Before apologizing, to make repair real instead of performative',
+      prompts: [
+        { label: 'Who am I apologizing to', placeholder: 'name', expectedLength: 'short' },
+        { label: 'What I did (specific action, no minimizing)', placeholder: 'name it', expectedLength: 'medium' },
+        { label: 'What impact it had on them (acknowledge without excusing)', placeholder: 'their experience', expectedLength: 'medium' },
+        { label: 'Why I did it (reason, not excuse)', placeholder: 'context', expectedLength: 'medium' },
+        { label: 'What I will do differently going forward', placeholder: 'concrete change', expectedLength: 'medium' },
+        { label: 'What I am NOT going to say (excuses, deflections, "but you...")', placeholder: 'self-discipline', expectedLength: 'medium' },
+        { label: 'How I will deliver the apology (in person, call, text, letter)', placeholder: 'choose', expectedLength: 'short' },
+        { label: 'What I will do if they are not ready to receive it', placeholder: 'plan', expectedLength: 'medium' }
+      ],
+      closingQuestion: 'Is this apology for them, or for me to feel better? (Both is okay, them must be first.)',
+      variations: ['Letter version', 'Self-apology version (forgiving self)', 'Group apology version'],
+      research: 'Effective apology research (Lewicki et al., 2016); restorative justice frameworks; Brown on apology.'
+    },
+    {
+      id: 'boundary_setting_clarification',
+      name: 'Boundary-Setting Clarification',
+      forWhat: 'Before setting or holding a boundary; clarifies the what and why',
+      prompts: [
+        { label: 'What is the situation that needs a boundary', placeholder: 'specific', expectedLength: 'medium' },
+        { label: 'What is happening that does not work for me', placeholder: 'name it', expectedLength: 'medium' },
+        { label: 'What I need instead', placeholder: 'specific request', expectedLength: 'medium' },
+        { label: 'Why this matters to me (value, need, limit)', placeholder: 'the why', expectedLength: 'long' },
+        { label: 'How I will communicate the boundary', placeholder: 'words I will use', expectedLength: 'medium' },
+        { label: 'What I will do if the boundary is not respected', placeholder: 'consequence I will hold', expectedLength: 'medium' },
+        { label: 'What I expect to feel (guilt, fear, relief) and what I will do with it', placeholder: 'plan', expectedLength: 'medium' },
+        { label: 'Who supports me in holding this', placeholder: 'name', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Am I setting a boundary or making a demand? (Boundary is about what I will do.)',
+      variations: ['Family-of-origin boundary version', 'Workplace version', 'Friendship version'],
+      research: 'Boundary theory (Cloud & Townsend, 1992); NVC; assertiveness; codependency research.'
+    },
+    {
+      id: 'decision_with_emotions',
+      name: 'Decision-Making With Emotions',
+      forWhat: 'When making a hard choice and emotions are loud',
+      prompts: [
+        { label: 'The decision I am facing', placeholder: 'specific', expectedLength: 'medium' },
+        { label: 'The options I see', placeholder: 'list', expectedLength: 'medium' },
+        { label: 'How each option makes my body feel', placeholder: 'sit with each', expectedLength: 'long' },
+        { label: 'What feelings come up about each', placeholder: 'fear, hope, dread, excitement', expectedLength: 'long' },
+        { label: 'Which feeling am I trying to avoid', placeholder: 'often this drives the choice', expectedLength: 'medium' },
+        { label: 'What would I choose if I were not afraid', placeholder: 'fear-removed scenario', expectedLength: 'medium' },
+        { label: 'What would my future self (5 years out) want me to choose', placeholder: 'time perspective', expectedLength: 'medium' },
+        { label: 'What values are most important to me here', placeholder: 'name them', expectedLength: 'medium' },
+        { label: 'Which option aligns with my values', placeholder: 'connect', expectedLength: 'medium' },
+        { label: 'What I will do, and by when', placeholder: 'commit', expectedLength: 'short' }
+      ],
+      closingQuestion: 'Am I deciding from values or from fear? Both inform; values lead.',
+      variations: ['Pros/cons version', 'Body-based version (which feels like a yes in my body)', 'Trusted advisor version (what would X say)'],
+      research: 'Affective forecasting (Gilbert, 2006); somatic markers (Damasio, 1994); values-based action (ACT).'
+    }
+  ];
+
   window.SelHub.registerTool('emotions', {
     icon: '\uD83D\uDE0A',
     label: 'Emotions Explorer',
@@ -18000,6 +18043,7 @@ window.SelHub = window.SelHub || {
 
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.emotions) || {};
+      _emoLoadImages(function() { try { if (ctx.update) ctx.update('emotions', 'imageTick', Date.now()); } catch (e) {} });
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('emotions', key); }
         else { if (ctx.update) ctx.update('emotions', key, val); }
@@ -18605,7 +18649,7 @@ window.SelHub = window.SelHub || {
                 onMouseEnter: function(e) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + fam.color + '33'; },
                 onMouseLeave: function(e) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }
               },
-                h('div', { style: { fontSize: 36, marginBottom: 6 } }, fam.emoji),
+                h('div', { style: { marginBottom: 6, display: 'flex', justifyContent: 'center' } }, _emoGlyph(h, 'families', fam.id, fam.emoji, 36, '')),
                 h('div', { style: { fontWeight: 700, color: INK(fam.color), fontSize: 14, marginBottom: 2 } }, fam.label),
                 h('div', { style: { fontSize: 10, color: P.textMuted, lineHeight: 1.3 } }, fam.desc[band]),
                 explored && h('div', { style: { fontSize: 11, color: P.textMuted, marginTop: 4 } }, '\u2713 explored')
@@ -18663,7 +18707,7 @@ window.SelHub = window.SelHub || {
                         background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', color: P.text
                       }
                     },
-                      h('span', { style: { fontSize: 22, flexShrink: 0 } }, feeling.emoji),
+                      _emoGlyph(h, 'feelings', feeling.word, feeling.emoji, 22, ''),
                       h('div', { style: { flex: 1 } },
                         h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                           h('span', { style: { fontWeight: 700, fontSize: 14, color: isExpanded ? fam.color : P.text, textTransform: 'capitalize' } }, feeling.word),
@@ -21700,6 +21744,41 @@ if (activeTab === 'color') {
 }
 
       // ══════════════════════════════════════════════════════════
+
+      // Journal templates (2026-09-13): 20 guided templates, each a few labelled prompts.
+      // Answers live in tool data under the template id, so switching templates keeps them.
+      if (activeTab === 'journal' && journalContent && typeof EMOTION_JOURNAL_TEMPLATES !== 'undefined' && EMOTION_JOURNAL_TEMPLATES.length) {
+        var jtId = d.journalTemplate || '';
+        var jt = EMOTION_JOURNAL_TEMPLATES.find(function(t) { return t.id === jtId; }) || null;
+        var jtAnswers = (d.journalTemplateAnswers && typeof d.journalTemplateAnswers === 'object') ? d.journalTemplateAnswers : {};
+        var mine = jt ? (jtAnswers[jt.id] || {}) : {};
+        journalContent = h('div', null, journalContent,
+          h('section', { 'aria-labelledby': 'emo-wired-templates', style: { margin: '18px auto 0', maxWidth: 550, padding: 14, borderRadius: 12, background: P.card, border: '1px solid ' + P.border, borderLeft: '4px solid ' + INK('#8b5cf6') } },
+            h('h3', { id: 'emo-wired-templates', style: { margin: '0 0 4px', fontSize: 15, fontWeight: 900, color: P.text } }, 'Guided journal templates'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, color: P.textMuted, lineHeight: 1.5 } }, 'Pick a template for the kind of moment you are writing about. Each one asks a few questions in order. Your answers stay with the template.'),
+            h('div', { role: 'group', 'aria-label': 'Journal template', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+              EMOTION_JOURNAL_TEMPLATES.map(function(t) {
+                var on = jtId === t.id;
+                return h('button', { key: t.id, onClick: function() { upd({ journalTemplate: on ? '' : t.id }); }, 'aria-pressed': on ? 'true' : 'false', title: t.forWhat || '',
+                  style: { minHeight: 36, padding: '6px 12px', borderRadius: 999, border: '1px solid ' + (on ? INK('#8b5cf6') : P.borderDim), background: on ? 'rgba(139,92,246,0.15)' : P.bg, color: on ? INK('#8b5cf6') : P.text2, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, t.name);
+              })
+            ),
+            jt ? h('div', null,
+              jt.forWhat ? h('p', { style: { margin: '0 0 10px', fontSize: 12, color: P.text2 } }, jt.forWhat) : null,
+              (jt.prompts || []).map(function(p, i) {
+                var fid = 'emo-jt-' + jt.id + '-' + i;
+                return h('div', { key: fid, style: { marginBottom: 10 } },
+                  h('label', { htmlFor: fid, style: { display: 'block', fontSize: 13, fontWeight: 700, color: P.text, marginBottom: 4 } }, p.label || ('Prompt ' + (i + 1))),
+                  h('textarea', { id: fid, value: mine[i] || '', placeholder: p.placeholder || '', rows: p.expectedLength === 'long' ? 5 : 3,
+                    onChange: function(e) { var next = Object.assign({}, jtAnswers); var m2 = Object.assign({}, next[jt.id] || {}); m2[i] = e.target.value; next[jt.id] = m2; upd({ journalTemplateAnswers: next }); },
+                    style: { width: '100%', boxSizing: 'border-box', padding: 8, borderRadius: 8, border: '1px solid ' + P.border, background: P.bg, color: P.text, fontSize: 13, lineHeight: 1.5 } })
+                );
+              }),
+              h('p', { style: { margin: 0, fontSize: 11, color: P.textMuted } }, 'Saved with this tool\u2019s data on this device. Use Export if you want to keep it somewhere else.')
+            ) : null
+          ));
+      }
+
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },

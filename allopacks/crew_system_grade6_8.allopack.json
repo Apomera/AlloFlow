@@ -1,0 +1,572 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 4: One System for the Week",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_system_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (planning and organizational skills; setting personal goals; showing the courage to take initiative); EL Education Crew (Crew Launch: academic coaching and habits); Maine DOE PBIS Tier 1 (teaching organizational routines as expected behaviors)"
+  },
+  "sourceTopic": "Executive function systems for being prepared and on time",
+  "history": [
+    {
+      "id": "cs-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 4: One System for the Week",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Responsibility. \"I take responsibility for my success as a learner.\"\n\nThis week you build one small system so that arriving prepared and finishing on time stops depending on willpower.\n\n1. Read **One System for the Week** (10 minutes).\n2. Learn the **Glossary** words, then win the **Matching** game.\n3. Keep the **Three Parts of a System** chart open.\n4. Sort the cards in **System or Willpower?**\n5. Take the quiz. Question 2 is about why willpower fails.\n6. Open the SEL Hub and choose [Executive Function](#sel-hub/execfunction?station=sel_station_crew_launch_system). Build your capture spot and launch check there. Then open [Goal Setter](#sel-hub/goals?station=sel_station_crew_launch_system) and set one goal for the week that your system will carry.\n7. Use the **Sentence Frames** to write your system in three lines.\n8. Lock it in with **Remember Capture, Launch, Reset**.\n9. Finish with the **Design Challenge: My One System**, and test it for a week.\n\nYour commitment: this week, do the launch check at the end of every day, and count how many mornings you had everything. 🎒\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cs-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cs-glossary"
+          },
+          {
+            "id": "cs-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cs-goal-manual",
+            "label": "I did the launch check every day this week and I know how many mornings I had everything",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cs-reading",
+      "type": "simplified",
+      "title": "One System for the Week",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## One System for the Week\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nTwo of the Responsibility behaviors in the King HOWLs are about the boring, powerful stuff: arrive **prepared** for class, and complete assignments **thoughtfully** and on time. Nobody gets a standing ovation for having a charged laptop. But almost every bad week starts with a small thing that was not where it needed to be.\n\nHere is the trap. Most people try to fix a messy week with **willpower**. \"I will just remember.\" \"I will try harder.\" Willpower is real, but it runs out, and it runs out fastest on the days you need it most. A **system** does not run out. A system is a small set of steps you do the same way every time, so that your brain does not have to decide anything.\n\nA good system for middle school has three parts. A **capture** spot: one place where every assignment and due date goes the moment you hear it. Not your memory. Not three places. One. A **launch** check: one look at tomorrow before you leave school, so that whatever you need is in the bag tonight, not in your locker at 8:04. And a weekly **reset**: ten minutes once a week to look at the whole week ahead, notice the big things, and split them into pieces.\n\nHere is a fictional Crew example. Marcus is smart and disorganized. He writes assignments on his hand, on sticky notes, and sometimes nowhere. He arrives without his science notebook about twice a week. His Crew leader, Mr. Bell, does not tell him to try harder. He asks Marcus to pick one capture spot. Marcus picks the notes app on his laptop, because it is always open. For two weeks, every assignment goes there, and nowhere else. Then Mr. Bell asks him to add a launch check: last two minutes of the day, open the notes, look at tomorrow, pack the bag. By the third week, Marcus has his notebook every day. Nothing about his brain changed. His system did.\n\nCompleting work thoughtfully is the other half. Thoughtfully does not mean slowly. It means the work got the kind of attention it needed. A system helps here too, because when you split a big assignment into pieces during the weekly reset, you stop doing all of it at 11 p.m. on the night before. Work done at 11 p.m. is rarely thoughtful.\n\nOne more thing. A system is yours. The capture spot can be paper or a screen. The launch check can be a list or a photo of your locker. The weekly reset can be Sunday night or Monday during Crew. What matters is that it is one system, you use it the same way each time, and you fix it when it breaks instead of going back to willpower.\n\nThis week you build one. Not the perfect one. One you will actually use on Thursday.",
+      "meta": "6th-8th Grade • Leveled reading • ~490 words"
+    },
+    {
+      "id": "cs-glossary",
+      "type": "glossary",
+      "title": "System Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "System",
+          "def": "A small set of steps you do the same way every time, so your brain does not have to decide.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Willpower",
+          "def": "Deciding to try harder in the moment. Real, but it runs out.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Capture",
+          "def": "Writing something down the moment you hear it, in one place.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Launch",
+          "def": "A one-minute look at tomorrow before you leave school today.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Reset",
+          "def": "A ten-minute weekly look at the whole week ahead.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Prepared",
+          "def": "Having what you need, where you need it, when class starts.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Thoughtful",
+          "def": "Work that got the kind of attention it needed, not just work that got done.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Deadline",
+          "def": "The time something is due.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Chunk",
+          "def": "A piece of a big assignment small enough to finish in one sitting.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Habit",
+          "def": "Something you do without deciding to, because you have done it the same way many times.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "6th-8th Grade • 10 terms • Tiered"
+    },
+    {
+      "id": "cs-anchor",
+      "type": "anchor-chart",
+      "title": "Three Parts of a System",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "THREE PARTS OF A SYSTEM",
+        "sections": [
+          {
+            "label": "CAPTURE SPOT",
+            "bullets": [
+              "One place, always",
+              "Every assignment, the moment you hear it",
+              "Paper or screen, your choice"
+            ],
+            "iconPrompt": "a single open notebook with an arrow pointing into it"
+          },
+          {
+            "label": "LAUNCH CHECK",
+            "bullets": [
+              "Last two minutes of the day",
+              "Look at tomorrow",
+              "Pack the bag tonight, not at 8:04"
+            ],
+            "iconPrompt": "a backpack with a small clock beside it"
+          },
+          {
+            "label": "WEEKLY RESET",
+            "bullets": [
+              "Ten minutes, once a week",
+              "See the big things coming",
+              "Split them into chunks"
+            ],
+            "iconPrompt": "a week calendar grid with one block split into three"
+          },
+          {
+            "label": "WHEN IT BREAKS",
+            "bullets": [
+              "Fix the system",
+              "Do not go back to willpower",
+              "Ask: which part failed?"
+            ],
+            "iconPrompt": "a wrench beside a simple gear"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cs-sort",
+      "type": "concept-sort",
+      "title": "System or Willpower?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cs-system",
+            "label": "SYSTEM (same steps every time)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cs-will",
+            "label": "WILLPOWER (try harder in the moment)",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cs-i1",
+            "content": "Every assignment goes in the notes app the second the teacher says it.",
+            "categoryId": "cs-system"
+          },
+          {
+            "id": "cs-i2",
+            "content": "\"I will just remember it this time.\"",
+            "categoryId": "cs-will"
+          },
+          {
+            "id": "cs-i3",
+            "content": "Last two minutes of the day: open tomorrow, pack the bag.",
+            "categoryId": "cs-system"
+          },
+          {
+            "id": "cs-i4",
+            "content": "Promising yourself you will start the project earlier next time.",
+            "categoryId": "cs-will"
+          },
+          {
+            "id": "cs-i5",
+            "content": "Sunday, ten minutes: look at the week, split the essay into three parts.",
+            "categoryId": "cs-system"
+          },
+          {
+            "id": "cs-i6",
+            "content": "Writing the due date on your hand.",
+            "categoryId": "cs-will"
+          },
+          {
+            "id": "cs-i7",
+            "content": "Charger lives in the same pocket of the bag, always.",
+            "categoryId": "cs-system"
+          },
+          {
+            "id": "cs-i8",
+            "content": "Staying up until midnight to finish because you feel bad about being late.",
+            "categoryId": "cs-will"
+          },
+          {
+            "id": "cs-i9",
+            "content": "A photo of the locker shelf taped inside the locker door as the packing list.",
+            "categoryId": "cs-system"
+          },
+          {
+            "id": "cs-i10",
+            "content": "Telling yourself to focus harder in the class you keep missing work for.",
+            "categoryId": "cs-will"
+          }
+        ]
+      },
+      "meta": "2 categories • 10 cards"
+    },
+    {
+      "id": "cs-quiz",
+      "type": "quiz",
+      "title": "System Check",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does the reading say a system is?",
+            "options": [
+              "A planner your school gives you at the start of the year",
+              "A small set of steps you do the same way every time",
+              "A promise to try harder when things get busy",
+              "An app that reminds you when things are due"
+            ],
+            "correctAnswer": "A small set of steps you do the same way every time",
+            "conceptLabel": "what a system is"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading say willpower is not enough?",
+            "options": [
+              "Because willpower is not real for most middle schoolers",
+              "Because teachers do not give credit for effort alone",
+              "Because it runs out, and fastest on the days you need it most",
+              "Because using willpower means you did not plan ahead"
+            ],
+            "correctAnswer": "Because it runs out, and fastest on the days you need it most",
+            "conceptLabel": "willpower runs out"
+          },
+          {
+            "type": "mcq",
+            "question": "What changed for Marcus by the third week?",
+            "options": [
+              "His brain changed and he became more organized",
+              "Mr. Bell started packing his bag with him each day",
+              "He switched to a paper planner that worked better",
+              "Nothing about his brain changed; his system did"
+            ],
+            "correctAnswer": "Nothing about his brain changed; his system did",
+            "conceptLabel": "system not brain"
+          },
+          {
+            "type": "mcq",
+            "question": "What does \"thoughtfully\" mean in \"complete assignments thoughtfully\"?",
+            "options": [
+              "The work got the kind of attention it needed",
+              "The work was done slowly and carefully every time",
+              "The work was checked by an adult before turning it in",
+              "The work was finished the day it was assigned"
+            ],
+            "correctAnswer": "The work got the kind of attention it needed",
+            "conceptLabel": "thoughtful work"
+          },
+          {
+            "type": "mcq",
+            "question": "Your launch check keeps failing because you forget to do it. What does the reading say to do?",
+            "options": [
+              "Go back to remembering, since the system did not work",
+              "Add two more steps so you cannot forget",
+              "Fix the system by asking which part failed",
+              "Switch to a totally new system each week"
+            ],
+            "correctAnswer": "Fix the system by asking which part failed",
+            "conceptLabel": "fix the system"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Name the three parts of a system and the time span each one covers.",
+            "expectedAnswer": "Capture spot (the moment you hear it), launch check (end of each day), weekly reset (once a week).",
+            "conceptLabel": "what a system is"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which of the three parts (capture, launch, reset) do you already do in some form? Which one is missing?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cs-frames",
+      "type": "sentence-frames",
+      "title": "My System in Three Lines",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "My capture spot is ____. Every assignment goes there when ____."
+          },
+          {
+            "text": "My launch check happens at ____. I look at ____ and pack ____."
+          },
+          {
+            "text": "My weekly reset is on ____ for ____ minutes. I look for ____."
+          },
+          {
+            "text": "The part most likely to break is ____, because ____."
+          },
+          {
+            "text": "When it breaks, I will ____ instead of ____."
+          },
+          {
+            "text": "This system helps me take responsibility because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| One capture spot | Several places or memory | One place named | One place named, with when it gets used |\n| Launch check | None | A time named | A time, what to look at, and what to pack |\n| Fixable | No plan for breaking | Names the weak part | Names the weak part and the fix |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cs-faq",
+      "type": "faq",
+      "title": "System Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What if I like using several places?",
+          "answer": "Several places means the assignment can be in the one you did not check. One capture spot is the whole point. You can copy it elsewhere later; it lands in one place first."
+        },
+        {
+          "question": "Paper or screen?",
+          "answer": "Whichever one is always with you and always open. For some people that is the notes app. For some it is one small notebook. Pick, then stop switching."
+        },
+        {
+          "question": "What if the launch check takes too long?",
+          "answer": "Then it is doing too much. It is one look at tomorrow and packing the bag. Two minutes. If it takes ten, you are doing the weekly reset by accident."
+        },
+        {
+          "question": "I built a system and it fell apart in a week. Did I fail?",
+          "answer": "No. Systems break. Ask which part failed. Usually it is one part, and it usually needs to be smaller, not bigger."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Responsibility HOWL includes arriving prepared and completing assignments thoughtfully and on time. A system is how those happen on the days you do not feel like it."
+        }
+      ],
+      "meta": "5 questions"
+    },
+    {
+      "id": "cs-memory",
+      "type": "memory-aid",
+      "title": "Remember Capture, Launch, Reset",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Capture, Launch, Reset",
+        "instructions": "Each card locks in one idea from One System for the Week. Look at the example aid, make it your own, and tell how it helps you keep the system.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "A good system for middle school has three parts. A capture spot: one place where every assignment and due date goes the moment you hear it. A launch check: one look at tomorrow before you leave school. And a weekly reset: ten minutes once a week to look at the whole week ahead. Willpower is real, but it runs out. A system does not run out.",
+        "lessonRef": {
+          "resourceId": "cs-reading",
+          "title": "One System for the Week"
+        },
+        "cards": [
+          {
+            "id": "cs-ma-clr",
+            "target": "The three parts of a system: capture spot, launch check, weekly reset",
+            "essentialFacts": [
+              "A capture spot: one place where every assignment and due date goes the moment you hear it.",
+              "A launch check: one look at tomorrow before you leave school.",
+              "A weekly reset: ten minutes once a week to look at the whole week ahead."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Catch it, Check it, Clear it. Catch the assignment when you hear it, check tomorrow before you leave, clear the week on Sunday. Three C-words in the order of the day, the evening, and the week.",
+            "mapping": "Catch is the capture spot, check is the launch check, clear is the weekly reset. The order runs from the smallest time span to the largest, which is the order you do them.",
+            "scaffoldStarter": "____ it when I hear it. ____ it before I leave. ____ it once a week.",
+            "scaffoldSteps": [
+              "Write the three parts in order of how often they happen.",
+              "Find three verbs that start the same way.",
+              "Say them with the time span: moment, day, week."
+            ],
+            "coachPrompts": [
+              "Which of the three would help Marcus most? Why that one?"
+            ],
+            "studentPrompt": "Make your own three-verb cue for capture, launch, reset.",
+            "reasoningPrompt": "How does your cue help you notice which part of your system broke?",
+            "hookFact": {
+              "text": "Almost every bad week starts with a small thing that was not where it needed to be.",
+              "sourceTitle": "One System for the Week (this lesson)"
+            }
+          },
+          {
+            "id": "cs-ma-willpower",
+            "target": "Willpower runs out; a system does not",
+            "essentialFacts": [
+              "Willpower is real, but it runs out.",
+              "A system does not run out."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Willpower is a phone battery. A system is the charger that lives in the same pocket. The battery is real, and it always dies at the worst time; the charger just sits there and works.",
+            "mapping": "The battery stands for willpower because it drains with use; the charger in the same pocket stands for a system because it is always in the same place and needs no decision.",
+            "scaffoldStarter": "Willpower is like ____. A system is like ____.",
+            "scaffoldSteps": [
+              "Think of something that runs out.",
+              "Think of something that works because it is always in the same place.",
+              "Pair them and say why."
+            ],
+            "coachPrompts": [
+              "When in your week does your battery usually die?"
+            ],
+            "studentPrompt": "Make your own pair for willpower and system.",
+            "reasoningPrompt": "How does your pair help you stop relying on \"I will just remember\"?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • three parts, willpower"
+    },
+    {
+      "id": "cs-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: My One System",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "My One System",
+        "instructions": "Design a system with all three parts, run it for one school week, keep a simple morning count of \"had everything\" versus \"missing something,\" and revise the part that broke.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The HOWL behaviors are arriving prepared and completing assignments thoughtfully and on time. A designed, tested, and revised system is how those become reliable rather than a matter of effort on the day.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "You have read about capture, launch, and reset. Now you build your own version, for your bag, your locker, your classes, and your week.",
+          "role": "A student designing a system for themselves",
+          "audience": "You. Then your Crew, who will hear the one-week result and the one change you made.",
+          "drivingQuestion": "What is the smallest three-part system that gets me to every class prepared this week, and which part needs to change after I test it?",
+          "seedDirection": "Pick one capture spot you already have with you every day. Set the launch check to the same two minutes daily. Put the weekly reset on a day you can actually keep. Then run it and count mornings.",
+          "lockedLessonFacts": [
+            "A system is a small set of steps you do the same way every time, so that your brain does not have to decide anything.",
+            "A good system has three parts: a capture spot, a launch check, and a weekly reset.",
+            "Willpower runs out; a system does not.",
+            "When a system breaks, fix the system instead of going back to willpower."
+          ],
+          "openQuestions": [
+            "Which capture spot is truly always with me?",
+            "When are the two minutes for the launch check that I will not skip?",
+            "Which day can the weekly reset actually happen?",
+            "What is my biggest assignment in the next two weeks, and what are its chunks?"
+          ],
+          "stakeholders": [
+            "You",
+            "Your Crew leader",
+            "The teachers whose classes you arrive at",
+            "Anyone at home who helps you get out the door"
+          ],
+          "criteria": [
+            "All three parts are named with a specific time and place",
+            "The system was run for at least four school days",
+            "A morning count was kept (had everything or missing something)",
+            "One part was revised based on what broke, with the reason",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "One capture spot only",
+            "The launch check is two minutes or less",
+            "The weekly reset is ten minutes or less",
+            "No new apps or supplies required"
+          ],
+          "deliverable": "A system card (three lines: capture, launch, reset), the morning count for the week, and one sentence about what you changed and why.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student set her launch check for the walk to the bus.",
+            "move": "By Wednesday she had skipped it twice because she was talking to friends. She moved it to the last two minutes of her final class, at her desk, and had everything the next three mornings. She did not change the capture spot or the reset; only the part that broke.",
+            "whyItHelps": "It shows that a broken part is a location or timing problem, not a character problem, and that you change one part rather than the whole system."
+          },
+          "frameStarter": "My capture spot is ____. My launch check is at ____. My reset is on ____.",
+          "frameChoices": [
+            "This week I had everything ____ out of ____ mornings.",
+            "The part that broke was ____, because ____.",
+            "I changed it to ____."
+          ],
+          "coachPrompts": [
+            "If you had everything five out of five mornings, what made the system easy? Could it survive a bad week?",
+            "Which teacher would notice first if this system worked?"
+          ]
+        },
+        "coachHint": "Students often design a system that is too big. If the plan has more than three parts or needs new supplies, help them cut it. Small systems get used.",
+        "sourceExcerpt": "A system is yours. The capture spot can be paper or a screen. The launch check can be a list or a photo of your locker. What matters is that it is one system, you use it the same way each time, and you fix it when it breaks instead of going back to willpower.",
+        "lessonRef": {
+          "resourceId": "cs-reading",
+          "title": "One System for the Week"
+        }
+      },
+      "meta": "6th-8th Grade • Design brief • one system, one week"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_system",
+      "name": "Crew station: Week 4: One System for the Week",
+      "tools": [
+        "execfunction",
+        "goals"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 4: One System for the Week pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_system_time",
+          "type": "timeSpent",
+          "toolId": "execfunction",
+          "label": "Spend 5 minutes in Executive Function",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_system_check",
+          "type": "manualComplete",
+          "toolId": "goals",
+          "label": "I did the launch check every day this week and I know how many mornings I had everything",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

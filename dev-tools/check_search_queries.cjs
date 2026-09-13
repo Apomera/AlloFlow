@@ -56,6 +56,8 @@ const ALLOWED_EXTRACTION = {
   'content_engine_source.jsx': 'researchPrompt leads with `Topic: "<subject>"`, which the extractor matches exactly.',
   'content_engine_module.js': 'Built from content_engine_source.jsx — same prompt.',
   'AlloFlowANTI.txt': 'handleAiUrlSearch prompt is `…resources about: <query>.` — the extractor matches "resources about" and the prompt is otherwise only the query.',
+  'host_handlers_source.jsx': 'handleAiUrlSearch moved here from AlloFlowANTI.txt (wave 3, 2026-09-13); same `…resources about: <query>.` prompt, unchanged.',
+  'host_handlers_module.js': 'Built from host_handlers_source.jsx — same prompt.',
   'quickstart_source.jsx': 'Wizard resource search uses the same `resources about:` shape.',
   'quickstart_module.js': 'Built from quickstart_source.jsx — same prompt.',
   'audit_remediator_module.js': 'verifyClaimsBatch prompt is a numbered list of the claims themselves; the extracted claim IS the thing to verify.',

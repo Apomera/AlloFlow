@@ -1808,6 +1808,101 @@
       return blocks;
     }
 
+
+    // ── SEL tool links (2026-09-13) ─────────────────────────────────────────
+    // A pack, a FAQ answer, or any rendered markdown can name a Hub tool as a
+    // plain link: [Emotion Zones](#sel-hub/zones). The host markdown renderer
+    // keeps `#` hrefs (and adds target=_blank), so without this handler the
+    // link would open a blank tab. This module loads at boot for every role,
+    // so it owns ONE capture-phase document listener; the hub component is
+    // only mounted while open, so an always-mounted surface (the history
+    // panel) lends the open setter through window.__alloSelHubOpener. The
+    // requested tool waits in window.__alloSelHubPendingTool until the hub
+    // mounts and the tool has registered. Nothing here touches the host.
+    // The active station id, kept while the page lives. The hub component only
+    // exists while open, so React state alone forgets the station every time
+    // the student closes the hub; localStorage covers a reload, this covers a
+    // device where storage is blocked.
+    var _selActiveStationMemo = null;
+
+    if (!window.SelHub.toolLinks) {
+      var _selToolLinkRe = /^#sel-hub(?:\/([A-Za-z0-9_-]{1,64}))?\/?(?:\?([A-Za-z0-9_=&.:-]{0,200}))?$/;
+      var toolLinks = {
+        EVENT: 'alloflow:sel-hub-open-tool',
+        PENDING_TTL_MS: 20000,
+        // '#sel-hub/zones' -> 'zones'; '#sel-hub' -> '' (the tool grid); anything else -> null.
+        // A '?station=<id>' query is allowed after either form and read by station().
+        parse: function (href) {
+          if (typeof href !== 'string') return null;
+          var hash = href.indexOf('#') >= 0 ? href.slice(href.indexOf('#')) : '';
+          var m = _selToolLinkRe.exec(hash.trim());
+          return m ? (m[1] || '') : null;
+        },
+        // '#sel-hub/zones?station=sel_station_crew_launch_zones' -> that station id;
+        // no query, or no station in it -> null. The id must match a station the
+        // project carries (History panel > SEL Stations); nothing is guessed from
+        // tool membership, because stations from earlier packs stay on the device.
+        station: function (href) {
+          if (typeof href !== 'string') return null;
+          var hash = href.indexOf('#') >= 0 ? href.slice(href.indexOf('#')) : '';
+          var m = _selToolLinkRe.exec(hash.trim());
+          if (!m || !m[2]) return null;
+          var parts = m[2].split('&');
+          for (var i = 0; i < parts.length; i++) {
+            var kv = parts[i].split('=');
+            if (kv[0] === 'station' && kv[1]) return kv[1];
+          }
+          return null;
+        },
+        href: function (toolId, stationId) {
+          var out = '#sel-hub/' + String(toolId || '').replace(/[^A-Za-z0-9_-]/g, '');
+          var st = String(stationId || '').replace(/[^A-Za-z0-9_.:-]/g, '');
+          return st ? out + '?station=' + st : out;
+        },
+        // Ask the app to open the hub at a tool. Returns true when an opener
+        // was available; the pending record is written either way so a hub
+        // that mounts later still lands on the tool.
+        open: function (toolId, label, stationId) {
+          var id = typeof toolId === 'string' ? toolId : '';
+          var st = typeof stationId === 'string' ? stationId : '';
+          try { window.__alloSelHubPendingTool = (id || st) ? { toolId: id, label: label || '', stationId: st, at: Date.now() } : null; } catch (e) {}
+          try { window.dispatchEvent(new CustomEvent(toolLinks.EVENT, { detail: { toolId: id, label: label || '', stationId: st } })); } catch (e) {}
+          var opener = window.__alloSelHubOpener;
+          if (typeof opener !== 'function') return false;
+          try { opener(id); } catch (e) { return false; }
+          return true;
+        },
+        // Read-and-clear, only when the tool can actually be shown. A tool
+        // that has not registered yet stays pending until PENDING_TTL_MS.
+        consumePending: function () {
+          var p = window.__alloSelHubPendingTool;
+          if (!p || typeof p !== 'object' || (!p.toolId && !p.stationId)) return null;
+          var st = typeof p.stationId === 'string' ? p.stationId : '';
+          var age = Date.now() - (Number(p.at) || 0);
+          if (!p.toolId) { window.__alloSelHubPendingTool = null; return { toolId: '', label: p.label || '', stationId: st, status: 'ready' }; }
+          if (window.SelHub.isRegistered(p.toolId)) { window.__alloSelHubPendingTool = null; return { toolId: p.toolId, label: p.label || '', stationId: st, status: 'ready' }; }
+          if (age > toolLinks.PENDING_TTL_MS) { window.__alloSelHubPendingTool = null; return { toolId: p.toolId, label: p.label || '', stationId: st, status: 'unknown' }; }
+          return { toolId: p.toolId, label: p.label || '', stationId: st, status: 'waiting' };
+        },
+        handleClick: function (event) {
+          try {
+            var target = event && event.target;
+            if (!target || typeof target.closest !== 'function') return false;
+            var a = target.closest('a[href]');
+            if (!a) return false;
+            var id = toolLinks.parse(a.getAttribute('href'));
+            if (id === null) return false;
+            event.preventDefault();
+            event.stopPropagation();
+            toolLinks.open(id, (a.textContent || '').trim().slice(0, 80), toolLinks.station(a.getAttribute('href')) || '');
+            return true;
+          } catch (e) { return false; }
+        }
+      };
+      window.SelHub.toolLinks = toolLinks;
+      try { document.addEventListener('click', toolLinks.handleClick, true); } catch (e) {}
+    }
+
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.SelHub = function SelHubModal(props) {
       var React = (typeof window !== 'undefined' && window.React) || require('react');
@@ -2125,7 +2220,17 @@
       ];
 
       var _savedStations = React.useState(function () {
-        try { return JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]'); } catch (e) { return []; }
+        // localStorage first (it survives a reload); the host's window slot when
+        // storage is blocked or empty. misc_handlers writes both on project load,
+        // and a hub that mounts afterwards must not start from [] and then mirror
+        // that [] back over the stations the project just loaded (the persist
+        // effect below writes savedStations to the slot on mount).
+        var fromStorage = null;
+        try { fromStorage = JSON.parse(localStorage.getItem('alloflow_sel_stations') || 'null'); } catch (e) { fromStorage = null; }
+        if (Array.isArray(fromStorage) && fromStorage.length) return fromStorage;
+        var slot = window.__alloflowSelStations;
+        if (Array.isArray(slot) && slot.length) return slot;
+        return Array.isArray(fromStorage) ? fromStorage : [];
       });
       var savedStations = _savedStations[0]; var setSavedStations = _savedStations[1];
 
@@ -2240,15 +2345,41 @@
         };
       }, []);
 
-      var _activeStationId = React.useState(null);
+      // The active station survives closing the hub (module memo) and a reload
+      // (localStorage). A Crew self-check is a week-long commitment, and the
+      // time step only counts while the station is active, so a student who
+      // comes back on Thursday must find the station where they left it.
+      // "Exit station", or the station's record being removed, clears it.
+      var _activeStationId = React.useState(function () {
+        var id = _selActiveStationMemo;
+        if (!id) { try { id = localStorage.getItem('alloflow_sel_active_station') || null; } catch (e) { id = null; } }
+        if (typeof id !== 'string' || !id) return null;
+        var list = _savedStations[0];
+        return Array.isArray(list) && list.some(function (st) { return st && st.id === id; }) ? id : null;
+      });
       var activeStationId = _activeStationId[0]; var setActiveStationId = _activeStationId[1];
+      var _stationResumedRef = React.useRef(!!activeStationId);
+      React.useEffect(function () {
+        _selActiveStationMemo = activeStationId || null;
+        try { if (activeStationId) localStorage.setItem('alloflow_sel_active_station', activeStationId); else localStorage.removeItem('alloflow_sel_active_station'); } catch (e) {}
+      }, [activeStationId]);
+      React.useEffect(function () {
+        if (activeStationId && !savedStations.some(function (st) { return st && st.id === activeStationId; })) setActiveStationId(null);
+      }, [savedStations, activeStationId]);
       var activeStation = (function () {
         if (!activeStationId) return null;
         return savedStations.find(function (s) { return s.id === activeStationId; }) || null;
       })();
 
       var _questProgress = React.useState(function () {
-        try { return JSON.parse(localStorage.getItem('alloflow_sel_station_progress') || '{}'); } catch (e) { return {}; }
+        // localStorage first; the host's window slot when storage is blocked or
+        // empty (misc_handlers writes both on project load; see savedStations).
+        var fromStorage = null;
+        try { fromStorage = JSON.parse(localStorage.getItem('alloflow_sel_station_progress') || 'null'); } catch (e) { fromStorage = null; }
+        if (fromStorage && typeof fromStorage === 'object' && !Array.isArray(fromStorage) && Object.keys(fromStorage).length) return fromStorage;
+        var slot = window.__alloflowSelProgress;
+        if (slot && typeof slot === 'object' && !Array.isArray(slot) && Object.keys(slot).length) return slot;
+        return fromStorage && typeof fromStorage === 'object' && !Array.isArray(fromStorage) ? fromStorage : {};
       });
       var questProgress = _questProgress[0]; var setQuestProgress = _questProgress[1];
 
@@ -2488,6 +2619,63 @@
         }
       }
 
+
+      // Consume a tool requested through a #sel-hub/<toolId> link (see
+      // window.SelHub.toolLinks). Runs when the hub opens, when a link fires
+      // while the hub is already open, and as plugins stream in (a link can be
+      // clicked before its tool has registered).
+      var _pluginProgressTick = _pluginProgress[0];
+
+      // A link can also name the station the pack carries (?station=<id>), so a
+      // student who clicks a tool in the pack's directions lands with the Crew
+      // steps and reflection showing, not only the tool. Refs, because the
+      // click listener below is bound once per hub open and must see the
+      // stations a project load added since (misc_handlers writes localStorage
+      // and the window slot, then fires alloflow-sel-stations-restored, which
+      // replaces savedStations above).
+      var _savedStationsRef = React.useRef(savedStations); _savedStationsRef.current = savedStations;
+      var _activeStationIdRef = React.useRef(activeStationId); _activeStationIdRef.current = activeStationId;
+      function activateStationFromLink(stationId) {
+        if (!stationId) return false;
+        var list = Array.isArray(_savedStationsRef.current) ? _savedStationsRef.current : [];
+        var found = null;
+        for (var i = 0; i < list.length; i++) { if (list[i] && list[i].id === stationId) { found = list[i]; break; } }
+        if (!found) {
+          if (typeof addToast === 'function') addToast('This link names a station that is not in this project. Load the pack that carries it, or start one from SEL Stations in the History panel.', 'info');
+          return false;
+        }
+        if (_activeStationIdRef.current !== stationId) {
+          setActiveStationId(stationId);
+          setActivePathway(null); setPathwayProgress({});
+          announceToSR('Started station ' + found.name);
+          if (typeof addToast === 'function') addToast('\uD83D\uDCCC ' + found.name + ' started', 'success');
+        }
+        return true;
+      }
+
+      React.useEffect(function () {
+        if (!showSelHub || !window.SelHub || !window.SelHub.toolLinks) return undefined;
+        var links = window.SelHub.toolLinks;
+        function settle() {
+          var p = links.consumePending();
+          if (!p) return;
+          if (p.status === 'ready') {
+            if (p.toolId) openSelToolById(p.toolId, p.label);
+            if (p.stationId) activateStationFromLink(p.stationId);
+          } else if (p.status === 'unknown') {
+            if (typeof addToast === 'function') addToast((p.label || p.toolId) + ' is not available in this SEL Hub.', 'error');
+            if (p.stationId) activateStationFromLink(p.stationId);
+          }
+        }
+        settle();
+        function onOpenTool() { Promise.resolve().then(settle); }
+        window.addEventListener(links.EVENT, onOpenTool);
+        var retry = null;
+        var pending = window.__alloSelHubPendingTool;
+        if (pending && pending.toolId) retry = setTimeout(settle, links.PENDING_TTL_MS + 50);
+        return function () { window.removeEventListener(links.EVENT, onOpenTool); if (retry) clearTimeout(retry); };
+      }, [showSelHub, _pluginProgressTick]);
+
       // Sync activeStation prop from parent (e.g. resource-history click).
       React.useEffect(function () {
         if (props.activeStation && props.activeStation.id) {
@@ -2501,6 +2689,9 @@
       React.useEffect(function() {
         if (!activeStationId || !showSelHub) return;
         setActivePathway(null);
+        // Resumed from the last visit: the guide is on screen, but the student
+        // opened the hub, not the station, so focus stays where the hub puts it.
+        if (_stationResumedRef.current) { _stationResumedRef.current = false; return; }
         var timer = setTimeout(function() {
           var guide = document.getElementById('sel-active-station-guide');
           if (guide) { guide.focus(); guide.scrollIntoView({ block: 'start' }); }
@@ -2713,22 +2904,22 @@
         { id: 'zones',       icon: '\uD83D\uDEA6', label: 'Emotion Zones', desc: 'Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.', color: 'emerald', recommendedRange: 'K-12' },
         { id: 'emotions',    icon: '\uD83D\uDE0A', label: 'Emotion Explorer',    desc: 'Build emotional vocabulary — identify, name, and rate the intensity of feelings.', color: 'blue', recommendedRange: 'K-8' },
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
-        { id: 'viaStrengths', icon: '\uD83C\uDF1F', label: 'VIA Strengths',     desc: 'A simplified self-sort of the 24 VIA Character Strengths (Peterson and Seligman, 2004), with 6 virtues and identification of signature strengths. For the authoritative free survey, go to viacharacter.org. Reflective practice, not psychometric.', color: 'amber', recommendedRange: '5-12' },
+        { id: 'viaStrengths', icon: '\uD83C\uDF1F', label: 'VIA Strengths',     desc: 'A simplified self-sort of the 24 VIA Character Strengths (Peterson and Seligman, 2004), with 6 virtues and identification of signature strengths. For the authoritative free survey, go to viacharacter.org. Reflective practice, not psychometric.', color: 'amber', recommendedRange: '6-12' },
         { id: 'wheelOfLife', icon: '\uD83D\uDEDE', label: 'Wheel of Life',      desc: 'Spider chart of 8 life domains, each rated 1 to 10. A self-portrait of where life is full and where it is thin right now. From the coaching tradition (Meyer 1960s; Co-Active Coaching). Heuristic; not a validated psychometric.', color: 'amber', recommendedRange: '5-12' },
         { id: 'perma',       icon: '\uD83C\uDF3B', label: 'PERMA Wellbeing',    desc: 'Self-check on the five PERMA domains plus a Health reflection: Positive emotion, Engagement, Relationships, Meaning, Accomplishment, and Health. 24 items, bar-chart result, per-domain reflection. From Seligman; pairs with VIA Strengths.', color: 'amber', recommendedRange: '5-12' },
 
         // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
         { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
         { id: 'coping',      icon: '\uD83E\uDDE8', label: 'Coping Toolkit',      desc: 'Explore and practice coping strategies — breathing, grounding, movement, and more.', color: 'teal', recommendedRange: 'K-12' },
-        { id: 'windowOfTolerance', icon: '\uD83E\uDE9F', label: 'Window of Tolerance', desc: 'Trauma-informed self-awareness visual. Three arousal zones (hyperarousal, window, hypoarousal). Map your personal signs of each zone, your triggers, and the practices that bring you back. Based on Siegel (1999); standard in trauma-informed schools.', color: 'teal', recommendedRange: '5-12' },
-        { id: 'stressBucket', icon: '\uD83E\uDEA3', label: 'Stress Bucket',        desc: 'A capacity visual. Stressors pour in; coping practices drain out. See whether your inflow and outflow are balanced. CBT-tradition tool (Brabban and Turkington 2002), used across NHS IAPT and Mind UK. Honest about structural stressors.', color: 'teal', recommendedRange: '5-12' },
+        { id: 'windowOfTolerance', icon: '\uD83E\uDE9F', label: 'Window of Tolerance', desc: 'Trauma-informed self-awareness visual. Three arousal zones (hyperarousal, window, hypoarousal). Map your personal signs of each zone, your triggers, and the practices that bring you back. Based on Siegel (1999); standard in trauma-informed schools.', color: 'teal', recommendedRange: '6-12' },
+        { id: 'stressBucket', icon: '\uD83E\uDEA3', label: 'Stress Bucket',        desc: 'A capacity visual. Stressors pour in; coping practices drain out. See whether your inflow and outflow are balanced. CBT-tradition tool (Brabban and Turkington 2002), used across NHS IAPT and Mind UK. Honest about structural stressors.', color: 'teal', recommendedRange: '6-12' },
         { id: 'tipp',        icon: '\uD83C\uDD98', label: 'TIPP',                desc: 'Four DBT crisis-survival skills (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) for ACUTE distress. Down-regulates the body in 30 seconds to 10 minutes before you try to think your way out. Foundational DBT Distress Tolerance skill (Linehan).', color: 'red', recommendedRange: '5-12' },
         { id: 'anxietyToolkit', icon: '\uD83E\uDEE7', label: 'Anxiety Toolkit', desc: 'CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time, decatastrophizing, grounding skills, and a personal patterns inventory. From Beck Institute, AACAP, ADAA. Pairs with Window of Tolerance and Stress Bucket.', color: 'cyan', recommendedRange: '5-12' },
         { id: 'sleep',       icon: '\uD83D\uDE34', label: 'Sleep & Rest',        desc: 'Adolescent sleep is a public-health crisis. AAP-recommended 8-10 hours is rarely met. Psychoeducation, self-check, 8 common barriers + what works for each, and a sleep diary. From AAP, CDC, NSF, Carskadon research.', color: 'indigo', recommendedRange: '5-12' },
-        { id: 'sensoryRegulation', icon: '\uD83C\uDF08', label: 'Sensory Regulation', desc: 'Neurodiversity-affirming tool for understanding your own sensory processing across the 8 sensory systems. Build a personal profile, plan a sensory diet, identify school accommodations. Identity-first language; built on Ayres / Dunn / autistic-led scholarship.', color: 'orange', recommendedRange: '3-12' },
-        { id: 'bigFeelings', icon: '\uD83D\uDD25', label: 'Big Feelings (Anger)', desc: 'Anger-specific psychoeducation and skill-building. Anger as information, not the problem; reactive aggression as the trap. Built on Lochman\'s Coping Power tradition + the CBT-for-anger evidence base. Hassle log, trigger inventory, the choice point, personalized cool-downs.', color: 'orange', recommendedRange: '5-12' },
+        { id: 'sensoryRegulation', icon: '\uD83C\uDF08', label: 'Sensory Regulation', desc: 'Neurodiversity-affirming tool for understanding your own sensory processing across the 8 sensory systems. Build a personal profile, plan a sensory diet, identify school accommodations. Identity-first language; built on Ayres / Dunn / autistic-led scholarship.', color: 'orange', recommendedRange: '6-12' },
+        { id: 'bigFeelings', icon: '\uD83D\uDD25', label: 'Big Feelings (Anger)', desc: 'Anger-specific psychoeducation and skill-building. Anger as information, not the problem; reactive aggression as the trap. Built on Lochman\'s Coping Power tradition + the CBT-for-anger evidence base. Hassle log, trigger inventory, the choice point, personalized cool-downs.', color: 'orange', recommendedRange: '6-12' },
         { id: 'substancePsychoed', icon: '\u2697\uFE0F', label: 'Substance Use', desc: 'Harm-reduction psychoeducation about substances (alcohol, cannabis, nicotine, opioids, stimulants, benzos, hallucinogens). Adolescent brain risks. Naloxone education. NOT a screener, NOT abstinence-only. Strong SAMHSA referral. MI-aligned reflection space.', color: 'slate', recommendedRange: '6-12' },
-        { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Notice what fits and choose a manageable next step. This planning activity draws on behavioral activation; it does not deliver or evaluate a course of therapy.', color: 'emerald', recommendedRange: '5-12' },
+        { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Notice what fits and choose a manageable next step. This planning activity draws on behavioral activation; it does not deliver or evaluate a course of therapy.', color: 'emerald', recommendedRange: '6-12' },
         // Inner Work (contemplative + reflective practice)
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
@@ -2742,7 +2933,7 @@
         { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
         { id: 'ecomap',      icon: '\uD83D\uDD78\uFE0F', label: 'Ecomap',              desc: 'Person-in-environment relationship map. You at the center; the 12 major life systems around you. Each connection rated for strength, stress, and energy direction. Standard social-work tool since Hartman (1978); used in IEPs, family assessment, and personal life inventory.', color: 'rose', recommendedRange: '5-12' },
         { id: 'circlesOfSupport', icon: '\uD83C\uDFAF', label: 'Circles of Support', desc: 'Four concentric rings of relationship: Intimacy, Friendship, Participation, Exchange (paid). Makes visible who is actually close, including when paid people fill the inner rings. From Forest and Snow at Inclusion Press.', color: 'rose', recommendedRange: '3-12' },
-        { id: 'genogram',    icon: '\uD83C\uDF33', label: 'Genogram',            desc: 'Three-generation family map using standard family-systems symbols. For personal self-understanding only (NOT clinical assessment). Based on Bowen family systems theory and McGoldrick-Gerson-Petry notation. Includes prominent safe-framing guidance.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'genogram',    icon: '\uD83C\uDF33', label: 'Genogram',            desc: 'Three-generation family map using standard family-systems symbols. For personal self-understanding only (NOT clinical assessment). Based on Bowen family systems theory and McGoldrick-Gerson-Petry notation. Includes prominent safe-framing guidance.', color: 'rose', recommendedRange: '8-12' },
         { id: 'griefLoss',   icon: '\uD83D\uDD6F\uFE0F', label: 'Grief & Loss',         desc: 'A guided self-companion for grief. Death of a person or pet, family changes, friend losses, identity losses, ambiguous loss \u2014 all count. Walk through Worden\'s four tasks of mourning, write a letter, plan rituals. Strong safety framing pointing to Crisis Companion / 988 for severe or complicated grief.', color: 'rose', recommendedRange: '5-12' },
         { id: 'traumaPsychoed', icon: '\uD83C\uDF3F', label: 'Understanding Trauma', desc: 'Psychoeducation only (NOT a screener). What trauma is and is not, neurobiology in plain English, common responses reframed as adaptations, SAMHSA\'s 6 principles, evidence-based treatments. For students and educators. Includes prominent safety framing about why screening without follow-up is unsafe.', color: 'emerald', recommendedRange: '6-12' },
         { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Strong NEDA referral framing for eating disorders.', color: 'rose', recommendedRange: '6-12' },
@@ -2758,7 +2949,7 @@
         { id: 'maps',        icon: '\uD83D\uDDFA\uFE0F', label: 'MAPS',         desc: 'Making Action Plans. Eight prompts in sequence (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps). Person-centered visual from Pearpoint, O\'Brien, and Forest at Inclusion Press; widely used for transition planning.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'path',        icon: '\uD83C\uDF05', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'valuesCommittedAction', icon: '\uD83D\uDC8E', label: 'Values & Action', desc: 'Sort what matters, name your top values, and turn each into a small concrete action this week. From Acceptance and Commitment Therapy (Hayes); adolescent DNA-V framing. The ACT distinction between values (directions) and goals (destinations).', color: 'indigo', recommendedRange: '5-12' },
-        { id: 'careerCompass', icon: '\uD83D\uDCBC', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 federal Career Clusters, and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'careerCompass', icon: '\uD83D\uDCBC', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 federal Career Clusters, and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '6-12' },
         { id: 'selfAdvocacy', icon: '\uD83D\uDDE3\uFE0F', label: 'Self-Advocacy Studio', desc: 'Build a concrete school-support plan for IEP or 504 questions, accommodations, disclosure choices, and asking trusted adults for help.', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
@@ -2784,7 +2975,7 @@
 
         // Stewardship (community, justice, land, and the future)
         { id: '_cat_Stewardship', icon: '\uD83C\uDF31', label: 'Stewardship', desc: '', color: 'slate', category: true },
-        { id: 'landPlace',   icon: '\uD83C\uDF31', label: 'Land & Place',         desc: 'Stewardship Studio for ongoing relationship with the land you live on. Three threads (history, ecology, present), critical reflection on land acknowledgment as practice rather than performance, Wabanaki-led organizations as authoritative voices, and a private reflection journal.', color: 'emerald', recommendedRange: '5-12' }
+        { id: 'landPlace',   icon: '\uD83C\uDF31', label: 'Land & Place',         desc: 'Stewardship Studio for ongoing relationship with the land you live on. Three threads (history, ecology, present), critical reflection on land acknowledgment as practice rather than performance, Wabanaki-led organizations as authoritative voices, and a private reflection journal.', color: 'emerald', recommendedRange: '8-12' }
       ];
       // Append dynamically registered tools into the correct category positions
       var _dynamicTools = [
@@ -4388,7 +4579,20 @@
           h('div', { style: { display: 'flex', gap: 12, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' } },
             h('div', null,
               h('h3', { style: { margin: 0, fontSize: 18 } }, activeStation.name),
-              h('p', { role: 'status', style: { margin: '6px 0', color: _t.textMuted, fontSize: 13 } }, doneCount + ' of ' + quests.length + ' steps recorded' + (passCount ? ' · ' + passCount + ' passed for now' : '') + '. This is a practice record, not a grade.')
+              h('p', { role: 'status', style: { margin: '6px 0', color: _t.textMuted, fontSize: 13 } }, doneCount + ' of ' + quests.length + ' steps recorded' + (passCount ? ' · ' + passCount + ' passed for now' : '') + '. This is a practice record, not a grade.'),
+              (function () {
+                // The "spend N minutes" step for THIS tool, visible while the steps list is collapsed.
+                if (!selHubTool) return null;
+                var tq = null;
+                for (var i = 0; i < quests.length; i++) { if (quests[i].type === 'timeSpent' && quests[i].toolId === selHubTool) { tq = quests[i]; break; } }
+                if (!tq) return null;
+                var tp = stationProg[tq.qid] || {};
+                var mins = Math.floor((tp.timeAccumMs || 0) / 60000);
+                var goal = (tq.params && tq.params.minutes) || 5;
+                return h('p', { 'data-sel-station-timer': 'true', role: 'status', style: { margin: '2px 0 0', fontSize: 13, color: tp.complete ? _t.accentSoftText : _t.textMuted } },
+                  (tp.complete ? '\u2713 ' : '\u23F1 ') + mins + ' of ' + goal + ' active minutes here' + (tp.complete ? '. Step recorded.' : '. Counts while this tab is visible and you are using it.'));
+              })(),
+              quests.length > 0 && doneCount === quests.length && h('p', { 'data-sel-station-complete': 'true', style: { margin: '6px 0', fontSize: 13, fontWeight: 700, color: _t.accentSoftText } }, '\u2713 All steps recorded. Saving the project keeps this record with the pack. You can exit the station, or reopen a step to change it.')
             ),
             h('button', { type: 'button', style: buttonStyle, 'aria-label': 'Exit station mode', onClick: function() {
               setActiveStationId(null); announceToSR('Station cleared');

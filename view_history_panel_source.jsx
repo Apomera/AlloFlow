@@ -742,6 +742,21 @@ function HistoryPanel(props) {
     setIsMoreActionsOpen(false);
   }, [activeUnitId]);
 
+  // SEL tool links: a #sel-hub/<toolId> link anywhere in rendered text is handled by
+  // sel_hub_module.js (window.SelHub.toolLinks), which loads at boot but only mounts
+  // its component while the hub is open. This panel is mounted for every student
+  // session, so it lends the open setter through one window slot. Order-independent:
+  // the hub reads the slot at click time, so neither module has to load first.
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof setShowSelHub !== 'function') return undefined;
+    const opener = () => {
+      if (typeof setSelHubTab === 'function') setSelHubTab('explore');
+      setShowSelHub(true);
+    };
+    window.__alloSelHubOpener = opener;
+    return () => { if (window.__alloSelHubOpener === opener) window.__alloSelHubOpener = null; };
+  }, [setShowSelHub, setSelHubTab]);
+
   return (
             <div id="tour-history-panel" data-help-key="history_panel" data-history-theme={historyTheme} className={`allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
                 <style>{HISTORY_PANEL_THEME_CSS}</style>

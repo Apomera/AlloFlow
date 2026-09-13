@@ -878,6 +878,55 @@ async function geminiCallWithFallback(opts) {
   return first;
 }
 
+// ── Vision evidence selection (image mode) ───────────────────────────────────
+// In image mode the run's pre-rendered pages stand in for PDF bytes. The pipeline's sliced audit
+// sends each slice as its own call, so attaching the whole run's pages to every call made all
+// fourteen slice prompts of a 54-page document carry the same five images (2026-09-13 NCES pilot):
+// each "audit" described pages it never saw. The slice prompt names its pages, and the legend
+// re-extraction prompts carry a "Focus on pages X through Y" hint, so the pages a call is about
+// can be read from the prompt and only those rendered pages attached.
+const SLICE_CONTEXT_RE = /SLICE CONTEXT: This file contains ONLY pages (\d{1,5})\s*[–—-]\s*(\d{1,5}) of a larger (\d{1,5})-page document/;
+const FOCUS_PAGES_RE = /Focus on pages (\d{1,5}) through (\d{1,5}) of the PDF/;
+
+function visionPageWindow(prompt) {
+  const text = String(prompt || '');
+  const slice = text.match(SLICE_CONTEXT_RE);
+  if (slice) return { mode: 'slice', first: Number(slice[1]), last: Number(slice[2]), totalPages: Number(slice[3]) };
+  const focus = text.match(FOCUS_PAGES_RE);
+  if (focus) return { mode: 'focus', first: Number(focus[1]), last: Number(focus[2]), totalPages: null };
+  return null;
+}
+
+// Returns { parts, prompt, selection } for one vision call. `selection` is
+// { mode: 'passthrough' | 'all' | 'slice' | 'focus' | 'raw-fallback', pages: [...] }.
+function selectVisionParts({ prompt, base64Data, mimeType, pageImages, renderReport }) {
+  const mime = mimeType || 'application/pdf';
+  const text = String(prompt || '');
+  const rawParts = [{ text }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }];
+  if (!(pageImages && pageImages.length && mime === 'application/pdf')) {
+    return { parts: rawParts, prompt: text, selection: { mode: 'passthrough', pages: [] } };
+  }
+  const pageNumbers = renderReport && Array.isArray(renderReport.pageNumbers) && renderReport.pageNumbers.length === pageImages.length
+    ? renderReport.pageNumbers.map((n) => Number(n))
+    : pageImages.map((_, i) => i + 1);
+  const window = visionPageWindow(text);
+  let chosen = pageImages.map((data, i) => ({ data, page: pageNumbers[i] }));
+  let mode = 'all';
+  if (window) {
+    const inWindow = chosen.filter((entry) => entry.page >= window.first && entry.page <= window.last);
+    if (!inWindow.length) {
+      // The call is about pages that were never rendered (rendering capped, or a range outside
+      // the pre-rendered set): the bytes the pipeline attached are the only faithful evidence.
+      return { parts: rawParts, prompt: text, selection: { mode: 'raw-fallback', pages: [], window } };
+    }
+    chosen = inWindow;
+    mode = window.mode;
+  }
+  const note = '\nAttached images correspond, in order, to source PDF pages: ' + chosen.map((entry) => entry.page).join(', ') + '.';
+  const parts = [{ text: text + note }].concat(chosen.map((entry) => ({ inline_data: { mime_type: PAGE_IMAGE_MIME, data: entry.data } })));
+  return { parts, prompt: text + note, selection: { mode, pages: chosen.map((entry) => entry.page), window: window || null } };
+}
+
 // ── Provider transport (Node side) ───────────────────────────────────────────
 // ALLOFLOW_MCP_MODEL_BACKEND picks who answers the pipeline's model calls when no agent
 // bridge is attached: 'gemini' (the default — the transport above, unchanged) or one of the
@@ -1299,13 +1348,14 @@ function createDriver(options) {
       // Image mode: swap the attached document for its rendered pages. Scoped to PDFs on purpose
       // — audio/video transcription and already-image payloads pass through untouched, since the
       // point is to remove the PDF content type, not to re-encode everything.
-      const pageImages = runOpts.pageImages;
-      const visionPrompt = String(prompt) + (pageImages && runOpts.renderReport && runOpts.renderReport.pageNumbers ? "\nAttached images correspond, in order, to source PDF pages: " + runOpts.renderReport.pageNumbers.join(", ") + "." : "");
-      const parts = (pageImages && pageImages.length && mime === 'application/pdf')
-        ? [{ text: visionPrompt }].concat(
-          pageImages.map((p) => ({ inline_data: { mime_type: PAGE_IMAGE_MIME, data: p } }))
-        )
-        : [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }];
+      const selected = selectVisionParts({ prompt, base64Data, mimeType: mime, pageImages: runOpts.pageImages, renderReport: runOpts.renderReport });
+      const parts = selected.parts;
+      const visionPrompt = selected.prompt;
+      if (selected.selection.mode === 'slice' || selected.selection.mode === 'focus') {
+        rlog('vision ' + selected.selection.mode + ' pages ' + selected.selection.window.first + '-' + selected.selection.window.last + ': attached ' + selected.selection.pages.length + ' rendered page(s)');
+      } else if (selected.selection.mode === 'raw-fallback') {
+        rlog('vision pages ' + selected.selection.window.first + '-' + selected.selection.window.last + ' were not rendered for this run; sending the attached bytes instead');
+      }
       if (modelBridge) return bridgeCall('vision', visionPrompt, parts);
       if (providerTransport) return trackTransport(() => providerTransport.call({ kind: 'vision', prompt: visionPrompt, parts, signal: runOpts.signal, transportState }));
       return trackTransport(() => geminiCallWithFallback({
@@ -1819,7 +1869,11 @@ function createDriver(options) {
         }
         if (!audit) {
           progress('audit', 'opening accessibility audit');
-          audit = await pipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
+          audit = await pipeline.runPdfAccessibilityAudit(b64, {
+            skipUiUpdates: true, skipCache: true, fileName, auditorCount,
+            // A sliced audit stays inside the requested page range instead of slicing the whole document.
+            ...(Array.isArray(pageRange) && pageRange.length === 2 ? { pageRange } : {}),
+          });
           progress('audit', 'before-score ' + (audit && audit.score));
         }
         if (!cur) {
@@ -3237,6 +3291,8 @@ module.exports = {
   resolveModelTransportConfig,
   createProviderTransport,
   PROVIDER_BACKENDS,
+  selectVisionParts,
+  visionPageWindow,
   resolveGeminiApiKey,
   verifyGeminiApiKey,
   resolveChromium,

@@ -347,8 +347,23 @@ function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf
 function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i, '.pdf, .docx, .pptx, an image (.png/.jpg/.webp), a text file (.md/.txt/.csv/.tsv), or a spreadsheet (.xlsx/.xls/.xlsb/.ods)'); }
 
 function requireGeminiKey() {
+  // ALLOFLOW_MCP_MODEL_BACKEND routes model calls to another provider; a config error there
+  // is reported as such rather than as a missing Gemini key.
+  if (Driver.resolveModelTransportConfig().backend !== 'gemini') return;
   if (!Driver.resolveGeminiApiKey().key) {
     throw new Error('GEMINI_API_KEY is not set (and no key file was found). This tool sends document content to the Gemini API and cannot run without a key — set the env var or ALLOFLOW_MCP_ENV_PATH.');
+  }
+}
+
+// Which provider answers pipeline model calls when no agent bridge is attached. Reports
+// labels only — the backend, model tags, and the key's SOURCE — never a key value.
+function describeModelBackend() {
+  try {
+    const cfg = Driver.resolveModelTransportConfig();
+    if (cfg.backend === 'gemini') return { backend: 'gemini', configured: true, note: 'Default: Gemini transport (or the agent bridge when a client answers).' };
+    return { backend: cfg.backend, model: cfg.model, visionModel: cfg.visionModel, baseUrl: cfg.baseUrl, keySource: cfg.keySource, configured: true };
+  } catch (e) {
+    return { backend: String(process.env.ALLOFLOW_MCP_MODEL_BACKEND || ''), configured: false, error: (e && e.message) || String(e) };
   }
 }
 
@@ -3721,6 +3736,7 @@ const OUTPUT_SCHEMAS = {
 };
 
 OUTPUT_SCHEMAS.remediation_capabilities.properties.agentBridge = {};
+OUTPUT_SCHEMAS.remediation_capabilities.properties.modelBackend = {};
 OUTPUT_SCHEMAS.remediation_capabilities.properties.narration = {};
 OUTPUT_SCHEMAS.document_narration_preflight = obj({epubVerification:{},files:{type:'array',items:{}},total:S_NUM,ready:S_NUM,blocked:S_NUM,note:S_STR},['files','total','ready','blocked','note']);
 OUTPUT_SCHEMAS.document_narration_voices = obj({voices:{type:'array',items:{}},kokoro:{},defaultProvider:S_STR,notes:{type:'array',items:S_STR}},['voices','kokoro','defaultProvider','notes']);
@@ -3903,6 +3919,7 @@ const TOOL_HANDLERS = {
       };
     }
     return {
+      modelBackend: describeModelBackend(),
       geminiKeyPresent: !!keyInfo.key,
       geminiKeySource: keyInfo.source, // label only; never the value
       keyVerified,

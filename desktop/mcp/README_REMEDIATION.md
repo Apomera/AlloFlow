@@ -212,6 +212,40 @@ as `env:GEMINI_API_KEY`.
 
 Set `ALLOFLOW_MCP_NO_KEY_FILES=1` to guarantee no key file is ever read, whatever is on disk.
 
+### Answering with a model other than Gemini
+
+`ALLOFLOW_MCP_MODEL_BACKEND` routes the pipeline's model calls to another provider when no
+client-model bridge is attached. It defaults to `gemini`, which leaves every path above exactly
+as it was. The other values are the app's own backends: `claude`, `openai`, `ollama`, `lmstudio`,
+`localai`, `custom`. Text and image calls (rendered pages) both go through the chosen provider,
+and error handling (quota, auth, model-not-found, transient) is classified the same way as Gemini's.
+
+```bash
+# Claude, unattended (the client bridge already lets Claude answer interactively with no key)
+export ALLOFLOW_MCP_MODEL_BACKEND=claude
+export ANTHROPIC_API_KEY=...                       # or ALLOFLOW_MCP_MODEL_KEY
+export ALLOFLOW_MCP_MODEL_NAME=claude-sonnet-5     # default for claude; required for the others
+
+# A local Ollama on this machine or on the LAN: no key, tags must already be pulled
+export ALLOFLOW_MCP_MODEL_BACKEND=ollama
+export ALLOFLOW_MCP_MODEL_BASE=http://127.0.0.1:11434
+export ALLOFLOW_MCP_MODEL_NAME=openbmb/minicpm5-2b
+export ALLOFLOW_MCP_VISION_MODEL=openbmb/minicpm-v4.6   # optional; defaults to MODEL_NAME
+
+# Any OpenAI-style server (LM Studio, LocalAI, Edge0 `serve`, a custom endpoint)
+export ALLOFLOW_MCP_MODEL_BACKEND=lmstudio
+export ALLOFLOW_MCP_MODEL_BASE=http://127.0.0.1:1234
+export ALLOFLOW_MCP_MODEL_NAME=<model id as the server lists it>
+```
+
+`remediation_capabilities` reports the active backend, model tags, and the key's *source label*
+under `modelBackend`; a key value is never logged or returned. The cloud providers (`claude`,
+`openai`) refuse to start without a key; the local ones need none. The same key hygiene as above
+applies: prefer the OS environment over any file an assistant can read.
+
+Note that the pipeline's prompts were tuned on Gemini. Before relying on another provider for
+real documents, run `tests/document_remediation_benchmark.test.js` against it and compare.
+
 **Key auto-discovery order:** `GEMINI_API_KEY` env var → the file at `ALLOFLOW_MCP_ENV_PATH` →
 the repo's gitignored `desktop/web-app/.env.maintainer-demo` (a maintainer artifact; a user should
 not put their key there). Accepted names inside a key file are `GEMINI_API_KEY` and

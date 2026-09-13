@@ -1,0 +1,5 @@
+{
+  "_note": "Optional. Map a family id or a feeling word (lowercase) to an image file in this folder. Missing entries fall back to the emoji. Art policy: docs/SEL_EMOTIONS_IMAGES.md.",
+  "families": {},
+  "feelings": {}
+}

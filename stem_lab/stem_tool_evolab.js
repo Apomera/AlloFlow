@@ -6,6 +6,16 @@
 // evolution — variation → selection → reproduction → inheritance — alongside
 // real-world relevance (Maine wildlife examples sprinkled throughout) and
 // targeted misconception correction.
+//
+// Learning scaffolds shared by every simulator (2026-09-13 pass):
+//   PredictCard     predict-observe-explain gate before a run, compared after
+//   CheckCard       one student-facing misconception check with per-option feedback
+//   ExperimentList  the "Try this" prompts as trackable cards, auto-detected where
+//                   the simulator can tell, ticked by the student otherwise
+//   markComplete    completion badges earned by doing (a finished hunt, 20
+//                   generations, a graded tree, a finished quiz), not by visiting
+//   SpeakButton     read-aloud via the host TTS, falling back to speechSynthesis
+// Progress lives in toolData.evoProgress (+ localStorage evoLab.progress.v1).
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -147,6 +157,169 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       var upd = function(key, val) { ctx.update('evoLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[EvoLab]', msg); };
       var callTTS = ctx.callTTS || null;
+      // Read-aloud (UDL: multiple means of representation). Host TTS first,
+      // then the browser's own speech synthesis so the button never dead-ends.
+      var speakText = function(text) {
+        var s = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+        if (!s) return;
+        if (callTTS) { try { callTTS(s); return; } catch (e) {} }
+        try {
+          if (window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
+            var u = new SpeechSynthesisUtterance(s);
+            u.rate = 0.95;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+          }
+        } catch (e) {}
+      };
+
+      // ── Learning progress ──
+      // evoBadges (below) still records which modules were VISITED. Completion is
+      // earned by doing: finishing a hunt, running 20 generations, grading a
+      // tree, scoring on a quiz. Experiments are the "Try this" cards, either
+      // auto-detected by the simulator or ticked by the student. Predictions and
+      // checks back the predict-observe-explain gates and the end-of-run
+      // misconception checks. One object so a project file carries it whole.
+      var _emptyProgress = function() { return { completed: {}, experiments: {}, predictions: {}, checks: {}, challenges: {}, records: {}, notes: {}, exitTickets: {} }; };
+      var _normalizeProgress = function(raw) {
+        var p = raw && typeof raw === 'object' ? raw : {};
+        return {
+          completed: p.completed && typeof p.completed === 'object' ? p.completed : {},
+          experiments: p.experiments && typeof p.experiments === 'object' ? p.experiments : {},
+          predictions: p.predictions && typeof p.predictions === 'object' ? p.predictions : {},
+          checks: p.checks && typeof p.checks === 'object' ? p.checks : {},
+          challenges: p.challenges && typeof p.challenges === 'object' ? p.challenges : {},
+          records: p.records && typeof p.records === 'object' ? p.records : {},
+          notes: p.notes && typeof p.notes === 'object' ? p.notes : {},
+          exitTickets: p.exitTickets && typeof p.exitTickets === 'object' ? p.exitTickets : {}
+        };
+      };
+      var _progressRef = useRef(null);
+      if (d.evoProgress) _progressRef.current = _normalizeProgress(d.evoProgress);
+      else if (_progressRef.current === null) _progressRef.current = _normalizeProgress(lsGet('evoLab.progress.v1', null)) || _emptyProgress();
+      var progress = _progressRef.current;
+      var writeProgress = function(mutator) {
+        var cur = _normalizeProgress(_progressRef.current);
+        var next = {
+          completed: Object.assign({}, cur.completed),
+          experiments: Object.assign({}, cur.experiments),
+          predictions: Object.assign({}, cur.predictions),
+          checks: Object.assign({}, cur.checks),
+          challenges: Object.assign({}, cur.challenges),
+          records: Object.assign({}, cur.records),
+          notes: Object.assign({}, cur.notes),
+          exitTickets: Object.assign({}, cur.exitTickets)
+        };
+        mutator(next);
+        _progressRef.current = next;
+        upd('evoProgress', next);
+        lsSet('evoLab.progress.v1', next);
+        return next;
+      };
+      var isComplete = function(moduleId) { var p = _progressRef.current; return !!(p && p.completed && p.completed[moduleId]); };
+      var markComplete = function(moduleId, note) {
+        if (isComplete(moduleId)) return false;
+        writeProgress(function(p) { p.completed[moduleId] = { at: new Date().toISOString(), note: String(note || '') }; });
+        announce(__alloFill(__alloT('stem.evolab.sr_module_completed', 'Module completed: {value1}. {value2}'), { value1: moduleId, value2: String(note || '') }));
+        return true;
+      };
+      var experimentDone = function(moduleId, expId) { var p = _progressRef.current; return !!(p && p.experiments && p.experiments[moduleId] && p.experiments[moduleId][expId]); };
+      var setExperiment = function(moduleId, expId, done, title) {
+        if (experimentDone(moduleId, expId) === !!done) return false;
+        writeProgress(function(p) {
+          var m = Object.assign({}, p.experiments[moduleId] || {});
+          if (done) m[expId] = { at: new Date().toISOString(), title: String(title || expId) }; else delete m[expId];
+          p.experiments[moduleId] = m;
+        });
+        return true;
+      };
+      // Challenges: goal-shaped, auto-detected once. Records: personal bests
+      // (max or min) with a label and unit, shown on the challenge card and in
+      // the journal.
+      var challengeDone = function(moduleId, id) { var p = _progressRef.current; return !!(p && p.challenges && p.challenges[moduleId] && p.challenges[moduleId][id]); };
+      var detectChallenge = function(moduleId, id, title, value) {
+        if (challengeDone(moduleId, id)) return false;
+        writeProgress(function(p) {
+          var m = Object.assign({}, p.challenges[moduleId] || {});
+          m[id] = { at: new Date().toISOString(), title: String(title || id), value: value == null ? null : value };
+          p.challenges[moduleId] = m;
+        });
+        announce(__alloFill(__alloT('stem.evolab.sr_challenge_met', 'Challenge met: {value1}'), { value1: title || id }));
+        return true;
+      };
+      var getRecord = function(moduleId, id) { var p = _progressRef.current; var r = p && p.records && p.records[moduleId] && p.records[moduleId][id]; return r && typeof r.value === 'number' && isFinite(r.value) ? r : null; };
+      var setRecord = function(moduleId, id, value, opts) {
+        if (typeof value !== 'number' || !isFinite(value)) return false;
+        var o = opts || {};
+        var cur = getRecord(moduleId, id);
+        var better = !cur || (o.better === 'min' ? value < cur.value : value > cur.value);
+        if (!better) return false;
+        writeProgress(function(p) {
+          var m = Object.assign({}, p.records[moduleId] || {});
+          m[id] = { value: value, label: String(o.label || id), unit: String(o.unit || ''), better: o.better === 'min' ? 'min' : 'max', at: new Date().toISOString() };
+          p.records[moduleId] = m;
+        });
+        if (cur) announce(__alloFill(__alloT('stem.evolab.sr_new_personal_best', 'New personal best: {value1} {value2}{value3}'), { value1: o.label || id, value2: Number.isInteger(value) ? value : value.toFixed(3), value3: o.unit || '' }));
+        return true;
+      };
+      // Auto-detected experiments announce themselves so a student who is
+      // looking at the canvas (or listening) learns the tool noticed.
+      var detectExperiment = function(moduleId, expId, label) {
+        if (!setExperiment(moduleId, expId, true, label)) return false;
+        announce(__alloFill(__alloT('stem.evolab.sr_experiment_detected', 'Experiment logged: {value1}'), { value1: label || expId }));
+        return true;
+      };
+      var experimentCount = function() {
+        var p = _progressRef.current; var n = 0;
+        if (p && p.experiments) Object.keys(p.experiments).forEach(function(m) { n += Object.keys(p.experiments[m] || {}).filter(function(k) { return p.experiments[m][k]; }).length; });
+        return n;
+      };
+      var getPrediction = function(moduleId) { var p = _progressRef.current; return (p && p.predictions && p.predictions[moduleId]) || null; };
+      var savePrediction = function(moduleId, patch) {
+        writeProgress(function(p) { p.predictions[moduleId] = patch ? Object.assign({}, p.predictions[moduleId] || {}, patch) : undefined; if (!patch) delete p.predictions[moduleId]; });
+      };
+      var getNote = function(moduleId) { var p = _progressRef.current; var n = p && p.notes && p.notes[moduleId]; return n && typeof n === 'object' && typeof n.text === 'string' ? n : null; };
+      var saveNote = function(moduleId, text) {
+        var clean = String(text == null ? '' : text).slice(0, 2000);
+        writeProgress(function(p) { if (clean.trim()) p.notes[moduleId] = { text: clean, at: new Date().toISOString() }; else delete p.notes[moduleId]; });
+      };
+      var getTicket = function(day) { var p = _progressRef.current; var r = p && p.exitTickets && p.exitTickets[day]; return r && typeof r === 'object' && typeof r.text === 'string' ? r : null; };
+      var saveTicket = function(day, text, confidence) {
+        var clean = String(text == null ? '' : text).slice(0, 2000);
+        writeProgress(function(p) { if (clean.trim() || confidence) p.exitTickets[day] = { text: clean, confidence: confidence || '', at: new Date().toISOString() }; else delete p.exitTickets[day]; });
+      };
+      // The 5-day guide's exit tickets, answerable in-app. Kept in step with
+      // CurriculumGuide's DAYS (same wording) so teacher and student see one prompt.
+      var EXIT_TICKETS = [
+        { day: 1, theme: t('stem.evolab.day1_theme', 'Foundation: Allele Frequencies'), icon: '🧮', prompt: t('stem.evolab.day1_ticket', 'In one sentence each: define equilibrium, define drift, and give one example where drift overwhelmed selection in a real population.'), modules: ['hardyWeinberg', 'geneticDrift'] },
+        { day: 2, theme: t('stem.evolab.day2_theme', 'Selection in Action'), icon: '🧪', prompt: t('stem.evolab.day2_ticket', 'Describe in words (or sketch on paper) the trait distribution before vs after directional selection, then the same for stabilizing selection. Say what happens to the mean and to the spread in each.'), modules: ['selectionSandbox', 'predatorVision', 'beakLab'] },
+        { day: 3, theme: t('stem.evolab.day3_theme', 'Between Populations: Speciation & Coevolution'), icon: '🌗', prompt: t('stem.evolab.day3_ticket', 'Pick a real coevolutionary pair (bats/moths, plants/herbivores, predator/prey, host/parasite) and describe one specific innovation and its counter-innovation.'), modules: ['speciation', 'coevolution'] },
+        { day: 4, theme: t('stem.evolab.day4_theme', 'Macroevolution: The Tree of Life'), icon: '🌳', prompt: t('stem.evolab.day4_ticket', 'Choose 5 organisms and describe how you would arrange them on a cladogram. Name one synapomorphy (shared derived trait) that defines each clade you use.'), modules: ['phyloBuilder', 'commonAncestry'] },
+        { day: 5, theme: t('stem.evolab.day5_theme', 'Application & Reflection'), icon: '💊', prompt: t('stem.evolab.day5_ticket', 'Scenario: your friend feels better after 3 days of a 10-day antibiotic course and wants to save the rest for next time. Write a 2-sentence response to your friend, then 1 sentence explaining the evolutionary mechanism behind your advice.'), modules: ['antibioticLab', 'misconceptions'] }
+      ];
+      // Every challenge, for the menu's "next challenge" suggestion and the count.
+      var CHALLENGE_INDEX = [
+        { moduleId: 'predatorVision', id: 'camo90in8', title: 'Sharp eyes: 90% camouflage by round 8' }, { moduleId: 'predatorVision', id: 'reAdapt', title: 'Re-adapt after an environment change' },
+        { moduleId: 'mateChoice', id: 'plateauUnder70', title: 'Hold the peacock balance under 0.70' }, { moduleId: 'mateChoice', id: 'dullOut', title: 'Dull the males down against choosy females' },
+        { moduleId: 'climatePressure', id: 'survive03', title: 'Survive warming of 0.030 per generation' }, { moduleId: 'climatePressure', id: 'survive03lowVar', title: 'Survive 0.030 with low variation' },
+        { moduleId: 'selectionSandbox', id: 'tightStabilizing', title: 'SD below 0.08 under stabilizing selection' }, { moduleId: 'selectionSandbox', id: 'bimodal', title: 'A clean disruptive split' },
+        { moduleId: 'beakLab', id: 'bigBeaks', title: 'Mean beak past 10.5 mm' }, { moduleId: 'beakLab', id: 'recover', title: 'Bring the small beaks back' },
+        { moduleId: 'antibioticLab', id: 'eradicate', title: 'Eradicate the infection' }, { moduleId: 'antibioticLab', id: 'rollback', title: 'Roll resistance back' },
+        { moduleId: 'geneticDrift', id: 'allFixed', title: 'Every drift lineage decided' }, { moduleId: 'geneticDrift', id: 'holdSteady', title: 'Big numbers hold steady' },
+        { moduleId: 'hardyWeinberg', id: 'purge', title: 'Purge an allele in 30 generations' }, { moduleId: 'hardyWeinberg', id: 'mutationMelt', title: 'Melt a fixed allele' },
+        { moduleId: 'speciation', id: 'milestone20', title: 'Divergence milestone in 20 generations' }, { moduleId: 'speciation', id: 'holdTogether', title: 'Same pressure, same shape' },
+        { moduleId: 'coevolution', id: 'redQueen', title: 'Run in place for 40 generations' },
+        { moduleId: 'phyloBuilder', id: 'perfectFirst', title: 'Perfect tree, first grading' }, { moduleId: 'phyloBuilder', id: 'noHints', title: 'Perfect tree without the checklist' },
+        { moduleId: 'discoveryTimeline', id: 'perfectOrder', title: 'Sequence six milestones first try' },
+        { moduleId: 'commonAncestry', id: 'detective5', title: 'Bone detective, five for five' },
+        { moduleId: 'geneticDrift', id: 'bottleneckScar', title: 'Scar of a bottleneck' },
+        { moduleId: 'misconceptions', id: 'perfect12', title: '12 of 12 misconceptions in one pass' },
+        { moduleId: 'selectionSleuth', id: 'streak10', title: 'Ten mechanisms in a row' }, { moduleId: 'homologySleuth', id: 'streak10', title: 'Ten homology calls in a row' }
+      ];
+      var getCheck = function(moduleId) { var p = _progressRef.current; return (p && p.checks && p.checks[moduleId]) || null; };
+      var saveCheck = function(moduleId, rec) {
+        writeProgress(function(p) { if (rec) p.checks[moduleId] = rec; else delete p.checks[moduleId]; });
+      };
 
       // Hydrate persisted state once on mount. Gated by ref so re-renders don't
       // re-fire the upd() and create a loop.
@@ -159,6 +332,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         if (savedQuizBest != null && d.misconQuizBest === undefined) upd('misconQuizBest', savedQuizBest);
         var savedCapstone = lsGet('evoLab.capstone.v2', null);
         if (savedCapstone && d.evoCapstone === undefined) upd('evoCapstone', savedCapstone);
+        var savedProgress = lsGet('evoLab.progress.v1', null);
+        if (savedProgress && d.evoProgress === undefined) upd('evoProgress', savedProgress);
       }
 
       // Top-level view selector. 'menu' is the hub; each module has its own view.
@@ -192,6 +367,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       StatCard = stableType('StatCard', StatCard);
       LabeledSlider = stableType('LabeledSlider', LabeledSlider);
       TeacherNotes = stableType('TeacherNotes', TeacherNotes);
+      SpeakButton = stableType('SpeakButton', SpeakButton);
+      ExperimentList = stableType('ExperimentList', ExperimentList);
+      PredictCard = stableType('PredictCard', PredictCard);
+      CheckCard = stableType('CheckCard', CheckCard);
+      ChallengeList = stableType('ChallengeList', ChallengeList);
+      FieldNote = stableType('FieldNote', FieldNote);
+      KeyTerms = stableType('KeyTerms', KeyTerms);
+      ExitTicketCard = stableType('ExitTicketCard', ExitTicketCard);
+      TraitHistogram = stableType('TraitHistogram', TraitHistogram);
       MainMenu = stableType('MainMenu', MainMenu);
       SelectionSleuth = stableType('SelectionSleuth', SelectionSleuth);
       HomologySleuth = stableType('HomologySleuth', HomologySleuth);
@@ -199,8 +383,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       StandardsCrosswalk = stableType('StandardsCrosswalk', StandardsCrosswalk);
       CurriculumGuide = stableType('CurriculumGuide', CurriculumGuide);
 
-      // Badge tracking — visiting each module marks it explored. Drives the
-      // progress banner on MainMenu and the per-card ✓ checkmark.
+      // Visit tracking — opening a module marks it EXPLORED (light state on the
+      // menu). The ✓ badge is COMPLETED, earned inside the module via
+      // markComplete() when the student actually does the work.
       var BADGE_IDS = ['predatorVision','mateChoice','climatePressure','selectionSandbox','beakLab','speciation','coevolution','phyloBuilder','hardyWeinberg','geneticDrift','commonAncestry','antibioticLab','discoveryTimeline','misconceptions','selectionSleuth','homologySleuth','capstone'];
       var goto = function(v) {
         setView(v);
@@ -514,6 +699,407 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // SHARED LEARNING CHROME
+      // ─────────────────────────────────────────────────────
+      // SpeakButton — read a passage aloud. `tone: 'dark'` for the white-on-
+      // gradient hero panels, default for white cards.
+      function SpeakButton(props) {
+        var label = props.label || __alloT('stem.evolab.read_aloud', 'Read this aloud');
+        var tone = props.tone === 'dark'
+          ? 'bg-white/20 hover:bg-white/30 text-white focus:ring-white/70'
+          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400';
+        return h('button', {
+          type: 'button',
+          onClick: function() {
+            var text = props.text;
+            if (!text && props.targetId) { var node = document.getElementById(props.targetId); text = node ? node.textContent : ''; }
+            speakText(text);
+          },
+          'aria-label': label,
+          title: label,
+          className: 'evolab-no-print inline-flex flex-shrink-0 items-center justify-center rounded-full w-8 h-8 text-base transition-colors focus:outline-none focus:ring-2 ' + tone + (props.className ? ' ' + props.className : '')
+        }, '🔊');
+      }
+
+      // ExperimentList — the "Try these experiments" prompts as trackable cards.
+      // items: [{ id, title, body, auto }]. `auto` items are ticked by the
+      // simulator itself (detectExperiment); the rest carry a checkbox.
+      function ExperimentList(props) {
+        var moduleId = props.moduleId;
+        var items = props.items || [];
+        var done = (progress.experiments && progress.experiments[moduleId]) || {};
+        var doneCount = items.filter(function(it) { return done[it.id]; }).length;
+        var border = props.border || 'border-emerald-400';
+        var heading = props.heading || 'text-emerald-800';
+        var challenges = props.challenges && props.challenges.length ? h(ChallengeList, { moduleId: moduleId, items: props.challenges, border: 'border-amber-400', heading: 'text-amber-800' }) : null;
+        return h('div', { className: 'space-y-3' }, h('div', { className: 'bg-white border-2 ' + border + ' rounded-xl p-4' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+            h('h3', { className: 'text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.try_these_experiments_generic', '🧪 Try these experiments')),
+            h('span', { className: 'text-[0.6875rem] font-bold rounded-full px-2 py-0.5 ' + (doneCount === items.length && items.length ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700') },
+              doneCount + ' / ' + items.length + ' ' + __alloT('stem.evolab.experiments_done', 'done'))
+          ),
+          h('ol', { className: 'space-y-2 text-sm text-slate-700' },
+            items.map(function(it, i) {
+              var isDone = !!done[it.id];
+              var boxId = 'evolab-exp-' + moduleId + '-' + it.id;
+              return h('li', { key: it.id, className: 'flex items-start gap-2 rounded-lg p-2 ' + (isDone ? 'bg-emerald-50' : '') },
+                it.auto
+                  ? h('span', {
+                      className: 'mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[0.6875rem] font-black ' + (isDone ? 'bg-emerald-700 text-white' : 'border-2 border-dashed border-slate-400 text-slate-500'),
+                      role: 'img',
+                      'aria-label': isDone ? __alloT('stem.evolab.experiment_detected', 'Detected by the simulator') : __alloT('stem.evolab.experiment_auto_detects', 'The simulator will detect this one when you do it')
+                    }, isDone ? '✓' : (i + 1))
+                  : h('input', {
+                      type: 'checkbox',
+                      id: boxId,
+                      checked: isDone,
+                      onChange: function(e) { setExperiment(moduleId, it.id, !!e.target.checked, it.title); },
+                      className: 'mt-1 h-4 w-4 flex-shrink-0 accent-emerald-600'
+                    }),
+                h(it.auto ? 'div' : 'label', it.auto ? { className: 'flex-1' } : { htmlFor: boxId, className: 'flex-1 cursor-pointer' },
+                  h('strong', null, it.title),
+                  it.body,
+                  it.auto && h('span', { className: 'ml-2 inline-block rounded-full px-1.5 text-[0.625rem] font-bold uppercase tracking-wider ' + (isDone ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600') },
+                    isDone ? __alloT('stem.evolab.detected', 'detected') : __alloT('stem.evolab.auto_detects', 'auto-detects'))
+                )
+              );
+            })
+          )
+        ), challenges);
+      }
+
+      // ChallengeList — goal-shaped targets the simulator detects, with optional
+      // personal-best records. items: [{ id, title, body, record: { id, label, unit } }]
+      function ChallengeList(props) {
+        var moduleId = props.moduleId;
+        var items = props.items || [];
+        var done = (progress.challenges && progress.challenges[moduleId]) || {};
+        var metCount = items.filter(function(it) { return done[it.id]; }).length;
+        var border = props.border || 'border-amber-400';
+        var heading = props.heading || 'text-amber-800';
+        return h('div', { className: 'bg-white border-2 ' + border + ' rounded-xl p-4' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+            h('h3', { className: 'text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.challenges_heading', '🏅 Challenges')),
+            h('span', { className: 'text-[0.6875rem] font-bold rounded-full px-2 py-0.5 ' + (metCount === items.length && items.length ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700') }, metCount + ' / ' + items.length + ' ' + __alloT('stem.evolab.met', 'met'))
+          ),
+          h('ul', { className: 'space-y-2 text-sm text-slate-700' },
+            items.map(function(it) {
+              var isDone = !!done[it.id];
+              var rec = it.record ? getRecord(moduleId, it.record.id) : null;
+              return h('li', { key: it.id, className: 'flex items-start gap-2 rounded-lg p-2 ' + (isDone ? 'bg-amber-50' : '') },
+                h('span', { className: 'mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[0.75rem] ' + (isDone ? 'bg-amber-800 text-white' : 'border-2 border-dashed border-slate-400 text-slate-500'), role: 'img', 'aria-label': isDone ? __alloT('stem.evolab.challenge_met_label', 'Challenge met') : __alloT('stem.evolab.challenge_open_label', 'Challenge not yet met') }, isDone ? '🏅' : '·'),
+                h('div', { className: 'flex-1' },
+                  h('strong', null, it.title),
+                  it.body,
+                  (rec || it.record) && h('div', { className: 'mt-1 text-xs font-bold ' + (rec ? 'text-amber-800' : 'text-slate-500') },
+                    rec ? '📈 ' + __alloT('stem.evolab.personal_best', 'Personal best: ') + (Number.isInteger(rec.value) ? rec.value : rec.value.toFixed(3)) + (rec.unit || '') : '📈 ' + __alloT('stem.evolab.no_record_yet', 'No record yet: ') + (it.record.label || ''))
+                )
+              );
+            })
+          )
+        );
+      }
+
+      // FieldNote — one free-text observation per module (UDL: expression).
+      // Draft lives locally while typing; saved on blur or the button, so the
+      // host is not re-rendered per keystroke. Shows up in the Learning Journal.
+      function FieldNote(props) {
+        var moduleId = props.moduleId;
+        var saved = getNote(moduleId);
+        var draftState = useState(saved ? saved.text : ''), draft = draftState[0], setDraft = draftState[1];
+        var statusState = useState(''), status = statusState[0], setStatus = statusState[1];
+        var dirty = draft !== (saved ? saved.text : '');
+        var commit = function() {
+          if (!dirty) return;
+          saveNote(moduleId, draft);
+          setStatus(__alloT('stem.evolab.note_saved', 'Saved to your journal'));
+          announce(__alloT('stem.evolab.sr_note_saved', 'Field note saved to your journal.'));
+        };
+        var noteId = 'evolab-note-' + moduleId;
+        var border = props.border || 'border-slate-300';
+        var heading = props.heading || 'text-slate-700';
+        return h('div', { className: 'evolab-no-print bg-white border-2 ' + border + ' rounded-xl p-4' },
+          h('div', { className: 'flex items-start justify-between gap-2 mb-2' },
+            h('div', null,
+              h('label', { htmlFor: noteId, className: 'block text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.my_field_note', '📝 My field note')),
+              h('p', { className: 'text-sm text-slate-700 mt-1' }, props.prompt || __alloT('stem.evolab.field_note_prompt_default', 'What surprised you here, and what would you test next?'))
+            ),
+            h(SpeakButton, { text: props.prompt || __alloT('stem.evolab.field_note_prompt_default', 'What surprised you here, and what would you test next?') })
+          ),
+          h('textarea', {
+            id: noteId,
+            value: draft,
+            rows: 3,
+            maxLength: 2000,
+            onChange: function(e) { setDraft(e.target.value); if (status) setStatus(''); },
+            onBlur: commit,
+            placeholder: __alloT('stem.evolab.field_note_placeholder', 'Write one or two sentences in your own words…'),
+            className: 'w-full rounded-lg border border-slate-500 p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400'
+          }),
+          h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-xs' },
+            h('span', { className: 'text-slate-500' }, draft.length + ' / 2000'),
+            h('div', { className: 'flex items-center gap-2' },
+              h('span', { role: 'status', className: 'text-emerald-800 font-bold' }, dirty ? __alloT('stem.evolab.unsaved_changes', 'Unsaved') : status),
+              h('button', { type: 'button', onClick: commit, disabled: !dirty, className: 'rounded-lg px-3 py-1.5 font-bold ' + (dirty ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-100 text-slate-600 cursor-not-allowed') }, __alloT('stem.evolab.save_note', 'Save note'))
+            )
+          )
+        );
+      }
+
+      // ── Key terms (UDL: vocabulary support). One shared glossary; each module
+      // lists the ids it uses. Definitions are deliberately short and avoid the
+      // word "evolve" where a plainer verb exists.
+      var GLOSSARY = {
+        allele: { term: t('stem.evolab.g_allele', 'allele'), def: t('stem.evolab.g_allele_def', 'One of the alternative versions of a gene. A population\'s allele frequency (p) is the fraction of gene copies that are one version.') },
+        variation: { term: t('stem.evolab.g_variation', 'variation'), def: t('stem.evolab.g_variation_def', 'Differences among individuals in a population. Selection can only act on variation that already exists.') },
+        heritable: { term: t('stem.evolab.g_heritable', 'heritable'), def: t('stem.evolab.g_heritable_def', 'Passed from parent to offspring through genes. A trait built during life (bigger muscles, a tan) is not heritable.') },
+        naturalSelection: { term: t('stem.evolab.g_natsel', 'natural selection'), def: t('stem.evolab.g_natsel_def', 'Individuals with some heritable traits survive and reproduce more than others in a given environment, so those traits become more common. No goal, no foresight.') },
+        fitness: { term: t('stem.evolab.g_fitness', 'fitness'), def: t('stem.evolab.g_fitness_def', 'Reproductive success: how many surviving offspring an individual leaves compared with others. Not strength, speed, or cleverness.') },
+        directional: { term: t('stem.evolab.g_directional', 'directional selection'), def: t('stem.evolab.g_directional_def', 'One extreme of a trait is favoured, so the population mean shifts that way.') },
+        stabilizing: { term: t('stem.evolab.g_stabilizing', 'stabilizing selection'), def: t('stem.evolab.g_stabilizing_def', 'The middle is favoured over both extremes; the mean holds while the spread shrinks.') },
+        disruptive: { term: t('stem.evolab.g_disruptive', 'disruptive selection'), def: t('stem.evolab.g_disruptive_def', 'Both extremes are favoured over the middle; the distribution splits toward two peaks.') },
+        sexualSelection: { term: t('stem.evolab.g_sexsel', 'sexual selection'), def: t('stem.evolab.g_sexsel_def', 'Selection through mating success (being chosen, or out-competing rivals for mates) rather than through survival.') },
+        drift: { term: t('stem.evolab.g_drift', 'genetic drift'), def: t('stem.evolab.g_drift_def', 'Change in allele frequency from the random sampling of who happens to reproduce. Strongest in small populations; has no direction.') },
+        mutation: { term: t('stem.evolab.g_mutation', 'mutation'), def: t('stem.evolab.g_mutation_def', 'A random change in DNA. The ultimate source of new variation; not aimed at what would be useful.') },
+        geneFlow: { term: t('stem.evolab.g_geneflow', 'gene flow (migration)'), def: t('stem.evolab.g_geneflow_def', 'Movement of alleles between populations when individuals move and breed.') },
+        bottleneck: { term: t('stem.evolab.g_bottleneck', 'bottleneck'), def: t('stem.evolab.g_bottleneck_def', 'A sharp drop in population size that leaves a random, smaller sample of the original variation.') },
+        founder: { term: t('stem.evolab.g_founder', 'founder effect'), def: t('stem.evolab.g_founder_def', 'A new population started by a few individuals carries only the alleles they happened to bring.') },
+        adaptation: { term: t('stem.evolab.g_adaptation', 'adaptation'), def: t('stem.evolab.g_adaptation_def', 'A heritable trait that raises fitness in a particular environment, and the process that produces it. Adaptation is local: what fits one environment can fail in another.') },
+        population: { term: t('stem.evolab.g_population', 'population'), def: t('stem.evolab.g_population_def', 'All the individuals of one species living and breeding in an area. Populations evolve; individuals do not.') },
+        generation: { term: t('stem.evolab.g_generation', 'generation'), def: t('stem.evolab.g_generation_def', 'The step from parents to offspring; the unit in which evolutionary change is counted.') },
+        hwe: { term: t('stem.evolab.g_hwe', 'Hardy-Weinberg equilibrium'), def: t('stem.evolab.g_hwe_def', 'The null model: with no selection, mutation, migration or drift, allele frequencies stay constant and genotype frequencies are p², 2pq and q².') },
+        genotypePhenotype: { term: t('stem.evolab.g_genophen', 'genotype / phenotype'), def: t('stem.evolab.g_genophen_def', 'Genotype is the set of alleles an individual carries; phenotype is the observable trait. Selection acts on phenotypes.') },
+        speciation: { term: t('stem.evolab.g_speciation', 'speciation'), def: t('stem.evolab.g_speciation_def', 'One species splitting into two, marked by reproductive isolation: the populations no longer exchange genes.') },
+        reproductiveIsolation: { term: t('stem.evolab.g_repiso', 'reproductive isolation'), def: t('stem.evolab.g_repiso_def', 'When two populations cannot, or do not, interbreed successfully. The test that decides species status; trait differences alone do not.') },
+        coevolution: { term: t('stem.evolab.g_coevo', 'coevolution'), def: t('stem.evolab.g_coevo_def', 'Two species evolving in response to each other, each forming part of the other\'s environment.') },
+        redQueen: { term: t('stem.evolab.g_redqueen', 'Red Queen effect'), def: t('stem.evolab.g_redqueen_def', 'In an arms race both sides keep improving and neither gains a lasting advantage: run to stay in place.') },
+        clade: { term: t('stem.evolab.g_clade', 'clade'), def: t('stem.evolab.g_clade_def', 'An ancestor together with all of its descendants.') },
+        synapomorphy: { term: t('stem.evolab.g_synapomorphy', 'synapomorphy'), def: t('stem.evolab.g_synapomorphy_def', 'A shared derived trait inherited from a common ancestor, marking a clade.') },
+        homologous: { term: t('stem.evolab.g_homologous', 'homologous'), def: t('stem.evolab.g_homologous_def', 'Structures with a common evolutionary origin, whatever job they do now.') },
+        analogous: { term: t('stem.evolab.g_analogous', 'analogous'), def: t('stem.evolab.g_analogous_def', 'Structures with a similar job but separate origins; the product of convergent evolution.') },
+        commonAncestor: { term: t('stem.evolab.g_commonancestor', 'common ancestor'), def: t('stem.evolab.g_commonancestor_def', 'The population from which two or more later lineages descend.') },
+        resistance: { term: t('stem.evolab.g_resistance', 'resistance'), def: t('stem.evolab.g_resistance_def', 'A heritable trait that lets an organism survive a treatment such as an antibiotic or pesticide. It spreads when the treatment removes everything else.') },
+        selectionPressure: { term: t('stem.evolab.g_selpressure', 'selection pressure'), def: t('stem.evolab.g_selpressure_def', 'Any factor in the environment that changes which individuals survive and reproduce.') },
+        camouflage: { term: t('stem.evolab.g_camouflage', 'camouflage'), def: t('stem.evolab.g_camouflage_def', 'Colouring or pattern that makes an organism harder to detect against its background. In this lab it emerges from selection; no individual changes.') },
+        theory: { term: t('stem.evolab.g_theory', 'theory (scientific)'), def: t('stem.evolab.g_theory_def', 'A well-tested explanation supported by many lines of evidence, such as the theory of evolution or the germ theory of disease. Not a guess.') }
+      };
+      var KEY_TERMS = {
+        predatorVision: ['variation', 'heritable', 'naturalSelection', 'selectionPressure', 'camouflage', 'adaptation', 'population'],
+        mateChoice: ['sexualSelection', 'fitness', 'heritable', 'naturalSelection', 'selectionPressure'],
+        climatePressure: ['selectionPressure', 'adaptation', 'variation', 'generation', 'naturalSelection', 'population'],
+        selectionSandbox: ['directional', 'stabilizing', 'disruptive', 'drift', 'mutation', 'variation', 'fitness'],
+        beakLab: ['naturalSelection', 'heritable', 'variation', 'directional', 'fitness', 'generation'],
+        speciation: ['speciation', 'reproductiveIsolation', 'geneFlow', 'drift', 'population', 'adaptation'],
+        coevolution: ['coevolution', 'redQueen', 'fitness', 'selectionPressure', 'naturalSelection'],
+        hardyWeinberg: ['allele', 'hwe', 'genotypePhenotype', 'mutation', 'geneFlow', 'population'],
+        geneticDrift: ['drift', 'allele', 'bottleneck', 'founder', 'population', 'generation'],
+        commonAncestry: ['homologous', 'analogous', 'commonAncestor', 'adaptation'],
+        antibioticLab: ['resistance', 'mutation', 'naturalSelection', 'variation', 'fitness', 'heritable'],
+        discoveryTimeline: ['theory', 'naturalSelection', 'heritable', 'mutation', 'drift']
+      };
+      // KeyTerms — collapsible glossary for one module, with read-aloud.
+      function KeyTerms(props) {
+        var ids = (KEY_TERMS[props.moduleId] || []).filter(function(id) { return GLOSSARY[id]; });
+        if (!ids.length) return null;
+        var speech = ids.map(function(id) { return GLOSSARY[id].term + ': ' + GLOSSARY[id].def; }).join(' ');
+        return h('details', { className: 'evolab-glossary bg-white border border-slate-300 rounded-xl p-4' },
+          h('summary', { className: 'cursor-pointer select-none text-xs font-bold uppercase tracking-wider ' + (props.heading || 'text-slate-700') },
+            '📚 ' + __alloFill(__alloT('stem.evolab.key_terms_n', 'Key terms ({value1})'), { value1: ids.length })),
+          h('div', { className: 'mt-3 flex items-start justify-between gap-2' },
+            h('dl', { className: 'flex-1 space-y-2 text-sm' }, ids.map(function(id) {
+              var g = GLOSSARY[id];
+              return h('div', { key: id },
+                h('dt', { className: 'font-bold text-slate-800' }, g.term),
+                h('dd', { className: 'text-slate-700 ml-4' }, g.def));
+            })),
+            h(SpeakButton, { text: speech })
+          )
+        );
+      }
+
+      // PredictCard — predict-observe-explain gate. The student commits to an
+      // outcome before running; once the module reports `outcomeId`, the card
+      // compares. `explain` maps outcome id → why that is what happened.
+      function PredictCard(props) {
+        var moduleId = props.moduleId;
+        var rec = getPrediction(moduleId) || {};
+        var choice = rec.choice || null;
+        var outcome = props.outcomeId || null;
+        var options = props.options || [];
+        var labelOf = function(id) { var o = options.filter(function(x) { return x.id === id; })[0]; return o ? o.label : id; };
+        var border = props.border || 'border-emerald-400';
+        var heading = props.heading || 'text-emerald-800';
+        var groupId = 'evolab-predict-' + moduleId;
+        var reset = function() { savePrediction(moduleId, null); };
+        // Persist the judged outcome once, so the journal can show it.
+        useEffect(function() {
+          if (!choice || !outcome) return;
+          var cur = getPrediction(moduleId) || {};
+          if (cur.outcome === outcome) return;
+          savePrediction(moduleId, { outcome: outcome, outcomeLabel: labelOf(outcome), matched: choice === outcome, revealedAt: new Date().toISOString() });
+        }, [moduleId, choice, outcome]); // eslint-disable-line
+        var body;
+        if (!choice) {
+          body = h('div', { role: 'group', 'aria-labelledby': groupId + '-q', className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+            options.map(function(o) {
+              return h('button', {
+                key: o.id,
+                type: 'button',
+                onClick: function() { savePrediction(moduleId, { choice: o.id, choiceLabel: o.label, question: props.question || '', at: new Date().toISOString(), context: props.context || '', outcome: null, outcomeLabel: null, matched: null }); announce(__alloFill(__alloT('stem.evolab.sr_prediction_saved', 'Prediction saved: {value1}'), { value1: o.label })); },
+                className: 'text-left rounded-lg border-2 border-slate-200 bg-slate-50 hover:border-slate-400 hover:bg-white p-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400'
+              }, o.label);
+            })
+          );
+        } else if (!outcome) {
+          body = h('div', { className: 'flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 border border-slate-200 p-3' },
+            h('div', { className: 'text-sm text-slate-800' },
+              h('span', { className: 'font-bold' }, __alloT('stem.evolab.you_predicted', 'You predicted: ')), labelOf(choice), rec.context ? h('span', { className: 'text-xs text-slate-600' }, ' (' + rec.context + ')') : null,
+              h('div', { className: 'text-xs text-slate-600 mt-1' }, props.pendingHint || __alloT('stem.evolab.now_run_it_and_see', 'Now run the simulation and see whether the population agrees with you.'))
+            ),
+            !props.locked && h('button', { type: 'button', onClick: reset, className: 'text-xs font-bold text-slate-700 underline' }, __alloT('stem.evolab.change_prediction', 'Change prediction'))
+          );
+        } else {
+          var matched = choice === outcome;
+          var explainText = props.explain ? (typeof props.explain === 'function' ? props.explain(choice, outcome) : props.explain[outcome]) : '';
+          body = h('div', { className: 'rounded-lg border-2 p-3 ' + (matched ? 'bg-emerald-50 border-emerald-400' : 'bg-amber-50 border-amber-400'), 'aria-live': 'polite' },
+            h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1 ' + (matched ? 'text-emerald-800' : 'text-amber-800') },
+              matched ? __alloT('stem.evolab.prediction_held', '✓ Your prediction held') : __alloT('stem.evolab.prediction_did_not_hold', '↺ The population disagreed with your prediction')),
+            h('div', { className: 'text-sm text-slate-800' },
+              h('div', null, h('span', { className: 'font-bold' }, __alloT('stem.evolab.predicted', 'Predicted: ')), labelOf(choice), rec.context ? h('span', { className: 'text-xs text-slate-600' }, ' (' + rec.context + ')') : null),
+              h('div', null, h('span', { className: 'font-bold' }, __alloT('stem.evolab.observed', 'Observed: ')), labelOf(outcome)),
+              props.observedDetail && h('div', { className: 'text-xs text-slate-700 mt-1' }, props.observedDetail)
+            ),
+            explainText && h('p', { className: 'text-sm text-slate-800 mt-2 leading-relaxed' }, explainText),
+            h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+              h('button', { type: 'button', onClick: reset, className: 'text-xs font-bold rounded-lg px-3 py-1.5 bg-white border border-slate-300 text-slate-800 hover:bg-slate-100' }, __alloT('stem.evolab.predict_again', 'Predict again for the next run')),
+              explainText && h(SpeakButton, { text: explainText, className: 'w-7 h-7 text-sm' })
+            )
+          );
+        }
+        return h('div', { className: 'bg-white border-2 ' + border + ' rounded-xl p-4' },
+          h('div', { className: 'flex items-start justify-between gap-2 mb-2' },
+            h('div', null,
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.predict_first', '🔮 Predict first')),
+              h('p', { id: groupId + '-q', className: 'text-sm font-bold text-slate-800 mt-1' }, props.question)
+            ),
+            h(SpeakButton, { text: props.question + ' ' + options.map(function(o) { return o.label; }).join('. ') })
+          ),
+          body
+        );
+      }
+
+      // CheckCard — a one-question, student-facing misconception check with
+      // feedback written for EACH option (the distractors are the misconceptions).
+      // options: [{ id, label, correct, feedback }]
+      function CheckCard(props) {
+        var moduleId = props.id ? props.moduleId + ':' + props.id : props.moduleId;
+        var rec = getCheck(moduleId) || {};
+        var picked = rec.choice || null;
+        var options = props.options || [];
+        var pickedOpt = picked ? options.filter(function(o) { return o.id === picked; })[0] : null;
+        var solved = !!(pickedOpt && pickedOpt.correct);
+        var border = props.border || 'border-emerald-400';
+        var heading = props.heading || 'text-emerald-800';
+        var groupId = 'evolab-check-' + moduleId;
+        return h('div', { className: 'bg-white border-2 ' + border + ' rounded-xl p-4' },
+          h('div', { className: 'flex items-start justify-between gap-2 mb-2' },
+            h('div', null,
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.check_yourself', '🧠 Check yourself')),
+              h('p', { id: groupId + '-q', className: 'text-sm font-bold text-slate-800 mt-1' }, props.question)
+            ),
+            h(SpeakButton, { text: props.question + ' ' + options.map(function(o) { return o.label; }).join('. ') })
+          ),
+          h('div', { role: 'group', 'aria-labelledby': groupId + '-q', className: 'space-y-2' },
+            options.map(function(o) {
+              var isPicked = picked === o.id;
+              var cls = 'block w-full text-left rounded-lg border-2 p-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 ';
+              if (solved && o.correct) cls += 'bg-emerald-50 border-emerald-500 text-emerald-900';
+              else if (isPicked && !o.correct) cls += 'bg-rose-50 border-rose-400 text-rose-900';
+              else cls += 'bg-slate-50 border-slate-200 text-slate-800 hover:border-slate-400 hover:bg-white';
+              return h('button', {
+                key: o.id,
+                type: 'button',
+                'aria-pressed': isPicked ? 'true' : 'false',
+                disabled: solved,
+                onClick: function() {
+                  saveCheck(moduleId, { choice: o.id, choiceLabel: o.label, question: props.question || '', correct: !!o.correct, at: new Date().toISOString(), tries: (rec.tries || 0) + 1, firstChoice: rec.firstChoice || o.id, firstChoiceLabel: rec.firstChoiceLabel || o.label, firstWrong: rec.firstChoice ? !!rec.firstWrong : !o.correct });
+                  announce(o.correct ? __alloT('stem.evolab.sr_check_correct', 'Correct.') : __alloT('stem.evolab.sr_check_not_yet', 'Not quite. Read the feedback and try another option.'));
+                },
+                className: cls
+              }, o.label);
+            })
+          ),
+          pickedOpt && h('div', { 'aria-live': 'polite', className: 'mt-3 rounded-lg border-2 p-3 ' + (solved ? 'bg-emerald-50 border-emerald-400' : 'bg-rose-50 border-rose-300') },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1 ' + (solved ? 'text-emerald-800' : 'text-rose-800') },
+                  solved ? __alloT('stem.evolab.check_correct_heading', '✓ Right, and here is why') : __alloT('stem.evolab.check_wrong_heading', '✗ Why this feels right, and why it is not')),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedOpt.feedback)
+              ),
+              h(SpeakButton, { text: pickedOpt.feedback })
+            ),
+            !solved && h('button', { type: 'button', onClick: function() { saveCheck(moduleId, { tries: rec.tries || 0, question: rec.question, firstChoice: rec.firstChoice, firstChoiceLabel: rec.firstChoiceLabel, firstWrong: rec.firstWrong }); }, className: 'mt-2 text-xs font-bold rounded-lg px-3 py-1.5 bg-white border border-slate-300 text-slate-800 hover:bg-slate-100' }, __alloT('stem.evolab.try_another_option', 'Try another option'))
+          )
+        );
+      }
+
+      // TraitHistogram — grouped bars over [0,1] so a BEFORE distribution can sit
+      // next to NOW. series: [{ label, values, color }]; marker: { value, label }.
+      function TraitHistogram(props) {
+        var bins = props.bins || 10;
+        var series = props.series || [];
+        var W = 400, H = 150, padL = 28, padR = 8, padT = 10, padB = 24;
+        var counts = series.map(function(s) {
+          var c = [];
+          for (var b = 0; b < bins; b++) c.push(0);
+          (s.values || []).forEach(function(v) { var bi = clamp(Math.floor(v * bins), 0, bins - 1); c[bi]++; });
+          return c;
+        });
+        var maxCount = 1;
+        counts.forEach(function(c) { c.forEach(function(n) { if (n > maxCount) maxCount = n; }); });
+        var binW = (W - padL - padR) / bins;
+        var groupW = binW * 0.8;
+        var barW = groupW / Math.max(1, series.length);
+        var toY = function(n) { return padT + (1 - n / maxCount) * (H - padT - padB); };
+        var summary = series.map(function(s) {
+          var vals = s.values || [];
+          var mean = vals.length ? vals.reduce(function(a, b) { return a + b; }, 0) / vals.length : 0;
+          return s.label + ': ' + vals.length + ' individuals, mean ' + mean.toFixed(2);
+        }).join('. ');
+        var markerX = props.marker ? padL + clamp(props.marker.value, 0, 1) * (W - padL - padR) : 0;
+        return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, props.title || __alloT('stem.evolab.trait_histogram_default_title', '📊 Trait distribution')),
+            h('div', { className: 'flex gap-3 text-[0.625rem]' },
+              series.map(function(s) {
+                return h('span', { key: s.label, className: 'flex items-center gap-1' },
+                  h('span', { style: { width: 10, height: 10, backgroundColor: s.color, display: 'inline-block', borderRadius: 2 } }),
+                  h('span', null, s.label));
+              })
+            )
+          ),
+          h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', role: 'img', 'aria-label': (props.ariaLabel || 'Trait histogram. ') + summary },
+            h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
+            h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
+            h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
+            h('text', { x: 4, y: toY(maxCount) + 4, fontSize: '9', fill: '#475569' }, String(maxCount)),
+            h('text', { x: 4, y: H - padB + 3, fontSize: '9', fill: '#475569' }, '0'),
+            h('text', { x: padL, y: H - 8, fontSize: '9', fill: '#475569' }, props.lowLabel || '0.0'),
+            h('text', { x: W - padR - 22, y: H - 8, fontSize: '9', fill: '#475569' }, props.highLabel || '1.0'),
+            counts.map(function(c, si) {
+              return c.map(function(n, bi) {
+                var x = padL + bi * binW + (binW - groupW) / 2 + si * barW;
+                return h('rect', { key: si + '-' + bi, x: x, y: toY(n), width: Math.max(1, barW - 1), height: (H - padB) - toY(n), fill: series[si].color, opacity: 0.9 });
+              });
+            }),
+            props.marker && h('line', { x1: markerX, y1: padT, x2: markerX, y2: H - padB, stroke: '#10b981', strokeWidth: 2, strokeDasharray: '4,3' }),
+            props.marker && h('text', { x: Math.min(W - padR - 70, markerX + 4), y: padT + 9, fontSize: '9', fill: '#10b981', fontWeight: 'bold' }, props.marker.label)
+          ),
+          props.caption && h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, props.caption)
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // MAIN MENU
       // ─────────────────────────────────────────────────────
       function MainMenu() {
@@ -569,8 +1155,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           {
             id: 'phyloBuilder', title: t('stem.evolab.phylogenetic_tree_builder', 'Phylogenetic Tree Builder'), icon: '🌳',
             subtitle: t('stem.evolab.build_a_cladogram_by_shared_traits', 'Build a cladogram by shared traits'),
-            desc: t('stem.evolab.drop_12_organisms_onto_a_branching_tre', 'Drop 12 organisms onto a branching tree based on shared derived traits (synapomorphies). Verify against the actual evolutionary relationship — see where morphological and molecular evidence agree (and where they don\'t).'),
-            bullets: ['12 organisms incl. Maine wildlife', 'Trait checklist guides placement', 'Toggle morphological vs molecular', 'Real-time correctness feedback'],
+            desc: t('stem.evolab.drop_12_organisms_onto_a_branching_tre', 'Place 13 organisms on the tips of a branching tree by following shared derived traits (synapomorphies): backbone, four limbs, amniotic egg, hair or feathers. Grade the tree, then toggle the evidence: skeletons and DNA disagree about exactly two branches.'),
+            bullets: ['13 organisms incl. Maine wildlife', 'Every split labelled with its synapomorphy', 'Skeleton vs DNA toggle (turtles and whales move)', 'Birds nest inside reptiles, as they should'],
             color: 'from-violet-500 to-purple-600',
             ring: 'ring-violet-500/40'
           }
@@ -614,7 +1200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           {
             id: 'discoveryTimeline', title: t('stem.evolab.discovery_timeline', 'Discovery Timeline'), icon: '📜',
             subtitle: t('stem.evolab.how_we_learned_what_we_know', 'How we learned what we know'),
-            desc: t('stem.evolab.the_250_year_history_of_evolution_scie', 'The 250-year history of evolution science. Darwin, Wallace, Mendel, the Modern Synthesis, and the often-overlooked figures whose work made it all possible (Margulis, Franklin, McClintock).'),
+            desc: t('stem.evolab.the_250_year_history_of_evolution_scie', 'The 290-year history of evolution science: Darwin, Wallace, Mendel, the Modern Synthesis, the often-overlooked figures (Margulis, Franklin, McClintock), and the field and lab studies that watched selection happen (Kettlewell, the Grants, Lenski).'),
             color: 'from-stone-500 to-stone-700',
             ring: 'ring-stone-500/40'
           },
@@ -649,15 +1235,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         ];
 
         var badges = d.evoBadges || {};
+        var completed = progress.completed || {};
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
+        var completedCount = BADGE_IDS.filter(function(id) { return completed[id]; }).length;
+        var experimentsDone = experimentCount();
+        var challengesMet = CHALLENGE_INDEX.filter(function(c) { return challengeDone(c.moduleId, c.id); }).length;
+        var unmetChallenges = CHALLENGE_INDEX.filter(function(c) { return !challengeDone(c.moduleId, c.id); });
+        // Suggest a challenge in a module the student already finished (they know the controls), else the first unmet one.
+        var nextChallenge = unmetChallenges.filter(function(c) { return completed[c.moduleId]; })[0] || unmetChallenges[0] || null;
         var totalCount = BADGE_IDS.length;
-        var allDone = visitedCount === totalCount;
+        var allDone = completedCount === totalCount;
         var allCards = bigCards.concat(miniCards);
         var moduleById = {};
         allCards.forEach(function(c) { moduleById[c.id] = c; });
-        var coreVisited = bigCards.filter(function(c) { return badges[c.id]; }).length;
+        var coreVisited = bigCards.filter(function(c) { return completed[c.id]; }).length;
         var practiceIds = ['selectionSleuth', 'homologySleuth', 'misconceptions', 'capstone'];
-        var practiceVisited = practiceIds.filter(function(id) { return badges[id]; }).length;
+        var practiceVisited = practiceIds.filter(function(id) { return completed[id]; }).length;
         var learningTracks = [
           {
             id: 'guided',
@@ -694,9 +1287,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         ];
         var activeTrackId = d.evoMenuTrack || 'guided';
         var activeTrack = learningTracks.filter(function(track) { return track.id === activeTrackId; })[0] || learningTracks[0];
-        var activeTrackVisited = activeTrack.modules.filter(function(id) { return badges[id]; }).length;
+        var activeTrackVisited = activeTrack.modules.filter(function(id) { return completed[id]; }).length;
         var activeTrackPct = Math.round((activeTrackVisited / Math.max(1, activeTrack.modules.length)) * 100);
-        var nextTrackModule = activeTrack.modules.filter(function(id) { return !badges[id]; })[0] || activeTrack.modules[0];
+        var nextTrackModule = activeTrack.modules.filter(function(id) { return !completed[id]; })[0] || activeTrack.modules.filter(function(id) { return !badges[id]; })[0] || activeTrack.modules[0];
         var evoLoopSteps = [
           { label: 'Variation', desc: 'Traits differ inside a population.' },
           { label: 'Pressure', desc: 'The environment changes who survives.' },
@@ -706,19 +1299,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         ];
         var capstoneDraft = d.evoCapstone || {};
         var capstoneSteps = ['Pick scenario', 'Predict', 'Collect evidence', 'Evaluate', 'Report'];
+        // Metacognition: the checks where the student's FIRST answer was wrong.
+        var revisedIdeas = Object.keys(progress.checks || {}).map(function(k) {
+          var r = progress.checks[k];
+          if (!r || typeof r !== 'object' || !r.firstWrong || !r.firstChoiceLabel) return null;
+          var base = k.split(':')[0];
+          return { key: k, moduleId: base, title: moduleById[base] ? moduleById[base].title : base, first: r.firstChoiceLabel, now: r.correct ? r.choiceLabel : null };
+        }).filter(Boolean);
+        var revisedTotal = revisedIdeas.length;
+        var revisedResolved = revisedIdeas.filter(function(r) { return r.now; }).length;
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
+          var done = !!completed[c.id];
           return h('button', {
             key: c.id,
             onClick: function() { goto(c.id); },
-            'aria-label': c.title + (visited ? ' (explored)' : ''),
-            className: 'relative text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 ' + (visited ? 'border-emerald-600' : 'border-slate-200') + ' hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring
+            'aria-label': c.title + (done ? ' (completed)' : visited ? ' (explored, not yet completed)' : ''),
+            className: 'relative text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 ' + (done ? 'border-emerald-600' : visited ? 'border-slate-400' : 'border-slate-200') + ' hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring
           },
-            visited && h('span', {
+            done && h('span', {
               'aria-hidden': true,
               className: 'absolute top-2 right-2 z-10 bg-emerald-700 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
             }, '✓'),
+            !done && visited && h('span', {
+              'aria-hidden': true,
+              className: 'absolute top-2 right-2 z-10 bg-white/90 text-slate-700 text-[0.625rem] font-bold rounded-full px-2 py-0.5 shadow'
+            }, 'explored'),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
@@ -745,11 +1352,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var c = moduleById[id];
           if (!c) return null;
           var visited = !!badges[c.id];
+          var done = !!completed[c.id];
           return h('button', {
             key: c.id,
             onClick: function() { goto(c.id); },
-            'aria-label': 'Open ' + c.title + (visited ? ' (explored)' : ''),
-            className: 'text-left rounded-xl border bg-white/95 p-4 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-4 ' + c.ring + ' ' + (visited ? 'border-emerald-500' : 'border-white/70 hover:border-slate-300')
+            'aria-label': 'Open ' + c.title + (done ? ' (completed)' : visited ? ' (explored)' : ''),
+            className: 'text-left rounded-xl border bg-white/95 p-4 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-4 ' + c.ring + ' ' + (done ? 'border-emerald-500' : visited ? 'border-slate-300' : 'border-white/70 hover:border-slate-300')
           },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-sm flex-shrink-0' }, idx + 1),
@@ -759,8 +1367,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('span', { className: 'font-black text-slate-900 leading-tight' }, c.title)
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, c.subtitle),
-                h('div', { className: 'mt-3 inline-flex items-center rounded-full px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider ' + (visited ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') },
-                  visited ? 'Explored' : 'Open next'
+                h('div', { className: 'mt-3 inline-flex items-center rounded-full px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider ' + (done ? 'bg-emerald-100 text-emerald-800' : visited ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600') },
+                  done ? 'Completed' : visited ? 'Explored · finish it' : 'Open next'
                 )
               )
             )
@@ -800,11 +1408,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     })
                   )
                 ),
-                h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5' },
+                h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2 mt-5' },
                   [
+                    { label: 'Completed', value: completedCount + '/' + totalCount },
                     { label: 'Explored', value: visitedCount + '/' + totalCount },
-                    { label: 'Core labs', value: coreVisited + '/' + bigCards.length },
-                    { label: 'Practice', value: practiceVisited + '/' + practiceIds.length },
+                    { label: 'Experiments', value: String(experimentsDone) },
+                    { label: 'Challenges', value: challengesMet + '/' + CHALLENGE_INDEX.length },
                     { label: 'Path', value: activeTrack.label }
                   ].map(function(stat) {
                     return h('div', { key: stat.label, className: 'rounded-xl border border-white/15 bg-white/10 px-3 py-2' },
@@ -828,7 +1437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (active ? 'bg-slate-200' : 'bg-white/10'), 'aria-hidden': true },
                       h('div', {
                         className: 'h-full rounded-full ' + (active ? 'bg-emerald-500' : 'bg-emerald-300/70'),
-                        style: { width: Math.round((track.modules.filter(function(moduleId) { return badges[moduleId]; }).length / Math.max(1, track.modules.length)) * 100) + '%' }
+                        style: { width: Math.round((track.modules.filter(function(moduleId) { return completed[moduleId]; }).length / Math.max(1, track.modules.length)) * 100) + '%' }
                       })
                     ),
                     h('div', { className: 'mt-2 flex gap-1', 'aria-hidden': true },
@@ -855,7 +1464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'mb-3 rounded-xl border border-white/10 bg-slate-950/20 p-3' },
                 h('div', { className: 'flex items-center justify-between gap-3 text-xs font-bold text-white/80' },
                   h('span', null, 'Path progress'),
-                  h('span', null, activeTrackVisited + ' of ' + activeTrack.modules.length + ' explored')
+                  h('span', null, activeTrackVisited + ' of ' + activeTrack.modules.length + ' completed')
                 ),
                 h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white/10', 'aria-hidden': true },
                   h('div', { className: 'h-full rounded-full bg-emerald-300 transition-all', style: { width: activeTrackPct + '%' } })
@@ -866,6 +1475,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               )
             )
           ),
+          h('details', { className: 'mb-6 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden' },
+            h('summary', { className: 'cursor-pointer select-none px-4 py-3 font-black text-slate-800 flex flex-wrap items-center justify-between gap-2' },
+              h('span', null, '🧭 ' + t('stem.evolab.how_evolab_works', 'How EvoLab works')),
+              h('span', { className: 'text-xs font-bold text-slate-500' }, t('stem.evolab.five_moves', 'five moves, every lab'))
+            ),
+            h('ol', { className: 'border-t border-slate-200 p-4 grid grid-cols-1 sm:grid-cols-5 gap-3 text-sm text-slate-800' },
+              [
+                ['🔮', t('stem.evolab.how_1', 'Predict'), t('stem.evolab.how_1_d', 'Commit to an outcome before you run. The lab compares afterwards.')],
+                ['🧪', t('stem.evolab.how_2', 'Run and experiment'), t('stem.evolab.how_2_d', 'Change one thing at a time. Most "Try this" cards tick themselves when you do them; challenges are the harder targets.')],
+                ['🧠', t('stem.evolab.how_3', 'Check yourself'), t('stem.evolab.how_3_d', 'One question after your run. Wrong answers get their own explanation; the tool remembers what you first thought.')],
+                ['📝', t('stem.evolab.how_4', 'Write a field note'), t('stem.evolab.how_4_d', 'One or two honest sentences in your own words. This is where the learning sticks.')],
+                ['📓', t('stem.evolab.how_5', 'Journal it'), t('stem.evolab.how_5_d', 'Everything lands in My Journal. Copy it as text for your teacher; badges are earned by finishing, not by visiting.')]
+              ].map(function(step, i) {
+                return h('li', { key: i, className: 'rounded-xl border border-slate-200 bg-slate-50 p-3' },
+                  h('div', { className: 'flex items-center gap-2 font-black' }, h('span', { 'aria-hidden': true }, step[0]), h('span', null, (i + 1) + '. ' + step[1])),
+                  h('p', { className: 'mt-1 text-xs text-slate-700 leading-snug' }, step[2]));
+              })
+            )
+          ),
+          revisedTotal > 0 && h('section', { className: 'mb-6 rounded-2xl border-2 border-violet-300 bg-gradient-to-r from-violet-50 to-fuchsia-50 p-4 shadow-sm', 'aria-label': t('stem.evolab.ideas_you_revised', 'Ideas you revised') },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('span', { className: 'text-3xl', 'aria-hidden': true }, '💡'),
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-widest text-violet-800' }, t('stem.evolab.ideas_you_revised', 'Ideas you revised')),
+                  h('div', { className: 'text-sm text-slate-800' }, __alloFill(t('stem.evolab.revised_summary', 'You changed your mind {value1} time{value2} after seeing the evidence{value3}. That is the skill.'), { value1: revisedTotal, value2: revisedTotal === 1 ? '' : 's', value3: revisedResolved < revisedTotal ? ' (' + (revisedTotal - revisedResolved) + ' still open)' : '' }))
+                )
+              ),
+              h(SpeakButton, { text: revisedIdeas.map(function(r) { return r.title + '. First thought: ' + r.first + (r.now ? '. Now: ' + r.now : '. Still open.'); }).join(' ') })
+            ),
+            h('ul', { className: 'mt-3 grid grid-cols-1 md:grid-cols-2 gap-2' }, revisedIdeas.slice(0, 6).map(function(r) {
+              return h('li', { key: r.key, className: 'rounded-xl bg-white/80 border border-violet-200 p-3 text-sm' },
+                h('button', { type: 'button', onClick: function() { goto(r.moduleId); }, className: 'font-black text-violet-900 underline decoration-violet-300 hover:decoration-violet-700 text-left' }, r.title),
+                h('div', { className: 'mt-1 text-slate-700' }, h('span', { className: 'font-bold text-rose-800' }, t('stem.evolab.first_thought', 'First thought: ')), r.first),
+                h('div', { className: 'mt-1 text-slate-800' }, r.now ? [h('span', { key: 'l', className: 'font-bold text-emerald-800' }, t('stem.evolab.now_label', 'Now: ')), r.now] : h('span', { className: 'italic text-slate-600' }, t('stem.evolab.still_open_revisit', 'Still open. Revisit the check when you are ready.'))));
+            }))
+          ),
+          nextChallenge && h('div', { className: 'mb-6 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('span', { className: 'text-3xl', 'aria-hidden': true }, '🏅'),
+              h('div', null,
+                h('div', { className: 'text-xs font-black uppercase tracking-widest text-amber-800' }, t('stem.evolab.suggested_next_challenge', 'Suggested next challenge')),
+                h('div', { className: 'font-black text-slate-900' }, nextChallenge.title),
+                h('div', { className: 'text-sm text-slate-700' }, (moduleById[nextChallenge.moduleId] ? moduleById[nextChallenge.moduleId].title : nextChallenge.moduleId) + ' · ' + __alloFill(t('stem.evolab.challenges_met_of', '{value1} of {value2} challenges met'), { value1: challengesMet, value2: CHALLENGE_INDEX.length }))
+              )
+            ),
+            h('button', {
+              onClick: function() { goto(nextChallenge.moduleId); },
+              className: 'rounded-xl bg-amber-700 px-4 py-2.5 text-sm font-black text-white shadow hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300'
+            }, t('stem.evolab.take_it_on', 'Take it on →'))
+          ),
           // Progress banner
           h('div', {
             'aria-live': 'polite',
@@ -875,17 +1535,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🎯'),
               h('div', null,
                 h('div', { className: 'font-bold text-slate-800' },
-                  allDone ? 'All modules explored — full evolution path complete!' : ('Progress: ' + visitedCount + ' of ' + totalCount + ' modules explored')
+                  allDone ? 'All 17 modules completed — full evolution path complete!' : ('Progress: ' + completedCount + ' of ' + totalCount + ' modules completed · ' + visitedCount + ' explored · ' + experimentsDone + ' experiments logged')
                 ),
                 h('div', { className: 'text-xs text-slate-600' },
-                  allDone ? 'Revisit any module to deepen your understanding.' : 'Use a recommended path or browse the full module catalog.')
+                  allDone ? 'Revisit any module to deepen your understanding.' : 'Completion is earned by doing: finish a hunt, run 20 generations, grade a tree, or finish a quiz. Experiments are the "Try this" cards inside each module.')
               )
             ),
-            h('div', { className: 'flex-shrink-0 w-32 h-3 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
-              h('div', {
-                className: 'h-full ' + (allDone ? 'bg-emerald-500' : 'bg-teal-500') + ' transition-all',
-                style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
-              })
+            h('div', { className: 'flex items-center gap-3' },
+              h('div', { className: 'flex-shrink-0 w-32 h-3 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
+                h('div', {
+                  className: 'h-full ' + (allDone ? 'bg-emerald-500' : 'bg-teal-500') + ' transition-all',
+                  style: { width: Math.round((completedCount / totalCount) * 100) + '%' }
+                })
+              ),
+              h('button', {
+                onClick: function() { setView('journal'); upd('view', 'journal'); },
+                className: 'rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-white shadow hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-400'
+              }, '📓 ' + t('stem.evolab.my_journal', 'My journal')),
+              h('button', {
+                onClick: function() { setView('exitTickets'); upd('view', 'exitTickets'); },
+                className: 'rounded-xl bg-amber-700 px-3 py-2 text-xs font-black text-white shadow hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300'
+              }, '🎟️ ' + t('stem.evolab.exit_tickets', 'Exit Tickets'))
             )
           ),
           capstoneDraft.scenarioId && h('section', {
@@ -932,7 +1602,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('span', null, t('stem.evolab.teacher_resources', 'Teacher Resources')),
             h('span', { className: 'normal-case font-medium text-slate-600' + onHostInk }, t('stem.evolab.for_educators_planning_a_unit', '— for educators planning a unit'))
           ),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
+            h('button', {
+              onClick: function() { setView('classSnapshot'); upd('view', 'classSnapshot'); },
+              'aria-label': t('stem.evolab.a11y_class_snapshot_card', 'Class Snapshot — paste student journals to see completion, prediction hit rates, misconceptions, and field notes'),
+              className: 'text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 border-amber-300 hover:border-amber-500 overflow-hidden focus:outline-none focus:ring-4 ring-amber-500/40'
+            },
+              h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 p-5 text-white' },
+                h('div', { className: 'flex items-start justify-between mb-2' },
+                  h('span', { className: 'text-4xl' }, '📊'),
+                  h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, t('stem.evolab.teacher_4', '🍎 Teacher'))
+                ),
+                h('h2', { className: 'text-xl font-black' }, t('stem.evolab.class_snapshot', 'Class Snapshot')),
+                h('p', { className: 'text-sm opacity-90 font-medium' }, t('stem.evolab.from_pasted_journals', 'From pasted student journals'))
+              ),
+              h('div', { className: 'p-5' },
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
+                  t('stem.evolab.class_snapshot_card_desc', 'Students copy their journal as text; paste them here to see who finished what, which predictions held, the most common wrong first answers on each check, and every field note by module. Runs in the page; nothing is uploaded.'))
+              )
+            ),
             h('button', {
               onClick: function() { setView('curriculumGuide'); upd('view', 'curriculumGuide'); },
               'aria-label': t('stem.evolab.5_day_curriculum_guide_sequenced_unit_', '5-Day Curriculum Guide — sequenced unit plan with warm-ups, labs, discussions, and exit tickets'),
@@ -995,6 +1683,517 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // EXIT TICKETS — the 5-day guide's exit tickets, answered in-app
+      // ─────────────────────────────────────────────────────
+      // One card per day: prompt, free-text answer, and a confidence self-check.
+      // Answers persist in progress.exitTickets and flow into the journal, the
+      // copied journal text, and the teacher's Class Snapshot.
+      function ExitTicketCard(props) {
+        var tk = props.ticket;
+        var saved = getTicket(tk.day);
+        var draftState = useState(saved ? saved.text : ''), draft = draftState[0], setDraft = draftState[1];
+        var confState = useState(saved ? saved.confidence || '' : ''), conf = confState[0], setConf = confState[1];
+        var statusState = useState(''), status = statusState[0], setStatus = statusState[1];
+        var dirty = draft !== (saved ? saved.text : '') || conf !== (saved ? saved.confidence || '' : '');
+        var commit = function() {
+          if (!dirty) return;
+          saveTicket(tk.day, draft, conf);
+          setStatus(__alloT('stem.evolab.ticket_saved', 'Saved to your journal'));
+          announce(__alloFill(__alloT('stem.evolab.sr_ticket_saved', 'Day {value1} exit ticket saved.'), { value1: tk.day }));
+        };
+        var taId = 'evolab-ticket-' + tk.day;
+        var wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
+        return h('section', { className: 'bg-white rounded-2xl border-2 ' + (saved && saved.text ? 'border-emerald-300' : 'border-slate-300') + ' shadow-sm p-4', 'aria-labelledby': taId + '-label' },
+          h('div', { className: 'flex items-start gap-3' },
+            h('span', { className: 'text-3xl', 'aria-hidden': true }, tk.icon),
+            h('div', { className: 'flex-1 min-w-0' },
+              h('div', { className: 'flex items-start justify-between gap-2' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-widest text-amber-800' }, __alloFill(__alloT('stem.evolab.day_n', 'Day {value1}'), { value1: tk.day }) + ' · ' + tk.theme),
+                  h('label', { id: taId + '-label', htmlFor: taId, className: 'block text-sm font-bold text-slate-900 mt-1' }, tk.prompt)
+                ),
+                h(SpeakButton, { text: 'Day ' + tk.day + '. ' + tk.theme + '. ' + tk.prompt })
+              ),
+              h('div', { className: 'mt-1 flex flex-wrap gap-1' }, tk.modules.map(function(m) {
+                return h('button', { key: m, type: 'button', onClick: function() { goto(m); }, className: 'rounded-full bg-slate-100 hover:bg-slate-200 px-2 py-0.5 text-[0.6875rem] font-bold text-slate-700' }, '↗ ' + ({ hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', selectionSandbox: 'Selection Sandbox', predatorVision: 'Predator Vision', beakLab: 'Beak Lab', speciation: 'Trait Divergence', coevolution: 'Coevolution', phyloBuilder: 'Tree Builder', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Lab', misconceptions: 'Misconceptions Quiz' }[m] || m));
+              })),
+              h('textarea', {
+                id: taId, value: draft, rows: 4, maxLength: 2000,
+                onChange: function(e) { setDraft(e.target.value); if (status) setStatus(''); },
+                onBlur: commit,
+                placeholder: __alloT('stem.evolab.ticket_placeholder', 'Answer in your own words. Complete sentences, no jargon you cannot explain.'),
+                className: 'mt-2 w-full rounded-lg border border-slate-500 p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400'
+              }),
+              h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-xs' },
+                h('div', { role: 'group', 'aria-label': __alloT('stem.evolab.how_sure', 'How sure are you?'), className: 'flex flex-wrap items-center gap-1' },
+                  h('span', { className: 'text-slate-600 mr-1' }, __alloT('stem.evolab.how_sure', 'How sure are you?')),
+                  [['sure', __alloT('stem.evolab.conf_sure', 'I could teach this')], ['mostly', __alloT('stem.evolab.conf_mostly', 'Mostly sure')], ['unsure', __alloT('stem.evolab.conf_unsure', 'Still shaky')]].map(function(opt) {
+                    var active = conf === opt[0];
+                    return h('button', { key: opt[0], type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function() { setConf(active ? '' : opt[0]); if (status) setStatus(''); }, className: 'rounded-full px-2 py-1 font-bold ' + (active ? (opt[0] === 'unsure' ? 'bg-rose-700 text-white' : opt[0] === 'mostly' ? 'bg-amber-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-700 hover:bg-slate-200') }, opt[1]);
+                  })
+                ),
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-slate-500' }, wordCount + ' ' + __alloT('stem.evolab.words', 'words')),
+                  h('span', { role: 'status', className: 'text-emerald-800 font-bold' }, dirty ? __alloT('stem.evolab.unsaved_changes', 'Unsaved') : status),
+                  h('button', { type: 'button', onClick: commit, disabled: !dirty, className: 'rounded-lg px-3 py-1.5 font-bold ' + (dirty ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-100 text-slate-600 cursor-not-allowed') }, __alloT('stem.evolab.save_answer', 'Save answer'))
+                )
+              )
+            )
+          )
+        );
+      }
+      function ExitTickets() {
+        var answered = EXIT_TICKETS.filter(function(tk) { var r = getTicket(tk.day); return r && r.text.trim(); }).length;
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          h('div', { className: 'evolab-no-print' }, h(BackBar, { icon: '🎟️', title: t('stem.evolab.exit_tickets', 'Exit Tickets') })),
+          h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-3' },
+            h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-800 rounded-2xl p-5 text-white shadow-lg' },
+              h('div', { className: 'flex items-start justify-between gap-3' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-[0.2em] text-amber-100 mb-1' }, t('stem.evolab.five_day_unit', 'Five-day unit')),
+                  h('h1', { className: 'text-2xl font-black' }, t('stem.evolab.exit_tickets', 'Exit Tickets')),
+                  h('p', { className: 'text-sm text-amber-50 mt-1' }, t('stem.evolab.exit_tickets_intro', 'One short written answer per day, in your own words, plus an honest confidence check. Your answers save to your journal; when you copy the journal for your teacher they come along.'))
+                ),
+                h('div', { className: 'rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-center' },
+                  h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-amber-100/80' }, t('stem.evolab.answered', 'Answered')),
+                  h('div', { className: 'text-lg font-black' }, answered + '/' + EXIT_TICKETS.length))
+              )
+            ),
+            EXIT_TICKETS.map(function(tk) { return h(ExitTicketCard, { key: tk.day, ticket: tk }); })
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // LEARNING JOURNAL — everything the student has done, in one printable page
+      // ─────────────────────────────────────────────────────
+      // Built from toolData.evoProgress (completion, experiments, challenges,
+      // records, predictions, checks) plus the Capstone draft. Read-only apart
+      // from the two-step reset; the print sheet hides the controls.
+      function LearningJournal() {
+        var p = progress;
+        var MODULE_TITLES = {
+          predatorVision: 'Predator Vision', mateChoice: 'Mate Choice Lab', climatePressure: 'Climate Pressure Lab', selectionSandbox: 'Selection Sandbox', beakLab: 'Galápagos Beak Lab', speciation: 'Trait Divergence Model', phyloBuilder: 'Phylogenetic Tree Builder', hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Resistance', coevolution: 'Coevolution Lab', discoveryTimeline: 'Discovery Timeline', misconceptions: 'Misconceptions Quiz', selectionSleuth: 'Selection Sleuth', homologySleuth: 'Homology vs Analogy', capstone: 'Capstone Project'
+        };
+        var titleOf = function(id) { var base = String(id).split(':')[0]; return MODULE_TITLES[base] || base; };
+        var fmtDate = function(iso) { try { var dt = new Date(iso); return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString(); } catch (e) { return ''; } };
+        var confirmResetState = useState(false), confirmReset = confirmResetState[0], setConfirmReset = confirmResetState[1];
+        var completedIds = BADGE_IDS.filter(function(id) { return p.completed && p.completed[id]; });
+        var exploredIds = BADGE_IDS.filter(function(id) { return (d.evoBadges || {})[id] && !(p.completed && p.completed[id]); });
+        var experimentRows = [];
+        Object.keys(p.experiments || {}).forEach(function(m) {
+          var done = p.experiments[m] || {};
+          Object.keys(done).forEach(function(expId) { if (done[expId]) experimentRows.push({ module: m, id: expId, title: done[expId] && done[expId].title ? done[expId].title : expId, at: done[expId] && done[expId].at }); });
+        });
+        var challengeRows = [];
+        Object.keys(p.challenges || {}).forEach(function(m) {
+          var done = p.challenges[m] || {};
+          Object.keys(done).forEach(function(cid) { if (done[cid]) challengeRows.push({ module: m, id: cid, title: done[cid].title || cid, at: done[cid].at, value: done[cid].value }); });
+        });
+        var recordRows = [];
+        Object.keys(p.records || {}).forEach(function(m) {
+          var recs = p.records[m] || {};
+          Object.keys(recs).forEach(function(rid) { var r = recs[rid]; if (r && typeof r.value === 'number') recordRows.push({ module: m, id: rid, label: r.label || rid, value: r.value, unit: r.unit || '', at: r.at }); });
+        });
+        var predictionRows = Object.keys(p.predictions || {}).map(function(m) { var r = p.predictions[m]; return r && typeof r === 'object' ? Object.assign({ module: m }, r) : null; }).filter(Boolean);
+        var checkRows = Object.keys(p.checks || {}).map(function(m) { var r = p.checks[m]; return r && typeof r === 'object' && r.choice ? Object.assign({ module: m }, r) : null; }).filter(Boolean);
+        var ticketRows = EXIT_TICKETS.map(function(tk) { var r = getTicket(tk.day); return r && (r.text.trim() || r.confidence) ? { day: tk.day, theme: tk.theme, prompt: tk.prompt, text: r.text, confidence: r.confidence || '', at: r.at } : null; }).filter(Boolean);
+        var confLabel = function(c) { return c === 'sure' ? t('stem.evolab.conf_sure', 'I could teach this') : c === 'mostly' ? t('stem.evolab.conf_mostly', 'Mostly sure') : c === 'unsure' ? t('stem.evolab.conf_unsure', 'Still shaky') : ''; };
+        var noteRows = Object.keys(p.notes || {}).map(function(m) { var r = p.notes[m]; return r && typeof r === 'object' && typeof r.text === 'string' && r.text.trim() ? { module: m, text: r.text, at: r.at } : null; }).filter(Boolean);
+        var copyStatusState = useState(''), copyStatus = copyStatusState[0], setCopyStatus = copyStatusState[1];
+        // Plain-text version for pasting into an LMS or email. Routed through the
+        // shell's alloCopyText: Gemini Canvas refuses navigator.clipboard by
+        // permissions policy, and execCommand needs the click's own activation.
+        var journalText = function() {
+          var lines = [];
+          lines.push((studentName ? studentName + ' — ' : '') + 'EvoLab learning journal — ' + new Date().toLocaleDateString());
+          lines.push('Completed ' + completedIds.length + ' of ' + BADGE_IDS.length + ' modules; ' + experimentRows.length + ' experiments; ' + challengeRows.length + ' challenges; predictions held ' + predictionsHeld + '/' + predictionsJudged + '; checks passed ' + checksRight + '/' + checkRows.length + '.');
+          lines.push('');
+          lines.push('MODULES COMPLETED');
+          completedIds.forEach(function(id) { var rec = p.completed[id] || {}; lines.push('- ' + titleOf(id) + (rec.note ? ': ' + rec.note : '')); });
+          if (!completedIds.length) lines.push('- none yet');
+          lines.push('');
+          lines.push('PREDICTIONS');
+          predictionRows.forEach(function(r) { lines.push('- ' + titleOf(r.module) + (r.context ? ' (' + r.context + ')' : '') + ': predicted "' + (r.choiceLabel || r.choice) + '"' + (r.outcome ? '; observed "' + (r.outcomeLabel || r.outcome) + '" → ' + (r.matched ? 'held' : 'revised') : '; not run yet')); });
+          if (!predictionRows.length) lines.push('- none yet');
+          lines.push('');
+          lines.push('CHECK-YOURSELF QUESTIONS');
+          checkRows.forEach(function(r) { lines.push('- ' + titleOf(r.module) + ': ' + (r.question || '') + ' → ' + (r.correct ? 'solved in ' + (r.tries || 1) + (r.tries === 1 ? ' try' : ' tries') : 'still open') + (r.choiceLabel ? ' (my answer: ' + r.choiceLabel + ')' : '')); });
+          if (!checkRows.length) lines.push('- none yet');
+          lines.push('');
+          lines.push('EXIT TICKETS');
+          ticketRows.forEach(function(r) { lines.push('- Day ' + r.day + ' (' + r.theme + ')' + (r.confidence ? ' [' + confLabel(r.confidence) + ']' : '') + ': ' + r.text.replace(/\s+/g, ' ')); });
+          if (!ticketRows.length) lines.push('- none yet');
+          lines.push('');
+          lines.push('FIELD NOTES');
+          noteRows.forEach(function(r) { lines.push('- ' + titleOf(r.module) + ': ' + r.text.replace(/\s+/g, ' ')); });
+          if (!noteRows.length) lines.push('- none yet');
+          lines.push('');
+          lines.push('EXPERIMENTS');
+          experimentRows.forEach(function(r) { lines.push('- ' + titleOf(r.module) + ': ' + String(r.title).replace(/:\s*$/, '')); });
+          if (!experimentRows.length) lines.push('- none yet');
+          lines.push('');
+          lines.push('CHALLENGES AND PERSONAL BESTS');
+          challengeRows.forEach(function(r) { lines.push('- ' + titleOf(r.module) + ': ' + r.title); });
+          recordRows.forEach(function(r) { lines.push('- ' + titleOf(r.module) + ': ' + r.label + ' ' + (Number.isInteger(r.value) ? r.value : r.value.toFixed(3)) + r.unit); });
+          if (!challengeRows.length && !recordRows.length) lines.push('- none yet');
+          if (capstone.scenarioId) { lines.push(''); lines.push('CAPSTONE: ' + (capstone.scenarioTitle || capstone.scenarioId) + ', step ' + (clamp(capstone.step || 0, 0, 4) + 1) + ' of 5, ' + capstoneRuns.length + ' run(s) captured' + (capstone.evidenceVerdict ? ', verdict ' + capstone.evidenceVerdict : '')); }
+          // Machine-readable footer for the teacher's Class Snapshot (base64 JSON, '.' terminated).
+          var data = { v: 1, name: studentName, date: new Date().toLocaleDateString(), completed: completedIds, predictions: {}, checks: {}, challenges: [], expCount: experimentRows.length, notes: {} };
+          predictionRows.forEach(function(r) { data.predictions[r.module] = { c: r.choice, o: r.outcome || null, m: r.matched === true }; });
+          checkRows.forEach(function(r) { data.checks[r.module] = { ok: !!r.correct, tries: r.tries || 1, q: r.question || '', first: r.firstChoice || r.choice, firstLabel: r.firstChoiceLabel || r.choiceLabel || '', firstWrong: r.firstChoice ? !!r.firstWrong : !r.correct }; });
+          challengeRows.forEach(function(r) { data.challenges.push(r.module + ':' + r.id); });
+          noteRows.forEach(function(r) { data.notes[r.module] = r.text.slice(0, 300); });
+          data.tickets = {};
+          ticketRows.forEach(function(r) { data.tickets[r.day] = { t: r.text.slice(0, 400), c: r.confidence }; });
+          lines.push('');
+          lines.push('(The line below lets your teacher build a class snapshot. Leave it in.)');
+          lines.push(encodeJournalData(data));
+          return lines.join('\n');
+        };
+        var legacyCopy = function(text) {
+          try {
+            var area = document.createElement('textarea');
+            area.value = text; area.setAttribute('readonly', 'readonly');
+            area.style.position = 'fixed'; area.style.top = '-1000px'; area.style.opacity = '0';
+            document.body.appendChild(area); area.select();
+            var ok = document.execCommand && document.execCommand('copy');
+            document.body.removeChild(area);
+            return !!ok;
+          } catch (e) { return false; }
+        };
+        var copyJournal = function() {
+          var text = journalText();
+          var done = function(ok) {
+            setCopyStatus(ok ? __alloT('stem.evolab.journal_copied', 'Journal copied as text.') : __alloT('stem.evolab.journal_copy_failed', 'Could not copy. Select the page text and press Ctrl+C.'));
+            announce(ok ? __alloT('stem.evolab.journal_copied', 'Journal copied as text.') : __alloT('stem.evolab.journal_copy_failed', 'Could not copy. Select the page text and press Ctrl+C.'));
+          };
+          if (typeof window.alloCopyText === 'function') { Promise.resolve(window.alloCopyText(text)).then(function(ok) { done(ok !== false); }).catch(function() { done(legacyCopy(text)); }); return; }
+          var legacyOk = legacyCopy(text);
+          if (legacyOk) { done(true); return; }
+          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function() { done(true); }).catch(function() { done(false); }); return; }
+          done(false);
+        };
+        var capstone = d.evoCapstone || {};
+        var capstoneRuns = Array.isArray(capstone.runs) ? capstone.runs : [];
+        var studentName = capstone.studentName || '';
+        var predictionsHeld = predictionRows.filter(function(r) { return r.matched === true; }).length;
+        var predictionsJudged = predictionRows.filter(function(r) { return r.outcome; }).length;
+        var checksRight = checkRows.filter(function(r) { return r.correct; }).length;
+        var section = function(title, body, emptyText) {
+          return h('section', { className: 'bg-white rounded-2xl border border-slate-300 shadow-sm p-4' },
+            h('h2', { className: 'text-sm font-black uppercase tracking-wider text-slate-700 mb-3' }, title),
+            body && (Array.isArray(body) ? body.length : true) ? body : h('p', { className: 'text-sm text-slate-500 italic' }, emptyText)
+          );
+        };
+        var resetAll = function() {
+          writeProgress(function(np) { np.completed = {}; np.experiments = {}; np.predictions = {}; np.checks = {}; np.challenges = {}; np.records = {}; np.notes = {}; np.exitTickets = {}; });
+          upd('evoBadges', {});
+          lsSet('evoLab.badges.v1', {});
+          setConfirmReset(false);
+          announce(__alloT('stem.evolab.sr_progress_reset', 'EvoLab progress reset. Module completion, experiments, predictions and checks cleared.'));
+        };
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          h('div', { className: 'evolab-no-print' }, h(BackBar, { icon: '📓', title: t('stem.evolab.my_learning_journal', 'My Learning Journal') })),
+          h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-3' },
+            h('div', { className: 'bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-[0.2em] text-emerald-200 mb-1' }, t('stem.evolab.evolution_field_journal', 'Evolution field journal')),
+                  h('h1', { className: 'text-2xl font-black' }, studentName ? __alloFill(t('stem.evolab.journal_of', '{value1}\'s journal'), { value1: studentName }) : t('stem.evolab.my_learning_journal', 'My Learning Journal')),
+                  h('p', { className: 'text-sm text-slate-200 mt-1' }, t('stem.evolab.journal_intro', 'Everything you have done in EvoLab, in one place: what you finished, what you predicted and whether the population agreed, the checks you passed, the experiments and challenges you logged. Print it or hand it to your teacher.'))
+                ),
+                h('div', { className: 'evolab-no-print flex flex-wrap gap-2' },
+                  h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} }, className: 'rounded-xl bg-white px-3 py-2 text-xs font-black text-slate-900 shadow hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-emerald-300' }, '🖨️ ' + t('stem.evolab.print_journal', 'Print journal')),
+                  h('button', { type: 'button', onClick: copyJournal, className: 'rounded-xl bg-emerald-500 px-3 py-2 text-xs font-black text-slate-900 shadow hover:bg-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-300' }, '📋 ' + t('stem.evolab.copy_as_text', 'Copy as text')),
+                  h(SpeakButton, { tone: 'dark', text: __alloFill(t('stem.evolab.journal_summary_speech', 'You have completed {value1} of {value2} modules, logged {value3} experiments and {value4} challenges, and {value5} of {value6} judged predictions held.'), { value1: completedIds.length, value2: BADGE_IDS.length, value3: experimentRows.length, value4: challengeRows.length, value5: predictionsHeld, value6: predictionsJudged }) })
+                )
+              ),
+              copyStatus && h('div', { role: 'status', className: 'evolab-no-print mt-3 rounded-lg bg-white/15 px-3 py-2 text-sm font-bold text-emerald-100' }, copyStatus),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4' },
+                [
+                  { label: t('stem.evolab.completed', 'Completed'), value: completedIds.length + '/' + BADGE_IDS.length },
+                  { label: t('stem.evolab.experiments', 'Experiments'), value: String(experimentRows.length) },
+                  { label: t('stem.evolab.challenges', 'Challenges'), value: String(challengeRows.length) },
+                  { label: t('stem.evolab.predictions_held', 'Predictions held'), value: predictionsJudged ? predictionsHeld + '/' + predictionsJudged : '—' },
+                  { label: t('stem.evolab.checks_passed', 'Checks passed'), value: checkRows.length ? checksRight + '/' + checkRows.length : '—' }
+                ].map(function(stat) {
+                  return h('div', { key: stat.label, className: 'rounded-xl border border-white/15 bg-white/10 px-3 py-2' },
+                    h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-emerald-100/80' }, stat.label),
+                    h('div', { className: 'text-lg font-black text-white' }, stat.value));
+                })
+              )
+            ),
+            section(t('stem.evolab.modules_completed', '✅ Modules completed'),
+              completedIds.length ? [h('ul', { className: 'space-y-2' }, completedIds.map(function(id) {
+                var rec = p.completed[id] || {};
+                return h('li', { key: id, className: 'text-sm text-slate-800 flex items-start gap-2' },
+                  h('span', { className: 'mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white text-[0.6875rem] font-black' }, '✓'),
+                  h('div', null, h('span', { className: 'font-bold' }, titleOf(id)), rec.note ? h('span', { className: 'text-slate-700' }, ' — ' + rec.note) : null, rec.at ? h('span', { className: 'text-xs text-slate-500' }, ' (' + fmtDate(rec.at) + ')') : null));
+              }))].concat(exploredIds.length ? [h('p', { key: 'explored', className: 'text-xs text-slate-600 mt-3' }, t('stem.evolab.explored_not_finished', 'Explored but not yet finished: ') + exploredIds.map(titleOf).join(', '))] : []) : null,
+              t('stem.evolab.no_modules_completed_yet', 'Nothing completed yet. Finish a hunt, run 20 generations, grade a tree, or finish a quiz to earn a badge.')),
+            section(t('stem.evolab.predictions_vs_observations', '🔮 Predictions vs what happened'),
+              predictionRows.length ? h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-sm' },
+                h('caption', { className: 'sr-only' }, t('stem.evolab.predictions_table_caption', 'Your predictions by module, with the observed outcome')),
+                h('thead', null, h('tr', { className: 'text-left text-xs uppercase tracking-wider text-slate-600' }, h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.module', 'Module')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.i_predicted', 'I predicted')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.observed_col', 'Observed')), h('th', { scope: 'col', className: 'py-1' }, t('stem.evolab.result', 'Result')))),
+                h('tbody', null, predictionRows.map(function(r) {
+                  return h('tr', { key: r.module, className: 'border-t border-slate-200 align-top' },
+                    h('th', { scope: 'row', className: 'py-2 pr-3 font-bold text-slate-800 text-left' }, titleOf(r.module), r.context ? h('div', { className: 'text-xs font-normal text-slate-500' }, r.context) : null),
+                    h('td', { className: 'py-2 pr-3 text-slate-800' }, r.choiceLabel || r.choice || '—', r.question ? h('div', { className: 'text-xs text-slate-500' }, r.question) : null),
+                    h('td', { className: 'py-2 pr-3 text-slate-800' }, r.outcomeLabel || r.outcome || h('span', { className: 'text-slate-500 italic' }, t('stem.evolab.not_run_yet', 'not run yet'))),
+                    h('td', { className: 'py-2' }, r.outcome ? h('span', { className: 'rounded-full px-2 py-0.5 text-xs font-bold ' + (r.matched ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800') }, r.matched ? t('stem.evolab.held', 'Held') : t('stem.evolab.revised', 'Revised')) : ''));
+                }))
+              )) : null,
+              t('stem.evolab.no_predictions_yet', 'No predictions yet. Each simulator asks for one before you run it.')),
+            section(t('stem.evolab.checks_heading', '🧠 Check-yourself questions'),
+              checkRows.length ? h('ul', { className: 'space-y-2' }, checkRows.map(function(r) {
+                return h('li', { key: r.module, className: 'text-sm text-slate-800' },
+                  h('span', { className: 'font-bold' }, titleOf(r.module) + ': '),
+                  r.question ? h('span', { className: 'text-slate-700' }, r.question + ' ') : null,
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-xs font-bold ' + (r.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800') }, r.correct ? __alloFill(t('stem.evolab.solved_in_tries', 'solved in {value1} tr{value2}'), { value1: r.tries || 1, value2: (r.tries || 1) === 1 ? 'y' : 'ies' }) : t('stem.evolab.still_open', 'still open')),
+                  r.choiceLabel ? h('div', { className: 'text-xs text-slate-600' }, t('stem.evolab.my_answer', 'My answer: ') + r.choiceLabel) : null);
+              })) : null,
+              t('stem.evolab.no_checks_yet', 'No checks answered yet. They appear after your first run in each simulator.')),
+            section(t('stem.evolab.exit_tickets_heading', '🎟️ Exit tickets'),
+              ticketRows.length ? h('ul', { className: 'space-y-3' }, ticketRows.map(function(r) {
+                return h('li', { key: r.day, className: 'text-sm text-slate-800' },
+                  h('div', { className: 'font-bold' }, 'Day ' + r.day + ' · ' + r.theme, r.confidence ? h('span', { className: 'ml-2 rounded-full px-2 py-0.5 text-xs font-bold ' + (r.confidence === 'unsure' ? 'bg-rose-100 text-rose-800' : r.confidence === 'mostly' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') }, confLabel(r.confidence)) : null),
+                  h('div', { className: 'text-xs text-slate-600' }, r.prompt),
+                  h('p', { className: 'whitespace-pre-wrap text-slate-800 border-l-4 border-amber-300 pl-3 mt-1' }, r.text || h('span', { className: 'italic text-slate-500' }, t('stem.evolab.no_answer_yet', 'no written answer yet'))));
+              })) : null,
+              t('stem.evolab.no_tickets_yet', 'No exit tickets answered yet. Open Exit Tickets from the menu; there is one per day of the unit.')),
+            section(t('stem.evolab.field_notes_heading', '📝 My field notes'),
+              noteRows.length ? h('ul', { className: 'space-y-3' }, noteRows.map(function(r) {
+                return h('li', { key: r.module, className: 'text-sm text-slate-800' },
+                  h('div', { className: 'font-bold' }, titleOf(r.module), r.at ? h('span', { className: 'text-xs font-normal text-slate-500' }, ' · ' + fmtDate(r.at)) : null),
+                  h('p', { className: 'whitespace-pre-wrap text-slate-800 border-l-4 border-slate-300 pl-3 mt-1' }, r.text));
+              })) : null,
+              t('stem.evolab.no_notes_yet', 'No field notes yet. Every simulator has a note box near the bottom; one honest sentence is enough.')),
+            section(t('stem.evolab.experiments_logged', '🧪 Experiments logged'),
+              experimentRows.length ? h('ul', { className: 'grid grid-cols-1 md:grid-cols-2 gap-1' }, experimentRows.map(function(r) {
+                return h('li', { key: r.module + r.id, className: 'text-sm text-slate-800' }, h('span', { className: 'font-bold' }, titleOf(r.module) + ': '), String(r.title).replace(/:\s*$/, ''));
+              })) : null,
+              t('stem.evolab.no_experiments_yet', 'No experiments logged yet. Each simulator lists five; the tool detects most of them for you.')),
+            section(t('stem.evolab.challenges_and_records', '🏅 Challenges and personal bests'),
+              (challengeRows.length || recordRows.length) ? h('div', { className: 'space-y-2' },
+                challengeRows.map(function(r) { return h('div', { key: 'c' + r.module + r.id, className: 'text-sm text-slate-800' }, '🏅 ', h('span', { className: 'font-bold' }, titleOf(r.module) + ': '), r.title, r.at ? h('span', { className: 'text-xs text-slate-500' }, ' (' + fmtDate(r.at) + ')') : null); }),
+                recordRows.map(function(r) { return h('div', { key: 'r' + r.module + r.id, className: 'text-sm text-slate-800' }, '📈 ', h('span', { className: 'font-bold' }, titleOf(r.module) + ': '), r.label + ' ' + (Number.isInteger(r.value) ? r.value : r.value.toFixed(3)) + r.unit); })
+              ) : null,
+              t('stem.evolab.no_challenges_yet', 'No challenges met yet. Each simulator lists one or two under its experiments.')),
+            section(t('stem.evolab.capstone_heading', '🎓 Capstone investigation'),
+              capstone.scenarioId ? h('div', { className: 'text-sm text-slate-800 space-y-1' },
+                h('div', null, h('span', { className: 'font-bold' }, capstone.scenarioTitle || capstone.scenarioId), ' · ' + __alloFill(t('stem.evolab.step_n_of_5', 'step {value1} of 5'), { value1: clamp(capstone.step || 0, 0, 4) + 1 })),
+                h('div', null, __alloFill(t('stem.evolab.runs_captured_n', '{value1} simulator run{value2} captured'), { value1: capstoneRuns.length, value2: capstoneRuns.length === 1 ? '' : 's' }) + (capstone.evidenceVerdict ? ' · ' + t('stem.evolab.verdict', 'verdict: ') + capstone.evidenceVerdict : '')),
+                capstone.notebook && capstone.notebook.claim ? h('div', { className: 'text-slate-700' }, h('span', { className: 'font-bold' }, t('stem.evolab.claim', 'Claim: ')), capstone.notebook.claim) : null,
+                h('button', { type: 'button', onClick: function() { goto('capstone'); }, className: 'evolab-no-print mt-2 rounded-lg bg-amber-700 px-3 py-1.5 text-xs font-black text-white hover:bg-amber-800' }, t('stem.evolab.open_capstone', 'Open the Capstone →'))
+              ) : null,
+              t('stem.evolab.no_capstone_yet', 'No Capstone started. Pick a scenario in the Capstone Project to begin an investigation.')),
+            h('div', { className: 'evolab-no-print bg-white rounded-2xl border border-slate-300 p-4 text-sm' },
+              !confirmReset
+                ? h('button', { type: 'button', onClick: function() { setConfirmReset(true); }, className: 'text-xs font-bold text-slate-600 underline' }, t('stem.evolab.reset_my_progress', 'Reset my EvoLab progress…'))
+                : h('div', { role: 'alertdialog', 'aria-labelledby': 'evolab-reset-q', className: 'flex flex-wrap items-center gap-3' },
+                    h('span', { id: 'evolab-reset-q', className: 'font-bold text-rose-800' }, t('stem.evolab.reset_confirm_q', 'Clear all badges, experiments, predictions, checks and field notes on this device? The Capstone notebook is kept.')),
+                    h('button', { type: 'button', onClick: resetAll, className: 'rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-black text-white hover:bg-rose-800' }, t('stem.evolab.yes_reset', 'Yes, reset')),
+                    h('button', { type: 'button', onClick: function() { setConfirmReset(false); }, className: 'rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-black text-slate-800 hover:bg-slate-300' }, t('stem.evolab.cancel', 'Cancel')))
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // CLASS SNAPSHOT — teacher view over pasted student journals
+      // ─────────────────────────────────────────────────────
+      // Students copy their journal as text; the copy ends with a compact
+      // machine-readable footer (EVOLAB-JOURNAL-DATA:<base64>.). A teacher pastes
+      // any number of journals here and gets completion, prediction hit rates,
+      // the most common wrong FIRST answers on each check (the misconception
+      // signal), challenges, and field notes by module. Nothing leaves the page.
+      var JOURNAL_DATA_PREFIX = 'EVOLAB-JOURNAL-DATA:';
+      var encodeJournalData = function(obj) {
+        try { return JOURNAL_DATA_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify(obj)))) + '.'; } catch (e) { return ''; }
+      };
+      var parseJournalDump = function(text) {
+        var out = { journals: [], unreadable: 0 };
+        var src = String(text || '');
+        var idx = 0;
+        while (true) {
+          var at = src.indexOf(JOURNAL_DATA_PREFIX, idx);
+          if (at < 0) break;
+          var end = src.indexOf('.', at + JOURNAL_DATA_PREFIX.length);
+          if (end < 0) end = src.length;
+          var raw = src.slice(at + JOURNAL_DATA_PREFIX.length, end).replace(/[^A-Za-z0-9+\/=]/g, '');
+          idx = end + 1;
+          try {
+            var json = decodeURIComponent(escape(atob(raw)));
+            var obj = JSON.parse(json);
+            if (obj && typeof obj === 'object' && obj.v === 1) out.journals.push(obj); else out.unreadable++;
+          } catch (e) { out.unreadable++; }
+        }
+        return out;
+      };
+      function ClassSnapshot() {
+        var textState = useState(''), pasted = textState[0], setPasted = textState[1];
+        var cmpAState = useState(''), cmpA = cmpAState[0], setCmpA = cmpAState[1];
+        var cmpBState = useState(''), cmpB = cmpBState[0], setCmpB = cmpBState[1];
+        var parsed = parseJournalDump(pasted);
+        var journals = parsed.journals;
+        var N = journals.length;
+        var MODULE_TITLES = {
+          predatorVision: 'Predator Vision', mateChoice: 'Mate Choice Lab', climatePressure: 'Climate Pressure Lab', selectionSandbox: 'Selection Sandbox', beakLab: 'Galápagos Beak Lab', speciation: 'Trait Divergence Model', phyloBuilder: 'Phylogenetic Tree Builder', hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Resistance', coevolution: 'Coevolution Lab', discoveryTimeline: 'Discovery Timeline', misconceptions: 'Misconceptions Quiz', selectionSleuth: 'Selection Sleuth', homologySleuth: 'Homology vs Analogy', capstone: 'Capstone Project'
+        };
+        var titleOf = function(id) { var base = String(id).split(':')[0]; return MODULE_TITLES[base] || base; };
+        var pct = function(a, b) { return b ? Math.round((a / b) * 100) + '%' : '—'; };
+        // aggregates
+        var completedBy = {};
+        BADGE_IDS.forEach(function(id) { completedBy[id] = 0; });
+        var predStats = {};   // module -> { made, judged, held }
+        var checkStats = {};  // key -> { answered, solved, firstWrong: { label: count } }
+        var challengeCounts = {};
+        var notesBy = {};
+        var ticketsBy = {};   // day -> [{ name, text, conf }]
+        var roster = journals.map(function(j, i) {
+          var name = (j.name && String(j.name).trim()) || __alloFill(__alloT('stem.evolab.student_n', 'Student {value1}'), { value1: i + 1 });
+          var completed = Array.isArray(j.completed) ? j.completed.filter(function(id) { return completedBy.hasOwnProperty(id); }) : [];
+          completed.forEach(function(id) { completedBy[id]++; });
+          var held = 0, judged = 0, made = 0;
+          Object.keys(j.predictions || {}).forEach(function(m) {
+            var r = j.predictions[m] || {};
+            var ps = predStats[m] = predStats[m] || { made: 0, judged: 0, held: 0 };
+            ps.made++; made++;
+            if (r.o) { ps.judged++; judged++; if (r.m) { ps.held++; held++; } }
+          });
+          var solved = 0, answered = 0;
+          Object.keys(j.checks || {}).forEach(function(k) {
+            var r = j.checks[k] || {};
+            var cs = checkStats[k] = checkStats[k] || { answered: 0, solved: 0, firstWrong: {}, question: '' };
+            cs.answered++; answered++;
+            if (r.q && !cs.question) cs.question = r.q;
+            if (r.ok) { cs.solved++; solved++; }
+            if (r.firstWrong) { var fwKey = r.firstLabel || r.first || '?'; cs.firstWrong[fwKey] = (cs.firstWrong[fwKey] || 0) + 1; }
+          });
+          (Array.isArray(j.challenges) ? j.challenges : []).forEach(function(c) { challengeCounts[c] = (challengeCounts[c] || 0) + 1; });
+          var noteCount = 0;
+          Object.keys(j.notes || {}).forEach(function(m) { var txt = String(j.notes[m] || '').trim(); if (!txt) return; noteCount++; (notesBy[m] = notesBy[m] || []).push({ name: name, text: txt }); });
+          var ticketCount = 0;
+          Object.keys(j.tickets || {}).forEach(function(dk) { var r = j.tickets[dk] || {}; var txt = String(r.t || '').trim(); if (!txt && !r.c) return; ticketCount++; (ticketsBy[dk] = ticketsBy[dk] || []).push({ name: name, text: txt, conf: r.c || '' }); });
+          return { name: name, date: j.date || '', completed: completed.length, held: held, judged: judged, made: made, solved: solved, answered: answered, notes: noteCount, tickets: ticketCount, experiments: j.expCount || 0, challenges: (j.challenges || []).length, raw: j };
+        });
+        var challengeTitle = function(key) { var parts = key.split(':'); var c = CHALLENGE_INDEX.filter(function(x) { return x.moduleId === parts[0] && x.id === parts[1]; })[0]; return (c ? c.title : key) + ' (' + titleOf(parts[0]) + ')'; };
+        var topWrong = function(fw) { var best = null; Object.keys(fw).forEach(function(k) { if (!best || fw[k] > fw[best]) best = k; }); return best ? best + ' (' + fw[best] + ')' : '—'; };
+        var table = function(caption, headers, rows) {
+          return h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-sm' },
+            h('caption', { className: 'sr-only' }, caption),
+            h('thead', null, h('tr', { className: 'text-left text-xs uppercase tracking-wider text-slate-600' }, headers.map(function(hd, i) { return h('th', { key: i, scope: 'col', className: 'py-1 pr-3' }, hd); }))),
+            h('tbody', null, rows.map(function(row, ri) {
+              return h('tr', { key: ri, className: 'border-t border-slate-200 align-top' }, row.map(function(cellV, ci) { return ci === 0 ? h('th', { key: ci, scope: 'row', className: 'py-1.5 pr-3 font-bold text-left text-slate-800' }, cellV) : h('td', { key: ci, className: 'py-1.5 pr-3 text-slate-800' }, cellV); }));
+            }))
+          ));
+        };
+        var section = function(title, body) {
+          return h('section', { className: 'bg-white rounded-2xl border border-slate-300 shadow-sm p-4' },
+            h('h2', { className: 'text-sm font-black uppercase tracking-wider text-slate-700 mb-3' }, title), body);
+        };
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          h('div', { className: 'evolab-no-print' }, h(BackBar, { icon: '📊', title: t('stem.evolab.class_snapshot', 'Class Snapshot') })),
+          h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
+            h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-800 rounded-2xl p-5 text-white shadow-lg' },
+              h('div', { className: 'text-xs font-black uppercase tracking-[0.2em] text-amber-100 mb-1' }, '🍎 ' + t('stem.evolab.teacher_tool', 'Teacher tool')),
+              h('h1', { className: 'text-2xl font-black' }, t('stem.evolab.class_snapshot_title', 'Class Snapshot from student journals')),
+              h('p', { className: 'text-sm text-amber-50 mt-1' }, t('stem.evolab.class_snapshot_intro', 'Ask students to open My Journal → Copy as text and paste it to you (LMS, email, a shared doc). Paste everything you received below. The snapshot reads the data line at the end of each journal and shows completion, which predictions held, the most common wrong first answers on each check (your misconception map), challenges, and field notes by module. Nothing is uploaded; this runs in the page.'))
+            ),
+            h('div', { className: 'evolab-no-print bg-white rounded-2xl border border-slate-300 shadow-sm p-4' },
+              h('label', { htmlFor: 'evolab-snapshot-paste', className: 'block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, t('stem.evolab.paste_journals_here', 'Paste student journals here (any number, any order)')),
+              h('textarea', {
+                id: 'evolab-snapshot-paste', value: pasted, rows: 6,
+                onChange: function(e) { setPasted(e.target.value); },
+                placeholder: t('stem.evolab.paste_placeholder', 'Paste the copied journal text. Each one ends with a line starting EVOLAB-JOURNAL-DATA:'),
+                className: 'w-full rounded-lg border border-slate-500 p-2 text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400'
+              }),
+              h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700' },
+                h('span', { role: 'status' }, __alloFill(t('stem.evolab.journals_read_n', '{value1} journal{value2} read'), { value1: N, value2: N === 1 ? '' : 's' }) + (parsed.unreadable ? ' · ' + __alloFill(t('stem.evolab.unreadable_n', '{value1} data line{value2} could not be read'), { value1: parsed.unreadable, value2: parsed.unreadable === 1 ? '' : 's' }) : '')),
+                h('div', { className: 'flex gap-2' },
+                  pasted && h('button', { type: 'button', onClick: function() { setPasted(''); }, className: 'rounded-lg bg-slate-200 px-3 py-1.5 font-bold text-slate-800 hover:bg-slate-300' }, t('stem.evolab.clear_pasted', 'Clear')),
+                  N > 0 && h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} }, className: 'rounded-lg bg-amber-700 px-3 py-1.5 font-bold text-white hover:bg-amber-800' }, '🖨️ ' + t('stem.evolab.print_snapshot', 'Print snapshot'))
+                )
+              )
+            ),
+            N === 0 && h('div', { className: 'rounded-2xl border-2 border-dashed border-slate-300 p-6 text-center text-sm text-slate-600' }, t('stem.evolab.snapshot_empty', 'Paste at least one journal to see the class picture.')),
+            N > 0 && section(__alloFill(t('stem.evolab.roster_n', '👩‍🎓 Roster ({value1})'), { value1: N }),
+              table(t('stem.evolab.roster_caption', 'One row per student journal'), [t('stem.evolab.student', 'Student'), t('stem.evolab.completed', 'Completed'), t('stem.evolab.predictions_held', 'Predictions held'), t('stem.evolab.checks_passed', 'Checks passed'), t('stem.evolab.experiments', 'Experiments'), t('stem.evolab.challenges', 'Challenges'), t('stem.evolab.notes', 'Notes'), t('stem.evolab.tickets', 'Tickets')],
+                roster.map(function(r) { return [r.name + (r.date ? ' · ' + r.date : ''), r.completed + '/' + BADGE_IDS.length, r.judged ? r.held + '/' + r.judged : '—', r.answered ? r.solved + '/' + r.answered : '—', String(r.experiments), String(r.challenges), String(r.notes), String(r.tickets)]; }))),
+            N > 1 && (function() {
+              var pick = function(v) { var i = parseInt(v, 10); return isFinite(i) && roster[i] ? roster[i] : null; };
+              var A = pick(cmpA), B = pick(cmpB);
+              var selectFor = function(id, value, onChange, label) {
+                return h('label', { className: 'text-xs font-bold text-slate-700 flex items-center gap-2' }, label,
+                  h('select', { id: id, value: value, onChange: function(e) { onChange(e.target.value); }, className: 'rounded-lg border border-slate-500 bg-white px-2 py-1 text-sm font-bold text-slate-900' },
+                    h('option', { value: '' }, '—'),
+                    roster.map(function(r, i) { return h('option', { key: i, value: String(i) }, r.name); })));
+              };
+              var listTitles = function(ids) { return ids.length ? ids.map(titleOf).join(', ') : '—'; };
+              var checkSummary = function(j, k) { var r = (j.checks || {})[k]; if (!r) return '—'; return (r.ok ? '✓ solved' : '○ open') + (r.firstWrong && r.firstLabel ? ' · first: "' + r.firstLabel + '"' : ''); };
+              var predSummary = function(j) { var ks = Object.keys(j.predictions || {}); var judged = ks.filter(function(k) { return j.predictions[k].o; }); var held = judged.filter(function(k) { return j.predictions[k].m; }); return ks.length ? held.length + '/' + judged.length + ' held (' + ks.length + ' made)' : '—'; };
+              var ticketSummary = function(j) { var ks = Object.keys(j.tickets || {}); return ks.length ? ks.map(function(dk) { return 'Day ' + dk + (j.tickets[dk].c ? ' (' + j.tickets[dk].c + ')' : ''); }).join(', ') : '—'; };
+              var body;
+              if (A && B && A !== B) {
+                var ja = A.raw, jb = B.raw;
+                var checkKeys = Object.keys(Object.assign({}, ja.checks || {}, jb.checks || {}));
+                var onlyA = (ja.completed || []).filter(function(id) { return (jb.completed || []).indexOf(id) < 0; });
+                var onlyB = (jb.completed || []).filter(function(id) { return (ja.completed || []).indexOf(id) < 0; });
+                var rows = [
+                  [t('stem.evolab.cmp_completed', 'Completed'), (ja.completed || []).length + '/' + BADGE_IDS.length + (onlyA.length ? ' · only: ' + listTitles(onlyA) : ''), (jb.completed || []).length + '/' + BADGE_IDS.length + (onlyB.length ? ' · only: ' + listTitles(onlyB) : '')],
+                  [t('stem.evolab.cmp_predictions', 'Predictions'), predSummary(ja), predSummary(jb)],
+                  [t('stem.evolab.cmp_challenges', 'Challenges'), String((ja.challenges || []).length), String((jb.challenges || []).length)],
+                  [t('stem.evolab.cmp_notes', 'Field notes'), listTitles(Object.keys(ja.notes || {})), listTitles(Object.keys(jb.notes || {}))],
+                  [t('stem.evolab.cmp_tickets', 'Exit tickets'), ticketSummary(ja), ticketSummary(jb)]
+                ].concat(checkKeys.map(function(k) { return [t('stem.evolab.cmp_check', 'Check: ') + titleOf(k), checkSummary(ja, k), checkSummary(jb, k)]; }));
+                body = table(t('stem.evolab.compare_caption', 'Two students side by side'), ['', A.name, B.name], rows);
+              } else {
+                body = h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.pick_two_students', 'Pick two different students to see them side by side: what each finished, where their predictions held, and which check each one first got wrong.'));
+              }
+              return section(t('stem.evolab.compare_two_students', '🔍 Compare two students'),
+                h('div', null,
+                  h('div', { className: 'evolab-no-print flex flex-wrap gap-4 mb-3' },
+                    selectFor('evolab-cmp-a', cmpA, setCmpA, t('stem.evolab.student_a', 'Student A')),
+                    selectFor('evolab-cmp-b', cmpB, setCmpB, t('stem.evolab.student_b', 'Student B'))),
+                  body));
+            })(),
+            N > 0 && section(t('stem.evolab.completion_by_module', '✅ Completion by module'),
+              table(t('stem.evolab.completion_caption', 'Students who completed each module'), [t('stem.evolab.module', 'Module'), t('stem.evolab.students_completed', 'Students completed'), '%'],
+                BADGE_IDS.map(function(id) { return [titleOf(id), completedBy[id] + ' / ' + N, pct(completedBy[id], N)]; }))),
+            N > 0 && section(t('stem.evolab.predictions_by_module', '🔮 Predictions by module'),
+              Object.keys(predStats).length ? table(t('stem.evolab.predictions_caption', 'Predictions made, judged, and held per module'), [t('stem.evolab.module', 'Module'), t('stem.evolab.made', 'Made'), t('stem.evolab.judged', 'Judged'), t('stem.evolab.held', 'Held'), t('stem.evolab.hit_rate', 'Hit rate')],
+                Object.keys(predStats).map(function(m) { var ps = predStats[m]; return [titleOf(m), String(ps.made), String(ps.judged), String(ps.held), pct(ps.held, ps.judged)]; })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_predictions_in_journals', 'No predictions in these journals yet.'))),
+            N > 0 && section(t('stem.evolab.misconception_map', '🧠 Misconception map: check-yourself questions'),
+              Object.keys(checkStats).length ? h('div', null,
+                h('p', { className: 'text-xs text-slate-600 mb-2' }, t('stem.evolab.misconception_map_hint', 'The most common wrong FIRST answer is the misconception your class walked in with. Reteach that, not the whole topic.')),
+                table(t('stem.evolab.checks_caption', 'Check questions with solve counts and the most common wrong first answer'), [t('stem.evolab.check', 'Check'), t('stem.evolab.answered', 'Answered'), t('stem.evolab.solved', 'Solved'), t('stem.evolab.most_common_wrong_first', 'Most common wrong first answer')],
+                  Object.keys(checkStats).map(function(k) { var cs = checkStats[k]; return [titleOf(k) + (cs.question ? ': ' + cs.question : ''), String(cs.answered), cs.solved + ' (' + pct(cs.solved, cs.answered) + ')', topWrong(cs.firstWrong)]; }))
+              ) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_checks_in_journals', 'No check questions answered in these journals yet.'))),
+            N > 0 && section(t('stem.evolab.challenges_met_heading', '🏅 Challenges met'),
+              Object.keys(challengeCounts).length ? h('ul', { className: 'grid grid-cols-1 md:grid-cols-2 gap-1 text-sm text-slate-800' }, Object.keys(challengeCounts).sort(function(a, b2) { return challengeCounts[b2] - challengeCounts[a]; }).map(function(k) { return h('li', { key: k }, h('span', { className: 'font-bold' }, challengeCounts[k] + ' × '), challengeTitle(k)); })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_challenges_in_journals', 'No challenges met yet.'))),
+            N > 0 && section(t('stem.evolab.exit_tickets_by_day', '🎟️ Exit tickets by day'),
+              Object.keys(ticketsBy).length ? h('div', { className: 'space-y-2' }, Object.keys(ticketsBy).sort().map(function(dk) {
+                var rows = ticketsBy[dk];
+                var tally = { sure: 0, mostly: 0, unsure: 0 };
+                rows.forEach(function(r) { if (tally.hasOwnProperty(r.conf)) tally[r.conf]++; });
+                var tk = EXIT_TICKETS.filter(function(x) { return String(x.day) === String(dk); })[0];
+                return h('details', { key: dk, className: 'rounded-lg border border-slate-200 p-2' },
+                  h('summary', { className: 'cursor-pointer text-sm font-bold text-slate-800' }, 'Day ' + dk + (tk ? ' · ' + tk.theme : '') + ' (' + rows.length + ') · ' + __alloFill(t('stem.evolab.confidence_tally', 'confidence: {value1} could teach it, {value2} mostly sure, {value3} still shaky'), { value1: tally.sure, value2: tally.mostly, value3: tally.unsure })),
+                  tk && h('p', { className: 'mt-1 text-xs text-slate-600' }, tk.prompt),
+                  h('ul', { className: 'mt-2 space-y-2' }, rows.map(function(r, i) { return h('li', { key: i, className: 'text-sm text-slate-800 border-l-4 pl-3 ' + (r.conf === 'unsure' ? 'border-rose-300' : r.conf === 'mostly' ? 'border-amber-300' : 'border-emerald-300') }, h('span', { className: 'font-bold' }, r.name + ': '), r.text || h('span', { className: 'italic text-slate-500' }, t('stem.evolab.no_written_answer', 'no written answer')), r.conf ? h('span', { className: 'ml-2 text-xs text-slate-500' }, '(' + r.conf + ')') : null); })));
+              })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_tickets_in_journals', 'No exit tickets in these journals yet.'))),
+            N > 0 && section(t('stem.evolab.field_notes_by_module', '📝 Field notes by module'),
+              Object.keys(notesBy).length ? h('div', { className: 'space-y-2' }, Object.keys(notesBy).map(function(m) {
+                return h('details', { key: m, className: 'rounded-lg border border-slate-200 p-2' },
+                  h('summary', { className: 'cursor-pointer text-sm font-bold text-slate-800' }, titleOf(m) + ' (' + notesBy[m].length + ')'),
+                  h('ul', { className: 'mt-2 space-y-2' }, notesBy[m].map(function(n2, i) { return h('li', { key: i, className: 'text-sm text-slate-800 border-l-4 border-slate-300 pl-3' }, h('span', { className: 'font-bold' }, n2.name + ': '), n2.text); })));
+              })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_notes_in_journals', 'No field notes in these journals yet.')))
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // HARDY-WEINBERG CALCULATOR
       // ─────────────────────────────────────────────────────
       // Visualizes p² + 2pq + q² = 1. Two main controls: allele frequency p
@@ -1010,6 +2209,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var genState = useState(0), gen = genState[0], setGen = genState[1];
         var historyState = useState([{ gen: 0, p: 0.5, AA: 0.25, Aa: 0.5, aa: 0.25 }]);
         var history = historyState[0], setHistory = historyState[1];
+        // A "run" starts at the first step after a reset (p may be set freely before that).
+        var hwSessionRef = useRef('');
+        var hwStartRef = useRef(null);
+        if (!hwSessionRef.current) hwSessionRef.current = newCapstoneSourceRunKey('hardyWeinberg');
 
         var q = 1 - p;
         var freqAA = p * p;
@@ -1021,6 +2224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // "Step 10" loop computed all 10 steps from the same starting p and collapsed to ~1 generation.
         var stepGeneration = function(times) {
           times = (typeof times === 'number' && times > 0) ? times : 1; // onClick passes an event → default to 1
+          if (gen === 0) { hwStartRef.current = { p: p, sel: selCoef, mut: mutRate, mig: migRate }; hwSessionRef.current = newCapstoneSourceRunKey('hardyWeinberg'); }
           var curP = p;
           var snapshots = [];
           for (var t = 0; t < times; t++) {
@@ -1043,9 +2247,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           setP(curP);
           setGen(gen + times);
           setHistory(history.concat(snapshots).slice(-50));
+          var genNow = gen + times;
+          var noForces = selCoef === 0 && mutRate === 0 && migRate === 0;
+          if (genNow >= 10) markComplete('hardyWeinberg', genNow + ' generations stepped; p = ' + curP.toFixed(3) + (noForces ? ' with no forces' : ' under modeled forces') + '.');
+          if (genNow >= 10 && noForces && Math.abs(curP - p) < 1e-9) detectExperiment('hardyWeinberg', 'noForces', 'No forces');
+          if (genNow >= 10 && selCoef >= 0.8) detectExperiment('hardyWeinberg', 'strongSelection', 'Strong selection');
+          if (genNow >= 50 && mutRate >= 0.05 && selCoef === 0) detectExperiment('hardyWeinberg', 'mutationPressure', 'Mutation pressure');
+          if (genNow >= 20 && migRate > 0 && selCoef > 0) detectExperiment('hardyWeinberg', 'migration', 'Migration overwhelms selection');
+          if (genNow <= 30 && selCoef > 0 && mutRate === 0 && migRate === 0 && curP >= 0.99 && p < 0.99) detectChallenge('hardyWeinberg', 'purge', 'Purge the allele', genNow);
+          if (mutRate >= 0.05 && selCoef === 0 && migRate === 0 && curP < 0.5 && p > curP) detectChallenge('hardyWeinberg', 'mutationMelt', 'Mutation melts a fixed allele', genNow);
         };
 
+        var hwTenAgo = function() { for (var i = history.length - 1; i >= 0; i--) if (history[i].gen === gen - 10) return history[i]; return null; };
+        var hwOutcome = function() {
+          if (gen < 10) return null;
+          var past = hwTenAgo();
+          if (!past) return null;
+          var delta = p - past.p;
+          if (delta > 0.05) return 'up';
+          if (delta < -0.05) return 'down';
+          return 'same';
+        };
+        var hwSnapshot = function() {
+          if (gen <= 0 || !hwStartRef.current) return null;
+          var start = hwStartRef.current;
+          var delta = p - start.p;
+          return {
+            sourceRunKey: hwSessionRef.current,
+            moduleLabel: 'Hardy-Weinberg Calculator',
+            comparison: {
+              designKey: 'p0=' + start.p.toFixed(3) + '|s=' + selCoef.toFixed(2) + '|mu=' + mutRate.toFixed(3) + '|m=' + migRate.toFixed(2) + '|generations=' + gen,
+              designLabel: 'p₀ = ' + start.p.toFixed(2) + ', selection ' + selCoef.toFixed(2) + ', mutation ' + mutRate.toFixed(3) + ', migration ' + migRate.toFixed(2) + ', ' + gen + ' generations',
+              primaryLabel: 'allele frequency change',
+              primaryValue: delta,
+              primaryDisplay: (delta >= 0 ? '+' : '') + delta.toFixed(3),
+              precision: 3,
+              unit: '',
+              factors: [
+                { id: 'startP', label: 'Starting p', value: Number(start.p.toFixed(2)) },
+                { id: 'selectionCoefficient', label: 'Selection against aa', value: Number(selCoef.toFixed(2)) },
+                { id: 'mutationRate', label: 'Mutation A→a', value: Number(mutRate.toFixed(3)) },
+                { id: 'migrationRate', label: 'Migration rate', value: Number(migRate.toFixed(2)) },
+                { id: 'generations', label: 'Generations', value: gen }
+              ]
+            },
+            baseline: 'Generation 0: p = ' + start.p.toFixed(3) + '; expected genotype proportions ' + (start.p * start.p).toFixed(3) + ' / ' + (2 * start.p * (1 - start.p)).toFixed(3) + ' / ' + ((1 - start.p) * (1 - start.p)).toFixed(3) + ' (AA / Aa / aa). Deterministic infinite-population model: no drift.',
+            settings: 'Selection against aa ' + selCoef.toFixed(2) + '; one-way mutation A→a ' + mutRate.toFixed(3) + '; migration ' + migRate.toFixed(2) + '; ' + gen + ' generations; settings shown at capture.',
+            outcome: 'Generation ' + gen + ': p = ' + p.toFixed(3) + ' (Δ ' + (delta >= 0 ? '+' : '') + delta.toFixed(3) + '); expected genotype proportions ' + freqAA.toFixed(3) + ' / ' + freqAa.toFixed(3) + ' / ' + freqaa.toFixed(3) + '.',
+            metrics: [
+              { label: 'Starting p', value: start.p.toFixed(3) },
+              { label: 'Generations', value: String(gen) },
+              { label: 'Final p', value: p.toFixed(3) },
+              { label: 'Change in p', value: (delta >= 0 ? '+' : '') + delta.toFixed(3) }
+            ]
+          };
+        };
         var reset = function() {
+          hwStartRef.current = null;
           setP(0.5); setSelCoef(0); setMutRate(0); setMigRate(0); setGen(0);
           setHistory([{ gen: 0, p: 0.5, AA: 0.25, Aa: 0.5, aa: 0.25 }]);
           announce(__alloT('stem.evolab.sr_hardy_weinberg_reset_to_equilibrium', 'Hardy-Weinberg reset to equilibrium.'));
@@ -1095,8 +2353,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'text-3xl font-black mb-1', style: { fontFamily: 'serif' } }, t('stem.evolab.p_2pq_q_1', 'p² + 2pq + q² = 1')),
               h('div', { className: 'text-sm opacity-95 mb-2' }, t('stem.evolab.hwe_expected_random_mating', 'Under random mating, p², 2pq, and q² are the expected genotype proportions for the current allele frequencies.')),
               h('div', { className: 'text-[0.75rem] font-bold bg-white/15 rounded-lg px-3 py-1.5 inline-block' },
-                t('stem.evolab.hwe_track_allele_change', 'Your job: apply a modeled force, track whether p changes, and watch the expected genotype proportions recalculate.'))
+                t('stem.evolab.hwe_track_allele_change', 'Your job: apply a modeled force, track whether p changes, and watch the expected genotype proportions recalculate.')),
+              h('div', { className: 'mt-2' }, h(SpeakButton, { tone: 'dark', text: t('stem.evolab.hwe_expected_random_mating', 'Under random mating, p², 2pq, and q² are the expected genotype proportions for the current allele frequencies.') + ' ' + t('stem.evolab.hwe_track_allele_change', 'Your job: apply a modeled force, track whether p changes, and watch the expected genotype proportions recalculate.') }))
             ),
+            h(PredictCard, {
+              moduleId: 'hardyWeinberg',
+              border: 'border-cyan-400', heading: 'text-cyan-800',
+              question: __alloFill(t('stem.evolab.predict_hw_q', 'From p = {value1} with selection {value2}, mutation {value3}, migration {value4}: where will p be after 10 more generations?'), { value1: p.toFixed(2), value2: selCoef.toFixed(2), value3: mutRate.toFixed(3), value4: migRate.toFixed(2) }),
+              context: 'p ' + p.toFixed(2) + ', s ' + selCoef.toFixed(2) + ', μ ' + mutRate.toFixed(3) + ', m ' + migRate.toFixed(2),
+              options: [
+                { id: 'up', label: t('stem.evolab.predict_hw_up', 'Higher (A becomes more common).') },
+                { id: 'same', label: t('stem.evolab.predict_hw_same', 'About the same (within 0.05).') },
+                { id: 'down', label: t('stem.evolab.predict_hw_down', 'Lower (A becomes rarer).') }
+              ],
+              pendingHint: t('stem.evolab.predict_hw_hint', 'Press Step 10 to test it.'),
+              locked: gen > 0,
+              outcomeId: hwOutcome(),
+              observedDetail: hwOutcome() ? __alloFill(t('stem.evolab.hw_observed_detail', 'p went from {value1} to {value2} over the last 10 generations.'), { value1: (hwTenAgo() || {}).p != null ? hwTenAgo().p.toFixed(3) : '—', value2: p.toFixed(3) }) : '',
+              explain: {
+                up: t('stem.evolab.explain_hw_up', 'p rose. Selection against aa removes a alleles every generation (fastest while a is common, slower as it hides in heterozygotes), and migration from a pool richer in A adds more. Check which force you had on.'),
+                same: t('stem.evolab.explain_hw_same', 'p held within 0.05. With every force at zero this is Hardy-Weinberg equilibrium: random mating alone changes nothing. It can also happen when forces are weak or when opposing forces roughly cancel (selection removing a, mutation making it).'),
+                down: t('stem.evolab.explain_hw_down', 'p fell. One-way mutation turns A into a, and migration from a pool poorer in A dilutes it; both work regardless of fitness. This is how a rare allele can persist, or grow, with no selection for it at all.')
+              }
+            }),
             // ── How to use this calculator (collapsible primer) ──
             h('details', {
               open: !gen || gen === 0,
@@ -1185,6 +2464,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
               }, t('stem.evolab.reset', '↺ Reset'))
             ),
+            h(CapstoneCapture, {
+              moduleId: 'hardyWeinberg',
+              moduleLabel: 'Hardy-Weinberg Calculator',
+              sourceRunKey: hwSessionRef.current,
+              ready: gen > 0,
+              readyHint: 'Save the starting p, the forces, generations stepped, and the change in allele frequency.',
+              emptyHint: 'Set p and the forces, then step at least one generation before capturing.',
+              getSnapshot: hwSnapshot
+            }),
             // Educational reference
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-cyan-800 mb-2' }, t('stem.evolab.why_hardy_weinberg_matters', '📖 Why Hardy-Weinberg Matters')),
@@ -1195,15 +2483,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.evolution_allele_frequency_change', 'evolution at this scale means allele frequencies change across generations. This model shows that change directly in p; the bars remain Hardy-Weinberg expectations for each new p.'))
             ),
             // Try-this experiments — concrete prompts so students don't stare at sliders.
-            h('div', { className: 'bg-white border-2 border-cyan-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-cyan-800 mb-3' }, t('stem.evolab.try_these_experiments', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.no_forces', 'No forces: ')), t('stem.evolab.set_p_to_anything_e_g_0_7_leave_select', 'Set p to anything (e.g., 0.7), leave selection / mutation / migration at 0. Press Step 10. The bars don\'t move — equilibrium holds.')),
-                h('li', null, h('strong', null, t('stem.evolab.strong_selection', 'Strong selection: ')), t('stem.evolab.set_p_0_5_selection_0_8_aa_is_80_letha', 'Set p = 0.5, selection = 0.8 (aa is 80% lethal). Step 10. Watch the aa bar shrink and AA grow as a is purged from the population.')),
-                h('li', null, h('strong', null, t('stem.evolab.mutation_pressure', 'Mutation pressure: ')), t('stem.evolab.set_p_1_0_all_a_mutation_0_05_step_50_', 'Set p = 1.0 (all A), mutation = 0.05. Step 50. Watch p slowly drift down as A → a mutations accumulate.')),
-                h('li', null, h('strong', null, t('stem.evolab.migration_overwhelms_selection', 'Migration overwhelms selection: ')), t('stem.evolab.set_p_0_1_selection_0_5_migration_0_2_', 'Set p = 0.1, selection = 0.5, migration = 0.2. Step 20. The population can\'t purge a because immigrants keep restoring it.'))
-              )
-            ),
+            h(ExperimentList, {
+              moduleId: 'hardyWeinberg',
+              challenges: [
+                { id: 'purge', title: t('stem.evolab.ch_purge', 'Purge the allele: '), body: t('stem.evolab.ch_purge_body', 'Starting below p = 0.99, use selection alone (mutation and migration at 0) to reach p ≥ 0.99 within 30 generations. Notice how the last few percent of a recessive allele hide in heterozygotes.') },
+                { id: 'mutationMelt', title: t('stem.evolab.ch_melt', 'Melt a fixed allele: '), body: t('stem.evolab.ch_melt_body', 'Set p = 1.0, selection 0, mutation 0.05 or more, and step until p falls below 0.5. Mutation pressure alone is slow but relentless.') }
+              ],
+              border: 'border-cyan-400', heading: 'text-cyan-800',
+              title: t('stem.evolab.try_these_experiments', '🧪 Try these experiments'),
+              items: [
+                { id: 'noForces', auto: true, title: t('stem.evolab.no_forces', 'No forces: '), body: t('stem.evolab.set_p_to_anything_e_g_0_7_leave_select', 'Set p to anything (e.g., 0.7), leave selection / mutation / migration at 0. Press Step 10. The bars don\'t move — equilibrium holds.') },
+                { id: 'strongSelection', auto: true, title: t('stem.evolab.strong_selection', 'Strong selection: '), body: t('stem.evolab.set_p_0_5_selection_0_8_aa_is_80_letha', 'Set p = 0.5, selection = 0.8 (aa is 80% lethal). Step 10. Watch the aa bar shrink and AA grow as a is purged from the population.') },
+                { id: 'mutationPressure', auto: true, title: t('stem.evolab.mutation_pressure', 'Mutation pressure: '), body: t('stem.evolab.set_p_1_0_all_a_mutation_0_05_step_50_', 'Set p = 1.0 (all A), mutation = 0.05. Step 50. Watch p slowly drift down as A → a mutations accumulate.') },
+                { id: 'migration', auto: true, title: t('stem.evolab.migration_overwhelms_selection', 'Migration overwhelms selection: '), body: t('stem.evolab.set_p_0_1_selection_0_5_migration_0_2_', 'Set p = 0.1, selection = 0.5, migration = 0.2. Step 20. The population can\'t purge a because immigrants keep restoring it.') }
+              ]
+            }),
             // Cross-module suggestion — point to the next natural lab.
             h('div', { className: 'bg-rose-50 border border-rose-300 rounded-xl p-3 text-sm text-slate-700 flex items-center gap-3' },
               h('span', { className: 'text-2xl' }, '🎲'),
@@ -1212,6 +2506,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.finite_population_drift_link', 'The idealized Hardy-Weinberg baseline assumes a very large population. In finite populations, random sampling changes allele frequencies even without selection. The Genetic Drift lab explores that process.')
               )
             ),
+            gen > 0 && h(CheckCard, {
+              moduleId: 'hardyWeinberg',
+              border: 'border-cyan-400', heading: 'text-cyan-800',
+              question: t('stem.evolab.check_hw_q', 'With selection, mutation, and migration all at 0, p did not change at all. Why?'),
+              options: [
+                { id: 'dominant', label: t('stem.evolab.check_hw_dominant', 'The dominant allele had already taken over, so there was nothing left to change.'), feedback: t('stem.evolab.check_hw_dominant_fb', 'Dominance is about which phenotype a heterozygote shows, not about which allele spreads. A dominant allele at p = 0.1 stays at p = 0.1 under these conditions. Dominance does not push allele frequencies anywhere by itself.') },
+                { id: 'nothing', label: t('stem.evolab.check_hw_nothing', 'Nothing changed who reproduced, and this calculator assumes a very large population, so there was no drift either.'), correct: true, feedback: t('stem.evolab.check_hw_nothing_fb', 'Right. Hardy-Weinberg is the null model: no force, no change. It is useful precisely because any change you DO see in a real population points at a cause (selection, mutation, migration, or, in small populations, drift, which this infinite-population calculator leaves to the Genetic Drift lab).') },
+                { id: 'hetero', label: t('stem.evolab.check_hw_hetero', 'Heterozygotes are fitter, so p is held at its balance point.'), feedback: t('stem.evolab.check_hw_hetero_fb', 'Heterozygote advantage would be a form of selection, and selection was set to 0. Also, that would hold p at one particular value; here p stayed wherever you set it, which is the signature of no force at all.') },
+                { id: 'random', label: t('stem.evolab.check_hw_random', 'Random mating stops evolution.'), feedback: t('stem.evolab.check_hw_random_fb', 'Random mating keeps genotype proportions at p², 2pq, q² for whatever p is, but it does not stop p from changing: add selection and p moves every generation even though mating stays random.') }
+              ]
+            }),
+            h(KeyTerms, { moduleId: 'hardyWeinberg', heading: 'text-cyan-800' }),
+            h(FieldNote, { moduleId: 'hardyWeinberg', border: 'border-cyan-400', heading: 'text-cyan-800', prompt: t('stem.evolab.note_prompt_hw', 'Which force moved p fastest, and which one could never finish the job? Why is a model where nothing changes useful?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-3', 'HS-LS4-2', 'HS-LS3-1'],
               questions: [
@@ -1242,14 +2549,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var trialsState = useState([]), trials = trialsState[0], setTrials = trialsState[1];
         var runIdState = useState(0), runId = runIdState[0], setRunId = runIdState[1];
         var lastRunMetaState = useState(null), lastRunMeta = lastRunMetaState[0], setLastRunMeta = lastRunMetaState[1];
+        var driftRunsRef = useRef({ small: 0, big: 0 });
+        // Optional bottleneck: N drops to 10 for 5 generations in the middle of the run.
+        var bottleneckState = useState(false), bottleneck = bottleneckState[0], setBottleneck = bottleneckState[1];
+        var bottleneckFor = function(gens) { return bottleneck ? { at: Math.floor(gens / 2), size: 10, duration: 5 } : null; };
 
         // Run ONE lineage of N generations starting at p=0.5. Returns array of p values.
-        var runOneLineage = function(n, gens) {
+        var runOneLineage = function(n, gens, bn) {
           var p = 0.5;
           var trace = [p];
           for (var g = 0; g < gens; g++) {
             // Binomial sampling: each of the 2N alleles is drawn from current p.
-            var alleles2N = 2 * n;
+            // During a bottleneck the census is the bottleneck size instead.
+            var nNow = (bn && g >= bn.at && g < bn.at + bn.duration) ? bn.size : n;
+            var alleles2N = 2 * nNow;
             var aCount = 0;
             for (var i = 0; i < alleles2N; i++) {
               if (Math.random() < p) aCount++;
@@ -1268,15 +2581,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var runMany = function() {
           var traces = [];
           for (var i = 0; i < 5; i++) {
-            traces.push(runOneLineage(popSize, generations));
+            traces.push(runOneLineage(popSize, generations, bottleneckFor(generations)));
           }
           setTrials(traces);
           var nextRunId = runId + 1;
           setRunId(nextRunId);
-          setLastRunMeta({ popSize: popSize, generations: generations, runId: nextRunId, sourceRunKey: newCapstoneSourceRunKey('geneticDrift') });
+          setLastRunMeta({ popSize: popSize, generations: generations, runId: nextRunId, bottleneck: bottleneckFor(generations), sourceRunKey: newCapstoneSourceRunKey('geneticDrift') });
           // Compute fixation summary
           var fixed0 = traces.filter(function(t) { return t[t.length - 1] === 0; }).length;
           var fixed1 = traces.filter(function(t) { return t[t.length - 1] === 1; }).length;
+          if (popSize <= 20) driftRunsRef.current.small++;
+          if (popSize >= 500) driftRunsRef.current.big++;
+          if (nextRunId >= 2) markComplete('geneticDrift', nextRunId + ' runs of 5 lineages; latest N = ' + popSize + ' for ' + generations + ' generations.');
+          if (popSize <= 10 && generations >= 100) detectExperiment('geneticDrift', 'tiny', 'Tiny population (N=10)');
+          if (popSize >= 1000 && generations >= 100) detectExperiment('geneticDrift', 'big', 'Big population (N=1000)');
+          if (popSize <= 10 && generations >= 500) detectExperiment('geneticDrift', 'longTerm', 'Long-term tiny population');
+          if (driftRunsRef.current.small >= 3 && driftRunsRef.current.big >= 3) detectExperiment('geneticDrift', 'compare', 'Compare outcomes');
+          if (bottleneck && popSize >= 500) {
+            detectExperiment('geneticDrift', 'bottleneck', 'Bottleneck in a big population');
+            var finalsB = traces.map(function(tr) { return tr[tr.length - 1]; });
+            if (finalsB.some(function(v) { return v >= 0.8 || v <= 0.2; })) detectChallenge('geneticDrift', 'bottleneckScar', 'Scar of a bottleneck', Math.max.apply(null, finalsB.map(function(v) { return Math.abs(v - 0.5); })));
+          }
+          var finalsNow = traces.map(function(tr) { return tr[tr.length - 1]; });
+          if (popSize <= 10 && generations <= 100 && finalsNow.every(function(v) { return v === 0 || v === 1; })) detectChallenge('geneticDrift', 'allFixed', 'Every lineage decided', generations);
+          if (popSize >= 1000 && generations >= 100 && finalsNow.every(function(v) { return v >= 0.45 && v <= 0.55; })) detectChallenge('geneticDrift', 'holdSteady', 'Big numbers hold steady', generations);
           announce(__alloFill(__alloT('stem.evolab.sr_ran_5_lineages_at_population_size_for_generations', 'Ran 5 lineages at population size {value1} for {value2} generations. Fixed at A: {value3}, fixed at a: {value4}.'), { value1: popSize, value2: generations, value3: fixed1, value4: fixed0 }));
         };
 
@@ -1287,6 +2615,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var toY = function(p) { return padT + (1 - p) * (H - padT - padB); };
         var lineColors = ['#10b981', '#06b6d4', '#f43f5e', '#a855f7', '#f59e0b'];
 
+        var renderBottleneckBand = function() {
+          var bn = lastRunMeta && lastRunMeta.bottleneck;
+          if (!bn) return null;
+          return h('g', { key: 'bn' },
+            h('rect', { x: toX(bn.at), y: padT, width: Math.max(2, toX(bn.at + bn.duration) - toX(bn.at)), height: H - padT - padB, fill: 'rgba(244,63,94,0.15)' }),
+            h('text', { x: toX(bn.at) + 3, y: padT + 10, fontSize: '9', fill: '#9f1239', fontWeight: 'bold' }, 'N = 10')
+          );
+        };
         var renderTrace = function(trace, idx) {
           var d = trace.map(function(p, g) {
             return (g === 0 ? 'M ' : 'L ') + toX(g).toFixed(1) + ' ' + toY(p).toFixed(1);
@@ -1295,6 +2631,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         var fixedCount = trials.filter(function(t) { return t[t.length - 1] === 0 || t[t.length - 1] === 1; }).length;
+        var driftOutcome = function() {
+          if (!trials.length || !lastRunMeta) return null;
+          if (fixedCount === 0) return 'none';
+          if (fixedCount >= 4) return 'most';
+          return 'some';
+        };
         var driftSnapshot = function() {
           if (!lastRunMeta || trials.length === 0) return null;
           var finals = trials.map(function(trace) { return trace[trace.length - 1]; });
@@ -1314,8 +2656,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: lastRunMeta.sourceRunKey,
             moduleLabel: 'Genetic Drift Simulator',
             comparison: {
-              designKey: 'N=' + lastRunMeta.popSize + '|generations=' + lastRunMeta.generations,
-              designLabel: 'N = ' + lastRunMeta.popSize + ' for ' + lastRunMeta.generations + ' generations',
+              designKey: 'N=' + lastRunMeta.popSize + '|generations=' + lastRunMeta.generations + '|bottleneck=' + (lastRunMeta.bottleneck ? 'on' : 'off'),
+              designLabel: 'N = ' + lastRunMeta.popSize + ' for ' + lastRunMeta.generations + ' generations' + (lastRunMeta.bottleneck ? ', bottleneck to N = 10 for 5 generations at generation ' + lastRunMeta.bottleneck.at : ''),
               primaryLabel: 'mean absolute displacement from p(A) = 0.500',
               primaryValue: meanAbsoluteDisplacement,
               primaryDisplay: meanAbsoluteDisplacement.toFixed(3),
@@ -1323,7 +2665,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               unit: '',
               factors: [
                 { id: 'populationSize', label: 'Population size', value: lastRunMeta.popSize },
-                { id: 'generations', label: 'Generations', value: lastRunMeta.generations }
+                { id: 'generations', label: 'Generations', value: lastRunMeta.generations },
+                { id: 'bottleneck', label: 'Bottleneck', value: lastRunMeta.bottleneck ? 'On (N→10 for 5 generations)' : 'Off' }
               ]
             },
             baseline: 'Generation 0: N = ' + lastRunMeta.popSize + ' diploid individuals; p(A) = 0.500 in all 5 lineages.',
@@ -1345,10 +2688,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Hero
             h('div', { className: 'bg-gradient-to-br from-rose-600 to-pink-700 rounded-2xl p-5 text-white shadow-lg' },
-              h('h2', { className: 'text-2xl font-black mb-1' }, t('stem.evolab.random_sampling_no_selection', 'Random sampling, no selection')),
-              h('p', { className: 'text-sm opacity-90' },
+              h('div', { className: 'flex items-start justify-between gap-2' },
+                h('h2', { className: 'text-2xl font-black mb-1' }, t('stem.evolab.random_sampling_no_selection', 'Random sampling, no selection')),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-geneticDrift' })
+              ),
+              h('p', { id: 'evolab-hero-geneticDrift', className: 'text-sm opacity-90' },
                 t('stem.evolab.set_a_population_size_then_run_5_paral', 'Set a population size, then run 5 parallel lineages. They all start at p = 0.5 (50/50 allele frequencies) and evolve only by chance — no selection, no mutation. Smaller populations drift much harder.'))
             ),
+            h(PredictCard, {
+              moduleId: 'geneticDrift',
+              border: 'border-rose-400', heading: 'text-rose-800',
+              question: __alloFill(t('stem.evolab.predict_drift_q', 'With N = {value1} for {value2} generations, how many of the 5 lineages will end at 0 or 1 (allele lost or fixed)?'), { value1: popSize, value2: generations }),
+              context: 'N ' + popSize + ', ' + generations + ' generations',
+              options: [
+                { id: 'none', label: t('stem.evolab.predict_drift_none', 'None: all five stay somewhere in between.') },
+                { id: 'some', label: t('stem.evolab.predict_drift_some', 'One to three of them.') },
+                { id: 'most', label: t('stem.evolab.predict_drift_most', 'Four or all five.') }
+              ],
+              pendingHint: t('stem.evolab.predict_drift_hint', 'Press Run 5 Lineages to test it at exactly these settings.'),
+              locked: false,
+              outcomeId: driftOutcome(),
+              observedDetail: trials.length && lastRunMeta ? __alloFill(t('stem.evolab.drift_observed_detail', 'N = {value1}, {value2} generations: {value3} of 5 lineages fixed or lost the allele.'), { value1: lastRunMeta.popSize, value2: lastRunMeta.generations, value3: fixedCount }) : '',
+              explain: {
+                none: t('stem.evolab.explain_drift_none', 'No lineage reached 0 or 1. Sampling error per generation scales as p(1−p)/(2N), so with a large N (or few generations) the random walk simply has not travelled far enough to hit a wall.'),
+                some: t('stem.evolab.explain_drift_some', 'Some lineages decided and some did not, from identical starting points. That spread IS drift: the same rules, different luck. Increase generations or shrink N and more of them will reach a wall.'),
+                most: t('stem.evolab.explain_drift_most', 'Almost every lineage hit 0 or 1. Small populations lose variation fast, and once an allele is lost only mutation or migration can bring it back. This is why tiny, isolated populations worry conservation biologists even when nothing is selecting against them.')
+              }
+            }),
             // Stats
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h(StatCard, { label: t('stem.evolab.population_n', 'Population (N)'), value: popSize, color: 'text-rose-600' }),
@@ -1388,7 +2754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 // Lineage traces (or an empty-state hint before the first run)
                 trials.length === 0
                   ? h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fontSize: '13', fill: '#94a3b8', fontStyle: 'italic' }, t('stem.evolab.press_run_to_watch_5_lineages_drift_by', 'Press Run to watch 5 lineages drift by chance'))
-                  : trials.map(function(t, i) { return renderTrace(t, i); })
+                  : [renderBottleneckBand()].concat(trials.map(function(t, i) { return renderTrace(t, i); }))
               )
             ),
             // Controls
@@ -1415,6 +2781,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 valueText: generations + ' generations',
                 accent: 'accent-cyan-500'
               })
+            ),
+            // Bottleneck toggle
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex flex-wrap items-center justify-between gap-3' },
+              h('div', null,
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.bottleneck_event', '⏳ Bottleneck event')),
+                h('div', { className: 'text-sm text-slate-600' }, bottleneck
+                  ? __alloFill(t('stem.evolab.bottleneck_on_desc', 'ON: at generation {value1} the population drops to 10 for 5 generations, then returns to N. Watch the lineages jump inside the shaded band.'), { value1: Math.floor(generations / 2) })
+                  : t('stem.evolab.bottleneck_off_desc', 'OFF: N is constant for the whole run. Turn it on to see how a brief crash leaves a permanent mark on allele frequencies, even in a huge population.'))
+              ),
+              h('button', {
+                type: 'button', onClick: function() { setBottleneck(!bottleneck); }, 'aria-pressed': bottleneck,
+                className: 'px-4 py-2 rounded-lg font-bold ' + (bottleneck ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-700')
+              }, bottleneck ? '✓ ' + t('stem.evolab.bottleneck_enabled', 'Bottleneck on') : t('stem.evolab.bottleneck_disabled', 'Bottleneck off'))
             ),
             // Run / reset
             h('div', { className: 'flex gap-3 justify-center' },
@@ -1446,15 +2825,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               )
             ),
             // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-rose-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-rose-800 mb-3' }, t('stem.evolab.try_these_experiments_2', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.tiny_population_n_10', 'Tiny population (N=10): ')), t('stem.evolab.run_5_lineages_over_100_generations_mo', 'Run 5 lineages over 100 generations. Most lineages "fix" — alleles go to 0 or 1 by chance. Repeat the run and notice the END states are different each time even though all started identically.')),
-                h('li', null, h('strong', null, t('stem.evolab.big_population_n_1000', 'Big population (N=1000): ')), t('stem.evolab.same_100_generations_lineages_stay_nea', 'Same 100 generations. Lineages stay near p=0.5 — drift can\'t move them much because random sampling from many individuals smooths out.')),
-                h('li', null, h('strong', null, t('stem.evolab.long_term_tiny_population', 'Long-term tiny population: ')), t('stem.evolab.long_term_drift_not_founder', 'Set N=10 and generations=500. Watch lineages drift toward loss or fixation. This is repeated random sampling, not a founder event by itself.')),
-                h('li', null, h('strong', null, t('stem.evolab.compare_outcomes', 'Compare outcomes: ')), t('stem.evolab.drift_variance_scaling', 'Run N=10 three times, then N=1000 three times. The N=10 outcomes vary widely; N=1000 trajectories usually fluctuate less. Per-generation sampling variance is p(1-p)/(2N), so typical fluctuation scales roughly with 1/√N.'))
-              )
-            ),
+            h(ExperimentList, {
+              moduleId: 'geneticDrift',
+              challenges: [
+                { id: 'allFixed', title: t('stem.evolab.ch_allfixed', 'Every lineage decided: '), body: t('stem.evolab.ch_allfixed_body', 'With N at 10 or less and 100 generations or fewer, get a run where all five lineages have fixed or lost the allele by the end.') },
+                { id: 'holdSteady', title: t('stem.evolab.ch_holdsteady', 'Big numbers hold steady: '), body: t('stem.evolab.ch_holdsteady_body', 'With N at 1000 or more for 100+ generations, get a run where all five lineages finish between 0.45 and 0.55.') },
+                { id: 'bottleneckScar', title: t('stem.evolab.ch_bottleneck', 'Scar of a bottleneck: '), body: t('stem.evolab.ch_bottleneck_body', 'With N at 500 or more and the bottleneck on, get at least one lineage to finish at or beyond 0.8 or 0.2. Cheetahs carry exactly this kind of scar.') }
+              ],
+              border: 'border-rose-400', heading: 'text-rose-800',
+              title: t('stem.evolab.try_these_experiments_2', '🧪 Try these experiments'),
+              items: [
+                { id: 'tiny', auto: true, title: t('stem.evolab.tiny_population_n_10', 'Tiny population (N=10): '), body: t('stem.evolab.run_5_lineages_over_100_generations_mo', 'Run 5 lineages over 100 generations. Most lineages "fix" — alleles go to 0 or 1 by chance. Repeat the run and notice the END states are different each time even though all started identically.') },
+                { id: 'big', auto: true, title: t('stem.evolab.big_population_n_1000', 'Big population (N=1000): '), body: t('stem.evolab.same_100_generations_lineages_stay_nea', 'Same 100 generations. Lineages stay near p=0.5 — drift can\'t move them much because random sampling from many individuals smooths out.') },
+                { id: 'longTerm', auto: true, title: t('stem.evolab.long_term_tiny_population', 'Long-term tiny population: '), body: t('stem.evolab.long_term_drift_not_founder', 'Set N=10 and generations=500. Watch lineages drift toward loss or fixation. This is repeated random sampling, not a founder event by itself.') },
+                { id: 'bottleneck', auto: true, title: t('stem.evolab.exp_bottleneck', 'Bottleneck in a big population: '), body: t('stem.evolab.exp_bottleneck_body', 'Set N = 1000, turn the Bottleneck on, and run. Lineages that were flat for 50 generations lurch inside the shaded band and then freeze at their new level: five generations of small numbers did what a thousand individuals could not.') },
+                { id: 'compare', auto: true, title: t('stem.evolab.compare_outcomes', 'Compare outcomes: '), body: t('stem.evolab.drift_variance_scaling', 'Run N=10 three times, then N=1000 three times. The N=10 outcomes vary widely; N=1000 trajectories usually fluctuate less. Per-generation sampling variance is p(1-p)/(2N), so typical fluctuation scales roughly with 1/√N.') }
+              ]
+            }),
             // Cross-module suggestion
             h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-sm text-slate-700 flex items-center gap-3' },
               h('span', { className: 'text-2xl' }, '🧪'),
@@ -1463,6 +2850,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.drift_is_one_major_force_selection_is_', 'Drift is one major force; SELECTION is the other. The Selection Sandbox lets you watch a 50-creature population evolve under your chosen pressure — stabilizing, directional, or disruptive.')
               )
             ),
+            trials.length > 0 && h(CheckCard, {
+              moduleId: 'geneticDrift',
+              border: 'border-rose-400', heading: 'text-rose-800',
+              question: t('stem.evolab.check_drift_q', 'With N = 10, allele A was lost in some lineages and fixed in others, with NO selection. What does that show?'),
+              options: [
+                { id: 'harmful', label: t('stem.evolab.check_drift_harmful', 'A must have been harmful in the lineages where it was lost.'), feedback: t('stem.evolab.check_drift_harmful_fb', 'Every lineage used identical rules and A had no effect on survival anywhere. The same allele fixed in one lineage and vanished in another purely because of which individuals happened to be sampled as parents. If harm explained loss, A could not also have fixed next door.') },
+                { id: 'chance', label: t('stem.evolab.check_drift_chance', 'Chance alone changes allele frequencies, and it matters most in small populations.'), correct: true, feedback: t('stem.evolab.check_drift_chance_fb', 'Yes. Each generation samples 2N alleles from the last; sampling error is about p(1−p)/(2N) per generation, so ten individuals wander far while a thousand barely move. Drift is evolution with no direction, and it is why small endangered populations lose variation even when nothing is selecting against it.') },
+                { id: 'faster', label: t('stem.evolab.check_drift_faster', 'Small populations adapt faster, so they reach the best allele sooner.'), feedback: t('stem.evolab.check_drift_faster_fb', 'There was no "best" allele: A and a were equivalent. Small populations change faster, but in RANDOM directions. Adaptation needs selection, and drift can even push a population away from an adaptive allele.') },
+                { id: 'biased', label: t('stem.evolab.check_drift_biased', 'The simulator\'s random numbers must be biased toward one allele.'), feedback: t('stem.evolab.check_drift_biased_fb', 'Run it again: across many lineages about half fix at A and half lose it. Fixation and loss are equally likely from p = 0.5, which is exactly what unbiased sampling predicts.') }
+              ]
+            }),
+            h(KeyTerms, { moduleId: 'geneticDrift', heading: 'text-rose-800' }),
+            h(FieldNote, { moduleId: 'geneticDrift', border: 'border-rose-400', heading: 'text-rose-800', prompt: t('stem.evolab.note_prompt_drift', 'Two lineages with identical rules ended at 0 and 1. Explain that to someone who thinks evolution always has a reason.') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-3', 'HS-LS3-1', 'HS-LS3-3'],
               questions: [
@@ -1513,7 +2913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // Includes presets for the 3 textbook selection modes plus a Maine
       // snowshoe-hare climate-change scenario.
       function SelectionSandbox() {
-        var POP_SIZE = 50;
+        var POP_SIZE = 50; // default census; the slider below overrides it
         // Presets describe a fitness landscape over trait t ∈ [0, 1]:
         //   ideal: target value (where fitness peaks)
         //   width: how forgiving the fitness fall-off is
@@ -1550,6 +2950,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             envColor: '#cbd5e1', traitLabel: 'Molt timing (early ↔ late)'
           }
         };
+        // Design-your-own landscape: the student sets where fitness peaks and how
+        // forgiving the fall-off is. Sliders adjust the live run (no reset).
+        var customIdealState = useState(0.5), customIdeal = customIdealState[0], setCustomIdeal = customIdealState[1];
+        var customWidthState = useState(0.15), customWidth = customWidthState[0], setCustomWidth = customWidthState[1];
+        PRESETS.custom = {
+          label: t('stem.evolab.custom_landscape', 'Custom — Design your own'),
+          description: t('stem.evolab.custom_landscape_desc', 'You choose the fitness landscape: where the peak sits (ideal) and how sharply fitness falls away from it (width). Move the peak mid-run and watch the population chase it.'),
+          ideal: customIdeal, width: customWidth, mode: 'gaussian',
+          envColor: '#ecfeff', traitLabel: 'Your trait (0 ↔ 1)'
+        };
 
         var presetState = useState('directional'), presetId = presetState[0], setPresetId = presetState[1];
         var preset = PRESETS[presetId];
@@ -1557,6 +2967,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var mutSizeState = useState(0.04), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
         var generationState = useState(0), generation = generationState[0], setGeneration = generationState[1];
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
+        var popSizeState = useState(POP_SIZE), popSize = popSizeState[0], setPopSize = popSizeState[1];
+        var popSizeRef = useRef(popSize);
+        popSizeRef.current = popSize;
+        var runStartedAtRef = useRef({ preset: 'directional', strength: 1.0 });
         // Refs for live values the RAF loop reads — kept stable so the loop's
         // useEffect deps don't include `generation` (which would force a full
         // RAF cancel/restart every step). Updated whenever state changes.
@@ -1586,7 +3000,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           selectionSessionRef.current = newCapstoneSourceRunKey('selectionSandbox');
           var pop = [];
           var initialSum = 0, initialSumSq = 0;
-          for (var i = 0; i < POP_SIZE; i++) {
+          var census = popSizeRef.current;
+          runStartedAtRef.current = { preset: presetRef.current ? presetRef.current.label : '', strength: selStrengthRef.current, mutation: mutSizeRef.current, popSize: census, driftOnly: !!(presetRef.current && presetRef.current.width >= 900) };
+          for (var i = 0; i < census; i++) {
             var initialTrait = Math.random();
             pop.push({
               x: 30 + Math.random() * 740,
@@ -1600,12 +3016,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             initialSum += initialTrait;
             initialSumSq += initialTrait * initialTrait;
           }
-          var initialMean = initialSum / POP_SIZE;
-          var initialVariance = (initialSumSq / POP_SIZE) - initialMean * initialMean;
+          var initialMean = initialSum / census;
+          var initialVariance = (initialSumSq / census) - initialMean * initialMean;
           var initialStd = Math.sqrt(Math.max(0, initialVariance));
           creaturesRef.current = pop;
-          selectionBaselineRef.current = { mean: initialMean, std: initialStd, population: POP_SIZE };
-          historyRef.current = [{ gen: 0, mean: initialMean, std: initialStd, alive: POP_SIZE }];
+          selectionBaselineRef.current = { mean: initialMean, std: initialStd, population: census };
+          historyRef.current = [{ gen: 0, mean: initialMean, std: initialStd, alive: census }];
           generationRef.current = 0;
           autoRunRef.current = false;
           setAutoRun(false);
@@ -1653,7 +3069,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           // replacement from selected parents. Equal fitness can now drift.
           var next = [];
           var mutNow = mutSizeRef.current;
-          while (next.length < POP_SIZE) {
+          var census = popSizeRef.current;
+          while (next.length < census) {
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
             next.push({
               x: parent.x + (Math.random() - 0.5) * 30,
@@ -1677,7 +3094,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           creaturesRef.current = next;
           generationRef.current = nextGen;
           setGeneration(nextGen);
+          checkSandboxMilestones(nextGen, mean, std, next);
           if (!silent) announce(__alloFill(__alloT('stem.evolab.sr_generation_mean_trait_survivors_before_reproducti', 'Generation {value1}. Mean trait {value2}, survivors before reproduction {value3} of {value4}.'), { value1: nextGen, value2: mean.toFixed(2), value3: survivors.length, value4: pop.length }));
+        };
+
+        // Completion at 20 generations; experiments detected from the live run.
+        var checkSandboxMilestones = function(gen, meanNow, stdNow, popNow) {
+          var p = presetRef.current;
+          var started = runStartedAtRef.current;
+          if (gen === 20) markComplete('selectionSandbox', p.label + ': 20 generations, mean trait ' + meanNow.toFixed(2) + ', SD ' + stdNow.toFixed(2) + '.');
+          if (gen >= 10 && p.mode === 'gaussian' && p.width < 900 && p.ideal > 0.7 && Math.abs(meanNow - p.ideal) < 0.1 && selStrengthRef.current >= 0.9) detectExperiment('selectionSandbox', 'selectionVsDrift', 'Selection vs drift');
+          if (gen >= 15 && p.mode === 'gaussian' && p.width < 900 && p.ideal === 0.5 && stdNow < selectionBaselineRef.current.std * 0.5) detectExperiment('selectionSandbox', 'stabilizing', 'Stabilizing keeps the mean stable');
+          if (gen >= 15 && p.mode === 'bimodal') {
+            var low = 0, mid = 0, high = 0;
+            popNow.forEach(function(c) { if (c.trait < 0.35) low++; else if (c.trait > 0.65) high++; else mid++; });
+            if (low >= 5 && high >= 5 && mid < Math.min(low, high)) detectExperiment('selectionSandbox', 'disruptive', 'Disruptive splits the population');
+          }
+          if (gen >= 10 && mutSizeRef.current === 0 && p.width < 900) detectExperiment('selectionSandbox', 'mutation', 'Mutation matters');
+          if (gen >= 20 && p.width < 900 && p.ideal === 0.68) detectExperiment('selectionSandbox', 'snowshoe', 'Snowshoe hare scenario');
+          if (gen >= 20 && p.width >= 900 && popSizeRef.current <= 20) detectExperiment('selectionSandbox', 'driftSize', 'Drift and population size');
+          if (gen <= 15 && p.mode === 'gaussian' && p.width < 900 && p.ideal === 0.5 && stdNow < 0.08) detectChallenge('selectionSandbox', 'tightStabilizing', 'Tight stabilizing selection', stdNow);
+          if (p.mode === 'bimodal') {
+            var lo2 = 0, mid2 = 0, hi2 = 0;
+            popNow.forEach(function(c) { if (c.trait < 0.35) lo2++; else if (c.trait > 0.65) hi2++; else mid2++; });
+            var N2 = popNow.length || 1;
+            if (lo2 / N2 >= 0.4 && hi2 / N2 >= 0.4 && mid2 / N2 <= 0.1) detectChallenge('selectionSandbox', 'bimodal', 'A clean split', mid2);
+          }
         };
 
         // Initialize synchronously before first paint to avoid the empty-canvas
@@ -1697,6 +3139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var canvas = canvasRef.current;
           if (!canvas) return;
           var ctx = canvas.getContext('2d');
+          if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
             var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -1867,7 +3310,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           );
         };
 
-        var latest = historyRef.current[historyRef.current.length - 1] || { mean: 0.5, std: 0.29, alive: POP_SIZE };
+        var latest = historyRef.current[historyRef.current.length - 1] || { mean: 0.5, std: 0.29, alive: popSize };
+        var census = selectionBaselineRef.current.population || popSize;
+        // Predict-observe-explain: the histogram's shape after 20 generations.
+        var sandboxOutcome = function() {
+          if (generation < 20) return null;
+          var base = selectionBaselineRef.current;
+          var low = 0, mid = 0, high = 0;
+          creaturesRef.current.forEach(function(c) { if (c.trait < 0.35) low++; else if (c.trait > 0.65) high++; else mid++; });
+          if (low >= 5 && high >= 5 && mid < Math.min(low, high)) return 'split';
+          if (Math.abs(latest.mean - base.mean) > 0.15) return 'shift';
+          if (latest.std < base.std * 0.6) return 'narrow';
+          return 'wander';
+        };
         var selectionSnapshot = function() {
           if (generation <= 0) return null;
           var baseline = selectionBaselineRef.current;
@@ -1884,8 +3339,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: selectionSessionRef.current,
             moduleLabel: 'Selection Sandbox',
             comparison: {
-              designKey: preset.label + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|generations=' + generation,
-              designLabel: preset.label + ', strength ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', ' + generation + ' generations',
+              designKey: preset.label + '|ideal=' + preset.ideal + '|width=' + preset.width + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|N=' + baseline.population + '|generations=' + generation,
+              designLabel: preset.label + ', strength ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', N = ' + baseline.population + ', ' + generation + ' generations',
               primaryLabel: 'mean trait shift',
               primaryValue: traitShift,
               primaryDisplay: (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3),
@@ -1895,18 +3350,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'selectionPreset', label: 'Selection preset', value: preset.label },
                 { id: 'selectionStrength', label: 'Selection strength', value: Number(selStrength.toFixed(2)) },
                 { id: 'traitVariation', label: 'Offspring trait variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'populationSize', label: 'Population size', value: baseline.population },
                 { id: 'generations', label: 'Generations', value: generation }
               ]
             },
             baseline: 'Generation 0: ' + baseline.population + ' modeled organisms; mean trait ' + baseline.mean.toFixed(3) + ', SD ' + baseline.std.toFixed(3) + '.',
             settings: preset.label + '; ' + targetText + '; selection strength ' + selStrength.toFixed(2) + '; offspring trait variation σ = ' + mutSize.toFixed(2) + '; settings shown at capture.',
-            outcome: 'Generation ' + generation + ': mean trait ' + latest.mean.toFixed(3) + ' (Δ ' + (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3) + '), SD ' + latest.std.toFixed(3) + ' (Δ ' + (spreadShift >= 0 ? '+' : '') + spreadShift.toFixed(3) + '); ' + latest.alive + '/50 survived the last selection pass before reproduction restored the census to 50.',
+            outcome: 'Generation ' + generation + ': mean trait ' + latest.mean.toFixed(3) + ' (Δ ' + (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3) + '), SD ' + latest.std.toFixed(3) + ' (Δ ' + (spreadShift >= 0 ? '+' : '') + spreadShift.toFixed(3) + '); ' + latest.alive + '/' + baseline.population + ' survived the last selection pass before reproduction restored the census to ' + baseline.population + '.',
             metrics: [
               { label: 'Preset', value: preset.label },
               { label: 'Generation', value: String(generation) },
               { label: 'Mean trait shift', value: (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3) },
               { label: 'Low / middle / high traits', value: low + ' / ' + middle + ' / ' + high },
-              { label: 'Last selection survivors', value: latest.alive + ' of 50' }
+              { label: 'Last selection survivors', value: latest.alive + ' of ' + baseline.population }
             ]
           };
         };
@@ -1921,15 +3377,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', null,
                   h('h2', { className: 'text-lg font-black' }, preset.label),
                   h('p', { className: 'text-sm text-emerald-50 mt-1' }, preset.description)
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', text: preset.label + '. ' + preset.description, className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'selectionSandbox',
+              border: 'border-emerald-400', heading: 'text-emerald-800',
+              question: __alloFill(t('stem.evolab.predict_sandbox_q', 'Under "{value1}" with selection strength {value2}, what will the trait histogram look like after 20 generations?'), { value1: preset.label, value2: selStrength.toFixed(2) }),
+              context: preset.label + ', strength ' + selStrength.toFixed(2) + ', N ' + popSize,
+              options: [
+                { id: 'shift', label: t('stem.evolab.predict_sandbox_shift', 'The whole hump slides toward one side.') },
+                { id: 'narrow', label: t('stem.evolab.predict_sandbox_narrow', 'It stays centred but gets narrower.') },
+                { id: 'split', label: t('stem.evolab.predict_sandbox_split', 'It splits into two humps with a gap in the middle.') },
+                { id: 'wander', label: t('stem.evolab.predict_sandbox_wander', 'It wanders randomly with no consistent shape.') }
+              ],
+              pendingHint: t('stem.evolab.predict_sandbox_hint', 'Step or Auto-Run to generation 20 and the histogram will be compared with your prediction.'),
+              locked: generation > 0,
+              outcomeId: sandboxOutcome(),
+              observedDetail: generation >= 20 ? 'Generation ' + generation + ': mean ' + selectionBaselineRef.current.mean.toFixed(2) + ' → ' + latest.mean.toFixed(2) + ', SD ' + selectionBaselineRef.current.std.toFixed(2) + ' → ' + latest.std.toFixed(2) + '.' : '',
+              explain: {
+                shift: t('stem.evolab.explain_sandbox_shift', 'Directional selection: one side of the distribution survives better every generation, so the whole hump slides that way until it sits on the fitness peak. The peppered moth and the snowshoe hare presets both do this.'),
+                narrow: t('stem.evolab.explain_sandbox_narrow', 'Stabilizing selection: both tails die more often than the middle, so the mean stays put while the spread shrinks. Human birth weight is the textbook case. Notice the mean did not need to move for selection to be acting.'),
+                split: t('stem.evolab.explain_sandbox_split', 'Disruptive selection: the middle is the worst place to be, so the population piles up at the two extremes. Two humps with a valley is the first step toward two specialists, though not by itself two species.'),
+                wander: t('stem.evolab.explain_sandbox_wander', 'With selection off (or very weak), the only thing changing the population is random sampling of who happens to reproduce. That is genetic drift: real change, no direction. Smaller populations wander further; try N = 10 versus N = 200.')
+              }
+            }),
             // Stats row
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h(StatCard, { label: t('stem.evolab.generation_2', 'Generation'), value: generation, color: 'text-emerald-700' }),
               h(StatCard, { label: t('stem.evolab.mean_trait', 'Mean Trait'), value: latest.mean.toFixed(3), color: 'text-cyan-700' }),
               h(StatCard, { label: t('stem.evolab.std_dev', 'Std Dev'), value: latest.std.toFixed(3), color: 'text-violet-700', unit: 'spread of trait' }),
-              h(StatCard, { label: t('stem.evolab.last_survivors', 'Last Survivors'), value: latest.alive + ' / ' + POP_SIZE, color: latest.alive < POP_SIZE * 0.5 ? 'text-rose-700' : 'text-emerald-700' })
+              h(StatCard, { label: t('stem.evolab.last_survivors', 'Last Survivors'), value: latest.alive + ' / ' + census, color: latest.alive < census * 0.5 ? 'text-rose-700' : 'text-emerald-700' })
             ),
             // Canvas (population view)
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 overflow-hidden' },
@@ -1949,7 +3428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             // Preset picker
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, t('stem.evolab.selection_mode', 'Selection Mode')),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2' },
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2' },
                 Object.keys(PRESETS).map(function(id) {
                   var p = PRESETS[id];
                   return h('button', {
@@ -1962,8 +3441,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 })
               )
             ),
+            presetId === 'custom' && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h(LabeledSlider, {
+                label: t('stem.evolab.fitness_peak_ideal', 'Fitness peak (ideal trait)'),
+                value: customIdeal, min: 0, max: 1, step: 0.05,
+                onChange: function(v) { setCustomIdeal(v); },
+                valueText: 'ideal = ' + customIdeal.toFixed(2),
+                accent: 'accent-cyan-600',
+                hint: t('stem.evolab.fitness_peak_hint', 'The trait value with the highest survival. Slide it while Auto-Run is on and the population will follow, lagging behind.')
+              }),
+              h(LabeledSlider, {
+                label: t('stem.evolab.landscape_width', 'Landscape width'),
+                value: customWidth, min: 0.05, max: 0.5, step: 0.05,
+                onChange: function(v) { setCustomWidth(v); },
+                valueText: 'width = ' + customWidth.toFixed(2) + (customWidth <= 0.1 ? ' · ' + t('stem.evolab.harsh', 'harsh') : customWidth >= 0.35 ? ' · ' + t('stem.evolab.forgiving', 'forgiving') : ''),
+                accent: 'accent-cyan-600',
+                hint: t('stem.evolab.landscape_width_hint', 'How far from the peak fitness stays high. Narrow = strong selection and a tight population; wide = almost neutral.')
+              })
+            ),
             // Sliders
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+              h(LabeledSlider, {
+                label: t('stem.evolab.population_size', 'Population Size'),
+                value: popSize, min: 10, max: 200, step: 10,
+                onChange: function(v) { setPopSize(v); },
+                valueText: 'N = ' + popSize + (popSize !== census ? ' · ' + t('stem.evolab.applies_on_reset', 'applies on Reset') : ''),
+                accent: 'accent-cyan-600',
+                hint: t('stem.evolab.population_size_hint', 'How many organisms the model refills to each generation. Smaller populations drift harder: with selection off, compare N = 10 against N = 200. Takes effect when you Reset the population.')
+              }),
               h(LabeledSlider, {
                 label: t('stem.evolab.selection_strength', 'Selection Strength'),
                 value: selStrength, min: 0, max: 1, step: 0.05,
@@ -2021,17 +3526,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', null, h('strong', null, 'Inheritance: '), t('stem.evolab.survivors_offspring_inherit_the_parent', 'Survivors\' offspring inherit the parent\'s trait ± a small random change (mutation). Over generations, this shifts the population mean.'))
               )
             ),
+            generation > 0 && h(CheckCard, {
+              moduleId: 'selectionSandbox',
+              border: 'border-emerald-400', heading: 'text-emerald-800',
+              question: t('stem.evolab.check_sandbox_q', 'Under stabilizing selection the mean barely moved. Was selection happening?'),
+              options: [
+                { id: 'no', label: t('stem.evolab.check_sandbox_no', 'No. If the mean does not move, nothing is being selected.'), feedback: t('stem.evolab.check_sandbox_no_fb', 'Look at the standard deviation, not the mean. Under the birth-weight preset both tails die more often than the middle, so the spread shrinks while the average stays put. Selection was strong; it just pointed inward from both sides.') },
+                { id: 'yes', label: t('stem.evolab.check_sandbox_yes', 'Yes. Both extremes were dying more often, so the spread shrank even though the average stayed put.'), correct: true, feedback: t('stem.evolab.check_sandbox_yes_fb', 'Right. Selection is about who survives to reproduce, and here the survivors were the middle every generation. The histogram narrows and the SD falls. "Evolution" is any change in the distribution, not only a moving average.') },
+                { id: 'weak', label: t('stem.evolab.check_sandbox_weak', 'Only weakly. Selection always moves the mean when it is strong.'), feedback: t('stem.evolab.check_sandbox_weak_fb', 'Strength and direction are separate things. Set stabilizing strength to 1.0 and watch the survivor count drop hard each generation while the mean holds at 0.5. Strong selection can leave the average exactly where it is.') },
+                { id: 'mutation', label: t('stem.evolab.check_sandbox_mutation', 'No. The population had stopped mutating.'), feedback: t('stem.evolab.check_sandbox_mutation_fb', 'Mutation (σ) was unchanged the whole time; every chick still varied from its parent. The narrowing happened despite mutation constantly adding spread, which tells you how hard selection was pushing inward.') }
+              ]
+            }),
             // Try-this experiments — concrete prompts mapped to the presets.
-            h('div', { className: 'bg-white border-2 border-emerald-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-3' }, t('stem.evolab.try_these_experiments_3', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.selection_vs_drift', 'Selection vs drift: ')), t('stem.evolab.pick_the_directional_peppered_moth_pre', 'Pick the directional (peppered moth) preset, set Selection Strength to 1.0, click Step 10. Watch the mean shift toward 0.85. Now set Selection to 0 and step another 30 generations — the mean wanders randomly without converging.')),
-                h('li', null, h('strong', null, t('stem.evolab.stabilizing_keeps_the_mean_stable', 'Stabilizing keeps the mean stable: ')), t('stem.evolab.switch_to_the_stabilizing_birth_weight', 'Switch to the stabilizing (birth weight) preset. The mean stays near 0.5 but the standard deviation SHRINKS over generations as extremes are pruned. Variation decreases without the mean moving.')),
-                h('li', null, h('strong', null, t('stem.evolab.disruptive_splits_the_population', 'Disruptive splits the population: ')), t('stem.evolab.switch_to_disruptive_after_15_20_gener', 'Switch to disruptive. After 15-20 generations the histogram becomes BIMODAL — two peaks at 0.2 and 0.8 with a valley at 0.5. This is how one species can begin to split into two.')),
-                h('li', null, h('strong', null, t('stem.evolab.mutation_matters', 'Mutation matters: ')), t('stem.evolab.on_the_directional_preset_with_selecti', 'On the directional preset with selection ON, set Mutation Size to 0 (no variation introduced). After convergence the population stops changing — selection has nothing left to act on. Then bump Mutation Size up — convergence resumes faster.')),
-                h('li', null, h('strong', null, t('stem.evolab.snowshoe_hare_scenario', 'Snowshoe hare scenario: ')), t('stem.evolab.switch_to_the_snowshoe_hare_preset_the', 'Switch to the snowshoe hare preset. The "ideal" trait is 0.68 (later molt) — selection now pushes hares away from their ancestral early-molt genes. This is real ongoing Maine evolution.'))
-              )
-            ),
+            h(ExperimentList, {
+              moduleId: 'selectionSandbox',
+              challenges: [
+                { id: 'tightStabilizing', title: t('stem.evolab.ch_tight', 'Tight middle: '), body: t('stem.evolab.ch_tight_body', 'Under the stabilizing preset, get the standard deviation below 0.08 within 15 generations. Selection strength and mutation size both matter.') },
+                { id: 'bimodal', title: t('stem.evolab.ch_bimodal', 'A clean split: '), body: t('stem.evolab.ch_bimodal_body', 'Under disruptive selection, reach a population with at least 40% in each extreme third and no more than 10% left in the middle.') }
+              ],
+              border: 'border-emerald-400', heading: 'text-emerald-800',
+              title: t('stem.evolab.try_these_experiments_3', '🧪 Try these experiments'),
+              items: [
+                { id: 'selectionVsDrift', auto: true, title: t('stem.evolab.selection_vs_drift', 'Selection vs drift: '), body: t('stem.evolab.pick_the_directional_peppered_moth_pre', 'Pick the directional (peppered moth) preset, set Selection Strength to 1.0, click Step 10. Watch the mean shift toward 0.85. Now set Selection to 0 and step another 30 generations — the mean wanders randomly without converging.') },
+                { id: 'stabilizing', auto: true, title: t('stem.evolab.stabilizing_keeps_the_mean_stable', 'Stabilizing keeps the mean stable: '), body: t('stem.evolab.switch_to_the_stabilizing_birth_weight', 'Switch to the stabilizing (birth weight) preset. The mean stays near 0.5 but the standard deviation SHRINKS over generations as extremes are pruned. Variation decreases without the mean moving.') },
+                { id: 'disruptive', auto: true, title: t('stem.evolab.disruptive_splits_the_population', 'Disruptive splits the population: '), body: t('stem.evolab.switch_to_disruptive_after_15_20_gener', 'Switch to disruptive. After 15-20 generations the histogram becomes BIMODAL — two peaks at 0.2 and 0.8 with a valley at 0.5. This is how one species can begin to split into two.') },
+                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_matters', 'Mutation matters: '), body: t('stem.evolab.on_the_directional_preset_with_selecti', 'On the directional preset with selection ON, set Mutation Size to 0 (no variation introduced). After convergence the population stops changing — selection has nothing left to act on. Then bump Mutation Size up — convergence resumes faster.') },
+                { id: 'snowshoe', auto: true, title: t('stem.evolab.snowshoe_hare_scenario', 'Snowshoe hare scenario: '), body: t('stem.evolab.switch_to_the_snowshoe_hare_preset_the', 'Switch to the snowshoe hare preset. The "ideal" trait is 0.68 (later molt) — selection now pushes hares away from their ancestral early-molt genes. This is real ongoing Maine evolution.') },
+                { id: 'driftSize', auto: true, title: t('stem.evolab.drift_and_population_size', 'Drift and population size: '), body: t('stem.evolab.drift_and_population_size_body', 'Pick Drift Only, set Population Size to 10, Reset, and Auto-Run 20 generations. Then do the same at N = 200. The tiny population wanders far from 0.5; the large one barely moves. Same zero selection, different sampling noise.') }
+              ]
+            }),
             // Cross-module suggestion — invites learners to the next natural step.
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 text-sm text-slate-700 flex items-center gap-3' },
               h('span', { className: 'text-2xl' }, '🐦'),
@@ -2040,6 +3563,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.see_selection_happen_in_real_data_the_', 'See selection happen in REAL data. The Galápagos Beak Lab reproduces the Grant 1977 drought study where finch beak depth shifted measurably in just one year.')
               )
             ),
+            h(KeyTerms, { moduleId: 'selectionSandbox', heading: 'text-emerald-800' }),
+            h(FieldNote, { moduleId: 'selectionSandbox', border: 'border-emerald-400', heading: 'text-emerald-800', prompt: t('stem.evolab.note_prompt_sandbox', 'Which preset surprised you, and how did the histogram change shape? Say it without the word "evolve".') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5', 'HS-LS4-6'],
               questions: [
@@ -2089,8 +3614,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var BASELINE_SEEDS = { small: 600, medium: 400, large: 200, veryHard: 80 };
         var DROUGHT_SEEDS = { small: 30, medium: 60, large: 250, veryHard: 200 };
 
-        // Real Grant data — published in their 1986 Ecology paper. Mean beak
-        // depth of medium ground finches before/after the 1977 drought.
+        // Grant data overlay. These means are the classroom approximation of the
+        // Daphne Major medium ground finch (Geospiza fortis) beak-depth record
+        // across the 1977 drought, as used in teaching datasets; the primary
+        // source is Boag & Grant 1981, Science 214:82-85, with the long-term
+        // record in Grant 1986 (Ecology and Evolution of Darwin's Finches).
+        // Shown to students as approximate, with the citation (GRANT_SOURCE).
+        var GRANT_SOURCE = t('stem.evolab.grant_source', 'Approximate teaching values after Boag & Grant 1981 (Science 214: 82-85) and Grant 1986. Check the paper for the exact means.');
         var GRANT_DATA = [
           { year: 1976, mean: 9.21, label: t('stem.evolab.pre_drought_baseline', 'Pre-drought baseline') },
           { year: 1977, mean: 9.42, label: t('stem.evolab.during_drought', 'During drought') },
@@ -2102,9 +3632,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var birdsRef = useRef([]);
         var historyRef = useRef([]);
         var yearState = useState(0), year = yearState[0], setYear = yearState[1];
+        var yearRef = useRef(year);
+        yearRef.current = year;
         var droughtState = useState(false), drought = droughtState[0], setDrought = droughtState[1];
         var showGrantState = useState(false), showGrant = showGrantState[0], setShowGrant = showGrantState[1];
         var mutSizeState = useState(0.25), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
+        var beakSessionRef = useRef('');
+        var grantShownRef = useRef(false);
+        if (showGrant) grantShownRef.current = true;
 
         var initPopulation = function() {
           var pop = [];
@@ -2115,13 +3650,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           birdsRef.current = pop;
           var sum = 0; for (var k = 0; k < pop.length; k++) sum += pop[k].depth;
           historyRef.current = [{ year: 0, mean: sum / pop.length, alive: pop.length }];
+          beakSessionRef.current = newCapstoneSourceRunKey('beakLab');
+          grantShownRef.current = showGrant;
+          yearRef.current = 0;
           setYear(0);
           setDrought(false);
         };
 
         // Run one annual cycle: seeds set by drought flag, birds eat what
         // they can crack, those who don't get enough food die.
-        var stepYear = function() {
+        var stepYear = function(silent) {
           var seeds = drought ? Object.assign({}, DROUGHT_SEEDS) : Object.assign({}, BASELINE_SEEDS);
           var birds = birdsRef.current.slice();
           // Each bird's "food eaten" — proportional to seeds it can access.
@@ -2167,11 +3705,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           birdsRef.current = next;
           var sum = 0;
           for (var m = 0; m < next.length; m++) sum += next[m].depth;
-          var nextYear = year + 1;
+          var nextYear = yearRef.current + 1;
+          yearRef.current = nextYear;
           historyRef.current.push({ year: nextYear, mean: sum / next.length, alive: survivors.length, drought: drought });
           if (historyRef.current.length > 30) historyRef.current.shift();
           setYear(nextYear);
-          announce('Year ' + nextYear + (drought ? ' (drought)' : '') + '. Mean beak depth ' + (sum / next.length).toFixed(2) + 'mm. ' + survivors.length + ' of ' + birds.length + ' birds survived.');
+          checkBeakMilestones(nextYear, sum / next.length);
+          if (silent !== true) announce('Year ' + nextYear + (drought ? ' (drought)' : '') + '. Mean beak depth ' + (sum / next.length).toFixed(2) + 'mm. ' + survivors.length + ' of ' + birds.length + ' birds survived.');
+        };
+
+        // Completion at 5 years with at least one drought; experiments from the
+        // year-by-year record (each history entry carries its drought flag).
+        var checkBeakMilestones = function(nextYear, meanNow) {
+          var hist = historyRef.current;
+          var droughtYears = hist.filter(function(hh) { return hh.drought; }).length;
+          var startMean = hist[0] ? hist[0].mean : 9.2;
+          if (nextYear >= 5 && droughtYears >= 1) markComplete('beakLab', nextYear + ' years, ' + droughtYears + ' of them drought; mean beak ' + startMean.toFixed(2) + ' → ' + meanNow.toFixed(2) + ' mm.');
+          if (droughtYears >= 1 && grantShownRef.current) detectExperiment('beakLab', 'reproduce1977', 'Reproduce the 1977 study');
+          var run = 0, longestDrought = 0;
+          hist.forEach(function(hh) { if (hh.drought) { run++; if (run > longestDrought) longestDrought = run; } else run = 0; });
+          if (longestDrought >= 6) detectExperiment('beakLab', 'droughtNoEnd', 'Drought without an end');
+          // Reversal: 5+ drought years followed by 5+ normal years.
+          var seenDrought = 0, normalAfter = 0, armed = false;
+          hist.forEach(function(hh) { if (hh.drought) { seenDrought++; if (seenDrought >= 5) { armed = true; normalAfter = 0; } } else if (armed) normalAfter++; });
+          if (armed && normalAfter >= 5) detectExperiment('beakLab', 'reversal', 'Reversal when the rains return');
+          if (meanNow > 10.5) detectChallenge('beakLab', 'bigBeaks', 'Deep beaks', meanNow);
+          if (armed && hist[hist.length - 1] && !hist[hist.length - 1].drought && meanNow < 9.6) detectChallenge('beakLab', 'recover', 'Bring the small beaks back', meanNow);
+          setRecord('beakLab', 'deepestMean', meanNow, { label: 'Deepest mean beak', unit: ' mm', better: 'max' });
         };
 
         // Map continuous depth → beak class index (for display & cracking ability).
@@ -2200,6 +3760,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           sumDepth += pop[i].depth;
         }
         var meanDepth = pop.length > 0 ? sumDepth / pop.length : 0;
+        var beakOutcome = function() {
+          var hist = historyRef.current;
+          var droughtYears = hist.filter(function(hh) { return hh.drought; }).length;
+          if (droughtYears < 3 || hist.length < 2) return null;
+          var shift = hist[hist.length - 1].mean - hist[0].mean;
+          if (shift > 0.3) return 'increase';
+          if (shift < -0.3) return 'decrease';
+          return 'same';
+        };
+        var beakSnapshot = function() {
+          var hist = historyRef.current;
+          if (year <= 0 || hist.length < 2) return null;
+          var start = hist[0];
+          var latestYear = hist[hist.length - 1];
+          var droughtYears = hist.filter(function(hh) { return hh.drought; }).length;
+          var shift = latestYear.mean - start.mean;
+          return {
+            sourceRunKey: beakSessionRef.current,
+            moduleLabel: 'Galápagos Beak Lab',
+            comparison: {
+              designKey: 'years=' + year + '|drought=' + droughtYears + '|variation=' + mutSize.toFixed(2),
+              designLabel: year + ' years, ' + droughtYears + ' drought year' + (droughtYears === 1 ? '' : 's') + ', inheritance σ = ' + mutSize.toFixed(2) + ' mm',
+              primaryLabel: 'mean beak depth shift',
+              primaryValue: shift,
+              primaryDisplay: (shift >= 0 ? '+' : '') + shift.toFixed(2) + ' mm',
+              precision: 2,
+              unit: ' mm',
+              factors: [
+                { id: 'droughtYears', label: 'Drought years', value: droughtYears },
+                { id: 'totalYears', label: 'Years run', value: year },
+                { id: 'traitVariation', label: 'Offspring beak variation (mm)', value: Number(mutSize.toFixed(2)) }
+              ]
+            },
+            baseline: 'Year 0: ' + POP_SIZE + ' finches; mean beak depth ' + start.mean.toFixed(2) + ' mm (model draws from N(9.2, 0.6)).',
+            settings: year + ' years; drought in ' + droughtYears + '; seeds per class fixed by the drought flag; survival needs 30 food units; offspring depth = parental mean ± σ ' + mutSize.toFixed(2) + ' mm; census refilled to ' + POP_SIZE + '.',
+            outcome: 'Year ' + year + ': mean beak depth ' + latestYear.mean.toFixed(2) + ' mm (Δ ' + (shift >= 0 ? '+' : '') + shift.toFixed(2) + '); ' + latestYear.alive + '/' + POP_SIZE + ' survived the last year' + (latestYear.drought ? ' (drought)' : '') + '.',
+            metrics: [
+              { label: 'Years', value: String(year) },
+              { label: 'Drought years', value: String(droughtYears) },
+              { label: 'Mean beak shift', value: (shift >= 0 ? '+' : '') + shift.toFixed(2) + ' mm' },
+              { label: 'Last-year survivors', value: latestYear.alive + ' of ' + POP_SIZE }
+            ]
+          };
+        };
         var latest = historyRef.current[historyRef.current.length - 1] || { mean: 9.2, alive: POP_SIZE };
 
         // SVG: bird population grid (4 columns by class)
@@ -2284,7 +3888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               viewBox: '0 0 ' + W + ' ' + H,
               className: 'w-full',
               role: 'img',
-              'aria-label': 'Mean beak depth chart over ' + hist.length + ' years' + (showGrant ? ', with real Grant 1977 data overlay' : '')
+              'aria-label': 'Mean beak depth chart over ' + hist.length + ' years' + (showGrant ? ', with the Grants\' 1977 drought record overlaid (approximate teaching values)' : '')
             },
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               // axes
@@ -2319,13 +3923,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌵'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-beakLab' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.daphne_major_1977', 'Daphne Major, 1977')),
                   h('p', { className: 'text-sm text-amber-50 mt-1' },
                     t('stem.evolab.peter_rosemary_grant_tagged_every_medi', 'Peter & Rosemary Grant tagged every medium ground finch on this Galápagos islet for 40+ years. In 1977 a severe drought killed 85% of small soft seeds. The next year, surviving birds had measurably larger beaks — observed evolution within ONE generation.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-beakLab', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'beakLab',
+              border: 'border-amber-400', heading: 'text-amber-800',
+              question: t('stem.evolab.predict_beak_q', 'If a drought removes the soft seeds for three years running, what happens to the population\'s MEAN beak depth?'),
+              options: [
+                { id: 'increase', label: t('stem.evolab.predict_beak_increase', 'It increases: the average bird ends up with a deeper beak.') },
+                { id: 'decrease', label: t('stem.evolab.predict_beak_decrease', 'It decreases: birds economise on beak growth when food is scarce.') },
+                { id: 'same', label: t('stem.evolab.predict_beak_same', 'It stays about the same: only the population size changes.') }
+              ],
+              pendingHint: t('stem.evolab.predict_beak_hint', 'Trigger Drought and run at least three years to test it.'),
+              locked: year > 0,
+              outcomeId: beakOutcome(),
+              observedDetail: historyRef.current.filter(function(hh) { return hh.drought; }).length >= 3 ? 'Mean beak ' + historyRef.current[0].mean.toFixed(2) + ' → ' + meanDepth.toFixed(2) + ' mm after ' + historyRef.current.filter(function(hh) { return hh.drought; }).length + ' drought years.' : '',
+              explain: {
+                increase: t('stem.evolab.explain_beak_increase', 'With the soft seeds gone, only birds that could crack hard seeds ate enough to survive, and they were the deep-beaked ones. Their offspring inherited deeper beaks (parental mean ± σ). No bird\'s beak grew; the average moved because the small-beaked birds were missing from the parents.'),
+                decrease: t('stem.evolab.explain_beak_decrease', 'The mean fell, which in this model happens only when soft seeds are abundant (normal years favour cheaper, smaller beaks) or when random variation ran against the trend for a year or two. Check the Mode card: was the drought actually on for those years?'),
+                same: t('stem.evolab.explain_beak_same', 'Little change usually means too few drought years, or a very tight inheritance σ so there was little variation for the drought to sort. Run more drought years and watch the survivors column.')
+              }
+            }),
             // Stats
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h(StatCard, { label: t('stem.evolab.year', 'Year'), value: year, color: 'text-amber-700' }),
@@ -2339,9 +3963,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             // Controls
             h('div', { className: 'flex flex-wrap gap-3 justify-center' },
               h('button', {
-                onClick: stepYear,
+                onClick: function() { stepYear(false); },
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-amber-700 hover:bg-amber-800 text-white shadow-lg'
               }, t('stem.evolab.run_1_year', '⏭ Run 1 Year')),
+              h('button', {
+                onClick: function() { for (var yi = 0; yi < 5; yi++) stepYear(yi < 4); },
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-amber-700 hover:bg-amber-800 text-white shadow-lg'
+              }, t('stem.evolab.run_5_years', '⏭⏭ Run 5 Years')),
               h('button', {
                 onClick: function() { setDrought(!drought); },
                 'aria-pressed': drought,
@@ -2357,6 +3985,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
               }, t('stem.evolab.reset_2', '↺ Reset'))
             ),
+            showGrant && h('div', { className: 'text-xs text-slate-700 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2' }, '📚 ' + GRANT_SOURCE),
+            h(CapstoneCapture, {
+              moduleId: 'beakLab',
+              moduleLabel: 'Galápagos Beak Lab',
+              sourceRunKey: beakSessionRef.current,
+              ready: year > 0,
+              readyHint: 'Save the starting beak distribution, drought years, and the mean beak shift.',
+              emptyHint: 'Run at least one year before capturing.',
+              getSnapshot: beakSnapshot
+            }),
+            year > 0 && h(CheckCard, {
+              moduleId: 'beakLab',
+              border: 'border-amber-400', heading: 'text-amber-800',
+              question: t('stem.evolab.check_beak_q', 'During the drought the average beak got deeper. How?'),
+              options: [
+                { id: 'grew', label: t('stem.evolab.check_beak_grew', 'Each finch grew a deeper beak to cope with the harder seeds.'), feedback: t('stem.evolab.check_beak_grew_fb', 'A finch\'s beak depth is set when it grows up and does not change with diet. Look at the birds grid: each bird keeps its class. The average changed because the small-beaked birds were missing from next year\'s parents, not because any bird changed.') },
+                { id: 'survived', label: t('stem.evolab.check_beak_survived', 'Small-beaked birds starved; the deep-beaked survivors bred, and their chicks inherited deeper beaks.'), correct: true, feedback: t('stem.evolab.check_beak_survived_fb', 'Yes. The drought changed WHO survived, inheritance carried that into the next generation, and the average followed. This is exactly what the Grants measured on Daphne Major: survivors of 1977 had deeper beaks than the birds that died, and the 1978 chicks resembled their parents.') },
+                { id: 'mutation', label: t('stem.evolab.check_beak_mutation', 'The drought caused mutations for deeper beaks.'), feedback: t('stem.evolab.check_beak_mutation_fb', 'The variation was already there before the drought (the Year 0 population had beaks from about 8 to 10.5 mm). Offspring variation (σ) is random in both directions and did not change when the drought started. The drought selected among existing variants.') },
+                { id: 'migrated', label: t('stem.evolab.check_beak_migrated', 'Deep-beaked birds flew in from other islands.'), feedback: t('stem.evolab.check_beak_migrated_fb', 'No migration exists in this model (and Daphne Major is isolated enough that the Grants could rule it out by tagging every bird). The change came from within the island population.') }
+              ]
+            }),
             // Mutation slider
             h(LabeledSlider, {
               label: t('stem.evolab.mutation_size_beak_variation_per_gener', 'Mutation Size (Beak Variation per Generation)'),
@@ -2378,21 +4027,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', null, h('strong', null, t('stem.evolab.1977_baseline', '1977 baseline: ')), t('stem.evolab.mean_medium_ground_finch_beak_depth_9_', 'Mean medium-ground-finch beak depth ≈ 9.21mm. Population ~1,500 birds.')),
                 h('p', null, h('strong', null, 'Drought: '), t('stem.evolab.85_of_all_the_soft_seeds_died_off_only', '~85% of all the soft seeds died off. Only the largest, hardest seeds remained.')),
                 h('p', null, h('strong', null, 'Mortality: '), t('stem.evolab.85_of_the_finch_population_died_and_th', '~85% of the finch population died — and the survivors were almost all large-beaked birds (the only ones who could crack the remaining seeds).')),
-                h('p', null, h('strong', null, t('stem.evolab.1978_mean', '1978 mean: ')), t('stem.evolab.10_05mm_a_0_84mm_shift_in_one_generati', '10.05mm — a 0.84mm shift in ONE generation. This was the first DOCUMENTED case of evolution caught happening in a wild vertebrate, and it took just one year.')),
+                h('p', null, h('strong', null, t('stem.evolab.1978_mean', '1978 mean: ')), t('stem.evolab.10_05mm_a_0_84mm_shift_in_one_generati', '≈10.05mm in this lab\'s teaching approximation of the record: a shift of roughly a millimetre within ONE generation. It is one of the first cases of natural selection measured directly, bird by bird, in a wild vertebrate population.')),
+                h('p', { className: 'text-xs text-slate-600' }, '📚 ' + GRANT_SOURCE),
                 h('p', null, h('strong', null, t('stem.evolab.the_lesson', 'The lesson: ')), t('stem.evolab.evolution_is_not_slow_given_strong_sel', 'Evolution is not slow. Given strong selection, populations can shift dramatically within a single generation. The Grants\' work is now a textbook example of natural selection in action.'))
               )
             ),
             // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-amber-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-3' }, t('stem.evolab.try_these_experiments_4', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.reproduce_the_1977_study', 'Reproduce the 1977 study: ')), t('stem.evolab.start_fresh_reset_trigger_drought_then', 'Start fresh (Reset). Trigger Drought, then Run 1 Year. Look at the mean beak depth shift. Toggle "Show Real Grant Data" — your result should track the historical 1977 → 1978 jump (~0.5-1mm).')),
-                h('li', null, h('strong', null, t('stem.evolab.drought_without_an_end', 'Drought without an end: ')), t('stem.evolab.keep_drought_on_and_run_5_more_years_t', 'Keep drought ON and run 5 more years. The population keeps shifting toward larger beaks until it hits the upper end of available variation — selection can\'t create new traits, only sort existing ones.')),
-                h('li', null, h('strong', null, t('stem.evolab.reversal_when_the_rains_return', 'Reversal when the rains return: ')), t('stem.evolab.after_5_drought_years_turn_drought_off', 'After 5 drought years, turn drought OFF and run 5 more years. Notice the mean drift back toward smaller — small beaks are cheaper to grow when soft seeds return.')),
-                h('li', null, h('strong', null, t('stem.evolab.mutation_rate_matters', 'Mutation rate matters: ')), t('stem.evolab.set_0_05_very_tight_inheritance_and_ru', 'Set σ = 0.05 (very tight inheritance) and run 5 drought years. Compare with σ = 0.40 (loose inheritance). Lower mutation = slower response to selection because there\'s less variation to work with.')),
-                h('li', null, h('strong', null, t('stem.evolab.try_to_make_small_beaks_come_back', 'Try to make small beaks come back: ')), t('stem.evolab.once_large_beaked_birds_dominate_turni', 'Once large-beaked birds dominate, turning off drought is not enough — the small-beak gene pool may already be too thin to recover quickly. This is why evolution often doesn\'t fully reverse even when conditions revert.'))
-              )
-            ),
+            h(ExperimentList, {
+              moduleId: 'beakLab',
+              challenges: [
+                { id: 'bigBeaks', title: t('stem.evolab.ch_bigbeaks', 'Deep beaks: '), body: t('stem.evolab.ch_bigbeaks_body', 'Push the population mean past 10.5 mm. How many drought years does it take, and does the inheritance σ change that?'), record: { id: 'deepestMean', label: t('stem.evolab.deepest_mean_beak', 'deepest mean beak') } },
+                { id: 'recover', title: t('stem.evolab.ch_recover', 'Bring the small beaks back: '), body: t('stem.evolab.ch_recover_body', 'After five or more drought years, turn the drought off and bring the mean back below 9.6 mm. Reversal is slower than the shift; find out why.') }
+              ],
+              border: 'border-amber-400', heading: 'text-amber-800',
+              title: t('stem.evolab.try_these_experiments_4', '🧪 Try these experiments'),
+              items: [
+                { id: 'reproduce1977', auto: true, title: t('stem.evolab.reproduce_the_1977_study', 'Reproduce the 1977 study: '), body: t('stem.evolab.start_fresh_reset_trigger_drought_then', 'Start fresh (Reset). Trigger Drought, then Run 1 Year. Look at the mean beak depth shift. Toggle "Show Real Grant Data" — your result should track the historical 1977 → 1978 jump (~0.5-1mm).') },
+                { id: 'droughtNoEnd', auto: true, title: t('stem.evolab.drought_without_an_end', 'Drought without an end: '), body: t('stem.evolab.keep_drought_on_and_run_5_more_years_t', 'Keep drought ON and run 5 more years. The population keeps shifting toward larger beaks until it hits the upper end of available variation — selection can\'t create new traits, only sort existing ones.') },
+                { id: 'reversal', auto: true, title: t('stem.evolab.reversal_when_the_rains_return', 'Reversal when the rains return: '), body: t('stem.evolab.after_5_drought_years_turn_drought_off', 'After 5 drought years, turn drought OFF and run 5 more years. Notice the mean drift back toward smaller — small beaks are cheaper to grow when soft seeds return.') },
+                { id: 'mutation', title: t('stem.evolab.mutation_rate_matters', 'Mutation rate matters: '), body: t('stem.evolab.set_0_05_very_tight_inheritance_and_ru', 'Set σ = 0.05 (very tight inheritance) and run 5 drought years. Compare with σ = 0.40 (loose inheritance). Lower mutation = slower response to selection because there\'s less variation to work with.') },
+                { id: 'smallBeaks', title: t('stem.evolab.try_to_make_small_beaks_come_back', 'Try to make small beaks come back: '), body: t('stem.evolab.once_large_beaked_birds_dominate_turni', 'Once large-beaked birds dominate, turning off drought is not enough — the small-beak gene pool may already be too thin to recover quickly. This is why evolution often doesn\'t fully reverse even when conditions revert.') }
+              ]
+            }),
             // Cross-module suggestion
             h('div', { className: 'bg-indigo-50 border border-indigo-300 rounded-xl p-3 text-sm text-slate-700 flex items-center gap-3' },
               h('span', { className: 'text-2xl' }, '🌗'),
@@ -2401,6 +4057,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_watched_one_species_change_the_spe', 'You watched one species CHANGE. The Trait Divergence Model shows what happens next — when an isolated population diverges far enough that it becomes a SECOND species. This is how the Galápagos got 14 finch species from one ancestor.')
               )
             ),
+            h(KeyTerms, { moduleId: 'beakLab', heading: 'text-amber-800' }),
+            h(FieldNote, { moduleId: 'beakLab', border: 'border-amber-400', heading: 'text-amber-800', prompt: t('stem.evolab.note_prompt_beak', 'How did your drought compare with the Grants\' record, and why might a teaching model exaggerate? What would you measure on the island if you were there?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5'],
               questions: [
@@ -2421,108 +4079,250 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       // PHYLOGENETIC TREE BUILDER
       // ─────────────────────────────────────────────────────
-      // 12 organisms (mix of Maine wildlife + global examples). Each must be
-      // assigned to a clade based on shared derived traits. Tool grades the
-      // placement and shows the correct cladogram. Plain dropdown UI rather
-      // than drag-and-drop — simpler, more accessible, works on touch.
+      // 12 organisms (mix of Maine wildlife + global examples) placed on the
+      // tips of a real nested cladogram drawn in SVG, every split labelled with
+      // its synapomorphy. Select an organism, then click a tip (or use the
+      // button list, which is the keyboard route). Two hypotheses share the
+      // same tips: skeletal morphology vs genome-scale DNA, differing only in
+      // where turtles attach. Birds nest inside reptiles; "fish" is ray-finned
+      // fishes, so no paraphyletic group is graded as a clade.
       function PhyloBuilder() {
+        // Organisms carry OBSERVABLE traits, not their answer. The tips of the
+        // tree are proper clades (birds nest inside the reptile branch; "fish"
+        // is ray-finned fishes, so tetrapods are not hiding inside it).
         var ORGANISMS = [
-          { id: 'moose',    name: t('stem.evolab.moose', 'Moose'),           icon: '🫎', truth: 'mammals',    note: t('stem.evolab.maine_s_largest_land_animal_has_fur_mi', 'Maine\'s largest land animal — has fur, milk glands.') },
-          { id: 'deer',     name: t('stem.evolab.white_tail_deer', 'White-tail Deer'), icon: '🦌', truth: 'mammals',    note: t('stem.evolab.common_maine_mammal_fur_live_birth_mam', 'Common Maine mammal — fur, live birth, mammary glands.') },
-          { id: 'bear',     name: t('stem.evolab.black_bear', 'Black Bear'),      icon: '🐻', truth: 'mammals',    note: t('stem.evolab.mainland_maine_apex_carnivore', 'Mainland Maine apex carnivore.') },
-          { id: 'cardinal', name: t('stem.evolab.cardinal', 'Cardinal'),        icon: '🐦', truth: 'birds',      note: t('stem.evolab.year_round_maine_resident_feathers_lay', 'Year-round Maine resident — feathers, lays eggs.') },
-          { id: 'turtle',   name: t('stem.evolab.box_turtle', 'Box Turtle'),      icon: '🐢', truth: 'reptiles',   note: t('stem.evolab.cold_blooded_scales_lays_leathery_eggs', 'Cold-blooded, scales, lays leathery eggs.') },
-          { id: 'snake',    name: t('stem.evolab.garter_snake', 'Garter Snake'),    icon: '🐍', truth: 'reptiles',   note: t('stem.evolab.common_maine_snake_scaly_ectothermic', 'Common Maine snake — scaly, ectothermic.') },
-          { id: 'salmon',   name: t('stem.evolab.atlantic_salmon', 'Atlantic Salmon'), icon: '🐟', truth: 'fish',       note: t('stem.evolab.anadromous_maine_s_endangered_native', 'Anadromous — Maine\'s endangered native.') },
-          { id: 'frog',     name: t('stem.evolab.bullfrog', 'Bullfrog'),        icon: '🐸', truth: 'amphibians', note: t('stem.evolab.moist_skin_lays_jelly_coated_eggs_in_w', 'Moist skin, lays jelly-coated eggs in water.') },
-          { id: 'lobster',  name: t('stem.evolab.maine_lobster', 'Maine Lobster'),   icon: '🦞', truth: 'arthropods', note: t('stem.evolab.jointed_exoskeleton_10_legs_like_insec', 'Jointed exoskeleton, 10 legs — like insects, not fish.') },
-          { id: 'bee',      name: t('stem.evolab.honeybee', 'Honeybee'),        icon: '🐝', truth: 'arthropods', note: t('stem.evolab.insect_6_legs_exoskeleton', 'Insect — 6 legs, exoskeleton.') },
-          { id: 'crab',     name: t('stem.evolab.crab', 'Crab'),            icon: '🦀', truth: 'arthropods', note: t('stem.evolab.crustacean_close_cousin_to_lobster', 'Crustacean — close cousin to lobster.') },
-          { id: 'maple',    name: t('stem.evolab.red_maple', 'Red Maple'),       icon: '🍁', truth: 'plants',     note: t('stem.evolab.maine_state_tree_photosynthesizes_no_n', 'Maine state tree — photosynthesizes, no nervous system.') }
+          { id: 'moose',    name: t('stem.evolab.moose', 'Moose'),                 icon: '🫎', tip: 'ungulates',   traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'hair', 'hooves'],   note: t('stem.evolab.moose_traits', 'Fur, nurses its calf with milk, walks on two-toed hooves. Maine\'s largest land animal.') },
+          { id: 'deer',     name: t('stem.evolab.white_tail_deer', 'White-tail Deer'), icon: '🦌', tip: 'ungulates',   traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'hair', 'hooves'],   note: t('stem.evolab.deer_traits', 'Fur, live birth and milk, two-toed hooves, chews plant food with flat molars.') },
+          { id: 'bear',     name: t('stem.evolab.black_bear', 'Black Bear'),          icon: '🐻', tip: 'carnivorans', traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'hair', 'claws'],    note: t('stem.evolab.bear_traits', 'Fur and milk, five clawed toes per foot, shearing cheek teeth (carnassials).') },
+          { id: 'whale',    name: t('stem.evolab.humpback_whale', 'Humpback Whale'),    icon: '🐋', tip: 'cetaceans',   traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'hair', 'blowhole'], note: t('stem.evolab.whale_traits', 'Nurses its calf with milk; hair only as whiskers on the snout; breathes through a blowhole; no hind limbs, though tiny internal pelvic bones remain. Summers in the Gulf of Maine.') },
+          { id: 'cardinal', name: t('stem.evolab.cardinal', 'Cardinal'),              icon: '🐦', tip: 'birds',       traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'scales', 'feathers'], note: t('stem.evolab.cardinal_traits', 'Feathers, scaly legs, lays hard-shelled eggs on land. Year-round Maine resident.') },
+          { id: 'turtle',   name: t('stem.evolab.box_turtle', 'Box Turtle'),          icon: '🐢', tip: 'turtles',     traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'scales', 'shell'],   note: t('stem.evolab.turtle_traits', 'Dry scaly skin, a bony shell fused to the ribs, lays leathery eggs on land, ectothermic.') },
+          { id: 'snake',    name: t('stem.evolab.garter_snake', 'Garter Snake'),      icon: '🐍', tip: 'squamates',   traits: ['backbone', 'fourLimbs', 'amnioticEgg', 'scales', 'forkedTongue'], note: t('stem.evolab.snake_traits', 'Dry overlapping scales, forked tongue, flexible jaw; limbless, but its ancestors had four legs.') },
+          { id: 'salmon',   name: t('stem.evolab.atlantic_salmon', 'Atlantic Salmon'), icon: '🐟', tip: 'rayfinned',   traits: ['backbone', 'finRays'],                                       note: t('stem.evolab.salmon_traits', 'Backbone, gills, fins supported by bony rays, no limbs. Maine\'s endangered native.') },
+          { id: 'frog',     name: t('stem.evolab.bullfrog', 'Bullfrog'),              icon: '🐸', tip: 'amphibians',  traits: ['backbone', 'fourLimbs', 'moistSkin'],                        note: t('stem.evolab.frog_traits', 'Four limbs, moist permeable skin, lays jelly-coated eggs in water.') },
+          { id: 'lobster',  name: t('stem.evolab.maine_lobster', 'Maine Lobster'),    icon: '🦞', tip: 'crustaceans', traits: ['exoskeleton', 'twoAntennaePairs'],                           note: t('stem.evolab.lobster_traits', 'Jointed exoskeleton, ten legs, two pairs of antennae. Lives in water but has no backbone.') },
+          { id: 'bee',      name: t('stem.evolab.honeybee', 'Honeybee'),              icon: '🐝', tip: 'insects',     traits: ['exoskeleton', 'sixLegs'],                                    note: t('stem.evolab.bee_traits', 'Jointed exoskeleton, six legs, three body segments, one pair of antennae.') },
+          { id: 'crab',     name: t('stem.evolab.crab', 'Crab'),                      icon: '🦀', tip: 'crustaceans', traits: ['exoskeleton', 'twoAntennaePairs'],                           note: t('stem.evolab.crab_traits', 'Jointed exoskeleton, ten legs, two pairs of antennae.') },
+          { id: 'maple',    name: t('stem.evolab.red_maple', 'Red Maple'),            icon: '🍁', tip: 'plants',      traits: ['cellulose'],                                                 note: t('stem.evolab.maple_traits', 'Photosynthesises, cellulose cell walls, no nervous system. Maine\'s state tree.') }
         ];
-        var CLADES = [
-          { id: 'plants',     label: t('stem.evolab.plants', '🌳 Plants'),                 color: '#10b981', tip: t('stem.evolab.photosynthesize_cell_walls_of_cellulos', 'Photosynthesize. Cell walls of cellulose. No nervous system.') },
-          { id: 'arthropods', label: t('stem.evolab.arthropods', '🦞 Arthropods'),             color: '#7c3aed', tip: t('stem.evolab.jointed_exoskeleton_segmented_body_ins', 'Jointed exoskeleton. Segmented body. Insects, crustaceans, spiders.') },
-          { id: 'fish',       label: t('stem.evolab.fish', '🐟 Fish'),                    color: '#06b6d4', tip: t('stem.evolab.aquatic_vertebrate_gills_scales_fins_c', 'Aquatic vertebrate. Gills, scales, fins. Cold-blooded.') },
-          { id: 'amphibians', label: t('stem.evolab.amphibians', '🐸 Amphibians'),             color: '#f59e0b', tip: t('stem.evolab.moist_permeable_skin_lay_eggs_in_water', 'Moist permeable skin. Lay eggs in water. Larval water → adult land.') },
-          { id: 'reptiles',   label: t('stem.evolab.reptiles', '🐢 Reptiles'),                color: '#dc2626', tip: t('stem.evolab.dry_scaly_skin_amniotic_eggs_or_live_b', 'Dry scaly skin. Amniotic eggs (or live birth). Cold-blooded.') },
-          { id: 'birds',      label: t('stem.evolab.birds', '🐦 Birds'),                   color: '#ec4899', tip: t('stem.evolab.feathers_modified_scales_warm_blooded_', 'Feathers (modified scales). Warm-blooded. Lay hard-shelled eggs.') },
-          { id: 'mammals',    label: t('stem.evolab.mammals', '🫎 Mammals'),                 color: '#a16207', tip: t('stem.evolab.hair_fur_mammary_glands_warm_blooded_m', 'Hair/fur. Mammary glands. Warm-blooded. Mostly live birth.') }
-        ];
+        var TRAIT_LABELS = {
+          cellulose: t('stem.evolab.trait_cellulose', 'cellulose walls, photosynthesis'),
+          exoskeleton: t('stem.evolab.trait_exoskeleton', 'jointed exoskeleton'),
+          sixLegs: t('stem.evolab.trait_six_legs', 'six legs, 3 body segments'),
+          twoAntennaePairs: t('stem.evolab.trait_two_antennae', 'two pairs of antennae, 10 legs'),
+          backbone: t('stem.evolab.trait_backbone', 'backbone'),
+          finRays: t('stem.evolab.trait_fin_rays', 'fins with bony rays, gills'),
+          fourLimbs: t('stem.evolab.trait_four_limbs', 'four limbs (or limbed ancestors)'),
+          moistSkin: t('stem.evolab.trait_moist_skin', 'moist skin, eggs in water'),
+          amnioticEgg: t('stem.evolab.trait_amniotic_egg', 'amniotic egg (or live birth from it)'),
+          hair: t('stem.evolab.trait_hair', 'hair and milk'),
+          hooves: t('stem.evolab.trait_hooves', 'two-toed hooves'),
+          claws: t('stem.evolab.trait_claws', 'claws, carnassial teeth'),
+          blowhole: t('stem.evolab.trait_blowhole', 'blowhole, tail flukes; hind limbs lost'),
+          scales: t('stem.evolab.trait_scales', 'dry scales'),
+          feathers: t('stem.evolab.trait_feathers', 'feathers'),
+          shell: t('stem.evolab.trait_shell', 'bony shell'),
+          forkedTongue: t('stem.evolab.trait_forked_tongue', 'forked tongue, flexible jaw')
+        };
+        var TIPS = {
+          plants:      { label: t('stem.evolab.tip_plants', 'Plants'),                     color: '#10b981', icon: '🌳' },
+          insects:     { label: t('stem.evolab.tip_insects', 'Insects'),                   color: '#7c3aed', icon: '🐝' },
+          crustaceans: { label: t('stem.evolab.tip_crustaceans', 'Crustaceans'),           color: '#8b5cf6', icon: '🦞' },
+          rayfinned:   { label: t('stem.evolab.tip_rayfinned', 'Ray-finned fishes'),       color: '#06b6d4', icon: '🐟' },
+          amphibians:  { label: t('stem.evolab.tip_amphibians', 'Amphibians'),             color: '#f59e0b', icon: '🐸' },
+          ungulates:   { label: t('stem.evolab.tip_ungulates', 'Even-toed ungulates'),     color: '#a16207', icon: '🦌' },
+          carnivorans: { label: t('stem.evolab.tip_carnivorans', 'Carnivorans'),           color: '#92400e', icon: '🐻' },
+          cetaceans:   { label: t('stem.evolab.tip_cetaceans', 'Whales & dolphins'),       color: '#0369a1', icon: '🐋' },
+          turtles:     { label: t('stem.evolab.tip_turtles', 'Turtles'),                   color: '#dc2626', icon: '🐢' },
+          squamates:   { label: t('stem.evolab.tip_squamates', 'Squamates (snakes & lizards)'), color: '#e11d48', icon: '🐍' },
+          birds:       { label: t('stem.evolab.tip_birds', 'Birds'),                       color: '#ec4899', icon: '🐦' }
+        };
+        // Two hypotheses for the same tips. They differ only where real
+        // evidence disagrees: skull morphology put turtles outside the diapsids;
+        // genome-scale DNA puts them next to birds and crocodiles (Archelosauria).
+        var sauropsidsMorph = { id: 'sauropsids', label: t('stem.evolab.node_reptiles_incl_birds', 'Reptiles (incl. birds)'), syn: t('stem.evolab.syn_scales', 'dry scales, water-tight skin'), children: [
+          { id: 'turtles', tip: 'turtles', syn: t('stem.evolab.syn_shell', 'bony shell; anapsid skull (no temporal openings)') },
+          { id: 'diapsids', label: t('stem.evolab.node_diapsids', 'Diapsids'), syn: t('stem.evolab.syn_diapsid', 'two openings behind each eye socket'), children: [
+            { id: 'squamates', tip: 'squamates', syn: t('stem.evolab.syn_squamate', 'forked tongue, flexible jaw joint') },
+            { id: 'birds', tip: 'birds', syn: t('stem.evolab.syn_feathers', 'feathers (via theropod dinosaurs)') }
+          ] }
+        ] };
+        var sauropsidsMol = { id: 'sauropsids', label: t('stem.evolab.node_reptiles_incl_birds', 'Reptiles (incl. birds)'), syn: t('stem.evolab.syn_scales', 'dry scales, water-tight skin'), children: [
+          { id: 'squamates', tip: 'squamates', syn: t('stem.evolab.syn_squamate', 'forked tongue, flexible jaw joint') },
+          { id: 'archelosaurs', label: t('stem.evolab.node_archelosauria', 'Archelosauria'), syn: t('stem.evolab.syn_archelosauria', 'shared DNA sequence changes (genome-scale studies, 2012 on)'), children: [
+            { id: 'turtles', tip: 'turtles', syn: t('stem.evolab.syn_shell_mol', 'bony shell; skull openings lost secondarily') },
+            { id: 'birds', tip: 'birds', syn: t('stem.evolab.syn_feathers', 'feathers (via theropod dinosaurs)') }
+          ] }
+        ] };
+        // Mammals also differ by evidence. Skeletons alone left whales as an order
+        // of their own (no ankle to compare); DNA nests them inside the even-toed
+        // ungulates next to hippos, and Eocene whale fossils described in 2001
+        // (Rodhocetus, Artiocetus) carry the even-toed "double-pulley" ankle bone.
+        var mammalsMorph = { id: 'mammals', label: t('stem.evolab.node_mammals', 'Mammals'), syn: t('stem.evolab.syn_mammals', 'hair, milk'), children: [
+          { id: 'ungulates', tip: 'ungulates', syn: t('stem.evolab.syn_ungulates', 'even-toed hooves') },
+          { id: 'carnivorans', tip: 'carnivorans', syn: t('stem.evolab.syn_carnivorans', 'carnassial shearing teeth') },
+          { id: 'cetaceans', tip: 'cetaceans', syn: t('stem.evolab.syn_cetaceans_morph', 'blowhole, flukes; affinities unresolved from skeletons') }
+        ] };
+        var mammalsMol = { id: 'mammals', label: t('stem.evolab.node_mammals', 'Mammals'), syn: t('stem.evolab.syn_mammals', 'hair, milk'), children: [
+          { id: 'carnivorans', tip: 'carnivorans', syn: t('stem.evolab.syn_carnivorans', 'carnassial shearing teeth') },
+          { id: 'cetartiodactyls', label: t('stem.evolab.node_cetartiodactyla', 'Cetartiodactyla'), syn: t('stem.evolab.syn_cetartiodactyla', 'shared DNA changes; double-pulley ankle in fossil whales'), children: [
+            { id: 'ungulates', tip: 'ungulates', syn: t('stem.evolab.syn_ungulates', 'even-toed hooves') },
+            { id: 'cetaceans', tip: 'cetaceans', syn: t('stem.evolab.syn_cetaceans_mol', 'blowhole, flukes; hind limbs lost') }
+          ] }
+        ] };
+        var buildTree = function(sauropsids, mammals) {
+          return { id: 'life', label: t('stem.evolab.node_life', 'Life'), children: [
+            { id: 'plants', tip: 'plants', syn: t('stem.evolab.syn_plants', 'cellulose cell walls, chloroplasts') },
+            { id: 'animals', label: t('stem.evolab.node_animals', 'Animals'), syn: t('stem.evolab.syn_animals', 'multicellular, eats other organisms, nerves'), children: [
+              { id: 'arthropods', label: t('stem.evolab.node_arthropods', 'Arthropods'), syn: t('stem.evolab.syn_arthropods', 'jointed exoskeleton, segmented body'), children: [
+                { id: 'insects', tip: 'insects', syn: t('stem.evolab.syn_insects', 'six legs, three body segments') },
+                { id: 'crustaceans', tip: 'crustaceans', syn: t('stem.evolab.syn_crustaceans', 'two pairs of antennae') }
+              ] },
+              { id: 'vertebrates', label: t('stem.evolab.node_vertebrates', 'Vertebrates'), syn: t('stem.evolab.syn_vertebrates', 'backbone, skull'), children: [
+                { id: 'rayfinned', tip: 'rayfinned', syn: t('stem.evolab.syn_rayfinned', 'fins supported by bony rays') },
+                { id: 'tetrapods', label: t('stem.evolab.node_tetrapods', 'Tetrapods'), syn: t('stem.evolab.syn_tetrapods', 'four limbs with digits'), children: [
+                  { id: 'amphibians', tip: 'amphibians', syn: t('stem.evolab.syn_amphibians', 'moist skin, larvae in water') },
+                  { id: 'amniotes', label: t('stem.evolab.node_amniotes', 'Amniotes'), syn: t('stem.evolab.syn_amniotes', 'amniotic egg (membranes around the embryo)'), children: [
+                    mammals,
+                    sauropsids
+                  ] }
+                ] }
+              ] }
+            ] }
+          ] };
+        };
 
         var assignmentsState = useState({}), assignments = assignmentsState[0], setAssignments = assignmentsState[1];
         var checkedState = useState(false), checked = checkedState[0], setChecked = checkedState[1];
         var showHintsState = useState(false), showHints = showHintsState[0], setShowHints = showHintsState[1];
-        var modeState = useState('morphological'), mode = modeState[0], setModeId = modeState[1];
+        var modeState = useState('morphological'), mode = modeState[0], setMode = modeState[1];
+        var selectedState = useState(null), selectedOrg = selectedState[0], setSelectedOrg = selectedState[1];
+        var gradesRef = useRef(0);
+        var hintsUsedRef = useRef(false);
+        if (showHints) hintsUsedRef.current = true;
+        var tree = buildTree(mode === 'molecular' ? sauropsidsMol : sauropsidsMorph, mode === 'molecular' ? mammalsMol : mammalsMorph);
 
-        var assign = function(orgId, cladeId) {
+        // Rectangular cladogram layout: tips evenly spaced top to bottom; each
+        // internal node sits at its depth and at the mean y of its children.
+        var TIP_ORDER = [];
+        (function collect(node) { if (node.tip) TIP_ORDER.push(node.tip); else node.children.forEach(collect); })(tree);
+        var W = 720, ROW = 44, PAD_T = 18, PAD_B = 16, LABEL_W = 210, X0 = 24;
+        var H = PAD_T + PAD_B + TIP_ORDER.length * ROW;
+        var maxDepth = 0;
+        (function depthOf(node, dpt) { if (dpt > maxDepth) maxDepth = dpt; if (!node.tip) node.children.forEach(function(c) { depthOf(c, dpt + 1); }); })(tree, 0);
+        var COL = (W - LABEL_W - X0 - 40) / Math.max(1, maxDepth);
+        var layout = {};
+        (function place(node, dpt) {
+          if (node.tip) {
+            var yi = TIP_ORDER.indexOf(node.tip);
+            layout[node.id] = { x: X0 + maxDepth * COL, y: PAD_T + yi * ROW + ROW / 2, node: node, depth: dpt };
+            return layout[node.id];
+          }
+          var kids = node.children.map(function(c) { return place(c, dpt + 1); });
+          var y = kids.reduce(function(sum, k) { return sum + k.y; }, 0) / kids.length;
+          layout[node.id] = { x: X0 + dpt * COL, y: y, node: node, depth: dpt, kids: kids };
+          return layout[node.id];
+        })(tree, 0);
+
+        var pathToTip = function(tipId) {
+          var path = [];
+          (function walk(node, acc) {
+            if (node.tip) { if (node.tip === tipId) path = acc.concat([node]); return; }
+            node.children.forEach(function(c) { walk(c, acc.concat([node])); });
+          })(tree, []);
+          return path;
+        };
+
+        var placedOn = function(tipId) { return ORGANISMS.filter(function(o) { return assignments[o.id] === tipId; }); };
+        var assign = function(orgId, tipId) {
           var next = Object.assign({}, assignments);
-          next[orgId] = cladeId;
+          next[orgId] = tipId;
           setAssignments(next);
-          if (checked) setChecked(false); // re-grade when changed after submission
+          setSelectedOrg(null);
+          if (checked) setChecked(false);
+          var org = ORGANISMS.filter(function(o) { return o.id === orgId; })[0];
+          announce(__alloFill(__alloT('stem.evolab.sr_placed_on_tip', '{value1} placed on {value2}. {value3} of {value4} organisms placed.'), { value1: org ? org.name : orgId, value2: TIPS[tipId].label, value3: Object.keys(next).length, value4: ORGANISMS.length }));
         };
-
-        var resetAll = function() {
-          setAssignments({});
-          setChecked(false);
+        var unassign = function(orgId) {
+          var next = Object.assign({}, assignments);
+          delete next[orgId];
+          setAssignments(next);
+          if (checked) setChecked(false);
         };
-
+        var resetAll = function() { setAssignments({}); setChecked(false); setSelectedOrg(null); gradesRef.current = 0; hintsUsedRef.current = showHints; };
+        var allAssigned = ORGANISMS.every(function(o) { return !!assignments[o.id]; });
+        var correctCount = ORGANISMS.filter(function(o) { return assignments[o.id] === o.tip; }).length;
+        var pctCorrect = Math.round((correctCount / ORGANISMS.length) * 100);
         var runCheck = function() {
+          if (!allAssigned) return;
           setChecked(true);
-          var correct = ORGANISMS.filter(function(o) { return assignments[o.id] === o.truth; }).length;
-          announce(__alloFill(__alloT('stem.evolab.sr_cladogram_graded_of_organisms_placed_correctly', 'Cladogram graded. {value1} of {value2} organisms placed correctly.'), { value1: correct, value2: ORGANISMS.length }));
+          var n = ORGANISMS.filter(function(o) { return assignments[o.id] === o.tip; }).length;
+          announce(__alloFill(__alloT('stem.evolab.sr_cladogram_graded_of_organisms_placed_correctly', 'Cladogram graded. {value1} of {value2} organisms placed correctly.'), { value1: n, value2: ORGANISMS.length }));
+          if (n >= ORGANISMS.length - 2) markComplete('phyloBuilder', n + ' of ' + ORGANISMS.length + ' organisms placed on the right tip.');
+          if (n === ORGANISMS.length && gradesRef.current === 0) detectChallenge('phyloBuilder', 'perfectFirst', 'Perfect tree, first grading', n);
+          if (n === ORGANISMS.length && !hintsUsedRef.current) detectChallenge('phyloBuilder', 'noHints', 'Perfect tree without the trait checklist', n);
+          gradesRef.current++;
         };
 
-        var allAssigned = ORGANISMS.every(function(o) { return assignments[o.id]; });
-        var correctCount = checked ? ORGANISMS.filter(function(o) { return assignments[o.id] === o.truth; }).length : 0;
-        var pctCorrect = checked ? Math.round((correctCount / ORGANISMS.length) * 100) : 0;
+        var evidenceNote = mode === 'molecular'
+          ? t('stem.evolab.evidence_molecular_note', 'DNA hypothesis: genome-scale comparisons (e.g. Crawford et al. 2012; Chiari et al. 2012) place turtles as the sister group of birds + crocodiles; the turtle\'s solid skull is now read as a later loss of the openings. DNA also nests whales inside the even-toed ungulates, closest to hippos (Cetartiodactyla); Eocene whale fossils described in 2001 turned out to carry the even-toed "double-pulley" ankle bone, so the skeletons agreed once the right bones were found.')
+          : t('stem.evolab.evidence_morph_note', 'Skeletal hypothesis: for most of the 20th century turtles were placed outside the diapsids because their skulls lack the two temporal openings that lizards, snakes, crocodiles and birds share, and whales, with no ankle bones to compare, were kept as an order of their own. Toggle to DNA to see the same tips arranged by molecular evidence: two branches move.');
 
-        // Render the actual cladogram (revealed after grading) — a simple
-        // text-tree showing the canonical relationships.
-        var renderCladogram = function() {
-          return h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4 font-mono text-sm' },
-            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-800 mb-3 font-sans' }, t('stem.evolab.actual_cladogram', '🌳 Actual Cladogram')),
-            h('pre', { className: 'text-slate-800 leading-tight whitespace-pre overflow-x-auto' },
-              'Life on Earth\n' +
-              '  │\n' +
-              '  ├── 🌳 Plants — Red Maple\n' +
-              '  │\n' +
-              '  └── Animals\n' +
-              '        │\n' +
-              '        ├── 🦞 Arthropods — Honeybee, Crab, Lobster\n' +
-              '        │      (lobster + crab = closer than either to bee)\n' +
-              '        │\n' +
-              '        └── Vertebrates (have a backbone)\n' +
-              '              │\n' +
-              '              ├── 🐟 Fish — Atlantic Salmon\n' +
-              '              │\n' +
-              '              └── Tetrapods (4 limbs)\n' +
-              '                    │\n' +
-              '                    ├── 🐸 Amphibians — Bullfrog\n' +
-              '                    │\n' +
-              '                    └── Amniotes (amniotic eggs)\n' +
-              '                          │\n' +
-              '                          ├── 🐢 Reptiles — Box Turtle, Garter Snake\n' +
-              '                          │\n' +
-              '                          ├── 🐦 Birds — Cardinal\n' +
-              '                          │      (birds ARE reptiles, descended from\n' +
-              '                          │       theropod dinosaurs — feathers were\n' +
-              '                          │       a reptilian innovation)\n' +
-              '                          │\n' +
-              '                          └── 🫎 Mammals — Moose, Deer, Black Bear'
-            )
+        // The cladogram, tips as clickable targets, placed organisms as icons.
+        var renderTree = function() {
+          var elems = [];
+          Object.keys(layout).forEach(function(id) {
+            var L = layout[id];
+            if (!L.kids) return;
+            L.kids.forEach(function(k) {
+              // elbow: vertical from parent y to child y at parent x, then horizontal to child x
+              elems.push(h('path', { key: 'e-' + id + '-' + k.node.id, d: 'M ' + L.x + ' ' + L.y + ' L ' + L.x + ' ' + k.y + ' L ' + k.x + ' ' + k.y, stroke: '#475569', strokeWidth: 2, fill: 'none' }));
+              // synapomorphy tick + label on the branch leading to the child
+              if (k.node.syn) {
+                var mx = (L.x + k.x) / 2;
+                elems.push(h('line', { key: 't-' + k.node.id, x1: mx, y1: k.y - 6, x2: mx, y2: k.y + 6, stroke: '#0f766e', strokeWidth: 2 }));
+                elems.push(h('text', { key: 's-' + k.node.id, x: mx + 3, y: k.y - 8, fontSize: '8', fill: '#0f766e', fontStyle: 'italic' }, k.node.syn.length > 34 ? k.node.syn.slice(0, 33) + '…' : k.node.syn));
+              }
+            });
+            if (L.node.label && L.node.id !== 'life') elems.push(h('text', { key: 'n-' + id, x: L.x + 3, y: L.y - 5, fontSize: '9', fill: '#334155', fontWeight: 'bold' }, L.node.label));
+          });
+          var tipElems = TIP_ORDER.map(function(tipId) {
+            var L = layout[tipId];
+            var tip = TIPS[tipId];
+            var placed = placedOn(tipId);
+            var isTarget = !!selectedOrg;
+            var anyWrong = checked && placed.some(function(o) { return o.tip !== tipId; });
+            var allRight = checked && placed.length > 0 && !anyWrong;
+            var missing = checked && ORGANISMS.some(function(o) { return o.tip === tipId && assignments[o.id] !== tipId; });
+            return h('g', {
+              key: 'tip-' + tipId,
+              onClick: function() { if (selectedOrg) assign(selectedOrg, tipId); },
+              style: { cursor: isTarget ? 'pointer' : 'default' }
+            },
+              h('rect', { x: L.x + 6, y: L.y - ROW / 2 + 4, width: LABEL_W + 28, height: ROW - 8, rx: 8, fill: anyWrong ? '#fee2e2' : allRight ? '#dcfce7' : isTarget ? '#f5f3ff' : '#f8fafc', stroke: anyWrong ? '#ef4444' : allRight ? '#22c55e' : isTarget ? '#8b5cf6' : tip.color, strokeWidth: isTarget ? 2.5 : 1.5, strokeDasharray: isTarget ? '5,3' : 'none' }),
+              h('text', { x: L.x + 14, y: L.y + 4, fontSize: '11', fontWeight: 'bold', fill: '#0f172a' }, tip.icon + ' ' + tip.label),
+              placed.map(function(o, i) {
+                var wrong = checked && o.tip !== tipId;
+                return h('text', { key: o.id, x: L.x + LABEL_W - 4 - i * 20, y: L.y + 6, fontSize: '16', textAnchor: 'end' }, (wrong ? '✗' : '') + o.icon);
+              }),
+              missing && h('text', { x: L.x + LABEL_W + 30, y: L.y + 4, fontSize: '10', fill: '#b91c1c', fontWeight: 'bold' }, t('stem.evolab.missing_here', '← missing'))
+            );
+          });
+          var summary = TIP_ORDER.map(function(tipId) { var p = placedOn(tipId); return TIPS[tipId].label + ': ' + (p.length ? p.map(function(o) { return o.name; }).join(', ') : 'empty'); }).join('. ');
+          return h('svg', {
+            viewBox: '0 0 ' + W + ' ' + H,
+            className: 'w-full',
+            role: 'img',
+            'aria-label': __alloFill(__alloT('stem.evolab.a11y_cladogram_summary', 'Cladogram with {value1} tips, {value2} evidence. {value3}'), { value1: TIP_ORDER.length, value2: mode === 'molecular' ? 'DNA' : 'skeletal', value3: summary })
+          },
+            h('rect', { x: 0, y: 0, width: W, height: H, fill: '#ffffff' }),
+            h('line', { x1: X0 - 12, y1: layout.life.y, x2: X0, y2: layout.life.y, stroke: '#475569', strokeWidth: 2 }),
+            elems,
+            tipElems
           );
         };
 
-        // Surprise notes — reveal counter-intuitive corrections after grading.
-        var SURPRISES = {
-          lobster: 'Lobster is an ARTHROPOD, not a fish. It shares an exoskeleton and segmented body with insects. Salmon is a vertebrate fish; lobster\'s closest relatives are crabs (and somewhat distantly, bees).',
-          crab: 'Crab is an arthropod (crustacean), like lobster. Crab + lobster share a more recent common ancestor than either does with insects.',
-          bee: 'Honeybee is an ARTHROPOD (insect). Same major group as crab and lobster — exoskeleton + jointed legs.',
-          frog: 'Frog is an AMPHIBIAN, not a reptile. Amphibians have moist permeable skin and lay jelly-coated eggs in water. Reptiles have dry scaly skin and lay eggs on land.',
-          turtle: 'Turtle is a REPTILE. Despite living in water, it has scales, is cold-blooded, and lays amniotic eggs.',
-          cardinal: 'Cardinal is a BIRD — but birds are technically descended from theropod dinosaurs, so birds ARE reptiles in cladistic terms. We split them off as a separate group because feathers are such a distinctive feature.'
-        };
+        var selected = selectedOrg ? ORGANISMS.filter(function(o) { return o.id === selectedOrg; })[0] : null;
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🌳', title: t('stem.evolab.phylogenetic_tree_builder_2', 'Phylogenetic Tree Builder') }),
@@ -2531,67 +4331,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌳'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-phyloBuilder' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.build_the_tree_of_life', 'Build the tree of life')),
-                  h('p', { className: 'text-sm text-violet-50 mt-1' }, t('stem.evolab.each_organism_belongs_to_one_of_seven_', 'Each organism belongs to one of seven major clades. Use the dropdown to assign each one. The tool grades your placements against the canonical cladogram. Watch out — some organisms look like they\'d group with one clade but their evolutionary history says otherwise.'))
-                )
+                  h('p', { className: 'text-sm text-violet-50 mt-1' }, t('stem.evolab.phylo_hero_v2', 'Thirteen Maine organisms, one branching tree. Pick an organism, read its observable traits, then place it on the tip whose path of shared derived traits (synapomorphies) it matches: backbone? four limbs? amniotic egg? hair, or feathers? Every split on the tree is labelled with the trait that defines it. Grade your tree, then toggle the evidence: skeletons and DNA agree on almost everything, and disagree about exactly two branches.'))
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-phyloBuilder', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'phyloBuilder',
+              border: 'border-violet-400', heading: 'text-violet-800',
+              question: t('stem.evolab.predict_phylo_q', 'Before you build: which two are the closer relatives?'),
+              options: [
+                { id: 'lobsterSalmon', label: t('stem.evolab.predict_phylo_lobster_salmon', 'Lobster and salmon (both live in the sea).') },
+                { id: 'lobsterBee', label: t('stem.evolab.predict_phylo_lobster_bee', 'Lobster and honeybee.') },
+                { id: 'salmonFrog', label: t('stem.evolab.predict_phylo_salmon_frog', 'Salmon and bullfrog (both slimy and aquatic).') }
+              ],
+              pendingHint: t('stem.evolab.predict_phylo_hint', 'Place all twelve and grade the tree to see the answer.'),
+              locked: Object.keys(assignments).length > 0,
+              outcomeId: checked ? 'lobsterBee' : null,
+              explain: function(choice, outcome) {
+                if (choice === 'lobsterBee') return t('stem.evolab.explain_phylo_right', 'Lobster and bee share a jointed exoskeleton and a segmented body, inherited from a common arthropod ancestor. Salmon has a backbone, which lobsters never had. Habitat is not ancestry: the sea is full of unrelated things that happen to live there.');
+                if (choice === 'lobsterSalmon') return t('stem.evolab.explain_phylo_lobster_salmon', 'Where something lives says nothing about its ancestry. Lobster has a jointed exoskeleton and no backbone; salmon has a backbone and no exoskeleton. Lobster\'s closest relative here is the honeybee (both arthropods), and salmon\'s is the frog (both vertebrates). Grouping by habitat is the folk taxonomy that tree-thinking replaces.');
+                return t('stem.evolab.explain_phylo_salmon_frog', 'Salmon and frog ARE relatives (both vertebrates), so this is the second-best answer. But the question asked about the lobster pairs: lobster and bee share a jointed exoskeleton from a common arthropod ancestor, and that is a closer relationship than either has to any vertebrate.');
+              }
+            }),
             // Status row
             h('div', { className: 'grid grid-cols-3 gap-3' },
-              h(StatCard, { label: t('stem.evolab.assigned', 'Assigned'), value: Object.keys(assignments).length + ' / ' + ORGANISMS.length, color: 'text-violet-700' }),
+              h(StatCard, { label: t('stem.evolab.assigned', 'Placed'), value: Object.keys(assignments).length + ' / ' + ORGANISMS.length, color: 'text-violet-700' }),
               h(StatCard, { label: t('stem.evolab.correct', 'Correct'), value: checked ? correctCount + ' / ' + ORGANISMS.length : '—', color: checked ? (pctCorrect >= 80 ? 'text-emerald-700' : pctCorrect >= 60 ? 'text-amber-700' : 'text-rose-700') : 'text-slate-600' }),
               h(StatCard, { label: t('stem.evolab.score', 'Score'), value: checked ? pctCorrect + '%' : '—', color: checked ? (pctCorrect >= 80 ? 'text-emerald-700' : pctCorrect >= 60 ? 'text-amber-700' : 'text-rose-700') : 'text-slate-600' })
             ),
-            // Clade reference
+            // Evidence toggle
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
-              h('div', { className: 'flex items-center justify-between mb-2' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.the_7_clades', 'The 7 Clades')),
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.evidence', '🔬 Evidence used to draw the tree')),
+                h('div', { role: 'group', 'aria-label': t('stem.evolab.evidence_type', 'Evidence type'), className: 'flex gap-2' },
+                  ['morphological', 'molecular'].map(function(m) {
+                    var active = mode === m;
+                    return h('button', {
+                      key: m,
+                      type: 'button',
+                      'aria-pressed': active,
+                      onClick: function() { setMode(m); announce(m === 'molecular' ? __alloT('stem.evolab.sr_evidence_dna', 'Tree redrawn from DNA evidence: turtles now sit next to birds, and whales sit inside the even-toed ungulates.') : __alloT('stem.evolab.sr_evidence_skeletal', 'Tree redrawn from skeletal evidence: turtles branch off before the other reptiles, and whales stand as their own branch of mammals.')); },
+                      className: 'px-3 py-1.5 rounded-full text-xs font-bold ' + (active ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
+                    }, m === 'morphological' ? t('stem.evolab.skeletons_morphology', '🦴 Skeletons') : t('stem.evolab.dna_molecular', '🧬 DNA'));
+                  })
+                )
+              ),
+              h('p', { className: 'text-xs text-slate-700 mt-2' }, evidenceNote)
+            ),
+            // Tree
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 overflow-x-auto' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.the_tree', '🌳 The tree: tips are clades, labels on branches are synapomorphies')),
+                h('div', { className: 'text-xs text-slate-600' }, selected ? __alloFill(t('stem.evolab.click_a_tip_to_place', 'Click a tip to place {value1}, or use the buttons below.'), { value1: selected.icon + ' ' + selected.name }) : t('stem.evolab.pick_an_organism_first', 'Pick an organism below, then a tip.'))
+              ),
+              h('div', { style: { minWidth: '640px' } }, renderTree())
+            ),
+            // Placement buttons for the selected organism (keyboard route)
+            selected && h('div', { className: 'bg-violet-50 border-2 border-violet-400 rounded-xl p-3' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'text-sm font-bold text-violet-900' }, __alloFill(t('stem.evolab.place_organism_on', 'Place {value1} on which tip?'), { value1: selected.icon + ' ' + selected.name })),
+                h('div', { className: 'text-xs text-slate-700' }, t('stem.evolab.observed', 'Observed: ') + selected.note)
+              ),
+              h('div', { role: 'group', 'aria-label': t('stem.evolab.tips_to_choose', 'Tips to choose from'), className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
+                TIP_ORDER.map(function(tipId) {
+                  var tip = TIPS[tipId];
+                  return h('button', {
+                    key: tipId,
+                    type: 'button',
+                    onClick: function() { assign(selected.id, tipId); },
+                    'aria-label': __alloFill(__alloT('stem.evolab.a11y_place_on', 'Place {value1} on {value2}'), { value1: selected.name, value2: tip.label }),
+                    className: 'text-left rounded-lg border-2 bg-white p-2 text-xs font-bold text-slate-800 hover:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-400',
+                    style: { borderColor: tip.color }
+                  }, tip.icon + ' ' + tip.label);
+                })
+              ),
+              h('button', { type: 'button', onClick: function() { setSelectedOrg(null); }, className: 'mt-2 text-xs font-bold text-slate-700 underline' }, t('stem.evolab.cancel', 'Cancel'))
+            ),
+            // Organism cards
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloFill(t('stem.evolab.n_organisms_pick_one', '{value1} organisms: pick one, then its tip'), { value1: ORGANISMS.length })),
                 h('button', {
+                  type: 'button',
                   onClick: function() { setShowHints(!showHints); },
                   'aria-pressed': showHints,
                   className: 'text-xs font-bold px-3 py-1 rounded-full ' + (showHints ? 'bg-violet-600 text-white' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200')
-                }, showHints ? '✓ Hints ON' : '💡 Show Trait Hints')
+                }, showHints ? '✓ ' + t('stem.evolab.trait_checklist_on', 'Trait checklist ON') : '💡 ' + t('stem.evolab.show_trait_checklist', 'Show trait checklist'))
               ),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2' },
-                CLADES.map(function(c) {
-                  return h('div', { key: c.id, className: 'p-2 rounded-lg text-xs', style: { backgroundColor: c.color + '22', borderLeft: '3px solid ' + c.color } },
-                    h('div', { className: 'font-bold text-slate-800' }, c.label),
-                    showHints && h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, c.tip)
-                  );
-                })
-              )
-            ),
-            // Organism placement grid
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, t('stem.evolab.12_organisms_pick_each_one_s_clade', '12 Organisms — Pick Each One\'s Clade')),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
                 ORGANISMS.map(function(o) {
                   var assigned = assignments[o.id];
-                  var isCorrect = checked && assigned === o.truth;
-                  var isWrong = checked && assigned && assigned !== o.truth;
-                  var bg = isCorrect ? 'bg-emerald-50 border-emerald-400' : isWrong ? 'bg-rose-50 border-rose-400' : 'bg-slate-50 border-slate-200';
-                  return h('div', { key: o.id, className: 'p-3 rounded-lg border-2 transition-colors ' + bg },
-                    h('div', { className: 'flex items-center gap-3' },
-                      h('span', { className: 'text-3xl' }, o.icon),
-                      h('div', { className: 'flex-1' },
-                        h('div', { className: 'font-bold text-slate-800' }, o.name),
-                        h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, o.note)
-                      ),
-                      checked && (isCorrect ? h('span', { className: 'text-2xl', 'aria-label': t('stem.evolab.correct_2', 'Correct') }, '✓') : isWrong ? h('span', { className: 'text-2xl', 'aria-label': t('stem.evolab.incorrect', 'Incorrect') }, '✗') : null)
-                    ),
-                    h('select', {
-                      value: assigned || '',
-                      onChange: function(e) { assign(o.id, e.target.value); },
-                      'aria-label': __alloFill(__alloT('stem.evolab.a11y_assign_clade_for', 'Assign clade for {value1}'), { value1: o.name }),
-                      className: 'mt-2 w-full px-2 py-1.5 rounded-lg border border-slate-500 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400'
+                  var isCorrect = checked && assigned === o.tip;
+                  var isWrong = checked && assigned && assigned !== o.tip;
+                  var isSel = selectedOrg === o.id;
+                  var bg = isCorrect ? 'bg-emerald-50 border-emerald-400' : isWrong ? 'bg-rose-50 border-rose-400' : isSel ? 'bg-violet-50 border-violet-500' : assigned ? 'bg-slate-50 border-slate-300' : 'bg-white border-slate-200';
+                  return h('div', { key: o.id, className: 'rounded-lg border-2 transition-colors ' + bg },
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { setSelectedOrg(isSel ? null : o.id); },
+                      'aria-pressed': isSel,
+                      'aria-label': o.name + (assigned ? ', placed on ' + TIPS[assigned].label : ', not placed') + (checked ? (isCorrect ? ', correct' : ', incorrect') : ''),
+                      className: 'w-full text-left p-3 focus:outline-none focus:ring-2 focus:ring-violet-400 rounded-lg'
                     },
-                      h('option', { value: '' }, t('stem.evolab.select_clade', '— Select clade —')),
-                      CLADES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.label); })
+                      h('div', { className: 'flex items-center gap-3' },
+                        h('span', { className: 'text-3xl' }, o.icon),
+                        h('div', { className: 'flex-1 min-w-0' },
+                          h('div', { className: 'font-bold text-slate-800 flex items-center gap-2' }, o.name, checked && h('span', { className: 'text-base' }, isCorrect ? '✓' : '✗')),
+                          h('div', { className: 'text-[0.6875rem] text-slate-600' }, o.note),
+                          showHints && h('div', { className: 'mt-1 flex flex-wrap gap-1' }, o.traits.map(function(tr) { return h('span', { key: tr, className: 'rounded-full bg-teal-50 border border-teal-300 px-1.5 text-[0.625rem] text-teal-900' }, TRAIT_LABELS[tr]); })),
+                          h('div', { className: 'mt-1 text-[0.6875rem] font-bold ' + (assigned ? 'text-violet-800' : 'text-slate-500') }, assigned ? '→ ' + TIPS[assigned].icon + ' ' + TIPS[assigned].label : t('stem.evolab.not_placed_yet', 'not placed yet'))
+                        )
+                      )
                     ),
-                    isWrong && SURPRISES[o.id] && h('div', { className: 'mt-2 p-2 bg-rose-100 border border-rose-300 rounded text-[0.6875rem] text-rose-900' },
-                      h('strong', null, t('stem.evolab.why', '💡 Why: ')), SURPRISES[o.id]
-                    )
+                    isWrong && h('div', { className: 'mx-3 mb-3 p-2 bg-rose-100 border border-rose-300 rounded text-[0.6875rem] text-rose-900' },
+                      h('strong', null, t('stem.evolab.path_to_the_right_tip', 'Path to the right tip: ')),
+                      pathToTip(o.tip).filter(function(n) { return n.syn; }).map(function(n) { return n.syn; }).join(' → ')
+                    ),
+                    assigned && !checked && h('button', { type: 'button', onClick: function() { unassign(o.id); }, className: 'mx-3 mb-2 text-[0.6875rem] font-bold text-slate-600 underline' }, t('stem.evolab.remove_from_tree', 'remove from tree'))
                   );
                 })
               )
@@ -2602,14 +4461,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onClick: runCheck,
                 disabled: !allAssigned,
                 className: 'px-6 py-3 rounded-xl font-bold shadow-lg transition-colors ' + (allAssigned ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-300 text-slate-700 cursor-not-allowed')
-              }, allAssigned ? '✓ Grade My Tree' : '⏳ Assign all 12 first'),
-              checked && h('button', {
+              }, allAssigned ? '✓ ' + t('stem.evolab.grade_my_tree', 'Grade My Tree') : '⏳ ' + __alloFill(t('stem.evolab.place_all_n_first', 'Place all {value1} first'), { value1: ORGANISMS.length })),
+              (checked || Object.keys(assignments).length > 0) && h('button', {
                 onClick: resetAll,
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
-              }, t('stem.evolab.try_again', '↺ Try Again'))
+              }, t('stem.evolab.try_again', '↺ Start Over'))
             ),
-            // Cladogram (revealed after grading)
-            checked && renderCladogram(),
+            checked && h('div', { 'aria-live': 'polite', className: 'rounded-2xl p-4 text-white shadow-lg ' + (pctCorrect >= 80 ? 'bg-gradient-to-br from-emerald-700 to-teal-700' : 'bg-gradient-to-br from-amber-600 to-orange-700') },
+              h('div', { className: 'font-black text-lg' }, pctCorrect === 100 ? '🏆 ' + t('stem.evolab.perfect_tree', 'Perfect tree') : pctCorrect >= 80 ? '🌟 ' + t('stem.evolab.strong_tree', 'Strong tree') : '📖 ' + t('stem.evolab.keep_going_tree', 'Keep going')),
+              h('div', { className: 'text-sm mt-1' }, __alloFill(t('stem.evolab.tree_result_detail', '{value1} of {value2} organisms sit on the right tip. Wrong placements show the path of synapomorphies that leads to the right one; fix them and grade again.'), { value1: correctCount, value2: ORGANISMS.length }))
+            ),
+            checked && h(CheckCard, {
+              moduleId: 'phyloBuilder',
+              border: 'border-violet-400', heading: 'text-violet-800',
+              question: t('stem.evolab.check_phylo_q', 'On this tree the cardinal sits inside the reptile branch. Are birds reptiles?'),
+              options: [
+                { id: 'separate', label: t('stem.evolab.check_phylo_separate', 'No. Birds are warm-blooded and feathered, so they are their own separate class.'), feedback: t('stem.evolab.check_phylo_separate_fb', 'That is the old Linnaean habit: cut a group out because it looks different. A clade is an ancestor plus ALL its descendants. The reptile ancestor\'s descendants include birds (via theropod dinosaurs), so a \"reptiles\" that excludes birds is not a clade, just as \"fish\" that excludes tetrapods is not.') },
+                { id: 'yes', label: t('stem.evolab.check_phylo_yes', 'Yes, in tree terms: birds descend from the reptile common ancestor, so any clade containing all reptiles must contain birds.'), correct: true, feedback: t('stem.evolab.check_phylo_yes_fb', 'Right. Feathers are a synapomorphy of birds, layered on top of the reptile synapomorphies (dry scales are still on a cardinal\'s legs; the amniotic egg is still in the nest). Being distinctive does not remove you from your ancestry; humans are still primates, mammals, tetrapods, and vertebrates.') },
+                { id: 'mammals', label: t('stem.evolab.check_phylo_mammals', 'No. Birds evolved from mammals, since both are warm-blooded.'), feedback: t('stem.evolab.check_phylo_mammals_fb', 'Warm-bloodedness arose independently in the two lineages (convergence), which is exactly why single traits are risky for building trees. Feathers on a scaly leg, egg-laying, and the skull and hip bones all place birds with dinosaurs and crocodiles, not with mammals.') },
+                { id: 'flightless', label: t('stem.evolab.check_phylo_flightless', 'Only flightless birds like ostriches are reptiles.'), feedback: t('stem.evolab.check_phylo_flightless_fb', 'Ancestry is not a matter of degree or of what an animal does today. Every bird, flying or not, descends from the same feathered theropod ancestors and so sits on the same branch.') }
+              ]
+            }),
+            h(ChallengeList, {
+              moduleId: 'phyloBuilder',
+              items: [
+                { id: 'perfectFirst', title: t('stem.evolab.ch_perfectfirst', 'First time right: '), body: t('stem.evolab.ch_perfectfirst_body', 'Place all twelve correctly before your first grading. Start Over resets the attempt.') },
+                { id: 'noHints', title: t('stem.evolab.ch_nohints', 'From observation alone: '), body: t('stem.evolab.ch_nohints_body', 'A perfect tree with the trait checklist switched off the whole way. Read each organism\'s note and reason down the tree yourself.') }
+              ]
+            }),
             // Educational reference
             h('div', { className: 'bg-violet-50 border border-violet-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-violet-800 mb-2' }, t('stem.evolab.tree_thinking_the_cladogram_way', '📖 Tree-thinking, the cladogram way')),
@@ -2676,6 +4555,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.the_cladogram_is_a_tree_built_from_sha', 'The cladogram is a tree built from shared traits. Common Ancestry Viewer shows you the most striking shared trait of all — the same five-bone forelimb skeleton in human, bat, whale, horse, and bird.')
               )
             ),
+            checked && h(CheckCard, {
+              moduleId: 'phyloBuilder', id: 'fishClade',
+              border: 'border-violet-400', heading: 'text-violet-800',
+              title: t('stem.evolab.check_yourself_2', '🧠 Check yourself (2)'),
+              question: t('stem.evolab.check_fish_q', 'The tip says "Ray-finned fishes", not "Fish". Why is plain "fish" not a clade?'),
+              options: [
+                { id: 'tetrapods', label: t('stem.evolab.check_fish_tetrapods', 'Because tetrapods descend from fish ancestors, so a group of every fish descendant would have to include frogs, birds, and us.'), correct: true, feedback: t('stem.evolab.check_fish_tetrapods_fb', 'Right. A lungfish is closer to a moose than to a salmon. "Fish" as people use it means "vertebrate that is not a tetrapod", a group defined by what it leaves out. Ray-finned fishes, by contrast, share a real ancestor with fin rays and include all of its descendants.') },
+                { id: 'water', label: t('stem.evolab.check_fish_water', 'Because some fish live in fresh water and some in the sea.'), feedback: t('stem.evolab.check_fish_water_fb', 'Habitat has nothing to do with clade membership; salmon themselves move between the two. The problem with "fish" is which descendants it excludes, not where its members swim.') },
+                { id: 'sharks', label: t('stem.evolab.check_fish_sharks', 'Because sharks have no bones, so they cannot be related to bony fish.'), feedback: t('stem.evolab.check_fish_sharks_fb', 'Sharks ARE related to bony fishes (all are vertebrates with jaws). Their cartilage skeleton makes them a separate branch, which is a reason "fish" is a grab-bag of several branches, but the deeper problem is that the bony-fish branch also contains every land vertebrate.') },
+                { id: 'toomany', label: t('stem.evolab.check_fish_toomany', 'Because there are too many species of fish for one clade.'), feedback: t('stem.evolab.check_fish_toomany_fb', 'Clades can be any size: beetles alone number hundreds of thousands of species and form a perfectly good clade. Size is irrelevant; completeness (ancestor plus ALL descendants) is what matters.') }
+              ]
+            }),
+            h(FieldNote, { moduleId: 'phyloBuilder', border: 'border-violet-400', heading: 'text-violet-800', prompt: t('stem.evolab.note_prompt_phylo', 'Which organism was hardest to place, and which trait finally decided it? What did the DNA toggle change, and what did it not?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-1', 'MS-LS4-1', 'MS-LS4-2', 'HS-LS4-2'],
               questions: [
@@ -2713,6 +4605,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         ];
         var SELECTED_DEFAULT = 'humerus';
         var selState = useState(SELECTED_DEFAULT), selected = selState[0], setSelected = selState[1];
+        // Bone detective: five modification descriptions, name the animal.
+        var SPECIES_LABELS = { human: t('stem.evolab.sp_human', 'Human'), bat: t('stem.evolab.sp_bat', 'Bat'), whale: t('stem.evolab.sp_whale', 'Whale'), horse: t('stem.evolab.sp_horse', 'Horse'), bird: t('stem.evolab.sp_bird', 'Bird') };
+        var SPECIES_IDS = ['human', 'bat', 'whale', 'horse', 'bird'];
+        var makeDetectiveItems = function() {
+          var bones = shuffle(BONES.map(function(b) { return b.id; })).slice(0, 5);
+          return bones.map(function(boneId) { var sp = SPECIES_IDS[Math.floor(Math.random() * SPECIES_IDS.length)]; return { bone: boneId, species: sp }; });
+        };
+        var bdState = useState(null), bd = bdState[0], setBd = bdState[1]; // { items, round, pick, score, attempts }
+        var startDetective = function() { setBd({ items: makeDetectiveItems(), round: 0, pick: null, score: 0, attempts: 0 }); announce(__alloT('stem.evolab.sr_detective_started', 'Bone detective started: five clues.')); };
+        var pickDetective = function(sp) {
+          if (!bd || bd.pick) return;
+          var item = bd.items[bd.round];
+          var correct = sp === item.species;
+          var next = Object.assign({}, bd, { pick: sp, score: bd.score + (correct ? 1 : 0), attempts: bd.attempts + 1 });
+          setBd(next);
+          announce(correct ? __alloT('stem.evolab.sr_detective_correct', 'Correct.') : __alloFill(__alloT('stem.evolab.sr_detective_wrong', 'Not quite. That was the {value1}.'), { value1: SPECIES_LABELS[item.species] }));
+          if (bd.round === bd.items.length - 1) {
+            var finalScore = next.score;
+            markComplete('commonAncestry', 'Bone detective: ' + finalScore + ' of ' + bd.items.length + ' clues named correctly.');
+            setRecord('commonAncestry', 'bestDetective', finalScore, { label: 'Best bone-detective score', unit: ' / 5', better: 'max' });
+            if (finalScore === bd.items.length) detectChallenge('commonAncestry', 'detective5', 'Bone detective, five for five', finalScore);
+          }
+        };
+        var nextDetective = function() { if (!bd) return; setBd(Object.assign({}, bd, { round: bd.round + 1, pick: null })); };
+        var viewedState = useState([SELECTED_DEFAULT]), viewedBones = viewedState[0], setViewedBones = viewedState[1];
+        // Completion: every bone group inspected across the five limbs.
+        var selectBone = function(id) {
+          setSelected(id);
+          if (viewedBones.indexOf(id) === -1) {
+            var nextViewed = viewedBones.concat([id]);
+            setViewedBones(nextViewed);
+            if (nextViewed.length >= BONES.length) markComplete('commonAncestry', 'Compared all ' + BONES.length + ' bone groups across five tetrapod forelimbs.');
+          }
+        };
 
         // Bone-by-bone modification descriptions per species.
         var MODIFICATIONS = {
@@ -2778,7 +4704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             stroke: g.stroke,
             strokeWidth: g.strokeWidth,
             opacity: g.fillOpacity,
-            onClick: function() { setSelected(boneId); },
+            onClick: function() { selectBone(boneId); },
             style: { cursor: 'pointer' },
             'aria-label': ((BONES.find(function(b) { return b.id === boneId; }) || {}).label || 'bone') + ' on ' + cls,
             tabIndex: 0,
@@ -2946,10 +4872,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-yellow-700 to-amber-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🦴'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-commonAncestry' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.same_blueprint_different_jobs', 'Same blueprint, different jobs')),
                   h('p', { className: 'text-sm text-amber-50 mt-1' }, t('stem.evolab.five_tetrapod_forelimbs_look_closely_e', 'Five tetrapod forelimbs. Look closely — every one has a humerus, radius, ulna, carpals, metacarpals, and phalanges. Same bones, dramatically modified to fly, swim, gallop, or grasp. Click any bone to see its homologous match in all species.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-commonAncestry', className: 'ml-auto' })
               )
             ),
             // Bone-selector chip row
@@ -2958,7 +4885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 var isSel = selected === b.id;
                 return h('button', {
                   key: b.id,
-                  onClick: function() { setSelected(b.id); },
+                  onClick: function() { selectBone(b.id); },
                   'aria-pressed': isSel,
                   className: 'px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-colors ' + (isSel ? 'text-white shadow' : 'bg-white text-slate-700 hover:bg-slate-50'),
                   style: isSel ? { backgroundColor: b.color, borderColor: b.color } : { borderColor: b.color }
@@ -3001,6 +4928,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.common_descent_is_one_of_the_most_misu', 'Common descent is one of the most-misunderstood ideas in biology. The Misconceptions Quiz tackles "humans from monkeys," the "just a theory" trap, and 10 other common errors.')
               )
             ),
+            h('div', { className: 'text-xs text-slate-600' }, __alloFill(t('stem.evolab.bones_viewed_progress', 'Bone groups compared: {value1} of {value2}'), { value1: viewedBones.length, value2: BONES.length })),
+            // Bone detective mini-game
+            h('div', { className: 'bg-white border-2 border-yellow-400 rounded-xl p-4' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2 mb-2' },
+                h('div', null,
+                  h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-yellow-800' }, t('stem.evolab.bone_detective', '🔎 Bone detective')),
+                  h('p', { className: 'text-sm text-slate-800 mt-1' }, t('stem.evolab.bone_detective_intro', 'Five clues. Each describes how ONE bone group is modified in ONE of the five animals. Name the animal. The clues come from the bone notes above, so compare limbs first.'))
+                ),
+                bd && h('div', { className: 'text-sm font-black text-yellow-900' }, __alloFill(t('stem.evolab.detective_score', 'Score {value1} / {value2}'), { value1: bd.score, value2: bd.items.length }))
+              ),
+              !bd && h('button', { type: 'button', onClick: startDetective, className: 'px-5 py-2.5 rounded-xl font-bold bg-yellow-700 hover:bg-yellow-800 text-white shadow' }, '▶ ' + t('stem.evolab.start_detective', 'Start the five clues')),
+              bd && bd.round < bd.items.length && (function() {
+                var item = bd.items[bd.round];
+                var boneLabel = (BONES.filter(function(b) { return b.id === item.bone; })[0] || {}).label || item.bone;
+                var clue = (MODIFICATIONS[item.bone] || {})[item.species] || '';
+                return h('div', null,
+                  h('div', { className: 'rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-900' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-yellow-800 mb-1' }, __alloFill(t('stem.evolab.clue_n_of', 'Clue {value1} of {value2} · {value3}'), { value1: bd.round + 1, value2: bd.items.length, value3: boneLabel })),
+                    h('div', { className: 'flex items-start justify-between gap-2' }, h('p', { className: 'italic' }, '“' + clue + '”'), h(SpeakButton, { text: boneLabel + '. ' + clue }))
+                  ),
+                  h('div', { role: 'group', 'aria-label': t('stem.evolab.which_animal', 'Which animal?'), className: 'mt-2 grid grid-cols-2 sm:grid-cols-5 gap-2' }, SPECIES_IDS.map(function(sp) {
+                    var picked = bd.pick === sp;
+                    var isRight = bd.pick && sp === item.species;
+                    var cls = 'rounded-lg border-2 p-2 text-sm font-bold text-left ' + (isRight ? 'bg-emerald-50 border-emerald-500 text-emerald-900' : picked ? 'bg-rose-50 border-rose-400 text-rose-900' : 'bg-slate-50 border-slate-200 text-slate-800 hover:border-slate-400');
+                    return h('button', { key: sp, type: 'button', disabled: !!bd.pick, 'aria-pressed': picked, onClick: function() { pickDetective(sp); }, className: cls }, SPECIES_LABELS[sp]);
+                  })),
+                  bd.pick && h('div', { role: 'status', className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-sm' },
+                    h('span', { className: bd.pick === item.species ? 'font-bold text-emerald-800' : 'font-bold text-rose-800' }, bd.pick === item.species ? t('stem.evolab.detective_right', '✓ Right.') : __alloFill(t('stem.evolab.detective_wrong', '✗ That was the {value1}.'), { value1: SPECIES_LABELS[item.species] }) + ' ' + __alloFill(t('stem.evolab.detective_hint', 'Click the {value1} above to see it highlighted in every limb.'), { value1: boneLabel.toLowerCase() })),
+                    h('button', { type: 'button', onClick: nextDetective, className: 'px-4 py-2 rounded-lg font-bold bg-yellow-700 hover:bg-yellow-800 text-white' }, bd.round === bd.items.length - 1 ? t('stem.evolab.see_score', 'See score →') : t('stem.evolab.next_clue', 'Next clue →'))
+                  )
+                );
+              })(),
+              bd && bd.round >= bd.items.length && h('div', { className: 'rounded-lg border-2 p-3 text-sm ' + (bd.score === bd.items.length ? 'border-emerald-400 bg-emerald-50' : 'border-amber-300 bg-amber-50') },
+                h('div', { className: 'font-black text-slate-900' }, bd.score === bd.items.length ? '🏆 ' + t('stem.evolab.detective_perfect', 'Five for five.') : __alloFill(t('stem.evolab.detective_result', '{value1} of {value2}. Same bones, five jobs; the clue is always what the job did to the bone.'), { value1: bd.score, value2: bd.items.length })),
+                h('button', { type: 'button', onClick: startDetective, className: 'mt-2 px-4 py-2 rounded-lg font-bold bg-yellow-700 hover:bg-yellow-800 text-white' }, '↻ ' + t('stem.evolab.new_clues', 'New clues'))
+              )
+            ),
+            h(ChallengeList, {
+              moduleId: 'commonAncestry',
+              items: [{ id: 'detective5', title: t('stem.evolab.ch_detective5', 'Bone detective, five for five: '), body: t('stem.evolab.ch_detective5_body', 'Name all five animals from their bone modifications on one run of the clues.'), record: { id: 'bestDetective', label: t('stem.evolab.best_detective_score', 'best score') } }]
+            }),
+            h(CheckCard, {
+              moduleId: 'commonAncestry',
+              border: 'border-yellow-400', heading: 'text-yellow-800',
+              question: t('stem.evolab.check_ancestry_q', 'A bat wing and a bird wing both fly, and both are forelimbs with the same bones. Are they homologous?'),
+              options: [
+                { id: 'wings', label: t('stem.evolab.check_ancestry_wings', 'Yes, completely: a wing is a wing.'), feedback: t('stem.evolab.check_ancestry_wings_fb', 'Half right. The LIMB is homologous (same humerus, radius, ulna, digits, inherited from a common tetrapod ancestor). But that ancestor did not fly. Bat and bird each turned the shared forelimb into a wing separately, one with a skin membrane over long fingers and one with feathers on a fused hand. The wing as a flying structure is convergent.') },
+                { id: 'nested', label: t('stem.evolab.check_ancestry_nested', 'The forelimb bones are homologous, but the wing itself evolved independently in each, so the flight surfaces are analogous.'), correct: true, feedback: t('stem.evolab.check_ancestry_nested_fb', 'Exactly. Homology is about shared ancestry of a structure, and it can hold at one level (the tetrapod forelimb) while a later modification (flight) arose separately. Click the phalanges: elongated fingers under a membrane in the bat, fused into a feather anchor in the bird. Same bones, different wings.') },
+                { id: 'class', label: t('stem.evolab.check_ancestry_class', 'No, because one is a mammal and one is a bird.'), feedback: t('stem.evolab.check_ancestry_class_fb', 'Being in different groups does not remove homology; mammals and birds are both tetrapods and share the whole forelimb plan from that ancestor. Your own arm is homologous with both wings, and you are a mammal too.') },
+                { id: 'function', label: t('stem.evolab.check_ancestry_function', 'No, because homologous structures must do the same job.'), feedback: t('stem.evolab.check_ancestry_function_fb', 'Backwards. Homology is about origin, not job: the human arm and whale flipper do completely different things and are the textbook homologous pair. Same job with different origins is analogy.') }
+              ]
+            }),
+            h(CheckCard, {
+              moduleId: 'commonAncestry', id: 'fused',
+              border: 'border-yellow-400', heading: 'text-yellow-800',
+              title: t('stem.evolab.check_yourself_2', '🧠 Check yourself (2)'),
+              question: t('stem.evolab.check_fused_q', 'Click through the radius and ulna. In which animal are they fused into one rigid bone, and why would that be favoured?'),
+              options: [
+                { id: 'horse', label: t('stem.evolab.check_fused_horse', 'The horse: a running leg needs a stiff strut, not a rotating forearm.'), correct: true, feedback: t('stem.evolab.check_fused_horse_fb', 'Yes. A horse never turns its palm up; rotation is useless weight on a leg built for galloping, so fusion won. The bones are still there (the ulna remnant sits at the elbow), which is the fingerprint of shared ancestry: modification of what was inherited, not a fresh design.') },
+                { id: 'bat', label: t('stem.evolab.check_fused_bat', 'The bat: the wing must be rigid to fly.'), feedback: t('stem.evolab.check_fused_bat_fb', 'The bat\'s ulna is reduced and partly fused, but the wing is anything but rigid: the long finger bones spread and fold the membrane every stroke. The fully fused, load-bearing strut belongs to the horse.') },
+                { id: 'human', label: t('stem.evolab.check_fused_human', 'The human: our forearm is one solid bone.'), feedback: t('stem.evolab.check_fused_human_fb', 'Turn your palm up, then down: that twist is the radius rolling over the ulna. Humans keep two separate bones precisely because we rotate the forearm constantly.') },
+                { id: 'whale', label: t('stem.evolab.check_fused_whale', 'The whale: a flipper is a paddle.'), feedback: t('stem.evolab.check_fused_whale_fb', 'The whale\'s radius and ulna are shortened and flattened into a stiff platform, but they stay two bones; the flipper is stiffened by connective tissue around them. Fused into ONE bone describes the horse.') }
+              ]
+            }),
+            h(KeyTerms, { moduleId: 'commonAncestry', heading: 'text-yellow-800' }),
+            h(FieldNote, { moduleId: 'commonAncestry', border: 'border-yellow-400', heading: 'text-yellow-800', prompt: t('stem.evolab.note_prompt_ancestry', 'Pick one bone and describe its job in two different animals. What does the same bone doing different jobs tell you?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-1', 'MS-LS4-2', 'HS-LS4-2'],
               questions: [
@@ -3031,120 +5024,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           {
             q: '"Evolution is just a theory" — what does \'theory\' mean in science?',
             choices: [
-              { id: 'a', label: t('stem.evolab.a_guess_that_hasn_t_been_proven_yet', 'A guess that hasn\'t been proven yet') },
+              { id: 'a', label: t('stem.evolab.a_guess_that_hasn_t_been_proven_yet', 'A guess that hasn\'t been proven yet'), feedback: 'In everyday speech "theory" means a hunch. In science that word is "hypothesis". A scientific theory is the top of the ladder: an explanation that has survived every test so far and ties thousands of observations together.' },
               { id: 'b', label: t('stem.evolab.a_well_tested_explanation_supported_by', 'A well-tested explanation supported by extensive evidence'), correct: true },
-              { id: 'c', label: t('stem.evolab.something_less_reliable_than_a_law', 'Something less reliable than a "law"') },
-              { id: 'd', label: t('stem.evolab.a_belief_that_hasn_t_been_observed', 'A belief that hasn\'t been observed') }
+              { id: 'c', label: t('stem.evolab.something_less_reliable_than_a_law', 'Something less reliable than a "law"'), feedback: 'Laws describe (what happens, often as an equation); theories explain (why). Gravity has both a law and a theory. Neither outranks the other, and a theory never "graduates" into a law.' },
+              { id: 'd', label: t('stem.evolab.a_belief_that_hasn_t_been_observed', 'A belief that hasn\'t been observed'), feedback: 'Evolution has been observed directly: peppered moths, Galápagos finches, antibiotic resistance, and Lenski\'s E. coli lines past 75,000 generations. "Theory" does not mean unobserved; it means the explanation that connects the observations.' }
             ],
             explain: 'In science, a "theory" is a comprehensive explanation supported by mountains of evidence — not a guess. Examples: germ theory of disease, atomic theory, plate tectonics, gravitational theory. The theory of evolution is in the same category. The colloquial "I have a theory" (meaning "guess") is a different word entirely. Calling evolution "just a theory" is like saying gravity is "just a theory" — technically correct in the casual sense, but missing what scientific theories actually are.'
           },
           {
             q: 'Did humans evolve from monkeys?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_modern_monkeys_are_our_direct_ance', 'Yes, modern monkeys are our direct ancestors') },
+              { id: 'a', label: t('stem.evolab.yes_modern_monkeys_are_our_direct_ance', 'Yes, modern monkeys are our direct ancestors'), feedback: 'Modern monkeys are our cousins, not our grandparents. Both lineages descend from a common ancestor that was neither a modern monkey nor a human, and each has been evolving separately for roughly 25-30 million years.' },
               { id: 'b', label: t('stem.evolab.no_humans_and_modern_monkeys_share_a_c', 'No, humans and modern monkeys share a common ancestor that lived ~25-30 million years ago'), correct: true },
-              { id: 'c', label: t('stem.evolab.no_humans_evolved_separately_from_any_', 'No, humans evolved separately from any other primate') },
-              { id: 'd', label: t('stem.evolab.only_some_humans_evolved_from_monkeys', 'Only some humans evolved from monkeys') }
+              { id: 'c', label: t('stem.evolab.no_humans_evolved_separately_from_any_', 'No, humans evolved separately from any other primate'), feedback: 'Human and chimpanzee DNA are about 98-99% identical, and we share the same broken vitamin C gene, the same fused chromosome 2, and the same ancient viral insertions in the same places. A separate origin would not produce shared mistakes.' },
+              { id: 'd', label: t('stem.evolab.only_some_humans_evolved_from_monkeys', 'Only some humans evolved from monkeys'), feedback: 'All living humans are one species with one shared ancestry; no group has a different evolutionary origin. This idea has been used to justify racism and has no biological basis.' }
             ],
             explain: 'Humans did NOT evolve from any modern monkey species — modern monkeys are our cousins, not our ancestors. Humans, chimpanzees, gorillas, orangutans, and gibbons share a common ancestor with Old World monkeys roughly 25-30 million years ago. That ancestor was neither a "monkey" nor a "human" — it was a primate that gave rise to multiple lineages. Calling someone\'s ancestor a monkey is like calling your great-great-grandmother your sister.'
           },
           {
             q: 'Does evolution have a goal or direction?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_life_is_constantly_improving_towar', 'Yes — life is constantly improving toward greater complexity') },
-              { id: 'b', label: t('stem.evolab.yes_every_species_is_moving_toward_an_', 'Yes — every species is moving toward an "ideal" form') },
+              { id: 'a', label: t('stem.evolab.yes_life_is_constantly_improving_towar', 'Yes — life is constantly improving toward greater complexity'), feedback: 'After 3.8 billion years the most abundant life on Earth is still bacteria, and they are simple. Cave fish lost their eyes; parasites shed whole organ systems. Selection favours what works here and now, not "more complex".' },
+              { id: 'b', label: t('stem.evolab.yes_every_species_is_moving_toward_an_', 'Yes — every species is moving toward an "ideal" form'), feedback: 'There is no ideal to aim at because the environment keeps changing; yesterday\'s best trait becomes tomorrow\'s liability (snowshoe hares moulting white before the snow arrives). Selection reacts to current conditions; it does not head somewhere.' },
               { id: 'c', label: t('stem.evolab.no_evolution_is_directionless_it_just_', 'No — evolution is directionless; it just optimizes for survival in current conditions'), correct: true },
-              { id: 'd', label: t('stem.evolab.only_intelligent_species_have_evolutio', 'Only intelligent species have evolutionary direction') }
+              { id: 'd', label: t('stem.evolab.only_intelligent_species_have_evolutio', 'Only intelligent species have evolutionary direction'), feedback: 'Intelligence gives a species no control over which mutations occur or which survive. Humans evolve by the same directionless process as everything else.' }
             ],
             explain: 'Evolution has NO goal. It does not aim for complexity, intelligence, or any particular outcome. It just changes populations to fit current local conditions. Lots of evolution is "regressive" — cave fish lose their eyes; whales lost their hind legs; humans lost most of our body hair and our ability to make vitamin C. None of those are "improvements" in any objective sense; they\'re just trade-offs that fit the environment. The phrase "more evolved" is misleading — every living species is equally "evolved" because every species has been evolving for the same 3.8 billion years.'
           },
           {
             q: '"Survival of the fittest" — what does fitness actually mean in evolution?',
             choices: [
-              { id: 'a', label: t('stem.evolab.the_strongest_individual_wins', 'The strongest individual wins') },
-              { id: 'b', label: t('stem.evolab.the_fastest_individual_wins', 'The fastest individual wins') },
+              { id: 'a', label: t('stem.evolab.the_strongest_individual_wins', 'The strongest individual wins'), feedback: 'A bird as strong as a gorilla that raises no chicks has an evolutionary fitness of zero. Fitness counts descendants, not muscle.' },
+              { id: 'b', label: t('stem.evolab.the_fastest_individual_wins', 'The fastest individual wins'), feedback: 'Speed only counts if it leads to more surviving offspring. Sloths and tortoises are among the most persistently successful lineages alive.' },
               { id: 'c', label: t('stem.evolab.the_individual_that_produces_the_most_', 'The individual that produces the most surviving offspring "wins"'), correct: true },
-              { id: 'd', label: t('stem.evolab.the_smartest_individual_wins', 'The smartest individual wins') }
+              { id: 'd', label: t('stem.evolab.the_smartest_individual_wins', 'The smartest individual wins'), feedback: 'Intelligence is one costly trait among many. Most of life\'s fitness champions, bacteria and insects, have no brain to speak of.' }
             ],
             explain: 'Evolutionary fitness = REPRODUCTIVE SUCCESS, not physical strength, speed, or intelligence. A small bird that successfully raises 8 chicks is "fitter" than a powerful bird that raises 0 chicks. This is why traits like nurturing behavior, communication, and cooperation evolve — they boost reproductive success even when they don\'t boost individual strength. Some of the most "successful" organisms by evolutionary metrics are bacteria and beetles — neither of which are particularly tough or smart.'
           },
           {
             q: 'A weightlifter develops big muscles. Will their children be born with bigger muscles?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_acquired_traits_are_passed_to_offs', 'Yes — acquired traits are passed to offspring') },
+              { id: 'a', label: t('stem.evolab.yes_acquired_traits_are_passed_to_offs', 'Yes — acquired traits are passed to offspring'), feedback: 'This is Lamarck\'s idea, tested and rejected: blacksmiths\' children were not born muscular, and Weismann cut the tails off mice for many generations and got normal-tailed mice. Muscle built in life does not rewrite the DNA in sperm or eggs.' },
               { id: 'b', label: t('stem.evolab.no_only_changes_to_dna_can_be_inherite', 'No — only changes to DNA can be inherited; muscles built in life don\'t change DNA'), correct: true },
-              { id: 'c', label: t('stem.evolab.sometimes_only_if_both_parents_lift_we', 'Sometimes — only if both parents lift weights') },
-              { id: 'd', label: t('stem.evolab.yes_but_only_after_many_generations_of', 'Yes — but only after many generations of weightlifting') }
+              { id: 'c', label: t('stem.evolab.sometimes_only_if_both_parents_lift_we', 'Sometimes — only if both parents lift weights'), feedback: 'Doubling an acquired trait does not make it heritable. Neither parent\'s training changes the gene copies they pass on.' },
+              { id: 'd', label: t('stem.evolab.yes_but_only_after_many_generations_of', 'Yes — but only after many generations of weightlifting'), feedback: 'Repetition across generations cannot write a habit into DNA. What can happen across generations is selection: if strong people out-reproduced others, genes favouring muscle would spread. That is selection on existing variation, not lifting causing inheritance.' }
             ],
             explain: 'Acquired characteristics — muscles from working out, calluses from labor, scars from injury, tan from sun — are NOT inherited. This idea (called Lamarckism) was a popular pre-Darwin theory but was disproven. The "giraffe stretched its neck reaching for leaves and passed the long neck to its kids" story is wrong. The actual Darwinian explanation: giraffe ancestors had varying neck lengths; longer-necked ones reached more food and had more offspring; over many generations the average neck length increased. Bodies don\'t teach DNA new tricks. (Tiny epigenetic exceptions exist but they don\'t accumulate over generations.)'
           },
           {
             q: '"If humans evolved from earlier apes, why are there still apes today?"',
             choices: [
-              { id: 'a', label: t('stem.evolab.modern_apes_are_old_human_ancestors_wh', 'Modern apes are old human ancestors who somehow survived') },
-              { id: 'b', label: t('stem.evolab.evolution_is_wrong_we_d_expect_the_anc', 'Evolution is wrong — we\'d expect the ancestors to be gone') },
+              { id: 'a', label: t('stem.evolab.modern_apes_are_old_human_ancestors_wh', 'Modern apes are old human ancestors who somehow survived'), feedback: 'Chimps and gorillas are not our ancestors; they are other descendants of a shared ancestor, and they have been evolving for as long as we have.' },
+              { id: 'b', label: t('stem.evolab.evolution_is_wrong_we_d_expect_the_anc', 'Evolution is wrong — we\'d expect the ancestors to be gone'), feedback: 'Evolution predicts branching, not replacement. When one population splits, both branches can persist: wolves are still here even though dogs evolved from wolf-like ancestors.' },
               { id: 'c', label: t('stem.evolab.lineages_branch_when_one_population_ev', 'Lineages branch — when one population evolves into something new, the original population can persist alongside as a separate species'), correct: true },
-              { id: 'd', label: t('stem.evolab.modern_apes_are_humans_who_haven_t_fin', 'Modern apes are humans who haven\'t finished evolving yet') }
+              { id: 'd', label: t('stem.evolab.modern_apes_are_humans_who_haven_t_fin', 'Modern apes are humans who haven\'t finished evolving yet'), feedback: 'Evolution has no finish line and no "human" endpoint. Chimpanzees are as fully evolved for their environment as we are for ours.' }
             ],
             explain: 'When a population splits and one branch evolves into a new species, the OTHER branch can persist unchanged. Imagine an ancestor population that geographically splits — some go to the savanna and become hominins, others stay in the forest and stay forest-apes. There\'s no rule that says the parent species must vanish when it gives rise to a daughter. Today\'s chimps and gorillas aren\'t our ancestors; they\'re our cousins, and they have their own evolutionary histories.'
           },
           {
             q: 'Are mutations always bad?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_mutations_always_damage_the_organi', 'Yes — mutations always damage the organism') },
+              { id: 'a', label: t('stem.evolab.yes_mutations_always_damage_the_organi', 'Yes — mutations always damage the organism'), feedback: 'Most mutations land in DNA that codes for nothing or swap a codon for a synonymous one; they do nothing. The antibiotic-resistance and adult lactose-tolerance mutations were beneficial to the organisms carrying them.' },
               { id: 'b', label: t('stem.evolab.no_most_mutations_are_neutral_some_are', 'No — most mutations are neutral; some are harmful; some are beneficial'), correct: true },
-              { id: 'c', label: t('stem.evolab.mutations_only_happen_in_cancer', 'Mutations only happen in cancer') },
-              { id: 'd', label: t('stem.evolab.mutations_are_always_beneficial', 'Mutations are always beneficial') }
+              { id: 'c', label: t('stem.evolab.mutations_only_happen_in_cancer', 'Mutations only happen in cancer'), feedback: 'Every human is born with roughly 60-70 new mutations that neither parent had. Cancer involves mutations, but so does every generation of every species.' },
+              { id: 'd', label: t('stem.evolab.mutations_are_always_beneficial', 'Mutations are always beneficial'), feedback: 'Many are harmful (sickle-cell disease, cystic fibrosis). Whether a mutation helps or hurts depends on context: one copy of the sickle-cell allele protects against malaria, two copies cause disease.' }
             ],
             explain: 'Most mutations are NEUTRAL — they happen in non-coding DNA or change a protein to a chemically equivalent one. A smaller number are harmful (the cell\'s repair machinery handles or kills these). A SMALL but crucial number are BENEFICIAL — improved enzyme efficiency, new immune resistance, lactase persistence in adults. Beneficial mutations are rare, but over millions of years they accumulate and drive evolution. The "all mutations are bad" idea ignores that beneficial ones, even if rare, are the raw material of all adaptation.'
           },
           {
             q: 'Does evolution explain how life originally began?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_evolution_covers_everything_from_n', 'Yes — evolution covers everything from non-life to humans') },
+              { id: 'a', label: t('stem.evolab.yes_evolution_covers_everything_from_n', 'Yes — evolution covers everything from non-life to humans'), feedback: 'Evolution needs reproducing populations with heritable variation. Before the first self-replicators existed there was nothing for selection to act on; how they arose is chemistry (abiogenesis), a separate research field.' },
               { id: 'b', label: t('stem.evolab.no_evolution_explains_how_life_diversi', 'No — evolution explains how life DIVERSIFIES once it exists; the origin of life itself is a separate field called abiogenesis'), correct: true },
-              { id: 'c', label: t('stem.evolab.yes_evolution_proved_life_came_from_no', 'Yes — evolution proved life came from non-life') },
-              { id: 'd', label: t('stem.evolab.no_evolution_disproves_the_origin_of_l', 'No — evolution disproves the origin of life') }
+              { id: 'c', label: t('stem.evolab.yes_evolution_proved_life_came_from_no', 'Yes — evolution proved life came from non-life'), feedback: 'Evolution neither proves nor requires any particular origin of life. Darwin\'s theory would stand whether life began in a warm pond, at a deep-sea vent, or arrived on a meteorite.' },
+              { id: 'd', label: t('stem.evolab.no_evolution_disproves_the_origin_of_l', 'No — evolution disproves the origin of life'), feedback: 'Evolution says nothing for or against any origin scenario. It starts once life exists and reproduces.' }
             ],
             explain: 'Evolution by natural selection explains how living populations CHANGE over time and DIVERSIFY into many species. It assumes life already exists. The question of how the FIRST self-replicating molecules arose from non-living chemistry is called abiogenesis or chemical evolution — a separate research area with its own evidence (RNA-world hypothesis, hydrothermal vent chemistry, etc.). Conflating the two is a common error: even if we never solved the origin of life, evolution would still be the correct explanation for the diversity of life we see today.'
           },
           {
             q: 'Is evolution a random process?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_every_aspect_of_evolution_is_purel', 'Yes — every aspect of evolution is purely random') },
+              { id: 'a', label: t('stem.evolab.yes_every_aspect_of_evolution_is_purel', 'Yes — every aspect of evolution is purely random'), feedback: 'If evolution were purely random, camouflage would get worse as often as better. In the Predator Vision lab the population moved consistently toward the background, because who survives depends on the trait. Selection is not random.' },
               { id: 'b', label: t('stem.evolab.no_mutations_are_random_but_selection_', 'No — mutations are random, but selection is non-random (it favors traits that boost survival/reproduction)'), correct: true },
-              { id: 'c', label: t('stem.evolab.no_evolution_is_fully_directed_by_an_e', 'No — evolution is fully directed by an external force') },
-              { id: 'd', label: t('stem.evolab.mutations_are_non_random_but_selection', 'Mutations are non-random but selection is random') }
+              { id: 'c', label: t('stem.evolab.no_evolution_is_fully_directed_by_an_e', 'No — evolution is fully directed by an external force'), feedback: 'No outside agent chooses. The "direction" comes from which variants happen to survive and reproduce in a given environment, and it reverses when the environment does.' },
+              { id: 'd', label: t('stem.evolab.mutations_are_non_random_but_selection', 'Mutations are non-random but selection is random'), feedback: 'Backwards. Mutations occur without regard to what would be useful (a moth cannot mutate darker on purpose); selection then non-randomly keeps the variants that work.' }
             ],
             explain: 'Evolution has TWO main forces, with very different randomness. (1) MUTATIONS are random — they happen by chance, regardless of whether they\'d be useful. (2) NATURAL SELECTION is non-random — it consistently favors mutations that boost survival/reproduction in the current environment. Calling evolution "random" is like calling a sieve "random" because some things fall through and others don\'t — but the sieve isn\'t random; it has holes of a specific size that filter consistently. The combination of random variation + non-random selection produces ordered adaptation.'
           },
           {
             q: 'Critics say "macroevolution" (one species becoming another) hasn\'t been observed, only small "microevolution." Is this true?',
             choices: [
-              { id: 'a', label: t('stem.evolab.true_macroevolution_is_unproven_and_im', 'True — macroevolution is unproven and impossible') },
+              { id: 'a', label: t('stem.evolab.true_macroevolution_is_unproven_and_im', 'True — macroevolution is unproven and impossible'), feedback: 'Speciation has been watched happening: apple maggot flies splitting between hawthorn and apple, the London Underground mosquito, new fly species in laboratory populations, and ring species like the greenish warbler. Small changes accumulating is how species form.' },
               { id: 'b', label: t('stem.evolab.false_speciation_has_been_directly_obs', 'False — speciation has been directly observed many times (apple maggot fly, London Underground mosquito, ring species, lab fruit flies, observed sympatric speciation in cichlid fish)'), correct: true },
-              { id: 'c', label: t('stem.evolab.true_but_evolution_is_still_real_for_s', 'True — but evolution is still real for small changes') },
-              { id: 'd', label: t('stem.evolab.false_but_only_on_geological_timescale', 'False — but only on geological timescales') }
+              { id: 'c', label: t('stem.evolab.true_but_evolution_is_still_real_for_s', 'True — but evolution is still real for small changes'), feedback: 'There is no barrier between "small" and "large" change; the same mechanisms (mutation, selection, drift) run for one generation or a million. Accepting inches while denying miles.' },
+              { id: 'd', label: t('stem.evolab.false_but_only_on_geological_timescale', 'False — but only on geological timescales'), feedback: 'Some speciation happens fast enough to watch within a human lifetime (see the examples in the correct answer). Geological time makes large divergence common, not necessary.' }
             ],
             explain: 'Speciation HAS been directly observed. Examples: the apple maggot fly Rhagoletis pomonella diverging from its hawthorn-eating ancestor in just ~150 years; the London Underground mosquito (Culex molestus) genetically distinct from above-ground populations; experimental Drosophila populations losing the ability to interbreed within decades; ring species like the Ensatina salamander complex; cichlid fish speciation observed in real time. "Macroevolution" is just enough microevolution accumulated over enough generations — it\'s the same process at different timescales. The microevolution / macroevolution distinction is mostly a rhetorical move, not a biological one.'
           },
           {
             q: 'Did giraffes get long necks because they "needed" to reach high leaves?',
             choices: [
-              { id: 'a', label: t('stem.evolab.yes_needs_drive_evolution', 'Yes — needs drive evolution') },
+              { id: 'a', label: t('stem.evolab.yes_needs_drive_evolution', 'Yes — needs drive evolution'), feedback: 'Needs do not generate mutations; a giraffe stretching all its life passes none of that to its calves. What happened is that giraffes with longer necks, by chance variation, left more offspring, so the average grew.' },
               { id: 'b', label: t('stem.evolab.no_selection_happens_because_individua', 'No — selection happens because individuals with longer necks happened to leave more offspring; no "need" causes mutations to appear'), correct: true },
-              { id: 'c', label: t('stem.evolab.yes_but_only_if_many_giraffes_need_it_', 'Yes — but only if many giraffes need it at once') },
-              { id: 'd', label: t('stem.evolab.no_giraffes_were_created_with_long_nec', 'No — giraffes were created with long necks') }
+              { id: 'c', label: t('stem.evolab.yes_but_only_if_many_giraffes_need_it_', 'Yes — but only if many giraffes need it at once'), feedback: 'How many individuals want a trait does not matter; wanting is not heritable. Only variation that already exists in the DNA can be selected.' },
+              { id: 'd', label: t('stem.evolab.no_giraffes_were_created_with_long_nec', 'No — giraffes were created with long necks'), feedback: 'Fossil giraffe relatives with short necks exist (Samotherium, for example), and a giraffe\'s neck has the same seven vertebrae as yours, stretched. The long neck arose gradually from short-necked ancestors.' }
             ],
             explain: 'Selection is RETROSPECTIVE, not prospective. Mutations happen randomly; they don\'t arise because they\'re needed. The standard giraffe story: ancestral giraffes had varying neck lengths (random variation). When food was scarce up high, longer-necked individuals reached more leaves, survived better, and had more offspring. Over many generations, average neck length grew. The mutations themselves weren\'t triggered by the giraffes "needing" them — they were already in the population before food got scarce. We say things like "evolved a long neck for reaching leaves" as shorthand, but the literal mechanism is descriptive, not goal-driven.'
           },
           {
             q: 'How fast can evolution happen?',
             choices: [
-              { id: 'a', label: t('stem.evolab.always_extremely_slow_millions_of_year', 'Always extremely slow — millions of years for any change') },
+              { id: 'a', label: t('stem.evolab.always_extremely_slow_millions_of_year', 'Always extremely slow — millions of years for any change'), feedback: 'The Grants measured a beak-depth shift in Galápagos finches across a single drought year. Bacteria evolve antibiotic resistance in weeks. Speed depends on selection strength and generation time.' },
               { id: 'b', label: t('stem.evolab.variable_strong_selection_can_produce_', 'Variable — strong selection can produce visible change in a single generation; weak selection takes thousands or millions of generations'), correct: true },
-              { id: 'c', label: t('stem.evolab.always_extremely_fast_within_a_single_', 'Always extremely fast — within a single lifetime') },
-              { id: 'd', label: t('stem.evolab.it_depends_only_on_the_species_not_the', 'It depends only on the species, not the environment') }
+              { id: 'c', label: t('stem.evolab.always_extremely_fast_within_a_single_', 'Always extremely fast — within a single lifetime'), feedback: 'Most evolutionary change is invisible on a human timescale; whale ancestors took roughly ten million years to move from land to sea. Fast cases are real but not the rule.' },
+              { id: 'd', label: t('stem.evolab.it_depends_only_on_the_species_not_the', 'It depends only on the species, not the environment'), feedback: 'The same species can evolve fast under strong pressure and stand still under weak pressure. Finch beaks jumped during the drought and drifted back in wet years.' }
             ],
             explain: 'Evolution can be FAST or SLOW depending on selection strength. The Galápagos finch beak shift in 1977 happened in ONE year. Antibiotic resistance in bacteria evolves in days. Industrial melanism in peppered moths shifted from light-dominated to dark-dominated in ~50 years. On the slow end: deep-sea organisms in stable environments may go millions of years with little change. The popular image of evolution as always slow comes from looking at very ancient fossil lineages — but observed evolution in living populations is often startlingly quick.'
           }
@@ -3161,8 +5154,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         });
 
         var ROUND_COUNT = QUESTIONS.length;
-        var idxState = useState(0), idx = idxState[0], setIdx = idxState[1];
-        var answersState = useState({}), answers = answersState[0], setAnswers = answersState[1];
+        // Resumable: answers and position live in toolData (like the two Sleuths),
+        // so leaving mid-quiz and coming back keeps the score. Hostile values clamp.
+        var savedIdx = (typeof d.misconIdx === 'number' && isFinite(d.misconIdx)) ? Math.floor(d.misconIdx) : 0;
+        var idxState = useState(savedIdx), idx = idxState[0], setIdxLocal = idxState[1];
+        var setIdx = function(i) { setIdxLocal(i); upd('misconIdx', i); };
+        var savedAnswers = (d.misconAnswers && typeof d.misconAnswers === 'object' && !Array.isArray(d.misconAnswers)) ? d.misconAnswers : {};
+        var answersState = useState(savedAnswers), answers = answersState[0], setAnswersLocal = answersState[1];
+        var setAnswers = function(next) { setAnswersLocal(next); upd('misconAnswers', next); };
         var revealState = useState(false), reveal = revealState[0], setReveal = revealState[1];
         // Review mode: when set, prev/next navigates only the missed questions
         // (a 5-of-12 score becomes a 7-question review pass). Resets when
@@ -3245,6 +5244,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               upd('misconQuizBest', correctCount);
               lsSet('evoLab.quizBest.v1', correctCount);
             }
+            markComplete('misconceptions', correctCount + ' of ' + ROUND_COUNT + ' misconceptions answered correctly.');
+            if (correctCount === ROUND_COUNT && !reviewMode) detectChallenge('misconceptions', 'perfect12', 'All 12 on a single pass', correctCount);
+            setRecord('misconceptions', 'bestScore', correctCount, { label: 'Best score', unit: ' / ' + ROUND_COUNT, better: 'max' });
           }
         }, [allDone, correctCount]); // eslint-disable-line
 
@@ -3271,7 +5273,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             // Question card
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-              h('h3', { className: 'text-base font-bold text-slate-800 mb-4' }, q.q),
+              h('div', { className: 'flex items-start justify-between gap-2 mb-4' },
+                h('h3', { className: 'text-base font-bold text-slate-800' }, q.q),
+                h(SpeakButton, { text: q.q + ' ' + q.choices.map(function(c) { return c.label; }).join('. ') })
+              ),
               h('div', { className: 'space-y-2' },
                 q.choices.map(function(c) {
                   var picked = chosenId === c.id;
@@ -3300,9 +5305,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 'aria-live': 'polite',
                 className: 'mt-4 p-4 rounded-lg border-2 ' + (isCorrect ? 'bg-emerald-50 border-emerald-400' : 'bg-rose-50 border-rose-400')
               },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-2 ' + (isCorrect ? 'text-emerald-800' : 'text-rose-800') },
-                  isCorrect ? '✓ Correct — here\'s why' : '✗ Why this matters'
+                h('div', { className: 'flex items-start justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider ' + (isCorrect ? 'text-emerald-800' : 'text-rose-800') },
+                    isCorrect ? '✓ Correct — here\'s why' : '✗ Why that answer feels right, and why it is not'
+                  ),
+                  h(SpeakButton, { text: (!isCorrect && chosenChoice && chosenChoice.feedback ? chosenChoice.feedback + ' ' : '') + q.explain })
                 ),
+                !isCorrect && chosenChoice && chosenChoice.feedback && h('p', { className: 'text-sm text-rose-900 leading-relaxed mb-2 pb-2 border-b border-rose-200' },
+                  h('strong', null, __alloT('stem.evolab.about_your_answer', 'About your answer: ')), chosenChoice.feedback),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.explain)
               )
             ),
@@ -3346,6 +5356,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 }, '↻ Restart All ' + ROUND_COUNT)
               )
             ),
+            h(ChallengeList, {
+              moduleId: 'misconceptions',
+              items: [{ id: 'perfect12', title: t('stem.evolab.ch_perfect12', 'Clean sweep: '), body: t('stem.evolab.ch_perfect12_body', 'All 12 correct on a single pass, no review round.'), record: { id: 'bestScore', label: t('stem.evolab.best_score', 'best score') } }]
+            }),
             h(TeacherNotes, {
               standards: ['HS-LS4-1', 'HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5'],
               questions: [
@@ -3384,6 +5398,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var doseStrengthState = useState(0.85), doseStrength = doseStrengthState[0], setDoseStrength = doseStrengthState[1];
         var mutRateState = useState(0.04), mutRate = mutRateState[0], setMutRate = mutRateState[1];
         var startResState = useState(0.02), startRes = startResState[0], setStartRes = startResState[1];
+        // Cost of resistance: each reproduction attempt by a cell with resistance r
+        // fails with probability cost × r. At 0 (default) resistance is free and
+        // never declines once the drug is gone; at 0.10 a fully resistant cell
+        // reproduces 10% less often, so resistance erodes without the drug.
+        var resCostState = useState(0), resCost = resCostState[0], setResCost = resCostState[1];
+        var resCostRef = useRef(resCost);
+        resCostRef.current = resCost;
+        // Dosing schedules drive the antibiotic toggle during Auto-Run so
+        // "complete the course" vs "stop early" is a reproducible comparison.
+        var SCHEDULES = {
+          manual: { label: t('stem.evolab.sched_manual', 'Manual toggle'), desc: t('stem.evolab.sched_manual_d', 'You switch the antibiotic on and off yourself.') },
+          continuous: { label: t('stem.evolab.sched_continuous', 'Continuous'), desc: t('stem.evolab.sched_continuous_d', 'Antibiotic on every tick.') },
+          course: { label: t('stem.evolab.sched_course', 'Complete course (15 on)'), desc: t('stem.evolab.sched_course_d', 'On for 15 ticks from when you start, then off.') },
+          early: { label: t('stem.evolab.sched_early', 'Stopped early (5 on)'), desc: t('stem.evolab.sched_early_d', 'On for 5 ticks, then off: the patient felt better and stopped.') },
+          pulsed: { label: t('stem.evolab.sched_pulsed', 'Pulsed (3 on / 3 off)'), desc: t('stem.evolab.sched_pulsed_d', 'Repeating 3 ticks on, 3 ticks off: missed doses.') }
+        };
+        var scheduleState = useState('manual'), schedule = scheduleState[0], setSchedule = scheduleState[1];
+        var scheduleRef = useRef(schedule);
+        scheduleRef.current = schedule;
+        var scheduleStartRef = useRef(0);
+        var scheduledOn = function(sched, sinceStart) {
+          if (sched === 'continuous') return true;
+          if (sched === 'course') return sinceStart < 15;
+          if (sched === 'early') return sinceStart < 5;
+          if (sched === 'pulsed') return (sinceStart % 6) < 3;
+          return null;
+        };
+        var chooseSchedule = function(id) {
+          setSchedule(id);
+          scheduleRef.current = id;
+          scheduleStartRef.current = tickRef.current;
+          if (id !== 'manual') {
+            var on = scheduledOn(id, 0);
+            antibioticRef.current = on; setAntibiotic(on);
+            announce(__alloFill(__alloT('stem.evolab.sr_schedule_chosen', 'Dosing schedule: {value1}. Press Auto-Run to follow it.'), { value1: SCHEDULES[id].label }));
+          }
+        };
+        var abMilestoneRef = useRef({ peakShare: 0, offStreak: 0, offAfterPeak: 0, onStreak: 0, offAfterTenOn: 0 });
         var tickState = useState(0), tick = tickState[0], setTick = tickState[1];
         var historyState = useState([]), history = historyState[0], setHistory = historyState[1];
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
@@ -3411,6 +5463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
         var initPopulation = function() {
           antibioticSessionRef.current = newCapstoneSourceRunKey('antibioticLab');
+          abMilestoneRef.current = { peakShare: 0, offStreak: 0, offAfterPeak: 0, onStreak: 0, offAfterTenOn: 0 };
           var pop = [];
           var initialResistanceSum = 0;
           for (var i = 0; i < POP_CAP; i++) {
@@ -3482,6 +5535,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           while (next.length < growthCap && survivors.length > 0 && attempts < 500) {
             attempts++;
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
+            // Cost of resistance: resistant parents reproduce less often.
+            if (resCostRef.current > 0 && Math.random() < resCostRef.current * parent.r) continue;
             // Offspring resistance: parent's value plus random small mutation.
             var newR = clamp(parent.r + randNormal(0, mut), 0, 1);
             next.push({
@@ -3503,6 +5558,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var newHist = historyRef.current.concat([{ tick: t, pop: next.length, resistant: resistantCount, anti: antiOn }]).slice(-80);
           historyRef.current = newHist; setHistory(newHist);
           if (next.length === 0) setAutoRun(false); // population extinct
+          checkAntibioticMilestones(t, next.length, resistantCount, antiOn);
+        };
+
+        // Completion at 20 ticks with some exposure; experiments from the record.
+        var checkAntibioticMilestones = function(t, popNow, resistantNow, antiOn) {
+          var ms = abMilestoneRef.current;
+          var share = popNow > 0 ? resistantNow / popNow : 0;
+          if (share > ms.peakShare) ms.peakShare = share;
+          if (antiOn) { ms.onStreak++; ms.offStreak = 0; }
+          else { ms.offStreak++; ms.onStreak = 0; }
+          if (!antiOn && ms.peakShare >= 0.9) ms.offAfterPeak++;
+          if (antiOn) ms.offAfterPeak = ms.offAfterPeak; // unchanged while on
+          if (t === 20 && exposureRef.current.ticks >= 1) markComplete('antibioticLab', '20 ticks, antibiotic active for ' + exposureRef.current.ticks + '; resistant share now ' + Math.round(share * 100) + '%.');
+          if (exposureRef.current.ticks >= 20 && share >= 0.8) detectExperiment('antibioticLab', 'watchResistance', 'Watch resistance evolve');
+          if (exposureRef.current.blocks >= 1 && exposureRef.current.ticks >= 10 && ms.offStreak >= 5 && popNow > 0) detectExperiment('antibioticLab', 'regimen', 'Follow the prescribed regimen');
+          if (ms.peakShare >= 0.9 && ms.offAfterPeak >= 15 && resCostRef.current > 0) detectExperiment('antibioticLab', 'stopUsing', 'Stop using it altogether');
+          if (popNow === 0 && mutRef.current === 0 && antiOn) detectExperiment('antibioticLab', 'mutation', 'Mutation rate matters');
+          if (popNow === 0 && antiOn) detectChallenge('antibioticLab', 'eradicate', 'Eradicate the infection', t);
+          if (ms.peakShare >= 0.9 && !antiOn && share < 0.2 && popNow > 0 && resCostRef.current > 0) detectChallenge('antibioticLab', 'rollback', 'Roll resistance back', share);
         };
 
         // Init synchronously to avoid empty-canvas flicker.
@@ -3513,6 +5587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var canvas = canvasRef.current;
           if (!canvas) return;
           var ctx = canvas.getContext('2d');
+          if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
             var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -3532,6 +5607,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             // Auto-run tick every 800ms when running.
             if (autoRunRef2.current && now - lastTickRef.current > 800) {
               lastTickRef.current = now;
+              // Follow the dosing schedule, if one is set, before stepping.
+              if (scheduleRef.current !== 'manual') {
+                var wantOn = scheduledOn(scheduleRef.current, tickRef.current - scheduleStartRef.current);
+                if (wantOn !== null && wantOn !== antibioticRef.current) { antibioticRef.current = wantOn; setAntibiotic(wantOn); }
+              }
               stepOne();
             }
             drawCanvas(ctx, canvas.width, canvas.height);
@@ -3579,6 +5659,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var pop = bacteriaRef.current;
         var resistantCount = pop.filter(function(b) { return b.r > 0.5; }).length;
         var resistantPct = pop.length > 0 ? Math.round((resistantCount / pop.length) * 100) : 0;
+        var antibioticOutcome = function() {
+          if (tick < 20) return null;
+          if (pop.length === 0) return 'extinct';
+          var share = resistantCount / pop.length;
+          return share >= 0.5 ? 'resistant' : 'unchanged';
+        };
         var antibioticSnapshot = function() {
           if (tick <= 0) return null;
           var baseline = antibioticBaselineRef.current;
@@ -3592,7 +5678,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: antibioticSessionRef.current,
             moduleLabel: 'Antibiotic Resistance Lab',
             comparison: {
-              designKey: 'start=' + baseline.configuredStart.toFixed(3) + '|ticks=' + tick + '|exposure=' + exposureRef.current.ticks + '|blocks=' + exposureRef.current.blocks + '|dose=' + doseStrength.toFixed(2) + '|variation=' + mutRate.toFixed(2),
+              designKey: 'start=' + baseline.configuredStart.toFixed(3) + '|ticks=' + tick + '|exposure=' + exposureRef.current.ticks + '|blocks=' + exposureRef.current.blocks + '|dose=' + doseStrength.toFixed(2) + '|variation=' + mutRate.toFixed(2) + '|cost=' + resCost.toFixed(2),
               designLabel: Math.round(baseline.configuredStart * 100) + '% starting-resistance setting, antibiotic active ' + exposureRef.current.ticks + '/' + tick + ' ticks, dose ' + doseStrength.toFixed(2) + ', variation σ = ' + mutRate.toFixed(2),
               primaryLabel: 'resistant-share change',
               primaryValue: pctDelta,
@@ -3605,7 +5691,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'exposureTicks', label: 'Antibiotic exposure ticks', value: exposureRef.current.ticks },
                 { id: 'exposureBlocks', label: 'Exposure blocks', value: exposureRef.current.blocks },
                 { id: 'doseStrength', label: 'Dose strength', value: Number(doseStrength.toFixed(2)) },
-                { id: 'traitVariation', label: 'Offspring resistance variation', value: Number(mutRate.toFixed(2)) }
+                { id: 'traitVariation', label: 'Offspring resistance variation', value: Number(mutRate.toFixed(2)) },
+                { id: 'resistanceCost', label: 'Cost of resistance', value: Number(resCost.toFixed(2)) },
+                { id: 'schedule', label: 'Dosing schedule', value: SCHEDULES[schedule].label }
               ]
             },
             baseline: 'Tick 0: ' + baseline.population + ' modeled bacteria; ' + baseline.resistantCount + '/' + baseline.population + ' (' + baseline.resistantPct.toFixed(1) + '%) above r > 0.50; mean resistance ' + baseline.meanResistance.toFixed(3) + '. Starting-resistance setting: ' + Math.round(baseline.configuredStart * 100) + '%.',
@@ -3688,12 +5776,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-fuchsia-600 to-pink-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '💊'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-antibioticLab' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.evolution_on_a_human_timescale', 'Evolution on a human timescale')),
                   h('p', { className: 'text-sm text-pink-50 mt-1' }, t('stem.evolab.antibiotic_model_limit', 'Apply an antibiotic in this simplified model and susceptible cells are more likely to die while more-resistant survivors reproduce. The continuous resistance trait, mutation rate, growth, and timing are exaggerated for visibility; real resistance can also involve horizontal gene transfer and many drug-specific mechanisms.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-antibioticLab', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'antibioticLab',
+              border: 'border-fuchsia-400', heading: 'text-fuchsia-800',
+              question: __alloFill(t('stem.evolab.predict_antibiotic_q', 'Starting with {value1}% resistant, if you apply the antibiotic and Auto-Run for 20 ticks, what will the dish look like?'), { value1: Math.round(startRes * 100) }),
+              context: 'start ' + Math.round(startRes * 100) + '%, dose ' + doseStrength.toFixed(2) + ', cost ' + resCost.toFixed(2),
+              options: [
+                { id: 'resistant', label: t('stem.evolab.predict_antibiotic_resistant', 'The population crashes, then regrows, mostly resistant.') },
+                { id: 'extinct', label: t('stem.evolab.predict_antibiotic_extinct', 'The antibiotic wipes the population out.') },
+                { id: 'unchanged', label: t('stem.evolab.predict_antibiotic_unchanged', 'The population shrinks but stays mostly susceptible.') }
+              ],
+              pendingHint: t('stem.evolab.predict_antibiotic_hint', 'Apply Antibiotic, then Auto-Run to tick 20.'),
+              locked: tick > 0,
+              outcomeId: antibioticOutcome(),
+              observedDetail: tick >= 20 ? 'Tick ' + tick + ': ' + pop.length + ' bacteria, ' + (pop.length ? Math.round((resistantCount / pop.length) * 100) : 0) + '% resistant; antibiotic active ' + exposureRef.current.ticks + ' of ' + tick + ' ticks.' : '',
+              explain: {
+                resistant: t('stem.evolab.explain_antibiotic_resistant', 'The drug killed susceptible cells preferentially, so the few resistant ones became most of the survivors and then most of the parents. Resistance did not appear because of the drug; it was already there (or arose by random mutation) and the drug removed everything else.'),
+                extinct: t('stem.evolab.explain_antibiotic_extinct', 'Nobody survived long enough to found a resistant lineage. That happens with zero starting resistance and low mutation, or a very strong dose on a small population. In real infections, extinction of the pathogen is the goal of a complete, correctly dosed course.'),
+                unchanged: t('stem.evolab.explain_antibiotic_unchanged', 'The population is still mostly susceptible. Either the drug was off for most of the run, the dose was low, or you have not reached tick 20 with the drug active. Selection needs exposure to act.')
+              }
+            }),
             // Stats
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h(StatCard, { label: t('stem.evolab.population', 'Population'), value: pop.length, color: 'text-fuchsia-700' }),
@@ -3732,7 +5841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white')
               }, autoRun ? '⏸ Stop Auto-Run' : '▶ Auto-Run'),
               h('button', {
-                onClick: function() { setAntibiotic(!antibiotic); },
+                onClick: function() { if (schedule !== 'manual') chooseSchedule('manual'); setAntibiotic(!antibiotic); },
                 'aria-pressed': antibiotic,
                 className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (antibiotic ? 'transition-colors bg-pink-700 hover:bg-pink-800 text-white' : 'transition-colors bg-pink-200 hover:bg-pink-300 text-pink-900')
               }, antibiotic ? '💊 Antibiotic ON' : '💊 Apply Antibiotic'),
@@ -3742,7 +5851,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               }, t('stem.evolab.reset_dish', '↺ Reset Dish'))
             ),
             // Sliders
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3' },
+              h(LabeledSlider, {
+                label: t('stem.evolab.cost_of_resistance', 'Cost of Resistance'),
+                value: resCost, min: 0, max: 0.1, step: 0.01,
+                onChange: function(v) { setResCost(v); },
+                valueText: resCost === 0 ? t('stem.evolab.no_cost_resistance_is_free', 'None: resistance is free') : Math.round(resCost * 100) + '% ' + t('stem.evolab.fewer_offspring_at_full_resistance', 'fewer offspring at full resistance'),
+                accent: 'accent-emerald-600',
+                hint: t('stem.evolab.cost_of_resistance_hint', 'Resistance often carries a growth cost (a pump or altered enzyme to maintain). With a cost, resistance erodes once the drug is gone; without one it stays. Real bacteria show both, and compensatory mutations can erase a cost over time.')
+              }),
               h(LabeledSlider, {
                 label: t('stem.evolab.antibiotic_dose', 'Antibiotic Dose'),
                 value: doseStrength, min: 0.3, max: 1.0, step: 0.05,
@@ -3768,6 +5885,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 hint: t('stem.evolab.antibiotic_starting_resistance_limit', 'Fraction of the initial modeled population above the resistance threshold. Outcomes vary stochastically; a small resistant minority can expand under selection but is not guaranteed to do so.')
               })
             ),
+            // Dosing schedule picker
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.dosing_schedule', '💊 Dosing schedule (followed during Auto-Run)')),
+                h('div', { className: 'text-xs text-slate-600' }, SCHEDULES[schedule].desc)
+              ),
+              h('div', { role: 'group', 'aria-label': t('stem.evolab.dosing_schedule_short', 'Dosing schedule'), className: 'grid grid-cols-1 sm:grid-cols-5 gap-2' },
+                Object.keys(SCHEDULES).map(function(id) {
+                  var active = schedule === id;
+                  return h('button', {
+                    key: id, type: 'button', 'aria-pressed': active,
+                    onClick: function() { chooseSchedule(id); },
+                    className: 'p-2 rounded-lg text-xs font-bold border-2 text-left transition-colors ' + (active ? 'border-fuchsia-500 bg-fuchsia-50 text-fuchsia-900' : 'border-slate-200 text-slate-700 hover:border-slate-400')
+                  }, SCHEDULES[id].label);
+                })
+              ),
+              schedule !== 'manual' && h('div', { className: 'mt-2 text-xs text-slate-700' }, __alloFill(t('stem.evolab.schedule_status', 'Schedule started at tick {value1}; antibiotic is {value2} now. Reset the dish and pick a different schedule to compare, then capture both.'), { value1: scheduleStartRef.current, value2: antibiotic ? 'ON' : 'OFF' }))
+            ),
             h(CapstoneCapture, {
               moduleId: 'antibioticLab',
               moduleLabel: 'Antibiotic Resistance Lab',
@@ -3777,17 +5912,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               emptyHint: autoRun ? 'Stop Auto-Run to freeze one consistent tick before capturing.' : 'Advance at least one tick before capturing a run.',
               getSnapshot: antibioticSnapshot
             }),
+            tick > 0 && h(CheckCard, {
+              moduleId: 'antibioticLab',
+              border: 'border-fuchsia-400', heading: 'text-fuchsia-800',
+              question: t('stem.evolab.check_antibiotic_q', 'Where did the resistant bacteria come from?'),
+              options: [
+                { id: 'learned', label: t('stem.evolab.check_antibiotic_learned', 'The bacteria sensed the antibiotic and built resistance to fight it.'), feedback: t('stem.evolab.check_antibiotic_learned_fb', 'Bacteria do not sense a drug and respond by redesigning themselves. Resistance in this model is a heritable number each cell is born with. The drug did not create resistant cells; it killed the susceptible ones and left the resistant minority to multiply.') },
+                { id: 'already', label: t('stem.evolab.check_antibiotic_already', 'A few were already resistant (or became so by random mutation); the drug killed the others, so the resistant ones took over.'), correct: true, feedback: t('stem.evolab.check_antibiotic_already_fb', 'Right. Set Starting Resistance to 0 and Mutation to 0 and the drug simply wins: with no variation there is nothing to select. Resistance spreads because selection acts on variation that exists first. The same logic ran the finch drought and your predator hunt.') },
+                { id: 'stronger', label: t('stem.evolab.check_antibiotic_stronger', 'The surviving bacteria got stronger each time they were exposed.'), feedback: t('stem.evolab.check_antibiotic_stronger_fb', 'No individual cell changed its resistance during its life; a cell\'s r is fixed and only its offspring vary (by ± σ, in both directions). What rose was the POPULATION\'s share of high-r cells, tick by tick, because low-r cells kept dying.') },
+                { id: 'dose', label: t('stem.evolab.check_antibiotic_dose', 'The dose was too weak to kill anything, so the population just grew.'), feedback: t('stem.evolab.check_antibiotic_dose_fb', 'Look at the population line: it crashed when the drug came on. The dish did not just grow; it was replaced. A dose that kills 85% of susceptible cells per tick is strong; what it cannot do is kill cells that carry high resistance.') }
+              ]
+            }),
             // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-fuchsia-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800 mb-3' }, t('stem.evolab.try_these_experiments_5', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.watch_resistance_evolve', 'Watch resistance evolve: ')), t('stem.evolab.reset_apply_antibiotic_auto_run_for_30', 'Reset. Apply Antibiotic. Auto-Run for ~30 ticks. Watch the population crash, then rebuild from the few resistant survivors. By tick 30 the dish is mostly red.')),
-                h('li', null, h('strong', null, t('stem.evolab.follow_prescribed_regimen', 'Follow the prescribed regimen: ')), t('stem.evolab.interrupted_exposure_model_limit', 'Apply Antibiotic for 10 ticks, turn it off, and watch survivors regrow. This demonstrates interrupted exposure inside this model, not a universal treatment rule. Real patients should take antibiotics exactly as prescribed and ask their clinician before changing duration.')),
-                h('li', null, h('strong', null, t('stem.evolab.dose_makes_the_poison', 'Dose makes the poison: ')), t('stem.evolab.compare_dose_without_clinical_generalization', 'Compare Dose = 0.4 with Dose = 1.0. In this model, stronger exposure often enriches resistant survivors faster, but it can also drive the small population extinct. Do not generalize this slider directly to clinical dosing.')),
-                h('li', null, h('strong', null, t('stem.evolab.stop_using_it_altogether', 'Stop using it altogether: ')), t('stem.evolab.after_resistance_reaches_100_turn_anti', 'After resistance reaches 100%, turn antibiotic OFF and Auto-Run. Watch resistance slowly decline if there\'s a "fitness cost" of being resistant — but in this model there isn\'t one, so resistance stays. (In real bacteria, fitness costs are sometimes present, sometimes not.)')),
-                h('li', null, h('strong', null, t('stem.evolab.mutation_rate_matters_2', 'Mutation rate matters: ')), t('stem.evolab.reset_set_mutation_rate_to_0_apply_ant', 'Reset. Set Mutation Rate to 0. Apply Antibiotic. Population goes extinct — no resistance can evolve from scratch. Now set Mutation Rate to 0.15. Resistance evolves nearly instantly. Real-world: bacteria with higher mutation rates evolve resistance faster.'))
-              )
-            ),
+            h(ExperimentList, {
+              moduleId: 'antibioticLab',
+              challenges: [
+                { id: 'eradicate', title: t('stem.evolab.ch_eradicate', 'Eradicate the infection: '), body: t('stem.evolab.ch_eradicate_body', 'Drive the dish to zero bacteria while the drug is on. Which settings make that possible, and which make it hopeless?') },
+                { id: 'rollback', title: t('stem.evolab.ch_rollback', 'Roll resistance back: '), body: t('stem.evolab.ch_rollback_body', 'Let resistance reach 90%, then bring it back under 20% with the drug OFF. Impossible at zero cost; try a cost of 0.05 or more and be patient.') }
+              ],
+              border: 'border-fuchsia-400', heading: 'text-fuchsia-800',
+              title: t('stem.evolab.try_these_experiments_5', '🧪 Try these experiments'),
+              items: [
+                { id: 'watchResistance', auto: true, title: t('stem.evolab.watch_resistance_evolve', 'Watch resistance evolve: '), body: t('stem.evolab.reset_apply_antibiotic_auto_run_for_30', 'Reset. Apply Antibiotic. Auto-Run for ~30 ticks. Watch the population crash, then rebuild from the few resistant survivors. By tick 30 the dish is mostly red.') },
+                { id: 'regimen', auto: true, title: t('stem.evolab.follow_prescribed_regimen', 'Follow the prescribed regimen: '), body: t('stem.evolab.interrupted_exposure_model_limit', 'Apply Antibiotic for 10 ticks, turn it off, and watch survivors regrow. This demonstrates interrupted exposure inside this model, not a universal treatment rule. Real patients should take antibiotics exactly as prescribed and ask their clinician before changing duration.') },
+                { id: 'dose', title: t('stem.evolab.dose_makes_the_poison', 'Dose makes the poison: '), body: t('stem.evolab.compare_dose_without_clinical_generalization', 'Compare Dose = 0.4 with Dose = 1.0. In this model, stronger exposure often enriches resistant survivors faster, but it can also drive the small population extinct. Do not generalize this slider directly to clinical dosing.') },
+                { id: 'stopUsing', auto: true, title: t('stem.evolab.stop_using_it_altogether', 'Stop using it altogether: '), body: t('stem.evolab.after_resistance_reaches_100_turn_anti', 'After resistance reaches ~100%, turn the antibiotic OFF and Auto-Run 15+ ticks with Cost of Resistance at 0: resistance stays. Reset, repeat with the cost at 0.05 or more: now resistance slowly erodes as susceptible cells out-reproduce resistant ones. Real bacteria show both patterns, and compensatory mutations can cancel a cost over time.') },
+                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_rate_matters_2', 'Mutation rate matters: '), body: t('stem.evolab.reset_set_mutation_rate_to_0_apply_ant', 'Reset. Set Mutation Rate to 0. Apply Antibiotic. Population goes extinct — no resistance can evolve from scratch. Now set Mutation Rate to 0.15. Resistance evolves nearly instantly. Real-world: bacteria with higher mutation rates evolve resistance faster.') }
+              ]
+            }),
             // Real-world callout
             h('div', { className: 'bg-fuchsia-50 border border-fuchsia-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800 mb-2' }, t('stem.evolab.real_world_public_health', '📖 Real-world public health')),
@@ -3807,6 +5959,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_seen_evolution_happening_in_day', 'You\'ve seen evolution happening in days. The Misconceptions Quiz tackles the deeper conceptual errors people still make about how all of this works.')
               )
             ),
+            h(KeyTerms, { moduleId: 'antibioticLab', heading: 'text-fuchsia-800' }),
+            h(FieldNote, { moduleId: 'antibioticLab', border: 'border-fuchsia-400', heading: 'text-fuchsia-800', prompt: t('stem.evolab.note_prompt_antibiotic', 'Where did the resistant bacteria come from, in your own words? What would you tell a friend who wants to stop a course early?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-4', 'HS-LS4-5', 'HS-LS2-7'],
               questions: [
@@ -3854,6 +6008,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var leftPopRef = useRef([]);
         var rightPopRef = useRef([]);
         var historyRef = useRef([]);
+        var speciationSessionRef = useRef('');
+        var speciationBaselineRef = useRef({ lMean: 0.5, rMean: 0.5, compat: 1 });
         var canvasRef = useRef(null);
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
@@ -3893,7 +6049,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
           leftPopRef.current = left;
           rightPopRef.current = right;
-          historyRef.current = [{ gen: 0, lMean: 0.5, rMean: 0.5, compat: 1.0 }];
+          // Realized starting means, not the nominal 0.5 (the capture record reports them).
+          var lSum = 0, rSum = 0;
+          for (var b0 = 0; b0 < POP_PER_SIDE; b0++) { lSum += left[b0].trait; rSum += right[b0].trait; }
+          speciationBaselineRef.current = { lMean: lSum / POP_PER_SIDE, rMean: rSum / POP_PER_SIDE, compat: 1.0 };
+          speciationSessionRef.current = newCapstoneSourceRunKey('speciation');
+          historyRef.current = [{ gen: 0, lMean: lSum / POP_PER_SIDE, rMean: rSum / POP_PER_SIDE, compat: 1.0 }];
           setGeneration(0);
           setSpeciated(false);
           setSpeciatedAt(null);
@@ -3964,6 +6125,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (historyRef.current.length > 80) historyRef.current.shift();
           generationRef.current = nextGen;
           setGeneration(nextGen);
+          if (nextGen === 20) markComplete('speciation', '20 generations; trait-overlap proxy ' + Math.round(compat * 100) + '%.');
+          if (compat < 0.3 && Math.abs(idealLeftRef.current - idealRightRef.current) >= 0.3) detectExperiment('speciation', 'defaultFast', 'Default fast divergence');
+          if (nextGen >= 30 && Math.abs(idealLeftRef.current - idealRightRef.current) < 0.05 && selStrengthRef.current > 0) detectExperiment('speciation', 'sameIdeal', 'Same ideal, no divergence');
+          if (nextGen >= 80 && selStrengthRef.current === 0) detectExperiment('speciation', 'driftOnly', 'Drift-only divergence');
+          if (compat < 0.3 && nextGen <= 20) detectChallenge('speciation', 'milestone20', 'Milestone in 20', nextGen);
+          if (nextGen >= 40 && Math.abs(idealLeftRef.current - idealRightRef.current) < 0.05 && compat > 0.7) detectChallenge('speciation', 'holdTogether', 'Same pressure, same shape', compat);
           // Detect speciation on threshold cross (compat < 0.3) — first time only.
           if (!speciated && compat < 0.3) {
             setSpeciated(true);
@@ -3983,6 +6150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var canvas = canvasRef.current;
           if (!canvas) return;
           var ctx = canvas.getContext('2d');
+          if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
             var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -4125,6 +6293,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           );
         };
 
+        var speciationSnapshot = function() {
+          var hist = historyRef.current;
+          if (generation <= 0 || hist.length < 2) return null;
+          var base = speciationBaselineRef.current;
+          var latestS = hist[hist.length - 1];
+          var gap = Math.abs(latestS.lMean - latestS.rMean);
+          return {
+            sourceRunKey: speciationSessionRef.current,
+            moduleLabel: 'Trait Divergence Model',
+            comparison: {
+              designKey: 'left=' + idealLeft.toFixed(2) + '|right=' + idealRight.toFixed(2) + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|generations=' + generation,
+              designLabel: 'ideals ' + idealLeft.toFixed(2) + ' / ' + idealRight.toFixed(2) + ', selection ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', ' + generation + ' generations',
+              primaryLabel: 'trait-overlap proxy',
+              primaryValue: latestS.compat,
+              primaryDisplay: Math.round(latestS.compat * 100) + '%',
+              precision: 2,
+              unit: '',
+              factors: [
+                { id: 'idealLeft', label: 'Left ideal', value: Number(idealLeft.toFixed(2)) },
+                { id: 'idealRight', label: 'Right ideal', value: Number(idealRight.toFixed(2)) },
+                { id: 'selectionStrength', label: 'Selection strength', value: Number(selStrength.toFixed(2)) },
+                { id: 'traitVariation', label: 'Offspring trait variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'generations', label: 'Generations', value: generation }
+              ]
+            },
+            baseline: 'Generation 0: two populations of ' + POP_PER_SIDE + ' from one source; means ' + base.lMean.toFixed(3) + ' (left) and ' + base.rMean.toFixed(3) + ' (right); overlap proxy 100%.',
+            settings: 'Left ideal ' + idealLeft.toFixed(2) + ', right ideal ' + idealRight.toFixed(2) + '; selection strength ' + selStrength.toFixed(2) + ' on both sides; offspring variation σ = ' + mutSize.toFixed(2) + '; no migration; model refills each population to 30 after each generation.',
+            outcome: 'Generation ' + generation + ': means ' + latestS.lMean.toFixed(3) + ' vs ' + latestS.rMean.toFixed(3) + ' (gap ' + gap.toFixed(3) + '); trait-overlap proxy ' + Math.round(latestS.compat * 100) + '%' + (speciated ? '; 30% teaching milestone reached at generation ' + speciatedAt : '') + '. The proxy is trait overlap, not a mating test.',
+            metrics: [
+              { label: 'Generations', value: String(generation) },
+              { label: 'Mean gap', value: gap.toFixed(3) },
+              { label: 'Overlap proxy', value: Math.round(latestS.compat * 100) + '%' },
+              { label: 'Milestone reached', value: speciated ? 'generation ' + speciatedAt : 'no' }
+            ]
+          };
+        };
+        var speciationOutcome = function() {
+          var hist = historyRef.current;
+          if (generation < 30 || hist.length < 2) return null;
+          var c = hist[hist.length - 1].compat;
+          if (c < 0.3) return 'diverge';
+          if (c < hist[0].compat - 0.15) return 'partial';
+          return 'same';
+        };
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🌗', title: t('stem.evolab.trait_divergence_model_2', 'Trait Divergence Model') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
@@ -4132,12 +6344,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-indigo-600 to-blue-800 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌗'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-speciation' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.from_separation_to_trait_divergence', 'From separation to trait divergence')),
                   h('p', { className: 'text-sm text-indigo-50 mt-1' }, t('stem.evolab.trait_divergence_milestone_limit', 'A geographic barrier splits an ancestral population. Each half evolves under its own pressure. This simplified model marks a teaching milestone when one trait\'s overlap proxy falls below 30%. Real speciation requires evidence of independently evolving lineages and reproductive isolation or other species criteria; this activity does not test mating.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-speciation', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'speciation',
+              border: 'border-indigo-400', heading: 'text-indigo-800',
+              question: __alloFill(t('stem.evolab.predict_speciation_q', 'With the left ideal at {value1} and the right at {value2} (selection {value3}), where will the trait-overlap proxy be after 30 generations?'), { value1: idealLeft.toFixed(2), value2: idealRight.toFixed(2), value3: selStrength.toFixed(2) }),
+              context: 'ideals ' + idealLeft.toFixed(2) + ' / ' + idealRight.toFixed(2) + ', selection ' + selStrength.toFixed(2),
+              options: [
+                { id: 'diverge', label: t('stem.evolab.predict_speciation_diverge', 'Below the 30% teaching milestone: the two trait distributions barely overlap.') },
+                { id: 'partial', label: t('stem.evolab.predict_speciation_partial', 'Lower than now, but still above 30%.') },
+                { id: 'same', label: t('stem.evolab.predict_speciation_same', 'About where it started: the two sides stay similar.') }
+              ],
+              pendingHint: t('stem.evolab.predict_speciation_hint', 'Auto-Run to generation 30 to test it.'),
+              locked: generation > 0,
+              outcomeId: speciationOutcome(),
+              observedDetail: generation >= 30 && historyRef.current.length ? 'Generation ' + generation + ': overlap proxy ' + Math.round(historyRef.current[historyRef.current.length - 1].compat * 100) + '%; means ' + historyRef.current[historyRef.current.length - 1].lMean.toFixed(2) + ' vs ' + historyRef.current[historyRef.current.length - 1].rMean.toFixed(2) + '.' : '',
+              explain: {
+                diverge: t('stem.evolab.explain_speciation_diverge', 'Each side was pulled toward its own ideal, and with no migration nothing pulled them back together, so the trait distributions separated until they barely overlap. Remember what the proxy is: trait overlap, not a mating test. Divergence like this is a precondition for speciation, not proof of it.'),
+                partial: t('stem.evolab.explain_speciation_partial', 'The sides separated but still overlap. Weaker selection, closer ideals, or high offspring variation all slow divergence. Given more generations they would likely keep separating; given migration (not modelled here) they might not.'),
+                same: t('stem.evolab.explain_speciation_same', 'Little divergence. With the same ideal on both sides, or selection near 0, only random sampling separates the means, and that is slow at N = 30 per side. Set the ideals apart and watch the difference.')
+              }
+            }),
             // Stats row
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h(StatCard, { label: t('stem.evolab.generation_3', 'Generation'), value: generation, color: 'text-indigo-700' }),
@@ -4223,16 +6456,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               }, t('stem.evolab.reset_3', '↺ Reset'))
             ),
             // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-indigo-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-indigo-800 mb-3' }, t('stem.evolab.try_these_experiments_6', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.default_fast_speciation', 'Default fast divergence: ')), t('stem.evolab.default_trait_divergence_experiment', 'Left ideal = 0.3, right = 0.7, selection = 0.7. Auto-run and note when the arbitrary overlap milestone is reached.')),
-                h('li', null, h('strong', null, t('stem.evolab.same_ideal_no_divergence', 'Same ideal, no divergence: ')), t('stem.evolab.same_optimum_trait_experiment', 'Set both ideals to 0.5. The trait means usually remain closer, although random sampling can still separate them.')),
-                h('li', null, h('strong', null, t('stem.evolab.drift_only_speciation', 'Drift-only divergence: ')), t('stem.evolab.drift_only_trait_divergence_limit', 'Set selection to 0 on both sides. Auto-run for 80+ generations. Random sampling can separate trait means, but the model cannot show whether reproductive isolation evolves.')),
-                h('li', null, h('strong', null, t('stem.evolab.reverse_a_near_speciation', 'Reverse trait divergence: ')), t('stem.evolab.reverse_trait_divergence_no_mixing', 'Run until the overlap proxy is about 40%, then set both ideals to 0.5. The means may converge independently; no migration or population mixing occurs in this model.')),
-                h('li', null, h('strong', null, t('stem.evolab.slow_vs_fast_speciation', 'Slow vs fast divergence: ')), t('stem.evolab.selection_strength_trait_divergence', 'Compare selection = 1.0 with 0.3. Stronger selection usually moves this modeled trait toward different optima faster; it does not by itself prove faster speciation.'))
-              )
-            ),
+            h(CapstoneCapture, {
+              moduleId: 'speciation',
+              moduleLabel: 'Trait Divergence Model',
+              sourceRunKey: speciationSessionRef.current,
+              ready: generation > 0 && !autoRun,
+              readyHint: 'Save both starting means, the two ideals, selection strength, and the trait-overlap proxy.',
+              emptyHint: autoRun ? 'Stop Auto-Run to freeze a consistent generation before capturing.' : 'Advance at least one generation before capturing a run.',
+              getSnapshot: speciationSnapshot
+            }),
+            generation > 0 && h(CheckCard, {
+              moduleId: 'speciation',
+              border: 'border-indigo-400', heading: 'text-indigo-800',
+              question: t('stem.evolab.check_speciation_q', 'The overlap proxy dropped below 30%. Are the two populations now two species?'),
+              options: [
+                { id: 'yes', label: t('stem.evolab.check_speciation_yes', 'Yes. Low trait overlap means they can no longer interbreed.'), feedback: t('stem.evolab.check_speciation_yes_fb', 'The proxy compares two TRAIT distributions; it never puts a left and a right individual together to see whether they mate or whether their offspring survive. Many real populations differ strongly in a trait and still interbreed freely. Reproductive isolation has to be tested, not inferred from one number.') },
+                { id: 'notnec', label: t('stem.evolab.check_speciation_notnec', 'Not necessarily. The model measures trait divergence; speciation needs reproductive isolation, which this model does not test.'), correct: true, feedback: t('stem.evolab.check_speciation_notnec_fb', 'Right. Divergence in isolation is how many speciation events START, and the 30% line is an arbitrary teaching milestone, not a species boundary. To call them species you would need evidence about mating, hybrid fertility, or gene flow if the barrier came down.') },
+                { id: 'barrier', label: t('stem.evolab.check_speciation_barrier', 'Yes. Once a barrier separates populations they are separate species by definition.'), feedback: t('stem.evolab.check_speciation_barrier_fb', 'Separation is geography, not biology. Populations split by a river or a road for centuries often remain one species and merge back when reconnected. What matters is whether they have changed in ways that stop them interbreeding.') },
+                { id: 'size', label: t('stem.evolab.check_speciation_size', 'No, because the two sides still have the same number of individuals.'), feedback: t('stem.evolab.check_speciation_size_fb', 'Population size has nothing to do with species status (the model refills each side to 30 anyway). The relevant question is reproductive compatibility, which the model leaves untested.') }
+              ]
+            }),
+            h(ExperimentList, {
+              moduleId: 'speciation',
+              challenges: [
+                { id: 'milestone20', title: t('stem.evolab.ch_milestone20', 'Milestone in 20: '), body: t('stem.evolab.ch_milestone20_body', 'Reach the 30% overlap milestone within 20 generations. Which of the three sliders gets you there fastest?') },
+                { id: 'holdTogether', title: t('stem.evolab.ch_holdtogether', 'Same pressure, same shape: '), body: t('stem.evolab.ch_holdtogether_body', 'With both ideals within 0.05 of each other, run 40 generations and keep the overlap proxy above 70%. Drift will try to separate them anyway.') }
+              ],
+              border: 'border-indigo-400', heading: 'text-indigo-800',
+              title: t('stem.evolab.try_these_experiments_6', '🧪 Try these experiments'),
+              items: [
+                { id: 'defaultFast', auto: true, title: t('stem.evolab.default_fast_speciation', 'Default fast divergence: '), body: t('stem.evolab.default_trait_divergence_experiment', 'Left ideal = 0.3, right = 0.7, selection = 0.7. Auto-run and note when the arbitrary overlap milestone is reached.') },
+                { id: 'sameIdeal', auto: true, title: t('stem.evolab.same_ideal_no_divergence', 'Same ideal, no divergence: '), body: t('stem.evolab.same_optimum_trait_experiment', 'Set both ideals to 0.5. The trait means usually remain closer, although random sampling can still separate them.') },
+                { id: 'driftOnly', auto: true, title: t('stem.evolab.drift_only_speciation', 'Drift-only divergence: '), body: t('stem.evolab.drift_only_trait_divergence_limit', 'Set selection to 0 on both sides. Auto-run for 80+ generations. Random sampling can separate trait means, but the model cannot show whether reproductive isolation evolves.') },
+                { id: 'reverse', title: t('stem.evolab.reverse_a_near_speciation', 'Reverse trait divergence: '), body: t('stem.evolab.reverse_trait_divergence_no_mixing', 'Run until the overlap proxy is about 40%, then set both ideals to 0.5. The means may converge independently; no migration or population mixing occurs in this model.') },
+                { id: 'slowVsFast', title: t('stem.evolab.slow_vs_fast_speciation', 'Slow vs fast divergence: '), body: t('stem.evolab.selection_strength_trait_divergence', 'Compare selection = 1.0 with 0.3. Stronger selection usually moves this modeled trait toward different optima faster; it does not by itself prove faster speciation.') }
+              ]
+            }),
             // Real-world examples
             h('div', { className: 'bg-indigo-50 border border-indigo-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-indigo-800 mb-2' }, t('stem.evolab.real_world_speciation_events', '📖 Real-world speciation events')),
@@ -4251,6 +6510,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_seen_one_species_become_two_now', 'You\'ve seen one species become two. Now scale up: the Phylogenetic Tree Builder shows the full branching pattern of life — every species today descended from a chain of speciation events going back billions of years.')
               )
             ),
+            h(KeyTerms, { moduleId: 'speciation', heading: 'text-indigo-800' }),
+            h(FieldNote, { moduleId: 'speciation', border: 'border-indigo-400', heading: 'text-indigo-800', prompt: t('stem.evolab.note_prompt_speciation', 'The overlap proxy fell. What would you need to observe in the field before calling these two species?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5'],
               questions: [
@@ -4436,15 +6697,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (historyRef.current.length > 80) historyRef.current.shift();
           generationRef.current = nextGen;
           setGeneration(nextGen);
+          var base = coevolutionBaselineRef.current;
+          if (nextGen === 20) markComplete('coevolution', '20 generations; predator speed ' + predMean.toFixed(2) + ', prey speed ' + preyMean.toFixed(2) + '.');
+          if (nextGen >= 30 && costRef.current && predMean - base.predatorMean > 0.2 && preyMean - base.preyMean > 0.2 && Math.abs(predMean - preyMean) < 0.2) detectExperiment('coevolution', 'armsRace', 'Watch the arms race');
+          if (nextGen >= 50 && !costRef.current && predMean >= 0.95 && preyMean >= 0.95) detectExperiment('coevolution', 'costOff', 'Cost OFF, runaway');
+          if (nextGen >= 20 && huntRef.current <= 0.2 && predMean < 0.45 && preyMean < 0.45) detectExperiment('coevolution', 'huntOff', 'Hunt pressure off');
+          var firstCapture = null;
+          for (var fc = 0; fc < historyRef.current.length; fc++) { if (typeof historyRef.current[fc].capture === 'number') { firstCapture = historyRef.current[fc].capture; break; } }
+          if (nextGen >= 40 && predMean - base.predatorMean >= 0.3 && preyMean - base.preyMean >= 0.3 && firstCapture != null && Math.abs(captures / POP_PER_SIDE - firstCapture) <= 0.1) detectChallenge('coevolution', 'redQueen', 'Run in place for 40 generations', captures / POP_PER_SIDE);
           if (!silent) announce(__alloFill(__alloT('stem.evolab.sr_generation_predator_mean_speed_prey_mean_captures', 'Generation {value1}. Predator mean speed {value2}, prey mean {value3}. {value4} captures.'), { value1: nextGen, value2: predMean.toFixed(2), value3: preyMean.toFixed(2), value4: captures }));
         };
 
         if (predRef.current.length === 0) initPopulations();
+        var firstCaptureRate = function() {
+          var hist = historyRef.current;
+          for (var i = 0; i < hist.length; i++) if (typeof hist[i].capture === 'number') return hist[i].capture;
+          return null;
+        };
+        var coevoOutcome = function() {
+          var hist = historyRef.current;
+          if (generation < 30 || hist.length < 2) return null;
+          var latestH = hist[hist.length - 1];
+          var base = coevolutionBaselineRef.current;
+          var rosePred = latestH.predMean - base.predatorMean, rosePrey = latestH.preyMean - base.preyMean;
+          var c0 = firstCaptureRate(), c1 = typeof latestH.capture === 'number' ? latestH.capture : null;
+          var dCapture = c0 == null || c1 == null ? 0 : c1 - c0;
+          if (dCapture >= 0.15) return 'pred';
+          if (dCapture <= -0.15) return 'prey';
+          if (rosePred < 0.15 && rosePrey < 0.15) return 'flat';
+          return 'both';
+        };
 
         useEffect(function() {
           var canvas = canvasRef.current;
           if (!canvas) return;
           var ctx = canvas.getContext('2d');
+          if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
             var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -4618,12 +6906,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-red-600 to-orange-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🐆'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-coevolution' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.the_red_queen_runs_faster_every_year', 'The Red Queen runs faster every year')),
                   h('p', { className: 'text-sm text-orange-50 mt-1' }, t('stem.evolab.now_here_you_see_it_takes_all_the_runn', '"Now, here, you see, it takes all the running you can do, to keep in the same place." — Lewis Carroll, Through the Looking-Glass. Predators select prey to be faster; prey selects predators to be faster. Both populations escalate together — neither getting ahead. Real examples: cheetahs vs gazelles, bats vs moths, plants vs caterpillars.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-coevolution', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'coevolution',
+              border: 'border-red-400', heading: 'text-red-800',
+              question: __alloFill(t('stem.evolab.predict_coevo_q', 'After 30 generations at hunt pressure {value1} with the speed cost {value2}, what will the two populations look like?'), { value1: huntPressure.toFixed(2), value2: costEnabled ? 'ON' : 'OFF' }),
+              context: 'hunt ' + huntPressure.toFixed(2) + ', cost ' + (costEnabled ? 'on' : 'off'),
+              options: [
+                { id: 'both', label: t('stem.evolab.predict_coevo_both', 'Both get faster; the capture rate stays about where it started.') },
+                { id: 'pred', label: t('stem.evolab.predict_coevo_pred', 'Predators pull ahead: the capture rate climbs.') },
+                { id: 'prey', label: t('stem.evolab.predict_coevo_prey', 'Prey pull ahead: the capture rate falls.') },
+                { id: 'flat', label: t('stem.evolab.predict_coevo_flat', 'Neither changes much.') }
+              ],
+              pendingHint: t('stem.evolab.predict_coevo_hint', 'Auto-Run to generation 30 to test it.'),
+              locked: generation > 0,
+              outcomeId: coevoOutcome(),
+              observedDetail: generation >= 30 && historyRef.current.length ? __alloFill(t('stem.evolab.coevo_observed_detail', 'Generation {value1}: predator speed {value2} → {value3}, prey speed {value4} → {value5}, capture rate {value6} → {value7}.'), { value1: generation, value2: coevolutionBaselineRef.current.predatorMean.toFixed(2), value3: historyRef.current[historyRef.current.length - 1].predMean.toFixed(2), value4: coevolutionBaselineRef.current.preyMean.toFixed(2), value5: historyRef.current[historyRef.current.length - 1].preyMean.toFixed(2), value6: firstCaptureRate() == null ? '—' : firstCaptureRate().toFixed(2), value7: (historyRef.current[historyRef.current.length - 1].capture || 0).toFixed(2) }) : '',
+              explain: {
+                both: t('stem.evolab.explain_coevo_both', 'The Red Queen: each side is the other\'s environment, so every gain is answered. Both populations are objectively faster than at generation 0 and neither catches or escapes more than before. Fitness is relative.'),
+                pred: t('stem.evolab.explain_coevo_pred', 'Predators gained on prey. That happens when prey are selected less harshly than predators for a while, or when a prey crash reseeded slow prey. Watch a few more generations: the prey usually claw back, because the ones caught are the slow ones.'),
+                prey: t('stem.evolab.explain_coevo_prey', 'Prey gained on predators, so captures fell. Hungry predators are now under strong selection for speed; expect the gap to close again. A permanent prey lead would starve the predators out.'),
+                flat: t('stem.evolab.explain_coevo_flat', 'Little changed. Low hunt pressure means few captures, so few slow prey die and few slow predators starve; with weak selection on both sides the arms race never starts.')
+              }
+            }),
             // Stats row
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h(StatCard, { label: t('stem.evolab.generation_4', 'Generation'), value: generation, color: 'text-orange-700' }),
@@ -4705,16 +7016,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               getSnapshot: coevolutionSnapshot
             }),
             // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-red-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-red-800 mb-3' }, t('stem.evolab.try_these_experiments_7', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.watch_the_arms_race', 'Watch the arms race: ')), t('stem.evolab.default_settings_auto_run_for_30_gener', 'Default settings, Auto-Run for 30 generations. Both lines climb together — neither gets meaningfully ahead. The GAP stays small even though absolute speeds rise dramatically.')),
-                h('li', null, h('strong', null, t('stem.evolab.cost_off_runaway', 'Cost OFF — runaway: ')), t('stem.evolab.disable_cost_of_speed_auto_run_for_50_', 'Disable Cost of Speed. Auto-Run for 50 generations. Speeds hit the simulation cap (1.0) and stay there. In nature, real costs (energy, predation visibility, joint stress) prevent this — which is why cheetahs aren\'t infinitely fast.')),
-                h('li', null, h('strong', null, t('stem.evolab.hunt_pressure_crash', 'Hunt pressure crash: ')), t('stem.evolab.reset_set_hunt_pressure_to_1_0_max_wit', 'Reset, set Hunt Pressure to 1.0 (max). Within ~10 generations one side often crashes — usually prey, since they\'re selected harder. Population recovery takes many generations.')),
-                h('li', null, h('strong', null, t('stem.evolab.hunt_pressure_off', 'Hunt pressure off: ')), t('stem.evolab.reset_set_hunt_pressure_to_0_2_low_bot', 'Reset, set Hunt Pressure to 0.2 (low). Both populations stay at low speed — without selection pressure, there\'s no arms race.')),
-                h('li', null, h('strong', null, t('stem.evolab.high_mutation', 'High mutation: ')), t('stem.evolab.set_mutation_size_to_0_12_high_the_dyn', 'Set Mutation Size to 0.12 (high). The dynamics get noisier but the arms race speeds up. Real mutation rates are lower; here exaggerated to be visible on the timescale of a classroom session.'))
-              )
-            ),
+            generation > 0 && h(CheckCard, {
+              moduleId: 'coevolution',
+              border: 'border-red-400', heading: 'text-red-800',
+              question: t('stem.evolab.check_coevo_q', 'Both speed lines climb together and the gap between them stays small. Who is winning?'),
+              options: [
+                { id: 'pred', label: t('stem.evolab.check_coevo_pred', 'The predators: they are faster than they were.'), feedback: t('stem.evolab.check_coevo_pred_fb', 'They are faster, but so is their food. Look at the capture rate rather than the speed: it stays roughly level, because every predator gain is matched by a prey gain. Being faster than your grandparents is not the same as catching more dinner.') },
+                { id: 'nobody', label: t('stem.evolab.check_coevo_nobody', 'Nobody: each side\'s improvement cancels the other\'s, so both run faster just to stay in place.'), correct: true, feedback: t('stem.evolab.check_coevo_nobody_fb', 'That is the Red Queen. Each population is the other\'s selective environment, so the target keeps moving. Fitness is relative: a predator only needs to be faster than the prey in front of it, and that prey is being selected to be faster too.') },
+                { id: 'prey', label: t('stem.evolab.check_coevo_prey', 'The prey: they keep escaping.'), feedback: t('stem.evolab.check_coevo_prey_fb', 'Prey escape at about the same rate they always did; the predators improved in step. If prey were truly winning the capture rate would fall toward zero and the predators would crash.') },
+                { id: 'worse', label: t('stem.evolab.check_coevo_worse', 'Both are getting worse, since neither has gained an advantage.'), feedback: t('stem.evolab.check_coevo_worse_fb', 'Both are objectively faster than at generation 0 (turn Cost of Speed on and you will see the real price of that). No advantage gained does not mean no change; it means the change was reciprocal.') }
+              ]
+            }),
+            h(ExperimentList, {
+              moduleId: 'coevolution',
+              challenges: [
+                { id: 'redQueen', title: t('stem.evolab.ch_redqueen', 'Run in place: '), body: t('stem.evolab.ch_redqueen_body', 'Over 40 generations, get both mean speeds up by 0.3 or more while the capture rate ends within 0.1 of where it started. Everyone faster, nobody ahead.') }
+              ],
+              border: 'border-red-400', heading: 'text-red-800',
+              title: t('stem.evolab.try_these_experiments_7', '🧪 Try these experiments'),
+              items: [
+                { id: 'armsRace', auto: true, title: t('stem.evolab.watch_the_arms_race', 'Watch the arms race: '), body: t('stem.evolab.default_settings_auto_run_for_30_gener', 'Default settings, Auto-Run for 30 generations. Both lines climb together — neither gets meaningfully ahead. The GAP stays small even though absolute speeds rise dramatically.') },
+                { id: 'costOff', auto: true, title: t('stem.evolab.cost_off_runaway', 'Cost OFF — runaway: '), body: t('stem.evolab.disable_cost_of_speed_auto_run_for_50_', 'Disable Cost of Speed. Auto-Run for 50 generations. Speeds hit the simulation cap (1.0) and stay there. In nature, real costs (energy, predation visibility, joint stress) prevent this — which is why cheetahs aren\'t infinitely fast.') },
+                { id: 'huntCrash', title: t('stem.evolab.hunt_pressure_crash', 'Hunt pressure crash: '), body: t('stem.evolab.reset_set_hunt_pressure_to_1_0_max_wit', 'Reset, set Hunt Pressure to 1.0 (max). Within ~10 generations one side often crashes — usually prey, since they\'re selected harder. Population recovery takes many generations.') },
+                { id: 'huntOff', auto: true, title: t('stem.evolab.hunt_pressure_off', 'Hunt pressure off: '), body: t('stem.evolab.reset_set_hunt_pressure_to_0_2_low_bot', 'Reset, set Hunt Pressure to 0.2 (low). Both populations stay at low speed — without selection pressure, there\'s no arms race.') },
+                { id: 'highMutation', title: t('stem.evolab.high_mutation', 'High mutation: '), body: t('stem.evolab.set_mutation_size_to_0_12_high_the_dyn', 'Set Mutation Size to 0.12 (high). The dynamics get noisier but the arms race speeds up. Real mutation rates are lower; here exaggerated to be visible on the timescale of a classroom session.') }
+              ]
+            }),
             // Real-world examples
             h('div', { className: 'bg-red-50 border border-red-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-red-800 mb-2' }, t('stem.evolab.real_world_coevolution', '📖 Real-world coevolution')),
@@ -4733,6 +7060,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_just_saw_two_species_evolving_agai', 'You just saw two species evolving against each other. The Antibiotic Resistance Lab shows the SAME dynamic on a much faster timescale: bacteria vs antibiotics is just predator-prey at the molecular level.')
               )
             ),
+            h(KeyTerms, { moduleId: 'coevolution', heading: 'text-red-800' }),
+            h(FieldNote, { moduleId: 'coevolution', border: 'border-red-400', heading: 'text-red-800', prompt: t('stem.evolab.note_prompt_coevo', 'Who was winning the arms race at the end, and what evidence on the chart says so? Where else does "run to stay in place" apply?') }),
             h(TeacherNotes, {
               standards: ['HS-LS2-7', 'HS-LS4-2', 'HS-LS4-5'],
               questions: [
@@ -4762,6 +7091,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // McClintock (transposons, 30-year delay before Nobel), Franklin (DNA).
       function DiscoveryTimeline() {
         var openState = useState(null), open = openState[0], setOpen = openState[1];
+        var openedState = useState([]), openedIds = openedState[0], setOpenedIds = openedState[1];
+        // "Who came first?" — six milestones to put in order. Years hidden until checked.
+        var SEQ_IDS = ['linnaeus', 'lamarck', 'darwinwallace', 'mendel', 'rediscovery', 'franklinwatsoncrick'];
+        var seqState = useState(function() { return shuffle(SEQ_IDS); }), seqOrder = seqState[0], setSeqOrder = seqState[1];
+        var seqCheckedState = useState(false), seqChecked = seqCheckedState[0], setSeqChecked = seqCheckedState[1];
+        var seqAttemptsState = useState(0), seqAttempts = seqAttemptsState[0], setSeqAttempts = seqAttemptsState[1];
+        var moveSeq = function(idx, dir) {
+          var j = idx + dir;
+          if (j < 0 || j >= seqOrder.length) return;
+          var next = seqOrder.slice();
+          var tmp = next[idx]; next[idx] = next[j]; next[j] = tmp;
+          setSeqOrder(next);
+          setSeqChecked(false);
+        };
+        var openEntry = function(entryId, isOpen) {
+          setOpen(isOpen ? null : entryId);
+          if (!isOpen && openedIds.indexOf(entryId) === -1) {
+            var nextOpened = openedIds.concat([entryId]);
+            setOpenedIds(nextOpened);
+            if (nextOpened.length >= 5) markComplete('discoveryTimeline', 'Read ' + nextOpened.length + ' entries on the discovery timeline.');
+          }
+        };
 
         var ENTRIES = [
           {
@@ -4835,11 +7186,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             tag: 'molecular'
           },
           {
-            id: 'kimura', year: 1968, name: t('stem.evolab.motoo_kimura', 'Motoo Kimura'), portrait: '🎲', country: 'Japan',
-            headline: 'Neutral theory — most molecular evolution is drift',
-            short: 'Kimura\'s neutral theory: at the molecular level, most evolutionary change is due to genetic drift acting on neutral (or nearly neutral) mutations — not selection. Selection still drives adaptive change, but most variation we SEE in DNA sequences is selection-blind random sampling.',
-            why: 'A genuine paradigm shift. Until 1968, most biologists assumed everything was under selection. Kimura\'s math forced the field to accept that random drift is the dominant force at the molecular level — making the Genetic Drift module in this tool not a quirky exception but a major mechanism.',
-            tag: 'molecular'
+            id: 'kettlewell', year: 1955, name: t('stem.evolab.bernard_kettlewell', 'Bernard Kettlewell'), portrait: '🦋', country: 'England',
+            headline: 'Bird predation on peppered moths, measured in the field',
+            short: 'Released marked light and dark peppered moths into a soot-blackened wood near Birmingham and an unpolluted wood in Dorset, then recaptured survivors. In each wood, birds took far more of the mismatched form. The first field experiment linking a colour shift in a wild population to a measured selection pressure.',
+            why: 'The methods were criticised later (release times, moths placed on trunks), so Michael Majerus repeated the work over seven years with natural resting positions and predation filmed; the results, published in 2012, confirmed bird predation as the agent. Science checking itself is part of the story. The Predator Vision lab is Kettlewell\'s experiment with you as the bird.',
+            tag: 'observed'
           },
           {
             id: 'margulis', year: 1967, name: t('stem.evolab.lynn_margulis', 'Lynn Margulis'), portrait: '🦠', country: 'USA',
@@ -4849,11 +7200,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             tag: 'molecular'
           },
           {
+            id: 'kimura', year: 1968, name: t('stem.evolab.motoo_kimura', 'Motoo Kimura'), portrait: '🎲', country: 'Japan',
+            headline: 'Neutral theory — most molecular evolution is drift',
+            short: 'Kimura\'s neutral theory: at the molecular level, most evolutionary change is due to genetic drift acting on neutral (or nearly neutral) mutations — not selection. Selection still drives adaptive change, but most variation we SEE in DNA sequences is selection-blind random sampling.',
+            why: 'A genuine paradigm shift. Until 1968, most biologists assumed everything was under selection. Kimura\'s math forced the field to accept that random drift is the dominant force at the molecular level — making the Genetic Drift module in this tool not a quirky exception but a major mechanism.',
+            tag: 'molecular'
+          },
+          {
             id: 'punkeq', year: 1972, name: t('stem.evolab.eldredge_gould', 'Eldredge & Gould'), portrait: '🪨', country: 'USA',
             headline: 'Punctuated equilibrium',
             short: 'Eldredge and Gould proposed that the fossil record shows long periods of stasis (no change) interrupted by rapid bursts of speciation — not the slow continuous gradualism Darwin emphasized. Big debate ensued.',
             why: 'Often misrepresented as "anti-Darwinian" — it isn\'t. Punctuated equilibrium just refines the timing: evolution happens, but in spurts, not at constant rate. Most working evolutionary biologists today accept some role for both gradualism and punctuated change. The debate was a healthy correction within the Modern Synthesis, not a refutation.',
             tag: 'synthesis'
+          },
+          {
+            id: 'grants', year: 1981, name: t('stem.evolab.boag_and_the_grants', 'Peter Boag, Peter & Rosemary Grant'), portrait: '🐦', country: 'Galápagos',
+            headline: 'Natural selection measured bird by bird',
+            short: 'On the islet of Daphne Major the Grants\' team tagged and measured every medium ground finch. The 1977 drought killed most of them; survivors had measurably deeper beaks than the pre-drought population, and their chicks inherited the difference (Boag & Grant, Science 1981).',
+            why: 'Turned natural selection from an inference into a measurement, in a wild vertebrate, within one generation. Four decades of follow-up showed selection reversing when the rains returned and, later, a new lineage founded by a single immigrant male. The Beak Lab overlays this record.',
+            tag: 'observed'
+          },
+          {
+            id: 'lenski', year: 1988, name: t('stem.evolab.richard_lenski', 'Richard Lenski'), portrait: '🧫', country: 'USA',
+            headline: 'Evolution watched for more than 75,000 generations',
+            short: 'Twelve flasks of E. coli, started from a single ancestor in 1988 and transferred to fresh medium every day since, with samples frozen every 500 generations. Fitness rose in every line, and around generation 31,500 one line evolved the ability to eat citrate, which E. coli normally cannot do (reported 2008).',
+            why: 'A frozen record that can be thawed and replayed makes chance testable: the citrate line needed earlier mutations that were only enabling in hindsight, and replays from before them almost never produce it. The cleanest demonstration that populations adapt by variation and selection with no goal. The Antibiotic lab is a two-minute version.',
+            tag: 'observed'
           },
           {
             id: 'genomics', year: 2001, name: t('stem.evolab.human_genome_project', 'Human Genome Project'), portrait: '🧬', country: 'International',
@@ -4876,7 +7248,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           genetics: { label: t('stem.evolab.genetics', 'Genetics'), color: 'bg-violet-200 text-violet-800' },
           synthesis: { label: t('stem.evolab.synthesis', 'Synthesis'), color: 'bg-emerald-200 text-emerald-800' },
           molecular: { label: t('stem.evolab.molecular', 'Molecular'), color: 'bg-cyan-200 text-cyan-800' },
-          modern: { label: t('stem.evolab.modern', 'Modern'), color: 'bg-rose-200 text-rose-800' }
+          modern: { label: t('stem.evolab.modern', 'Modern'), color: 'bg-rose-200 text-rose-800' },
+          observed: { label: t('stem.evolab.observed_evolution', 'Observed evolution'), color: 'bg-lime-200 text-lime-900' }
         };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
@@ -4886,12 +7259,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-stone-700 to-stone-900 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-5xl' }, '📜'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-discoveryTimeline' },
                   h('h2', { className: 'text-2xl font-black' }, t('stem.evolab.how_we_learned_what_we_know_2', 'How we learned what we know')),
                   h('p', { className: 'text-sm text-stone-200 mt-1' }, t('stem.evolab.290_years_of_figuring_out_evolution_da', '290 years of figuring out evolution. Darwin gets the textbook spotlight, but he didn\'t do this alone — and many key figures (Wallace, Mendel, Margulis, McClintock, Franklin) were ignored or pushed aside in their time. Click any card to read more.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-discoveryTimeline', className: 'ml-auto' })
               )
             ),
+            // Sequencing game
+            (function() {
+              var byId = {};
+              ENTRIES.forEach(function(e) { byId[e.id] = e; });
+              var sortedYears = SEQ_IDS.map(function(id) { return byId[id].year; }).sort(function(x, y) { return x - y; });
+              var correctCount = seqOrder.filter(function(id, i) { return byId[id].year === sortedYears[i]; }).length;
+              var allRight = seqChecked && correctCount === seqOrder.length;
+              var checkOrder = function() {
+                var n = seqOrder.filter(function(id, i) { return byId[id].year === sortedYears[i]; }).length;
+                var attempts = seqAttempts + 1;
+                setSeqAttempts(attempts);
+                setSeqChecked(true);
+                announce(__alloFill(__alloT('stem.evolab.sr_sequence_checked', 'Order checked: {value1} of {value2} in the right place.'), { value1: n, value2: seqOrder.length }));
+                if (n === seqOrder.length) {
+                  markComplete('discoveryTimeline', 'Sequenced six milestones correctly in ' + attempts + ' attempt' + (attempts === 1 ? '' : 's') + '.');
+                  setRecord('discoveryTimeline', 'fewestAttempts', attempts, { label: 'Fewest attempts to sequence', unit: '', better: 'min' });
+                  if (attempts === 1) detectChallenge('discoveryTimeline', 'perfectOrder', 'Perfect order, first try', attempts);
+                }
+              };
+              return h('div', { className: 'bg-white rounded-2xl border-2 border-violet-300 shadow-sm p-4' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-2 mb-2' },
+                  h('div', null,
+                    h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-violet-800' }, t('stem.evolab.who_came_first', '🧩 Who came first?')),
+                    h('p', { className: 'text-sm text-slate-800 mt-1' }, t('stem.evolab.sequence_instructions', 'Put these six milestones in order, earliest at the top, then check. Years stay hidden until you do.'))
+                  ),
+                  h(SpeakButton, { text: t('stem.evolab.sequence_instructions', 'Put these six milestones in order, earliest at the top, then check. Years stay hidden until you do.') + ' ' + seqOrder.map(function(id, i) { return (i + 1) + '. ' + byId[id].name + ': ' + byId[id].headline; }).join('. ') })
+                ),
+                h('ol', { className: 'space-y-1' }, seqOrder.map(function(id, i) {
+                  var e = byId[id];
+                  var right = seqChecked && e.year === sortedYears[i];
+                  var wrong = seqChecked && !right;
+                  return h('li', { key: id, className: 'flex items-center gap-2 rounded-lg border-2 p-2 ' + (right ? 'bg-emerald-50 border-emerald-400' : wrong ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200') },
+                    h('span', { className: 'w-6 text-center font-black text-slate-700' }, i + 1),
+                    h('span', { className: 'text-xl', 'aria-hidden': true }, e.portrait),
+                    h('div', { className: 'flex-1 min-w-0 text-sm' },
+                      h('div', { className: 'font-bold text-slate-800' }, e.name, seqChecked ? h('span', { className: 'ml-2 text-xs font-bold ' + (right ? 'text-emerald-800' : 'text-rose-800') }, e.year + (right ? ' ✓' : ' ✗')) : null),
+                      h('div', { className: 'text-xs text-slate-600 truncate' }, e.headline)
+                    ),
+                    h('div', { className: 'flex gap-1' },
+                      h('button', { type: 'button', disabled: i === 0, onClick: function() { moveSeq(i, -1); }, 'aria-label': __alloFill(__alloT('stem.evolab.a11y_move_up', 'Move {value1} up'), { value1: e.name }), className: 'h-8 w-8 rounded-lg bg-white border border-slate-300 text-slate-700 font-black disabled:opacity-40 hover:bg-slate-100' }, '▲'),
+                      h('button', { type: 'button', disabled: i === seqOrder.length - 1, onClick: function() { moveSeq(i, 1); }, 'aria-label': __alloFill(__alloT('stem.evolab.a11y_move_down', 'Move {value1} down'), { value1: e.name }), className: 'h-8 w-8 rounded-lg bg-white border border-slate-300 text-slate-700 font-black disabled:opacity-40 hover:bg-slate-100' }, '▼')
+                    )
+                  );
+                })),
+                h('div', { className: 'mt-3 flex flex-wrap items-center gap-3' },
+                  h('button', { type: 'button', onClick: checkOrder, className: 'px-4 py-2 rounded-xl font-bold bg-violet-700 text-white hover:bg-violet-800 shadow' }, t('stem.evolab.check_order', '✓ Check order')),
+                  h('button', { type: 'button', onClick: function() { setSeqOrder(shuffle(SEQ_IDS)); setSeqChecked(false); setSeqAttempts(0); }, className: 'px-4 py-2 rounded-xl font-bold bg-slate-200 text-slate-800 hover:bg-slate-300' }, t('stem.evolab.shuffle_again', '🔀 Shuffle again')),
+                  seqChecked && h('div', { role: 'status', className: 'text-sm font-bold ' + (allRight ? 'text-emerald-800' : 'text-amber-800') }, allRight ? __alloFill(t('stem.evolab.sequence_all_right', 'All six in order after {value1} attempt{value2}.'), { value1: seqAttempts, value2: seqAttempts === 1 ? '' : 's' }) : __alloFill(t('stem.evolab.sequence_partial', '{value1} of 6 in the right place. Swap the ✗ rows and check again.'), { value1: correctCount }))
+                ),
+                allRight && h('p', { className: 'text-xs text-slate-700 mt-2' }, t('stem.evolab.sequence_takeaway', 'Notice the gap: Mendel published in 1866, eight years after Darwin and Wallace, and nobody connected the two until 1900. The mechanism of inheritance sat unread while the theory that needed it spread.'))
+              );
+            })(),
+            h(ChallengeList, {
+              moduleId: 'discoveryTimeline',
+              items: [{ id: 'perfectOrder', title: t('stem.evolab.ch_perfectorder', 'Perfect order, first try: '), body: t('stem.evolab.ch_perfectorder_body', 'Sequence all six milestones correctly on your first check after a shuffle.'), record: { id: 'fewestAttempts', label: t('stem.evolab.fewest_attempts', 'fewest attempts') } }]
+            }),
             // Timeline
             h('div', { className: 'space-y-3 relative' },
               // Vertical line down the left
@@ -4910,7 +7340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   }, entry.portrait),
                   // Card
                   h('button', {
-                    onClick: function() { setOpen(isOpen ? null : entry.id); },
+                    onClick: function() { openEntry(entry.id, isOpen); },
                     'aria-expanded': isOpen,
                     'aria-label': entry.year + ': ' + entry.name + ' — ' + entry.headline + (isOpen ? ' (expanded)' : ' (click to expand)'),
                     className: 'w-full text-left bg-white rounded-xl shadow border-2 ' + (isOpen ? 'border-stone-500' : 'transition-colors border-slate-200 hover:border-stone-300') + ' p-4 transition-colors'
@@ -4958,6 +7388,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               )
             ),
             // Teacher Notes
+            h('div', { className: 'text-xs text-slate-600' }, __alloFill(t('stem.evolab.timeline_entries_read', 'Entries read: {value1} (open five to complete this module)'), { value1: openedIds.length })),
+            h(CheckCard, {
+              moduleId: 'discoveryTimeline',
+              border: 'border-stone-400', heading: 'text-stone-800',
+              question: t('stem.evolab.check_timeline_q', 'Darwin published in 1859 without knowing how traits were inherited. Does that weaken the theory of evolution?'),
+              options: [
+                { id: 'complete', label: t('stem.evolab.check_timeline_complete', 'Yes. A theory has to be complete when it is first proposed.'), feedback: t('stem.evolab.check_timeline_complete_fb', 'No scientific theory arrives complete. Newton had gravity without knowing what carried it; Darwin had selection without knowing what carried heredity. Theories are judged by whether new evidence keeps fitting, and for evolution it has, for 165 years.') },
+                { id: 'converged', label: t('stem.evolab.check_timeline_converged', 'No. Mendel\'s genetics (rediscovered in 1900), then DNA, supplied the mechanism Darwin lacked, and independent lines of evidence converged on the same picture.'), correct: true, feedback: t('stem.evolab.check_timeline_converged_fb', 'Right. The Modern Synthesis of the 1930s and 40s joined Darwin\'s selection to Mendel\'s particles of inheritance; Watson, Crick and Franklin\'s DNA structure explained how those particles copy and mutate. A gap that later evidence FILLS is a strength of a theory, not a weakness.') },
+                { id: 'replaced', label: t('stem.evolab.check_timeline_replaced', 'Yes. Darwin\'s theory has since been replaced by genetics.'), feedback: t('stem.evolab.check_timeline_replaced_fb', 'Genetics did not replace natural selection; it explained the inheritance step that selection depends on. Modern evolutionary biology is Darwin plus Mendel plus molecular biology, layered, not swapped.') },
+                { id: 'secret', label: t('stem.evolab.check_timeline_secret', 'No, because Darwin already knew about DNA.'), feedback: t('stem.evolab.check_timeline_secret_fb', 'DNA\'s structure was worked out in 1953, 71 years after Darwin died. He proposed his own (wrong) heredity idea, pangenesis. The theory survived his mistake because its core claim did not depend on it.') }
+              ]
+            }),
+            h(KeyTerms, { moduleId: 'discoveryTimeline', heading: 'text-stone-800' }),
+            h(FieldNote, { moduleId: 'discoveryTimeline', border: 'border-stone-400', heading: 'text-stone-800', prompt: t('stem.evolab.note_prompt_timeline', 'Which discovery was ignored the longest, and what changed so people finally listened? Who on this timeline had you never heard of?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-1', 'HS-LS4-2', 'NOS (Nature of Science)'],
               questions: [
@@ -4996,6 +7440,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
         var extinctState = useState(false), extinct = extinctState[0], setExtinct = extinctState[1];
         var mutSizeState = useState(0.04), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
+        // Warming trial: the RATE of change as a number the student sets, applied
+        // by Auto-Run over a fixed 0.50 → 0.90 rise so trials are comparable.
+        var TRIAL_START = 0.5, TRIAL_TARGET = 0.9;
+        var warmRateState = useState(0.01), warmRate = warmRateState[0], setWarmRate = warmRateState[1];
+        var trialState = useState(null), trial = trialState[0], setTrial = trialState[1];
+        var trialsLogRef = useRef([]);    // finished trials: { rate, status, gens, mutSize }
+        var climateSessionRef = useRef('');
+        var bestRateRef = useRef(null);
+        var climateBest = (d.evoClimateBest && typeof d.evoClimateBest.rate === 'number' && isFinite(d.evoClimateBest.rate)) ? d.evoClimateBest : null;
+        bestRateRef.current = climateBest;
 
         var popRef = useRef([]);
         var historyRef = useRef([]);
@@ -5003,6 +7457,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
         var temperatureRef = useRef(temperature);
+        var warmRateRef = useRef(warmRate);
+        var trialRef = useRef(trial);
+        warmRateRef.current = warmRate;
+        trialRef.current = trial;
         var mutRef = useRef(mutSize);
         var autoRunRef = useRef(autoRun);
         var extinctRef = useRef(extinct);
@@ -5028,7 +7486,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
           popRef.current = pop;
           var sum = 0; for (var k = 0; k < pop.length; k++) sum += pop[k].tolerance;
-          historyRef.current = [{ gen: 0, mean: sum / pop.length, popSize: pop.length, temp: temperature }];
+          historyRef.current = [{ gen: 0, mean: sum / pop.length, popSize: pop.length, temp: temperatureRef.current }];
+          climateSessionRef.current = newCapstoneSourceRunKey('climatePressure');
+          trialRef.current = null;
+          setTrial(null);
           setGeneration(0);
           setExtinct(false);
         };
@@ -5056,6 +7517,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             setExtinct(true);
             setAutoRun(false);
             announce(__alloFill(__alloT('stem.evolab.sr_extinction_event_population_dropped_to_climate_ch', 'Extinction event! Population dropped to {value1}. Climate changed faster than they could adapt.'), { value1: survivors.length }));
+            detectExperiment('climatePressure', 'rapidJump', 'Rapid temperature change (extinction)');
+            if (trialRef.current && trialRef.current.status === 'running') finishTrial('extinct', generationRef.current + 1);
+            else if (generationRef.current + 1 >= 5) markComplete('climatePressure', 'Population went extinct at generation ' + (generationRef.current + 1) + ' under manual temperature change.');
             return;
           }
           // Reproduce back to cap
@@ -5080,6 +7544,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (historyRef.current.length > 80) historyRef.current.shift();
           generationRef.current = nextGen;
           setGeneration(nextGen);
+          if (nextGen === 20 && !(trialRef.current && trialRef.current.status === 'running')) markComplete('climatePressure', 'Ran 20 generations under manual temperature control.');
+          // Warming trial: the climate moves by the set rate each generation.
+          var tr = trialRef.current;
+          if (tr && tr.status === 'running') {
+            var nextTemp = Math.min(tr.targetTemp, temperatureRef.current + tr.rate);
+            temperatureRef.current = nextTemp;
+            setTemperature(nextTemp);
+            if (nextTemp >= tr.targetTemp - 1e-9) finishTrial('survived', nextGen);
+          }
+        };
+
+        // A trial ends by reaching the target temperature (survived) or by
+        // extinction. Records the personal best, completion, and experiments.
+        var finishTrial = function(status, gen) {
+          var tr = trialRef.current;
+          if (!tr) return;
+          var pop = popRef.current;
+          var sum = 0; for (var i = 0; i < pop.length; i++) sum += pop[i].tolerance;
+          var meanNow = pop.length ? sum / pop.length : 0;
+          var done = Object.assign({}, tr, { status: status, endGen: gen, finalPop: pop.length, finalMean: meanNow, finalTemp: temperatureRef.current });
+          trialRef.current = done;
+          setTrial(done);
+          setAutoRun(false);
+          trialsLogRef.current.push({ rate: tr.rate, status: status, gens: gen - tr.startGen, mutSize: tr.mutSize });
+          var log = trialsLogRef.current;
+          announce(status === 'survived'
+            ? __alloFill(__alloT('stem.evolab.sr_trial_survived', 'Warming trial survived: {value1} per generation, {value2} generations, {value3} creatures alive.'), { value1: tr.rate.toFixed(3), value2: gen - tr.startGen, value3: pop.length })
+            : __alloFill(__alloT('stem.evolab.sr_trial_extinct', 'Warming trial ended in extinction at {value1} per generation after {value2} generations.'), { value1: tr.rate.toFixed(3), value2: gen - tr.startGen }));
+          markComplete('climatePressure', 'Warming trial at ' + tr.rate.toFixed(3) + '/generation: ' + status + ' after ' + (gen - tr.startGen) + ' generations.');
+          if (status === 'survived') {
+            var best = bestRateRef.current;
+            if (!best || tr.rate > best.rate) {
+              var record = { rate: tr.rate, mutSize: tr.mutSize, gens: gen - tr.startGen, at: new Date().toISOString() };
+              bestRateRef.current = record;
+              upd('evoClimateBest', record);
+              announce(__alloFill(__alloT('stem.evolab.sr_new_best_rate', 'New personal best: the population survived warming of {value1} per generation.'), { value1: tr.rate.toFixed(3) }));
+            }
+            if (tr.rate <= 0.015) detectExperiment('climatePressure', 'slowWarming', 'Slow gradual warming');
+            setRecord('climatePressure', 'bestRate', tr.rate, { label: 'Fastest warming survived', unit: ' per generation', better: 'max' });
+            if (tr.rate >= 0.03) detectChallenge('climatePressure', 'survive03', 'Survive 0.030 per generation', tr.rate);
+            if (tr.rate >= 0.03 && tr.mutSize <= 0.04) detectChallenge('climatePressure', 'survive03lowVar', 'Survive 0.030 with low variation', tr.rate);
+            if (tr.rate >= 0.03 && tr.mutSize >= 0.08) detectExperiment('climatePressure', 'mutation', 'Mutation matters');
+          }
+          var survivedRates = log.filter(function(x) { return x.status === 'survived'; }).map(function(x) { return x.rate; });
+          var extinctRates = log.filter(function(x) { return x.status === 'extinct'; }).map(function(x) { return x.rate; });
+          if (survivedRates.length && extinctRates.length) detectExperiment('climatePressure', 'findRate', 'Find the survivable rate');
+        };
+
+        var startTrial = function() {
+          initPopulation();
+          temperatureRef.current = TRIAL_START;
+          setTemperature(TRIAL_START);
+          historyRef.current[0].temp = TRIAL_START;
+          var tr = { startTemp: TRIAL_START, targetTemp: TRIAL_TARGET, rate: warmRateRef.current, mutSize: mutRef.current, startGen: 0, status: 'running' };
+          trialRef.current = tr;
+          setTrial(tr);
+          lastTickRef.current = performance.now();
+          setAutoRun(true);
+          announce(__alloFill(__alloT('stem.evolab.sr_trial_started', 'Warming trial started: temperature rises {value1} per generation from 0.50 to 0.90.'), { value1: tr.rate.toFixed(3) }));
         };
 
         if (popRef.current.length === 0) initPopulation();
@@ -5089,6 +7612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var canvas = canvasRef.current;
           if (!canvas) return;
           var ctx = canvas.getContext('2d');
+          if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
             var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -5234,6 +7758,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var lag = Math.abs(mean - temperature);
         var stressed = pop.filter(function(c) { return Math.abs(c.tolerance - temperature) > 0.2; }).length;
 
+        var climateOutcome = function() {
+          if (!trial || trial.status === 'running' || !historyRef.current.length) return null;
+          if (trial.status === 'extinct') return 'extinct';
+          var shift = (trial.finalMean || 0) - historyRef.current[0].mean;
+          return shift > 0.1 ? 'track' : 'unchanged';
+        };
+
+        var climateSnapshot = function() {
+          if (generation <= 0 && !extinct) return null;
+          var start = historyRef.current[0];
+          var tr = trial && trial.status !== 'running' ? trial : null;
+          var rateLabel = tr ? tr.rate.toFixed(3) + ' per generation' : 'manual slider';
+          var status = extinct ? 'extinct' : 'alive';
+          var shift = mean - start.mean;
+          return {
+            sourceRunKey: climateSessionRef.current,
+            moduleLabel: 'Climate Pressure Lab',
+            comparison: {
+              designKey: 'rate=' + (tr ? tr.rate.toFixed(3) : 'manual') + '|variation=' + mutSize.toFixed(2) + '|generations=' + generation,
+              designLabel: 'warming ' + rateLabel + ', variation σ = ' + mutSize.toFixed(2) + ', ' + generation + ' generations',
+              primaryLabel: 'final population size',
+              primaryValue: pop.length,
+              primaryDisplay: pop.length + ' of ' + POP_CAP + (extinct ? ' (extinct)' : ''),
+              precision: 0,
+              unit: '',
+              factors: [
+                { id: 'warmingRate', label: 'Warming per generation', value: tr ? Number(tr.rate.toFixed(3)) : 'manual' },
+                { id: 'traitVariation', label: 'Offspring tolerance variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'generations', label: 'Generations', value: generation },
+                { id: 'temperatureRise', label: 'Temperature rise', value: tr ? Number((tr.targetTemp - tr.startTemp).toFixed(2)) : Number((temperature - start.temp).toFixed(2)) }
+              ]
+            },
+            baseline: 'Generation 0: ' + POP_CAP + ' creatures; mean tolerance ' + start.mean.toFixed(3) + '; temperature ' + start.temp.toFixed(2) + '.',
+            settings: 'Warming ' + rateLabel + '; offspring tolerance variation σ = ' + mutSize.toFixed(2) + '; extinction threshold ' + EXTINCTION_THRESHOLD + '; population refilled to ' + POP_CAP + ' after each generation.',
+            outcome: 'Generation ' + generation + ': ' + status + '; ' + pop.length + ' alive; temperature ' + temperature.toFixed(2) + '; mean tolerance ' + mean.toFixed(3) + ' (Δ ' + (shift >= 0 ? '+' : '') + shift.toFixed(3) + '); lag behind the climate ' + lag.toFixed(3) + '.',
+            metrics: [
+              { label: 'Warming rate', value: rateLabel },
+              { label: 'Generations', value: String(generation) },
+              { label: 'Outcome', value: status },
+              { label: 'Final population', value: pop.length + ' of ' + POP_CAP },
+              { label: 'Tolerance shift', value: (shift >= 0 ? '+' : '') + shift.toFixed(3) },
+              { label: 'Lag behind climate', value: lag.toFixed(3) }
+            ]
+          };
+        };
+
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🌡️', title: t('stem.evolab.climate_pressure_lab_2', 'Climate Pressure Lab') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
@@ -5241,16 +7811,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-orange-700 to-red-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌡️'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-climatePressure' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.you_are_the_climate_2', 'You ARE the climate')),
-                  h('p', { className: 'text-sm text-orange-50 mt-1' }, t('stem.evolab.drag_the_temperature_slider_each_gener', 'Drag the temperature slider. Each generation, creatures whose tolerance trait matches the current temperature survive better. If you change temperature SLOWLY, the population can adapt by selection. If you change too FAST, they go extinct. The lesson: the RATE of climate change matters more than the magnitude.'))
-                )
+                  h('p', { className: 'text-sm text-orange-50 mt-1' }, t('stem.evolab.drag_the_temperature_slider_each_gener', 'Drag the temperature slider, or set a warming RATE and run a trial. Each generation, creatures whose tolerance trait matches the current temperature survive better. If temperature changes SLOWLY, the population can adapt by selection. If it changes too FAST, they go extinct. The lesson: the RATE of climate change matters more than the magnitude, and here the rate is a number you can report.'))
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-climatePressure', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'climatePressure',
+              border: 'border-orange-400', heading: 'text-orange-800',
+              question: __alloFill(t('stem.evolab.predict_climate_q', 'If the temperature rises {value1} per generation from 0.50 to 0.90 (about {value2} generations), what will the population do?'), { value1: warmRate.toFixed(3), value2: Math.ceil((TRIAL_TARGET - TRIAL_START) / warmRate) }),
+              context: 'rate ' + warmRate.toFixed(3) + '/gen, σ ' + mutSize.toFixed(2),
+              options: [
+                { id: 'track', label: t('stem.evolab.predict_climate_track', 'Survive: its mean tolerance tracks the temperature, lagging a little.') },
+                { id: 'extinct', label: t('stem.evolab.predict_climate_extinct', 'Go extinct before the warming ends.') },
+                { id: 'unchanged', label: t('stem.evolab.predict_climate_unchanged', 'Survive without its tolerance changing much.') }
+              ],
+              pendingHint: t('stem.evolab.predict_climate_hint', 'Press "Run warming trial" to test it at exactly this rate.'),
+              locked: !!(trial && trial.status === 'running'),
+              outcomeId: climateOutcome(),
+              observedDetail: trial && trial.status !== 'running' ? 'Trial at ' + trial.rate.toFixed(3) + '/generation: ' + trial.status + ' after ' + (trial.endGen - trial.startGen) + ' generations; mean tolerance ' + historyRef.current[0].mean.toFixed(2) + ' → ' + (trial.finalMean || 0).toFixed(2) + '; ' + trial.finalPop + ' alive.' : '',
+              explain: {
+                track: t('stem.evolab.explain_climate_track', 'Slow enough. Each generation only a slice of the population was outside its tolerance, so survivors existed to breed the next generation, and their offspring (with small random variation) sat a little closer to the new temperature. Repeat that for many generations and the mean tolerance follows the climate. No individual changed; the population did.'),
+                extinct: t('stem.evolab.explain_climate_extinct', 'Too fast. When the temperature jumps further in one generation than the spread of tolerances in the population, almost nobody survives to breed, and the few who do cannot restore the numbers. Adaptation needs survivors; the rate decided whether there were any.'),
+                unchanged: t('stem.evolab.explain_climate_unchanged', 'The population survived but barely shifted. That happens when the rise is small relative to how tolerant individuals already are, or the trial ended early. Push the rate up and the shift becomes visible, until it stops being possible at all.')
+              }
+            }),
             // Stats
-            h('div', { className: 'grid grid-cols-4 gap-3' },
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-3' },
               h(StatCard, { label: t('stem.evolab.generation_5', 'Generation'), value: generation, color: 'text-orange-700' }),
               h(StatCard, { label: t('stem.evolab.population_2', 'Population'), value: pop.length + ' / ' + POP_CAP, color: pop.length < 20 ? 'text-rose-700' : 'text-emerald-700' }),
+              h(StatCard, { label: t('stem.evolab.best_rate_survived', 'Best rate survived'), value: climateBest ? climateBest.rate.toFixed(3) : '—', color: 'text-cyan-700', unit: climateBest ? t('stem.evolab.per_generation_sigma', 'per generation · σ ') + (Number(climateBest.mutSize) || 0).toFixed(2) : t('stem.evolab.run_a_warming_trial', 'run a warming trial') }),
               h(StatCard, { label: t('stem.evolab.tolerance_lag', 'Tolerance Lag'), value: lag.toFixed(2), color: lag > 0.2 ? 'text-rose-700' : lag > 0.1 ? 'text-amber-700' : 'text-emerald-700', unit: lag > 0.2 ? 'critical!' : lag > 0.1 ? 'stressed' : 'matched' }),
               h(StatCard, { label: t('stem.evolab.stressed', 'Stressed'), value: stressed + ' / ' + pop.length, color: stressed > pop.length / 3 ? 'text-rose-700' : 'text-slate-600' })
             ),
@@ -5292,6 +7884,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ),
               h('div', { className: 'text-[0.625rem] text-slate-600 mt-2 italic' }, t('stem.evolab.slide_slowly_while_the_simulation_runs', 'Slide slowly while the simulation runs to let the population catch up. Slide fast to force extinction.'))
             ),
+            // Warming-rate trial: the headline variable as a number
+            h('div', { className: 'bg-white rounded-xl shadow border-2 border-orange-300 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, t('stem.evolab.warming_trial', '🌡️ Warming trial: set the RATE, then run')),
+                h('div', { className: 'text-xs text-slate-600' }, t('stem.evolab.warming_trial_desc', 'Auto-Run raises the temperature by this amount every generation, from 0.50 to 0.90, so every trial is comparable.'))
+              ),
+              h(LabeledSlider, {
+                id: 'evolab-warm-rate',
+                label: t('stem.evolab.warming_per_generation', 'Warming per generation'),
+                value: warmRate, min: 0.005, max: 0.06, step: 0.005,
+                onChange: function(v) { if (!(trial && trial.status === 'running')) setWarmRate(v); },
+                valueText: warmRate.toFixed(3) + ' / gen · ' + __alloFill(t('stem.evolab.about_n_generations_for_the_rise', '~{value1} generations for the 0.40 rise'), { value1: Math.ceil((TRIAL_TARGET - TRIAL_START) / warmRate) }) + (trial && trial.status === 'running' ? ' · ' + t('stem.evolab.locked_during_trial', 'locked during the trial') : ''),
+                accent: 'accent-orange-500',
+                hint: t('stem.evolab.warming_rate_hint', 'Compare with your creatures\' tolerance spread (σ ≈ 0.08 at the start). A rise smaller than that each generation leaves survivors; a rise larger than it does not.')
+              }),
+              h('div', { className: 'mt-3 flex flex-wrap items-center gap-3' },
+                h('button', {
+                  onClick: startTrial,
+                  disabled: !!(trial && trial.status === 'running'),
+                  className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-orange-700 hover:bg-orange-800 disabled:bg-orange-300 text-white shadow-lg'
+                }, trial && trial.status === 'running' ? '⏳ ' + t('stem.evolab.trial_running', 'Trial running…') : '▶ ' + t('stem.evolab.run_warming_trial', 'Run warming trial (resets, 0.50 → 0.90)')),
+                trial && h('div', {
+                  role: 'status',
+                  className: 'flex-1 min-w-[12rem] rounded-lg border-2 p-2 text-sm ' + (trial.status === 'running' ? 'border-orange-300 bg-orange-50 text-orange-900' : trial.status === 'survived' ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-rose-400 bg-rose-50 text-rose-900')
+                },
+                  trial.status === 'running'
+                    ? __alloFill(t('stem.evolab.trial_status_running', 'Rate {value1}/gen · temperature {value2} · generation {value3} · {value4} alive'), { value1: trial.rate.toFixed(3), value2: temperature.toFixed(2), value3: generation, value4: pop.length })
+                    : trial.status === 'survived'
+                      ? __alloFill(t('stem.evolab.trial_status_survived', '✓ Survived {value1}/gen: {value2} generations, {value3} alive, tolerance lag {value4} at the end.'), { value1: trial.rate.toFixed(3), value2: trial.endGen - trial.startGen, value3: trial.finalPop, value4: Math.abs((trial.finalMean || 0) - (trial.finalTemp || 0)).toFixed(2) })
+                      : __alloFill(t('stem.evolab.trial_status_extinct', '✗ Extinct at {value1}/gen after {value2} generations. Try a slower rate, or more variation.'), { value1: trial.rate.toFixed(3), value2: trial.endGen - trial.startGen })
+                )
+              ),
+              trialsLogRef.current.length > 0 && h('div', { className: 'mt-2 text-xs text-slate-700' },
+                h('span', { className: 'font-bold' }, t('stem.evolab.trials_this_session', 'Trials this visit: ')),
+                trialsLogRef.current.map(function(x, i) { return h('span', { key: i, className: 'inline-block mr-2 rounded px-1.5 ' + (x.status === 'survived' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900') }, x.rate.toFixed(3) + ' ' + (x.status === 'survived' ? '✓' : '✗') + ' (σ ' + x.mutSize.toFixed(2) + ')'); })
+              )
+            ),
             // Mutation rate slider
             h(LabeledSlider, {
               label: t('stem.evolab.mutation_size_offspring_trait_variatio', 'Mutation Size (offspring trait variation)'),
@@ -5321,17 +7950,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             // History chart
             renderChart(),
-            // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-orange-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800 mb-3' }, t('stem.evolab.try_these_experiments_8', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.slow_gradual_warming_adaptation', 'Slow gradual warming (adaptation): ')), t('stem.evolab.reset_auto_run_then_move_temp_slider_f', 'Reset. Auto-Run, then move temp slider from 0.5 to 0.9 over ~30 seconds. The mean tolerance will track the temperature line, lagging slightly. Population survives — they ADAPTED.')),
-                h('li', null, h('strong', null, t('stem.evolab.rapid_temperature_jump_extinction', 'Rapid temperature jump (extinction): ')), t('stem.evolab.reset_pause_auto_run_drag_temp_from_0_', 'Reset. Pause auto-run. Drag temp from 0.5 to 0.95 instantly. Resume auto-run. Within ~3-5 generations, watch the population crash. Extinction.')),
-                h('li', null, h('strong', null, t('stem.evolab.find_the_survivable_rate', 'Find the survivable rate: ')), t('stem.evolab.reset_try_moving_the_slider_at_differe', 'Reset. Try moving the slider at different rates — slow enough that pop stays > 30, but as fast as possible. This is the population\'s "adaptive capacity."')),
-                h('li', null, h('strong', null, t('stem.evolab.mutation_matters_2', 'Mutation matters: ')), t('stem.evolab.reset_set_mutation_size_to_0_10_high_t', 'Reset. Set Mutation Size to 0.10 (high). Try the same rapid temp change. Population may now survive — high mutation means more variation for selection to act on. Real species with short generation times (insects, bacteria) adapt faster than slow ones (whales, humans).')),
-                h('li', null, h('strong', null, t('stem.evolab.compare_with_predator_vision', 'Compare with Predator Vision: ')), t('stem.evolab.both_labs_put_you_in_control_of_select', 'Both labs put YOU in control of selection. Predator Vision: you applied a static pressure. Climate Pressure: you apply a CHANGING pressure. The dynamic introduces extinction as a possibility — selection pressure can outpace adaptation.'))
-              )
-            ),
+            h(CapstoneCapture, {
+              moduleId: 'climatePressure',
+              moduleLabel: 'Climate Pressure Lab',
+              sourceRunKey: climateSessionRef.current,
+              ready: generation > 0 && !autoRun,
+              readyHint: 'Save the warming rate, variation setting, generations run, and whether the population tracked the climate or went extinct.',
+              emptyHint: autoRun ? 'Stop Auto-Run (or let the trial finish) to freeze a consistent generation before capturing.' : 'Advance at least one generation or run a warming trial before capturing.',
+              getSnapshot: climateSnapshot
+            }),
+            (generation > 0 || extinct) && h(CheckCard, {
+              moduleId: 'climatePressure',
+              border: 'border-orange-400', heading: 'text-orange-800',
+              question: t('stem.evolab.check_climate_q', 'Why does the population survive slow warming but go extinct under fast warming?'),
+              options: [
+                { id: 'adjust', label: t('stem.evolab.check_climate_adjust', 'Fast warming gives individuals no time to adjust their own tolerance.'), feedback: t('stem.evolab.check_climate_adjust_fb', 'No individual adjusts. Each creature\'s tolerance is fixed at birth (look at one: it never changes colour). Slow warming works because every generation SOME individuals already sit near the new temperature, survive, and breed. Time helps the population, not the individual.') },
+                { id: 'survivors', label: t('stem.evolab.check_climate_survivors', 'Each generation only creatures near the current temperature survive; slow change leaves survivors to breed, fast change leaves too few.'), correct: true, feedback: t('stem.evolab.check_climate_survivors_fb', 'Right. Adaptation is made of survivors. When the climate moves less per generation than the spread of tolerances, there are always some survivors and their offspring shift the mean. When it moves more than that spread, there is nobody left to breed, and selection has nothing to work with.') },
+                { id: 'mutations', label: t('stem.evolab.check_climate_mutations', 'Fast warming stops mutations from happening.'), feedback: t('stem.evolab.check_climate_mutations_fb', 'Mutation (the ± σ on each chick) happened at the same rate in every run. Mutation supplies variation, but it cannot rescue a population that has no survivors to pass anything on. Raising σ helps only because it widens the spread of tolerances among the survivors\' offspring.') },
+                { id: 'chose', label: t('stem.evolab.check_climate_chose', 'The population chose to stop reproducing under stress.'), feedback: t('stem.evolab.check_climate_chose_fb', 'Nothing chooses in this model. Reproduction always refills the population from whoever survived. Extinction happened because fewer than 5 survived the selection step, not because anyone stopped breeding.') }
+              ]
+            }),
+            h(ExperimentList, {
+              moduleId: 'climatePressure',
+              challenges: [
+                { id: 'survive03', title: t('stem.evolab.ch_survive03', 'Fast climate, living population: '), body: t('stem.evolab.ch_survive03_body', 'Survive a warming trial at 0.030 per generation or faster. Hint: more offspring variation widens the spread selection can work with.'), record: { id: 'bestRate', label: t('stem.evolab.fastest_warming_survived', 'fastest warming survived') } },
+                { id: 'survive03lowVar', title: t('stem.evolab.ch_survive03lowvar', 'Hard mode: '), body: t('stem.evolab.ch_survive03lowvar_body', 'Survive 0.030 per generation with Mutation Size at 0.04 or less. Expect several extinctions first; that is the point.') }
+              ],
+              border: 'border-orange-400', heading: 'text-orange-800',
+              title: t('stem.evolab.try_these_experiments_8', '🧪 Try these experiments'),
+              items: [
+                { id: 'slowWarming', auto: true, title: t('stem.evolab.slow_gradual_warming_adaptation', 'Slow gradual warming (adaptation): '), body: t('stem.evolab.reset_auto_run_then_move_temp_slider_f', 'Set the warming rate to 0.010 or less and run a trial. The mean tolerance tracks the temperature line, lagging slightly. The population survives: it ADAPTED.') },
+                { id: 'rapidJump', auto: true, title: t('stem.evolab.rapid_temperature_jump_extinction', 'Rapid temperature change (extinction): '), body: t('stem.evolab.reset_pause_auto_run_drag_temp_from_0_', 'Set the rate to 0.050 and run a trial, or drag the slider from 0.5 to 0.95 in one move and Auto-Run. Within a few generations the population crashes. Extinction.') },
+                { id: 'findRate', auto: true, title: t('stem.evolab.find_the_survivable_rate', 'Find the survivable rate: '), body: t('stem.evolab.reset_try_moving_the_slider_at_differe', 'Run trials at several rates until you have one that survived and one that went extinct. The boundary between them is this population\'s "adaptive capacity", and the Best rate survived card keeps your record.') },
+                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_matters_2', 'Mutation matters: '), body: t('stem.evolab.reset_set_mutation_size_to_0_10_high_t', 'Set Mutation Size to 0.10 and rerun a rate that went extinct at σ = 0.04 (0.030 or faster). The population may now survive: more variation gives selection more to work with. Real species with short generation times (insects, bacteria) adapt faster than slow ones (whales, humans).') },
+                { id: 'compare', title: t('stem.evolab.compare_with_predator_vision', 'Compare with Predator Vision: '), body: t('stem.evolab.both_labs_put_you_in_control_of_select', 'Both labs put YOU in control of selection. Predator Vision: you applied a static pressure. Climate Pressure: you apply a CHANGING pressure. The dynamic introduces extinction as a possibility — selection pressure can outpace adaptation.') }
+              ]
+            }),
             // Real-world callout
             h('div', { className: 'bg-orange-50 border border-orange-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800 mb-2' }, t('stem.evolab.this_is_happening_right_now', '📖 This is happening right now')),
@@ -5350,6 +8004,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_been_the_predator_camouflage_th', 'You\'ve been the predator (camouflage), the climate (extinction). Be the mate-chooser next — the third major selection pressure that drives evolution. Mate Choice Lab shows runaway sexual selection.')
               )
             ),
+            h(KeyTerms, { moduleId: 'climatePressure', heading: 'text-orange-800' }),
+            h(FieldNote, { moduleId: 'climatePressure', border: 'border-orange-400', heading: 'text-orange-800', prompt: t('stem.evolab.note_prompt_climate', 'What was the fastest warming your population survived, and what decided it? Name one real species you think is near that edge.') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5', 'HS-LS4-6', 'HS-LS2-7', 'HS-ESS3-1'],
               questions: [
@@ -5380,93 +8036,237 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // selection stabilizes the trait at a finite size — the standard
       // peacock/Zahavi/handicap-principle dynamic.
       function MateChoiceLab() {
-        var POP_SIZE = 12;
+        var N_MALES = 12;
+        var N_FEMALES = 12;
         var MAX_ROUNDS = 12;
+        var STUDENT_OFFSPRING = 6;      // the student's female sires a quarter of the next generation
+        var INSPECT = 4;                // a choosy female compares this many surviving males
+        var FAST_FORWARD_ROUNDS = 10;
+        // Predator viability filter: survival = 1 - 1.6 * showiness^2, so a male
+        // at 0.5 survives 60% of the time and one above ~0.79 essentially never
+        // reaches the display ground. Steep on purpose: the trade-off has to be
+        // visible inside a class period.
+        var survivalOf = function(s) { return Math.max(0, 1 - 1.6 * s * s); };
+        //
+        // Sexual selection, in miniature. Every bird carries two heritable
+        // values: an ornament gene (expressed by males as tail showiness) and a
+        // preference gene (expressed by females as the probability she chooses
+        // by looks, picking the showiest of INSPECT males she compares, rather
+        // than at random). Offspring take the midpoint of both parents for BOTH
+        // genes, plus noise. The student is one of twelve females and chooses by
+        // hand; the other eleven choose by their preference gene. The predator
+        // removes showy males BEFORE mating, so ornament and survival trade off
+        // and the escalation stalls where the two pressures balance. Parameters
+        // were tuned against a headless replica (2026-09-13): cost off runs to
+        // ~0.95 by round 40; cost on settles near 0.6-0.7; choosiness 0.1 vs 0.9
+        // roughly halves or doubles the pace.
 
-        var birdsRef = useRef([]);
+        var malesRef = useRef([]);
+        var femalesRef = useRef([]);
         var historyRef = useRef([]);
+        var costLogRef = useRef([]);      // predator setting per round, for the capture record
+        var sessionRef = useRef('');
         var roundState = useState(0), round = roundState[0], setRound = roundState[1];
         var predatorCostState = useState(false), predatorCost = predatorCostState[0], setPredatorCost = predatorCostState[1];
         var phaseState = useState('intro'), phase = phaseState[0], setPhase = phaseState[1];
         var msgState = useState(''), msg = msgState[0], setMsg = msgState[1];
         var lastSelectedState = useState(null), lastSelected = lastSelectedState[0], setLastSelected = lastSelectedState[1];
+        var eatenState = useState(0), eatenThisRound = eatenState[0], setEatenThisRound = eatenState[1];
+        var choosinessState = useState(0.5), choosiness = choosinessState[0], setChoosiness = choosinessState[1];
+        var studentPicksRef = useRef([]);  // showiness rank (0 = dullest) of each pick, for the experiments
         var phaseRef = useRef(phase);
         phaseRef.current = phase;
 
-        var initPopulation = function() {
-          var pop = [];
-          for (var i = 0; i < POP_SIZE; i++) {
-            // Start at trait ≈ 0.3 (modest showiness) — leaves room to escalate.
-            pop.push({
-              id: 'b' + i + '_' + Math.random(),
-              showiness: clamp(randNormal(0.3, 0.07), 0, 1)
-            });
+        var meanOf = function(arr, key) { if (!arr.length) return 0; var s = 0; for (var i = 0; i < arr.length; i++) s += arr[i][key]; return s / arr.length; };
+        var maxOf = function(arr, key) { if (!arr.length) return 0; return Math.max.apply(null, arr.map(function(b) { return b[key]; })); };
+
+        // Predator filter: showier males are taken before the females see them.
+        var applyPredation = function(males, costOn) {
+          var eaten = 0;
+          males.forEach(function(m) {
+            m.eaten = false;
+            if (costOn && Math.random() >= survivalOf(m.showiness)) { m.eaten = true; eaten++; }
+          });
+          // Keep the exercise alive: at least two males must survive to breed.
+          var alive = males.filter(function(m) { return !m.eaten; });
+          if (alive.length < 2) {
+            males.slice().sort(function(a, b) { return a.showiness - b.showiness; }).slice(0, 2).forEach(function(m) { if (m.eaten) { m.eaten = false; eaten--; } });
           }
-          birdsRef.current = pop;
-          var sum = 0; for (var k = 0; k < pop.length; k++) sum += pop[k].showiness;
-          historyRef.current = [{ round: 0, mean: sum / pop.length, max: Math.max.apply(null, pop.map(function(b) { return b.showiness; })) }];
-          setRound(0); setPhase('intro'); setMsg(''); setLastSelected(null);
+          return eaten;
+        };
+
+        var initPopulation = function() {
+          sessionRef.current = newCapstoneSourceRunKey('mateChoice');
+          var males = [], females = [];
+          for (var i = 0; i < N_MALES; i++) {
+            var sGene = clamp(randNormal(0.3, 0.07), 0, 1);
+            males.push({ id: 'm' + i + '_' + Math.random(), showiness: sGene, sGene: sGene, pGene: clamp(randNormal(choosiness, 0.08), 0, 1), eaten: false });
+          }
+          for (var j = 0; j < N_FEMALES; j++) {
+            var pGene = clamp(randNormal(choosiness, 0.08), 0, 1);
+            females.push({ id: 'f' + j + '_' + Math.random(), pref: pGene, pGene: pGene, sGene: clamp(randNormal(0.3, 0.07), 0, 1) });
+          }
+          malesRef.current = males;
+          femalesRef.current = females;
+          costLogRef.current = [];
+          studentPicksRef.current = [];
+          historyRef.current = [{ round: 0, mean: meanOf(males, 'showiness'), max: maxOf(males, 'showiness'), pref: meanOf(females, 'pref'), eaten: 0 }];
+          setRound(0); setPhase('intro'); setMsg(''); setLastSelected(null); setEatenThisRound(0);
+        };
+
+        var startRound = function(males, costOn) {
+          var eaten = applyPredation(males, costOn);
+          setEatenThisRound(eaten);
+          return eaten;
+        };
+
+        // One modelled female picks a father. With probability = her preference
+        // she compares INSPECT random survivors and takes the showiest; otherwise
+        // she mates with a random survivor. Rank-based, so the mating advantage
+        // of extra showiness saturates while the predator cost keeps climbing.
+        var chooseFather = function(female, alive) {
+          if (Math.random() < female.pref) {
+            var best = null;
+            for (var i = 0; i < INSPECT; i++) {
+              var m = alive[Math.floor(Math.random() * alive.length)];
+              if (!best || m.showiness > best.showiness) best = m;
+            }
+            return best;
+          }
+          return alive[Math.floor(Math.random() * alive.length)];
+        };
+
+        // Breed one full generation. `chosen` is the student's mate (null when the
+        // student's female chooses by her own preference gene, as in fast-forward).
+        var breedGeneration = function(males, females, chosen, roundIndex) {
+          var alive = males.filter(function(m) { return !m.eaten; });
+          var student = females[0];
+          var others = females.slice(1);
+          var nextMales = [], nextFemales = [];
+          var total = N_MALES + N_FEMALES;
+          for (var k = 0; k < total; k++) {
+            var father, mother;
+            if (chosen && k < STUDENT_OFFSPRING) { father = chosen; mother = student; }
+            else { mother = chosen ? others[Math.floor(Math.random() * others.length)] : females[Math.floor(Math.random() * females.length)]; father = chooseFather(mother, alive); }
+            var sex = (k % 2 === 0) ? 'm' : 'f';
+            var chick = makeChick(father, mother, sex, k, roundIndex);
+            if (sex === 'm') nextMales.push(chick); else nextFemales.push(chick);
+          }
+          return { males: nextMales, females: nextFemales };
+        };
+
+        var makeChick = function(father, mother, sex, idx, roundIndex) {
+          var sGene = clamp((father.sGene + mother.sGene) / 2 + randNormal(0, 0.06), 0, 1);
+          var pGene = clamp((father.pGene + mother.pGene) / 2 + randNormal(0, 0.06), 0, 1);
+          if (sex === 'm') return { id: 'm' + idx + '_' + roundIndex + '_' + Math.random(), showiness: sGene, sGene: sGene, pGene: pGene, eaten: false };
+          return { id: 'f' + idx + '_' + roundIndex + '_' + Math.random(), pref: pGene, pGene: pGene, sGene: sGene };
         };
 
         var pickMate = function(bid) {
           if (phaseRef.current !== 'choosing') return;
-          var pop = birdsRef.current;
-          var chosen = pop.find(function(b) { return b.id === bid; });
+          var males = malesRef.current;
+          var females = femalesRef.current;
+          var chosen = males.find(function(b) { return b.id === bid && !b.eaten; });
           if (!chosen) return;
           setLastSelected(chosen);
-          // Predator cost: showiest birds may have been "eaten" before mating.
-          // We model this by reducing the chosen bird's effective contribution
-          // proportional to a stabilizing penalty if predator cost is enabled.
-          // BUT for runaway-selection visualization, the chosen bird IS the
-          // parent regardless — predator cost just kills SOME competing birds
-          // before the user sees them next round (via penalty in initial draw).
-          // Simplification: the selected bird produces all 12 offspring with
-          // mutation. If predator cost enabled, mutation has a downward bias
-          // (offspring are slightly less showy than parent on average).
-          var bias = predatorCost ? -0.02 : 0;
-          var nextPop = [];
-          for (var i = 0; i < POP_SIZE; i++) {
-            nextPop.push({
-              id: 'b' + i + '_' + (round + 1) + '_' + Math.random(),
-              showiness: clamp(chosen.showiness + bias + randNormal(0, 0.05), 0, 1)
-            });
-          }
-          birdsRef.current = nextPop;
-          var sum = 0; for (var k = 0; k < nextPop.length; k++) sum += nextPop[k].showiness;
-          var meanNext = sum / nextPop.length;
-          historyRef.current.push({ round: round + 1, mean: meanNext, max: Math.max.apply(null, nextPop.map(function(b) { return b.showiness; })) });
-          setRound(round + 1);
-          announce(__alloFill(__alloT('stem.evolab.sr_you_chose_the_bird_with_showiness_next_generation', 'You chose the bird with showiness {value1}. Next generation mean: {value2}.'), { value1: chosen.showiness.toFixed(2), value2: meanNext.toFixed(2) }));
-          if (round + 1 >= MAX_ROUNDS) {
+          var alive = males.filter(function(m) { return !m.eaten; });
+          var rank = alive.slice().sort(function(a, b) { return a.showiness - b.showiness; }).indexOf(chosen);
+          studentPicksRef.current.push({ rank: rank, of: alive.length });
+          costLogRef.current.push(predatorCost);
+          // The student is female 0; her mate sires STUDENT_OFFSPRING chicks.
+          // The other females choose by preference and fill the rest.
+          var bred = breedGeneration(males, females, chosen, round + 1);
+          var nextMales = bred.males, nextFemales = bred.females;
+          var nextRound = round + 1;
+          var costOn = predatorCost;
+          var eaten = nextRound < MAX_ROUNDS ? startRound(nextMales, costOn) : applyPredation(nextMales, false);
+          malesRef.current = nextMales;
+          femalesRef.current = nextFemales;
+          var meanNext = meanOf(nextMales, 'showiness');
+          var prefNext = meanOf(nextFemales, 'pref');
+          historyRef.current.push({ round: nextRound, mean: meanNext, max: maxOf(nextMales, 'showiness'), pref: prefNext, eaten: eaten });
+          setRound(nextRound);
+          announce(__alloFill(__alloT('stem.evolab.sr_you_chose_showiness_next_mean_pref', 'You chose the bird with showiness {value1}. Next generation: mean showiness {value2}, mean female preference {value3}.'), { value1: chosen.showiness.toFixed(2), value2: meanNext.toFixed(2), value3: prefNext.toFixed(2) }));
+          if (nextRound >= MAX_ROUNDS) {
             setPhase('done');
-            setMsg('🎯 Selection complete. Look how the population\'s showiness shifted because of YOUR choices.');
+            setMsg('🎯 Selection complete. Look how showiness AND female preference shifted.');
+            finishRun(nextRound);
           } else {
-            setMsg('Round ' + (round + 1) + ' — pick the next mate. Showiness ' + (predatorCost ? 'biased down by predator cost.' : 'unconstrained — runaway likely.'));
-            setTimeout(function() { setMsg(''); }, 2200);
+            setMsg('Round ' + nextRound + ' — ' + (eaten > 0 ? eaten + ' showy male' + (eaten === 1 ? '' : 's') + ' taken by predators before mating. ' : '') + 'Pick the next mate.');
+            setTimeout(function() { setMsg(''); }, 2600);
           }
+        };
+
+        // Fast-forward: every female (the student's included) chooses by her
+        // preference gene for FAST_FORWARD_ROUNDS rounds. Lets a class see where
+        // the population SETTLES, which twelve hand-picked rounds cannot.
+        var fastForward = function() {
+          if (phaseRef.current === 'intro') return;
+          var males = malesRef.current, females = femalesRef.current;
+          var r = round;
+          var costOn = predatorCost;
+          for (var i = 0; i < FAST_FORWARD_ROUNDS; i++) {
+            r++;
+            costLogRef.current.push(costOn);
+            var bred = breedGeneration(males, females, null, r);
+            males = bred.males; females = bred.females;
+            var eaten = applyPredation(males, costOn);
+            historyRef.current.push({ round: r, mean: meanOf(males, 'showiness'), max: maxOf(males, 'showiness'), pref: meanOf(females, 'pref'), eaten: eaten, auto: true });
+          }
+          if (phaseRef.current === 'done') applyPredation(males, false);
+          malesRef.current = males; femalesRef.current = females;
+          setEatenThisRound(historyRef.current[historyRef.current.length - 1].eaten);
+          setRound(r);
+          setLastSelected(null);
+          var finalMean = meanOf(males, 'showiness');
+          announce(__alloFill(__alloT('stem.evolab.sr_fast_forward_rounds', 'Fast-forwarded {value1} rounds with every female choosing by her inherited preference. Round {value2}: mean showiness {value3}.'), { value1: FAST_FORWARD_ROUNDS, value2: r, value3: finalMean.toFixed(2) }));
+          if (phaseRef.current === 'choosing' && r >= MAX_ROUNDS) { setPhase('done'); setMsg('🎯 Selection complete. Look where showiness settled.'); }
+          finishRun(r);
+        };
+
+        // Completion + auto-detected experiments, read from the run's history.
+        var finishRun = function(roundsDone) {
+          var hist = historyRef.current;
+          if (hist.length < 2) return;
+          var start = hist[0].mean, final = hist[hist.length - 1].mean;
+          var costs = costLogRef.current;
+          var allOn = costs.length > 0 && costs.every(function(c) { return c; });
+          var allOff = costs.length > 0 && costs.every(function(c) { return !c; });
+          if (roundsDone >= 6) markComplete('mateChoice', 'Mean showiness ' + start.toFixed(2) + ' → ' + final.toFixed(2) + ' over ' + roundsDone + ' rounds' + (allOn ? ' with predator cost' : allOff ? ' without predator cost' : '') + '.');
+          if (allOff && final >= 0.85) detectExperiment('mateChoice', 'runaway', 'Runaway selection');
+          if (allOn && roundsDone >= 20 && final - start > 0.15 && final < 0.8) detectExperiment('mateChoice', 'balance', 'Stabilizing balance');
+          if (final < start - 0.1) detectExperiment('mateChoice', 'pickDull', 'Pick something different');
+          if (allOn && roundsDone >= 30 && final < 0.7 && final - start > 0.1) detectChallenge('mateChoice', 'plateauUnder70', 'Hold the balance', final);
+          if (final < 0.15 && hist[0].pref >= 0.65) detectChallenge('mateChoice', 'dullOut', 'Dull them down against choosy females', final);
+          setRecord('mateChoice', 'peakShowiness', Math.max.apply(null, hist.map(function(pt) { return pt.mean; })), { label: 'Highest mean showiness', unit: '', better: 'max' });
         };
 
         var startSelection = function() {
           initPopulation();
+          startRound(malesRef.current, predatorCost);
           setPhase('choosing');
           announce(__alloT('stem.evolab.sr_mate_choice_begins_click_the_bird_you_find_most_a', 'Mate choice begins. Click the bird you find most attractive each round.'));
         };
 
-        if (birdsRef.current.length === 0) initPopulation();
+        var endEarly = function() {
+          setPhase('done');
+          finishRun(round);
+        };
 
-        // Render a single bird as SVG: body + tail. Tail length and color
+        if (malesRef.current.length === 0) initPopulation();
+
+        // Render a single male as SVG: body + tail. Tail length and color
         // intensity scale with showiness; "eyespots" appear above showiness > 0.6.
-        var renderBird = function(b, idx) {
+        var renderBird = function(b) {
           var s = b.showiness;
           var W = 180, H = 130;
           var tailLen = 20 + s * 90;       // 20 → 110 px tail
           var tailHue = Math.round(lerp(40, 320, s)); // gold → magenta as showiness rises
           var eyespotCount = Math.floor(s * 6); // 0 to 6 eyespots
           var bodyX = 30, bodyY = H / 2;
-          // Tail fans behind the bird from bodyX going leftward
           var tailFanPath = '';
           for (var f = 0; f < 7; f++) {
-            var angle = (f / 6 - 0.5) * 1.5; // -0.75 to +0.75 rad
+            var angle = (f / 6 - 0.5) * 1.5;
             var endX = bodyX - Math.cos(angle) * tailLen;
             var endY = bodyY + Math.sin(angle) * tailLen;
             tailFanPath += 'M ' + bodyX + ' ' + bodyY + ' L ' + endX + ' ' + endY + ' ';
@@ -5480,13 +8280,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             eyespots.push(h('circle', { key: 'eyec' + e, cx: ex, cy: ey, r: 2, fill: '#fef9c3' }));
           }
           var selected = lastSelected && lastSelected.id === b.id;
+          var eaten = !!b.eaten;
+          var canPick = phaseRef.current === 'choosing' && !eaten;
           return h('button', {
             key: b.id,
             onClick: function() { pickMate(b.id); },
-            disabled: phaseRef.current !== 'choosing',
+            disabled: !canPick,
             'aria-pressed': selected,
-            'aria-label': 'Bird with showiness ' + s.toFixed(2) + (selected ? ' (your last pick)' : '') + '. Click to choose this mate.',
-            className: 'rounded-2xl border-4 ' + (selected ? 'border-fuchsia-500 ring-4 ring-fuchsia-200' : 'transition-colors border-slate-200 hover:border-slate-400') + ' bg-gradient-to-b from-sky-50 to-emerald-50 transition-all ' + (phaseRef.current === 'choosing' ? 'cursor-pointer hover:scale-105' : 'opacity-80'),
+            'aria-label': eaten
+              ? __alloFill(__alloT('stem.evolab.a11y_male_taken_by_predator', 'Male with showiness {value1}, taken by a predator before mating. Not available.'), { value1: s.toFixed(2) })
+              : 'Bird with showiness ' + s.toFixed(2) + (selected ? ' (your last pick)' : '') + '. Click to choose this mate.',
+            className: 'relative rounded-2xl border-4 ' + (selected ? 'border-fuchsia-500 ring-4 ring-fuchsia-200' : eaten ? 'border-slate-300' : 'transition-colors border-slate-200 hover:border-slate-400') + ' bg-gradient-to-b from-sky-50 to-emerald-50 transition-all ' + (canPick ? 'cursor-pointer hover:scale-105' : eaten ? 'opacity-45 grayscale cursor-not-allowed' : 'opacity-80'),
             style: { padding: '4px' }
           },
             h('svg', {
@@ -5495,60 +8299,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               role: 'img',
               'aria-label': 'A bird with showiness ' + s.toFixed(2) + (eyespotCount > 0 ? ', ' + eyespotCount + ' tail eyespots' : '') + ', tail length ' + Math.round(tailLen) + ' pixels'
             },
-              // Background sky/grass gradient is handled by parent button
-              // Tail fans
-              h('path', {
-                d: tailFanPath,
-                stroke: 'hsl(' + tailHue + ',75%,55%)',
-                strokeWidth: 4,
-                fill: 'none',
-                strokeLinecap: 'round'
-              }),
-              // Eyespots (peacock-style)
+              h('path', { d: tailFanPath, stroke: 'hsl(' + tailHue + ',75%,55%)', strokeWidth: 4, fill: 'none', strokeLinecap: 'round' }),
               eyespots,
-              // Body — a teardrop-like shape
               h('ellipse', { cx: bodyX + 30, cy: bodyY, rx: 26, ry: 18, fill: '#1e293b', stroke: '#0f172a', strokeWidth: 1 }),
-              // Head
               h('circle', { cx: bodyX + 56, cy: bodyY - 8, r: 12, fill: '#1e293b', stroke: '#0f172a', strokeWidth: 1 }),
-              // Eye
               h('circle', { cx: bodyX + 60, cy: bodyY - 10, r: 2.5, fill: '#fbbf24' }),
               h('circle', { cx: bodyX + 60.5, cy: bodyY - 10.5, r: 1, fill: '#0f172a' }),
-              // Beak
               h('polygon', { points: (bodyX + 67) + ',' + (bodyY - 7) + ' ' + (bodyX + 75) + ',' + (bodyY - 4) + ' ' + (bodyX + 67) + ',' + (bodyY - 1), fill: '#f59e0b' }),
-              // Legs
               h('line', { x1: bodyX + 24, y1: bodyY + 17, x2: bodyX + 22, y2: H - 12, stroke: '#f59e0b', strokeWidth: 2 }),
               h('line', { x1: bodyX + 36, y1: bodyY + 17, x2: bodyX + 38, y2: H - 12, stroke: '#f59e0b', strokeWidth: 2 }),
-              // Showiness indicator (small badge)
               h('rect', { x: 4, y: 4, width: 38, height: 16, fill: 'rgba(255,255,255,0.85)', rx: 4 }),
               h('text', { x: 23, y: 16, fontSize: '10', fill: '#1e293b', fontWeight: 'bold', textAnchor: 'middle' }, 'S=' + s.toFixed(2))
-            )
+            ),
+            eaten && h('span', { 'aria-hidden': true, className: 'absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-xs font-black text-rose-800 bg-white/85 py-1' }, '🦊 ' + t('stem.evolab.taken_by_a_predator', 'taken by a predator'))
           );
         };
 
-        // History chart of mean + max showiness over rounds
+        // History chart: mean + max showiness and mean female preference.
         var renderChart = function() {
           var hist = historyRef.current;
           var W = 500, H = 180, padL = 32, padR = 8, padT = 12, padB = 24;
-          var xMax = Math.max(MAX_ROUNDS, hist.length);
+          var xMax = Math.max(MAX_ROUNDS, hist.length - 1);
           var toX = function(i) { return padL + (i / xMax) * (W - padL - padR); };
           var toY = function(p) { return padT + (1 - p) * (H - padT - padB); };
           var meanPath = hist.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + toX(i) + ' ' + toY(pt.mean); }).join(' ');
           var maxPath = hist.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + toX(i) + ' ' + toY(pt.max); }).join(' ');
+          var prefPath = hist.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + toX(i) + ' ' + toY(pt.pref); }).join(' ');
+          var legend = function(color, label, dashed) {
+            return h('span', { className: 'flex items-center gap-1' },
+              h('span', { style: { width: 12, height: 0, borderTop: '2px ' + (dashed ? 'dashed' : 'solid') + ' ' + color, display: 'inline-block' } }),
+              h('span', null, label));
+          };
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
-            h('div', { className: 'flex items-center justify-between mb-2' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.showiness_over_rounds', 'Showiness Over Rounds')),
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.showiness_and_preference_over_rounds', 'Showiness and preference over rounds')),
               h('div', { className: 'flex gap-3 text-[0.625rem]' },
-                h('span', { className: 'flex items-center gap-1' },
-                  h('span', { style: { width: 12, height: 2, backgroundColor: '#ec4899', display: 'inline-block' } }),
-                  h('span', null, t('stem.evolab.mean', 'Mean'))
-                ),
-                h('span', { className: 'flex items-center gap-1' },
-                  h('span', { style: { width: 12, height: 2, backgroundColor: '#7c3aed', display: 'inline-block' } }),
-                  h('span', null, 'Max')
-                )
+                legend('#ec4899', t('stem.evolab.mean_showiness_males', 'Mean showiness (males)')),
+                legend('#7c3aed', t('stem.evolab.max', 'Max'), true),
+                legend('#0891b2', t('stem.evolab.mean_preference_females', 'Mean preference (females)'))
               )
             ),
-            h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', role: 'img', 'aria-label': t('stem.evolab.mean_and_max_showiness_over_rounds', 'Mean and max showiness over rounds.') },
+            h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', role: 'img', 'aria-label': __alloFill(__alloT('stem.evolab.a11y_showiness_preference_chart', 'Mean and max male showiness and mean female preference over {value1} rounds. Latest mean showiness {value2}, latest mean preference {value3}.'), { value1: hist.length - 1, value2: hist[hist.length - 1].mean.toFixed(2), value3: hist[hist.length - 1].pref.toFixed(2) }) },
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
               h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
@@ -5557,17 +8348,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, '0.0'),
               h('text', { x: padL, y: H - 8, fontSize: '10', fill: '#475569' }, t('stem.evolab.round_0', 'round 0')),
               h('text', { x: W - padR - 50, y: H - 8, fontSize: '10', fill: '#475569' }, 'round ' + xMax),
+              hist.length > 1 && h('path', { d: prefPath, stroke: '#0891b2', strokeWidth: 2, fill: 'none' }),
               hist.length > 1 && h('path', { d: meanPath, stroke: '#ec4899', strokeWidth: 2.4, fill: 'none' }),
               hist.length > 1 && h('path', { d: maxPath, stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '4,2', fill: 'none' })
-            )
+            ),
+            h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.evolab.pref_line_caption', 'Cyan is the females\' inherited preference. Fisher\'s runaway says it should ride up with the ornament, because choosy mothers and showy fathers make chicks carrying both. In 24 birds over a few dozen rounds that pull is too weak to beat chance, so expect the cyan line to wander. The escalation you see is powered by the preference that already exists; set it with the choosiness slider.'))
           );
         };
 
         // Stats
-        var pop = birdsRef.current;
-        var sum = 0; for (var i = 0; i < pop.length; i++) sum += pop[i].showiness;
-        var mean = pop.length > 0 ? sum / pop.length : 0;
-        var max = pop.length > 0 ? Math.max.apply(null, pop.map(function(b) { return b.showiness; })) : 0;
+        var males = malesRef.current;
+        var females = femalesRef.current;
+        var mean = meanOf(males, 'showiness');
+        var max = maxOf(males, 'showiness');
+        var prefMean = meanOf(females, 'pref');
+        var startMean = historyRef.current.length ? historyRef.current[0].mean : 0.3;
+        var aliveMales = males.filter(function(m) { return !m.eaten; }).length;
+
+        var mateOutcome = function() {
+          if (phase !== 'done' || historyRef.current.length < 2) return null;
+          var delta = mean - startMean;
+          if (delta < -0.1) return 'drop';
+          if (Math.abs(delta) <= 0.1) return 'flat';
+          if (mean >= 0.75) return 'runaway';
+          return 'plateau';
+        };
+
+        var mateSnapshot = function() {
+          if (round <= 0 || historyRef.current.length < 2) return null;
+          var costs = costLogRef.current;
+          var costSetting = costs.length && costs.every(function(c) { return c; }) ? 'On' : costs.length && costs.every(function(c) { return !c; }) ? 'Off' : 'Changed mid-run';
+          var picks = studentPicksRef.current;
+          var showyPicks = picks.filter(function(p) { return p.of > 1 && p.rank >= p.of - 3; }).length;
+          var strategy = picks.length === 0 ? 'none' : showyPicks / picks.length >= 0.75 ? 'showiest' : showyPicks / picks.length <= 0.25 ? 'dullest / mixed' : 'mixed';
+          var shift = mean - startMean;
+          var eatenTotal = historyRef.current.reduce(function(sum, pt) { return sum + (pt.eaten || 0); }, 0);
+          return {
+            sourceRunKey: sessionRef.current,
+            moduleLabel: 'Mate Choice Lab',
+            comparison: {
+              designKey: 'cost=' + costSetting + '|rounds=' + round + '|strategy=' + strategy,
+              designLabel: 'predator cost ' + costSetting + ', ' + round + ' rounds, student picked the ' + strategy,
+              primaryLabel: 'mean showiness shift',
+              primaryValue: shift,
+              primaryDisplay: (shift >= 0 ? '+' : '') + shift.toFixed(3),
+              precision: 3,
+              unit: '',
+              factors: [
+                { id: 'predatorCost', label: 'Predator cost', value: costSetting },
+                { id: 'rounds', label: 'Rounds', value: round },
+                { id: 'studentStrategy', label: 'Student pick strategy', value: strategy }
+              ]
+            },
+            baseline: 'Round 0: ' + N_MALES + ' males, mean showiness ' + startMean.toFixed(3) + '; ' + N_FEMALES + ' females, mean preference ' + historyRef.current[0].pref.toFixed(3) + '.',
+            settings: 'Predator cost ' + costSetting + '; student mate sires ' + STUDENT_OFFSPRING + ' of ' + (N_MALES + N_FEMALES) + ' chicks; other females choose by heritable preference; both genes inherited as parental midpoint ± σ 0.05.',
+            outcome: 'Round ' + round + ': mean showiness ' + mean.toFixed(3) + ' (Δ ' + (shift >= 0 ? '+' : '') + shift.toFixed(3) + '), max ' + max.toFixed(3) + '; mean female preference ' + prefMean.toFixed(3) + '; ' + eatenTotal + ' males taken by predators across the run.',
+            metrics: [
+              { label: 'Rounds', value: String(round) },
+              { label: 'Mean showiness shift', value: (shift >= 0 ? '+' : '') + shift.toFixed(3) },
+              { label: 'Mean female preference', value: prefMean.toFixed(3) },
+              { label: 'Males lost to predators', value: String(eatenTotal) },
+              { label: 'Predator cost', value: costSetting }
+            ]
+          };
+        };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🦚', title: t('stem.evolab.mate_choice_lab_2', 'Mate Choice Lab') }),
@@ -5576,17 +8420,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-pink-600 to-fuchsia-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🦚'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-mateChoice' },
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.you_pick_the_mate', 'You pick the mate')),
-                  h('p', { className: 'text-sm text-pink-50 mt-1' }, t('stem.evolab.each_round_you_see_12_male_birds_with_', 'Each round you see 12 male birds with varying tail showiness. You pick one to be the parent of the next generation. The others don\'t reproduce. Watch how YOUR choices drive the population. Without a predator cost, showiness escalates indefinitely (the famous "runaway sexual selection" model). With a cost, it stabilizes — like real peacocks who have to balance attractiveness against being eaten.'))
-                )
+                  h('p', { className: 'text-sm text-pink-50 mt-1' }, t('stem.evolab.mate_choice_hero_v2', 'Each round you see 12 male birds with varying tail showiness. You are one of 12 females: pick a mate, and he fathers a quarter of the next generation. The other 11 females choose by an inherited PREFERENCE for showy tails: a choosy female compares four males and takes the showiest. Tail and preference both pass to the chicks. With no predator the ornament escalates. Turn the predator on and showy males start disappearing before they can mate; the escalation stalls where attraction and survival balance, which is where real peacocks live. Use Fast-forward to see where the population settles.'))
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-mateChoice', className: 'ml-auto' })
               )
             ),
+            h(PredictCard, {
+              moduleId: 'mateChoice',
+              border: 'border-pink-400', heading: 'text-pink-800',
+              question: t('stem.evolab.predict_mate_q', 'With the predator cost as it is set now, and you picking the showiest surviving male every round, where will average showiness be when the run ends?'),
+              options: [
+                { id: 'runaway', label: t('stem.evolab.predict_mate_runaway', 'High: it climbs past 0.75 and keeps going.') },
+                { id: 'plateau', label: t('stem.evolab.predict_mate_plateau', 'It rises, then stalls somewhere below 0.75.') },
+                { id: 'flat', label: t('stem.evolab.predict_mate_flat', 'It stays about where it started.') },
+                { id: 'drop', label: t('stem.evolab.predict_mate_drop', 'It falls.') }
+              ],
+              pendingHint: t('stem.evolab.predict_mate_hint', 'Your answer should depend on whether the predator cost is on. Run it both ways, and use Fast-forward to see where each one settles.'),
+              locked: phase !== 'intro',
+              outcomeId: mateOutcome(),
+              observedDetail: phase === 'done' ? 'Mean showiness ' + startMean.toFixed(2) + ' → ' + mean.toFixed(2) + '; female preference now ' + prefMean.toFixed(2) + '; predator cost ' + (costLogRef.current.every(function(c) { return c; }) ? 'on' : costLogRef.current.every(function(c) { return !c; }) ? 'off' : 'changed mid-run') + '.' : '',
+              explain: {
+                runaway: t('stem.evolab.explain_mate_runaway', 'With no survival cost, nothing pushes back. Showy males get most of the matings and their sons inherit the ornament, so the average climbs toward the maximum and stays there. Real ornaments stop growing only when a cost appears.'),
+                plateau: t('stem.evolab.explain_mate_plateau', 'Showiness rose, then stalled. With the predator on, males above about 0.8 almost never survive to the display ground, so beyond a point extra showiness costs more matings (by death) than it wins. Sexual selection pushing up met natural selection pushing down; the population settled where they balance. If the predator was OFF and you still see this, the run was short: fast-forward and watch it keep climbing.'),
+                flat: t('stem.evolab.explain_mate_flat', 'The average barely moved. That happens with very few rounds, mixed picks, or a predator so effective that showy males rarely survive to be chosen. Selection needs consistent direction to move a trait.'),
+                drop: t('stem.evolab.explain_mate_drop', 'Showiness fell because dull males were the ones that mated, either by your picks or because the predator kept removing the showy ones. Mate choice can drive a trait in any direction; there is nothing special about \"more\".')
+              }
+            }),
             // Stats
-            h('div', { className: 'grid grid-cols-4 gap-3' },
-              h(StatCard, { label: t('stem.evolab.round', 'Round'), value: round + ' / ' + MAX_ROUNDS, color: 'text-pink-700' }),
-              h(StatCard, { label: t('stem.evolab.mean_showiness', 'Mean Showiness'), value: mean.toFixed(2), color: 'text-fuchsia-700' }),
-              h(StatCard, { label: t('stem.evolab.max_showiness', 'Max Showiness'), value: max.toFixed(2), color: 'text-violet-700' }),
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-3' },
+              h(StatCard, { label: t('stem.evolab.round', 'Round'), value: round < MAX_ROUNDS ? round + ' / ' + MAX_ROUNDS : String(round), color: 'text-pink-700', unit: round >= MAX_ROUNDS ? t('stem.evolab.hands_on_rounds_done', 'hands-on rounds done') : '' }),
+              h(StatCard, { label: t('stem.evolab.mean_showiness', 'Mean Showiness'), value: mean.toFixed(2), color: 'text-fuchsia-700', unit: t('stem.evolab.males', 'males') }),
+              h(StatCard, { label: t('stem.evolab.mean_preference', 'Mean Preference'), value: prefMean.toFixed(2), color: 'text-cyan-700', unit: t('stem.evolab.females_0_indifferent_1_choosy', 'females · 0 indifferent, 1 choosy') }),
+              h(StatCard, { label: t('stem.evolab.taken_by_predators', 'Taken by predators'), value: eatenThisRound + ' / ' + N_MALES, color: eatenThisRound > 0 ? 'text-rose-700' : 'text-slate-600', unit: t('stem.evolab.this_round', 'this round') }),
               h(StatCard, { label: t('stem.evolab.cost', 'Cost'), value: predatorCost ? 'Predator ON' : 'No cost', color: predatorCost ? 'text-rose-700' : 'text-emerald-700' })
             ),
             // Round message
@@ -5594,22 +8461,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             // 12-bird grid
             phase !== 'intro' && h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' },
-                phase === 'choosing' ? '🦚 Round ' + (round + 1) + ' — Pick the male you find most attractive' : '🏁 Final population'
+                phase === 'choosing' ? '🦚 Round ' + (round + 1) + ' — Pick the male you find most attractive (' + aliveMales + ' of ' + N_MALES + ' survived to the display ground)' : '🏁 Final population'
               ),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' },
-                pop.map(function(b, idx) { return renderBird(b, idx); })
+                males.map(function(b) { return renderBird(b); })
               )
             ),
             // History chart
             historyRef.current.length > 1 && renderChart(),
+            // Female choosiness (starting preference) — locked while a run is live
+            h(LabeledSlider, {
+              label: t('stem.evolab.female_choosiness_at_start', 'Female choosiness at start'),
+              value: choosiness, min: 0, max: 1, step: 0.05,
+              onChange: function(v) { if (phase !== 'choosing') setChoosiness(v); },
+              valueText: Math.round(choosiness * 100) + '% ' + t('stem.evolab.choose_by_looks', 'choose by looks') + (phase === 'choosing' ? ' · ' + t('stem.evolab.locked_during_run', 'locked during a run') : ''),
+              accent: 'accent-cyan-600',
+              hint: t('stem.evolab.choosiness_hint', 'The other 11 females\' starting preference: the chance each one compares four males and takes the showiest instead of mating at random. Applies on Restart. At 0 only YOUR choices drive the ornament.')
+            }),
             // Predator cost toggle
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex items-center justify-between gap-3' },
               h('div', null,
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.predator_cost', '🦅 Predator Cost')),
                 h('div', { className: 'text-sm text-slate-600' },
                   predatorCost
-                    ? 'ON — showy males die more often. Sexual selection vs natural selection in tension.'
-                    : 'OFF — no penalty for being showy. Runaway selection: trait escalates without limit.'
+                    ? t('stem.evolab.predator_cost_on_desc', 'ON — before each round, a male survives with probability 1 − 1.6 × showiness². A male at 0.5 survives 60% of the time; above ~0.8 almost none reach the display ground. Sexual selection vs natural selection in tension.')
+                    : t('stem.evolab.predator_cost_off_desc', 'OFF — no penalty for being showy. Runaway selection: ornament and preference escalate together.')
                 )
               ),
               h('button', {
@@ -5631,10 +8507,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', { className: 'flex-1' },
                   h('h3', { className: 'text-xl font-black' }, t('stem.evolab.your_choices_shaped_the_population', 'Your choices shaped the population')),
                   h('p', { className: 'text-sm text-pink-50 mt-1' },
-                    'Mean showiness shifted from ~0.30 to ' + mean.toFixed(2) + ' across ' + round + ' rounds. ' +
+                    'Mean showiness shifted from ' + startMean.toFixed(2) + ' to ' + mean.toFixed(2) + ' across ' + round + ' rounds; mean female preference is now ' + prefMean.toFixed(2) + '. ' +
                     (predatorCost
-                      ? 'Predator cost balanced the runaway — note how the trend stabilized rather than racing to 1.0.'
-                      : 'Without predator cost, runaway selection drove showiness rapidly upward.'
+                      ? 'With the predator on, showy males kept disappearing before mating, so the trend stalled instead of racing to 1.0.'
+                      : 'Without a predator cost, ornament and preference fed each other upward.'
                     )
                   ),
                   h('button', {
@@ -5644,9 +8520,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 )
               )
             ),
+            phase !== 'intro' && h('div', { className: 'flex justify-center' },
+              h('button', {
+                onClick: fastForward,
+                className: 'transition-colors px-5 py-2.5 rounded-xl font-bold bg-cyan-700 hover:bg-cyan-800 text-white shadow',
+                'aria-label': __alloFill(__alloT('stem.evolab.a11y_fast_forward_rounds', 'Fast-forward {value1} rounds with every female choosing by her inherited preference'), { value1: FAST_FORWARD_ROUNDS })
+              }, '⏩ ' + __alloFill(__alloT('stem.evolab.fast_forward_rounds', 'Fast-forward {value1} rounds (females choose by preference)'), { value1: FAST_FORWARD_ROUNDS }))
+            ),
             phase === 'choosing' && h('div', { className: 'flex justify-center gap-3' },
               h('button', {
-                onClick: function() { setPhase('done'); },
+                onClick: endEarly,
                 className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-amber-200 hover:bg-amber-300 text-amber-900'
               }, t('stem.evolab.end_selection', '⏹️ End Selection')),
               h('button', {
@@ -5654,17 +8537,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
               }, t('stem.evolab.restart', '↺ Restart'))
             ),
-            // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-pink-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-pink-800 mb-3' }, t('stem.evolab.try_these_experiments_9', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.runaway_selection', 'Runaway selection: ')), t('stem.evolab.with_predator_cost_off_always_pick_the', 'With Predator Cost OFF, always pick the showiest bird. Within ~8 rounds, the population is at maximum showiness (1.0). This is the Fisher runaway model.')),
-                h('li', null, h('strong', null, t('stem.evolab.stabilizing_balance', 'Stabilizing balance: ')), t('stem.evolab.restart_with_predator_cost_on_pick_the', 'Restart with Predator Cost ON. Pick the showiest bird each round. The trait still rises but plateaus — predator cost prevents runaway. Real-world peacocks live here.')),
-                h('li', null, h('strong', null, t('stem.evolab.pick_something_different', 'Pick something different: ')), t('stem.evolab.try_picking_the_least_showy_bird_each_', 'Try picking the LEAST showy bird each round. The population evolves toward dull/cryptic. Female preference can drive evolution in any direction — including toward camouflage if predators are intense.')),
-                h('li', null, h('strong', null, t('stem.evolab.mix_strategies', 'Mix strategies: ')), t('stem.evolab.pick_the_showiest_for_3_rounds_then_sw', 'Pick the showiest for 3 rounds, then switch to picking modestly showy birds. The trait briefly drops, but the genetic momentum from earlier rounds means it doesn\'t crash all the way down. Selection has memory.')),
-                h('li', null, h('strong', null, t('stem.evolab.compare_with_predator_vision_2', 'Compare with Predator Vision: ')), t('stem.evolab.in_predator_vision_lab_your_selection_', 'In Predator Vision Lab, your selection drove camouflage (cryptic, hard-to-see). Here, it drives showiness (conspicuous, easy-to-see). Same MECHANISM (heritable variation + selection), opposite DIRECTION.'))
-              )
-            ),
+            h(CapstoneCapture, {
+              moduleId: 'mateChoice',
+              moduleLabel: 'Mate Choice Lab',
+              sourceRunKey: sessionRef.current,
+              ready: round > 0 && phase !== 'choosing',
+              readyHint: 'Save the starting showiness and preference, the predator setting, your pick strategy, and the final shift.',
+              emptyHint: phase === 'choosing' ? 'End the selection to freeze a consistent round before capturing.' : 'Choose at least one mate before capturing.',
+              getSnapshot: mateSnapshot
+            }),
+            phase !== 'intro' && h(CheckCard, {
+              moduleId: 'mateChoice',
+              border: 'border-pink-400', heading: 'text-pink-800',
+              question: t('stem.evolab.check_mate_q', 'A peacock\'s tail makes it easier for predators to catch. Why hasn\'t natural selection removed it?'),
+              options: [
+                { id: 'weak', label: t('stem.evolab.check_mate_weak', 'Sexual selection is weaker than natural selection, so the tail is slowly disappearing.'), feedback: t('stem.evolab.check_mate_weak_fb', 'Sexual selection is not the weaker force; it built the tail in the first place. In your run, the ornament rose even with the predator on, until the two pressures balanced. The tail persists because mating success and survival are both part of fitness.') },
+                { id: 'balance', label: t('stem.evolab.check_mate_balance', 'A showier male loses some survival but gains more matings; the tail stops growing where those two effects cancel.'), correct: true, feedback: t('stem.evolab.check_mate_balance_fb', 'Yes. Fitness is offspring left behind, not survival alone. A male eaten at 3 years old after siring twenty chicks out-reproduces a cautious male who lives to 10 with two. With the predator on, your population settled where the mating gain of extra showiness equalled its survival cost.') },
+                { id: 'choose', label: t('stem.evolab.check_mate_choose', 'Peacocks choose to grow big tails to impress females.'), feedback: t('stem.evolab.check_mate_choose_fb', 'No individual chooses its tail. Tail size is inherited; the males in your grid were born with their showiness and could not change it. What changed across rounds was which males got to be fathers.') },
+                { id: 'predators', label: t('stem.evolab.check_mate_predators', 'Predators cannot see the tail, so it has no survival cost.'), feedback: t('stem.evolab.check_mate_predators_fb', 'The cost is real: in your run the predator took the showiest males most often (survival = 1 − 1.6 × showiness²). The trait persists DESPITE the cost, which is exactly what makes it interesting.') }
+              ]
+            }),
+            h(ExperimentList, {
+              moduleId: 'mateChoice',
+              challenges: [
+                { id: 'plateauUnder70', title: t('stem.evolab.ch_plateau', 'Hold the balance: '), body: t('stem.evolab.ch_plateau_body', 'With the predator ON for the whole run, get past round 30 (use Fast-forward) with mean showiness risen but still under 0.70. That is the peacock\'s equilibrium.'), record: { id: 'peakShowiness', label: t('stem.evolab.highest_mean_showiness', 'highest mean showiness') } },
+                { id: 'dullOut', title: t('stem.evolab.ch_dull', 'Against the tide: '), body: t('stem.evolab.ch_dull_body', 'Set choosiness to 0.65 or higher, then drive mean showiness below 0.15 with your picks alone. The other females will fight you every round.') }
+              ],
+              border: 'border-pink-400', heading: 'text-pink-800',
+              title: t('stem.evolab.try_these_experiments_9', '🧪 Try these experiments'),
+              items: [
+                { id: 'runaway', auto: true, title: t('stem.evolab.runaway_selection', 'Runaway selection: '), body: t('stem.evolab.with_predator_cost_off_always_pick_the', 'With Predator Cost OFF, pick the showiest bird for 12 rounds, then Fast-forward. The population climbs to and stays near maximum showiness. Nothing pushes back.') },
+                { id: 'balance', auto: true, title: t('stem.evolab.stabilizing_balance', 'Stabilizing balance: '), body: t('stem.evolab.restart_with_predator_cost_on_pick_the', 'Restart with Predator Cost ON and leave it on. Pick the showiest surviving bird each round, then Fast-forward past round 20. The trait rises but settles around 0.6-0.7, because males above ~0.8 keep getting taken before they can mate. Real-world peacocks live here.') },
+                { id: 'pickDull', auto: true, title: t('stem.evolab.pick_something_different', 'Pick something different: '), body: t('stem.evolab.try_picking_the_least_showy_bird_each_', 'Try picking the LEAST showy bird each round. Your quarter of the chicks pulls the average down, but the other females keep choosing showy fathers. Set choosiness to 0.9 and try again: now the population fights you.') },
+                { id: 'mix', title: t('stem.evolab.mix_strategies', 'Mix strategies: '), body: t('stem.evolab.pick_the_showiest_for_3_rounds_then_sw', 'Pick the showiest for 3 rounds, then switch to picking modestly showy birds. The trait dips, but the other females\' preference keeps pushing it back up. Selection has memory, and here the memory is in the preference gene.') },
+                { id: 'compare', title: t('stem.evolab.compare_with_predator_vision_2', 'Compare with Predator Vision: '), body: t('stem.evolab.in_predator_vision_lab_your_selection_', 'In Predator Vision Lab, your selection drove camouflage (cryptic, hard-to-see). Here, it drives showiness (conspicuous, easy-to-see). Same MECHANISM (heritable variation + selection), opposite DIRECTION.') }
+              ]
+            }),
             // Real-world callout
             h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-pink-800 mb-2' }, t('stem.evolab.real_biology', '📖 Real biology')),
@@ -5672,7 +8580,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', null, h('strong', null, 'Peacocks: '), t('stem.evolab.male_peacocks_have_absurd_tail_trains_', 'Male peacocks have absurd tail trains — 5 feet long, with up to 200 eyespots. The tail makes flying harder and attracts predators. Why do they have it? Female peahens prefer it. The tail evolved because females consistently picked the showiest males for thousands of generations.')),
                 h('p', null, h('strong', null, t('stem.evolab.birds_of_paradise', 'Birds of paradise: ')), t('stem.evolab.40_species_in_new_guinea_all_descended', '~40 species in New Guinea, all descended from a crow-like ancestor. Each species has a different bizarre display: spinning ribbons, head shaking, capes that flip up, dance moves. All driven by female mate preference operating in isolation on different islands.')),
                 h('p', null, h('strong', null, 'Guppies: '), t('stem.evolab.trinidad_guppies_have_vivid_spots_in_s', 'Trinidad guppies have vivid spots in safe streams (mate choice wins) but dull spots in predator-rich streams (natural selection wins). Same species, different equilibria — exactly the dynamic the predator cost toggle models.')),
-                h('p', null, h('strong', null, t('stem.evolab.why_this_matters_3', 'Why this matters: ')), t('stem.evolab.sexual_selection_is_one_of_the_major_e', 'Sexual selection is one of the major engines of evolution. It drives speciation, ornamentation, song, courtship dances. It also explains why some traits seem maladaptive — they\'re not optimizing survival; they\'re optimizing reproduction.'))
+                h('p', null, h('strong', null, t('stem.evolab.why_this_matters_3', 'Why this matters: ')), t('stem.evolab.sexual_selection_is_one_of_the_major_e', 'Sexual selection is one of the major engines of evolution. It drives speciation, ornamentation, song, courtship dances. It also explains why some traits seem maladaptive — they\'re not optimizing survival; they\'re optimizing reproduction.')),
+                h('p', null, h('strong', null, t('stem.evolab.what_this_model_leaves_out', 'What this model leaves out: ')), t('stem.evolab.mate_model_limits', 'Real preference and ornament are polygenic, condition-dependent, and shaped by \"good genes\" signalling as well as Fisherian feedback. Twelve birds and twelve rounds exaggerate every effect so it is visible in a class period.'))
               )
             ),
             // Cross-module suggestion
@@ -5683,17 +8592,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_seen_sexual_selection_within_a_', 'You\'ve seen sexual selection within a population. The Coevolution Lab shows what happens when TWO populations evolve in response to each other — natural selection\'s answer to sexual selection.')
               )
             ),
+            h(KeyTerms, { moduleId: 'mateChoice', heading: 'text-pink-800' }),
+            h(FieldNote, { moduleId: 'mateChoice', border: 'border-pink-400', heading: 'text-pink-800', prompt: t('stem.evolab.note_prompt_mate', 'Where did showiness settle with the predator on, and why there? What would a female peahen "want" if she could want anything?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5', 'HS-LS4-6'],
               questions: [
                 'In the Predator Vision Lab, your selection produced camouflage. Here, your selection produced showiness. What does that tell you about the role of selection PRESSURE vs the role of TRAITS?',
                 'A peacock\'s tail makes it easier for predators to spot. Why hasn\'t natural selection eliminated the trait?',
-                'Real peahens prefer showier tails. Could this preference itself have evolved? How?',
+                'Real peahens prefer showier tails. In this model the preference itself rose. Trace WHY: which chicks inherit a strong preference, and who were their fathers?',
                 'Sexual selection sometimes produces traits that look "maladaptive" (energetically costly, predator-attracting). How is this consistent with evolution by natural selection?'
               ],
               misconceptions: [
                 'Students may think sexual selection is "weaker" or "less real" than natural selection. It isn\'t — it produces some of the most striking traits in nature (peacock tails, lion manes, deer antlers).',
-                'Students often think mate choice is conscious. The selection mechanism doesn\'t require conscious decision-making — birds, fish, and insects all show mate-choice patterns without anything like deliberation.',
+                'Students often think mate choice is conscious. The selection mechanism doesn\'t require conscious decision-making — the eleven modelled females here choose by a number, and the runaway still happens.',
                 'Students may project human attractiveness onto the simulation. The sim is intentionally about non-human creatures (birds) — the underlying mechanism is the same, but the mechanism applies to species that aren\'t making "choices" in any cognitively rich sense.'
               ],
               extension: 'Pick a real species with extreme sexually-selected traits (peacock, bird of paradise, fiddler crab, deer, elephant seal). Research: how big is the trait? What does mate choice / display look like? What predator cost does the trait impose?'
@@ -5744,6 +8655,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var env = ENVIRONMENTS[envId];
         var popRef = useRef([]);
         var historyRef = useRef([]);
+        // Start-of-hunt colours for the before/after histogram, and a log of
+        // mid-hunt environment changes (the "climate changed" experiment).
+        var initialTraitsRef = useRef([]);
+        var envSwitchesRef = useRef([]);
+        var startEnvRef = useRef('forest');
+        var huntSessionRef = useRef('');
+        var keyboardHuntsRef = useRef(0);
+        // Two saved hunts for side-by-side comparison (the partner / strategy experiments).
+        var savedRunsState = useState({}), savedRuns = savedRunsState[0], setSavedRuns = savedRunsState[1];
+        var RUN_COLORS = { A: '#0284c7', B: '#7c3aed' };
         var canvasRef = useRef(null);
         var rafRef = useRef(null);
         var roundState = useState(0), round = roundState[0], setRound = roundState[1];
@@ -5765,6 +8686,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var phaseRef = useRef(phase);
         phaseRef.current = phase;
 
+        // Completion + auto-detected experiments fire from the hunt itself.
+        var finishHunt = function(roundsDone, times, meanNow) {
+          var e = envRef.current;
+          if (roundsDone >= 6) markComplete('predatorVision', 'Hunted ' + roundsDone + ' rounds in ' + e.label + '; mean trait ' + meanNow.toFixed(2) + ' vs ideal ' + e.idealTrait.toFixed(2) + '.');
+          if (roundsDone >= 12) setRecord('predatorVision', 'camoAt12', Math.max(0, Math.round((1 - Math.abs(meanNow - e.idealTrait)) * 100)), { label: 'Camouflage after 12 rounds', unit: '%', better: 'max' });
+          if (times.length >= 10 && times[times.length - 1] > times[0]) detectExperiment('predatorVision', 'raceTime', 'Race against your own evolution');
+          if (roundsDone >= 5 && Math.abs(meanNow - e.idealTrait) < 0.1) detectExperiment('predatorVision', 'chart', 'Check the chart');
+        };
+
         var initPopulation = function() {
           var pop = [];
           for (var i = 0; i < POP_SIZE; i++) {
@@ -5783,20 +8713,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           popRef.current = pop;
           var sum = 0; for (var k = 0; k < pop.length; k++) sum += pop[k].trait;
           historyRef.current = [{ round: 0, mean: sum / pop.length, time: 0, kills: 0 }];
+          initialTraitsRef.current = pop.map(function(p) { return p.trait; });
+          envSwitchesRef.current = [];
+          startEnvRef.current = envIdRef.current;
+          keyboardHuntsRef.current = 0;
+          huntSessionRef.current = newCapstoneSourceRunKey('predatorVision');
           setRound(0); setKills(0); setTotalKills(0); setRoundTimes([]); setPhase('intro'); setMsg('');
         };
 
         // Kill a prey — survivors reproduce when KILLS_PER_ROUND is hit.
-        var killPrey = function(pid) {
+        var killPreyIds = function(ids) {
           if (phaseRef.current !== 'hunting') return;
           var pop = popRef.current;
-          var idx = pop.findIndex(function(p) { return p.id === pid && p.alive; });
-          if (idx < 0) return;
-          pop[idx].alive = false;
-          // Move the dead prey off-canvas
-          pop[idx].x = -100; pop[idx].y = -100;
-          var newKills = kills + 1;
-          var newTotal = totalKills + 1;
+          var killed = 0;
+          ids.forEach(function(pid) {
+            var idx = pop.findIndex(function(p) { return p.id === pid && p.alive; });
+            if (idx < 0) return;
+            pop[idx].alive = false;
+            // Move the dead prey off-canvas
+            pop[idx].x = -100; pop[idx].y = -100;
+            killed++;
+          });
+          if (!killed) return;
+          var newKills = kills + killed;
+          var newTotal = totalKills + killed;
           setKills(newKills);
           setTotalKills(newTotal);
           if (newKills >= KILLS_PER_ROUND) {
@@ -5809,6 +8749,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             for (var s = 0; s < survivors.length; s++) sumS += survivors[s].trait;
             var meanSurvivors = survivors.length > 0 ? sumS / survivors.length : 0.5;
             historyRef.current.push({ round: round + 1, mean: meanSurvivors, time: time, kills: KILLS_PER_ROUND });
+            var camoNow = Math.max(0, Math.round((1 - Math.abs(meanSurvivors - envRef.current.idealTrait)) * 100));
+            // By eye only: the keyboard rule removes the most visible prey algorithmically, which makes these trivial.
+            if (keyboardHuntsRef.current === 0 && camoNow >= 90 && round + 1 <= 8) detectChallenge('predatorVision', 'camo90in8', 'Sharp eyes: 90% camouflage by round 8', round + 1);
+            if (keyboardHuntsRef.current === 0 && camoNow >= 90) setRecord('predatorVision', 'fastestTo90', round + 1, { label: 'Fewest rounds to 90% camouflage (by eye)', unit: ' rounds', better: 'min' });
+            if (envSwitchesRef.current.length > 0 && camoNow >= 80 && round + 1 > envSwitchesRef.current[envSwitchesRef.current.length - 1].round) detectChallenge('predatorVision', 'reAdapt', 'Re-adapt after an environment change', camoNow);
             // Reproduce: each survivor produces offspring back to POP_SIZE
             var nextPop = survivors.slice();
             while (nextPop.length < POP_SIZE && survivors.length > 0) {
@@ -5831,11 +8776,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             if (round + 1 >= MAX_ROUNDS) {
               setPhase('done');
               setMsg('🎯 Hunt complete! Look how the population shifted toward camouflage.');
+              finishHunt(round + 1, newRoundTimes, meanSurvivors);
             } else {
+              if (round + 1 >= 5 && Math.abs(meanSurvivors - envRef.current.idealTrait) < 0.1) detectExperiment('predatorVision', 'chart', 'Check the chart');
               setMsg('Round ' + (round + 1) + ' survivors reproduce → fresh population. Keep hunting!');
               setTimeout(function() { setMsg(''); }, 2200);
             }
           }
+        };
+
+        var killPrey = function(pid) { killPreyIds([pid]); };
+
+        // One press finishes the round by the keyboard rule: removes the remaining
+        // most-visible prey for this round, then reproduction runs as usual.
+        var huntRoundByRule = function() {
+          if (phaseRef.current !== 'hunting') return;
+          var live = popRef.current.filter(function(prey) { return prey.alive; });
+          var need = Math.max(0, KILLS_PER_ROUND - kills);
+          if (!live.length || !need) return;
+          var ideal = env.idealTrait;
+          var ids = live.slice().sort(function(a, b) { return Math.abs(b.trait - ideal) - Math.abs(a.trait - ideal); }).slice(0, need).map(function(p) { return p.id; });
+          keyboardHuntsRef.current += ids.length;
+          killPreyIds(ids);
         };
 
         var startHunt = function() {
@@ -5853,6 +8815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var canvas = canvasRef.current;
           if (!canvas) return;
           var ctx = canvas.getContext('2d');
+          if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
             var dt = Math.min(0.05, (now - lastT) / 1000);
@@ -5976,7 +8939,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var target = live.reduce(function(best, prey) {
             return Math.abs(prey.trait - env.idealTrait) > Math.abs(best.trait - env.idealTrait) ? prey : best;
           }, live[0]);
+          keyboardHuntsRef.current++;
           killPrey(target.id);
+        };
+
+        // Mid-hunt environment change keeps the population: the camouflage they
+        // evolved for one background is now measured against another. This is
+        // the single most instructive moment in the lab (adaptation is local, not
+        // progress), so it must NOT reset the hunt.
+        var changeEnvironment = function(id) {
+          if (id === envId) return;
+          if (phaseRef.current === 'hunting' && round > 0) {
+            var live = popRef.current.filter(function(p) { return p.alive; });
+            var sumL = 0; for (var i = 0; i < live.length; i++) sumL += live[i].trait;
+            var meanL = live.length ? sumL / live.length : 0.5;
+            var fromLabel = ENVIRONMENTS[envId].label;
+            var toEnv = ENVIRONMENTS[id];
+            envSwitchesRef.current.push({ round: round, from: envId, to: id, meanAtSwitch: meanL });
+            setEnvId(id);
+            setMsg('🌍 Environment changed: ' + fromLabel + ' → ' + toEnv.label + '. The same prey, on a new background. Watch the camouflage score.');
+            announce(__alloFill(__alloT('stem.evolab.sr_environment_changed_mid_hunt', 'Environment changed to {value1} during the hunt. The population keeps its colours; camouflage is now measured against the new background.'), { value1: toEnv.label }));
+            if (round >= 3) detectExperiment('predatorVision', 'switchEnv', 'Switch environments mid-evolution');
+            return;
+          }
+          setEnvId(id);
+          initPopulation();
         };
 
         // History chart of mean trait over rounds
@@ -6007,10 +8994,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: toY(0) + 4, fontSize: '9', fill: '#475569' }, '0.0'),
               h('text', { x: padL, y: H - 8, fontSize: '9', fill: '#475569' }, t('stem.evolab.round_0_2', 'round 0')),
               h('text', { x: W - padR - 36, y: H - 8, fontSize: '9', fill: '#475569' }, 'round ' + xMax),
+              ['A', 'B'].map(function(slot) {
+                var run = savedRuns[slot];
+                if (!run || !run.means || run.means.length < 2) return null;
+                var dPath = run.means.map(function(m, i) { return (i === 0 ? 'M ' : 'L ') + toX(i).toFixed(1) + ' ' + toY(m).toFixed(1); }).join(' ');
+                return h('path', { key: 'run' + slot, d: dPath, stroke: RUN_COLORS[slot], strokeWidth: 1.5, strokeDasharray: '5,3', fill: 'none' });
+              }),
               hist.length > 1 && h('path', { d: pathD, stroke: '#dc2626', strokeWidth: 2, fill: 'none' }),
-              hist.length > 0 && h('circle', { cx: toX(hist.length - 1), cy: toY(hist[hist.length - 1].mean), r: 3, fill: '#dc2626' })
+              hist.length > 0 && h('circle', { cx: toX(hist.length - 1), cy: toY(hist[hist.length - 1].mean), r: 3, fill: '#dc2626' }),
+              envSwitchesRef.current.map(function(sw, i) {
+                return h('g', { key: 'sw' + i },
+                  h('line', { x1: toX(sw.round), y1: padT, x2: toX(sw.round), y2: H - padB, stroke: '#0ea5e9', strokeWidth: 1.5, strokeDasharray: '2,2' }),
+                  h('text', { x: toX(sw.round) + 2, y: padT + 9 + (i % 2) * 10, fontSize: '8', fill: '#0369a1', fontWeight: 'bold' }, '→ ' + ENVIRONMENTS[sw.to].label.replace(/^[^ ]+ /, ''))
+                );
+              })
+            ),
+            envSwitchesRef.current.length > 0 && h('div', { className: 'text-[0.625rem] text-sky-800 mt-1' }, t('stem.evolab.blue_dashed_lines_mark_environment_changes', 'Blue dashed lines mark environment changes. The green ideal line moved; the red population line had to chase it again.')),
+            (savedRuns.A || savedRuns.B) && h('div', { className: 'flex flex-wrap gap-3 text-[0.625rem] text-slate-700 mt-1' },
+              h('span', null, h('span', { style: { display: 'inline-block', width: 12, borderTop: '2px solid #dc2626', verticalAlign: 'middle', marginRight: 4 } }), t('stem.evolab.this_hunt', 'this hunt')),
+              savedRuns.A && h('span', null, h('span', { style: { display: 'inline-block', width: 12, borderTop: '2px dashed ' + RUN_COLORS.A, verticalAlign: 'middle', marginRight: 4 } }), t('stem.evolab.run_a', 'Run A') + ' · ' + savedRuns.A.env),
+              savedRuns.B && h('span', null, h('span', { style: { display: 'inline-block', width: 12, borderTop: '2px dashed ' + RUN_COLORS.B, verticalAlign: 'middle', marginRight: 4 } }), t('stem.evolab.run_b', 'Run B') + ' · ' + savedRuns.B.env)
             )
           );
+        };
+
+        // Save the finished hunt into slot A or B for comparison.
+        var saveRun = function(slot) {
+          if (phase !== 'done' || round <= 0 || historyRef.current.length < 2) return;
+          var start = historyRef.current[0];
+          var startEnv = ENVIRONMENTS[startEnvRef.current] || env;
+          var camoGain = Math.abs(start.mean - startEnv.idealTrait) - Math.abs(mean - env.idealTrait);
+          var run = {
+            env: env.label.replace(/^[^ ]+ /, ''), rounds: round, means: historyRef.current.map(function(hh) { return hh.mean; }),
+            times: roundTimes.slice(), camoGain: camoGain, camo: camouflageScore, switches: envSwitchesRef.current.length,
+            mode: keyboardHuntsRef.current === 0 ? t('stem.evolab.visual_search', 'visual search') : keyboardHuntsRef.current >= totalKills ? t('stem.evolab.keyboard_rule', 'keyboard rule') : t('stem.evolab.mixed', 'mixed'),
+            at: new Date().toISOString()
+          };
+          var next = Object.assign({}, savedRuns);
+          next[slot] = run;
+          setSavedRuns(next);
+          announce(__alloFill(__alloT('stem.evolab.sr_saved_as_run', 'Saved this hunt as Run {value1}: {value2}, {value3} rounds, camouflage gain {value4}.'), { value1: slot, value2: run.env, value3: run.rounds, value4: (camoGain >= 0 ? '+' : '') + camoGain.toFixed(2) }));
+          if (next.A && next.B) detectExperiment('predatorVision', 'strategy', 'Compare two hunts');
+        };
+
+        var renderRunComparison = function() {
+          if (!savedRuns.A && !savedRuns.B) return null;
+          var rows = ['A', 'B'].filter(function(k) { return savedRuns[k]; });
+          var cell = function(txt, key) { return h('td', { key: key, className: 'py-1.5 pr-3 text-slate-800' }, txt); };
+          return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.compare_two_hunts', '🆚 Compare two hunts')),
+              h('button', { type: 'button', onClick: function() { setSavedRuns({}); }, className: 'text-xs font-bold text-slate-600 underline' }, t('stem.evolab.clear_saved_runs', 'Clear saved runs'))
+            ),
+            h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-sm' },
+              h('caption', { className: 'sr-only' }, t('stem.evolab.saved_hunts_caption', 'Saved hunts compared')),
+              h('thead', null, h('tr', { className: 'text-left text-xs uppercase tracking-wider text-slate-600' },
+                h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.run', 'Run')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.environment', 'Environment')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.rounds', 'Rounds')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.camouflage_gain', 'Camouflage gain')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.final_camouflage', 'Final camouflage')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.round_time_first_last', 'Time first → last')), h('th', { scope: 'col', className: 'py-1 pr-3' }, t('stem.evolab.hunt_mode', 'Mode')))),
+              h('tbody', null, rows.map(function(k) {
+                var run = savedRuns[k];
+                return h('tr', { key: k, className: 'border-t border-slate-200' },
+                  h('th', { scope: 'row', className: 'py-1.5 pr-3 font-black text-left', style: { color: RUN_COLORS[k] } }, 'Run ' + k),
+                  cell(run.env, 'env'), cell(String(run.rounds), 'rounds'), cell((run.camoGain >= 0 ? '+' : '') + run.camoGain.toFixed(2), 'gain'), cell(run.camo + '%', 'camo'),
+                  cell(run.times.length ? run.times[0].toFixed(1) + 's → ' + run.times[run.times.length - 1].toFixed(1) + 's' : '—', 'time'), cell(run.mode + (run.switches ? ' · ' + run.switches + ' switch' + (run.switches === 1 ? '' : 'es') : ''), 'mode'));
+              }))
+            )),
+            rows.length === 2 && h('p', { className: 'text-xs text-slate-700 mt-2' },
+              savedRuns.A.camoGain === savedRuns.B.camoGain
+                ? t('stem.evolab.runs_tied', 'The two hunts gained the same camouflage.')
+                : __alloFill(t('stem.evolab.run_x_gained_more', 'Run {value1} gained more camouflage ({value2} vs {value3}). What differed: environment, number of rounds, who was hunting, or how selectively?'), { value1: savedRuns.A.camoGain > savedRuns.B.camoGain ? 'A' : 'B', value2: Math.max(savedRuns.A.camoGain, savedRuns.B.camoGain).toFixed(2), value3: Math.min(savedRuns.A.camoGain, savedRuns.B.camoGain).toFixed(2) }))
+          );
+        };
+
+        // Predict-observe-explain outcome, known once the hunt is done.
+        var predatorOutcome = function() {
+          if (phase !== 'done' || historyRef.current.length < 2) return null;
+          var startMean = historyRef.current[0].mean;
+          var startDist = Math.abs(startMean - env.idealTrait);
+          var nowDist = Math.abs(mean - env.idealTrait);
+          if (startDist - nowDist > 0.05) return 'toward';
+          if (nowDist - startDist > 0.05) return 'away';
+          return 'same';
+        };
+
+        var predatorSnapshot = function() {
+          if (round <= 0 || historyRef.current.length < 2) return null;
+          var start = historyRef.current[0];
+          var startEnv = ENVIRONMENTS[startEnvRef.current] || env;
+          var startDist = Math.abs(start.mean - startEnv.idealTrait);
+          var nowDist = Math.abs(mean - env.idealTrait);
+          var camoGain = startDist - nowDist;
+          var switches = envSwitchesRef.current.length;
+          var firstTime = roundTimes.length ? roundTimes[0] : null;
+          var lastTime = roundTimes.length ? roundTimes[roundTimes.length - 1] : null;
+          var huntMode = keyboardHuntsRef.current === 0 ? 'visual search' : keyboardHuntsRef.current >= totalKills ? 'keyboard (most-visible rule)' : 'mixed';
+          return {
+            sourceRunKey: huntSessionRef.current,
+            moduleLabel: 'Predator Vision Lab',
+            comparison: {
+              designKey: envId + '|rounds=' + round + '|switches=' + switches + '|mode=' + huntMode,
+              designLabel: env.label + ', ' + round + ' rounds, ' + huntMode + (switches ? ', environment changed ' + switches + ' time' + (switches === 1 ? '' : 's') : ''),
+              primaryLabel: 'camouflage gain',
+              primaryValue: camoGain,
+              primaryDisplay: (camoGain >= 0 ? '+' : '') + camoGain.toFixed(3),
+              precision: 3,
+              unit: '',
+              factors: [
+                { id: 'environment', label: 'Environment', value: env.label.replace(/^[^ ]+ /, '') },
+                { id: 'rounds', label: 'Rounds hunted', value: round },
+                { id: 'environmentSwitches', label: 'Environment switches', value: switches },
+                { id: 'huntMode', label: 'Hunt mode', value: huntMode }
+              ]
+            },
+            baseline: 'Round 0: ' + POP_SIZE + ' prey with uniform random colour; mean trait ' + start.mean.toFixed(3) + '; camouflage ideal ' + startEnv.idealTrait.toFixed(2) + ' (' + startEnv.label + ').',
+            settings: env.label + '; ' + KILLS_PER_ROUND + ' prey eaten per round; ' + round + ' rounds; offspring colour = parent ± σ 0.05; ' + huntMode + '.',
+            outcome: 'Round ' + round + ': mean trait ' + mean.toFixed(3) + '; distance to the camouflage ideal ' + nowDist.toFixed(3) + ' (started at ' + startDist.toFixed(3) + ')' + (firstTime != null && lastTime != null ? '; time to eat ' + KILLS_PER_ROUND + ' went from ' + firstTime.toFixed(1) + 's to ' + lastTime.toFixed(1) + 's' : '') + '.',
+            metrics: [
+              { label: 'Environment', value: env.label },
+              { label: 'Rounds', value: String(round) },
+              { label: 'Camouflage gain', value: (camoGain >= 0 ? '+' : '') + camoGain.toFixed(3) },
+              { label: 'Camouflage score', value: camouflageScore + '%' },
+              { label: 'Round time first → last', value: firstTime != null && lastTime != null ? firstTime.toFixed(1) + 's → ' + lastTime.toFixed(1) + 's' : 'n/a' }
+            ]
+          };
         };
 
         // Hunt times chart — shows that you slow down each round
@@ -6061,12 +9166,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-lime-700 to-green-800 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '👁️'),
-                h('div', null,
+                h('div', { id: 'evolab-hero-predatorVision' },
                   h('h2', { className: 'text-xl font-black' }, 'You are the predator'),
                   h('p', { className: 'text-sm text-lime-50 mt-1' }, t('stem.evolab.click_prey_to_eat_them_each_round_the_', 'Click prey to "eat" them. Each round, the survivors reproduce — and each generation looks slightly more like the background. By round 10, the prey will be almost invisible. The camouflage you\'re watching emerge is YOUR doing — you applied the selection pressure that produced it.'))
-                )
+                ),
+                h(SpeakButton, { tone: 'dark', targetId: 'evolab-hero-predatorVision', className: 'ml-auto' })
               )
             ),
+            // Predict before hunting; compared once the hunt is done.
+            h(PredictCard, {
+              moduleId: 'predatorVision',
+              border: 'border-lime-400', heading: 'text-lime-800',
+              question: t('stem.evolab.predict_predator_q', 'After 12 rounds of hunting the easiest-to-see prey, what will happen to the population\'s AVERAGE colour?'),
+              options: [
+                { id: 'toward', label: t('stem.evolab.predict_predator_toward', 'It shifts toward the background colour (harder to see).') },
+                { id: 'same', label: t('stem.evolab.predict_predator_same', 'It stays about where it started; prey just get eaten at random.') },
+                { id: 'away', label: t('stem.evolab.predict_predator_away', 'It shifts away from the background (easier to see).') },
+                { id: 'individual', label: t('stem.evolab.predict_predator_individual', 'Each surviving prey gradually changes its own colour to match.') }
+              ],
+              locked: phase !== 'intro',
+              outcomeId: predatorOutcome(),
+              observedDetail: phase === 'done' && historyRef.current.length ? 'Mean trait ' + historyRef.current[0].mean.toFixed(2) + ' → ' + mean.toFixed(2) + '; camouflage ideal ' + env.idealTrait.toFixed(2) + '.' : '',
+              explain: function(choice, outcome) {
+                if (choice === 'individual') return t('stem.evolab.explain_predator_individual', 'No individual prey changed colour. Every prey was born with a fixed colour and kept it. What changed was WHO survived to reproduce: the hard-to-see ones. Their offspring inherited that colour (plus small random variation), so the population average moved even though no individual did.');
+                if (outcome === 'toward') return t('stem.evolab.explain_predator_toward', 'You removed the most visible prey each round, so the survivors that bred were, on average, closer to the background. Random variation in the offspring then gave you new visible prey to remove. Selection plus heritable variation moved the average.');
+                if (outcome === 'away') return t('stem.evolab.explain_predator_away', 'The average moved away from the background. That happens when the environment changed mid-hunt (the old camouflage is now the wrong colour) or when you hunted the well-camouflaged prey instead of the visible ones. The direction of selection sets the direction of change.');
+                return t('stem.evolab.explain_predator_same', 'The average barely moved. Random or very short hunting gives selection little to act on. Try more rounds and hunt the prey you can see most easily.');
+              }
+            }),
             // Stats
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h(StatCard, { label: t('stem.evolab.round_2', 'Round'), value: round + ' / ' + MAX_ROUNDS, color: 'text-green-700' }),
@@ -6102,6 +9229,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 disabled: phase !== 'hunting',
                 className: 'px-3 py-2 rounded-lg font-bold bg-lime-100 text-lime-800 border border-lime-400 disabled:opacity-50 disabled:cursor-not-allowed'
               }, t('stem.evolab.hunt_most_visible_prey', 'Hunt most-visible prey')),
+              h('button', {
+                type: 'button',
+                onClick: huntRoundByRule,
+                disabled: phase !== 'hunting',
+                className: 'px-3 py-2 rounded-lg font-bold bg-lime-700 text-white border border-lime-800 disabled:opacity-50 disabled:cursor-not-allowed'
+              }, __alloFill(t('stem.evolab.finish_round_by_rule', 'Finish round by the rule ({value1} left)'), { value1: Math.max(0, KILLS_PER_ROUND - kills) })),
               h('span', null, t('stem.evolab.keyboard_hunt_model_note', 'Keyboard mode removes the trait farthest from the camouflage optimum; it models the same selection direction without visual-search timing.'))
             ),
             // Two charts side-by-side
@@ -6109,6 +9242,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               renderHistoryChart(),
               renderTimeChart() || h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex items-center justify-center text-slate-600 text-sm italic' }, t('stem.evolab.round_times_will_appear_after_round_1', '⏱️ Round times will appear after Round 1.'))
             ),
+            // Variation is the point: the whole distribution, start vs now.
+            h(TraitHistogram, {
+              title: t('stem.evolab.colour_distribution_start_vs_now', '📊 Colour distribution: start vs now'),
+              series: [
+                { label: t('stem.evolab.start', 'Start'), values: initialTraitsRef.current, color: '#94a3b8' },
+                { label: t('stem.evolab.now', 'Now'), values: pop.map(function(p) { return p.trait; }), color: '#65a30d' }
+              ],
+              marker: { value: env.idealTrait, label: t('stem.evolab.camouflage_ideal', 'camouflage ideal') },
+              lowLabel: t('stem.evolab.dark', 'dark'), highLabel: t('stem.evolab.light', 'light'),
+              caption: t('stem.evolab.histogram_caption_predator', 'Grey bars are the colours the hunt started with; green bars are the living population now. The spread narrows and slides toward the ideal because you removed the visible tail every round.'),
+              ariaLabel: 'Colour distribution of prey, start versus now. '
+            }),
             // Environment picker
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, t('stem.evolab.choose_environment', 'Choose Environment')),
@@ -6117,14 +9262,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   var e2 = ENVIRONMENTS[id];
                   return h('button', {
                     key: id,
-                    onClick: function() { setEnvId(id); initPopulation(); },
+                    onClick: function() { changeEnvironment(id); },
                     'aria-pressed': envId === id,
                     'aria-label': __alloFill(__alloT('stem.evolab.a11y_set_environment_to', 'Set environment to {value1}'), { value1: e2.label }),
                     className: 'p-2 rounded-lg text-sm font-bold border-2 transition-colors text-left ' + (envId === id ? 'border-lime-500 bg-lime-50 text-lime-800' : 'border-slate-200 text-slate-700 hover:border-slate-300')
                   }, e2.label);
                 })
               ),
-              h('div', { className: 'text-xs text-slate-600 mt-2 italic' }, env.description)
+              h('div', { className: 'text-xs text-slate-600 mt-2 italic' }, env.description),
+              phase === 'hunting' && h('div', { className: 'text-xs text-lime-800 font-semibold mt-1' }, t('stem.evolab.env_switch_keeps_population', 'Switching during a hunt keeps the population. The prey do not change colour; only the background does.'))
             ),
             // Phase controls
             phase === 'intro' && h('div', { className: 'flex justify-center' },
@@ -6135,7 +9281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             phase === 'hunting' && h('div', { className: 'flex justify-center gap-3' },
               h('button', {
-                onClick: function() { setPhase('done'); },
+                onClick: function() { setPhase('done'); finishHunt(round, roundTimes, mean); },
                 className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-amber-200 hover:bg-amber-300 text-amber-900'
               }, t('stem.evolab.end_hunt', '⏹️ End Hunt')),
               h('button', {
@@ -6154,24 +9300,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     (avgTime > 0 ? 'Average round time: ' + avgTime.toFixed(1) + 's. ' : '') +
                     'YOU caused this evolution by selecting against the easy-to-spot prey.'
                   ),
-                  h('button', {
-                    onClick: initPopulation,
-                    className: 'transition-colors mt-3 px-5 py-2 rounded-lg font-bold bg-white text-emerald-700 hover:bg-emerald-50'
-                  }, t('stem.evolab.hunt_again', '↻ Hunt Again'))
+                  h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                    h('button', {
+                      onClick: initPopulation,
+                      className: 'transition-colors px-5 py-2 rounded-lg font-bold bg-white text-emerald-700 hover:bg-emerald-50'
+                    }, t('stem.evolab.hunt_again', '↻ Hunt Again')),
+                    h('button', { type: 'button', onClick: function() { saveRun('A'); }, className: 'px-4 py-2 rounded-lg font-bold bg-sky-100 text-sky-900 hover:bg-sky-200' }, savedRuns.A ? t('stem.evolab.replace_run_a', 'Replace Run A') : t('stem.evolab.save_as_run_a', 'Save as Run A')),
+                    h('button', { type: 'button', onClick: function() { saveRun('B'); }, className: 'px-4 py-2 rounded-lg font-bold bg-violet-100 text-violet-900 hover:bg-violet-200' }, savedRuns.B ? t('stem.evolab.replace_run_b', 'Replace Run B') : t('stem.evolab.save_as_run_b', 'Save as Run B'))
+                  ),
+                  h('p', { className: 'text-xs text-emerald-50 mt-2' }, t('stem.evolab.save_run_hint', 'Save this hunt, then hunt again (a different background, a different strategy, or a partner at the controls) and save that one too. Both appear on the chart and in a comparison table.'))
                 )
               )
             ),
-            // Try-this experiments
-            h('div', { className: 'bg-white border-2 border-lime-400 rounded-xl p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-lime-800 mb-3' }, t('stem.evolab.try_these_experiments_10', '🧪 Try these experiments')),
-              h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.race_against_your_own_evolution', 'Race against your own evolution: ')), t('stem.evolab.note_your_time_to_eat_10_in_round_1_co', 'Note your time to eat 10 in Round 1. Compare to your time in Round 10. You\'ll be SLOWER even though you\'re more practiced — because the prey are evolving to evade YOU.')),
-                h('li', null, h('strong', null, t('stem.evolab.switch_environments_mid_evolution', 'Switch environments mid-evolution: ')), t('stem.evolab.after_5_rounds_in_forest_switch_to_sno', 'After 5 rounds in Forest, switch to Snow. The prey that evolved to match leaves now stand out against snow. They have to evolve again from scratch.')),
-                h('li', null, h('strong', null, t('stem.evolab.hunt_strategically_vs_randomly', 'Hunt strategically vs randomly: ')), t('stem.evolab.in_round_1_click_only_the_brightest_pr', 'In Round 1, click only the BRIGHTEST prey. In Round 2, click randomly. Compare end-of-round populations. Selective hunting produces faster camouflage evolution.')),
-                h('li', null, h('strong', null, t('stem.evolab.compare_with_a_partner', 'Compare with a partner: ')), t('stem.evolab.two_students_one_screen_take_turns_hun', 'Two students, one screen — take turns hunting one round each. Notice how each person\'s "predator profile" subtly differs and shapes the prey differently.')),
-                h('li', null, h('strong', null, t('stem.evolab.check_the_chart', 'Check the chart: ')), t('stem.evolab.the_red_line_on_the_trait_chart_approa', 'The red line on the trait chart approaches the green dashed "camouflage ideal" line. That\'s natural selection in action — the population converging on the trait you\'re NOT selecting against.'))
-              )
-            ),
+            renderRunComparison(),
+            h(CapstoneCapture, {
+              moduleId: 'predatorVision',
+              moduleLabel: 'Predator Vision Lab',
+              sourceRunKey: huntSessionRef.current,
+              ready: round > 0 && phase !== 'hunting',
+              readyHint: 'Save the starting colour spread, rounds hunted, environment changes, and how far the population moved toward the camouflage ideal.',
+              emptyHint: phase === 'hunting' ? 'End the hunt to freeze a consistent round before capturing.' : 'Hunt at least one full round before capturing.',
+              getSnapshot: predatorSnapshot
+            }),
+            phase !== 'intro' && h(CheckCard, {
+              moduleId: 'predatorVision',
+              border: 'border-lime-400', heading: 'text-lime-800',
+              question: t('stem.evolab.check_predator_q', 'In this hunt, HOW did the prey become harder to see?'),
+              options: [
+                { id: 'learned', label: t('stem.evolab.check_predator_learned', 'Each prey learned to hide better after watching others get eaten.'), feedback: t('stem.evolab.check_predator_learned_fb', 'Nothing in this population learns. A prey\'s colour is fixed the moment it is born and never changes. It feels like learning because the group changes, but the group changes only because different individuals survive to breed.') },
+                { id: 'inherit', label: t('stem.evolab.check_predator_inherit', 'Prey that happened to be harder to see were eaten less, so more of the next generation inherited their colour.'), correct: true, feedback: t('stem.evolab.check_predator_inherit_fb', 'Exactly. Variation existed before you clicked anything. You removed the visible individuals; the camouflaged ones bred; offspring resembled their parents. Repeat that and the average moves. That is natural selection: differential survival plus inheritance.') },
+                { id: 'purpose', label: t('stem.evolab.check_predator_purpose', 'The prey mutated on purpose toward the background colour.'), feedback: t('stem.evolab.check_predator_purpose_fb', 'Mutation in this model is random noise of ± 0.05 in EVERY direction, applied before you see the offspring. Some offspring are more visible than their parent, some less. You removed the visible ones. The direction came from you, not from the mutations.') },
+                { id: 'me', label: t('stem.evolab.check_predator_me', 'I got worse at hunting as the rounds went on.'), feedback: t('stem.evolab.check_predator_me_fb', 'Your round times rose even though you had more practice. If you were the thing changing, practice should have made you faster. The prey changed: the population converged on colours you could not pick out.') }
+              ]
+            }),
+            h(ExperimentList, {
+              moduleId: 'predatorVision',
+              challenges: [
+                { id: 'camo90in8', title: t('stem.evolab.ch_camo90in8', 'Sharp eyes: '), body: t('stem.evolab.ch_camo90in8_body', 'Hunting by eye (mouse or touch, no keyboard rule), reach 90% camouflage by round 8. Pick the most visible prey every time; each random click slows the population down.'), record: { id: 'fastestTo90', label: t('stem.evolab.fewest_rounds_to_90', 'fewest rounds to 90%, by eye') } },
+                { id: 'reAdapt', title: t('stem.evolab.ch_readapt', 'Two backgrounds, one population: '), body: t('stem.evolab.ch_readapt_body', 'After at least 3 rounds, switch environments mid-hunt and bring camouflage back above 80% on the new background.'), record: { id: 'camoAt12', label: t('stem.evolab.camouflage_after_12', 'camouflage after 12 rounds') } }
+              ],
+              border: 'border-lime-400', heading: 'text-lime-800',
+              title: t('stem.evolab.try_these_experiments_10', '🧪 Try these experiments'),
+              items: [
+                { id: 'raceTime', auto: true, title: t('stem.evolab.race_against_your_own_evolution', 'Race against your own evolution: '), body: t('stem.evolab.note_your_time_to_eat_10_in_round_1_co', 'Note your time to eat 10 in Round 1. Compare to your time in Round 10. You\'ll be SLOWER even though you\'re more practiced — because the prey are evolving to evade YOU.') },
+                { id: 'switchEnv', auto: true, title: t('stem.evolab.switch_environments_mid_evolution', 'Switch environments mid-evolution: '), body: t('stem.evolab.after_5_rounds_in_forest_switch_to_sno', 'After 5 rounds in Forest, switch to Snow while the hunt is still running. The prey keep the colours they evolved for leaves, so they now stand out against snow and the camouflage score drops. They have to evolve again, from where they are.') },
+                { id: 'strategy', auto: true, title: t('stem.evolab.hunt_strategically_vs_randomly', 'Hunt strategically vs randomly: '), body: t('stem.evolab.in_round_1_click_only_the_brightest_pr', 'Run one hunt clicking only the most VISIBLE prey and save it as Run A; then hunt again clicking whatever is nearest your cursor and save it as Run B. The comparison table shows the camouflage gain of each. Selective hunting produces faster camouflage evolution.') },
+                { id: 'partner', title: t('stem.evolab.compare_with_a_partner', 'Compare with a partner: '), body: t('stem.evolab.two_students_one_screen_take_turns_hun', 'Two students, one screen — take turns hunting one round each. Notice how each person\'s "predator profile" subtly differs and shapes the prey differently.') },
+                { id: 'chart', auto: true, title: t('stem.evolab.check_the_chart', 'Check the chart: '), body: t('stem.evolab.the_red_line_on_the_trait_chart_approa', 'The red line on the trait chart approaches the green dashed "camouflage ideal" line. That\'s natural selection in action — the population converging on the trait you\'re NOT selecting against.') }
+              ]
+            }),
             // Real-world tie-in
             h('div', { className: 'bg-lime-50 border border-lime-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-lime-800 mb-2' }, t('stem.evolab.this_is_real_biology', '📖 This is real biology')),
@@ -6190,6 +9367,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_just_felt_selection_happening_the_', 'You just felt selection happening. The Selection Sandbox lets you adjust selection pressure as a slider rather than as your own clicks — see how the same dynamic plays out under different settings.')
               )
             ),
+            h(KeyTerms, { moduleId: 'predatorVision', heading: 'text-lime-800' }),
+            h(FieldNote, { moduleId: 'predatorVision', border: 'border-lime-400', heading: 'text-lime-800', prompt: t('stem.evolab.note_prompt_predator', 'What did the prey look like at the start and at the end? Where did the new colours come from, if no prey ever changed colour?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5', 'HS-LS4-6', 'NOS'],
               questions: [
@@ -6291,13 +9470,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           upd('evoSlPick', null);
           upd('evoSlShown', sShown.concat([pick]));
         }
+        var SL_NOT_WHY = {"1":{"artificial":"Not artificial selection: poachers are not choosing which elephants BREED in order to produce a tuskless herd; they kill tusked animals for ivory. The evolutionary change is a by-product of who survives, which makes it natural selection even though humans cause it.","drift":"Not drift: the shift is consistent, in one direction, and tracks poaching intensity. Drift is directionless and would not correlate with a survival pressure.","natural-stabilizing":"Not stabilizing: only ONE extreme (large tusks) is penalized and the other (small or none) is favoured. Stabilizing would trim both extremes toward the middle."},"2":{"natural-directional":"Not natural selection: cows do not survive better by making more milk; farmers decide which animals breed. Deliberate human choice of the breeders is the definition of artificial selection.","sexual":"Not sexual selection: the cows are not choosing mates. The sires are chosen by people and delivered by artificial insemination."},"3":{"natural-directional":"Not natural selection: the long tail LOWERS survival, so survival pressure points the other way. The trait spreads only through mating success, which is sexual selection.","artificial":"Not artificial: no human is breeding peacocks for tails here; peahens do the choosing."},"4":{"natural-directional":"Not natural selection: the blue variant has no survival advantage. It became common because the hurricane randomly killed most of the others; a bottleneck is sampling, not selection.","natural-disruptive":"Not disruptive: there is no pressure against the middle; there is no pressure at all, only a random sample of survivors."},"5":{"artificial":"Not artificial selection: nobody chooses which bacteria reproduce; the drug kills susceptible cells and the survivors multiply. Human-caused, but by differential survival, so natural selection.","drift":"Not drift: the direction is consistent (toward resistance) and matches the pressure (antibiotic exposure). Drift is random and would not track drug use."},"6":{"natural-directional":"Not directional: BOTH extremes have higher mortality; neither small nor large babies are favoured. When the middle wins from both sides, that is stabilizing.","natural-disruptive":"Not disruptive: disruptive favours the extremes over the middle. Here the middle is the safest place to be, the opposite pattern."},"7":{"natural-stabilizing":"Not stabilizing: medium beaks are the LOSERS here; stabilizing would make the middle the winner.","natural-directional":"Not directional: both small and large beaks do well, so there is no single favoured direction. The population splits toward two peaks."},"8":{"natural-directional":"Not natural selection: kale and cauliflower do not out-survive wild mustard. Farmers chose the plants with the biggest leaves or flower buds and bred from them; deliberate breeding is artificial selection.","natural-disruptive":"Not disruptive: the many forms came from humans choosing different traits in different lineages, not from an environment penalizing intermediates."},"9":{"natural-directional":"Not selection: low diversity is not a trait that helped cheetahs survive; it is the scar of nearly going extinct. A handful of survivors carried only a sample of the old gene pool, which is drift (a bottleneck).","natural-stabilizing":"Not stabilizing: stabilizing selection narrows a TRAIT around an optimum. The loss here is of genetic variation across the whole genome, by chance."},"10":{"natural-directional":"Not natural selection: an elaborate bower does not help a male survive; it helps him get chosen. Traits that spread through mate choice are sexual selection.","artificial":"Not artificial: no humans are involved; female bowerbirds are the judges."}};
+        var slWhyNot = function(vid, mechId) {
+          var m = SL_NOT_WHY[vid] && SL_NOT_WHY[vid][mechId];
+          if (m) return m;
+          var mech = MECHANISMS.filter(function(x) { return x.id === mechId; })[0];
+          return mech ? 'Not ' + mech.label.toLowerCase() + ': that would mean "' + mech.def + '" Reread the scenario and ask WHO or WHAT decides which individuals reproduce.' : '';
+        };
         function pickSl(mechId) {
           if (sAns) return;
           var v = V[sIdx];
           var correct = mechId === v.correct;
+          if (sShown.length >= V.length) markComplete('selectionSleuth', 'All ' + V.length + ' vignettes classified; score ' + (sScore + (correct ? 1 : 0)) + ' of ' + (sRounds + 1) + '.');
           var newScore = sScore + (correct ? 1 : 0);
           var newStreak = correct ? (sStreak + 1) : 0;
           var newBest = Math.max(sBest, newStreak);
+          if (newStreak >= 10) detectChallenge('selectionSleuth', 'streak10', 'Ten in a row', newStreak);
+          setRecord('selectionSleuth', 'bestStreak', newBest, { label: 'Best streak', unit: '', better: 'max' });
           upd('evoSlAns', true);
           upd('evoSlPick', mechId);
           upd('evoSlScore', newScore);
@@ -6352,10 +9541,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('span', null, t('stem.evolab.streak', 'Streak '), h('strong', { className: 'text-amber-700' }, sStreak)),
             h('span', null, t('stem.evolab.best', 'Best '), h('strong', { className: 'text-fuchsia-700' }, sBest))
           ),
+          h('div', { className: 'mb-4' }, h(ChallengeList, {
+            moduleId: 'selectionSleuth',
+            items: [{ id: 'streak10', title: t('stem.evolab.ch_streak10', 'Ten in a row: '), body: t('stem.evolab.ch_streak10_body', 'Name the mechanism correctly ten vignettes running. Ask first whether humans chose the breeders (artificial), whether mates did (sexual), whether survival did (natural), or whether nothing did (drift).'), record: { id: 'bestStreak', label: t('stem.evolab.best_streak', 'best streak') } }]
+          })),
           // The vignette
           h('section', { className: 'p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 mb-4' },
             h('div', { className: 'text-xs font-bold uppercase tracking-widest text-amber-700 mb-2' }, 'Vignette ' + sShown.length + ' of ' + V.length),
-            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario),
+              h(SpeakButton, { text: v.scenario })
+            )
           ),
           // 6 mechanism picker buttons
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-4', role: 'radiogroup', 'aria-label': t('stem.evolab.pick_the_mechanism', 'Pick the mechanism') },
@@ -6399,7 +9595,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ? '✅ Correct — ' + correctMech.label
                 : '❌ The mechanism is ' + correctMech.label + (pickedMech ? ' (you picked ' + pickedMech.label + ')' : '')
             ),
-            h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+            !pickedCorrect && sPick && h('p', { className: 'text-xs text-rose-900 leading-relaxed mb-2 pb-2 border-b border-rose-200' }, h('strong', null, __alloT('stem.evolab.about_your_answer', 'About your answer: ')), slWhyNot(v.id, sPick)),
+            h('div', { className: 'flex items-start justify-between gap-2 mb-3' },
+              h('p', { className: 'text-xs text-slate-800 leading-relaxed' }, v.why),
+              h(SpeakButton, { text: (!pickedCorrect && sPick ? slWhyNot(v.id, sPick) + ' ' : '') + v.why, className: 'w-7 h-7 text-sm' })
+            ),
             allDone
               ? h('div', { className: 'p-3 rounded-lg bg-amber-100 border border-amber-300' },
                   h('div', { className: 'text-sm font-black text-amber-800 mb-1' }, t('stem.evolab.all_10_vignettes_complete', '🏆 All 10 vignettes complete')),
@@ -6492,13 +9692,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           upd('hsPick', null);
           upd('hsShown', hsShown.concat([pick]));
         }
+        var HS_WRONG = {"1":"They look and work nothing alike, which is exactly why the shared skeleton matters: the same bones in the same order can only come from a common ancestor. Different FUNCTION does not make structures analogous; different ORIGIN does.","2":"Both are called wings and both fly, but look inside: bones and feathers in one, a chitin membrane with no bones in the other. Same job, different building plans, from ancestors that split before either had wings.","3":"Flying and swimming are different jobs, but both limbs contain a humerus, radius, ulna and five digits. Same bones from the shared mammalian forelimb; the functions diverged.","4":"The camera design is uncannily similar, but the octopus and vertebrate lineages split before either had an eye, and their retinas are wired oppositely (ours is inside-out, with nerves in front of the photoreceptors). Two independent inventions.","5":"The shark fin is stiffened by cartilage rods; the dolphin fin has no bones at all, only connective tissue, and the dolphin's land-mammal ancestors had no dorsal fin. Convergence on the same swimming physics.","6":"Both are sharp, but a cactus spine is a modified LEAF and a rose \"thorn\" (technically a prickle) is an outgrowth of the stem's skin. Different organs recruited for the same defence.","7":"The whale's pelvic bones do not do the job a pelvis does, which is the point: they are leftovers of the same bones a dog walks with, inherited from land-living ancestors. Shared origin, function lost.","8":"A bird and an insect share no flight ancestry at all. The resemblance (size, hover, long tongue) is convergence on the same flower-feeding niche, strong enough to fool people in gardens.","9":"Different diets, same tooth: both are the canine of the standard mammalian tooth row, inherited from a shared ancestor and sharpened for different jobs.","10":"Insects flew more than a hundred million years before any vertebrate did, using outgrowths of the body wall; bird wings are modified dinosaur arms. Two independent origins of powered flight."};
         function pickHs(typeId) {
+          if (!hsAns && hsShown.length >= V.length) markComplete('homologySleuth', 'All ' + V.length + ' trait pairs classified; score ' + (hsScore + (typeId === V[hsIdx].correct ? 1 : 0)) + ' of ' + (hsRounds + 1) + '.');
           if (hsAns) return;
           var v = V[hsIdx];
           var correct = typeId === v.correct;
           var newScore = hsScore + (correct ? 1 : 0);
           var newStreak = correct ? (hsStreak + 1) : 0;
           var newBest = Math.max(hsBest, newStreak);
+          if (newStreak >= 10) detectChallenge('homologySleuth', 'streak10', 'Ten in a row', newStreak);
+          setRecord('homologySleuth', 'bestStreak', newBest, { label: 'Best streak', unit: '', better: 'max' });
           upd('hsAns', true);
           upd('hsPick', typeId);
           upd('hsScore', newScore);
@@ -6552,9 +9756,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('span', null, t('stem.evolab.streak_2', 'Streak '), h('strong', { className: 'text-amber-700' }, hsStreak)),
             h('span', null, t('stem.evolab.best_2', 'Best '), h('strong', { className: 'text-fuchsia-700' }, hsBest))
           ),
+          h('div', { className: 'mb-4' }, h(ChallengeList, {
+            moduleId: 'homologySleuth',
+            items: [{ id: 'streak10', title: t('stem.evolab.ch_streak10_h', 'Ten in a row: '), body: t('stem.evolab.ch_streak10_h_body', 'Ten pairs correct running. The test is always the same: shared ORIGIN (homologous) or shared JOB (analogous)? Appearance is the trap.'), record: { id: 'bestStreak', label: t('stem.evolab.best_streak', 'best streak') } }]
+          })),
           h('section', { className: 'p-5 rounded-2xl bg-cyan-50 border-2 border-cyan-300 mb-4' },
             h('div', { className: 'text-xs font-bold uppercase tracking-widest text-cyan-700 mb-2' }, 'Pair ' + hsShown.length + ' of ' + V.length),
-            h('p', { className: 'text-base text-slate-800 leading-relaxed font-bold' }, v.pair)
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('p', { className: 'text-base text-slate-800 leading-relaxed font-bold' }, v.pair),
+              h(SpeakButton, { text: v.pair })
+            )
           ),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4', role: 'radiogroup', 'aria-label': t('stem.evolab.pick_the_relationship_type', 'Pick the relationship type') },
             TYPES.map(function(t) {
@@ -6596,7 +9807,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ? '✅ Correct — ' + correctType.label
                 : '❌ The relationship is ' + correctType.label + (pickedType ? ' (you picked ' + pickedType.label + ')' : '')
             ),
-            h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+            !pickedCorrect && hsPick && HS_WRONG[v.id] && h('p', { className: 'text-xs text-rose-900 leading-relaxed mb-2 pb-2 border-b border-rose-200' }, h('strong', null, __alloT('stem.evolab.about_your_answer', 'About your answer: ')), HS_WRONG[v.id]),
+            h('div', { className: 'flex items-start justify-between gap-2 mb-3' },
+              h('p', { className: 'text-xs text-slate-800 leading-relaxed' }, v.why),
+              h(SpeakButton, { text: (!pickedCorrect && hsPick && HS_WRONG[v.id] ? HS_WRONG[v.id] + ' ' : '') + v.why, className: 'w-7 h-7 text-sm' })
+            ),
             allDone
               ? h('div', { className: 'p-3 rounded-lg bg-cyan-100 border border-cyan-300' },
                   h('div', { className: 'text-sm font-black text-cyan-900 mb-1' }, t('stem.evolab.all_10_pairs_complete', '🏆 All 10 pairs complete')),
@@ -6692,15 +9907,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             icon: '❄️',
             color: 'from-emerald-500 to-teal-700',
             problem: 'Maine winters are getting shorter. Historically, snowshoe hares molted to white fur in November to match the snow. Today, the snow often doesn\'t arrive until December — leaving white-coated hares against bare brown ground for weeks. Over the next 50 generations, what will happen to the hare population\'s molt-timing genes?',
-            module: 'selectionSandbox',
-            moduleLabel: '🧪 Selection Sandbox',
-            moduleHint: 'Use the Selection Sandbox with the "Maine Snowshoe Hare" preset. The "ideal" trait is set to 0.68 (later molt). Run for 30+ generations.',
-            trialPlan: { version: 1, strategy: 'change-one', factor: 'selectionStrength', factorLabel: 'Selection strength', levelA: '0.40', levelB: '1.00', targetRuns: 2 },
+            module: 'climatePressure',
+            moduleLabel: '🌡️ Climate Pressure Lab',
+            moduleHint: 'Use the Climate Pressure Lab\'s warming trial: temperature stands in for the shrinking snow season. Run one trial at 0.010 per generation and one at 0.030, capturing each finished trial. (Alternative model: the Selection Sandbox\'s "Maine Snowshoe Hare" preset. The "ideal" trait is set to 0.68 (later molt). Run for 30+ generations.)',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'warmingRate', factorLabel: 'Warming per generation', levelA: '0.010', levelB: '0.030', targetRuns: 2 },
             mechanismCue: 'Directional selection can shift a population only when useful variation is heritable. Whether adaptation keeps pace also depends on population size and the rate of environmental change.',
             dataMission: [
-              'Record the starting mean trait, ideal trait, and population size.',
-              'Keep the selection settings fixed and note the generations elapsed.',
-              'Record the final mean trait and population size; compare the trait shift with the environmental shift.'
+              'Record the starting mean tolerance, temperature, and population size.',
+              'Run the warming trial at two rates, keeping mutation size the same.',
+              'Record whether each trial survived or went extinct, the final population, and the tolerance lag.'
             ],
             reflectionLabels: ['Compare', 'Explain pace', 'Apply'],
             predictPrompts: [
@@ -6743,6 +9958,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ]
           },
           {
+            id: 'sootMoths',
+            title: t('stem.evolab.peppered_moths_and_the_soot', 'Peppered Moths and the Soot'),
+            icon: '🦋',
+            color: 'from-lime-600 to-green-800',
+            problem: 'A dark form of the peppered moth was first recorded near Manchester in 1848. By 1895 nearly all the moths near the city were dark, while in unpolluted countryside most stayed pale. Birds hunt moths by sight against tree bark. After 12 generations of bird predation on soot-darkened bark, what happens to the moth population, and what happens if the soot later clears?',
+            module: 'predatorVision',
+            moduleLabel: '👁️ Predator Vision Lab',
+            moduleHint: 'You are the bird. Hunt 12 rounds in Urban Concrete (dark bark) and capture. Then Restart, hunt 12 rounds in Snowy Field (pale bark) and capture. To model the clean-air laws, switch the environment mid-hunt and watch the camouflage score fall.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'environment', factorLabel: 'Environment', levelA: 'Urban Concrete', levelB: 'Snowy Field', targetRuns: 2 },
+            mechanismCue: 'Natural selection by visual predators: heritable colour variation plus differential survival moves the population toward the background. The direction comes from the background, not from the moths.',
+            dataMission: [
+              'Record the environment and the round-0 mean colour.',
+              'Hunt the most visible prey every round; note your round-1 and round-12 times.',
+              'Record the final mean colour and camouflage gain; compare the two environments.'
+            ],
+            reflectionLabels: ['Compare', 'Explain direction', 'Apply'],
+            predictPrompts: [
+              'After 12 rounds of bird predation on a dark background, will the population get darker, lighter, or stay the same?',
+              'If the background then switches to pale, how many rounds will it take for camouflage to recover? Make an estimate.',
+              'Does any individual moth change colour during its life in this model? What changes instead?'
+            ],
+            reflectPrompts: [
+              'How did your prediction compare to what you observed in the two environments?',
+              'Around Manchester the dark form fell from roughly 90% to under 10% after clean-air laws (1950s to 1990s). Which part of your run models that reversal?',
+              'What does this scenario say about the claim that evolution has a direction or a goal?'
+            ]
+          },
+          {
+            id: 'guppies',
+            title: t('stem.evolab.guppies_in_two_streams', 'Guppies in Two Streams'),
+            icon: '🐠',
+            color: 'from-pink-500 to-fuchsia-700',
+            problem: 'In Trinidad, male guppies in streams with few predators carry large bright orange spots. A few kilometres downstream, below waterfalls where large predatory fish live, males of the same species are drab. Females in both streams prefer brighter males. After 20 generations, what will male colour look like in each stream?',
+            module: 'mateChoice',
+            moduleLabel: '🦚 Mate Choice Lab',
+            moduleHint: 'Run Mate Choice with Predator Cost OFF (the upstream pool): pick the showiest surviving male for 12 rounds, Fast-forward, capture. Restart with Predator Cost ON (downstream), same routine, capture. Keep female choosiness the same for both.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'predatorCost', factorLabel: 'Predator cost', levelA: 'Off', levelB: 'On', targetRuns: 2 },
+            mechanismCue: 'Sexual selection (female choice) pushes the ornament up; natural selection (predation) pushes it down. The population settles where the two balance, so one species can sit at different ornament levels in different streams.',
+            dataMission: [
+              'Record starting mean showiness and female choosiness.',
+              'Use the same pick strategy in both runs (showiest surviving male every round).',
+              'Record final mean showiness and how many males predators removed; compare the two runs.'
+            ],
+            reflectionLabels: ['Compare', 'Explain balance', 'Apply'],
+            predictPrompts: [
+              'With no predators, will showiness rise, plateau, or fall over 20 or more rounds?',
+              'With predators, where will it settle: higher or lower than the no-predator run?',
+              'In 1976 John Endler moved guppies from a predator-rich stream to a predator-free one. Predict what happened to male colour within a few years.'
+            ],
+            reflectPrompts: [
+              'Did the two runs differ the way you predicted?',
+              'Endler\'s transplanted guppies became measurably brighter within about two years (roughly 15 generations). Which of your runs does that match, and why so fast?',
+              'Fitness is not survival alone. Explain that sentence using your predator-on run.'
+            ]
+          },
+          {
+            id: 'daphne',
+            title: t('stem.evolab.daphne_major_drought', 'Drought on Daphne Major'),
+            icon: '🐦',
+            color: 'from-amber-500 to-orange-700',
+            problem: 'In 1977 the rains failed on Daphne Major in the Galápagos. Seeds ran out, the small soft ones first. Of roughly 1,200 medium ground finches, fewer than 200 survived. Will the survivors\' beaks differ from the pre-drought population, and will their chicks inherit the difference?',
+            module: 'beakLab',
+            moduleLabel: '🐦 Galápagos Beak Lab',
+            moduleHint: 'Reset, Trigger Drought, run 3 years and capture. Then Reset and run 3 normal years as the control; capture that too. Toggle "Show Real Grant Data" to compare your shift with the record.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'droughtYears', factorLabel: 'Drought years', levelA: '0', levelB: '3', targetRuns: 2 },
+            mechanismCue: 'Directional natural selection: a change in the food supply changes which beak sizes survive, and heritable variation carries the shift into the next generation. When the food supply changes back, so does the direction of selection.',
+            dataMission: [
+              'Record the starting mean beak depth and population size.',
+              'Run the same number of years with and without drought, at the same inheritance σ.',
+              'Record mean beak depth and survivors for each run; compare the shifts.'
+            ],
+            reflectionLabels: ['Compare', 'Evaluate model', 'Apply'],
+            predictPrompts: [
+              'Will mean beak depth go up, down, or stay flat after a drought year? By roughly how much?',
+              'Will one drought year be enough to see a change, or will it take many generations?',
+              'When the rains return, will the mean revert, stay, or keep rising?'
+            ],
+            reflectPrompts: [
+              'How did your drought and control runs compare with your predictions?',
+              'The Grants found the 1977 survivors had beaks roughly 4-5% deeper than the pre-drought average (Boag & Grant 1981). How does the model\'s shift compare, and why might a teaching model exaggerate?',
+              'Why is this study treated as strong evidence for natural selection in the wild rather than an experiment?'
+            ]
+          },
+          {
+            id: 'canyon',
+            title: t('stem.evolab.two_rims_one_canyon', 'Two Rims, One Canyon'),
+            icon: '🏞️',
+            color: 'from-indigo-500 to-blue-700',
+            problem: 'Tassel-eared squirrels live in the ponderosa pine forests on both rims of the Grand Canyon. The canyon and the desert scrub in it are a barrier they do not cross. North-rim Kaibab squirrels have white tails and dark bellies; south-rim Abert\'s squirrels have grey tails and white bellies. Biologists classify the Kaibab squirrel as a subspecies, not a separate species. After thousands of generations apart, how far should we expect two isolated populations to diverge, and what would it take to call them species?',
+            module: 'speciation',
+            moduleLabel: '🌗 Trait Divergence Model',
+            moduleHint: 'Use the Trait Divergence Model. Set the two ideals apart (e.g. 0.3 and 0.7) and run 40 generations at selection 0.30; capture. Reset and repeat at selection 1.00; capture. Compare how far the overlap proxy fell, then ask what the proxy does NOT measure.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'selectionStrength', factorLabel: 'Selection strength', levelA: '0.30', levelB: '1.00', targetRuns: 2 },
+            mechanismCue: 'Allopatric divergence: a barrier stops gene flow, and each side responds to its own selection and its own sampling accidents. Divergence in traits is where speciation often starts; reproductive isolation is a separate question the model does not test.',
+            dataMission: [
+              'Record the two starting means and the two ideals you set.',
+              'Run both trials for the same number of generations and the same variation σ.',
+              'Record the final means, the gap between them, and the overlap proxy for each trial.'
+            ],
+            reflectionLabels: ['Compare', 'Evaluate model', 'Apply'],
+            predictPrompts: [
+              'With the ideals set apart, will the overlap proxy fall below the 30% milestone within 40 generations at low selection? At high selection?',
+              'If both rims had the SAME ideal, would the two populations still drift apart? By how much?',
+              'Real Kaibab and Abert\'s squirrels differ in colour but are still one species. What would you need to observe to change that classification?'
+            ],
+            reflectPrompts: [
+              'How did the two trials compare with your predictions?',
+              'The model\'s overlap proxy is about ONE trait. Name two things real biologists would measure that the model leaves out.',
+              'Which other isolated Maine populations (islands, lakes, mountain tops) might be diverging right now, and what barrier separates them?'
+            ]
+          },
+          {
+            id: 'lactase',
+            title: t('stem.evolab.milk_drinkers', 'Milk Drinkers: How Fast Can a Helpful Allele Spread?'),
+            icon: '🥛',
+            color: 'from-cyan-500 to-blue-700',
+            problem: 'Most mammals, and most early humans, stop making lactase after weaning and cannot digest milk as adults. In populations that took up dairy herding over roughly the last 7,000 to 10,000 years (parts of Europe, Africa and the Middle East), a dominant allele that keeps lactase switched on in adults rose from rare to common. Published estimates of how strongly it was favoured range from about 1% to 15% extra reproductive success per generation. Starting from p = 0.05, how fast could such an allele spread?',
+            module: 'hardyWeinberg',
+            moduleLabel: '🧮 Hardy-Weinberg Calculator',
+            moduleHint: 'Treat A as the persistence allele: it is dominant, so only aa adults cannot digest milk and selection acts against aa. Reset, set p = 0.05 and selection 0.05, Step 10 four times (40 generations), capture. Reset, set p = 0.05 and selection 0.15, Step 40, capture. One human generation is about 25 years.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'selectionCoefficient', factorLabel: 'Selection against aa', levelA: '0.05', levelB: '0.15', targetRuns: 2 },
+            mechanismCue: 'Directional selection on a dominant beneficial allele: it spreads quickly while rare because almost every copy sits in a heterozygote that shows the trait, then slows as the remaining a copies hide in heterozygotes too. The calculator leaves out drift, gene flow between groups, and the cultural spread of dairying itself.',
+            dataMission: [
+              'Record the starting p and the selection setting for each run.',
+              'Step the same number of generations in both runs with mutation and migration at 0.',
+              'Record the final p and the change; convert generations to years at 25 years each.'
+            ],
+            reflectionLabels: ['Compare', 'Explain shape', 'Apply'],
+            predictPrompts: [
+              'At 5% selection, where will p be after 40 generations (about 1,000 years)? At 15%?',
+              'Will the allele spread faster at the start, in the middle, or near the end? Why?',
+              'Today lactase persistence is near 90% in some northern European populations and near 10% in much of East Asia. What does that pattern say about where dairying was important?'
+            ],
+            reflectPrompts: [
+              'How did the two runs compare with your predictions, in generations and in years?',
+              'The calculator assumes an infinite population with no drift or migration. Which of those would matter most for real herding villages of a few hundred people?',
+              'Selection here comes from a cultural practice (herding). Give another example where human culture changed which human alleles were favoured.'
+            ]
+          },
+          {
             id: 'custom',
             title: t('stem.evolab.design_your_own_scenario', 'Design Your Own Scenario'),
             icon: '🛠️',
@@ -6750,7 +10105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             problem: '(Open-ended) — Pick any evolutionary scenario you\'re curious about. Could be observed evolution (peppered moths, antibiotic resistance, hawthorn flies), conservation biology (a small endangered population), human evolution (lactase persistence, sickle cell, malaria resistance), or speculation (what if dinosaurs hadn\'t gone extinct?).',
             module: null,
             moduleLabel: 'Pick the most relevant module from the menu',
-            moduleHint: 'Match your scenario to a module: selection in one population → Selection Sandbox; two populations → Speciation or Coevolution; small isolated population → Genetic Drift; molecular timescale → Antibiotic Lab. If your scenario is purely conceptual, use the module that best fits the underlying mechanism.',
+            moduleHint: 'Match your scenario to a module: selection in one population → Selection Sandbox or Predator Vision; mate choice → Mate Choice Lab; rate of environmental change → Climate Pressure Lab; a real dataset → Galápagos Beak Lab; two populations → Speciation or Coevolution; small isolated population → Genetic Drift; molecular timescale → Antibiotic Lab. If your scenario is purely conceptual, use the module that best fits the underlying mechanism.',
             mechanismCue: 'Name the mechanism your model represents, then explain what the model leaves out. A simulation is evidence about the model\'s behavior, not direct proof of a real-world claim.',
             dataMission: [
               'Name the independent variable you will change and the outcome you will measure.',
@@ -6800,7 +10155,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           upd('evoCapstone', nextCapstone);
           lsSet('evoLab.capstone.v2', nextCapstone);
         };
-        var setStep = function(nextStep) { saveCapstone({ step: clamp(nextStep, 0, 4) }); };
+        var setStep = function(nextStep) {
+          var stepIdx = clamp(nextStep, 0, 4);
+          saveCapstone({ step: stepIdx });
+          if (stepIdx >= 4) markComplete('capstone', 'Reached the report step' + (capstone.scenarioTitle ? ' for "' + capstone.scenarioTitle + '"' : '') + '.');
+        };
         var setStudentName = function(name) { saveCapstone({ studentName: name }); };
 
         var scenario = scenarioId ? SCENARIOS.find(function(s) { return s.id === scenarioId; }) : null;
@@ -6817,12 +10176,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           antibioticLab: [
             { id: 'doseStrength', label: 'Dose strength', levelA: '0.55', levelB: '0.85' },
             { id: 'startingResistance', label: 'Starting resistance', levelA: '1%', levelB: '10%' },
-            { id: 'traitVariation', label: 'Offspring resistance variation', levelA: '0.02', levelB: '0.08' }
+            { id: 'traitVariation', label: 'Offspring resistance variation', levelA: '0.02', levelB: '0.08' },
+            { id: 'schedule', label: 'Dosing schedule', levelA: 'Complete course (15 on)', levelB: 'Stopped early (5 on)' }
           ],
           coevolution: [
             { id: 'huntPressure', label: 'Hunt pressure', levelA: '0.35', levelB: '0.75' },
             { id: 'traitVariation', label: 'Offspring speed variation', levelA: '0.02', levelB: '0.08' },
             { id: 'predatorCost', label: 'Predator speed cost', levelA: 'On', levelB: 'Off' },
+            { id: 'generations', label: 'Generations', levelA: '20', levelB: '40' }
+          ],
+          predatorVision: [
+            { id: 'environment', label: 'Environment', levelA: 'Urban Concrete', levelB: 'Snowy Field' },
+            { id: 'rounds', label: 'Rounds hunted', levelA: '6', levelB: '12' }
+          ],
+          mateChoice: [
+            { id: 'predatorCost', label: 'Predator cost', levelA: 'Off', levelB: 'On' },
+            { id: 'rounds', label: 'Rounds', levelA: '12', levelB: '22' }
+          ],
+          climatePressure: [
+            { id: 'warmingRate', label: 'Warming per generation', levelA: '0.010', levelB: '0.030' },
+            { id: 'traitVariation', label: 'Offspring tolerance variation', levelA: '0.04', levelB: '0.10' }
+          ],
+          beakLab: [
+            { id: 'droughtYears', label: 'Drought years', levelA: '0', levelB: '3' },
+            { id: 'traitVariation', label: 'Offspring beak variation (mm)', levelA: '0.10', levelB: '0.40' }
+          ],
+          speciation: [
+            { id: 'selectionStrength', label: 'Selection strength', levelA: '0.30', levelB: '1.00' },
+            { id: 'traitVariation', label: 'Offspring trait variation', levelA: '0.02', levelB: '0.08' },
+            { id: 'generations', label: 'Generations', levelA: '30', levelB: '60' }
+          ],
+          hardyWeinberg: [
+            { id: 'selectionCoefficient', label: 'Selection against aa', levelA: '0.05', levelB: '0.15' },
+            { id: 'startP', label: 'Starting p', levelA: '0.05', levelB: '0.20' },
             { id: 'generations', label: 'Generations', levelA: '20', levelB: '40' }
           ]
         };
@@ -6830,7 +10216,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           geneticDrift: 'mean absolute displacement and fixation/loss',
           selectionSandbox: 'trait response',
           antibioticLab: 'resistant-share change',
-          coevolution: 'capture rate and reciprocal trait shifts'
+          coevolution: 'capture rate and reciprocal trait shifts',
+          predatorVision: 'camouflage gain',
+          mateChoice: 'mean showiness shift',
+          climatePressure: 'survival and final population size',
+          beakLab: 'mean beak depth shift',
+          speciation: 'trait-overlap proxy',
+          hardyWeinberg: 'allele frequency change'
         };
         var factorOptions = scenario && scenario.module ? (CAPSTONE_FACTOR_OPTIONS[scenario.module] || []) : [];
         var trialPlanTarget = trialPlan && trialPlan.strategy === 'repeat' ? clamp(parseInt(trialPlan.targetRuns, 10) || 2, 2, 3) : 2;
@@ -8156,6 +11548,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 )
               )
             ),
+            h('div', { className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-sm text-slate-800 flex flex-wrap items-center justify-between gap-2' },
+              h('span', null, '🎟️ ', t('stem.evolab.tickets_in_app_note', 'Students can answer each day\'s exit ticket in-app (Exit Tickets on the menu) with a confidence check; answers land in their journal and in your Class Snapshot.')),
+              h('button', { onClick: function() { setView('exitTickets'); upd('view', 'exitTickets'); }, className: 'rounded-lg bg-amber-700 px-3 py-1.5 text-xs font-black text-white hover:bg-amber-800' }, t('stem.evolab.open_exit_tickets', 'Open Exit Tickets →'))
+            ),
             // Summary stats
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h(StatCard, { label: t('stem.evolab.days', 'Days'), value: DAYS.length, color: 'text-amber-700' }),
@@ -8216,6 +11612,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'selectionSleuth') return h(SelectionSleuth);
       if (view === 'homologySleuth') return h(HomologySleuth);
       if (view === 'capstone') return h(stableType('CapstoneProject', CapstoneProject));
+      if (view === 'journal') return h(stableType('LearningJournal', LearningJournal));
+      if (view === 'classSnapshot') return h(stableType('ClassSnapshot', ClassSnapshot));
+      if (view === 'exitTickets') return h(stableType('ExitTickets', ExitTickets));
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
       if (view === 'standardsCrosswalk') return h(StandardsCrosswalk);

@@ -1149,10 +1149,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   // PET-CARE WEEK SIM — daily events per species. Each event has
   // a list of choices; each choice impacts welfare meters + human
   // resources (energy, money). Realistic trade-offs, not punishment.
+  //
+  // `link` (optional) points at the module that holds the evidence behind
+  // the day's question, offered under the prompt BEFORE the choice. The
+  // sim is meant to be the application of the reference modules, so the
+  // reference should be one click away at the moment it is needed. A link
+  // never states which option to pick; it teaches what the options mean.
+  //
+  // `effects` is what the owner knows BEFORE choosing (and is what the
+  // choice buttons preview: money and energy only). `aftermath` is what
+  // the choice turns out to cost afterwards (the ER run after the
+  // brownie, the $800 week-late vet bill, the night up with a hunched
+  // rabbit). It is applied at the same moment but only revealed in
+  // "What happens", so a student cannot pick the cheapest chip and call
+  // that a judgement.
   // ─────────────────────────────────────────────────────────
   var CARE_SIM_DAYS = {
     dog: [
       { day: 1, label: 'Day 1 — establish the routine',
+        link: { view: 'training', patch: { trMode: 'read' }, label: 'Pet Training', why: 'Why a predictable routine matters to a dog.' },
+        scene: { icon: '\uD83C\uDF05', label: 'Routine morning', detail: 'Walk + breakfast set the tone', kind: 'routine' },
         prompt: 'It\'s the first morning with your new dog. Setting expectations now will define the next 10–15 years. What\'s your morning plan?',
         choices: [
           { id: 'full', label: 'Full routine: 30-min walk, breakfast, brief training, set up daytime enrichment',
@@ -1167,6 +1183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ]
       },
       { day: 2, label: 'Day 2 — friend texts at walk time',
+        scene: { icon: '\uD83D\uDC65', label: 'Social plans', detail: 'A walk competes with your evening', kind: 'social' },
         prompt: 'A friend invites you to a movie that starts at your usual evening walk time. Walks are 45 min for your high-energy dog.',
         choices: [
           { id: 'walk_first', label: 'Walk first, meet friend after the movie',
@@ -1177,10 +1194,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Compromise. Dogs handle one missed walk fine if they get extra attention; just don\'t let it become the pattern.' },
           { id: 'long_alone', label: 'Skip walk; dog is alone 6 extra hours',
             effects: { phys: -5, ment: -7, soc: -8, env: -3, en: 0, money: -8 },
+            aftermath: { en: -6 },
             note: 'A young dog left this long without a midday break is likely to have an indoor accident — and to associate alone-time with stress.' }
         ]
       },
       { day: 3, label: 'Day 3 — anxiety signals',
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'Yawning, lip-licking and pacing are all on the decoder.' },
+        scene: { icon: '\uD83C\uDF92', label: 'Departure cue', detail: 'The bag predicts alone time', kind: 'anxiety' },
         prompt: 'You notice your dog yawning, lip-licking, and pacing when you grab your bag in the morning. (See Body Language Decoder — calming signals.) What do you do?',
         choices: [
           { id: 'reduce', label: 'Lower the cue intensity — pick up bag without leaving for a few days',
@@ -1191,10 +1211,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Kong on departure = "alone time predicts good things." Pairs nicely with the previous strategy.' },
           { id: 'ignore', label: 'It\'s probably nothing — proceed normally',
             effects: { phys: -1, ment: -4, soc: -3, env: 0, en: 0, money: 0 },
+            aftermath: { en: -5 },
             note: 'Calming signals are early warnings. Ignored, they often progress to destruction or vocalization. Worth catching early.' }
         ]
       },
       { day: 4, label: 'Day 4 — vet visit planning',
+        link: { view: 'cost', patch: { costSpecies: 'dog-large' }, label: 'Lifetime Cost', why: 'What routine and emergency vet care add up to over a life.' },
+        scene: { icon: '\u2695\uFE0F', label: 'Vet visit', detail: 'Prevention protects future health', kind: 'vet' },
         prompt: 'A routine veterinary visit is due. During the exam, the veterinarian recommends sampling a small lump and provides a separate estimate.',
         choices: [
           { id: 'all', label: 'Approve the recommended visit and lump sampling',
@@ -1209,6 +1232,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ]
       },
       { day: 5, label: 'Day 5 — pouring rain',
+        link: { view: 'training', patch: { trMode: 'read' }, label: 'Pet Training', why: 'What nose-work and training do to a dog\'s energy.' },
+        scene: { icon: '\uD83C\uDF27\uFE0F', label: 'Rain day', detail: 'Indoor nose-work still counts', kind: 'rain' },
         prompt: 'Cold rain all day. Your dog is staring at you expectantly. What\'s the move?',
         choices: [
           { id: 'short_outside', label: 'Short walk in rain gear, then indoor enrichment + nose-work games',
@@ -1219,10 +1244,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Pleasant for both of you, but high-energy breeds (especially under 5 years) will be wired by evening.' },
           { id: 'nothing', label: 'Treat them like furniture today',
             effects: { phys: -4, ment: -6, soc: -5, env: -2, en: 0, money: 0 },
+            aftermath: { en: -6 },
             note: 'Bored dogs invent jobs. Often those jobs involve your couch or your shoes.' }
         ]
       },
       { day: 6, label: 'Day 6 — vacation request',
+        scene: { icon: '\uD83E\uDDF3', label: 'Travel weekend', detail: 'Coverage keeps routines safe', kind: 'travel' },
         prompt: 'Your family is going to Boston for the weekend (Friday–Sunday). Pick the dog\'s coverage.',
         choices: [
           { id: 'kennel', label: 'Reputable boarding kennel ($55/night × 2 = $110)',
@@ -1233,17 +1260,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Best welfare option if the friend is reliable. Dog stays in their own environment with their own routine.' },
           { id: 'alone_visits', label: 'Friend drops by twice a day for feeds + walks ($30 thanks)',
             effects: { phys: 0, ment: -5, soc: -8, env: -3, en: 0, money: -30 },
+            aftermath: { en: -4 },
             note: 'Cheaper, but a young/anxious dog alone overnight + most of the day will likely regress on training and may have accidents.' }
         ]
       },
       { day: 7, label: 'Day 7 — family BBQ',
+        link: { view: 'nutrition', label: 'Nutrition Science', why: 'The toxic-foods list, chocolate included.' },
+        scene: { icon: '\uD83C\uDF7D\uFE0F', label: 'Family BBQ', detail: 'Guests need a safe-treat plan', kind: 'bbq' },
         prompt: 'Your family is grilling. A guest offers your dog a chocolate brownie. What happens next?',
         choices: [
           { id: 'intercept', label: 'Politely intercept; offer guest a "dog-safe treat" to give instead',
             effects: { phys: +5, ment: +3, soc: +5, env: 0, en: -2, money: -3 },
             note: 'Theobromine in chocolate is metabolized too slowly by dogs — a brownie can be life-threatening for a small dog. You also taught the guest, kindly.' },
           { id: 'allow', label: 'Let them have it. "It\'s just a little."',
-            effects: { phys: -10, ment: 0, soc: 0, env: 0, en: 0, money: -200 },
+            effects: { phys: -10, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            aftermath: { en: -8, money: -200 },
             note: 'If an exposure occurs, call immediately with the dog\'s weight, product label, estimated amount, and time. Product concentration and body size matter; do not wait for symptoms or calculate a home cutoff.' },
           { id: 'shoo', label: 'Just put the dog outside while you eat',
             effects: { phys: -1, ment: -3, soc: -4, env: 0, en: -1, money: 0 },
@@ -1253,6 +1284,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     ],
     cat: [
       { day: 1, label: 'Day 1 — bringing home the cat',
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'What a hiding cat is telling you.' },
+        scene: { icon: '\uD83C\uDFE0', label: 'Safe room', detail: 'A quiet landing zone lowers stress', kind: 'home' },
         prompt: 'Your newly-adopted cat is hiding under the bed. It\'s been 4 hours.',
         choices: [
           { id: 'space', label: 'Set up food/water/litter in a quiet single room; let them come out on their own time',
@@ -1260,6 +1293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Standard shelter advice. New cats often need 3–7 days to relax. Forcing interaction triggers stress hiding for weeks.' },
           { id: 'pull', label: 'Pull them out so they get used to you',
             effects: { phys: -3, ment: -8, soc: -10, env: 0, en: -2, money: 0 },
+            aftermath: { en: -6 },
             note: 'You\'ve set up the wrong association — your hand = trapped. Recovery takes weeks of slow re-introduction.' },
           { id: 'leave', label: 'Leave them alone all day; they\'ll figure it out',
             effects: { phys: 0, ment: -3, soc: -2, env: +2, en: 0, money: 0 },
@@ -1267,6 +1301,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ]
       },
       { day: 2, label: 'Day 2 — the litter box',
+        link: { view: 'cats', label: 'Cats', why: 'Litter box count and placement, from the cat page.' },
+        scene: { icon: '\uD83E\uDDF9', label: 'Litter setup', detail: 'Placement changes bathroom comfort', kind: 'litter' },
         prompt: 'You have one cat. How many litter boxes should you set up, and where?',
         choices: [
           { id: 'two', label: 'Two boxes, in two different rooms (one per cat + 1)',
@@ -1277,10 +1313,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Minimum acceptable. Make sure it\'s scooped daily — cats refuse dirty boxes and pee elsewhere instead.' },
           { id: 'one_corner', label: 'One box, tucked next to the dryer + furnace',
             effects: { phys: -2, ment: -3, soc: 0, env: -3, en: -1, money: -20 },
+            aftermath: { en: -2 },
             note: 'Loud noises near the box = ambush trauma in cats\' minds. They\'ll start avoiding it.' }
         ]
       },
       { day: 3, label: 'Day 3 — outdoor temptation',
+        link: { view: 'welfare', patch: { welfareSec: 'outdoorCats' }, label: 'Welfare & Ethics', why: 'The indoor / outdoor evidence: lifespan and wildlife.' },
+        scene: { icon: '\uD83C\uDF3F', label: 'Window temptation', detail: 'Indoor enrichment protects wildlife', kind: 'outdoors' },
         prompt: 'Your cat is staring out the window, batting at the screen. A neighbor says "just let them out, cats love it."',
         choices: [
           { id: 'indoor_enrich', label: 'Stay indoor; add a window perch, food puzzles, daily play sessions',
@@ -1291,10 +1330,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Yes, cats can be leash-trained. Takes patience but gives outdoor enrichment without predation or risk. Best of both worlds.' },
           { id: 'free_roam', label: 'Open the door; "they know where home is"',
             effects: { phys: -8, ment: +3, soc: 0, env: 0, en: 0, money: 0 },
+            aftermath: { en: -4 },
             note: 'Owned outdoor cat lifespan ~5 years on average. They\'ll also kill an estimated dozens of birds/mammals per year. See Welfare & Ethics for the data.' }
         ]
       },
       { day: 4, label: 'Day 4 — scratching the couch',
+        link: { view: 'welfare', patch: { welfareSec: 'declawing' }, label: 'Welfare & Ethics', why: 'What declawing actually is, and the alternatives.' },
+        scene: { icon: '\uD83E\uDE91', label: 'Scratching post', detail: 'Claws need a legal target, not surgery', kind: 'scratch' },
         prompt: 'Your cat has been using the couch corner as a scratching post for two weeks. Friends are suggesting "just declaw."',
         choices: [
           { id: 'multi_post', label: 'Buy 2 tall vertical posts (sisal + cardboard) + redirect with treats',
@@ -1305,10 +1347,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Vinyl caps glue over nails for 4–6 weeks. No pain, no surgery. Pair with scratching posts so the urge has somewhere to go.' },
           { id: 'declaw', label: 'Schedule a declaw appointment',
             effects: { phys: -15, ment: -10, soc: -8, env: 0, en: 0, money: -350 },
+            aftermath: { en: -10 },
             note: 'Declawing is amputation of the last bone of every toe (P3). AVMA + AAFP oppose. Banned in most of Europe + NY/MD. ~3× higher chronic-pain rate, 7× higher rate of biting + litter-box problems (Martell-Moran 2018). See Welfare & Ethics.' }
         ]
       },
       { day: 5, label: 'Day 5 — sudden illness signs',
+        link: { view: 'cats', label: 'Cats', why: 'Which changes in a cat are urgent.' },
+        scene: { icon: '\u2695\uFE0F', label: 'Sudden change', detail: 'Skipped meals + hiding need a call', kind: 'vet' },
         prompt: 'Your cat has skipped meals and is hiding more than usual. This is a sudden change from their normal behavior.',
         choices: [
           { id: 'vet_today', label: 'Call the veterinarian now for same-day guidance',
@@ -1318,11 +1363,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             effects: { phys: -3, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
             note: 'A food change does not identify the cause or create a safe waiting window. Call now and follow the veterinarian\'s case-specific instructions.' },
           { id: 'wait_week', label: '"Cats are like that" — wait a week',
-            effects: { phys: -15, ment: -5, soc: -3, env: 0, en: 0, money: -800 },
+            effects: { phys: -15, ment: -5, soc: -3, env: 0, en: 0, money: 0 },
+            aftermath: { en: -10, money: -800 },
             note: 'A long delay can allow serious illness to worsen. The diagnosis, timing, outcome, and cost cannot be forecast from this scenario; the safe next step is prompt veterinary contact.' }
         ]
       },
       { day: 6, label: 'Day 6 — vacation: 3 days',
+        scene: { icon: '\uD83C\uDFE1', label: 'Care coverage', detail: 'Familiar space beats disruption', kind: 'sitter' },
         prompt: 'Family weekend trip Friday–Sunday. Cat coverage:',
         choices: [
           { id: 'sitter_visits', label: 'Cat sitter twice a day ($25/visit × 6 = $150). Litter, food, play, brush.',
@@ -1330,13 +1377,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Cats often handle alone-time better than dogs, but daily check-ins catch sudden illness AND maintain litter freshness so the cat doesn\'t protest-pee.' },
           { id: 'auto_feed', label: 'Auto-feeder + extra water + clean litter; check on Sunday',
             effects: { phys: -3, ment: -3, soc: -3, env: -8, en: 0, money: -60 },
+            aftermath: { en: -6 },
             note: 'Three-day litter without scooping is gross enough that many cats stop using it. Auto-feeders fail, water bowls get knocked. Risky.' },
           { id: 'boarding', label: 'Boarding facility ($55/night × 2 = $110)',
             effects: { phys: 0, ment: -8, soc: -10, env: -3, en: 0, money: -110 },
+            aftermath: { en: -4 },
             note: 'Cats experience boarding as significantly more stressful than dogs. Their environment IS their territory — moving them = trauma. Sitter at home is better welfare for cats.' }
         ]
       },
       { day: 7, label: 'Day 7 — guest with allergies',
+        scene: { icon: '\uD83C\uDF81', label: 'Allergic guest', detail: 'Choice and escape routes matter', kind: 'guests' },
         prompt: 'A friend with cat allergies is visiting for a long weekend. They\'re asking you to "just let the cat be outside while I\'m here."',
         choices: [
           { id: 'guest_room', label: 'Set up a quiet room for cat with all comforts; HEPA filter where guest sleeps',
@@ -1344,6 +1394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Cat\'s territory remains intact. Friend takes their allergy meds + uses the HEPA. Both sides of the disagreement get respected.' },
           { id: 'outside_temp', label: 'Yes, let cat outside for the weekend',
             effects: { phys: -8, ment: -5, soc: -3, env: 0, en: 0, money: 0 },
+            aftermath: { en: -8 },
             note: 'Indoor cats unfamiliar with outdoors are at high risk of getting lost, hit, or attacked. They\'re also catching anything from outside (fleas, ticks, FIV/FeLV exposure).' },
           { id: 'reschedule', label: 'Suggest the friend stay at a hotel this trip',
             effects: { phys: +4, ment: 0, soc: -1, env: +2, en: -2, money: 0 },
@@ -1353,6 +1404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     ],
     rabbit: [
       { day: 1, label: 'Day 1 — the cage question',
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'Housing standards for rabbits.' },
+        scene: { icon: '\uD83D\uDECE\uFE0F', label: 'New enclosure', detail: 'Room to run beats a pet-store cage', kind: 'settle' },
         prompt: 'Your bunny\'s pet-store cage is 30" × 18". You\'re re-doing the setup. What works?',
         choices: [
           { id: 'free_roam', label: 'Free-roam in a bunny-proofed room (cords covered, baseboards protected)',
@@ -1363,10 +1416,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Acceptable middle ground. Make sure out-of-pen time is daily and predictable.' },
           { id: 'cage', label: 'Keep the original cage',
             effects: { phys: -8, ment: -10, soc: -3, env: -8, en: 0, money: 0 },
+            aftermath: { en: -4 },
             note: 'Pet-store cages are inhumane for rabbits — they cause foot sores ("hock disease"), aggression from confinement, and severely compressed lifespan. RSPCA + HRS both call this welfare failure.' }
         ]
       },
       { day: 2, label: 'Day 2 — diet',
+        link: { view: 'nutrition', label: 'Nutrition Science', why: 'The hay / pellet / greens balance.' },
+        scene: { icon: '\uD83C\uDF3E', label: 'Hay first', detail: 'Fiber keeps the gut moving', kind: 'hay' },
         prompt: 'You\'re at the pet store. The clerk recommends a "complete rabbit kibble" diet.',
         choices: [
           { id: 'hay_first', label: 'Buy unlimited timothy hay + small pellet portion + leafy greens',
@@ -1377,10 +1433,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Causes obesity, dental disease (rabbit teeth grow forever — they need hay\'s grinding action), and GI stasis. Surprisingly common cause of vet visits.' },
           { id: 'free_food', label: 'Free-fed pellets, occasional hay',
             effects: { phys: -12, ment: -4, soc: 0, env: 0, en: 0, money: -20 },
+            aftermath: { en: -3 },
             note: 'A low-hay diet raises the risk of dental and gastrointestinal disease, but timing and outcome cannot be predicted. Seek rabbit-savvy guidance for diet changes and any appetite or dropping change.' }
         ]
       },
       { day: 3, label: 'Day 3 — pair bonding',
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'Why rabbits are kept in bonded pairs.' },
+        scene: { icon: '\uD83D\uDC30', label: 'Pair bonding', detail: 'A second bun needs slow intros', kind: 'bond' },
         prompt: 'Rabbits are highly social — most happiest in bonded pairs. Should you adopt a friend?',
         choices: [
           { id: 'shelter_bond', label: 'Adopt a second rabbit from a shelter; do supervised intros',
@@ -1391,17 +1450,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Possible if you genuinely have hours daily, but most working/school people can\'t match what another bun does. Switzerland makes solo rabbit ownership ILLEGAL for this reason.' },
           { id: 'just_add', label: 'Buy another, no introductions',
             effects: { phys: -10, ment: -5, soc: -5, env: 0, en: 0, money: -50 },
+            aftermath: { en: -8 },
             note: 'Rabbits are territorial — unbonded buns can fight to serious injury. Introductions on neutral territory, both spayed/neutered, takes weeks.' }
         ]
       },
       { day: 4, label: 'Day 4 — spay surgery',
+        link: { view: 'welfare', patch: { welfareSec: 'spayNeuter' }, label: 'Welfare & Ethics', why: 'The spay evidence, uterine-cancer numbers included.' },
+        scene: { icon: '\u2695\uFE0F', label: 'Spay decision', detail: 'Uterine cancer risk is the reason', kind: 'vet' },
         prompt: 'Your female rabbit is 6 months old. The exotic vet recommends spaying. Cost estimate: $400.',
         choices: [
           { id: 'spay', label: 'Schedule the spay',
             effects: { phys: +18, ment: +3, soc: +3, env: 0, en: -5, money: -400 },
             note: 'Female rabbits have ~80% rate of uterine cancer by age 5 if not spayed (House Rabbit Society / Saunders 2003). Spay nearly eliminates this. Plus reduces aggression + spraying.' },
           { id: 'wait', label: 'Wait until she shows symptoms',
-            effects: { phys: -15, ment: 0, soc: 0, env: 0, en: 0, money: -1500 },
+            effects: { phys: -15, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            aftermath: { money: -1500 },
             note: 'By the time symptoms (blood in urine, lethargy) show, cancer is often advanced + spread. Spay-now is preventive + far cheaper than later treatment.' },
           { id: 'never', label: '"She\'s a pet — why bother?"',
             effects: { phys: -25, ment: -3, soc: -3, env: 0, en: 0, money: 0 },
@@ -1409,20 +1472,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ]
       },
       { day: 5, label: 'Day 5 — urgent appetite change',
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'GI stasis: the signs, and why it is an emergency.' },
+        scene: { icon: '\uD83D\uDEA8', label: 'Appetite change', detail: 'Fewer droppings is an emergency sign', kind: 'vet' },
         prompt: 'Your rabbit refuses a favorite food, has produced fewer droppings for several hours, and is hunched in the corner. What now?',
         choices: [
           { id: 'er', label: 'Call a rabbit-savvy veterinarian or emergency clinic now',
             effects: { phys: +20, ment: +2, soc: +2, env: 0, en: -8, money: -350 },
             note: 'Loss of appetite, reduced droppings, and hunching are urgent. Call ahead because not every emergency clinic treats rabbits; a clinician must assess causes such as obstruction before directing feeding or treatment.' },
           { id: 'wait_morning', label: 'Wait until morning to call',
-            effects: { phys: -20, ment: -3, soc: 0, env: 0, en: 0, money: -1200 },
+            effects: { phys: -20, ment: -3, soc: 0, env: 0, en: 0, money: 0 },
+            aftermath: { en: -10, money: -1200 },
             note: 'Do not wait for a 12-hour cutoff before asking for help. Rabbits can worsen quickly, and only a veterinary assessment can identify the cause and safe next step.' },
           { id: 'home_remedy', label: 'Try massage and syringe-feeding before calling',
             effects: { phys: -15, ment: -2, soc: 0, env: 0, en: -3, money: 0 },
+            aftermath: { en: -5 },
             note: 'Home treatment can delay care, and force-feeding can worsen an obstruction. Do not force-feed or give medication unless a rabbit-savvy veterinarian has assessed the risk and directs you.' }
         ]
       },
       { day: 6, label: 'Day 6 — kid wants to hold',
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'How a rabbit shows fear when it is picked up.' },
+        scene: { icon: '\uD83D\uDC65', label: 'Young visitor', detail: 'Floor-level meets protect a prey animal', kind: 'guests' },
         prompt: 'A young niece (age 6) is visiting and wants to hold the rabbit. The rabbit is recently bonded but not yet handling-confident.',
         choices: [
           { id: 'floor_visit', label: 'Sit on floor with niece; let rabbit approach on its terms',
@@ -1430,6 +1499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Rabbits are prey animals — being held high (above eye-level) triggers predator-grab instinct. Floor-level interactions are far better welfare.' },
           { id: 'hold_briefly', label: 'Carefully hand the rabbit to her for 30 seconds',
             effects: { phys: -3, ment: -3, soc: -5, env: 0, en: -2, money: 0 },
+            aftermath: { en: -1 },
             note: 'Many rabbits stress-freeze in human arms (they\'re not enjoying it — they\'re terrified). Adults can usually hold safely; kids almost always misjudge.' },
           { id: 'no', label: 'Tell niece "no — rabbits are not for holding"; offer brushing instead',
             effects: { phys: +5, ment: +3, soc: +3, env: +1, en: -2, money: 0 },
@@ -1437,6 +1507,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ]
       },
       { day: 7, label: 'Day 7 — long-term reality check',
+        link: { view: 'cost', patch: { costSpecies: 'rabbit-pair' }, label: 'Lifetime Cost', why: 'What a bonded pair costs over its life.' },
+        scene: { icon: '\uD83D\uDCAC', label: 'Honest advice', detail: 'What one week taught you', kind: 'reflect' },
         prompt: 'You\'ve been a rabbit owner for one week. A friend mentions getting one. What do you tell them?',
         choices: [
           { id: 'honest', label: '"They\'re wonderful but high-effort. Plan 8–12 years, exotic vets, daily greens + hay, free-roam space, almost certainly pair-bonded. Read House Rabbit Society first."',
@@ -1455,26 +1527,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
   // Care-sim economy constants.
   //
-  // START_MONEY is species-scaled, not flat. A flat budget made the sim
-  // teach the wrong lesson: the cheapest path to full welfare costs $115
-  // for a dog, $296 for a cat, but $596 for a rabbit (spay + a GI-stasis
-  // emergency are both mandatory and both exotic-vet priced). On a flat
-  // $500 the *highest-welfare rabbit week was unreachable* — a student who
-  // made every correct medical call went bankrupt and was denied the
-  // badge, while one who skipped the spay kept it. These figures give each
-  // species a comparable ~$355+ margin over its best-care path while
-  // leaving every species bankruptable by careless spending (reckless
-  // weeks cost up to $707 / $1,416 / $2,946). Scaled off the tool's own
-  // Lifetime Cost profiles, where rabbits carry exotic-vet premiums.
-  var CARE_SIM_START_MONEY = { dog: 500, cat: 650, rabbit: 950 };
+  // START_MONEY is species-scaled, not flat, and is tuned against the
+  // ALL-BEST week (every highest-welfare choice plus daily feeding), not
+  // the cheapest badge-earning week. A 2026-07 retune measured its margin
+  // against the cheapest badge path ($596 rabbit) and left the all-best
+  // rabbit week (free-roam, hay, a bonded partner, the spay, the ER) at
+  // $975 + $21 feeding against a $950 budget: every correct call, $46 in
+  // debt, badge denied, while the cage-and-never-spay week stayed solvent.
+  // All-best + daily feeding now costs $472 / $511 / $996 and each species
+  // keeps a comparable ~$180-200 margin, while reckless weeks (up to
+  // $728 / $1,437 / $2,967) still go bankrupt.
+  var CARE_SIM_START_MONEY = { dog: 650, cat: 700, rabbit: 1200 };
 
-  // Caregiver energy. Previously decorative — it was displayed and
-  // decremented but read by nothing, while the intro promised it tracked
-  // "how YOU are doing". Now it recovers overnight and, when it runs low,
-  // degrades the care you're able to give (documented caregiver-fatigue
-  // effect), which is the actual lesson the meter was there to teach.
-  var CARE_SIM_ENERGY_RECOVERY = 10;   // overnight rest, capped at 100
+  // Caregiver energy. Overnight rest is 8, not 10: at 10 the lowest
+  // energy any of the 839,808 possible weeks could reach was 39, so the
+  // fatigue rule below and the "finish above 20%" badge row could never
+  // fire; two of the four badge criteria were decorative. At 8 the
+  // all-best week still finishes at 27+ in every species and never starts
+  // a task below 25 in either task order, while careless weeks (an indoor
+  // accident to clean up, a night at the ER, weeks of re-introducing a
+  // grabbed cat) can now actually exhaust you.
+  var CARE_SIM_ENERGY_RECOVERY = 8;    // overnight rest, capped at 100
   var CARE_SIM_TIRED_BELOW = 25;       // below this, routine care is half as effective
+
+  // Routine care is upkeep, not a second score. Each task done adds a
+  // little (INTERACT_EFFECTS, below in renderCareSim); each task SKIPPED
+  // costs the animal a little overnight. Before this the five daily
+  // buttons added up to +49 phys / +35 ment / +28 soc / +35 env over a
+  // week, more than the seven decisions combined, so the pet-store cage,
+  // no spay and a home-remedied GI stasis still earned "Caring Pet-Owner"
+  // if you clicked feed/water/play/pet/clean every day. Now the weekly
+  // ceiling is +21 / +14 / +14 / +14 and the skip cost outweighs the
+  // bonus, so routine care keeps a good week good but cannot rescue a bad
+  // one. Keys are the INTERACT_EFFECTS kinds; values are per-night costs.
+  var CARE_SIM_ROUTINE_SKIP_COST = {
+    pet:   { soc: -3 },
+    feed:  { phys: -3 },
+    water: { phys: -1 },
+    play:  { ment: -3 },
+    clean: { env: -3 }
+  };
+
+  // Consequences. The notes have always warned what neglect leads to
+  // ("bored dogs invent jobs", "likely to have an indoor accident") but the
+  // warnings stayed prose: nothing ever happened. Now, when a welfare
+  // domain is below CARE_SIM_CONSEQUENCE_BELOW at the end of a night, the
+  // matching event happens and costs the OWNER (money, effort, sometimes a
+  // mess to clean). At most two fire per night, lowest domains first, so a
+  // bad week escalates without becoming a wall of text. Events never lower
+  // the domain that caused them, so a bad week is recoverable; they make
+  // the recovery cost something, which is the lesson. The all-best week
+  // never triggers one (verified by enumeration in the economy test).
+  var CARE_SIM_CONSEQUENCE_BELOW = 40;
+  var CARE_SIM_CONSEQUENCES_PER_NIGHT = 2;
+  var CARE_SIM_CONSEQUENCES = {
+    dog: {
+      phys: { icon: '\uD83E\uDD12', label: 'Off their food this morning', money: -45, en: -4,
+        note: 'Low physical welfare shows up as a dog that will not eat. A vet phone consult and a bland-diet day.' },
+      ment: { icon: '\uD83D\uDECB\uFE0F', label: 'Chewed the couch cushion overnight', money: -40, en: -4, env: -3,
+        note: 'Bored dogs invent jobs. This one cost a cushion and an hour of cleanup.' },
+      soc:  { icon: '\uD83D\uDC15', label: 'Howled and paced after you left', money: 0, en: -3,
+        note: 'A neighbour texted. A lonely dog is a loud dog, and the stress compounds.' },
+      env:  { icon: '\uD83E\uDDFB', label: 'Indoor accident to clean up', money: -8, en: -5,
+        note: 'A dirty, cramped or unpredictable space makes accidents likely. Enzyme cleaner and a mop before work.' }
+    },
+    cat: {
+      phys: { icon: '\uD83E\uDD12', label: 'Skipped breakfast and hid', money: -45, en: -4,
+        note: 'A cat that stops eating is never "just being a cat". A vet phone consult and close watching today.' },
+      ment: { icon: '\uD83E\uDEB4', label: 'Knocked everything off the shelf at 3 a.m.', money: -20, en: -4,
+        note: 'Under-stimulated cats make their own entertainment at night. You lost a plant pot and an hour of sleep.' },
+      soc:  { icon: '\uD83D\uDC08', label: 'Hissed and hid when you came home', money: 0, en: -3,
+        note: 'Trust is a meter that drains. Rebuilding it takes slow, quiet sessions.' },
+      env:  { icon: '\uD83E\uDDFB', label: 'Peed outside the litter box', money: -15, en: -5,
+        note: 'A dirty or badly placed box is the number one reason cats stop using it. Enzyme cleaner, and a hard look at the box.' }
+    },
+    rabbit: {
+      phys: { icon: '\uD83E\uDD12', label: 'Fewer droppings this morning', money: -60, en: -5,
+        note: 'The first sign of GI trouble in a rabbit. An exotic-vet phone consult and hay pushed all day.' },
+      ment: { icon: '\uD83D\uDD0C', label: 'Chewed through a phone charger', money: -25, en: -3, env: -2,
+        note: 'A bored rabbit chews. Cords are the classic casualty, and a live one is a danger to the rabbit.' },
+      soc:  { icon: '\uD83D\uDC30', label: 'Thumped and hid at the sight of you', money: 0, en: -3,
+        note: 'A prey animal that does not trust you treats you as a threat. That takes floor time to undo.' },
+      env:  { icon: '\uD83E\uDDFB', label: 'Soiled bedding and a sore hock', money: -12, en: -4,
+        note: 'Wet, dirty bedding causes hock sores fast. Full clean-out and a foot check.' }
+    }
+  };
+
+  // Rendered choice order. The authored tables put the highest-welfare
+  // option first on 20 of 21 days and the list rendered in authored
+  // order, so a student who clicked the top button seven times without
+  // reading earned the cat badge. Rotate deterministically by species and
+  // day (no randomness: a replay is stable and tests can pin it); over a
+  // week the authored-first option lands in every slot. Pure on purpose
+  // so a test can lift and run it.
+  // Net welfare of a choice across the four domains. Below zero means the
+  // option harms the animal on balance; every such option's note carries a
+  // warning, and no authored "acceptable alternative" is net-negative, so
+  // this is the line between a mistake and a defensible different call.
+  function petsCareWelfareSum(choice) {
+    var e = (choice && choice.effects) || {};
+    return (e.phys || 0) + (e.ment || 0) + (e.soc || 0) + (e.env || 0);
+  }
+  function petsCareStrongestChoice(day) {
+    var choices = (day && day.choices) || [];
+    var best = null;
+    for (var i = 0; i < choices.length; i++) {
+      if (!best || petsCareWelfareSum(choices[i]) > petsCareWelfareSum(best)) best = choices[i];
+    }
+    return best;
+  }
+  // Whether the badge is still within reach from a mid-week state. It only
+  // ever says "out of reach" when that is CERTAIN: a miss that cannot be
+  // undone (money below $0, a task started exhausted, energy that cannot
+  // climb back above 20%), or a domain ceiling that stays under the floor
+  // even if every remaining choice and every remaining task goes the
+  // animal's way. It may still say "within reach" for a week that will
+  // fail; it never says "out of reach" for a week that could still win, so
+  // nobody is told to give up on a week they could have saved. Pure and
+  // module-scope so the economy test can lift it and check exactly that.
+  function petsCareOutlook(state, days, interact, recovery) {
+    var domains = [['phys', 'Physical'], ['ment', 'Mental'], ['soc', 'Social'], ['env', 'Environmental']];
+    var reasons = [];
+    if (state.lowMoney || Number(state.money) < 0) reasons.push('money went below $0');
+    if (Number(state.tiredCare) > 0) reasons.push('a routine task was started below 25% energy');
+    var nightsLeft = Math.max(0, days.length - 1 - state.day);
+    if ((Number(state.en) || 0) + recovery * nightsLeft <= 20) reasons.push('energy cannot get back above 20%');
+    var chosenToday = !!((state.choices || [])[state.day]);
+    var todayDone = ((state.dailyInteractions || {})[state.day]) || {};
+    var ceilings = {};
+    domains.forEach(function(pair) {
+      var dom = pair[0];
+      var v = Number(state[dom]) || 0;
+      for (var i = state.day; i < days.length; i++) {
+        if (i === state.day && chosenToday) continue;
+        var best = 0;
+        (days[i].choices || []).forEach(function(c) { best = Math.max(best, ((c.effects || {})[dom] || 0)); });
+        v += best;
+      }
+      Object.keys(interact || {}).forEach(function(kind) {
+        var gain = (interact[kind] || {})[dom] || 0;
+        if (!gain) return;
+        v += gain * (nightsLeft + (todayDone[kind] ? 0 : 1));
+      });
+      ceilings[dom] = Math.min(100, v);
+    });
+    var weakest = domains[0];
+    domains.forEach(function(pair) { if (ceilings[pair[0]] < ceilings[weakest[0]]) weakest = pair; });
+    var minCeil = ceilings[weakest[0]];
+    var avgCeil = domains.reduce(function(sum, pair) { return sum + ceilings[pair[0]]; }, 0) / domains.length;
+    if (Math.round(minCeil) < 70) {
+      reasons.push(weakest[1] + ' cannot reach 70% even if every remaining choice and task goes well (best case ' + Math.round(minCeil) + '%)');
+    } else if (Math.round(avgCeil) < 80) {
+      reasons.push('the four domains cannot average 80% even if every remaining choice and task goes well (best case ' + Math.round(avgCeil) + '%)');
+    }
+    return { reachable: reasons.length === 0, reasons: reasons, ceilings: ceilings };
+  }
+  function petsCareChoiceOrder(species, dayIdx, choices) {
+    var n = choices ? choices.length : 0;
+    if (!n) return [];
+    var speciesIdx = { dog: 0, cat: 1, rabbit: 2 }[species] || 0;
+    var shift = ((dayIdx * 2) + speciesIdx) % n;
+    return choices.slice(shift).concat(choices.slice(0, shift));
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 7b: SENSORY PERSPECTIVE ("Through Their Eyes")
@@ -2345,7 +2559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         'biologyCorrect', 'biologyTotal', 'behaviorCorrect', 'behaviorTotal',
         'healthCorrect', 'healthTotal', 'welfareCorrect', 'welfareTotal', 'criterionMet'],
       aiPractice: ['scenarioId', 'draftChars', 'feedbackSource', 'reviewStatus', 'revisionMade', 'revisionNoteChars'],
-      careSim: ['species', 'days', 'physical', 'mental', 'social', 'environmental', 'weakestDomain', 'weakestPct', 'moneyLeft', 'avoidedNegativeBalance', 'stayedInBudget', 'energyLeft', 'finishedAboveEnergyTarget', 'avoidedExhaustedCare', 'caregiverSustainable', 'criterionMet'],
+      careSim: ['species', 'days', 'physical', 'mental', 'social', 'environmental', 'weakestDomain', 'weakestPct', 'averagePct', 'overnightEvents', 'moneyLeft', 'avoidedNegativeBalance', 'stayedInBudget', 'energyLeft', 'finishedAboveEnergyTarget', 'avoidedExhaustedCare', 'caregiverSustainable', 'criterionMet'],
       sensory: ['perspectives', 'criterionMet']
     };
     var PETS_EVIDENCE_ACTIVITY_SUMMARIES = {
@@ -2560,7 +2774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return safe;
     }
     function normalizeEvidenceDetailValue(key, value) {
-      var percentKeys = ['behaviorPct', 'trustPct', 'scorePct', 'bestPct', 'physical', 'mental', 'social', 'environmental', 'weakestPct', 'energyLeft'];
+      var percentKeys = ['behaviorPct', 'trustPct', 'scorePct', 'bestPct', 'physical', 'mental', 'social', 'environmental', 'weakestPct', 'averagePct', 'energyLeft'];
       if (percentKeys.indexOf(key) >= 0 && typeof value === 'number' && isFinite(value)) {
         return Math.max(0, Math.min(100, Math.round(value)));
       }
@@ -2693,6 +2907,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }, domains[0]);
           details.weakestDomain = weakest[0];
           details.weakestPct = details[weakest[1]];
+          // Re-derived from the four stored domains, never trusted from the row.
+          details.averagePct = Math.round(domains.reduce(function(sum, domain) {
+            return sum + details[domain[1]];
+          }, 0) / domains.length);
+          if (hasNumber('overnightEvents')) {
+            details.overnightEvents = Math.max(0, Math.min(14, Math.round(details.overnightEvents)));
+          } else {
+            delete details.overnightEvents;
+          }
           if (hasNumber('moneyLeft')) {
             details.stayedInBudget = details.moneyLeft >= 0 &&
               details.avoidedNegativeBalance !== false;
@@ -2706,7 +2929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }
           details.criterionMet = domains.every(function(domain) {
             return details[domain[1]] >= 70;
-          }) && details.stayedInBudget === true &&
+          }) && details.averagePct >= 80 && details.stayedInBudget === true &&
             hasNumber('energyLeft') && details.energyLeft > 20 &&
             details.caregiverSustainable === true;
         } else {
@@ -5479,6 +5702,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { type: 'wrong',   desc: 'The puppy starts barking at a noise outside.', label: '× Barking at noise' },
         { type: 'target',  desc: 'You say "sit." The puppy holds the sit for 3 seconds.', label: '✓ Sustained sit' }
       ];
+      var TR_RESPONSE_NAMES = {
+        treat3s: 'Treat within 3 seconds',
+        click: 'Marker only',
+        wait: 'Wait and observe',
+        correct: 'Verbal correction'
+      };
+      // The strongest response for each kind of moment, per the reinforcement
+      // model in pickResponse (the economy test derives the same answer from
+      // that code and checks these agree). Named on the session summary beside
+      // any round where the student did something weaker.
+      var TR_BEST_RESPONSE = {
+        target: { id: 'treat3s', why: 'The behaviour you want just happened. Pay it within three seconds so the puppy connects the sit with the reward.' },
+        almost: { id: 'click',   why: 'Mark the approximation so the puppy knows it is on the right track, and keep the treat for the full sit. That is shaping.' },
+        wrong:  { id: 'wait',    why: 'Nothing to reinforce and nothing to punish. Behaviour that never pays fades on its own; a correction only adds stress.' }
+      };
       var trSim = normalizeTrainerState(d.trSim);  // { idx, choices, prob, trust, log }
       function startTrSim() {
         upd('trSim', { idx: 0, choices: [], prob: 0.20, trust: 1.00, done: false, log: [] });
@@ -5560,12 +5798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           : trSim.idx === 1 ? 'sniff'
           : trSim.idx === 4 ? 'jump'
           : 'bark';
-        var responseNames = {
-          treat3s: 'Treat within 3 seconds',
-          click: 'Marker only',
-          wait: 'Wait and observe',
-          correct: 'Verbal correction'
-        };
+        var responseNames = TR_RESPONSE_NAMES;
         var selected = revealed ? thisChoice.rxn : null;
         var outcomeColor = !revealed ? '#fbbf24'
           : thisChoice.dProb > 0 ? '#84cc16'
@@ -5809,7 +6042,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { className: 'petslab-stage-hud petslab-stage-hud--top', 'aria-hidden': 'true' },
             h('div', { className: 'petslab-hud-stack' },
               h('span', { className: 'petslab-hud-chip' }, 'ROUND ', h('strong', null, round + ' / ' + TR_MOMENTS.length)),
-              h('span', { className: 'petslab-hud-chip' }, revealed ? 'RESPONSE ' : 'OBSERVE ', h('strong', null, revealed ? responseNames[selected] : moment.label))
+              // Before the response, show the behaviour WITHOUT its ✓ / × / ~
+              // classification glyph: that glyph is the answer key (target /
+              // wrong / almost), and with it on screen the round collapses to
+              // "✓ means treat". Judging whether a half-sit is a sit is the task.
+              h('span', { className: 'petslab-hud-chip' }, revealed ? 'RESPONSE ' : 'OBSERVE ', h('strong', null, revealed ? responseNames[selected] : moment.label.replace(/^[✓×~]\s*/, '')))
             ),
             h('div', { className: 'petslab-hud-objective' },
               h('strong', { style: { display: 'block', color: outcomeColor, marginBottom: 2 } }, revealed ? outcomeLabel.toUpperCase() : 'TRAINING MOMENT'),
@@ -6017,7 +6254,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   transform: 'rotate(-90 14 ' + (H / 2) + ')'
                 }, 'Probability / trust')
               )
-            ),            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            ),
+            // Round by round: what happened, what you did, what it did to the
+            // puppy, and (where a stronger response existed) what that was and
+            // why. The headline tells the student to "review the moments where
+            // probability dropped"; this is where they can.
+            (function() {
+              var rounds = TR_MOMENTS.map(function(moment, i) {
+                var ch = (trSim.choices || [])[i];
+                if (!ch) return null;
+                var best = TR_BEST_RESPONSE[moment.type] || null;
+                var wasBest = !!(best && ch.rxn === best.id);
+                var signed = function(v) { var n = Math.round(v * 100); return (n > 0 ? '+' : '') + n; };
+                return h('li', { key: i, className: 'petslab-trainer-round' + (wasBest ? ' is-best' : ' is-weaker'),
+                  style: { padding: '8px 10px', borderRadius: 8, background: T.cardAlt, borderLeft: '3px solid ' + (wasBest ? T.ok : T.warm), fontSize: 12, lineHeight: 1.5 } },
+                  h('div', { style: { color: T.text } },
+                    h('strong', null, 'Round ' + (i + 1) + ' · ' + moment.label + ' → ' + (TR_RESPONSE_NAMES[ch.rxn] || ch.rxn)),
+                    ' ',
+                    // #f87171 (red-400), not T.danger: #dc2626 at 11px on the
+                    // dark card is 3.8:1, under AA for small text.
+                    h('span', { style: { fontFamily: 'monospace', fontSize: 11, color: ch.dProb > 0 ? T.ok : ch.dProb < 0 ? '#f87171' : T.dim } },
+                      '(' + signed(ch.dProb) + ' behavior' + (ch.dTrust ? ', ' + signed(ch.dTrust) + ' trust' : '') + ')')),
+                  !wasBest && best && h('div', { className: 'petslab-trainer-stronger', style: { marginTop: 3, color: T.muted } },
+                    h('strong', { style: { color: T.accentHi } }, 'Stronger response: ' + TR_RESPONSE_NAMES[best.id] + '. '), best.why)
+                );
+              }).filter(Boolean);
+              var weaker = rounds.filter(function(node) { return node && node.props && /is-weaker/.test(node.props.className); }).length;
+              return h('div', { className: 'petslab-trainer-review', 'data-pets-trainer-weaker': String(weaker),
+                style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + (weaker ? T.warm : T.ok), marginBottom: 12 } },
+                h('h3', { style: { margin: '0 0 4px', fontSize: 14, color: T.text } }, '🔎 Round by round'),
+                h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                  weaker === 0
+                    ? 'Every round got the strongest response for that moment. That is the whole skill: read the moment, then time the reward.'
+                    : weaker + ' of ' + rounds.length + ' rounds had a stronger response available. Each one is named below with the reason.'),
+                h('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 } }, rounds)
+              );
+            })(),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-pets-focusable': true,
                 onClick: newTrSim,
                 style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
@@ -10599,7 +10872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { module: 'Lifespan Match', target: 'I can estimate the scale of a companion animal’s lifetime commitment.', success: 'Finish all 10 species; 8/10 meets the activity target. Missed species stay local for review and focused retry, while the full comparison remains available after the attempt.' },
         { module: 'Knowledge Quiz', target: 'I can answer a formative sample across pet biology, behavior, health, and welfare.', success: 'Finish all 15 questions with 70%+ overall and at least half correct in each of the four concept strands.' },
         { module: 'AI Practice', target: 'I can explain a welfare decision with relevant evidence, use feedback, and explain a revision.', success: 'Write a response and complete a rubric check or critique. Revising the draft and explaining one change adds stronger evidence; every record still requires teacher review.' },
-        { module: 'Pet-Care Week', target: 'I can balance all four welfare domains with caregiver time and money.', success: 'Finish seven days with every domain at 70%+, never let money drop below $0, energy above 20%, and no care tasks attempted while exhausted (defined here as starting a routine task below 25% energy).' }
+        { module: 'Pet-Care Week', target: 'I can balance all four welfare domains with caregiver time and money.', success: 'Finish seven days with every domain at 70%+ and the four domains averaging 80%+, never let money drop below $0, energy above 20%, and no care tasks attempted while exhausted (defined here as starting a routine task below 25% energy).' }
       ];
       var evidenceCounts = {};
       var latestEvidence = {};
@@ -10782,6 +11055,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
         if (record.moduleId === 'careSim' && x.physical != null) {
           var careOutcome = (x.species || 'Pet') + ' · Physical ' + x.physical + '% · Mental ' + x.mental + '% · Social ' + x.social + '% · Environmental ' + x.environmental + '% · Weakest: ' + x.weakestDomain + ' ' + x.weakestPct + '%';
+          if (typeof x.averagePct === 'number') careOutcome += ' · Average ' + x.averagePct + '%';
+          if (typeof x.overnightEvents === 'number') careOutcome += ' · Overnight events ' + x.overnightEvents;
           if (x.moneyLeft != null && typeof x.stayedInBudget === 'boolean') {
             careOutcome += ' · Budget ' + (x.stayedInBudget ? 'sustainable' : 'overdrawn') + ' ($' + x.moneyLeft + ' left)';
             if (typeof x.avoidedNegativeBalance === 'boolean') {
@@ -13217,40 +13492,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // via CSS keyframes that honor prefers-reduced-motion.
     // Presentation-only scene cues for each scenario day. These do not affect
     // scoring; they make the prompt feel situated in the animal's world.
-    var CARE_SCENE_EVENTS = {
-      dog: [
-        { icon: '\uD83C\uDF05', label: 'Routine morning', detail: 'Walk + breakfast set the tone', kind: 'routine' },
-        { icon: '\uD83D\uDC65', label: 'Social plans', detail: 'A walk competes with your evening', kind: 'social' },
-        { icon: '\uD83C\uDF92', label: 'Departure cue', detail: 'The bag predicts alone time', kind: 'anxiety' },
-        { icon: '\u2695\uFE0F', label: 'Vet visit', detail: 'Prevention protects future health', kind: 'vet' },
-        { icon: '\uD83C\uDF27\uFE0F', label: 'Rain day', detail: 'Indoor nose-work still counts', kind: 'rain' },
-        { icon: '\uD83E\uDDF3', label: 'Travel weekend', detail: 'Coverage keeps routines safe', kind: 'travel' },
-        { icon: '\uD83C\uDF7D\uFE0F', label: 'Family BBQ', detail: 'Guests need a safe-treat plan', kind: 'bbq' }
-      ],
-      cat: [
-        { icon: '\uD83C\uDFE0', label: 'Safe room', detail: 'A quiet landing zone lowers stress', kind: 'home' },
-        { icon: '\uD83E\uDDF9', label: 'Litter setup', detail: 'Placement changes bathroom comfort', kind: 'litter' },
-        { icon: '\uD83C\uDF3F', label: 'Window temptation', detail: 'Indoor enrichment protects wildlife', kind: 'outdoors' },
-        { icon: '\u2695\uFE0F', label: 'Health check', detail: 'A small sign deserves attention', kind: 'vet' },
-        { icon: '\uD83D\uDD0A', label: 'Noise stress', detail: 'A quiet hideaway is a resource', kind: 'noise' },
-        { icon: '\uD83C\uDFE1', label: 'Care coverage', detail: 'Familiar space beats disruption', kind: 'sitter' },
-        { icon: '\uD83C\uDF81', label: 'Holiday guests', detail: 'Choice and escape routes matter', kind: 'guests' }
-      ],
-      rabbit: [
-        { icon: '\uD83D\uDECE\uFE0F', label: 'New enclosure', detail: 'Hide spots make settling safer', kind: 'settle' },
-        { icon: '\uD83C\uDF3E', label: 'Hay first', detail: 'Fiber keeps the gut moving', kind: 'hay' },
-        { icon: '\uD83D\uDCA7', label: 'Water check', detail: 'Hydration is a daily basic', kind: 'water' },
-        { icon: '\u2695\uFE0F', label: 'Exotic vet', detail: 'Rabbit health can turn quickly', kind: 'vet' },
-        { icon: '\u2600\uFE0F', label: 'Warm afternoon', detail: 'Shade and airflow prevent heat stress', kind: 'heat' },
-        { icon: '\uD83D\uDEAA', label: 'Free-roam plan', detail: 'Safe exercise needs preparation', kind: 'space' },
-        { icon: '\uD83D\uDC65', label: 'Guest visit', detail: 'Quiet handling protects trust', kind: 'guests' }
-      ]
-    };
+    // Scene chips are read straight off the day table so the timeline
+    // headline, the scene call-out and the day's actual scenario cannot
+    // drift apart. (They had: cat days 4-5 and rabbit days 3, 5, 6, 7
+    // announced events that never happened.)
+    var CARE_SCENE_EVENTS = {};
+    Object.keys(CARE_SIM_DAYS).forEach(function(speciesId) {
+      CARE_SCENE_EVENTS[speciesId] = CARE_SIM_DAYS[speciesId].map(function(day) {
+        return day.scene || { icon: '\u2022', label: day.label, detail: '', kind: 'routine' };
+      });
+    });
 
     function renderCareTimeline(careSim, allDays) {
       if (!careSim || !allDays) return null;
-      var clamp = function(v) { return Math.max(0, Math.min(100, v)); };
-      var running = { phys: 50, ment: 50, soc: 50, env: 50 };
       var events = CARE_SCENE_EVENTS[careSim.species] || [];
       var domainMeta = [
         { key: 'phys', label: 'P', color: T.ok },
@@ -13278,12 +13532,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             var choice = (careSim.choices || [])[i] || null;
             var ev = events[i] || { icon: '\u2022', label: day.label, detail: '' };
             var deltas = choice && choice.effects ? choice.effects : null;
-            var before = Object.assign({}, running);
-            if (deltas) {
-              ['phys', 'ment', 'soc', 'env'].forEach(function(k) { running[k] = clamp(running[k] + (deltas[k] || 0)); });
-            }
             var isPast = i < careSim.day || careSim.done;
             var isNow = !careSim.done && i === careSim.day;
+            // The night after this day: routine tasks done, and any overnight
+            // events. Decisions are only half the story the timeline tells.
+            var routineThatDay = ((careSim.dailyInteractions || {})[i]) || {};
+            var routineDone = ['pet', 'feed', 'water', 'play', 'clean'].filter(function(kind) { return routineThatDay[kind]; }).length;
+            var nightEvents = (Array.isArray(careSim.consequenceLog) ? careSim.consequenceLog : []).filter(function(entry) { return entry && entry.day === i; });
+            var nightTable = CARE_SIM_CONSEQUENCES[careSim.species] || {};
+            var nightLabel = nightEvents.map(function(entry) { return (nightTable[entry.domain] || {}).label || entry.domain; }).join('; ');
             return h('article', {
               key: i,
               className: 'petslab-care-timeline-day' + (isNow ? ' is-now' : '') + (isPast ? ' is-past' : ''),
@@ -13306,12 +13563,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { className: 'petslab-care-timeline-deltas' },
                 domainMeta.map(function(m) {
                   var delta = deltas ? (deltas[m.key] || 0) : 0;
-                  var value = choice ? Math.round(running[m.key]) : Math.round(before[m.key]);
-                  return h('span', { key: m.key, style: { '--pets-domain-color': m.color }, 'aria-label': m.key + ' ' + (delta >= 0 ? '+' : '') + delta + ', ' + value + '%' },
+                  // The label states the decision's delta only. A running
+                  // total derived from decisions alone never matched the
+                  // meters (routine care and overnight upkeep move them too).
+                  return h('span', { key: m.key, style: { '--pets-domain-color': m.color }, 'aria-label': m.key + (choice ? ' ' + (delta >= 0 ? '+' : '') + delta + ' from this decision' : ': no decision yet') },
                     h('b', null, m.label),
                     h('em', null, choice ? (delta >= 0 ? '+' : '') + delta : '\u2014')
                   );
                 })
+              ),
+              (isPast || isNow) && h('div', {
+                className: 'petslab-care-timeline-night',
+                'aria-label': 'Routine care ' + routineDone + ' of 5' + (isPast ? (nightEvents.length ? '. Overnight: ' + nightLabel + '.' : '. Quiet night.') : ' so far.'),
+                style: { marginTop: 6, fontSize: 10, color: nightEvents.length ? T.warm : T.dim, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }
+              },
+                h('span', null, 'Routine ' + routineDone + '/5'),
+                isPast && h('span', { 'aria-hidden': 'true', title: nightEvents.length ? nightLabel : 'Quiet night' },
+                  '\uD83C\uDF19 ' + (nightEvents.length ? nightEvents.map(function(entry) { return (nightTable[entry.domain] || {}).icon || ''; }).join(' ') : '\u2014'))
               )
             );
           })
@@ -13335,17 +13603,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var avoidedExhaustedCare = !(Number(careState.tiredCare) > 0);
       var energySustainable = finishedAboveEnergyTarget && avoidedExhaustedCare;
       var sustainable = moneySustainable && energySustainable;
+      // The welfare target is BOTH a floor on the weakest domain and a floor
+      // on the average. The floor alone let a week of three genuinely bad
+      // calls (ignore the anxiety signals, skip the vet, allow the brownie)
+      // scrape 70 in every domain and take the badge. Literals, not the
+      // module constants, on purpose: this function is lifted and run in
+      // isolation by the badge-target tests. Keep them in step with the
+      // criteria copy in renderCareSim and the teacher success statement.
+      // Compared on the ROUNDED values, which are the ones the student sees:
+      // a week shown as "averaged 80%" must not be denied for averaging 79.75.
+      var welfareTarget = Math.round(minimum) >= 70 && Math.round(average) >= 80;
       var verdict;
       if (minimum >= 80 && sustainable) {
         verdict = '🌟 Excellent week. Every welfare domain finished strong, and the care plan remained sustainable.';
-      } else if (minimum >= 70 && sustainable) {
+      } else if (welfareTarget && sustainable) {
         verdict = '✅ Badge target met. All four welfare domains and every caregiver-sustainability requirement finished on target.';
-      } else if (minimum >= 70 && !moneySustainable && !energySustainable) {
+      } else if (welfareTarget && !moneySustainable && !energySustainable) {
         verdict = '⚖️ The animal-welfare target was met, but both the budget and caregiver-sustainability targets were missed.';
-      } else if (minimum >= 70 && !moneySustainable) {
+      } else if (welfareTarget && !moneySustainable) {
         verdict = '⚖️ The pet-welfare domains finished strong, but the care plan was not financially sustainable.';
-      } else if (minimum >= 70) {
+      } else if (welfareTarget) {
         verdict = '😮‍💨 The animal-welfare target was met, but the caregiver-sustainability target was missed.';
+      } else if (minimum >= 70) {
+        verdict = '😬 Every domain cleared 70%, but the week averaged ' + Math.round(average) + '%. Adequate is not the same as good: too many days were just enough.';
       } else if (minimum >= 45) {
         verdict = '😬 Mixed week. ' + weakest.label + ' was the limiting welfare domain at ' + Math.round(minimum) + '%.';
       } else {
@@ -13356,6 +13636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         weakest: weakest,
         minimum: minimum,
         average: average,
+        welfareTarget: welfareTarget,
         mood: mood,
         sustainable: sustainable,
         moneySustainable: moneySustainable,
@@ -13391,10 +13672,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var W = 800, H = 280;
 
       // Ambient items — show or hide based on individual welfare.
-      // Empty bowl signals food neglect; full bowl signals the
-      // student fed regularly. Toy presence reflects mental
-      // enrichment. Bedding cleanliness reflects environment.
-      var bowlFull   = careSim.phys >= 50;            // food regularly provided
+      // The food bowl is the exception: it is empty every morning until
+      // the student feeds the animal TODAY, because feeding is a daily
+      // routine task with an overnight cost for skipping, and a bowl that
+      // stayed full on the strength of last week's vet visit hid that.
+      // Toy presence reflects mental enrichment. Bedding cleanliness
+      // reflects environment.
+      var todayRoutine = ((careSim.dailyInteractions || {})[dayIdx]) || {};
+      var bowlFull   = !!todayRoutine.feed;           // fed today
       var hasToy     = careSim.ment >= 50;            // enrichment offered
       var beddingClean = careSim.env >= 50;           // habitat maintained
       var ownerNear  = careSim.soc >= 50 && mood !== 'distressed'; // companionship
@@ -13838,7 +14123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                       )
                     : null;
       var chips = [
-        { label: bowlFull ? 'Fed' : 'Hungry',          ok: bowlFull,    icon: '🍖' },
+        { label: bowlFull ? 'Fed today' : (careSim.phys < 50 ? 'Hungry' : 'Bowl empty'), ok: bowlFull, icon: '🍖' },
         { label: hasToy ? 'Enriched' : 'Bored',        ok: hasToy,      icon: '🧩' },
         { label: ownerNear ? 'Bonded' : 'Lonely',      ok: ownerNear,   icon: '💗' },
         { label: beddingClean ? 'Clean home' : 'Dirty', ok: beddingClean, icon: '🏠' }
@@ -14135,6 +14420,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
       }
       var done = raw.done === true && answeredCount === days.length;
+      // Last night's upkeep note (which routine tasks were skipped and what
+      // it cost). Display-only, but it must survive normalisation or the
+      // next day's view can never show it. Kinds and domains are checked
+      // against the same local lists as everything else here; a note has
+      // no meaning on the first morning of a fresh week.
+      var safeOvernight = null;
+      if (raw.overnight && typeof raw.overnight === 'object' && !Array.isArray(raw.overnight) &&
+          Array.isArray(raw.overnight.skipped) && (day > 0 || done)) {
+        var skippedKinds = raw.overnight.skipped.filter(function(kind, idx, arr) {
+          return interactionKinds.indexOf(kind) >= 0 && arr.indexOf(kind) === idx;
+        });
+        var deltaSource = raw.overnight.deltas && typeof raw.overnight.deltas === 'object' && !Array.isArray(raw.overnight.deltas)
+          ? raw.overnight.deltas : {};
+        var safeDeltas = {};
+        ['phys', 'ment', 'soc', 'env'].forEach(function(dom) {
+          var delta = Number(deltaSource[dom]);
+          if (isFinite(delta) && delta !== 0) safeDeltas[dom] = Math.max(-100, Math.min(100, Math.round(delta)));
+        });
+        var eventDomains = (Array.isArray(raw.overnight.events) ? raw.overnight.events : []).filter(function(dom, idx, arr) {
+          return ['phys', 'ment', 'soc', 'env'].indexOf(dom) >= 0 && arr.indexOf(dom) === idx;
+        });
+        safeOvernight = { skipped: skippedKinds, deltas: safeDeltas, events: eventDomains };
+      }
+      // Overnight events already charged this week: (night, domain) pairs
+      // for nights that have actually passed. Display-only, but the
+      // reflection lists them, so they must survive a restore.
+      var safeConsequenceLog = [];
+      (Array.isArray(raw.consequenceLog) ? raw.consequenceLog : []).forEach(function(entry) {
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+        var night = Number(entry.day);
+        if (!Number.isInteger(night) || night < 0 || night >= days.length) return;
+        if (!done && night >= day) return;
+        if (['phys', 'ment', 'soc', 'env'].indexOf(entry.domain) < 0) return;
+        safeConsequenceLog.push({ day: night, domain: entry.domain });
+      });
       return {
         species: species,
         day: day,
@@ -14155,7 +14475,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         done: done,
         badgeEarned: done && raw.badgeEarned === true,
         dailyInteractions: safeInteractions,
-        lastInteract: safeLastInteract
+        lastInteract: safeLastInteract,
+        overnight: safeOvernight,
+        consequenceLog: safeConsequenceLog
       };
     }
 
@@ -14186,8 +14508,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var newMent = clamp(careSim.ment + (choice.effects.ment || 0));
         var newSoc  = clamp(careSim.soc  + (choice.effects.soc  || 0));
         var newEnv  = clamp(careSim.env  + (choice.effects.env  || 0));
-        var newEn   = clamp(careSim.en   + (choice.effects.en   || 0));
-        var newMoney = careSim.money + (choice.effects.money || 0);
+        // Aftermath lands with the choice but was not previewed.
+        var after = choice.aftermath || {};
+        var newEn   = clamp(careSim.en   + (choice.effects.en   || 0) + (after.en || 0));
+        var newMoney = careSim.money + (choice.effects.money || 0) + (after.money || 0);
         upd('careSim', Object.assign({}, careSim, {
           choices: nextChoices,
           phys: newPhys, ment: newMent, soc: newSoc, env: newEnv,
@@ -14198,12 +14522,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function nextDay() {
         if (!careSim) return;
+        var upkeep = overnightUpkeep(careSim);
+        if (typeof petsAnnounce === 'function') {
+          var eventText = upkeep.overnight.events.map(function(dom) {
+            var ev = describeConsequence(careSim.species, dom);
+            return ev ? ' ' + ev.label + ' (' + ev.cost + ').' : '';
+          }).join('');
+          petsAnnounce((upkeep.overnight.skipped.length
+            ? 'Overnight: ' + upkeep.overnight.skipped.map(careKindLabel).join(', ') + ' skipped, ' + describeCareDeltas(upkeep.overnight.deltas) + '.'
+            : 'Overnight: every routine task was done, no welfare lost.') + eventText);
+        }
         if (careSim.day < CARE_SIM_DAYS[careSim.species].length - 1) {
           // Overnight rest. Energy is a renewable resource, not a one-way
           // drain — a week of full care stays sustainable, but stacking
           // energy-expensive days on top of full care still wears you down.
-          var rested = Math.max(0, Math.min(100, careSim.en + CARE_SIM_ENERGY_RECOVERY));
-          upd('careSim', Object.assign({}, careSim, {
+          var rested = Math.max(0, Math.min(100, upkeep.en + CARE_SIM_ENERGY_RECOVERY));
+          upd('careSim', Object.assign({}, careSim, upkeep, {
             day: careSim.day + 1,
             en: rested,
             lastInteract: null
@@ -14216,9 +14550,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // while the animal's housing was neglected — incoherent with the
           // Five Domains framing this tool teaches elsewhere, and worst for
           // exactly the caged species where habitat matters most.
-          var c = careSim;
+          // The last night's skipped tasks count too: seven days, seven nights.
+          var c = Object.assign({}, careSim, upkeep);
           var finalWelfare = evaluateCareWelfare(c);
-          var earned = (finalWelfare.minimum >= 70 && finalWelfare.sustainable);
+          var earned = (finalWelfare.welfareTarget && finalWelfare.sustainable);
           if (earned) awardBadge('pets_caregiver', 'Caring Pet-Owner (week complete)');
           completeModule('careSim', 'Finished the seven-day pet-care simulation', {
             species: c.species,
@@ -14229,6 +14564,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             environmental: Math.round(c.env),
             weakestDomain: finalWelfare.weakest.label,
             weakestPct: Math.round(finalWelfare.minimum),
+            averagePct: Math.round(finalWelfare.average),
+            overnightEvents: (c.consequenceLog || []).length,
             moneyLeft: Math.round(c.money),
             avoidedNegativeBalance: !c.lowMoney,
             stayedInBudget: finalWelfare.moneySustainable,
@@ -14238,7 +14575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             caregiverSustainable: finalWelfare.energySustainable,
             criterionMet: earned
           });
-          upd('careSim', Object.assign({}, careSim, { done: true, badgeEarned: earned }));
+          upd('careSim', Object.assign({}, c, { done: true, badgeEarned: earned }));
         }
         focusPetsTarget(_careQuestionRef);
       }
@@ -14250,13 +14587,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // pet the dog, refill the bowl, swap out the toy, top off the
       // water. Costs a sliver of player energy / money so that
       // spamming doesn't trivially max the meters.
+      // Small bonuses on purpose: the real stake is CARE_SIM_ROUTINE_SKIP_COST,
+      // charged overnight for each task NOT done. See the constants block.
       var INTERACT_EFFECTS = {
-        pet:   { soc: 4, en: -2, money: 0,  toast: '💗 Calm pet & talk: bond strengthens.',          eff: '+4 social · -2 energy' },
-        feed:  { phys: 5, en: -1, money: -3, toast: '🍖 Bowl topped off with fresh food.',            eff: '+5 physical · -$3 · -1 energy' },
-        play:  { ment: 5, en: -4, money: 0,  toast: '🧩 Play session: tail wag / purr / binky.',       eff: '+5 mental · -4 energy' },
-        water: { phys: 2, en: -1, money: 0,  toast: '💧 Fresh water — small daily basic.',            eff: '+2 physical · -1 energy' },
-        clean: { env: 5, en: -3, money: 0,  toast: '🏠 Habitat scrub: bedding clean, smells right.', eff: '+5 environment · -3 energy' }
+        pet:   { soc: 2, en: -2, money: 0,  toast: '💗 Calm pet & talk: bond strengthens.',          eff: '+2 social · -2 energy · skipping costs 3 social overnight' },
+        feed:  { phys: 2, en: -1, money: -3, toast: '🍖 Bowl topped off with fresh food.',            eff: '+2 physical · -$3 · -1 energy · skipping costs 3 physical overnight' },
+        play:  { ment: 2, en: -4, money: 0,  toast: '🧩 Play session: tail wag / purr / binky.',       eff: '+2 mental · -4 energy · skipping costs 3 mental overnight' },
+        water: { phys: 1, en: -1, money: 0,  toast: '💧 Fresh water — small daily basic.',            eff: '+1 physical · -1 energy · skipping costs 1 physical overnight' },
+        clean: { env: 2, en: -3, money: 0,  toast: '🏠 Habitat scrub: bedding clean, smells right.', eff: '+2 environment · -3 energy · skipping costs 3 environment overnight' }
       };
+      var CARE_ROUTINE_KINDS = [
+        { kind: 'pet',   icon: '🤚', label: 'Pet',    short: '+bond' },
+        { kind: 'feed',  icon: '🍖', label: 'Feed',   short: '+phys -$3' },
+        { kind: 'water', icon: '💧', label: 'Water',  short: '+phys' },
+        { kind: 'play',  icon: '🧩', label: 'Play',   short: '+ment' },
+        { kind: 'clean', icon: '🧹', label: 'Clean',  short: '+env' }
+      ];
+      var CARE_DOMAIN_WORDS = { phys: 'physical', ment: 'mental', soc: 'social', env: 'environmental' };
+      function careKindLabel(kind) {
+        for (var ki = 0; ki < CARE_ROUTINE_KINDS.length; ki++) if (CARE_ROUTINE_KINDS[ki].kind === kind) return CARE_ROUTINE_KINDS[ki].label;
+        return kind;
+      }
+      function describeCareDeltas(deltas) {
+        return ['phys', 'ment', 'soc', 'env'].filter(function(dom) { return deltas && deltas[dom]; }).map(function(dom) {
+          return (deltas[dom] > 0 ? '+' : '−') + Math.abs(deltas[dom]) + ' ' + (CARE_DOMAIN_WORDS[dom] || dom);
+        }).join(', ');
+      }
+      // Overnight upkeep: every routine task skipped today costs its
+      // domain tonight. Returns the patched meters plus a note the next
+      // day's view shows, so the cost is announced, not silent.
+      function overnightUpkeep(state) {
+        var doneToday = ((state.dailyInteractions || {})[state.day]) || {};
+        var skipped = [];
+        var deltas = {};
+        Object.keys(CARE_SIM_ROUTINE_SKIP_COST).forEach(function(kind) {
+          if (doneToday[kind]) return;
+          skipped.push(kind);
+          var cost = CARE_SIM_ROUTINE_SKIP_COST[kind];
+          Object.keys(cost).forEach(function(dom) { deltas[dom] = (deltas[dom] || 0) + cost[dom]; });
+        });
+        var clampMeter = function(v) { return Math.max(0, Math.min(100, v)); };
+        var next = {
+          phys: clampMeter(state.phys + (deltas.phys || 0)),
+          ment: clampMeter(state.ment + (deltas.ment || 0)),
+          soc:  clampMeter(state.soc  + (deltas.soc  || 0)),
+          env:  clampMeter(state.env  + (deltas.env  || 0)),
+          en: clampMeter(Number(state.en) || 0),
+          money: Number(state.money) || 0,
+          lowMoney: !!state.lowMoney
+        };
+        // Consequences: the lowest domains under the threshold, at most two.
+        var table = CARE_SIM_CONSEQUENCES[state.species] || {};
+        var events = ['phys', 'ment', 'soc', 'env'].filter(function(dom) {
+          return table[dom] && next[dom] < CARE_SIM_CONSEQUENCE_BELOW;
+        }).sort(function(a, b) { return next[a] - next[b]; }).slice(0, CARE_SIM_CONSEQUENCES_PER_NIGHT);
+        events.forEach(function(dom) {
+          var ev = table[dom];
+          next.money += ev.money || 0;
+          if (next.money < 0) next.lowMoney = true;
+          next.en = clampMeter(next.en + (ev.en || 0));
+          if (ev.env) next.env = clampMeter(next.env + ev.env);
+        });
+        var log = Array.isArray(state.consequenceLog) ? state.consequenceLog.slice() : [];
+        events.forEach(function(dom) { log.push({ day: state.day, domain: dom }); });
+        next.consequenceLog = log;
+        next.overnight = { skipped: skipped, deltas: deltas, events: events };
+        return next;
+      }
+      function describeAftermath(after) {
+        if (!after) return null;
+        var parts = [];
+        if (after.money) parts.push((after.money < 0 ? '−$' : '+$') + Math.abs(after.money));
+        if (after.en) parts.push((after.en < 0 ? '−' : '+') + Math.abs(after.en) + ' energy');
+        return parts.length ? parts.join(' · ') : null;
+      }
+      function describeConsequence(species, dom) {
+        var ev = (CARE_SIM_CONSEQUENCES[species] || {})[dom];
+        if (!ev) return null;
+        var costs = [];
+        if (ev.money) costs.push((ev.money < 0 ? '−$' : '+$') + Math.abs(ev.money));
+        if (ev.en) costs.push((ev.en < 0 ? '−' : '+') + Math.abs(ev.en) + ' energy');
+        if (ev.env) costs.push((ev.env < 0 ? '−' : '+') + Math.abs(ev.env) + ' environmental');
+        return { icon: ev.icon, label: ev.label, note: ev.note, cost: costs.join(', ') };
+      }
       function petInteract(kind) {
         if (!careSim || careSim.done) return;
         var d0 = careSim.day;
@@ -14299,14 +14712,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function reset() { upd('careSim', null); }
       function renderCareBadgeTarget(targetState, isFinal) {
         var targetOutcome = evaluateCareWelfare(targetState);
+        var outlook = isFinal
+          ? { reachable: true, reasons: [] }
+          : petsCareOutlook(targetState, CARE_SIM_DAYS[targetState.species] || [], INTERACT_EFFECTS, CARE_SIM_ENERGY_RECOVERY);
         var tiredCareCount = Math.max(0, Number(targetState.tiredCare) || 0);
         var rows = [
           {
             key: 'welfare',
-            met: targetOutcome.minimum >= 70,
-            label: 'All four welfare domains finish at 70% or higher',
+            met: targetOutcome.welfareTarget,
+            label: 'All four welfare domains finish at 70% or higher and average 80% or more',
             detail: (isFinal ? 'Final weakest: ' : 'Weakest now: ') +
-              targetOutcome.weakest.label + ' ' + Math.round(targetOutcome.minimum) + '%.'
+              targetOutcome.weakest.label + ' ' + Math.round(targetOutcome.minimum) + '%. ' +
+              (isFinal ? 'Final average ' : 'Average now ') + Math.round(targetOutcome.average) + '%.'
           },
           {
             key: 'budget',
@@ -14366,12 +14783,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             }, metCount + ' / ' + rows.length + ' requirements met')
           ),
           h('p', {
-            style: { margin: '0 0 9px', color: T.dim, fontSize: 11, lineHeight: 1.5 }
+            className: 'petslab-care-outlook',
+            'data-pets-care-outlook': isFinal ? 'final' : (outlook.reachable ? 'reachable' : 'out-of-reach'),
+            style: { margin: '0 0 9px', color: isFinal || outlook.reachable ? T.dim : T.warm, fontSize: 11, lineHeight: 1.5, fontWeight: isFinal || outlook.reachable ? 400 : 700 }
           }, isFinal
             ? (targetMet
               ? 'Target met: animal welfare and the caregiver plan both finished sustainably.'
               : 'Target not met yet. Use the checks below to plan the next attempt.')
-            : 'This check is provisional until the week ends; later choices can change it.'),
+            : (outlook.reachable
+              ? 'This check is provisional until the week ends; later choices can change it. The badge is still within reach.'
+              : 'Out of reach this week: ' + outlook.reasons.join('; ') + '. Play the week out for the animal, then retry.')),
           h('ul', {
             style: {
               listStyle: 'none', padding: 0, margin: 0, display: 'grid',
@@ -14415,8 +14836,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.65 } },
               'Pick a species and walk through 7 days of decisions. Real trade-offs: walks vs. plans, vet bills vs. budget, comfort vs. enrichment. Four welfare meters track how the pet is doing; your energy + money meters track how YOU are doing.'
             ),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.65 } },
+              'Each day also has five routine tasks on the scene (feed, water, play, pet, clean). Each one done adds a little; each one skipped costs the animal a little overnight. Routine care keeps a good week good. It cannot make up for a bad decision. And when a welfare meter falls low, things happen overnight (a chewed cushion, an accident, a skipped breakfast) that cost you money and effort.'
+            ),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-              'Earn the Caring Pet-Owner badge when all four welfare domains — Physical, Mental, Social, and Environmental — finish at 70% or higher; money never drops below $0; you finish with more than 20% energy; and you never start a routine care task below 25% energy. Your starting budget depends on the species, because their real costs do.'
+              'Earn the Caring Pet-Owner badge when all four welfare domains — Physical, Mental, Social, and Environmental — finish at 70% or higher and average 80% or more; money never drops below $0; you finish with more than 20% energy; and you never start a routine care task below 25% energy. Your starting budget depends on the species, because their real costs do.'
             ),
             learningModelNote('Simulation model', 'The scores and scenarios are simplified for comparing consequences. They are not a welfare diagnosis, budget forecast, or substitute for species-specific advice from a veterinarian or qualified caregiver.')
           ),
@@ -14427,16 +14851,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               { id: 'rabbit', icon: '🐰', label: 'Rabbit (newly home)',     sub: 'GI stasis vigilance, free-roam space, exotic-vet costs' }
             ].map(function(sp) {
               var spMoney = CARE_SIM_START_MONEY[sp.id] != null ? CARE_SIM_START_MONEY[sp.id] : 500;
+              // Finished weeks with this species, from the evidence log.
+              var spHistory = (evidenceRecords || []).filter(function(record) {
+                var x = record && record.details;
+                return record && record.moduleId === 'careSim' && record.kind === 'activity' && x && x.species === sp.id && typeof x.averagePct === 'number';
+              });
+              var spBest = spHistory.reduce(function(best, record) { return Math.max(best, record.details.averagePct); }, -1);
+              var spMet = spHistory.some(function(record) { return record.details.criterionMet === true; });
+              var spHistoryText = spHistory.length
+                ? spHistory.length + (spHistory.length === 1 ? ' attempt' : ' attempts') + ' · best average ' + spBest + '%' + (spMet ? ' · target met' : ' · target not met yet')
+                : 'Not tried yet';
               return h('button', { key: sp.id, 'data-pets-focusable': true,
                 onClick: function() { startSim(sp.id); },
-                'aria-label': sp.label + '. Starting budget $' + spMoney + '. ' + sp.sub,
+                'aria-label': sp.label + '. Starting budget $' + spMoney + '. ' + sp.sub + '. ' + spHistoryText + '.',
                 style: btn({ padding: 16, fontSize: 14, textAlign: 'left', minHeight: 100 })
               },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, sp.icon),
                 h('div', { style: { fontWeight: 800, color: T.accentHi, fontSize: 15, marginBottom: 4 } }, sp.label),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sp.sub),
                 h('div', { style: { fontSize: 11, color: T.dim, marginTop: 6, fontFamily: 'monospace' } },
-                  'Week budget: $' + spMoney)
+                  'Week budget: $' + spMoney),
+                h('div', { className: 'petslab-care-species-history', 'data-pets-care-attempts': String(spHistory.length),
+                  style: { fontSize: 11, marginTop: 4, color: spMet ? T.ok : spHistory.length ? T.accentHi : T.dim } },
+                  (spMet ? '\u2713 ' : '') + spHistoryText)
               );
             })
           ),
@@ -14452,10 +14889,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       if (careSim.done) {
         var c = careSim;
         var outcome = evaluateCareWelfare(c);
-        var careTargetMet = outcome.minimum >= 70 && outcome.sustainable;
+        var careTargetMet = outcome.welfareTarget && outcome.sustainable;
+        var consequenceLog = Array.isArray(c.consequenceLog) ? c.consequenceLog : [];
         var earnedCareBadge = !!(c.badgeEarned && careTargetMet);
         var weakestContributors = (c.choices || []).filter(function(choice) {
           return choice && choice.effects && Number(choice.effects[outcome.weakest.key]) < 0;
+        });
+        // Overnight losses from skipped routine care, per domain and per
+        // task. Without this, an all-correct week whose Environmental
+        // meter fell short showed "Decisions that reduced it:" and nothing,
+        // because no decision had. The skipped Clean tasks had.
+        var routineKinds = Object.keys(CARE_SIM_ROUTINE_SKIP_COST);
+        var skippedNights = {};
+        var skippedLoss = {};
+        for (var nightIdx = 0; nightIdx < allDays.length; nightIdx++) {
+          var doneThatDay = ((c.dailyInteractions || {})[nightIdx]) || {};
+          routineKinds.forEach(function(kind) {
+            if (doneThatDay[kind]) return;
+            skippedNights[kind] = (skippedNights[kind] || 0) + 1;
+            var cost = CARE_SIM_ROUTINE_SKIP_COST[kind];
+            Object.keys(cost).forEach(function(dom) { skippedLoss[dom] = (skippedLoss[dom] || 0) + cost[dom]; });
+          });
+        }
+        var weakestSkipLoss = skippedLoss[outcome.weakest.key] || 0;
+        var weakestSkipKinds = routineKinds.filter(function(kind) {
+          return CARE_SIM_ROUTINE_SKIP_COST[kind][outcome.weakest.key] && skippedNights[kind];
         });
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📅 Pet-Care Week — Reflection'),
@@ -14474,9 +14932,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               weakestContributors.length > 0 && h('span', null,
                 ' Decisions that reduced it: ',
                 weakestContributors.map(function(choice) { return choice.dayLabel + ' — ' + choice.choiceLabel; }).join('; '),
-                '.')
+                '.'),
+              weakestSkipLoss < 0 && h('span', { className: 'petslab-care-weakest-skipped' },
+                (weakestContributors.length > 0
+                  ? ' Skipped routine care also cost it: '
+                  : ' No decision lowered it. It fell because routine care was skipped: '),
+                weakestSkipKinds.map(function(kind) {
+                  return careKindLabel(kind) + ' on ' + skippedNights[kind] + ' of ' + allDays.length + ' nights';
+                }).join(', '),
+                ' (−' + Math.abs(weakestSkipLoss) + ' overnight).')
             ),
             renderCareBadgeTarget(c, true),
+            // Earlier attempts with this species, read from the evidence log
+            // (every finished week writes one record), so a retry shows a
+            // trajectory instead of a fresh verdict with no memory. Nothing
+            // new is persisted for this; the log already carried it.
+            (function() {
+              var attempts = (evidenceRecords || []).filter(function(record) {
+                var x = record && record.details;
+                return record && record.moduleId === 'careSim' && record.kind === 'activity' &&
+                  x && x.species === c.species && typeof x.averagePct === 'number' && typeof x.weakestPct === 'number';
+              });
+              if (attempts.length < 2) return null;
+              var first = attempts[0].details;
+              var last = attempts[attempts.length - 1].details;
+              var trend = last.averagePct - first.averagePct;
+              return h('section', {
+                className: 'petslab-care-attempts',
+                'data-pets-care-attempts': String(attempts.length),
+                'aria-labelledby': 'petslab-care-attempts-heading',
+                style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 12 }
+              },
+                h('h4', { id: 'petslab-care-attempts-heading', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
+                  '📈 Your attempts with this species: ' + attempts.length),
+                h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                  'Average welfare went from ' + first.averagePct + '% on your first week to ' + last.averagePct + '% on this one' +
+                  (trend > 0 ? ' (up ' + trend + ')' : trend < 0 ? ' (down ' + Math.abs(trend) + ')' : ' (no change)') + '.' +
+                  (last.criterionMet && !first.criterionMet ? ' The badge came on a retry, which is how most owners learn too.' : '')),
+                h('ol', { style: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 } },
+                  attempts.map(function(record, i) {
+                    var x = record.details;
+                    var isThis = i === attempts.length - 1;
+                    return h('li', { key: record.id || i, style: { fontSize: 12, lineHeight: 1.5, color: isThis ? T.text : T.muted, fontWeight: isThis ? 700 : 400 } },
+                      (isThis ? 'This week' : 'Attempt ' + (i + 1)) + ': weakest ' + x.weakestDomain + ' ' + x.weakestPct +
+                      '% · average ' + x.averagePct + '% · $' + x.moneyLeft + ' left · energy ' + x.energyLeft + '% · ' +
+                      (x.criterionMet ? '✓ target met' : '○ not met'));
+                  }))
+              );
+            })(),
             earnedCareBadge && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } }, '🏅 Badge earned: Caring Pet-Owner'),
             c.lowMoney && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } }, '⚠ Money went negative this week. In real life this often forces hard choices — surrendering the pet, skipping vet care, or going into debt.'),
             (c.tiredCare > 0 || c.en <= 20) && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } },
@@ -14519,6 +15022,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               )
             )
           ),
+          // Overnight events: what low welfare actually caused this week.
+          h('div', {
+            className: 'petslab-care-events',
+            'data-pets-care-event-count': String(consequenceLog.length),
+            style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (consequenceLog.length ? T.warm : T.border), marginBottom: 12 }
+          },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: consequenceLog.length ? T.warm : T.accentHi } },
+              '🌙 Overnight events: ' + consequenceLog.length),
+            consequenceLog.length === 0
+              ? h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  'Nothing went wrong overnight all week. A welfare meter has to fall below ' + CARE_SIM_CONSEQUENCE_BELOW + '% before the animal starts making its own decisions about your couch, your cords or your carpet.')
+              : h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 } },
+                  consequenceLog.map(function(entry, i) {
+                    var ev = describeConsequence(c.species, entry.domain);
+                    if (!ev) return null;
+                    return h('li', { key: i, style: { padding: '8px 10px', borderRadius: 8, background: T.cardAlt, fontSize: 12, lineHeight: 1.5 } },
+                      h('strong', { style: { color: T.text } }, 'Night ' + (entry.day + 1) + ' · ' + ev.icon + ' ' + ev.label),
+                      ' ',
+                      h('span', { style: { color: T.warm, marginLeft: 6, fontFamily: 'monospace', fontSize: 11 } }, '(' + ev.cost + ')'),
+                      h('div', { style: { color: T.muted, fontStyle: 'italic' } }, ev.note)
+                    );
+                  }))
+          ),
           // Decisions log
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, '📋 Your decisions this week'),
@@ -14539,19 +15065,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   doneCount + ' / ' + possible),
                 h('span', { style: { flex: '1 1 140px', fontSize: 10, color: T.dim, lineHeight: 1.45 } },
                   doneCount === 0
-                    ? 'You never used the daily care actions on the scene. Feeding, water, play, cleaning and contact move the same four meters your big decisions do.'
-                    : 'Daily feeding, water, play, cleaning and contact across the week (' + pct + '% of the available actions).')
+                    ? 'You never used the daily care actions on the scene. Every skipped task cost the animal welfare overnight (1 to 3 points each: ' + describeCareDeltas(skippedLoss) + ' this week).'
+                    : 'Daily feeding, water, play, cleaning and contact across the week (' + pct + '% of the available actions' + (Object.keys(skippedLoss).length ? '; skipped tasks cost ' + describeCareDeltas(skippedLoss) + ' overnight' : '') + ').')
               );
             })(),
             (c.choices || []).map(function(ch, i) {
               if (!ch) return null;
-              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, marginBottom: 6 } },
+              var authoredDay = allDays[i];
+              var authoredChoice = null;
+              if (authoredDay) for (var ci = 0; ci < authoredDay.choices.length; ci++) if (authoredDay.choices[ci].id === ch.choiceId) { authoredChoice = authoredDay.choices[ci]; break; }
+              var afterText = authoredChoice ? describeAftermath(authoredChoice.aftermath) : null;
+              // After the week, a decision that harmed the animal on balance
+              // gets the stronger option named beside it, with its reasoning.
+              // Defensible alternatives (a Kong instead of counter-conditioning,
+              // a hotel for the allergic guest) are not "corrected": they are
+              // not net-negative, so they never trigger this.
+              var strongest = authoredDay ? petsCareStrongestChoice(authoredDay) : null;
+              var harmful = !!(authoredChoice && strongest && strongest.id !== authoredChoice.id &&
+                petsCareWelfareSum(authoredChoice) < 0);
+              return h('div', { key: i, className: harmful ? 'petslab-care-decision is-harmful' : 'petslab-care-decision',
+                style: { padding: 10, borderRadius: 8, background: T.cardAlt, marginBottom: 6, borderLeft: harmful ? '3px solid ' + T.warm : '3px solid transparent' } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 2 } }, ch.dayLabel),
                 h('div', { style: { fontSize: 12, color: T.text, marginBottom: 3 } }, h('strong', null, '→ '), ch.choiceLabel),
-                h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, ch.note)
+                h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, ch.note),
+                afterText && h('div', { style: { marginTop: 3, fontSize: 11, color: T.warm, fontFamily: 'monospace' } }, 'Aftermath: ' + afterText),
+                harmful && h('div', { className: 'petslab-care-stronger-call', style: { marginTop: 6, padding: '7px 9px', borderRadius: 7, background: T.card, border: '1px solid ' + T.border, fontSize: 11, lineHeight: 1.5 } },
+                  h('div', { style: { color: T.text } }, h('strong', { style: { color: T.accentHi } }, 'A stronger call that day: '), strongest.label),
+                  h('div', { style: { color: T.muted, fontStyle: 'italic', marginTop: 2 } }, strongest.note)
+                )
               );
             })
           ),
+          // Breadth nudge: the same four domains, very different animals.
+          (function() {
+            var finishedSpecies = {};
+            (evidenceRecords || []).forEach(function(record) {
+              var x = record && record.details;
+              if (record && record.moduleId === 'careSim' && record.kind === 'activity' && x && x.species) finishedSpecies[x.species] = true;
+            });
+            finishedSpecies[c.species] = true;
+            var untried = Object.keys(CARE_SIM_DAYS).filter(function(id) { return !finishedSpecies[id]; });
+            if (!untried.length) return null;
+            var names = { dog: 'a dog', cat: 'a cat', rabbit: 'a rabbit' };
+            return h('p', { className: 'petslab-care-breadth', style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'You have finished the week with ' + (names[c.species] || c.species) + '. ' +
+              'Try ' + untried.map(function(id) { return names[id] || id; }).join(' or ') + ' next: the same four welfare domains, but what each one needs, and what it costs, is different.');
+          })(),
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
             h('button', { 'data-pets-focusable': true, onClick: function() { startSim(c.species); },
               style: btnPrimary({ padding: '10px 18px' })
@@ -14607,13 +15166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
       },
         h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.04em', minWidth: 88 } }, '🗓 Today\'s care'),
-        [
-          { kind: 'pet',   icon: '🤚', label: 'Pet',    short: '+bond' },
-          { kind: 'feed',  icon: '🍖', label: 'Feed',   short: '+phys -$3' },
-          { kind: 'water', icon: '💧', label: 'Water',  short: '+phys' },
-          { kind: 'play',  icon: '🧩', label: 'Play',   short: '+ment' },
-          { kind: 'clean', icon: '🧹', label: 'Clean',  short: '+env' }
-        ].map(function(c) {
+        CARE_ROUTINE_KINDS.map(function(c) {
           var done = !!todayInts[c.kind];
           return h('button', {
             key: c.kind, className: 'petslab-sim-button',
@@ -14633,10 +15186,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             }
           },
             (done ? '✓ ' : c.icon + ' ') + c.label,
-            h('span', { style: { fontSize: 10, opacity: 0.7, marginLeft: 6 } }, c.short)
+            // Full opacity once done: the lime ink at 70% on the lime-tinted
+            // ground measured 3.8:1, under AA for 10px text.
+            h('span', { style: { fontSize: 10, opacity: done ? 1 : 0.7, marginLeft: 6 } }, c.short)
           );
         })
       );
+      // What last night cost (or didn't). Rendered right above today's
+      // care row so the cause and the remedy sit together.
+      var overnight = careSim.overnight && Array.isArray(careSim.overnight.skipped) ? careSim.overnight : null;
+      var overnightEvents = overnight && Array.isArray(overnight.events) ? overnight.events : [];
+      var overnightBad = !!(overnight && (overnight.skipped.length || overnightEvents.length));
+      var overnightNote = overnight ? h('div', {
+        className: 'petslab-care-overnight',
+        role: 'status',
+        'data-pets-care-overnight-skipped': String(overnight.skipped.length),
+        'data-pets-care-overnight-events': String(overnightEvents.length),
+        style: {
+          padding: '8px 12px', borderRadius: 9, marginBottom: 10, fontSize: 12, lineHeight: 1.5,
+          background: T.cardAlt,
+          border: '1px solid ' + (overnightBad ? T.warm : T.border),
+          color: overnightBad ? T.warm : T.muted
+        }
+      },
+        h('div', null, overnight.skipped.length
+          ? '🌙 Overnight: ' + overnight.skipped.map(careKindLabel).join(', ') + ' skipped yesterday, so ' + describeCareDeltas(overnight.deltas) + '.'
+          : '🌙 Overnight: every routine task done yesterday. No welfare lost.'),
+        overnightEvents.map(function(dom, i) {
+          var ev = describeConsequence(careSim.species, dom);
+          if (!ev) return null;
+          return h('div', { key: i, className: 'petslab-care-overnight-event', style: { marginTop: 4, color: T.text } },
+            h('strong', null, ev.icon + ' ' + ev.label),
+            ' ',
+            h('span', { style: { color: T.warm, marginLeft: 6, fontFamily: 'monospace', fontSize: 11 } }, '(' + ev.cost + ')'),
+            h('div', { style: { color: T.muted, fontStyle: 'italic', fontSize: 11 } }, ev.note)
+          );
+        })
+      ) : null;
 
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('📅 Pet-Care Week — ' + careSim.species.charAt(0).toUpperCase() + careSim.species.slice(1)),
@@ -14661,6 +15247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ),
         renderPetScene(careSim.species, careSim, careSim.day, allDays.length, hasChosen, petInteract),
         renderCareTimeline(careSim, allDays),
+        overnightNote,
         // Tap-friendly version of the same interactions, listed below the
         // scene for keyboard / touch users who'd rather see the menu.
         careTrack,
@@ -14669,11 +15256,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
           h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' } }, dayObj.label),
           h('p', { ref: _careQuestionRef, tabIndex: -1,
-            style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.6 } }, dayObj.prompt)
+            style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.6 } }, dayObj.prompt),
+          dayObj.link && h('div', { className: 'petslab-care-support', style: { marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+            h('span', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.accentHi } }, '📖 Before you decide: '), dayObj.link.why),
+            h('button', {
+              type: 'button', 'data-pets-focusable': true,
+              className: 'petslab-care-support-action',
+              onClick: function() { goToView(dayObj.link.view, dayObj.link.label, dayObj.link.patch); },
+              style: btn({ padding: '6px 11px', fontSize: 12 })
+            }, 'Open ' + dayObj.link.label + ' →')
+          )
         ),
         h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_your_action', 'Choose your action'),
           style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
-          dayObj.choices.map(function(ch) {
+          petsCareChoiceOrder(careSim.species, careSim.day, dayObj.choices).map(function(ch) {
             var isPicked = hasChosen && thisChoice.choiceId === ch.id;
             // Preview only what a real owner already knows BEFORE deciding:
             // what it costs and what it takes out of you. The four welfare
@@ -14728,8 +15325,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
             style: { padding: 12, borderRadius: 10, background: T.cardAlt, borderLeft: '4px solid ' + T.accentHi, marginBottom: 12 } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'What happens'),
-            h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, thisChoice.note)
+            h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, thisChoice.note),
+            (function() {
+              var authored = null;
+              for (var ai = 0; ai < dayObj.choices.length; ai++) if (dayObj.choices[ai].id === thisChoice.choiceId) { authored = dayObj.choices[ai]; break; }
+              var afterText = authored ? describeAftermath(authored.aftermath) : null;
+              if (!afterText) return null;
+              return h('div', { className: 'petslab-choice-aftermath', style: { marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                h('span', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: T.warm } }, 'Aftermath'),
+                h('span', { style: { padding: '2px 8px', borderRadius: 999, border: '1px solid rgba(251,146,60,.5)', background: 'rgba(251,146,60,.14)', color: '#fdba74', fontSize: 11, fontWeight: 800, whiteSpace: 'nowrap' } }, afterText),
+                h('span', { style: { fontSize: 11, color: T.dim, lineHeight: 1.4 } }, 'Not on the price tag when you chose. It rarely is.')
+              );
+            })()
           ),
+          // The model can say exactly what tonight will cost from here, so it
+          // does, before the student sleeps on it: skipped tasks and any event
+          // a low meter has set up. Both are still avoidable at this point.
+          (function() {
+            var tonight = overnightUpkeep(careSim).overnight;
+            var skipped = tonight.skipped || [];
+            var events = tonight.events || [];
+            if (!skipped.length && !events.length) {
+              return h('p', { className: 'petslab-care-tonight', 'data-pets-care-tonight': 'quiet',
+                style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                '🌙 Tonight, as things stand: every routine task done, nothing brewing.');
+            }
+            return h('div', { className: 'petslab-care-tonight', 'data-pets-care-tonight': events.length ? 'event' : 'skipped',
+              style: { margin: '0 0 10px', padding: '9px 12px', borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.warm, fontSize: 12, color: T.text, lineHeight: 1.55 } },
+              h('div', null,
+                h('strong', { style: { color: T.warm } }, '🌙 Tonight, as things stand: '),
+                skipped.length
+                  ? skipped.map(careKindLabel).join(', ') + ' not done, so ' + describeCareDeltas(tonight.deltas) + '.'
+                  : 'every routine task done.'),
+              events.map(function(dom, i) {
+                var ev = describeConsequence(careSim.species, dom);
+                if (!ev) return null;
+                return h('div', { key: i, style: { marginTop: 3 } },
+                  h('strong', null, ev.icon + ' ' + ev.label), ' is coming (' + ev.cost + '): ' + (CARE_DOMAIN_WORDS[dom] || dom) + ' ends tonight below ' + CARE_SIM_CONSEQUENCE_BELOW + '%.');
+              }),
+              h('div', { style: { marginTop: 4, fontSize: 11, color: T.dim } },
+                skipped.length
+                  ? 'The routine tasks above are still open. Do them first, or sleep on it.'
+                  : 'Only tomorrow\'s decision can move that meter now.')
+            );
+          })(),
           h('button', { 'data-pets-focusable': true, onClick: nextDay,
             style: btnPrimary({ padding: '12px 24px', fontSize: 14, width: '100%' })
           }, careSim.day < allDays.length - 1 ? 'Next day →' : 'See week summary ✓')

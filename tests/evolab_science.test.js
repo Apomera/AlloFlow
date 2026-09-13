@@ -61,13 +61,26 @@ describe('EvoLab model boundaries', () => {
     expect(source).toContain('offspring resistance variation σ');
     expect(source).toContain('resistant fraction and mean resistance are not defined');
     expect(source).toContain('model refills each population to 30 after each generation');
-    expect((source.match(/comparison: \{/g) || [])).toHaveLength(4);
+    // Ten modules capture to the Capstone notebook: the four originals plus
+    // Predator Vision, Mate Choice, Climate Pressure, the Beak Lab, the Trait
+    // Divergence Model and the Hardy-Weinberg calculator (2026-09-13).
+    expect((source.match(/comparison: \{/g) || [])).toHaveLength(10);
     expect(source).toContain("primaryLabel: 'mean absolute displacement from p(A) = 0.500'");
     expect(source).not.toContain("primaryLabel: 'mean final p(A)'");
     expect(source).toContain("primaryLabel: 'mean trait shift'");
     expect(source).toContain("primaryLabel: 'resistant-share change'");
     expect(source).toContain("primaryLabel: 'mean capture rate'");
-    expect((source.match(/factors: \[/g) || [])).toHaveLength(4);
+    expect((source.match(/factors: \[/g) || [])).toHaveLength(10);
+    expect(source).toContain("primaryLabel: 'allele frequency change'");
+    expect(source).toContain("primaryLabel: 'trait-overlap proxy'");
+    expect(source).toContain("sourceRunKey: speciationSessionRef.current");
+    expect(source).toContain("primaryLabel: 'camouflage gain'");
+    expect(source).toContain("primaryLabel: 'mean showiness shift'");
+    expect(source).toContain("primaryLabel: 'final population size'");
+    expect(source).toContain("primaryLabel: 'mean beak depth shift'");
+    expect(source).toContain("sourceRunKey: huntSessionRef.current");
+    expect(source).toContain("sourceRunKey: climateSessionRef.current");
+    expect(source).toContain("sourceRunKey: beakSessionRef.current");
     expect(source).toContain("sourceRunKey: lastRunMeta.sourceRunKey");
     expect(source).toContain("sourceRunKey: selectionSessionRef.current");
     expect(source).toContain("sourceRunKey: antibioticSessionRef.current");

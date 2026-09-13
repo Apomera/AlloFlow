@@ -1,0 +1,16 @@
+{
+ "tool": "teamwork",
+ "file": "sel_hub/sel_tool_teamwork.js",
+ "removedAt": "2026-09-13",
+ "fromCommit": "c3c4d5e2d",
+ "declarations": [
+  {
+   "name": "COMM_STYLES",
+   "line": 710,
+   "size": 2424,
+   "items": 4,
+   "verdict": "authored, unwired",
+   "source": "var COMM_STYLES = {\n    director: { name: 'Director', icon: '\\uD83C\\uDFAF', color: '#ef4444',\n      desc: 'Task-focused and decisive. You like to get things done efficiently and lead by example.',\n      strengths: ['Makes quick decisions', 'Keeps the team on track', 'Results-oriented', 'Confident under pressure'],\n      blindSpots: ['May overlook others\\u2019 feelings', 'Can seem impatient or controlling', 'Might skip important discussion for speed'],\n      workWith: 'Give Directors clear goals and deadlines. Let them take the lead on logistics. Don\\u2019t take their directness personally \\u2014 they mean well.' },\n    collaborator: { name: 'Collaborator', icon: '\\uD83E\\uDD1D', color: '#22c55e',\n      desc: 'Consensus-seeking and inclusive. You want everyone\\u2019s voice heard before making decisions.',\n      strengths: ['Builds team unity', 'Values every perspective', 'Creates psychological safety', 'Strong relationship builder'],\n      blindSpots: ['Decisions may take too long', 'Can struggle with conflict or tough calls', 'Might avoid necessary confrontation'],\n      workWith: 'Give Collaborators time for discussion. Acknowledge their efforts to include everyone. Help them set decision deadlines so progress keeps moving.' },\n    analyzer: { name: 'Analyzer', icon: '\\uD83D\\uDD0D', color: '#3b82f6',\n      desc: 'Data-driven and careful. You like to research thoroughly before committing to a plan.',\n      strengths: ['Thorough and accurate', 'Catches mistakes early', 'Evidence-based thinking', 'Reduces risk'],\n      blindSpots: ['Can cause analysis paralysis', 'May seem overly cautious', 'Might frustrate action-oriented teammates'],\n      workWith: 'Give Analyzers data and time to review. Ask for their input on quality checks. Help them recognize when \\u201Cgood enough\\u201D is sufficient.' },\n    supporter: { name: 'Supporter', icon: '\\uD83D\\uDC9A', color: '#f59e0b',\n      desc: 'Harmony-focused and encouraging. You keep morale high and make sure nobody feels left out.',\n      strengths: ['Excellent listener', 'Boosts team morale', 'Mediates disagreements', 'Creates a positive environment'],\n      blindSpots: ['May avoid sharing own opinions', 'Can take on too much to keep peace', 'Might suppress important disagreements'],\n      workWith: 'Ask Supporters directly for their opinion \\u2014 they may not volunteer it. Appreciate their emotional labor. Help them set boundaries.' }\n  };"
+  }
+ ]
+}

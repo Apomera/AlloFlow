@@ -330,11 +330,33 @@ describe('B5: re-OCR splice gate only adopts non-junkier text (pure-logic mirror
   });
 });
 
+describe("B6b: a sliced audit honours the caller\'s page range (2026-09-13 NCES pilot, finding 6)", () => {
+  const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  it('threads options.pageRange from the audit entry point into both slice call sites', () => {
+    expect(dp).toMatch(/const _auditPageRange = \(options && Array\.isArray\(options\.pageRange\) && options\.pageRange\.length === 2\) \? options\.pageRange : null;/);
+    expect(dp.match(/_auditPdfInSlices\(base64Data, auditPrompt, _auditCancelled, _auditPageRange\)/g)).toHaveLength(2);
+    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel, pageRange\) =>/);
+  });
+  it('bounds the slice ranges to the requested pages and falls back to the whole document on a bad range', () => {
+    expect(dp).toMatch(/const _rangeIdx = _auditSliceRangeBounds\(totalPages, pageRange\);/);
+    expect(dp).toMatch(/for \(let sp = _rangeIdx\[0\]; sp < _rangeIdx\[1\]; sp \+= per\) ranges\.push\(\[sp, Math\.min\(sp \+ per, _rangeIdx\[1\]\)\]\);/);
+    // Evaluate the pure bounds helper straight out of the source: it must clamp, and never audit nothing.
+    const src = dp.match(/const _auditSliceRangeBounds = \(totalPages, pageRange\) => \{[\s\S]*?\n  \};/)[0];
+    const bounds = new Function(src + '\nreturn _auditSliceRangeBounds;')();
+    expect(bounds(54, [19, 23])).toEqual([18, 23]);
+    expect(bounds(54, [50, 90])).toEqual([49, 54]);
+    expect(bounds(54, null)).toEqual([0, 54]);
+    expect(bounds(54, [0, 5])).toEqual([0, 54]);
+    expect(bounds(54, [60, 70])).toEqual([0, 54]);
+    expect(bounds(54, [9, 3])).toEqual([0, 54]);
+  });
+});
+
 describe('B6: large-document page-slice audit (chunk-first router + reactive fallback)', () => {
   // ── Source-pins: the design is present and the safety net is preserved ──
   it('defines the _auditPdfInSlices helper + tunable threshold constants', () => {
     // Gained a shouldCancel callback so a slice run can bail between slices.
-    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel\)/);
+    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel, pageRange\)/); // pageRange added 2026-09-13 (bounded slices)
     expect(dp).toMatch(/_AUDIT_SLICE_BYTES_KB = 9000/);
     expect(dp).toMatch(/_AUDIT_SLICE_PAGES\b\s*=\s*20/);
     expect(dp).toMatch(/_AUDIT_SLICE_MAX\s*=\s*40/);

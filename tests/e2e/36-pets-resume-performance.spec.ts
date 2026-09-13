@@ -253,8 +253,8 @@ test.describe('Pets Lab resume integrity and idle rendering', () => {
       };
     })).toEqual({
       stateKeys: [
-        'badgeEarned', 'choices', 'dailyInteractions', 'day', 'done',
-        'en', 'env', 'lastInteract', 'lowMoney', 'ment', 'money', 'phys',
+        'badgeEarned', 'choices', 'consequenceLog', 'dailyInteractions', 'day', 'done',
+        'en', 'env', 'lastInteract', 'lowMoney', 'ment', 'money', 'overnight', 'phys',
         'soc', 'species', 'startMoney', 'tiredCare',
       ],
       species: 'dog',
@@ -272,7 +272,9 @@ test.describe('Pets Lab resume integrity and idle rendering', () => {
         env: 50,
         en: 100,
         money: 10_000,
-        startMoney: 500,
+        // Species budget is authoritative over any restored value (dog: $650
+        // since the 2026-09-13 retune against the all-best week).
+        startMoney: 650,
         lowMoney: false,
         tiredCare: 35,
       },

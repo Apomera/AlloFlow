@@ -1,0 +1,582 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 3: Where Am I Right Now?",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_zones_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Awareness (identifying one's emotions; linking feelings, values, and thoughts); CASEL Self-Management (managing one's emotions; using stress-management strategies); EL Education Crew (Crew Launch: check-ins and Crew culture); Maine DOE PBIS Tier 1 (self-regulation as an expected behavior taught in context)"
+  },
+  "sourceTopic": "Naming your state and regulating to participate",
+  "history": [
+    {
+      "id": "cz-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 3: Where Am I Right Now?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Responsibility. \"I take responsibility for my success as a learner.\"\n\nThis week is about knowing your own state, so you can participate fully and mindfully.\n\n1. Read **Where Am I Right Now?** (10 minutes).\n2. Learn the **Glossary** words, then win the **Word Scramble**.\n3. Keep the **Four Zones, One Window** chart open.\n4. Sort the cards in **Which Zone?**\n5. Take the quiz. Question 4 is about what naming your state does NOT mean.\n6. Open the SEL Hub and choose [Emotion Zones](#sel-hub/zones?station=sel_station_crew_launch_zones). Do the one-word check-in. Then open [Window of Tolerance](#sel-hub/windowOfTolerance?station=sel_station_crew_launch_zones) and find one move that brings you back. If you have time, try [Sensory Regulation](#sel-hub/sensoryRegulation?station=sel_station_crew_launch_zones) for a move you can do at a desk.\n7. Use the **Sentence Frames** to write your own check-in and reset.\n8. Lock it in with **Remember Zones and the Window**.\n9. Finish with the **Investigate Challenge: What Moves Me Back?**\n\nYour commitment: this week, do a silent one-word check-in at the start of one class, and if you are not green, make one move before the lesson starts. 🚦\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cz-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "cz-glossary"
+          },
+          {
+            "id": "cz-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cz-goal-manual",
+            "label": "I did a silent one-word check-in at the start of a class this week and made one move if I needed it",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cz-reading",
+      "type": "simplified",
+      "title": "Where Am I Right Now?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Where Am I Right Now?\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nThe Responsibility HOWL asks you to **participate** fully and **mindfully**. Fully means you are in the room, not just your body. Mindfully means you notice what is going on inside you and make a choice about it. You cannot do either one if you do not know where you are right now.\n\nYour body and brain are always in some **state**. Sometimes you are calm and ready. Sometimes you are buzzing, restless, or on edge. Sometimes you are heavy, foggy, or checked out. None of these states is bad. They are information. The problem is not being in a state. The problem is not knowing it, and then trying to do hard learning from a state that cannot do hard learning.\n\nOne way to name your state is to use **zones**. Green is calm and ready. Yellow is revved up: excited, nervous, frustrated, silly. Red is overwhelmed: too much to think. Blue is low: tired, sad, bored, foggy. You do not need to be green all the time. You need to know which zone you are in so you can pick a move.\n\nAnother way to picture the same idea is a **window**. Inside your window, you can think, listen, and try things. Above the window, you are too **activated** to take in anything. Below it, you are too shut down. Every person's window is a different size, and it changes with sleep, food, stress, and what happened in the hallway two minutes ago. The goal is not a bigger window by Friday. The goal is to notice when you have left it and to know one thing that brings you back.\n\nHere is a fictional Crew moment. It is Tuesday. Priya walks into Crew after a hallway argument. Her jaw is tight. Her leg is bouncing. When the Crew leader asks the group to name a zone in one word, Priya says \"yellow.\" That one word does two things. It tells Priya what is true. And it tells the Crew leader that Priya may need a minute before she is asked to share. Nobody makes it a big deal. Priya takes three slow breaths, drops her shoulders, and by the time it is her turn to share, she is closer to green.\n\nNaming your state is not an excuse. \"I am in red\" does not mean you get to leave. It means you know what you need to do first. A two-minute **reset**, a drink of water, a **sensory** move, a quiet check-in with the Crew leader. Then you come back and participate. That is the mindful part of \"fully and mindfully.\" You are responsible for knowing where you are, and for the first move back.\n\nThis week you practice the one-word check-in. Not because Crew wants to know your business, but because knowing where you are is the first responsibility of a learner.",
+      "meta": "6th-8th Grade • Leveled reading • ~500 words"
+    },
+    {
+      "id": "cz-glossary",
+      "type": "glossary",
+      "title": "State Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "State",
+          "def": "How your body and brain are right now: calm, buzzing, heavy, on edge.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Zone",
+          "def": "A color word for your state: green, yellow, red, or blue.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Window",
+          "def": "The range of states in which you can think, listen, and try things.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Activated",
+          "def": "Revved up. Above the window, too much energy to take things in.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Shutdown",
+          "def": "Checked out. Below the window, too little energy to engage.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Mindful",
+          "def": "Noticing what is going on inside you and making a choice about it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Reset",
+          "def": "A short move that brings you back toward your window, like slow breaths or water.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Regulate",
+          "def": "To move your state on purpose, a little at a time.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Sensory",
+          "def": "Having to do with what your body feels: pressure, movement, sound, temperature.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Participate",
+          "def": "To take part. Fully means your attention is in the room, not just your body.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "6th-8th Grade • 10 terms • Tiered"
+    },
+    {
+      "id": "cz-anchor",
+      "type": "anchor-chart",
+      "title": "Four Zones, One Window",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "FOUR ZONES, ONE WINDOW",
+        "sections": [
+          {
+            "label": "GREEN",
+            "bullets": [
+              "Calm, focused, ready",
+              "Inside the window",
+              "Move: keep going"
+            ],
+            "iconPrompt": "a green circle with a steady horizontal line"
+          },
+          {
+            "label": "YELLOW",
+            "bullets": [
+              "Excited, nervous, frustrated, silly",
+              "Near the top of the window",
+              "Move: slow breaths, drop shoulders"
+            ],
+            "iconPrompt": "a yellow circle with a wavy line"
+          },
+          {
+            "label": "RED",
+            "bullets": [
+              "Overwhelmed, too much to think",
+              "Above the window",
+              "Move: two-minute reset, water, quiet check-in"
+            ],
+            "iconPrompt": "a red circle with a jagged line"
+          },
+          {
+            "label": "BLUE",
+            "bullets": [
+              "Tired, sad, bored, foggy",
+              "Below the window",
+              "Move: stand, stretch, cold water, light"
+            ],
+            "iconPrompt": "a blue circle with a low flat line"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cz-sort",
+      "type": "concept-sort",
+      "title": "Which Zone?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cz-green",
+            "label": "GREEN (ready)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cz-yellow",
+            "label": "YELLOW (revved)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "cz-red",
+            "label": "RED (overwhelmed)",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "cz-blue",
+            "label": "BLUE (low)",
+            "color": "bg-sky-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cz-i1",
+            "content": "Leg bouncing, jaw tight, just came from an argument",
+            "categoryId": "cz-yellow"
+          },
+          {
+            "id": "cz-i2",
+            "content": "Listening, pencil moving, ready for the next step",
+            "categoryId": "cz-green"
+          },
+          {
+            "id": "cz-i3",
+            "content": "Head on the desk, eyes heavy, slept four hours",
+            "categoryId": "cz-blue"
+          },
+          {
+            "id": "cz-i4",
+            "content": "Heart pounding, cannot hear the directions, wants to leave the room",
+            "categoryId": "cz-red"
+          },
+          {
+            "id": "cz-i5",
+            "content": "Laughing too hard to stop, cannot settle",
+            "categoryId": "cz-yellow"
+          },
+          {
+            "id": "cz-i6",
+            "content": "Calm after a walk, breathing slow, curious",
+            "categoryId": "cz-green"
+          },
+          {
+            "id": "cz-i7",
+            "content": "Staring at the wall, foggy, nothing feels interesting",
+            "categoryId": "cz-blue"
+          },
+          {
+            "id": "cz-i8",
+            "content": "Yelled at a friend and now everything is too loud",
+            "categoryId": "cz-red"
+          },
+          {
+            "id": "cz-i9",
+            "content": "Excited about the field trip, talking fast, hard to focus",
+            "categoryId": "cz-yellow"
+          },
+          {
+            "id": "cz-i10",
+            "content": "Finished breakfast, sat down, opened the notebook without being asked",
+            "categoryId": "cz-green"
+          }
+        ]
+      },
+      "meta": "4 categories • 10 cards"
+    },
+    {
+      "id": "cz-quiz",
+      "type": "quiz",
+      "title": "Know Your State",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "According to the reading, what is the real problem with being in the yellow or red zone?",
+            "options": [
+              "Being in those zones means you did something wrong that day",
+              "Not knowing you are there, and trying to do hard learning anyway",
+              "Those zones last all day once you are in them",
+              "Other students will notice and treat you differently"
+            ],
+            "correctAnswer": "Not knowing you are there, and trying to do hard learning anyway",
+            "conceptLabel": "states are information"
+          },
+          {
+            "type": "mcq",
+            "question": "What does \"inside your window\" mean?",
+            "options": [
+              "You are calm because nothing stressful happened today",
+              "You are in the green zone and will stay there all class",
+              "You are in a state where you can think, listen, and try things",
+              "You are sitting quietly so the teacher does not notice you"
+            ],
+            "correctAnswer": "You are in a state where you can think, listen, and try things",
+            "conceptLabel": "window of tolerance"
+          },
+          {
+            "type": "mcq",
+            "question": "In the reading, what did Priya's one word \"yellow\" do?",
+            "options": [
+              "It got her excused from sharing for the rest of Crew",
+              "It told the Crew everything about the hallway argument",
+              "It let the Crew leader know she was going to be in trouble",
+              "It told Priya what was true and told the leader she might need a minute"
+            ],
+            "correctAnswer": "It told Priya what was true and told the leader she might need a minute",
+            "conceptLabel": "one-word check-in"
+          },
+          {
+            "type": "mcq",
+            "question": "A student says \"I am in red\" and walks out of class. What does the reading say about this?",
+            "options": [
+              "Naming a state is not an excuse; it means you know your first move back",
+              "This is exactly what naming a state is for, so it is fine",
+              "Red means you should always leave until you feel green again",
+              "The student should have said yellow so they could stay"
+            ],
+            "correctAnswer": "Naming a state is not an excuse; it means you know your first move back",
+            "conceptLabel": "naming is not an excuse"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is true about the size of a person's window, according to the reading?",
+            "options": [
+              "It is the same for everyone in a grade",
+              "It gets bigger every week if you practice",
+              "It changes with sleep, food, stress, and what just happened",
+              "It only matters for students who have trouble with anger"
+            ],
+            "correctAnswer": "It changes with sleep, food, stress, and what just happened",
+            "conceptLabel": "window changes"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Name your zone right now in one word, and one move you could make if you were not green.",
+            "expectedAnswer": "One of green, yellow, red, or blue, plus a reset move such as slow breaths, water, standing up, or pressing feet into the floor.",
+            "conceptLabel": "one-word check-in"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is one move that reliably brings you back toward green? When did you last use it?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cz-frames",
+      "type": "sentence-frames",
+      "title": "My Check-In and Reset",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "Right now I am in ____. I know because my body is ____."
+          },
+          {
+            "text": "When I am in yellow, one move that helps is ____."
+          },
+          {
+            "text": "When I am in blue, one move that helps is ____."
+          },
+          {
+            "text": "If I am in red, my first move is ____, and then I ____."
+          },
+          {
+            "text": "My window gets smaller when ____. It gets bigger when ____."
+          },
+          {
+            "text": "Knowing my state is my responsibility because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Names the state | Says \"fine\" | Names a zone | Names a zone and one body clue |\n| Has a move | No move | One move for one zone | A move for each zone I visit |\n| Comes back | Uses the state as a reason to stop | Plans to return | Plans the first move back and what happens after |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cz-faq",
+      "type": "faq",
+      "title": "State Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "Do I have to tell the Crew why I am in yellow?",
+          "answer": "No. The one-word check-in is the word, not the story. You can always pass."
+        },
+        {
+          "question": "Is it bad to be in blue a lot?",
+          "answer": "Blue is a state, not a grade. If you notice you are in blue most days, that is worth a private conversation with your Crew leader or the school counselor. Noticing it is the responsible part."
+        },
+        {
+          "question": "What if my reset move looks weird?",
+          "answer": "Most resets are invisible: slow breaths, pressing your feet into the floor, a sip of water. If yours needs space, ask your Crew leader for a signal you can use."
+        },
+        {
+          "question": "Can I be in two zones at once?",
+          "answer": "Yes. Nervous and tired at the same time is common. Pick the one that is loudest and make a move for that one first."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Responsibility HOWL says you participate fully and mindfully. Knowing your state and making the first move back is the mindful part. Teachers see it as being in the room."
+        }
+      ],
+      "meta": "5 questions"
+    },
+    {
+      "id": "cz-memory",
+      "type": "memory-aid",
+      "title": "Remember Zones and the Window",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Zones and the Window",
+        "instructions": "Each card locks in one idea from Where Am I Right Now? Look at the example aid, make it your own, and tell how it helps you check in.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Green is calm and ready. Yellow is revved up: excited, nervous, frustrated, silly. Red is overwhelmed: too much to think. Blue is low: tired, sad, bored, foggy. Inside your window, you can think, listen, and try things. Naming your state is not an excuse.",
+        "lessonRef": {
+          "resourceId": "cz-reading",
+          "title": "Where Am I Right Now?"
+        },
+        "cards": [
+          {
+            "id": "cz-ma-zones",
+            "target": "The four zones: green ready, yellow revved, red overwhelmed, blue low",
+            "essentialFacts": [
+              "Green is calm and ready.",
+              "Yellow is revved up: excited, nervous, frustrated, silly.",
+              "Red is overwhelmed: too much to think.",
+              "Blue is low: tired, sad, bored, foggy."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a traffic light with a puddle under it. Green go, yellow speeding up, red stop-everything-is-too-much, and the blue puddle at the bottom where energy drains out.",
+            "mapping": "The traffic light carries green, yellow, and red in the order of rising energy; the puddle below carries blue as the low state under all of them.",
+            "scaffoldStarter": "Green is like ____. Yellow is like ____. Red is like ____. Blue is like ____.",
+            "scaffoldSteps": [
+              "Pick one picture that holds three colors in order.",
+              "Add something low for blue.",
+              "Say the four states while looking at your picture."
+            ],
+            "coachPrompts": [
+              "Which zone is hardest for you to notice from the inside?"
+            ],
+            "studentPrompt": "Draw or describe your own picture that holds all four zones.",
+            "reasoningPrompt": "How does your picture help you name a zone in one word?",
+            "hookFact": {
+              "text": "You do not need to be green all the time. You need to know which zone you are in so you can pick a move.",
+              "sourceTitle": "Where Am I Right Now? (this lesson)"
+            }
+          },
+          {
+            "id": "cz-ma-window",
+            "target": "Inside the window you can think, listen, and try; naming a state is not an excuse",
+            "essentialFacts": [
+              "Inside your window, you can think, listen, and try things.",
+              "Naming your state is not an excuse."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "WINDOW = WORK ZONE. Same first letter. If I am in my window, I can work. If I am out of it, my first job is the move back, not the worksheet.",
+            "mapping": "Window and work share a first letter, which links the picture of the window to what it is for: the range where learning can happen.",
+            "scaffoldStarter": "Inside my window I can ____. Outside it, my first job is ____.",
+            "scaffoldSteps": [
+              "Write what you can do inside the window.",
+              "Write the first move when you are outside it.",
+              "Find a word pair that keeps them together."
+            ],
+            "coachPrompts": [
+              "What is the difference between \"I am in red\" and \"I am in red, so I am leaving\"?"
+            ],
+            "studentPrompt": "Make your own word pair for window.",
+            "reasoningPrompt": "How does your pair remind you that naming a state comes with a move?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • four zones, the window"
+    },
+    {
+      "id": "cz-challenge",
+      "type": "applied-challenge",
+      "title": "Investigate Challenge: What Moves Me Back?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "What Moves Me Back?",
+        "instructions": "For one school week, do a private one-word check-in at the start of three classes a day, try one reset move when you are not green, and find out which moves actually work for you. Report the pattern, not the feelings.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The HOWL behavior is participating fully and mindfully. A week of check-ins turns \"be mindful\" into a real investigation with data the student owns, and the result is a personal reset list they can use in any class.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Everyone has been told to \"calm down\" at some point. Almost nobody has been told how, or which moves actually work for them. This week you find out for yourself.",
+          "role": "A student investigating their own states",
+          "audience": "Yourself first. Then your Crew, who will hear the pattern (never the private details) in a one-minute share.",
+          "drivingQuestion": "Which reset moves reliably bring me back toward green, and in which situations do I need them most?",
+          "seedDirection": "Make a private tally card: class, one-word zone, move tried, did it help (yes, some, no). Fill it three times a day. On Friday, look for the pattern.",
+          "lockedLessonFacts": [
+            "Your body and brain are always in some state, and states are information.",
+            "Inside your window you can think, listen, and try things.",
+            "Every person's window is a different size, and it changes with sleep, food, stress, and what just happened.",
+            "Naming your state is not an excuse; it means you know what you need to do first."
+          ],
+          "openQuestions": [
+            "Which time of day am I most often out of green?",
+            "Which move worked most often?",
+            "Which move did I think would work but did not?",
+            "What happened right before my red or blue check-ins?"
+          ],
+          "stakeholders": [
+            "You",
+            "Your Crew leader, who can help you pick moves",
+            "Your teachers, who see the result without seeing the card"
+          ],
+          "criteria": [
+            "At least twelve check-ins recorded over the week",
+            "At least three different reset moves tried",
+            "The report names a pattern with evidence from the tally",
+            "The report ends with a two-move personal reset list",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "The tally card is private; only the pattern is shared",
+            "No names of other people on the card",
+            "Moves must be ones you can do without leaving the room, unless your Crew leader agreed to a signal"
+          ],
+          "deliverable": "A short pattern report (five sentences or a small chart) and a two-move reset list on an index card you keep.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student tallied for a week.",
+            "move": "She found she was yellow almost every day after lunch and that slow breathing did nothing for her, but pressing her feet into the floor and counting the ceiling tiles did. Her reset list became: feet, then tiles. She stopped trying to breathe her way down.",
+            "whyItHelps": "It shows that the investigation can prove a popular move does not work for you, and that is a useful result."
+          },
+          "frameStarter": "I was most often in ____ during ____. The move that worked most was ____.",
+          "frameChoices": [
+            "A move that did not work for me was ____.",
+            "The thing that happened right before my ____ check-ins was usually ____.",
+            "My two-move reset list is: ____, then ____."
+          ],
+          "coachPrompts": [
+            "What would you tell a sixth grader who says \"I tried breathing and it does not work\"?",
+            "Which of your moves could you do in the middle of a test?"
+          ]
+        },
+        "coachHint": "If a student reports \"I was green all week,\" ask whether they checked in right after lunch or after a hard class. Green all week usually means the check-ins were done at easy times.",
+        "sourceExcerpt": "Naming your state is not an excuse. \"I am in red\" does not mean you get to leave. It means you know what you need to do first. A two-minute reset, a drink of water, a sensory move, a quiet check-in with the Crew leader. Then you come back and participate.",
+        "lessonRef": {
+          "resourceId": "cz-reading",
+          "title": "Where Am I Right Now?"
+        }
+      },
+      "meta": "6th-8th Grade • Investigate brief • a week of check-ins"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_zones",
+      "name": "Crew station: Week 3: Where Am I Right Now?",
+      "tools": [
+        "zones",
+        "windowOfTolerance",
+        "sensoryRegulation"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 3: Where Am I Right Now? pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_zones_time",
+          "type": "timeSpent",
+          "toolId": "zones",
+          "label": "Spend 5 minutes in Emotion Zones",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_zones_check",
+          "type": "manualComplete",
+          "toolId": "sensoryRegulation",
+          "label": "I did a silent one-word check-in at the start of a class this week and made one move if I needed it",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

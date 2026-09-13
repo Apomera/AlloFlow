@@ -55,7 +55,7 @@ const SERVER_DIRS = ['vendor'];
 // than at pipeline boot — but it has to be IN the bundle or export_accessible_office cannot work
 // on a packaged install. Adding it was the 2026-07-28 capability-inventory finding: the connector
 // reached 11% of the pipeline, partly because capabilities lived in modules it never shipped.
-const ASSET_FILES = ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'view_pdf_validator_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js', 'audio_helpers_module.js', 'karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js', 'kokoro_tts_loader.js', 'piper_tts_loader.js', 'document_narration_text_module.js'];
+const ASSET_FILES = ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'view_pdf_validator_module.js', 'doc_pipeline_module.js', 'ai_backend_module.js', 'view_pdf_audit_module.js', 'audio_helpers_module.js', 'karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js', 'kokoro_tts_loader.js', 'piper_tts_loader.js', 'document_narration_text_module.js'];
 const ASSET_DIRS = ['verapdf'];
 const SKILL_DIRS = ['alloflow-pdf-remediation'];
 

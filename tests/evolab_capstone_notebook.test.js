@@ -176,9 +176,11 @@ describe('EvoLab Capstone evidence notebook', () => {
     expect(persisted.runs).toHaveLength(1);
     expect(persisted.runs[0]).toMatchObject({ id: 'run-1', moduleId: 'geneticDrift' });
     expect(persisted.runs[0].sourceRunKey).toMatch(/^geneticDrift:/);
+    // The bottleneck factor (2026-09-13) is always present so a change-one plan can target it.
     expect(persisted.runs[0].comparison.factors).toEqual([
       { id: 'populationSize', label: 'Population size', value: 10 },
-      { id: 'generations', label: 'Generations', value: 100 }
+      { id: 'generations', label: 'Generations', value: 100 },
+      { id: 'bottleneck', label: 'Bottleneck', value: 'Off' }
     ]);
     expect(persisted.runs[0].baseline).toContain('N = 10');
     expect(persisted.runs[0].metrics.find((metric) => metric.label === 'Final p(A) values')).toBeTruthy();

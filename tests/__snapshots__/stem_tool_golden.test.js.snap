@@ -72,10 +72,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for evoLab 1`] = `
 {
-  "buttons": 28,
+  "buttons": 32,
   "inputs": 0,
-  "lengthBucket": 191,
-  "sha": "659e1eae83cf1840",
+  "lengthBucket": 215,
+  "sha": "5609326fa92f7821",
   "svgs": 0,
 }
 `;

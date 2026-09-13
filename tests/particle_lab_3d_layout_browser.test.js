@@ -703,6 +703,61 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
     } finally { await page.close(); }
   }, 60000);
 
+  it('pumps eight particles into the live chamber without a rebuild and lets them out again', async () => {
+    // The count slider re-seeds the chamber (one WebGLRenderer per rebuild); the pump must not. It adds to the live
+    // particle array, so the run, the history and the tracer survive and pressure can be watched following N.
+    const { page, errors } = await mount({ width: 1440, height: 900 }, { preset: 'diffusion' }, 'default', {}, () => {
+      const Orig = THREE.WebGLRenderer; window.rendererBuilds = 0;
+      THREE.WebGLRenderer = function (options) { window.rendererBuilds += 1; return new Orig(options); };
+      THREE.WebGLRenderer.prototype = Orig.prototype;
+    });
+    try {
+      const inChamber = (n) => page.waitForFunction((expected) => document.body.textContent.includes(expected + ' particles in the chamber'), n, { timeout: 15000 });
+      await inChamber(64);
+      await page.getByRole('button', { name: /^Pump in 8 A\./ }).click();
+      await inChamber(72);
+      await page.waitForFunction(() => document.querySelector('#particle-stage-activity')?.textContent.includes('Live simulation'));
+      await page.getByRole('button', { name: /^Pump in 8 B\./ }).click();
+      await inChamber(80);
+      expect(await page.locator('#particle-trace-selector').getAttribute('max')).toBe('80');
+      await page.getByRole('button', { name: /^Release 8\./ }).click();
+      await inChamber(72);
+      await page.waitForTimeout(1500); // the newcomers cross the chamber and reach the walls
+      expect(await page.evaluate(() => window.rendererBuilds)).toBe(1); // no rebuild for any of it
+      expect(await page.locator('#particle-readouts').textContent()).toContain('N 72');
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 90000);
+
+  it('switches to the flat 2D view and back, keeping the chamber painted', async () => {
+    const { page, errors } = await mount({ width: 1280, height: 900 }, {});
+    try {
+      const litFraction = async () => {
+        const shot = await page.locator('#particle-viewport').screenshot();
+        return page.evaluate(async png => {
+          const img = new Image(); img.src = 'data:image/png;base64,' + png; await img.decode();
+          const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+          const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+          const d = g.getImageData(0, 0, c.width, c.height).data; let bright = 0;
+          for (let i = 0; i < d.length; i += 16) if (d[i] + d[i + 1] + d[i + 2] > 300) bright++;
+          return bright / (d.length / 16);
+        }, shot.toString('base64'));
+      };
+      const flat = page.getByRole('button', { name: /^Flat 2D view\./ });
+      await flat.click();
+      expect(await flat.getAttribute('aria-pressed')).toBe('true');
+      await page.waitForFunction(() => window.savedParticleData.viewMode === 'flat');
+      await page.waitForTimeout(400);
+      expect(await litFraction()).toBeGreaterThan(0.005); // the orthographic camera paints the chamber
+      expect(await page.locator('.particle-touch-hint').count()).toBe(0); // no orbit hint in a fixed-camera view
+      await page.locator('#particle-viewport canvas').focus();
+      await page.keyboard.press('2');
+      await page.waitForFunction(() => window.savedParticleData.viewMode === 'orbit');
+      expect(await flat.getAttribute('aria-pressed')).toBe('false');
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
   it('supports native fullscreen, preserves the renderer, and captures desktop layouts', async () => {
     const { page, errors } = await mount({ width: 1440, height: 900 }, { preset: 'diffusion', trace: true, systemProbe: true });
     try {

@@ -1,0 +1,578 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 5: Asking for What You Need",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_ask_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering support and help when needed); CASEL Self-Management (showing the courage to take initiative); EL Education Crew (Crew Launch: academic coaching); Maine DOE PBIS Tier 1 (teaching help-seeking as an expected behavior)"
+  },
+  "sourceTopic": "Self-advocacy through specific questions",
+  "history": [
+    {
+      "id": "ca-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 5: Asking for What You Need",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Perseverance. \"I persevere to produce high quality work.\"\n\nThis week you build the words for a clear ask, so that being stuck turns into a question instead of a quiet week.\n\n1. Read **Asking for What You Need** (10 minutes).\n2. Learn the **Glossary** words, then win the **Word Scramble**.\n3. Keep the **Four Moves of a Clear Ask** chart open.\n4. Sort the cards in **Which Move Is It?**\n5. Take the quiz. Question 3 compares two ways of asking.\n6. Open the SEL Hub and choose [DEAR MAN](#sel-hub/dearMan?station=sel_station_crew_launch_ask). Build a real, low-stakes ask for one of your classes. Then pair up: one person asks, the other plays the teacher. Swap. If you have time, try [Self-Advocacy Studio](#sel-hub/selfAdvocacy?station=sel_station_crew_launch_ask).\n7. Use the **Sentence Frames** to write your ask in four lines.\n8. Lock it in with **Remember Describe, Express, Ask, Reinforce**.\n9. Finish with the **Decide Challenge: Ask It This Week**, and actually use the ask.\n\nYour commitment: this week, make one specific ask in one class where you are stuck, and report back on what happened. 🗣\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "ca-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "ca-glossary"
+          },
+          {
+            "id": "ca-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "ca-goal-manual",
+            "label": "I made one specific four-move ask in a class this week and I can say what happened next",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "ca-reading",
+      "type": "simplified",
+      "title": "Asking for What You Need",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Asking for What You Need\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nThe first **Perseverance** behavior in the King HOWLs is **advocating** for your learning by **asking** questions. That sentence surprises some people. Perseverance sounds like gritting your teeth and pushing through alone. But the students who actually produce high quality work are usually the ones who ask early, ask clearly, and ask again if the first answer did not help. Asking is not the opposite of persevering. It is how persevering works.\n\nHere is the problem. Asking is hard. You might not know exactly what you do not understand. You might worry about looking slow. You might have asked before and gotten a rushed answer. So the question stays inside, the confusion grows, and the assignment gets harder every day it is not asked about.\n\nThere is a **script** that makes a hard ask easier. It comes from a skill-building approach called DEAR MAN. You do not need the whole thing. You need four moves. **Describe**: say the facts of the situation, without blame. **Express**: say how it is affecting you, in one sentence. Ask: say exactly what you want, small and **specific**. **Reinforce**: say why it helps, for you and for them.\n\nHere is a fictional example. Tomas has been stuck on the same kind of math problem for three days. He has been erasing and guessing. In Crew, he practices the four moves. Describe: \"The last three homework sets had problems where I have to set up the equation from a word problem, and I got most of those wrong.\" Express: \"I am getting frustrated because I understand the math once it is set up, but I cannot get it set up.\" Ask: \"Could you show me two examples of setting one up, and then watch me try one?\" Reinforce: \"If I can do that part, I think the rest of the homework will go a lot faster and I will stop turning it in half done.\" That is a four-sentence ask. It took Tomas ninety seconds. His teacher knew exactly what to do with it.\n\nCompare that to \"I don't get it.\" That sentence is honest, but it gives the teacher nothing to work with. The teacher has to guess, and often guesses wrong, and now both people feel like the asking did not help. A specific ask is a gift to the person you are asking.\n\nAdvocating also means knowing your **options** when the first ask does not work. Ask a different way. Ask a different person. Ask in writing if speaking is hard. Ask for a time to come back. None of these is giving up. Giving up is the only move that is not on the list.\n\nYou can practice asks in Crew because Crew is low stakes. Nobody is grading the ask. The point is to have the words ready before the moment you need them, so that when the math problem or the essay or the group project gets stuck, the question comes out instead of staying in.",
+      "meta": "6th-8th Grade • Leveled reading • ~510 words"
+    },
+    {
+      "id": "ca-glossary",
+      "type": "glossary",
+      "title": "Asking Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Advocate",
+          "def": "To speak up for what you need. Here, to ask for help with your learning.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Describe",
+          "def": "Say the facts of the situation, without blame.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Express",
+          "def": "Say how it is affecting you, in one sentence.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Ask",
+          "def": "Say exactly what you want, small and specific.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Reinforce",
+          "def": "Say why it helps, for you and for them.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Specific",
+          "def": "Clear enough that the other person knows exactly what to do.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Vague",
+          "def": "So general that the other person has to guess. \"I don't get it\" is vague.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Persevere",
+          "def": "To keep going toward high quality work, including by asking.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Script",
+          "def": "Words prepared ahead of time so they are there when you need them.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Option",
+          "def": "Another way to ask when the first way does not work.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "6th-8th Grade • 10 terms • Tiered"
+    },
+    {
+      "id": "ca-anchor",
+      "type": "anchor-chart",
+      "title": "Four Moves of a Clear Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "FOUR MOVES OF A CLEAR ASK",
+        "sections": [
+          {
+            "label": "DESCRIBE",
+            "bullets": [
+              "The facts, no blame",
+              "\"The last three sets had word problems I got wrong.\""
+            ],
+            "iconPrompt": "a plain magnifying glass over a page"
+          },
+          {
+            "label": "EXPRESS",
+            "bullets": [
+              "How it affects you, one sentence",
+              "\"I am getting frustrated because...\""
+            ],
+            "iconPrompt": "a simple heart outline"
+          },
+          {
+            "label": "ASK",
+            "bullets": [
+              "Exactly what you want, small",
+              "\"Could you show me two examples, then watch me try one?\""
+            ],
+            "iconPrompt": "an open hand, palm up"
+          },
+          {
+            "label": "REINFORCE",
+            "bullets": [
+              "Why it helps, for both",
+              "\"Then the rest of the homework will go faster.\""
+            ],
+            "iconPrompt": "two arrows pointing toward each other"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "ca-sort",
+      "type": "concept-sort",
+      "title": "Which Move Is It?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "ca-desc",
+            "label": "DESCRIBE",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "ca-exp",
+            "label": "EXPRESS",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "ca-ask",
+            "label": "ASK",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "ca-rein",
+            "label": "REINFORCE",
+            "color": "bg-violet-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "ca-i1",
+            "content": "\"The essay is due Friday and I have an intro but no body paragraphs.\"",
+            "categoryId": "ca-desc"
+          },
+          {
+            "id": "ca-i2",
+            "content": "\"I am worried because I do not know what a body paragraph is supposed to have.\"",
+            "categoryId": "ca-exp"
+          },
+          {
+            "id": "ca-i3",
+            "content": "\"Could you show me one strong body paragraph from a past student?\"",
+            "categoryId": "ca-ask"
+          },
+          {
+            "id": "ca-i4",
+            "content": "\"If I see one, I can write mine tonight instead of turning in just the intro.\"",
+            "categoryId": "ca-rein"
+          },
+          {
+            "id": "ca-i5",
+            "content": "\"In the lab, my group did the measuring and I did not get to try.\"",
+            "categoryId": "ca-desc"
+          },
+          {
+            "id": "ca-i6",
+            "content": "\"Could I do the measuring on the next trial?\"",
+            "categoryId": "ca-ask"
+          },
+          {
+            "id": "ca-i7",
+            "content": "\"It bugs me because I want to be able to do it on the test.\"",
+            "categoryId": "ca-exp"
+          },
+          {
+            "id": "ca-i8",
+            "content": "\"Then the group will have two people who can measure, not one.\"",
+            "categoryId": "ca-rein"
+          },
+          {
+            "id": "ca-i9",
+            "content": "\"Could I have until Monday for the last two problems?\"",
+            "categoryId": "ca-ask"
+          },
+          {
+            "id": "ca-i10",
+            "content": "\"I missed Tuesday and the notes for section two are the ones I do not have.\"",
+            "categoryId": "ca-desc"
+          }
+        ]
+      },
+      "meta": "4 categories • 10 cards"
+    },
+    {
+      "id": "ca-quiz",
+      "type": "quiz",
+      "title": "Is That a Clear Ask?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Why does the reading say asking questions is part of perseverance?",
+            "options": [
+              "Because asking is how persevering actually works",
+              "Because teachers give perseverance points for questions",
+              "Because asking means you do not have to keep trying",
+              "Because pushing through alone is against the rules"
+            ],
+            "correctAnswer": "Because asking is how persevering actually works",
+            "conceptLabel": "asking is persevering"
+          },
+          {
+            "type": "mcq",
+            "question": "What are the four moves of a clear ask, in order?",
+            "options": [
+              "Ask, describe, reinforce, express",
+              "Describe, express, ask, reinforce",
+              "Express, ask, describe, reinforce",
+              "Describe, ask, express, reinforce"
+            ],
+            "correctAnswer": "Describe, express, ask, reinforce",
+            "conceptLabel": "four moves order"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the problem with \"I don't get it,\" according to the reading?",
+            "options": [
+              "It is dishonest, because the student usually gets some of it",
+              "It is rude to the teacher and sounds like blaming",
+              "It gives the teacher nothing to work with, so they have to guess",
+              "It takes too long to say in the middle of class"
+            ],
+            "correctAnswer": "It gives the teacher nothing to work with, so they have to guess",
+            "conceptLabel": "specific beats vague"
+          },
+          {
+            "type": "mcq",
+            "question": "In Tomas's ask, which sentence was the ASK move?",
+            "options": [
+              "\"I got most of those wrong.\"",
+              "\"I am getting frustrated because I understand the math once it is set up.\"",
+              "\"If I can do that part, the rest will go faster.\"",
+              "\"Could you show me two examples of setting one up, and then watch me try one?\""
+            ],
+            "correctAnswer": "\"Could you show me two examples of setting one up, and then watch me try one?\"",
+            "conceptLabel": "identify the ask"
+          },
+          {
+            "type": "mcq",
+            "question": "Your first ask did not get you what you needed. Which option is NOT on the reading's list?",
+            "options": [
+              "Ask a different person",
+              "Ask in writing instead of out loud",
+              "Give up on that assignment for now",
+              "Ask for a time to come back"
+            ],
+            "correctAnswer": "Give up on that assignment for now",
+            "conceptLabel": "options after first ask"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Turn \"I don't get fractions\" into an ASK move: one small, specific thing a teacher could do in five minutes.",
+            "expectedAnswer": "A specific request, for example: Could you show me one example of finding a common denominator and then watch me try one?",
+            "conceptLabel": "specific beats vague"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What stops you from asking in the class where you are most stuck? Which of the four moves is hardest for you?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "ca-frames",
+      "type": "sentence-frames",
+      "title": "My Ask in Four Lines",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "Describe: In ____, the last ____ had ____, and I ____."
+          },
+          {
+            "text": "Express: I am ____ because ____."
+          },
+          {
+            "text": "Ask: Could you ____?"
+          },
+          {
+            "text": "Reinforce: If ____, then I can ____, and ____."
+          },
+          {
+            "text": "If that does not work, my next option is ____."
+          },
+          {
+            "text": "Asking this is persevering because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Describe | Blames or is vague | States a fact | States the fact of what happened with no blame |\n| Ask | \"Help me\" | Names one thing | Names one small, specific thing the person can do now |\n| Reinforce | Missing | Says why it helps me | Says why it helps me and them |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "ca-faq",
+      "type": "faq",
+      "title": "Asking Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What if I do not know what I do not understand?",
+          "answer": "Describe that. \"I can follow the example in class but I cannot start the homework on my own\" is a fact, and it is a good one. The teacher can work with it."
+        },
+        {
+          "question": "Is it embarrassing to ask in front of the class?",
+          "answer": "Sometimes. So ask after class, or in writing, or in Crew. The four moves work the same in an email as out loud."
+        },
+        {
+          "question": "What if the teacher says no?",
+          "answer": "Then you have options: a different way, a different person, a different time. A no to one ask is not a no to you."
+        },
+        {
+          "question": "Do I have to do all four moves every time?",
+          "answer": "No. For a quick question, describe and ask are enough. Use all four when it matters or when a quick ask did not work."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Perseverance HOWL says you advocate for your learning by asking questions. A clear ask in a class where you were stuck is the exact thing that sentence describes."
+        }
+      ],
+      "meta": "5 questions"
+    },
+    {
+      "id": "ca-memory",
+      "type": "memory-aid",
+      "title": "Remember Describe, Express, Ask, Reinforce",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Describe, Express, Ask, Reinforce",
+        "instructions": "Each card locks in one idea from Asking for What You Need. Look at the example aid, make it your own, and tell how it helps you ask.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Describe: say the facts of the situation, without blame. Express: say how it is affecting you, in one sentence. Ask: say exactly what you want, small and specific. Reinforce: say why it helps, for you and for them. A specific ask is a gift to the person you are asking.",
+        "lessonRef": {
+          "resourceId": "ca-reading",
+          "title": "Asking for What You Need"
+        },
+        "cards": [
+          {
+            "id": "ca-ma-dear",
+            "target": "The four moves: describe, express, ask, reinforce",
+            "essentialFacts": [
+              "Describe: say the facts of the situation, without blame.",
+              "Express: say how it is affecting you, in one sentence.",
+              "Ask: say exactly what you want, small and specific.",
+              "Reinforce: say why it helps, for you and for them."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "D-E-A-R. Dear teacher: here is what happened (D), here is how it is landing on me (E), here is the one thing I need (A), here is why it helps us both (R). The word \"dear\" is how you would start the email anyway.",
+            "mapping": "Each letter of dear is the first letter of a move, in the order you say them, and the word itself sounds like the opening of a written ask.",
+            "scaffoldStarter": "D is for ____. E is for ____. A is for ____. R is for ____.",
+            "scaffoldSteps": [
+              "Write the four moves in order.",
+              "Take the first letters.",
+              "Say the word and one sentence for each letter."
+            ],
+            "coachPrompts": [
+              "Which letter do people most often skip? What happens when it is missing?"
+            ],
+            "studentPrompt": "Make your own four-letter hook for the four moves.",
+            "reasoningPrompt": "How does your hook keep the ask in order when you are nervous?",
+            "hookFact": {
+              "text": "That is a four-sentence ask. It took Tomas ninety seconds.",
+              "sourceTitle": "Asking for What You Need (this lesson)"
+            }
+          },
+          {
+            "id": "ca-ma-gift",
+            "target": "A specific ask is a gift to the person you are asking",
+            "essentialFacts": [
+              "A specific ask is a gift to the person you are asking.",
+              "That sentence is honest, but it gives the teacher nothing to work with."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A vague ask is handing someone a locked box. A specific ask is handing them the key. Same box, but only one of them lets the person actually help.",
+            "mapping": "The locked box stands for \"I don't get it\" (the teacher cannot open it); the key stands for the specific ask that tells them exactly what to do.",
+            "scaffoldStarter": "A vague ask is like ____. A specific ask is like ____.",
+            "scaffoldSteps": [
+              "Think of something useless without one more piece.",
+              "Make the vague ask the thing and the specific ask the missing piece.",
+              "Say why the pair fits."
+            ],
+            "coachPrompts": [
+              "Think of a time someone asked you for help vaguely. What did you need from them?"
+            ],
+            "studentPrompt": "Make your own pair for vague and specific.",
+            "reasoningPrompt": "How does your pair change how you ask next time?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • four moves, the gift"
+    },
+    {
+      "id": "ca-challenge",
+      "type": "applied-challenge",
+      "title": "Decide Challenge: Ask It This Week",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Ask It This Week",
+        "instructions": "Pick one class where you are stuck, build a four-move ask, decide when and how to deliver it, deliver it, and record what happened. If the first ask does not work, use one option from the list.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The HOWL behavior is advocating for learning through questions. The challenge is a real ask in a real class, decided and delivered by the student, which is the behavior itself rather than a description of it.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "Somewhere in your week there is a class where something is stuck: a kind of problem, a skill, a project step, a grade you do not understand. It has probably been stuck for a while.",
+          "role": "A student making a real ask",
+          "audience": "The teacher, aide, or classmate you decide to ask, and your Crew, who hears what happened",
+          "drivingQuestion": "What is the one specific ask that would unstick this, and when, how, and to whom should I make it?",
+          "seedDirection": "Write the four moves first. Then decide: out loud or in writing, during class or after, this teacher or someone else. Then do it before Thursday's Crew.",
+          "lockedLessonFacts": [
+            "Asking is not the opposite of persevering; it is how persevering works.",
+            "A clear ask has four moves: describe, express, ask, reinforce.",
+            "A specific ask is a gift to the person you are asking.",
+            "When the first ask does not work, the options are a different way, a different person, in writing, or a time to come back."
+          ],
+          "openQuestions": [
+            "Which class, and what exactly is stuck?",
+            "Out loud or in writing?",
+            "What is the smallest thing the person could do that would actually help?",
+            "What is my next option if this one gets a no?"
+          ],
+          "stakeholders": [
+            "You",
+            "The person you ask",
+            "Your Crew leader, who can rehearse it with you"
+          ],
+          "criteria": [
+            "The ask has all four moves and each is one sentence",
+            "The ASK move names one small, specific action",
+            "The delivery decision (when, how, to whom) is written down before delivering",
+            "The ask was actually delivered and the result recorded",
+            "Uses at least three glossary words correctly in the record"
+          ],
+          "constraints": [
+            "One ask, one class",
+            "Delivered before the next Crew",
+            "The record names what happened, not what you wish had happened",
+            "No blame in the describe move"
+          ],
+          "deliverable": "The four-line ask, the delivery decision, and a three-sentence record: what you did, what they said, what you will do next.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student was stuck on lab reports.",
+            "move": "He wrote the four moves, decided to email because speaking after class felt too rushed, and asked for one example of a strong conclusion section. The teacher sent one that night. His record said: \"I asked in writing. She sent an example. Next I will write mine before Friday and ask her to check one paragraph.\"",
+            "whyItHelps": "It shows the delivery decision doing real work: the same ask that was too hard out loud was easy in writing."
+          },
+          "frameStarter": "My ask is for ____ class. The stuck thing is ____. I will ask ____ by ____.",
+          "frameChoices": [
+            "What happened: ____.",
+            "They said: ____.",
+            "My next move is ____."
+          ],
+          "coachPrompts": [
+            "If you got a no, which of the four options would you try first?",
+            "What would make this ask easier to deliver: a different time, a different form, or a partner rehearsal?"
+          ]
+        },
+        "coachHint": "The most common failure is an ASK move that is still vague (\"help me with fractions\"). Push for the one thing the person could do in five minutes.",
+        "sourceExcerpt": "Advocating also means knowing your options when the first ask does not work. Ask a different way. Ask a different person. Ask in writing if speaking is hard. Ask for a time to come back. None of these is giving up. Giving up is the only move that is not on the list.",
+        "lessonRef": {
+          "resourceId": "ca-reading",
+          "title": "Asking for What You Need"
+        }
+      },
+      "meta": "6th-8th Grade • Decide brief • one real ask"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_ask",
+      "name": "Crew station: Week 5: Asking for What You Need",
+      "tools": [
+        "dearMan",
+        "selfAdvocacy"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 5: Asking for What You Need pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_ask_time",
+          "type": "timeSpent",
+          "toolId": "dearMan",
+          "label": "Spend 5 minutes in DEAR MAN",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_ask_check",
+          "type": "manualComplete",
+          "toolId": "selfAdvocacy",
+          "label": "I made one specific four-move ask in a class this week and I can say what happened next",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

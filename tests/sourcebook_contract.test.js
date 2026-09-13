@@ -2446,7 +2446,7 @@ describe('Sourcebook initial feature contract', () => {
     ['searchRijks', 'rijksSearchTerms', 'normalizeRijksRights', 'normalizeRijksRecord', 'rijksIdentityFromAsset', 'fetchRijksAssets']
       .forEach((name) => expect(typeof window.SourcebookProviders[name]).toBe('function'));
     expect(pluginSource).toContain('data-sourcebook-more-from-provider');
-    expect(pluginSource).toContain("'More from ' + providerPresentation(item.provider).name");
+    expect(pluginSource).toContain("'More from {provider}', { provider: providerPresentation(item.provider).name }");
     expect(pluginSource).toContain("var focusedQuery = buildSimilarSearch(item) || String(item.title || '').trim() || String(query || '').trim();");
     expect(pluginSource).toContain("'Searching only {provider}', { provider: item.provider }");
     expect(window.SourcebookProviders.providerPresentation('National Gallery of Art Open Access')).toEqual({
@@ -4841,7 +4841,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain('function createLatestPaletteUndoSnapshot');
     expect(pluginSource).toContain("'data-sourcebook-role-action': roleAction.mode");
     expect(pluginSource).toContain("'data-sourcebook-role-action-detail': roleAction.mode");
-    expect(pluginSource).toContain("'Find & replace ' + roleFillCount");
+    expect(pluginSource).toContain("'Find & replace {count}', { count: roleFillCount }");
     expect(pluginSource).toContain('paletteUndo: undoSnapshot');
     expect(pluginSource).toContain('currentAction = planPaletteRoleGapAction');
     expect(pluginSource).toContain("'data-sourcebook-role-balance-behavior'");
@@ -4875,8 +4875,8 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).not.toContain("'? ' + item.rightsShort");
     expect(pluginSource).not.toContain("saved ? '? Saved'");
     expect(pluginSource).toContain('Sourcebook’s curated shelf.');
-    expect(pluginSource).toContain("'✓ ' + item.rightsShort");
-    expect(pluginSource).toContain("saved ? '✓ Saved'");
+    expect(pluginSource).toContain("'✓ {rights}', { rights: rightsShortLabel(item) }");
+    expect(pluginSource).toContain("saved ? __alloT('stem.sourcebook.card_saved_check', '✓ Saved')");
     expect(pluginSource).toContain("'Output preflight'");
     expect(pluginSource).toContain("'data-sourcebook-output-preflight': outputPreflightSummary.ready ? 'ready' : 'review'");
     expect(pluginSource).toContain("'data-sourcebook-preflight-rights': outputPreflightSummary.rightsVerified");
@@ -4889,7 +4889,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'data-sourcebook-preflight-queue': outputReviewRows.length");
     expect(pluginSource).toContain("'data-sourcebook-preflight-row': row.id");
     expect(pluginSource).toContain("'Copy preflight report'");
-    expect(pluginSource).toContain("'Asset review queue · '");
+    expect(pluginSource).toContain("'Asset review queue · {count} need action'");
     expect(pluginSource).toContain("'Review next check'");
     expect(pluginSource).toContain('printPreflightSummary');
     expect(pluginSource).toContain("'Import .json'");
@@ -4897,12 +4897,12 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("rawSavedSmkKeys.length && savedSmkVerificationStatus !== 'ready'");
     expect(pluginSource).toContain("paletteImportBusy || savedSmkVerificationStatus === 'loading'");
     expect(pluginSource).toContain('++savedSmkRequestRef.current');
-    expect(pluginSource).toContain("'Find & save ' + paletteTarget");
+    expect(pluginSource).toContain("'Find & save {count}', { count: paletteTarget }");
     expect(pluginSource).toContain("'Search verified visuals'");
     expect(pluginSource).toContain("'Save picks to palette'");
     expect(pluginSource).toContain("'Find more verified assets'");
     expect(pluginSource).toContain("'Re-curate matches'");
-    expect(pluginSource).toContain("'Save recommendations ('");
+    expect(pluginSource).toContain("'Save recommendations ({count})'");
     expect(pluginSource).toContain("'Clear palette'");
     expect(pluginSource).toContain("'Undo palette change'");
     expectAriaLabelSource(pluginSource, 'Prepare every palette asset');
@@ -4913,7 +4913,7 @@ describe('Sourcebook initial feature contract', () => {
     expectAriaLabelSource(pluginSource, 'Manage Sourcebook palette selection');
     expect(pluginSource).toContain("'Filter this palette'");
     expect(pluginSource).toContain("'Clear palette filter'");
-    expect(pluginSource).toContain("'Select shown ('");
+    expect(pluginSource).toContain("'Select shown ({count})'");
     expect(pluginSource).toContain("'Clear selection'");
     expect(pluginSource).toContain("'stem.sourcebook.remove_selected_count'");
     expect(pluginSource).toContain("'Select {title} for palette actions', { title: item.title }");
@@ -4947,8 +4947,8 @@ describe('Sourcebook initial feature contract', () => {
     expectAriaLabelSource(pluginSource, 'Saved Sourcebook palette tray');
     expect(pluginSource).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(pluginSource).toContain("boardView === 'gallery'");
-    expect(pluginSource).toContain("'Replace palette'");
-    expect(pluginSource).toContain("'Use as palette'");
+    expect(pluginSource).toContain("'Replace palette ({count})'");
+    expect(pluginSource).toContain("'Use as palette ({count})'");
     expect(pluginSource).toContain('changePaletteTarget');
     expect(pluginSource).toContain("'Visual AI review'");
     expect(pluginSource).toContain("'Visual AI unavailable · metadata ranking active'");
@@ -4992,7 +4992,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain('normalizeRijksRights(record.edmRights)');
     expect(pluginSource).toContain("'[public_domain:true],[has_image:true]'");
     expect(pluginSource).toContain("'qfields=titles,content_subject,tags,techniques,materials,medium'");
-    expect(pluginSource).toContain("LIVE_PROVIDER_NAMES.length + ' collections'");
+    expect(pluginSource).toContain("__alloTn('stem.sourcebook.collections_count', LIVE_PROVIDER_NAMES.length, '{count} collection', '{count} collections')");
     expect(pluginSource).toContain('COMMONS_PROVIDER_PROFILES');
     expect(pluginSource).toContain('lg:overflow-y-auto');
     expect(pluginSource).toContain("tabIndex: 0");
@@ -5487,6 +5487,176 @@ describe('Sourcebook initial feature contract', () => {
       browserWindow.StemLab = previousStemLab;
       browserWindow.SourcebookProviders = previousProviders;
       browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('restores a saved board in batched Commons queries, keeps every record that still verifies, and reports the rest', async () => {
+    function commonsRecord(index) {
+      const file = `Restore_probe_${index}.jpg`;
+      return {
+        id: `commons-live-${5000 + index}`, provider: 'Wikimedia Commons', title: `Restore probe ${index}`, kind: 'Archival',
+        creator: 'Probe creator', year: String(1850 + index), description: `Restore probe record ${index}.`,
+        imageUrl: `https://upload.wikimedia.org/thumb/${file}/900px.jpg`, downloadUrl: `https://upload.wikimedia.org/${file}`,
+        sourceUrl: `https://commons.wikimedia.org/wiki/File:${file}`, license: 'Public Domain Mark',
+        licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/', rightsType: 'pd', rightsShort: 'Public domain',
+        rightsNote: 'Wikimedia Commons reports this file as Public Domain Mark.', rightsMetadataSource: 'Wikimedia Commons imageinfo extmetadata',
+        live: true, tags: ['probe'], accent: ['#dce8e2', '#466b60']
+      };
+    }
+    function commonsPage(index) {
+      const file = `Restore_probe_${index}.jpg`;
+      return {
+        pageid: 5000 + index, title: `File:Restore probe ${index}.jpg`,
+        imageinfo: [{
+          mediatype: 'BITMAP', width: 3000, height: 2000, url: `https://upload.wikimedia.org/${file}`,
+          thumburl: `https://upload.wikimedia.org/thumb/${file}/900px.jpg`, descriptionurl: `https://commons.wikimedia.org/wiki/File:${file}`,
+          extmetadata: {
+            LicenseShortName: { value: 'Public Domain Mark' }, LicenseUrl: { value: 'https://creativecommons.org/publicdomain/mark/1.0/' },
+            Artist: { value: 'Probe creator' }, DateTimeOriginal: { value: String(1850 + index) }
+          }
+        }]
+      };
+    }
+    function load(missingIndex, failWhole) {
+      const requests = [];
+      const window = loadSourcebook(async (url) => {
+        const parsed = new URL(String(url));
+        const titles = String(parsed.searchParams.get('titles') || '').split('|');
+        requests.push(titles);
+        if (failWhole) return { ok: false, status: 503, headers: { get: () => '' } };
+        const pages = titles.map((title) => {
+          const index = Number((/Restore probe (\d+)\.jpg$/.exec(title) || [])[1]);
+          return index === missingIndex ? { title, missing: true } : commonsPage(index);
+        });
+        return { ok: true, json: async () => ({ query: { pages } }) };
+      });
+      return { window, requests };
+    }
+    const now = Date.UTC(2026, 8, 13, 12, 0, 0);
+    const items = Array.from({ length: 60 }, (_, index) => commonsRecord(index));
+
+    const healthy = load(-1, false);
+    const session = healthy.window.SourcebookProviders.buildLiveSession(items, { query: 'restore probe', kind: 'All', provider: 'All', rightsScope: 'pd' }, now);
+    expect(session.results).toHaveLength(60);
+    const restored = await healthy.window.SourcebookProviders.revalidateLiveSession(session, { nowValue: now + 1000 });
+    // Sixty records travel as one query of fifty titles plus one of ten, not sixty serial requests.
+    expect(healthy.requests.map((titles) => titles.length)).toEqual([50, 10]);
+    expect(healthy.requests[0][0]).toBe('File:Restore probe 0.jpg');
+    expect(restored.results).toHaveLength(60);
+    expect(restored.dropped).toEqual([]);
+    expect(restored.results.every((item) => item.live === true)).toBe(true);
+    // A restored record is still an external record: it must persist in a live session and be savable.
+    const persisted = healthy.window.SourcebookProviders.buildLiveSession(restored.results, { query: restored.query, kind: restored.kind, provider: restored.provider, rightsScope: restored.rightsScope }, now);
+    expect(persisted.results).toHaveLength(60);
+
+    const oneRenamed = load(37, false);
+    const partial = await oneRenamed.window.SourcebookProviders.revalidateLiveSession(session, { nowValue: now + 1000 });
+    expect(oneRenamed.requests.map((titles) => titles.length)).toEqual([50, 10]);
+    expect(partial.results).toHaveLength(59);
+    expect(partial.results.some((item) => item.id === 'commons-live-5037')).toBe(false);
+    expect(partial.dropped).toEqual([{ id: 'commons-live-5037', title: 'Restore probe 37', reason: expect.stringContaining('changed its image identity or reuse rights') }]);
+
+    const unreachable = load(-1, true);
+    await expect(unreachable.window.SourcebookProviders.revalidateLiveSession(session, { nowValue: now + 1000 })).rejects.toThrow('could not be verified');
+
+    // Palette imports stay atomic: one unverifiable record still rejects the whole file.
+    const palette = oneRenamed.window.SourcebookProviders.buildPalette(items.slice(35, 40).map((item) => item.id), {}, 'Restore probe palette', items.slice(35, 40));
+    await expect(oneRenamed.window.SourcebookProviders.revalidatePalette(palette)).rejects.toThrow('changed its image identity or reuse rights');
+
+    // Reopening a saved palette verifies every record in one batched pass and reports the stale one by id,
+    // instead of an atomic attempt followed by one request per record.
+    const savedAssets = {};
+    items.slice(35, 40).forEach((item) => { savedAssets[item.id] = item; });
+    oneRenamed.requests.length = 0;
+    const recovered = await oneRenamed.window.SourcebookProviders.recoverSavedAssets(savedAssets, {});
+    expect(oneRenamed.requests.map((titles) => titles.length)).toEqual([5]);
+    expect(Object.keys(recovered.assets).sort()).toEqual(['commons-live-5035', 'commons-live-5036', 'commons-live-5038', 'commons-live-5039']);
+    expect(recovered.idMap).toEqual({ 'commons-live-5035': 'commons-live-5035', 'commons-live-5036': 'commons-live-5036', 'commons-live-5038': 'commons-live-5038', 'commons-live-5039': 'commons-live-5039' });
+    expect(recovered.errors).toEqual({ 'commons-live-5037': expect.stringContaining('changed its image identity or reuse rights') });
+  });
+
+  it('copies credit lines through the host clipboard bridge and falls back to execCommand when the Clipboard API is refused', async () => {
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousCopy = browserWindow.alloCopyText;
+    const previousExec = document.execCommand;
+    const previousClipboard = Object.getOwnPropertyDescriptor(browserWindow.navigator, 'clipboard');
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    async function mountAndCopy(setup) {
+      const toasts = [];
+      const patches = [];
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController, document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL, window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      const builtIn = Array.from(browserWindow.SourcebookProviders.materials)[0];
+      const ctx = {
+        React: ReactLib, toolData: { sourcebook: { collection: [builtIn.id], activeId: builtIn.id } },
+        updateMulti(key, next) { patches.push(next); }, update() {}, announceToSR() {}, addToast(message, type) { toasts.push({ message, type }); }
+      };
+      setup(browserWindow.SourcebookProviders.buildAttribution(builtIn));
+      function Harness() { return tool.render(ctx); }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      const button = Array.from(host.querySelectorAll('button')).find((node) => node.textContent.trim() === 'Copy credit');
+      expect(button).toBeTruthy();
+      await ReactLib.act(async () => { button.click(); });
+      await ReactLib.act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+      await ReactLib.act(async () => { reactRoot.unmount(); });
+      reactRoot = null;
+      return { toasts, patches };
+    }
+    try {
+      // 1. The shell bridge is preferred whenever it is present.
+      const bridged = [];
+      const viaBridge = await mountAndCopy((credit) => {
+        browserWindow.alloCopyText = async (text) => { bridged.push(text); return true; };
+        Object.defineProperty(browserWindow.navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('should not be called'); } } });
+      });
+      expect(bridged).toHaveLength(1);
+      expect(bridged[0]).toContain('Wikimedia Commons');
+      expect(viaBridge.toasts[0]).toMatchObject({ message: 'Attribution copied.', type: 'success' });
+      expect(viaBridge.patches.some((next) => next.creditsCopied === 1)).toBe(true);
+
+      // 2. Without the bridge, a refused Clipboard API (the Gemini Canvas policy) falls through to execCommand.
+      let execCalls = 0;
+      const viaLegacy = await mountAndCopy(() => {
+        delete browserWindow.alloCopyText;
+        Object.defineProperty(browserWindow.navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('NotAllowedError'); } } });
+        document.execCommand = () => { execCalls += 1; return true; };
+      });
+      expect(execCalls).toBe(1);
+      expect(viaLegacy.toasts[0]).toMatchObject({ message: 'Attribution copied.', type: 'success' });
+      expect(viaLegacy.patches.some((next) => next.creditsCopied === 1)).toBe(true);
+
+      // 3. Only when every strategy fails does the student hear that the copy did not happen.
+      const failed = await mountAndCopy(() => {
+        delete browserWindow.alloCopyText;
+        Object.defineProperty(browserWindow.navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('NotAllowedError'); } } });
+        document.execCommand = () => false;
+      });
+      expect(failed.toasts[0].type).not.toBe('success');
+      expect(failed.patches.some((next) => next.creditsCopied === 1)).toBe(false);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.StemLab = previousStemLab;
+      if (previousCopy === undefined) delete browserWindow.alloCopyText; else browserWindow.alloCopyText = previousCopy;
+      document.execCommand = previousExec;
+      if (previousClipboard) Object.defineProperty(browserWindow.navigator, 'clipboard', previousClipboard);
+      else delete browserWindow.navigator.clipboard;
       globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
     }
   });

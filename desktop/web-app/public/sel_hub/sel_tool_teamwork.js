@@ -707,29 +707,7 @@ window.SelHub = window.SelHub || {
 };
 
   // Original questionnaire definitions retained for earlier project records.
-  var COMM_STYLES = {
-    director: { name: 'Director', icon: '\uD83C\uDFAF', color: '#ef4444',
-      desc: 'Task-focused and decisive. You like to get things done efficiently and lead by example.',
-      strengths: ['Makes quick decisions', 'Keeps the team on track', 'Results-oriented', 'Confident under pressure'],
-      blindSpots: ['May overlook others\u2019 feelings', 'Can seem impatient or controlling', 'Might skip important discussion for speed'],
-      workWith: 'Give Directors clear goals and deadlines. Let them take the lead on logistics. Don\u2019t take their directness personally \u2014 they mean well.' },
-    collaborator: { name: 'Collaborator', icon: '\uD83E\uDD1D', color: '#22c55e',
-      desc: 'Consensus-seeking and inclusive. You want everyone\u2019s voice heard before making decisions.',
-      strengths: ['Builds team unity', 'Values every perspective', 'Creates psychological safety', 'Strong relationship builder'],
-      blindSpots: ['Decisions may take too long', 'Can struggle with conflict or tough calls', 'Might avoid necessary confrontation'],
-      workWith: 'Give Collaborators time for discussion. Acknowledge their efforts to include everyone. Help them set decision deadlines so progress keeps moving.' },
-    analyzer: { name: 'Analyzer', icon: '\uD83D\uDD0D', color: '#3b82f6',
-      desc: 'Data-driven and careful. You like to research thoroughly before committing to a plan.',
-      strengths: ['Thorough and accurate', 'Catches mistakes early', 'Evidence-based thinking', 'Reduces risk'],
-      blindSpots: ['Can cause analysis paralysis', 'May seem overly cautious', 'Might frustrate action-oriented teammates'],
-      workWith: 'Give Analyzers data and time to review. Ask for their input on quality checks. Help them recognize when \u201Cgood enough\u201D is sufficient.' },
-    supporter: { name: 'Supporter', icon: '\uD83D\uDC9A', color: '#f59e0b',
-      desc: 'Harmony-focused and encouraging. You keep morale high and make sure nobody feels left out.',
-      strengths: ['Excellent listener', 'Boosts team morale', 'Mediates disagreements', 'Creates a positive environment'],
-      blindSpots: ['May avoid sharing own opinions', 'Can take on too much to keep peace', 'Might suppress important disagreements'],
-      workWith: 'Ask Supporters directly for their opinion \u2014 they may not volunteer it. Appreciate their emotional labor. Help them set boundaries.' }
-  };
-
+  
   var COMM_STYLE_QUESTIONS = [
     { q: 'In a group meeting, I usually...', options: [
       { text: 'Jump in with a plan and assign tasks', style: 'director' },

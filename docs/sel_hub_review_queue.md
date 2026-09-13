@@ -1273,3 +1273,435 @@ graded; `check_sel_dead_content` clean against its new baseline. All changed
 ★ An intermediate run reported 3 failed files with 300 skipped; every one passed
 alone. That is the third time contention has faked a failure in this hub — **never
 diagnose from a contended run.**
+
+
+## 19. 2026-09-13 — the Crew path: dead weight removed, tool links, AI-off sweep, King's three HOWLs  (local, unpushed)
+
+Context: King Middle School's PBIS coordinator asked for monthly PD so teachers can deliver SEL
+lessons through AlloFlow. Six Crew Launch packs (`allopacks/crew_*`) now link thirteen Hub tools.
+PPS students have no Gemini, so every one of those tools has to work on the browser shell with
+`callGemini === null`. This pass is scoped to that path plus the two content decisions that had
+been waiting since §17f and §18d. Nothing in `AlloFlowANTI.txt` changed (another session was
+extracting modules from it at the time).
+
+### 19a. FIXED — §17f / §18d: 5.05 MB of unreachable content removed from 11 tools; the August ratchet now holds at 1
+
+The August 25 gate (`dev-tools/check_sel_dead_content.cjs`, acorn AST, baseline in
+`dev-tools/sel_dead_content_baseline.json`, runner `tests/sel_dead_content_ratchet.test.js`) measured
+the debt: 652 declarations, 5.04 MB, 11 tools. A scratch remover (babel AST; only literal
+initializers; greatest fixpoint of "every reference lies inside another dead declaration", which
+closes the `X_NARRATIVES_1..75` gathered-by-an-unread-`ALL_X` chains and `howl`'s duplicate
+`var EL_CORE_PRACTICES`; then one ripgrep over every other source file for each name, strings
+included) found the same 652 and removed them. The gate was re-run afterward: 1 never-read
+declaration remains (2,007 bytes, under the remover's 2,048 floor and over the gate's 2,000), and
+the baseline was refreshed from 652 to that 1, so the ratchet keeps policing and the runner's
+"records the debt it holds" check still has something to hold. Honest note: my scratch remover was
+briefly copied over the tracked gate; it was restored from git before anything else ran.
+
+| tool | before | after |
+|---|---|---|
+| zones | 2,111,699 | 1,567,140 |
+| howl | 1,752,176 | 1,124,968 |
+| mindfulness | 1,652,944 | 1,348,204 |
+| advocacy | 1,474,039 | 863,019 |
+| upstander | 988,247 | 366,993 |
+| digitalwellbeing | 754,809 | 245,097 |
+| anxietytoolkit | 620,656 | 87,971 |
+| griefloss | 583,304 | 55,432 |
+| stressbucket | 571,857 | 68,838 |
+| bigfeelings | 528,885 | 59,668 |
+| emotions | 1,565,479 | 1,537,365 |
+
+`sel_hub/` went from 21.2 MB to 16.0 MB. Every file passes `node --check`; `check_sel_a11y.cjs`
+audits all 72 tools with 0 errors; the mount suites pass; and
+`tests/sel_modified_tools_click_sweep.test.js` mounts each of the 12 changed tools through the real
+`renderTool` and click-sweeps it twice (no AI provider, stub AI provider) with no crash, no React
+error, and no "undefined" rendered where a library used to be.
+
+**Was it redundant?** Unreachable, yes: nothing in the repo read a byte of it, including through
+string lookups. Duplicate, no: zero removed declarations overlap live text. And not all of it is
+filler. The August read stands for the four narrative tools (anxietytoolkit, bigfeelings,
+stressbucket, griefloss: 337 libraries, telegraphic). The rest (howl, zones, mindfulness, advocacy,
+upstander, digitalwellbeing) includes real authored material that never got a view: howl
+`COACHING_MOVES` (150 coaching lines), `CONFERENCE_SCRIPTS`, `REPAIR_SCRIPTS`, `MICRO_ACTIONS`,
+`EL_CORE_PRACTICES`, `EL_RESEARCH`; zones `CULTURAL_ZONE_ADAPTATIONS`, `ZONE_VALIDATION_PHRASES`,
+`ZONE_COREGULATION`, `ZONE_BODY_SENSATIONS`; mindfulness `TRAUMA_ADAPTATIONS`, `AWE_PRACTICES`,
+`GRATITUDE_PROMPT_BANK`, `VISUAL_ANCHORS`; advocacy `SCAFFOLDED_PRACTICE_LIBRARY`,
+`FAMILY_CONVERSATION_PREP`, script libraries; upstander `POWER_UP_CARDS`, `ALLY_SCRIPTS`,
+first-person narratives; digitalwellbeing `FRIENDSHIP_AUDIT_QUESTIONS`. Every removed declaration
+is archived verbatim, with its line, size, item count and sample, in
+`docs/sel_hub_unwired_content/sel_tool_<tool>.removed.json` (12 files) and summarised in
+`docs/sel_hub_removed_content_audit_2026-09-13.md`. That archive is the content backlog for
+enhancing these tools: wire it into a view (and it leaves the archive), or leave it.
+
+### 19b. FIXED — a pack can open a Hub tool
+
+`[Emotion Zones](#sel-hub/zones)` in any rendered markdown opens the hub at that tool. The hub
+module (boot-loaded for every role) owns one capture-phase document click listener and
+`window.SelHub.toolLinks`; the always-mounted history panel lends the open setter through
+`window.__alloSelHubOpener`; the hub consumes `window.__alloSelHubPendingTool` on mount, on a
+link fired while open, and as plugins register (unknown id → error toast after 20 s). Spec:
+`docs/ALLOPACK_FORMAT_SPEC.md`. Guard: `tests/sel_hub_tool_links.test.js` (70 tests, real clicks
+and real mounts, every `#sel-hub/` link in every pack checked against registered ids).
+
+### 19c. Measured and clean — the thirteen linked tools with no AI provider
+
+`tests/sel_crew_path_ai_off.test.js` reads the tool ids out of the packs, mounts each through the
+real `renderTool` with `callGemini: null`, clicks every button, tab and role=button it finds
+(capped at 160 per tool across four passes), and asserts no uncaught error, no React render error,
+and no error toast that blames AI on a control that did not name AI. All thirteen pass. The
+static count agrees: every `callGemini(` call in those files sits behind a guard.
+
+### 19d. FIXED — HOWL Tracker can rate Respect, Responsibility, Perseverance
+
+The tool shipped only EL Education's four habits. King grades three, 1-4 per course per trimester.
+`RRP_HOWLS` adds the three with the grading guide's "I" statements and behaviors, a 1-4 rubric,
+strands, research, misconception, goal examples and Crew prompts; `HOWL_PRESETS` and a picker on
+the Home view switch sets (past check-ins are kept, keyed by the ids they were saved under). Each
+preset habit carries `elBase`, and the evidence, exemplar and reflection-prompt filters accept the
+borrowed EL bank through `howlContentIds`, so those views stay populated. The ten secondary views
+that read `DEFAULT_HOWLS` directly now read the active set. Guard: `tests/sel_howl_preset.test.js`
+(real mount, real change event, statements rendered).
+
+### 19e. FIXED — §17g: nine cards no longer claim elementary eligibility
+
+`recommendedRange` raised on the nine tools whose prose measures at a secondary level:
+sensoryRegulation 3-12 → 6-12; genogram and landPlace 5-12 → 8-12; stressBucket, bigFeelings,
+careerCompass, viaStrengths, windowOfTolerance, behavioralActivation 5-12 → 6-12. No band branch
+was added; that remains the better fix if an elementary school wants them.
+
+### 19f. Outside the hub, on the same path
+
+The browser shell referenced `/vendor/drag-drop-touch-2.0.3.esm.min.js` and Pages answered with
+the SPA fallback page (live since at least 2026-09-06), so touch drag was dead on phones and every
+Crew pack has a concept sort. The file (plus its license, `idb-keyval` and `lz-string`) now sits
+in root `vendor/`, which Pages serves. Guard: `tests/app_shell_vendor_assets.test.js` reads every
+`/vendor/` reference out of `app/index.html` and requires a real, non-HTML file at the root.
+Reaches users at the next deploy.
+
+### 19g. Verification
+
+Sixteen SEL suites, 196 tests, green in one run (`--pool=forks`); `check_sel_a11y.cjs` 0 errors
+across 72 tools; `check_deploy_mirror.cjs` reports only `launch.html`, which belongs to another
+session. Root and `desktop/web-app/public/sel_hub` are byte-identical for every changed file.
+Not verified: a browser walk of the thirteen tools on a real phone, and the hub reached through a
+pack link in the deployed shell (the packs are not published yet).
+
+### 19h. 2026-09-13 (night) — the archived content wired into views; stations audited; illustrations plumbed
+
+Aaron's questions after 19a: was the removed content truly unneeded, is the `#sel-hub/` link a second
+architecture beside SEL Stations, and can the tools be made easy to integrate into lessons. Answers
+and work, in order.
+
+**Stations vs links (audit).** SEL Stations are teacher-built bundles (`{id, name, tools[], quests[]}`
+with `xpThreshold | timeSpent | freeResponse | manualComplete` quests) saved by the hub's Station
+Builder to `localStorage['alloflow_sel_stations']` and to the project file as `selStations`; the
+loader (`misc_handlers` `handleLoadProject`) installs `rawData.selStations`, and the History panel
+lists them under **SEL Stations** beside STEM stations, opening the hub filtered to the station's
+tools with quest tracking. There is also an existing "teacher launch plan → Station Builder" path
+(`_applyTeacherLaunchPlan`). The link (`[Emotion Zones](#sel-hub/zones)`) is a different layer: an
+inline pointer from a sentence to one tool. Not a duplicate, but they had to meet. They now do:
+**every Crew Launch pack carries a `selStations` entry** (the tools its directions link, a 5-minute
+`timeSpent` quest on the first tool, the week's real-class commitment as a `manualComplete`
+self-check), its directions say where to find it, the format spec documents the field, and a
+Playwright check through the real loader shows `window.__alloflowSelStations` holding each pack's
+station after load. `tests/sel_hub_tool_links.test.js` now also validates every station a pack
+carries (registered tools, quest types, quest tools inside the station). The link stays for the
+sentence; the station holds the time and the self-check.
+
+**Wired back (FIXED).** From `docs/sel_hub_unwired_content/`, verbatim, only libraries that now have
+a view; the second regenerated copies in `howl` stay archived. Each panel is a `section` with an
+`h3`, disclosures (`details/summary`) for depth, buttons with names and `aria-pressed`, 36 to 44 px
+targets, theme-mapped colours, no motion, and it is appended at the view dispatch so no original
+view function changed.
+
+| tool | library | where it shows now |
+|---|---|---|
+| zones | `ZONE_BODY_SENSATIONS` (196) | Check-In: "What is your body telling you?" chips (6 per zone); tapping suggests a zone with a one-tap "Choose" |
+| zones | `ZONE_VALIDATION_PHRASES` (82) | Check-In after a zone is chosen: "Something true to hear right now", with why-it-helps and what to avoid saying, "Another one" |
+| zones | `ZONE_COREGULATION` (60) | Help a Friend, once a zone is predicted: "Real situations in the … Zone" with what to say, what not to say, when to get an adult, after-care |
+| zones | `CULTURAL_ZONE_ADAPTATIONS` (32) | Classroom: "For educators: Zones across communities", labelled as adult guidance and a starting point, not a label |
+| howl | `MICRO_ACTIONS` (200) | Goals: three suggestions per HOWL, "+ Add" writes into the goal's weekly micro-actions (an empty `var MICRO_ACTIONS = []` stub that shadowed the library was removed) |
+| howl | `COACHING_MOVES` (150) | Crew prompts: "For the Crew leader: coaching moves", filtered to the HOWL in focus, by category |
+| howl | `REPAIR_SCRIPTS` (30) | Protocols: "Repair conversations" with setup, steps, signs to pause, when not to |
+| howl | `CONFERENCE_SCRIPTS` (30) | SLC rehearsal: "Conference scripts" by type, with agenda phases and red flags |
+| howl | `EL_CORE_PRACTICES`, `CHARACTER_HABITS`, `EL_RESEARCH`, `EXPEDITION_CONNECTIONS` | Library: four sections under the per-HOWL deep dive, research entries show their caveat |
+| mindfulness | `TRAUMA_ADAPTATIONS` (25) | Breathe, Body Scan, Meditate, Trataka: "If this practice feels unsafe", matched to the practices on that tab, with early signs to stop and what to do if activated |
+| mindfulness | `SENSORY_ANCHORS` (85) + `VISUAL_ANCHORS` (15) | Grounding: "More anchors for your senses", filter by sense, eyes-open visual anchors |
+| mindfulness | `AWE_PRACTICES` (24) | Moments: "Awe practices" |
+| mindfulness | `GRATITUDE_PROMPT_BANK` (390) | Gratitude: "Give Me a Prompt" now draws from the band's prompts plus the bank |
+
+Sizes after wiring: zones 2.03 MB, howl 1.59 MB, mindfulness 1.65 MB (each below its pre-removal
+size; the bytes that came back are read by a view). The Aug 25 gate stays at its baseline of 1.
+
+**Emotion Explorer illustrations (plumbed, not yet drawn).** Every family and feeling still renders
+its emoji, now `aria-hidden` (the word is printed beside it, so a screen reader hears "proud", not
+"smiling face with smiling eyes proud"). If `sel_hub/media/emotions/manifest.json` lists an image
+for a feeling word or family id, the image renders instead, `alt=""` for the same reason; anything
+not listed keeps its emoji; no manifest, no change. The manifest ships empty; the shot list for 6
+families and 121 feelings, with the text-free art policy and prompts for Gemini or ChatGPT, is
+`docs/SEL_EMOTIONS_IMAGES.md`. The manifest URL resolves from the tool's own script URL, so it works
+from the CDN, the shell, and Canvas alike.
+
+**Verification.** `tests/sel_wired_content.test.js` (11 tests) mounts the four real tools and clicks
+through each panel: body cues → suggestion → choose → validation → "Another one"; coaching-move
+category filter; "+ Add" writing a `source: 'suggested'` micro-action; sense filter; manifest swap
+to an `<img>` with emoji fallback. `check_sel_a11y.cjs` 0 errors across 72 tools after wiring;
+click sweeps of the 12 changed tools with and without an AI provider pass; pack suites (633) pass
+with the stations; the offline real-loader QA passes all 99 files. Deploy mirrors updated for the
+four tools and the manifest.
+
+**Not done, deliberately.** Advocacy, Upstander and Digital Wellbeing content stays archived (not on
+the Crew path; the same pattern applies when wanted). `ZONE_SCHEDULES`, `INTEROCEPTION_EXERCISES`,
+`SOUNDSCAPE_RECIPES` and the four narrative-tool libraries stay archived. No monolith edit.
+
+### 19i. 2026-09-13 (later) — the remaining archived content wired: Advocacy, Upstander, Digital Wellbeing, Emotion journal templates
+
+Same pattern as 19h, driven by a shared generator (`_advW_*`, `_upW_*`, `_dwW_*` helpers: section +
+h3, disclosures, named buttons with `aria-pressed`, a random-card "deck" with "Another one", and a
+generic entry renderer that turns any library item into a labelled block). Panels are appended at
+each tool's dispatch, so no original view changed. Curated, not everything: curricula, lesson plans,
+workshop guides, resource directories with phone numbers, laws-by-state, film and book lists, and the
+terse adult-oriented `DEEP_NARRATIVES_VOLUME_*` stories stay archived.
+
+| tool | tab | what is there now |
+|---|---|---|
+| advocacy | My Kit | Power-up cards (rarity filter, "I used this" remembered), practice ladder (tiers with evidence), one practice prompt for today |
+| advocacy | Scenarios | First aid for hard moments (30 plans), triggers and what to do (category filter), longer situations step by step |
+| advocacy | Scripts | 30 more scripts, dialogues with key moves, ally scripts |
+| advocacy | Rights | Know your rights in Maine (MUSER etc.), federal laws in plain words, IEP words, trauma-informed advocacy; caveat: not legal advice, check the source |
+| advocacy | Vocabulary | Words that hurt and what to say instead (55), fuller glossary |
+| advocacy | Journal / Voice / Case studies / Letters | Prompt deck + browse; mentor quotes, movement quotes, affirmations; advocacy history with a dates caveat; talking with family; for families and educators |
+| advocacy | Strengths | Friendship audit: yes/no per question, live count, category filter |
+| upstander | Moves | Courage ladder (level filter), everyday moments, micro-practices, scripts by context |
+| upstander | Practice / Roles / Cycle | Situations with the low-risk move first; why people freeze (moments, barriers, bystander types, psychology); repair step by step |
+| upstander | Pledge / Reference | Voices and prompt deck; stories (composites, labelled so), history with caveat, questions people ask, for families and educators, trauma-informed responses |
+| digital | Toolkit / Cyberbullying / What's Real / AI Companions / Struggling / Reference | Habits and a daily prompt deck; situations and recovery stages; "How the apps work on you" (manipulation tactics, platform by platform, algorithm ideas, deepfakes); talking to an AI; mentor voices; stories, words, research with limits, for families and educators |
+| emotions | Journal | 20 guided journal templates: pick one, labelled fields, answers kept per template in tool data |
+
+Two tools are light-base (`_upC`, `_dwC` map light hexes to dark and high-contrast). The first pass
+used the shared helpers' dark-base hexes and produced 654 contrast warnings in Upstander (dark on
+dark). Fixed by translating to light-base hexes before mapping, choosing greys the tool's dark map
+knows (`#1f2937`, not `#1e293b`). `check_sel_a11y.cjs`: **0 errors, 0 warnings across 72 tools**
+after the fix. `tests/sel_wired_content_2.test.js` (9 tests) clicks through every panel with a live
+store: power-up used, rarity filter, friendship audit yes/no counts, courage level, prompt deck seed,
+journal template answer. Click sweeps of the 12 changed tools and the seven advocacy suites pass.
+Sizes: advocacy 1.21 MB, upstander 591 KB, digital 375 KB, emotions 1.57 MB. Dead-content ratchet at 1.
+
+
+### 19j. 2026-09-13 (evening) — a pack link now starts the pack's station, and a storage trap the real browser found
+
+**What was wrong.** After 19b a pack could open a Hub tool, and after 19h each Crew pack carried a
+station with a 5-minute step and the week's self-check. But the two were not joined: a student who
+clicked "Emotion Zones" in the directions got the tool alone, and the station (steps, teacher note,
+reflection) only appeared if someone found it under SEL Stations in the History panel and pressed
+"Start station". In a Crew slot that is the step nobody takes.
+
+**FIXED — `#sel-hub/<toolId>?station=<stationId>`.** The link convention accepts an explicit station
+id. `window.SelHub.toolLinks` gained `station(href)` and a two-argument `href(toolId, stationId)`;
+`open()` and the pending record carry `stationId`; `consumePending()` also hands back a station-only
+request (`#sel-hub?station=<id>` opens the grid with the station active). The hub consumes it next to
+the tool: it looks the id up in `savedStations` (refs, because the click listener is bound once per
+open and must see stations a project load added since), activates it, clears any pathway, announces
+"Started station …" and toasts it. Explicit ids only: nothing is inferred from tool membership,
+because stations from earlier packs stay on the device, and guessing would start the wrong week.
+A link to a station the project does not carry opens the tool and says so in an info toast.
+
+The six Crew packs were regenerated (two lines each: every tool link carries its pack's station,
+and the station's teacher note now says a tool link starts it). `docs/ALLOPACK_FORMAT_SPEC.md`
+documents the query.
+
+**FIXED — the hub could erase the stations a project had just loaded.** Found by the real-browser
+check below, not by jsdom. The hub's `savedStations` initializer read only localStorage; its persist
+effect then mirrored that state into `window.__alloflowSelStations` on mount. On a page whose
+localStorage throws (an opaque-origin page, or a browser policy that blocks site data), the loader's
+localStorage write was silently swallowed, the hub mounted with `[]`, and the persist effect wrote
+that `[]` over the slot misc_handlers had just filled. Every pack link then reported "not in this
+project", and the History panel would have shown no stations either. The initializer now reads
+localStorage first and falls back to the window slot when storage is empty or unavailable. This
+predates 19j; the link just made it visible.
+
+**Verification.**
+- `tests/sel_hub_tool_links.test.js` (was 70, now 80): the query parser and two-argument href; a
+  click records the station; station-only links; the mounted hub starts a station on mount, when a
+  link fires while open, and after a mid-session project load (restore event); a missing station id
+  opens the tool and toasts; storage blocked plus a filled window slot still starts the station and
+  the slot is not wiped; every `?station=` in a pack names a station that pack carries and the linked
+  tool belongs to it.
+- `scratch/station_link_check.cjs`: real Chromium, offline, the REAL loader (now in
+  `host_handlers_module.js`, see below), the real hub module and all 72 tools, a host-like wrapper
+  that lends the opener the way the history panel does, and a real pointer click on each pack's
+  first link. All six packs: tool opened, station guide rendered with the pack's station name and
+  first step, tool view rendered, `location.hash` unchanged, no popup, focus on the station guide,
+  zero page errors. Run twice: storage on, and storage blocked.
+- The ten hub-module suites: 268 passed. Dead-content ratchet at 1. Deploy mirror: only the two
+  drifts that belong to other sessions (`lang/spanish_latin_america.js`, `launch.html`).
+
+**Two things the check surfaced that are not mine to fix tonight.**
+- Playwright's `page.setContent()` pages have an opaque origin where `localStorage` throws. Any
+  scratch check that relies on storage must `page.route()` a real origin and `goto` it first;
+  `station_load_check.cjs` from 19h read `localStorage` through a try/catch and reported the slot,
+  so its "1 station in localStorage" line was the slot, not storage.
+- The CDN extraction moved `loadProjectFromJson` out of `AlloFlowANTI.txt` into
+  `host_handlers_module.js` (the ANTI line is now a one-line delegator through
+  `_alloHostHandlers()`). `dev-tools/qa_allopack_imports.cjs` still slices the function out of ANTI
+  and will throw `_alloHostHandlers is not defined` the next time it runs. Left for the extraction
+  session, which owns that boundary; the fix is the same five-line rebinding this check uses.
+
+### 19k. 2026-09-13 (night) — the station comes back on Thursday
+
+**What was wrong.** A Crew station's second step is a week-long commitment ("I did a silent
+one-word check-in at the start of a class this week"), and its first step (5 minutes in the tool)
+only accrues while the station is active. But `activeStationId` was plain React state in a
+component that exists only while the hub is open. Close the hub, or reload, and the station was
+gone: the student who came back on Thursday to mark the self-check had to find the station in the
+History panel and press "Start station" again, and time spent in the tool in between counted for
+nothing. Quest progress itself was persisted; the pointer to which station was live was not.
+
+**FIXED — the active station persists.** A module-level memo keeps the id for the page's lifetime
+(so a device with storage blocked still resumes across hub opens), and localStorage keeps it across
+a reload. The initializer validates the id against `savedStations`, and an effect drops it when its
+record disappears (deleted in the hub, or replaced by loading another project). "Exit station" clears
+both. A resumed station does not steal focus: the student opened the hub, not the station, so the
+focus-the-guide effect skips its first run on resume (`_stationResumedRef`).
+
+**FIXED — the guide says when it is done.** With every step recorded, a line under the count reads
+"All steps recorded. Saving the project keeps this record with the pack. You can exit the station,
+or reopen a step to change it." (`data-sel-station-complete`). Reopening a step removes it. The
+record travels in the project file: `phase_k_helpers_module.js` writes `selProgress` from
+`window.__alloflowSelProgress`, and misc_handlers restores it on load.
+
+**FIXED — quest progress had the same storage trap as 19j.** The `questProgress` initializer read
+only localStorage; with storage blocked, progress a project had just loaded into the window slot was
+mirrored over with `{}`. Same fallback as `savedStations`.
+
+**Packs.** The six Crew directions gained one sentence: "It stays active until you exit it, so come
+back later in the week to mark the self-check." One changed line per pack.
+
+**Verification.**
+- `tests/sel_station_resume.test.js` (7): resume after close, resume after a module reload with only
+  localStorage, exit ends it, a missing record does not resume and clears storage, storage blocked
+  resumes from the memo, the completion line appears at 2 of 2 and goes away when a step reopens,
+  and progress loaded into the window slot shows with storage blocked.
+- `scratch/station_link_check.cjs` now continues past the click: close the hub, reopen it, check the
+  station is still active and the completion line is absent, check the resumed guide does not hold
+  focus, press "Exit station", check storage is cleared. All six packs, storage on and blocked, zero
+  page errors.
+- Eleven hub-module suites: 275 passed. Ratchet at 1. Mirror drift only in other sessions' files
+  (`lang/spanish_latin_america.js`, `launch.html`, `stem_lab/stem_tool_evolab.js`).
+
+### 19l. 2026-09-13 (late) — HOWL Tracker: the sentence that explained all 80 exemplars; station steps as evidence; the timer you can see
+
+**Found by a duplication scan, not by reading.** A scan of every array-of-objects library in the
+seven tools touched this week (rows, distinct primary text, and string fields whose value is
+identical on every row) turned up a pattern in the HOWL Tracker's generated banks: fields that look
+per-item and are not.
+
+| library | rows | fields identical on every row |
+|---|---|---|
+| `MICRO_ACTIONS` | 200 (50 actions copied under all four HOWLs) | whyItMatters, evidenceOfCompletion, obstacles, research |
+| `COACHING_MOVES` | 150 | whyItWorks, whenToUse, whatToAvoid, research |
+| `HOWL_EXEMPLARS` | 80 | whyThisIsLevelN, growthEdge, ifThisWereYou, research |
+| `HOWL_MISCONCEPTIONS` | 41 | whatTheTruthIs, reframeForStudent, validatingFirst, research |
+| `CREW_OPENERS` / `CREW_CLOSERS` / `CELEBRATIONS` | 80 / 60 / 50 | setup, whatItDoes, bestFor, facilitatorTip, studentBenefit, inclusivity, research |
+| `REFLECTION_PROMPTS`, `PORTRAIT_OF_GRADUATE`, `HOWL_EVIDENCE` | 156 / 20 / 192 | whyThisQuestion, developmentTrajectory, teacherPrompt, research |
+
+Several of these were on screen. The Exemplars view put a "Why is this L3?" button under each of
+80 vignettes; every button opened the same three lines ("Sustained pattern, not single moment,
+defines the level." and two more). The Misconceptions "Reframe" showed one shared "truth" and one
+shared "validate first" for 41 different misconceptions. The micro-action suggestions I wired in
+19h carried "5 min · Consistent small action builds the habit." under every action, and because the
+bank listed each action under all four HOWLs, "Crew Membership" and "Active Engagement" offered the
+same list. A student who opens two of those reveals learns that the tool is bluffing.
+
+**FIXED — scrub at load, say it once.** `_howScrubConstants` runs before `registerTool`: for each of
+the ten libraries it removes string fields whose value is identical on every row and keeps the
+constants in `HOWL_LIB_NOTES`. Views that showed them now say the true sentence once where it is
+true: the Exemplars intro ("A level is a sustained pattern, not a single moment; as you read, ask
+which moment of your own you recognize"), the Misconceptions intro (validate first, then the shared
+reframe, and the promise of per-item "truth" and "reframe" is gone), the Rituals intro (pass option,
+model first, opt-out for celebrations), the coaching-moves blurb. The exemplar reveal button renders
+only when an item has something to reveal, so it no longer renders at all.
+
+**FIXED — MICRO_ACTIONS curated.** 200 rows became 50: each action sits under the HOWL(s) it
+serves (Crew actions under Crew Membership, revision and Pomodoro under Effective Effort, "notice
+one assumption you held" under Habits of Mind), with a reason a student can use ("Feedback read
+late is feedback lost."). King's three HOWLs reach them through `elBase`. The tool lost 64 KB.
+
+**FIXED — the weekly check-in offers the Crew station record as evidence.** Steps a student recorded
+in the last three weeks (from the hub's window mirrors; the tool never writes them) appear above the
+HOWL cards with one button per HOWL. A click appends the step and date to that HOWL's evidence box
+with a trailing dash, and the screen reader hears "Now say what it looked like." A recorded step is
+not a rating; the block says so. Time steps that only accrued minutes do not appear.
+
+**FIXED — the hub shows the minutes while the tool is open.** The station guide collapses its steps
+when a tool is open, which hid "2 / 5 active minutes". A one-line status under the step count now
+reads "⏱ 2 of 5 active minutes here. Counts while this tab is visible and you are using it." and
+flips to "✓ … Step recorded." Only for the time step that targets the open tool.
+
+**Verification.** `tests/sel_howl_content_honesty.test.js` (8): source shape of the curated bank and
+the scrub; through the REAL `renderTool` with the host's updater arity (`update(toolId, key, val)`,
+`updateMulti(toolId, patch)`): Goals shows reasons and different lists per HOWL and no boilerplate;
+Exemplars has no reveal button and the shared sentence exactly once; Misconceptions' Reframe keeps
+the per-item why and drops the shared truth; Rituals states the tip once; the check-in offers a
+completed step, a click lands it in the evidence box, and nothing shows when nothing is recorded.
+`tests/sel_station_resume.test.js` gained the timer case (8). Preset suite, click sweep of the 12
+changed tools, wired-content suites, link suite, Crew AI-off walk: 129 passed. a11y gate: 0 errors, 0
+warnings, 72 tools. Ratchet at 1. Sizes: howl 1.53 MB (was 1.59).
+
+**Not done.** The same scan flagged constant fields in libraries I did not touch tonight
+(`HOWL_EVIDENCE.teacherPrompt`, not rendered) and duplicate-looking primaries in other tools that
+turned out to be category columns (advocacy `cat`, zones `zone`), so no change there. The scan is
+`scratch`-only; a gate would need a per-library allow-list for legitimate shared fields.
+
+### 19m. 2026-09-13 (later still) — the rest of the HOWL Tracker's padding: 80 openers that were 12, thirty scripts that were one
+
+**Scan, then scope.** The 19l field-level scan (values identical on every row) was rerun across all
+72 tools: the pattern exists only in the HOWL Tracker. A second, AST-based scan
+(`scratch/dup_rows_ast.cjs`: top-level rows of every named array with 12+ object elements, exact
+and id-blind duplicates, same-primary rows) found the row-level padding also concentrated there.
+Every other tool's flagged libraries were category columns, not copies.
+
+| library | was | is | what the copies were |
+|---|---|---|---|
+| `CREW_OPENERS` | 80 | 12 | each opener copied per grade (`opener_0_g6`, `_g7`, …); the Rituals view said "80 openers in the library" |
+| `CREW_CLOSERS` | 60 | 9 | same |
+| `COACHING_MOVES` | 150 | 50 | each move copied under three `context` values, title showed "Naming Effort · in-class" |
+| `HOWL_EVIDENCE` | 192 | 48 | the same 12 voices per level listed under all four HOWLs; the bank never tied a voice to a HOWL, so rows now say `howl: "any"` and the view groups by level |
+| `HOWL_GOAL_TEMPLATES` | 252 | 36 | each goal sentence copied for grades 6 to 12; the "micro-actions, obstacles, support people, review question" were one shared set |
+| `CONFERENCE_SCRIPTS` | 30 | 30 | thirty titles with one identical five-phase agenda |
+| `REPAIR_SCRIPTS` | 30 | 30 | thirty harms with one identical seven-step script |
+| `CREW_CLIMATE_SCENARIOS` | 59 | 59 | fifty-nine real scenario names, one shared navigation, and a templated description ("Specific situation requiring facilitator attention. X. Address with care and follow-up.") |
+
+**FIXED — source-level dedupe** (`scratchpad/dedupe_howl_libs.py`, top-level row parser, keeps the
+first row per key, repeatable) for the first five. The intros that quoted counts read
+`LIBRARY.length` and corrected themselves; the tab descriptions that hard-coded "120+", "200+", "60"
+were rewritten.
+
+**FIXED — one script, shown once.** The scrub from 19l now also removes arrays of strings that are
+identical on every row, and covers the goal, conference, repair and climate banks. The Repair
+panel shows the one script (setup, seven steps with the words to say, follow-up, when not to do
+this) and then "Fits these situations" grouped by group size. The Conference panel shows the one
+15-minute agenda and then "Occasions" grouped by type. The Climate view shows "How to navigate any
+of these" once (in the moment, afterwards, don't, the two scripts, the escalation line with 988),
+then the 59 scenarios as cards with difficulty and, on the ones that can be a crisis, their own
+escalation line. No "See navigation" reveal; no templated description. A `_howSteps` renderer
+prints phase, minutes, the move and the words, because the key-value helper printed only the
+phase line.
+
+**Verification.** `tests/sel_howl_content_honesty_2.test.js` (9): source counts and the
+`howl: "any"` / `forGrade: "all"` rewrites; through the REAL `renderTool`: opener randomizer says
+12; Conference shows the agenda's opening line exactly once and lists the occasions; Protocols
+shows the repair script's first words exactly once and the situations; Crew coaching titles carry
+no context suffix; Climate shows the navigation once, no reveal buttons, no templated description,
+and exactly one 988 mention per crisis card plus the shared line; Evidence says 48 voices by level
+with no per-level boilerplate; Goals library says 36 sentences with no template boilerplate.
+`tests/sel_wired_content.test.js` updated for the new panel titles. HOWL suites, click sweep of 12
+tools, wired-content: 56 passed. a11y 0/0. Ratchet at 1. Size: howl **1.12 MB**, was 1.59 MB at
+the start of the evening and 2.1 MB before 19a.
+
+**Left alone, on purpose.** The 59 climate scenario names, 50 celebrations, 44 hand-written
+reflection prompts, 30 conference occasions and 30 harms are real content and stay. The scan
+scripts stay in `scratch/` and the scratchpad; a gate would need an allow-list for legitimate
+per-grade copies elsewhere in the hub (none found tonight, but the emotions and zones tools carry
+per-band variants by design).

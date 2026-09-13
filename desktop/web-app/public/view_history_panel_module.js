@@ -785,6 +785,17 @@ function HistoryPanel(props) {
     clearResourceFilters();
     setIsMoreActionsOpen(false);
   }, [activeUnitId]);
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof setShowSelHub !== "function") return void 0;
+    const opener = () => {
+      if (typeof setSelHubTab === "function") setSelHubTab("explore");
+      setShowSelHub(true);
+    };
+    window.__alloSelHubOpener = opener;
+    return () => {
+      if (window.__alloSelHubOpener === opener) window.__alloSelHubOpener = null;
+    };
+  }, [setShowSelHub, setSelHubTab]);
   return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", "data-history-theme": historyTheme, className: `allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("style", null, HISTORY_PANEL_THEME_CSS), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-base text-slate-950 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700" }, /* @__PURE__ */ React.createElement(History, { size: 16 })), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate" }, isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement(
     "span",
     {

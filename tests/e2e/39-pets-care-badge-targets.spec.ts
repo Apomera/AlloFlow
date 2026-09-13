@@ -28,10 +28,13 @@ test.describe('Pets Lab Care Sim badge targets', () => {
         { choiceId: 'alone_visits' },
         { choiceId: 'allow' },
       ],
-      phys: 75,
-      ment: 78,
-      soc: 80,
-      env: 76,
+      // Every domain clears the 70 floor and the four average 82.5 (the 80
+      // floor), with one domain under 80 so the verdict is "target met",
+      // not "excellent".
+      phys: 82,
+      ment: 84,
+      soc: 86,
+      env: 78,
       en: 50,
       money: 120,
       startMoney: 800,

@@ -18331,7 +18331,17 @@ var createDocPipeline = function(deps) {
       return doc.getPageCount();
     } catch (_) { return null; }
   };
-  const _auditPdfInSlices = async (base64Data, auditPromptBase, shouldCancel) => {
+  // [startIdx, endExclusive) of the pages a slice run may cover. A malformed or out-of-document
+  // range falls back to the whole document rather than auditing nothing.
+  const _auditSliceRangeBounds = (totalPages, pageRange) => {
+    const total = Math.max(0, Math.floor(Number(totalPages) || 0));
+    if (!Array.isArray(pageRange) || pageRange.length !== 2) return [0, total];
+    const first = Math.floor(Number(pageRange[0]));
+    const last = Math.floor(Number(pageRange[1]));
+    if (!Number.isFinite(first) || !Number.isFinite(last) || first < 1 || last < first || first > total) return [0, total];
+    return [first - 1, Math.min(total, last)];
+  };
+  const _auditPdfInSlices = async (base64Data, auditPromptBase, shouldCancel, pageRange) => {
     const _sliceCancelled = () => typeof shouldCancel === 'function' && !!shouldCancel();
     if (_sliceCancelled()) return null;
     try { await ensurePdfLibLoaded(); } catch (_) {} // live-bug fix 2026-07-02: load, don't hope
@@ -18344,11 +18354,17 @@ var createDocPipeline = function(deps) {
     if (_sliceCancelled()) return null;
     const totalPages = srcDoc.getPageCount();
     if (!totalPages || totalPages < 1) return null;
-    // Grow pages-per-slice if the doc is huge so we never exceed _AUDIT_SLICE_MAX calls.
+    // A caller's page range (the MCP page_range argument) bounds the slices: a 54-page document
+    // asked about pages 19-23 used to be sliced end to end (2026-09-13 NCES pilot, 14 calls for 3
+    // pages' worth of work), and every slice outside the range described pages nobody asked about.
+    const _rangeIdx = _auditSliceRangeBounds(totalPages, pageRange);
+    const spanPages = _rangeIdx[1] - _rangeIdx[0];
+    if (_rangeIdx[0] > 0 || _rangeIdx[1] < totalPages) warnLog('[PDF Audit/slices] page range ' + (_rangeIdx[0] + 1) + '-' + _rangeIdx[1] + ' of ' + totalPages + ' bounds the slices');
+    // Grow pages-per-slice if the span is huge so we never exceed _AUDIT_SLICE_MAX calls.
     let per = _AUDIT_SLICE_PAGES_PER;
-    if (Math.ceil(totalPages / per) > _AUDIT_SLICE_MAX) per = Math.ceil(totalPages / _AUDIT_SLICE_MAX);
+    if (Math.ceil(spanPages / per) > _AUDIT_SLICE_MAX) per = Math.ceil(spanPages / _AUDIT_SLICE_MAX);
     const ranges = [];
-    for (let sp = 0; sp < totalPages; sp += per) ranges.push([sp, Math.min(sp + per, totalPages)]); // [startIdx, endExclusive)
+    for (let sp = _rangeIdx[0]; sp < _rangeIdx[1]; sp += per) ranges.push([sp, Math.min(sp + per, _rangeIdx[1])]); // [startIdx, endExclusive)
     const _sliceB64 = async (startIdx, endEx) => {
       if (_sliceCancelled()) return null;
       const sub = await NS.PDFDocument.create();
@@ -18580,6 +18596,9 @@ var createDocPipeline = function(deps) {
     // In either mode, the final audit result object is returned.
     const _skipUi = !!(options && options.skipUiUpdates);
     const _skipCache = !!(options && options.skipCache);
+    // pageRange — optional [first, last] (1-indexed); a sliced audit stays inside it. The app never
+    // sets it; the MCP driver forwards its page_range argument.
+    const _auditPageRange = (options && Array.isArray(options.pageRange) && options.pageRange.length === 2) ? options.pageRange : null;
     const _auditSignal = options && options.signal;
     // Payload ledger, part 2 (2026-07-27). The opening audit runs from the UI BEFORE
     // fixAndVerifyPdf exists, and fixAndVerifyPdf then replaces _pipelineStats with a FRESH object
@@ -19079,7 +19098,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         if (!_skipUi) addToast && addToast('📄 Large PDF — auditing in page slices…', 'info');
         }
         _publishAuditStage('slices', 'Large document — auditing in page slices…');
-        const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
+        const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
         if (_slicedFirst) { parsedAudits = [_slicedFirst]; _auditedViaSlices = true; }
       }
       if (!_auditedViaSlices) {
@@ -19137,7 +19156,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         if (_auditUiCurrent()) {
         if (!_skipUi) addToast && addToast('📄 Switching to a page-slice audit…', 'info');
         }
-        const _slicedFallback = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled).catch(() => null);
+        const _slicedFallback = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange).catch(() => null);
         if (_slicedFallback) { parsedAudits = [_slicedFallback]; _auditedViaSlices = true; }
       }
 

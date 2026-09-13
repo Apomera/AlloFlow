@@ -11,6 +11,8 @@ const path = require('path');
 
 function subjectFor(pack, slug) {
   const s = String((pack.allopack && pack.allopack.standards) || '').toUpperCase();
+  // CASEL-aligned packs (SEL, Crew, HOWL) are SEL / Character even when they also cite ELA or C3.
+  if (s.includes('CASEL')) return 'SEL / Character';
   if (s.includes('NGSS')) return 'Science';
   if (s.includes('MATH')) return 'Math';
   if (s.includes('C3 ') || s.includes('RH.')) return 'Social Studies';
@@ -27,12 +29,15 @@ function gradeFor(pack) {
 }
 
 function tagsFor(pack, slug) {
-  const words = slug.replace(/_grade\d+$/, '').split('_');
+  const words = slug.replace(/_grade\d+(_\d+)?$/, '').split('_');
   const tags = [words.join('-')];
   const types = new Set((pack.history || []).map((r) => r.type));
   if (types.has('memory-aid')) tags.push('memory-aid');
   if (types.has('applied-challenge')) tags.push('applied-challenge');
   const s = String((pack.allopack && pack.allopack.standards) || '').toUpperCase();
+  if (s.includes('CASEL')) tags.push('sel');
+  if (s.includes('HOWL')) tags.push('howl');
+  if (s.includes('CREW')) tags.push('crew');
   if (s.includes('NGSS')) tags.push('ngss');
   if (s.includes('CCSS')) tags.push('ccss');
   if (s.includes('C3 ')) tags.push('c3');

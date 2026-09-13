@@ -633,7 +633,8 @@ describe('Pets Lab structured evidence records', () => {
     expect(care).toMatch(/energyLeft:\s*Math\.round\(c\.en\)/);
     expect(care).toMatch(/caregiverSustainable:\s*finalWelfare\.energySustainable/);
     expect(care).toMatch(/criterionMet:\s*earned/);
-    expect(SRC).toMatch(/var earned = \(finalWelfare\.minimum >= 70 && finalWelfare\.sustainable\)/);
+    expect(SRC).toMatch(/var earned = \(finalWelfare\.welfareTarget && finalWelfare\.sustainable\)/);
+    expect(SRC).toMatch(/var welfareTarget = Math\.round\(minimum\) >= 70 && Math\.round\(average\) >= 80;/);
   });
 
   it('renders AI evidence from metadata without exposing raw work', () => {
@@ -712,8 +713,8 @@ describe('Pets Lab structured evidence records', () => {
       recordedAt: '2026-08-26T12:00:00.000Z',
       details: {
         species: 'dog', days: 7,
-        physical: 82, mental: 76, social: 79, environmental: 74,
-        weakestDomain: 'Environmental', weakestPct: 74,
+        physical: 86, mental: 80, social: 83, environmental: 78,
+        weakestDomain: 'Environmental', weakestPct: 78,
         moneyLeft: 118, stayedInBudget: true,
         energyLeft: 46, caregiverSustainable: true, criterionMet: true,
         tiredCareTasks: 999,
@@ -733,8 +734,8 @@ describe('Pets Lab structured evidence records', () => {
     const { state, helpers } = evidenceHarness();
     helpers.recordEvidence('careSim', 'Completed care week', {
       species: 'dog', days: 7,
-      physical: 82, mental: 76, social: 79, environmental: 74,
-      weakestDomain: 'Environmental', weakestPct: 74,
+      physical: 86, mental: 80, social: 83, environmental: 78,
+      weakestDomain: 'Environmental', weakestPct: 78,
       moneyLeft: 118, stayedInBudget: true,
       energyLeft: 46, caregiverSustainable: true, criterionMet: true,
     }, 'activity');

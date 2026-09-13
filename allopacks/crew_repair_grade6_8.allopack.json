@@ -1,0 +1,581 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 2: Repair When Something Goes Wrong",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_repair_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Respect (steward community resources and materials); CASEL Responsible Decision-Making (evaluating consequences of actions; contributing to the well-being of the community); CASEL Relationship Skills (resolving conflicts constructively); EL Education Crew (Crew Launch: community and belonging); Maine DOE PBIS Tier 1 (restorative practices integrated with PBIS)"
+  },
+  "sourceTopic": "Stewardship and restorative repair",
+  "history": [
+    {
+      "id": "cr-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 2: Repair When Something Goes Wrong",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Respect. \"I am a respectful member of the King community.\"\n\nThis week is about taking care of what belongs to everyone, and about what to do when something goes wrong anyway.\n\n1. Read **Repair When Something Goes Wrong** (10 minutes).\n2. Learn the **Glossary** words, then win the **Matching** game.\n3. Keep the **Punish or Repair?** chart open.\n4. Sort the cards in **Which Move Is It?** (name it, own it, fix it, or not repair at all).\n5. Take the quiz. Question 3 is about the person who was affected.\n6. Open the SEL Hub and choose [Restorative Circle](#sel-hub/restorativeCircle?station=sel_station_crew_launch_repair). Walk the four questions with a fictional case. If you have time, try [Perspective Lens](#sel-hub/perspective?station=sel_station_crew_launch_repair) on the same case.\n7. Use the **Sentence Frames** to script a repair.\n8. Lock it in with **Remember Name, Own, Fix**.\n9. Finish with the **Propose Challenge: A Stewardship Routine for Our Crew Room**.\n\nYour commitment: this week, steward one shared thing in any class (return it, plug it in, put it back) without anyone asking. 🔧\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cr-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cr-glossary"
+          },
+          {
+            "id": "cr-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cr-goal-manual",
+            "label": "I took care of one shared thing this week without being asked, and I can say what it was",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cr-reading",
+      "type": "simplified",
+      "title": "Repair When Something Goes Wrong",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Repair When Something Goes Wrong\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nThe second respect behavior in the King HOWLs is **stewarding** community **resources** and materials. A steward is someone who takes care of something that belongs to everyone. The Crew room, the shared laptops, the field trip gear, the time the group has together: none of it belongs to one person, and all of it can be damaged.\n\nThings will go wrong. A laptop gets left on the bus. A shared marker set comes back with half the caps missing. Someone borrows a Crew member's charger and forgets to return it. The question is not whether **harm** happens. It is what happens next.\n\nThere are two ways to think about what happens next. The first asks, \"What rule was broken, and what is the punishment?\" The second asks, \"Who was **affected**, what do they need, and how do we make it right?\" The second one is called a **restorative** approach. It does not skip **responsibility**. It puts responsibility to work.\n\nHere is a fictional example. Jonah borrowed the Crew's speaker for a project and returned it with a cracked case. In a punishment approach, Jonah loses speaker privileges for a month, and the Crew still has a cracked speaker. In a restorative approach, the Crew leader, Ms. Delgado, asks four questions. What happened? Who was affected? What do they need? What will you do to **repair** it? Jonah explains it fell off a desk. The Crew was affected because the speaker is shared. They need it to work for Friday. Jonah tapes the case, tests it, and offers to be the one who carries it on Friday. The Crew gets its speaker back, and Jonah gets his **standing** back. Both matter.\n\nRepair has three moves. Name it: say plainly what happened without excuses or blame. Own it: say what part was yours. Fix it: do something that helps the people affected, not just something that makes you feel less bad. An **apology** without a fix is only the first move.\n\nRepair is also something the people affected take part in. If you were the one whose charger was lost, you can say what you need. Maybe it is the charger back. Maybe it is a heads-up next time. Saying what you need is not being difficult. It is how repair gets done accurately.\n\nStewardship is the quiet version of repair. It is the habit of putting things back, plugging things in, and checking the cart before Crew ends, so that most of the time nothing needs repairing at all. A Crew that stewards well spends its time on each other instead of on missing caps.",
+      "meta": "6th-8th Grade • Leveled reading • ~450 words"
+    },
+    {
+      "id": "cr-glossary",
+      "type": "glossary",
+      "title": "Repair Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Steward",
+          "def": "A person who takes care of something that belongs to everyone.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Resource",
+          "def": "Something a group uses and shares, like equipment, a room, or time.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Harm",
+          "def": "Damage or loss that affects a person or a group.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Restorative",
+          "def": "An approach that asks who was affected and how to make it right, instead of only what punishment fits.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Repair",
+          "def": "Action that helps the people affected by harm, not just words.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Responsibility",
+          "def": "Owning the part that was yours.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Affected",
+          "def": "Touched by what happened, even if you were not there.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Apology",
+          "def": "Saying you are sorry. In repair, it is the first move, not the whole thing.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Routine",
+          "def": "A set of small actions done the same way each time so nothing gets forgotten.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Standing",
+          "def": "How the group sees you. Repair gives it back.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "6th-8th Grade • 10 terms • Tiered"
+    },
+    {
+      "id": "cr-anchor",
+      "type": "anchor-chart",
+      "title": "Punish or Repair?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "PUNISH OR REPAIR?",
+        "sections": [
+          {
+            "label": "PUNISHMENT ASKS",
+            "bullets": [
+              "What rule was broken?",
+              "Who did it?",
+              "What do they deserve?"
+            ],
+            "iconPrompt": "a gavel resting on a plain block"
+          },
+          {
+            "label": "REPAIR ASKS",
+            "bullets": [
+              "What happened?",
+              "Who was affected and what do they need?",
+              "What will you do to make it right?"
+            ],
+            "iconPrompt": "two hands holding a mended cup"
+          },
+          {
+            "label": "THREE MOVES",
+            "bullets": [
+              "Name it: say what happened, no excuses",
+              "Own it: say what part was yours",
+              "Fix it: do something that helps the affected"
+            ],
+            "iconPrompt": "three stepping stones in a row"
+          },
+          {
+            "label": "STEWARDSHIP",
+            "bullets": [
+              "Put it back",
+              "Plug it in",
+              "Check the cart before Crew ends"
+            ],
+            "iconPrompt": "a laptop cart with every slot filled"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cr-sort",
+      "type": "concept-sort",
+      "title": "Which Move Is It?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cr-name",
+            "label": "NAME IT",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "cr-own",
+            "label": "OWN IT",
+            "color": "bg-violet-500"
+          },
+          {
+            "id": "cr-fix",
+            "label": "FIX IT",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cr-not",
+            "label": "NOT REPAIR",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cr-i1",
+            "content": "\"The speaker fell off the desk while I was packing up and the case cracked.\"",
+            "categoryId": "cr-name"
+          },
+          {
+            "id": "cr-i2",
+            "content": "\"I should have put it in the bag first. That part was on me.\"",
+            "categoryId": "cr-own"
+          },
+          {
+            "id": "cr-i3",
+            "content": "\"I taped the case, tested it, and I will carry it Friday.\"",
+            "categoryId": "cr-fix"
+          },
+          {
+            "id": "cr-i4",
+            "content": "\"Sorry, but it was already kind of loose.\"",
+            "categoryId": "cr-not"
+          },
+          {
+            "id": "cr-i5",
+            "content": "\"I borrowed your charger Tuesday and did not bring it back.\"",
+            "categoryId": "cr-name"
+          },
+          {
+            "id": "cr-i6",
+            "content": "\"Everyone forgets stuff, it is not a big deal.\"",
+            "categoryId": "cr-not"
+          },
+          {
+            "id": "cr-i7",
+            "content": "\"I forgot, and that is mine to fix, not yours to chase.\"",
+            "categoryId": "cr-own"
+          },
+          {
+            "id": "cr-i8",
+            "content": "\"Here is the charger, and I wrote a note so it will not happen again.\"",
+            "categoryId": "cr-fix"
+          },
+          {
+            "id": "cr-i9",
+            "content": "\"I feel really bad about it.\" (and nothing else)",
+            "categoryId": "cr-not"
+          },
+          {
+            "id": "cr-i10",
+            "content": "\"I will replace the missing caps from the art room supply by Thursday.\"",
+            "categoryId": "cr-fix"
+          }
+        ]
+      },
+      "meta": "4 categories • 10 cards"
+    },
+    {
+      "id": "cr-quiz",
+      "type": "quiz",
+      "title": "Repair or Not?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does a steward do, according to the reading?",
+            "options": [
+              "Reports anyone who damages shared equipment",
+              "Takes care of something that belongs to everyone",
+              "Owns the equipment the Crew uses each week",
+              "Decides who is allowed to borrow shared things"
+            ],
+            "correctAnswer": "Takes care of something that belongs to everyone",
+            "conceptLabel": "stewardship"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the main difference between a punishment approach and a restorative approach?",
+            "options": [
+              "Restorative asks who was affected and how to make it right",
+              "Restorative means nobody has to take responsibility",
+              "Punishment fixes the harm faster than repair does",
+              "Punishment is for adults and repair is for students"
+            ],
+            "correctAnswer": "Restorative asks who was affected and how to make it right",
+            "conceptLabel": "restorative approach"
+          },
+          {
+            "type": "mcq",
+            "question": "Your charger was borrowed and lost. What does the reading say your part in repair is?",
+            "options": [
+              "Wait quietly so you do not seem difficult about it",
+              "Ask the Crew leader to decide the punishment for you",
+              "Take the same thing from the other person to even it out",
+              "Say what you need, such as the charger back or a heads-up"
+            ],
+            "correctAnswer": "Say what you need, such as the charger back or a heads-up",
+            "conceptLabel": "affected person names needs"
+          },
+          {
+            "type": "mcq",
+            "question": "\"I am really sorry about the speaker.\" Which move is still missing?",
+            "options": [
+              "Naming it, because sorry does not say what happened",
+              "Owning it, because sorry does not say whose part it was",
+              "Fixing it, because sorry is only the first move",
+              "Nothing is missing, because an apology is a complete repair"
+            ],
+            "correctAnswer": "Fixing it, because sorry is only the first move",
+            "conceptLabel": "apology is first move"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading call stewardship \"the quiet version of repair\"?",
+            "options": [
+              "Because stewards are expected to work without talking",
+              "Because it is done so that most of the time nothing needs repairing",
+              "Because repair is loud and stewardship happens after school",
+              "Because it is a private job for one person in each Crew"
+            ],
+            "correctAnswer": "Because it is done so that most of the time nothing needs repairing",
+            "conceptLabel": "stewardship prevents harm"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A classmate borrowed your calculator and returned it with a cracked screen. Write the three moves you would want to hear from them, one sentence each.",
+            "expectedAnswer": "Name it (what happened, no excuse), own it (the part that was theirs), fix it (an action that helps you, with a time).",
+            "conceptLabel": "apology is first move"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of a time something shared got damaged or lost (no names). Which of the three moves happened? Which did not?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cr-frames",
+      "type": "sentence-frames",
+      "title": "Script a Repair",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "What happened was ____. (Name it, no excuses.)"
+          },
+          {
+            "text": "The part that was mine was ____. (Own it.)"
+          },
+          {
+            "text": "The people affected were ____, and they need ____."
+          },
+          {
+            "text": "To make it right I will ____ by ____. (Fix it.)"
+          },
+          {
+            "text": "Next time I will ____ so it does not happen again."
+          },
+          {
+            "text": "If I was the one affected, I would need ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Name it | Blames or excuses | Says what happened | Says what happened plainly, with no excuse attached |\n| Own it | Says \"mistakes happen\" | Names a part that was mine | Names exactly which part was mine and which was not |\n| Fix it | Apology only | Offers a fix | Offers a fix that helps the affected person, with a time |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cr-faq",
+      "type": "faq",
+      "title": "Repair Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "Does repair mean nobody gets consequences?",
+          "answer": "No. Repair is a consequence: you do the work of making it right. It is usually harder than losing a privilege, and it is the only one that gives the group its thing back."
+        },
+        {
+          "question": "What if it really was not my fault?",
+          "answer": "Then name what happened and own only the part that was yours. If none of it was yours, say so plainly. Owning it is about accuracy, not about taking blame for everything."
+        },
+        {
+          "question": "What if the person affected does not want an apology?",
+          "answer": "Ask what they do need. Sometimes it is the item back. Sometimes it is space. The affected person gets to say."
+        },
+        {
+          "question": "Is a restorative circle a punishment?",
+          "answer": "No. It is a structured conversation with the four questions. A Crew leader runs it. Nobody is put on trial."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Respect HOWL includes stewarding community resources and materials. Putting things back and repairing what breaks is what teachers are looking for when they score it."
+        }
+      ],
+      "meta": "5 questions"
+    },
+    {
+      "id": "cr-memory",
+      "type": "memory-aid",
+      "title": "Remember Name, Own, Fix",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Name, Own, Fix",
+        "instructions": "Each card locks in one idea from Repair When Something Goes Wrong. Look at the example aid, make it your own, and tell how it helps you repair.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Repair has three moves. Name it: say plainly what happened without excuses or blame. Own it: say what part was yours. Fix it: do something that helps the people affected, not just something that makes you feel less bad. An apology without a fix is only the first move.",
+        "lessonRef": {
+          "resourceId": "cr-reading",
+          "title": "Repair When Something Goes Wrong"
+        },
+        "cards": [
+          {
+            "id": "cr-ma-nof",
+            "target": "The three moves of repair, in order: name it, own it, fix it",
+            "essentialFacts": [
+              "Name it: say plainly what happened without excuses or blame.",
+              "Own it: say what part was yours.",
+              "Fix it: do something that helps the people affected, not just something that makes you feel less bad."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "N-O-F, like \"enough\": Name, Own, Fix. When you have done all three, you have done enough. Stop at an apology and you have not.",
+            "mapping": "The three letters keep the order (name first, then own, then fix), and the word \"enough\" reminds you that the sequence is only complete at the third move.",
+            "scaffoldStarter": "First I ____ it. Then I ____ it. Then I ____ it.",
+            "scaffoldSteps": [
+              "Write the three verbs in order.",
+              "Find a word or sound that keeps them in that order.",
+              "Test it on the speaker story."
+            ],
+            "coachPrompts": [
+              "Why does fix come last and not first?"
+            ],
+            "studentPrompt": "Make your own order cue for name, own, fix.",
+            "reasoningPrompt": "How does your cue stop you from skipping a move?",
+            "hookFact": {
+              "text": "An apology without a fix is only the first move.",
+              "sourceTitle": "Repair When Something Goes Wrong (this lesson)"
+            }
+          },
+          {
+            "id": "cr-ma-steward",
+            "target": "Stewardship is the quiet version of repair",
+            "essentialFacts": [
+              "Stewardship is the quiet version of repair.",
+              "It is the habit of putting things back, plugging things in, and checking the cart before Crew ends, so that most of the time nothing needs repairing at all."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Stewardship is to repair what brushing is to a filling. Do the small quiet thing every day and the big loud thing mostly never happens.",
+            "mapping": "Brushing stands for the daily habit of putting things back; the filling stands for repair after harm. The analogy carries the idea that the habit prevents the need.",
+            "scaffoldStarter": "Stewardship is to repair what ____ is to ____.",
+            "scaffoldSteps": [
+              "Think of a small daily habit that prevents a bigger problem.",
+              "Put stewardship in the habit slot and repair in the problem slot.",
+              "Say why the pair fits."
+            ],
+            "coachPrompts": [
+              "What is one stewardship habit your Crew room does not have yet?"
+            ],
+            "studentPrompt": "Make your own \"is to\" pair for stewardship and repair.",
+            "reasoningPrompt": "How does your pair help you remember to check the cart before Crew ends?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • three moves, stewardship"
+    },
+    {
+      "id": "cr-challenge",
+      "type": "applied-challenge",
+      "title": "Propose Challenge: A Stewardship Routine for Our Crew Room",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Stewardship Routine for Our Crew Room",
+        "instructions": "Design a two-minute end-of-Crew routine that keeps the shared things in your room working, assign it fairly, and propose it to your Crew leader with a plan for what happens when something still goes wrong.",
+        "selectionMode": "manual",
+        "family": "propose",
+        "fitReason": "The HOWL behavior is stewarding community resources and materials. A routine the Crew designs and runs is stewardship made visible, and the repair plan attached to it puts the three moves into a real structure.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "propose",
+          "context": "Your Crew room has shared things: a laptop cart, markers, a speaker, chairs that get moved, maybe a plant. Right now whoever notices takes care of them, which means sometimes nobody does.",
+          "role": "Crew members proposing a routine to the Crew leader",
+          "audience": "Your Crew leader, who decides whether to adopt it, and your Crew, who will run it",
+          "drivingQuestion": "What two-minute routine would keep our shared things working, and what will we do on the day it is not enough?",
+          "seedDirection": "List every shared thing in the room. For each one, name the small action that keeps it working. Then decide who does what, and how the jobs rotate.",
+          "lockedLessonFacts": [
+            "A steward is someone who takes care of something that belongs to everyone.",
+            "Repair has three moves: name it, own it, fix it.",
+            "The people affected take part in repair by saying what they need.",
+            "Stewardship is the quiet version of repair."
+          ],
+          "openQuestions": [
+            "Which shared thing gets damaged or lost most often?",
+            "How will jobs rotate so the same two people are not always doing it?",
+            "What is the repair plan when something breaks anyway?",
+            "How will the Crew know the routine is working after two weeks?"
+          ],
+          "stakeholders": [
+            "Crew members",
+            "The Crew leader",
+            "The next class that uses the room",
+            "The person who has to find a missing charger"
+          ],
+          "criteria": [
+            "The routine takes two minutes or less",
+            "Every shared thing in the room has one named action",
+            "Jobs rotate on a schedule the Crew can see",
+            "The proposal includes a repair plan using name, own, fix",
+            "Uses at least three glossary words correctly"
+          ],
+          "constraints": [
+            "Fits in the last two minutes of Crew",
+            "No job belongs to one person permanently",
+            "The Crew leader can say no, so the proposal has to explain why it helps"
+          ],
+          "deliverable": "A one-page proposal: the routine as a checklist, the rotation, the repair plan, and two sentences on why it helps the Crew.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional Crew kept losing marker caps.",
+            "move": "They made the last person to use the markers the \"cap counter,\" rotating weekly, and wrote a repair plan: if caps are missing, the counter names it at the next Crew, and the Crew replaces caps from the art room together. Caps stopped going missing within two weeks.",
+            "whyItHelps": "It shows a routine small enough to actually happen, with a repair plan that treats the loss as the group's to fix."
+          },
+          "frameStarter": "Our routine is: ____. It takes ____ minutes. The jobs rotate every ____.",
+          "frameChoices": [
+            "If ____ breaks or goes missing, the person who notices will ____.",
+            "This helps the Crew because ____.",
+            "We will check whether it is working on ____ by ____."
+          ],
+          "coachPrompts": [
+            "Which job would you least want? How could the routine make that job fair?",
+            "What would your Crew leader worry about, and how does the proposal answer it?"
+          ]
+        },
+        "coachHint": "If students design a ten-minute routine, ask which three actions matter most. A routine that is too long stops happening.",
+        "sourceExcerpt": "Stewardship is the quiet version of repair. It is the habit of putting things back, plugging things in, and checking the cart before Crew ends, so that most of the time nothing needs repairing at all.",
+        "lessonRef": {
+          "resourceId": "cr-reading",
+          "title": "Repair When Something Goes Wrong"
+        }
+      },
+      "meta": "6th-8th Grade • Propose brief • a two-minute routine"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_repair",
+      "name": "Crew station: Week 2: Repair When Something Goes Wrong",
+      "tools": [
+        "restorativeCircle",
+        "perspective"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 2: Repair When Something Goes Wrong pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_repair_time",
+          "type": "timeSpent",
+          "toolId": "restorativeCircle",
+          "label": "Spend 5 minutes in Restorative Circle",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_repair_check",
+          "type": "manualComplete",
+          "toolId": "perspective",
+          "label": "I took care of one shared thing this week without being asked, and I can say what it was",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

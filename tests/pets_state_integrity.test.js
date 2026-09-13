@@ -613,6 +613,22 @@ describe('Pets restored-state guards', () => {
     });
     expect(answeredCurrentDay.day).toBe(0);
     expect(answeredCurrentDay.lastInteract).toEqual({ kind: 'feed', t: 1234 });
+
+    // Overnight events: only nights that have passed, only real domains.
+    const withEvents = normalize({
+      species: 'dog',
+      day: 3,
+      choices: [{ choiceId: 'choice-0' }, { choiceId: 'choice-1' }, { choiceId: 'choice-2' }],
+      consequenceLog: [
+        { day: 1, domain: 'ment' }, { day: 2, domain: 'env' },
+        { day: 5, domain: 'env' }, { day: 'x', domain: 'ment' },
+        { day: 0, domain: 'private' }, 'junk', null,
+      ],
+      overnight: { skipped: ['clean'], deltas: { env: -3 }, events: ['env', 'bogus', 'env'] },
+    });
+    expect(withEvents.consequenceLog).toEqual([{ day: 1, domain: 'ment' }, { day: 2, domain: 'env' }]);
+    expect(withEvents.overnight).toEqual({ skipped: ['clean'], deltas: { env: -3 }, events: ['env'] });
+    expect(normalize({ species: 'dog', day: 0, overnight: { skipped: [], deltas: {} } }).overnight).toBeNull();
   });
 
   it('rejects malformed Body Language attempts and recomputes restored scores', () => {
