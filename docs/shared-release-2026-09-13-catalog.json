@@ -1,0 +1,264 @@
+{
+  "checkedAt": "2026-09-13T05:17:52.488Z",
+  "entries": 43,
+  "packs": [
+    {
+      "path": "allopacks/illustrated/area_perimeter_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 309950
+    },
+    {
+      "path": "allopacks/illustrated/body_systems_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 538344
+    },
+    {
+      "path": "allopacks/illustrated/day_night_sky_grade1.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 384379
+    },
+    {
+      "path": "allopacks/illustrated/central_idea_grade7.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 771723
+    },
+    {
+      "path": "allopacks/illustrated/weathering_erosion_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 964579
+    },
+    {
+      "path": "allopacks/illustrated/chemical_reactions_grade8.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 400017
+    },
+    {
+      "path": "allopacks/illustrated/scarcity_choice_grade7.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 524994
+    },
+    {
+      "path": "allopacks/illustrated/equal_groups_grade3.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 674300
+    },
+    {
+      "path": "allopacks/illustrated/energy_transfer_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 482449
+    },
+    {
+      "path": "allopacks/illustrated/sound_vibration_grade1.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 582652
+    },
+    {
+      "path": "allopacks/illustrated/forces_motion_grade3.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 674126
+    },
+    {
+      "path": "allopacks/illustrated/volume_grade5.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 887818
+    },
+    {
+      "path": "allopacks/illustrated/figurative_language_grade5.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 605746
+    },
+    {
+      "path": "allopacks/illustrated/fractions_number_line_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 323833
+    },
+    {
+      "path": "allopacks/illustrated/word_families_grade1.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 449806
+    },
+    {
+      "path": "allopacks/illustrated/ecosystems_food_webs_grade5.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 1294393
+    },
+    {
+      "path": "allopacks/illustrated/linear_equations_grade8.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 699590
+    },
+    {
+      "path": "allopacks/illustrated/magnetism_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 428868
+    },
+    {
+      "path": "allopacks/illustrated/probability_models_grade7.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 685696
+    },
+    {
+      "path": "allopacks/illustrated/main_idea_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 810214
+    },
+    {
+      "path": "allopacks/illustrated/moon_phases_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 533908
+    },
+    {
+      "path": "allopacks/illustrated/natural_selection_grade8.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 1488489
+    },
+    {
+      "path": "allopacks/illustrated/photosynthesis_grade7.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 875130
+    },
+    {
+      "path": "allopacks/illustrated/plate_tectonics_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 573251
+    },
+    {
+      "path": "allopacks/illustrated/ratios_real_life_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 275714
+    },
+    {
+      "path": "allopacks/illustrated/point_of_view_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 856808
+    },
+    {
+      "path": "allopacks/illustrated/decimal_place_value_grade5.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 772157
+    },
+    {
+      "path": "allopacks/illustrated/argument_evidence_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 607323
+    },
+    {
+      "path": "allopacks/illustrated/proportional_relationships_grade7.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 770554
+    },
+    {
+      "path": "allopacks/illustrated/states_of_matter_grade4.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 607269
+    },
+    {
+      "path": "allopacks/illustrated/simple_machines_grade5.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 325022
+    },
+    {
+      "path": "allopacks/illustrated/story_retell_grade2.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 700165
+    },
+    {
+      "path": "allopacks/illustrated/making_ten_grade1.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 579984
+    },
+    {
+      "path": "allopacks/illustrated/water_cycle_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 1827667
+    },
+    {
+      "path": "allopacks/illustrated/place_value_grade2.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 666841
+    },
+    {
+      "path": "allopacks/illustrated/cell_structure_grade7.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 739267
+    },
+    {
+      "path": "allopacks/illustrated/weather_vs_climate_grade5.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 1977565
+    },
+    {
+      "path": "allopacks/illustrated/plant_needs_grade3.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 1318359
+    },
+    {
+      "path": "allopacks/illustrated/data_and_typical_grade6.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 424083
+    },
+    {
+      "path": "allopacks/illustrated/materials_grade2.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 773432
+    },
+    {
+      "path": "allopacks/illustrated/context_clues_grade3.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 457345
+    },
+    {
+      "path": "allopacks/illustrated/theme_development_grade8.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 885058
+    },
+    {
+      "path": "allopacks/illustrated/habitats_diversity_grade2.allopack.json",
+      "status": 200,
+      "matches": true,
+      "bytes": 978800
+    }
+  ]
+}

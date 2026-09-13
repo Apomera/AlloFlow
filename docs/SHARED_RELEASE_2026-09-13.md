@@ -45,3 +45,16 @@ the promotional site is GitHub Pages at https://apomera.github.io/AlloFlow/.
 The repository's placeholder Firebase target must not select a maintainer demo.
 Final commit identifiers, deployment status, and additional test results are
 reported after the release completes.
+
+## Changed-test batch result
+
+The 340-file changed-test run completed with 6,316 passing assertions and 20
+failures across Pictionary integration, class mailbox, and Raptor experience
+tests. See `shared-release-2026-09-13-tests.json` for the exact failing cases.
+A diagnostic Raptor run against the already committed source also failed
+12 assertions; the differences include brittle source-text checks and localization
+coverage limits. These failures were not hidden or added to quarantine.
+
+Source commit: `b4d7ed714` (normal commit hooks passed).
+
+Live catalog verification: the main-branch catalog now contains 43 illustrated editions; all 43 public downloads returned HTTP 200 and matched local file hashes. See shared-release-2026-09-13-catalog.json.

@@ -1,0 +1,104 @@
+{
+  "checkedAt": "2026-09-13T05:11:42.286Z",
+  "sourceCommit": "b4d7ed714",
+  "selectedTestFiles": 340,
+  "passedAssertions": 6316,
+  "failedAssertions": 20,
+  "failedFiles": [
+    {
+      "path": "tests/arcade_concept_pictionary_integration.test.js",
+      "failures": [
+        {
+          "name": "Pictionary production integration versions the changed Pictionary plugin while retaining other plugin versions and retries",
+          "message": "AssertionError: expected '// @mode react\\n// Canvas source for …' to contain 'allohaven_module.js?v=3cb9b709b7'"
+        }
+      ]
+    },
+    {
+      "path": "tests/class_mailbox.test.js",
+      "failures": [
+        {
+          "name": "ANTI wiring pins keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks",
+          "message": "AssertionError: expected 'const AlloQuestionBoardPanel = React.…' to contain '[activityId, activityScope, admin, ap…'"
+        }
+      ]
+    },
+    {
+      "path": "tests/stem_raptorhunt_experience.test.js",
+      "failures": [
+        {
+          "name": "Raptor Hunt accessible flight controls and lifecycle provides declarative, keyboard-friendly controls and fullscreen access",
+          "message": "AssertionError: expected '// ══════════════════════════════════…' to match /type:\\s*'button'[\\s\\S]{0,500}onPointe…/"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions uses one three-dimensional forward/target calculation for both reticle and strike",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'function acquireTarget()'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions uses a deliberate setup-to-flight flow with compact navigation and progressive disclosure",
+          "message": "AssertionError: expected '// ══════════════════════════════════…' to contain '\\'aria-label\\': \\'Review \\' + species…'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions adds depth cues to the flight world without turning them into permanent clutter",
+          "message": "AssertionError: expected '// ══════════════════════════════════…' to contain 'updateWaterWakes(now);'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions uses elapsed-time damping and a nonteleporting inward world edge",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'var cameraFollowAlpha = dampingAlpha(…'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions builds recognizable prey families instead of generic primitives",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'var dorsal ='"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions animates each raptor family with distinct wing and tail mechanics",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'var tailSpreadTarget = pullUpKey ? 1.…'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions updates the complete environment through one coherent daylight palette",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'sun.position.copy(sunDir)'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions keeps mission and text target guidance visible in narrow touch layouts",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'targetInfo.verticalOffset > 0 ? \\'ALI…'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions separates raptor plumage planes with subtle material and edge accents",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'var wingEdgeMark = new THREE.Mesh'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions turns live weather into visible, wind-driven atmosphere at every frame rate",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'if (!_rmFX && lake && lakeOriginalY &…'"
+        },
+        {
+          "name": "Raptor Hunt 3D interaction and responsive visual regressions throttles water visuals and exposes deterministic atmosphere diagnostics",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'var waterUpdateInterval = 1000 / qual…'"
+        },
+        {
+          "name": "Raptor Hunt configurable controls and key guide routes keyboard input through the active preset and ignores unbound keys",
+          "message": "AssertionError: expected '// ══════════════════════════════════…' to contain 'var action = controlScheme.keys[raw];…'"
+        },
+        {
+          "name": "Raptor Hunt configurable controls and key guide renders a contextual key guide that refreshes on target, pause, and landing changes",
+          "message": "AssertionError: expected '// ══════════════════════════════════…' to contain 'if (targetStateChanged) refreshKeyGui…'"
+        },
+        {
+          "name": "Raptor Hunt accessibility string translation does not let the untranslated accessibility count grow",
+          "message": "AssertionError: expected 225 to be less than or equal to 175"
+        },
+        {
+          "name": "Raptor Hunt accessibility string translation keeps ordinary copy fully translated, which is what makes the gap categorical",
+          "message": "AssertionError: expected 6 to be less than or equal to 5"
+        },
+        {
+          "name": "Raptor Hunt visual field and target lock cone leaves the strike gate alone so a wider lock does not mean a looser hit",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'canStrike: distance <= reach && dot >…'"
+        },
+        {
+          "name": "Raptor Hunt prey detection distance scales the silent-strike pull-up alert and the calm-down range the same way",
+          "message": "AssertionError: expected 'function initHuntSim(canvasEl, specie…' to contain 'if (mission.id === \\'silentStrike\\' &…'"
+        }
+      ]
+    }
+  ]
+}
