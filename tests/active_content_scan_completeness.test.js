@@ -52,10 +52,13 @@ describe('active-content scan completeness', () => {
     });
   });
 
-  it('withholds forms, outlines, and nested name trees as unexamined', () => {
+  it('withholds a form without /Fields, an unreadable outline root, and nested name trees as unexamined', () => {
+    // Well-formed bookmarks and forms are walked (see active_content_scan_bookmarks_forms.test.js);
+    // a form dictionary that omits its required /Fields and an outline root that is not a
+    // dictionary still fail closed.
     const result = scan({
       AcroForm: dict(),
-      Outlines: dict(),
+      Outlines: {},
       Names: dict({
         JavaScript: dict({ Kids: array([]) }),
       }),
@@ -311,8 +314,10 @@ describe('active-content scan completeness', () => {
     expect(scannerBlock(moduleSource)).toBe(scannerBlock(source));
     expect(scannerBlock(publicModuleSource)).toBe(scannerBlock(source));
     for (const text of [source, moduleSource, publicModuleSource]) {
-      expect(text).toContain("if (catalog.get(nm('AcroForm'))) unexaminedStructures++;");
-      expect(text).toContain("if (catalog.get(nm('Outlines'))) unexaminedStructures++;");
+      expect(text).toContain("var rawAcroForm = catalog.get(nm('AcroForm'));");
+      expect(text).toContain("var rawOutlines = catalog.get(nm('Outlines'));");
+      expect(text).toContain("var rawOpenAction = catalog.get(nm('OpenAction'));");
+      expect(text).toContain("var ACROFORM_KEYS = _keySet(['Fields', 'NeedAppearances', 'SigFlags', 'CO', 'DR', 'DA', 'Q']);");
       expect(text).toContain("if (catalog.get(nm('Collection'))) unexaminedStructures++;");
       expect(text).toContain("var catalogAssociatedFiles = _resolve(catalog.get(nm('AF')));");
       expect(text).toContain("catch (_) { unexaminedStructures++; return null; }");

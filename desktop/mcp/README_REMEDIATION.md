@@ -122,6 +122,26 @@ author verification notes. Legacy app string exports keep their existing behavio
 Narration reports carry this coverage result and upstream source coverage when the
 HTML came from remediation. These checks do not certify pronunciation or accessibility.
 
+## Document Safety scan
+
+Before an original-layout tagged PDF is delivered, the pipeline walks the source PDF for
+active content: open actions, JavaScript, launch actions, embedded files, additional-action
+triggers, chained actions and multimedia annotations. Anything found is disclosed in the report
+and the tagged PDF is withheld for review (`active_content_requires_review`). A structure the
+scanner cannot fully examine also withholds it (`active_content_scan_unavailable`); an
+incomplete scan is never treated as a clean one.
+
+Since 0.11.0 the scan examines three structures it used to refuse outright: the bookmark tree
+(`/Outlines`), the interactive-form dictionary (`/AcroForm`) and a destination-only
+`/OpenAction`. Bookmarks are a WCAG-recommended navigation aid and most born-digital PDFs carry
+them; an empty `/AcroForm` is what Word and Acrobat leave behind after a form-free export; an
+open action that only jumps to a page is viewer navigation. Refusing all three withheld tagged-PDF
+delivery from 14 of the 16 documents in the testing corpus. Every bookmark, field and open action
+now goes through the same action classifiers as page annotations, so a JavaScript bookmark or a
+field calculation script is disclosed under its own type. XFA forms, PDF portfolios
+(`/Collection`), nested name trees, undocumented keys and documents that exceed the walk budgets
+still fail closed.
+
 ## No-account mode
 
 `remediation_capabilities` reports two distinct states. `fullAiPipelineReady` describes the

@@ -59,6 +59,12 @@ the EPUB. Every check reports `passed`, `failed`, `review-required`, `unavailabl
 A missing runtime is reported as `unavailable`, never as a pass. `audit_html` runs the AI rubric,
 axe-core and IBM Equal Access and reports each engine separately.
 
+Original-layout tagged PDFs are also gated by the Document Safety scan of the source: PDFs with
+active content (JavaScript, launch actions, embedded files, action triggers) are disclosed and
+withheld for review, and a source the scanner cannot fully examine is withheld rather than
+assumed clean. Since 0.11.0 bookmarks, empty or passive forms and open-at-page actions are
+examined instead of refused, which is what most born-digital PDFs need to reach delivery.
+
 These are automated, machine-verifiable checks with a defined scope. A passing result is
 `complete-for-tested-scope` and still requires human review of reading order, tables, forms,
 language, descriptions and audio. Nothing this connector produces is a WCAG, PDF/UA or Title II

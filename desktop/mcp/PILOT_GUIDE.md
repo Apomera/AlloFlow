@@ -1,6 +1,6 @@
 # AlloFlow Remediation MCP: supervised pilot guide
 
-_For colleagues evaluating the connector for Title II document work. Prepared 2026-09-04 for v0.10._
+_For colleagues evaluating the connector for Title II document work. Prepared 2026-09-04 for v0.10; bundle v0.11.0 (2026-09-13) supersedes it, see reports/mcp-scanner-walk-2026-09-13._
 
 This is a **supervised pilot**, not a certified compliance tool. The connector runs machine-verifiable
 checks (veraPDF for PDF/UA-1, EPUBCheck and DAISY Ace for EPUB, axe-core and IBM Equal Access for

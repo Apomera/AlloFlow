@@ -765,10 +765,10 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
       catch (_) { unexaminedStructures++; return null; }
     };
     var catalog = pdfDoc.catalog;
-    if (catalog.get(nm('OpenAction'))) counts.openAction = 1;
     if (catalog.get(nm('AA'))) counts.additionalActions++;
-    if (catalog.get(nm('AcroForm'))) unexaminedStructures++;
-    if (catalog.get(nm('Outlines'))) unexaminedStructures++;
+    // /OpenAction, /Outlines and /AcroForm are examined below, once the scoped
+    // walk helpers exist. /Collection (a PDF portfolio) stays unexamined: its
+    // embedded documents are a corpus of their own.
     if (catalog.get(nm('Collection'))) unexaminedStructures++;
     var catalogAssociatedFiles = _resolve(catalog.get(nm('AF')));
     if (catalogAssociatedFiles) counts.embeddedFiles++;
@@ -959,6 +959,9 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
         }
       }
     };
+    // Widget annotations are usually the same dictionaries as the form fields
+    // walked below; remembering them keeps each action classified once.
+    var _seenAnnotations = (typeof WeakSet === 'function') ? new WeakSet() : null;
     var pages = pdfDoc.getPages ? pdfDoc.getPages() : [];
     for (var pi = 0; pi < pages.length; pi++) {
       var pg = pages[pi];
@@ -980,6 +983,7 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
           for (var i = 0; i < annots.size(); i++) {
             var an = _resolve(annots.get(i));
             if (!an || !an.get) { pageScanFailures++; continue; }
+            if (_seenAnnotations && typeof an === 'object') _seenAnnotations.add(an);
             var subtype = String(an.get(nm('Subtype')) || '');
             if (subtype === '/FileAttachment') counts.embeddedFiles++;
             if (subtype === '/RichMedia' || subtype === '/3D' || subtype === '/Movie'
@@ -1046,6 +1050,138 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
         }
       } else if (structTree) {
         _structureFail();
+      }
+    }
+    // ── Bookmarks, forms and the open-action: examine, don't refuse (2026-09-13) ──
+    // /Outlines is a WCAG-recommended navigation aid and nearly every born-digital
+    // PDF carries one; an /AcroForm with an empty /Fields array is what Word and
+    // Acrobat leave behind after a form-free export; a destination-only
+    // /OpenAction means "open at page 1". Treating all three as active or
+    // unexamined withheld original-layout tagged-PDF delivery from 14 of the 16
+    // corpus documents, while the pipeline's own tagged export writes /Outlines.
+    // Each graph is bounded by the shared walk budgets, and every entry that can
+    // carry an action (/A, /AA, /OpenAction, /AF) goes through the same
+    // classifiers as the page, XObject and structure walks. Undocumented keys,
+    // XFA, an absent /Fields and unresolvable members still count as unexamined,
+    // so the gate fails closed exactly where it did before.
+    var _keySet = function (names) {
+      var set = {};
+      for (var ni = 0; ni < names.length; ni++) set[String(nm(names[ni]))] = 1;
+      return set;
+    };
+    var _dictKeysWithin = function (dict, allowed, fail) {
+      var keys;
+      try { keys = dict.keys(); } catch (_) { fail(); return false; }
+      if (!Array.isArray(keys) || keys.length > MAX_CONTAINER_ENTRIES) { fail(); return false; }
+      for (var ki = 0; ki < keys.length; ki++) {
+        if (!allowed[String(keys[ki])]) { fail(); return false; }
+      }
+      return true;
+    };
+    var OUTLINE_ROOT_KEYS = _keySet(['Type', 'First', 'Last', 'Count']);
+    var OUTLINE_ITEM_KEYS = _keySet(['Title', 'Parent', 'Prev', 'Next', 'First', 'Last', 'Count', 'Dest', 'A', 'SE', 'C', 'F', 'AF']);
+    var outlineState = _newWalkState();
+    var _scanOutlineItems = function (rawFirst, depth) {
+      var item = _resolveStructure(rawFirst);
+      var siblings = 0;
+      while (item) {
+        if (++siblings > MAX_CONTAINER_ENTRIES) { _structureFail(); return; }
+        if (!_claimWalkObject(outlineState, item, depth, _structureFail)) return;
+        if (typeof item.get !== 'function' || typeof item.keys !== 'function') { _structureFail(); return; }
+        if (!_dictKeysWithin(item, OUTLINE_ITEM_KEYS, _structureFail)) return;
+        _scanAssociatedFiles(item, _resolveStructure, _structureFail);
+        _scanActionEntries(item, _resolveStructure, _structureFail, false);
+        var rawChild = item.get(nm('First'));
+        if (rawChild) _scanOutlineItems(rawChild, depth + 1);
+        item = _resolveStructure(item.get(nm('Next')));
+      }
+    };
+    var rawOutlines = catalog.get(nm('Outlines'));
+    if (rawOutlines) {
+      var outlines = _resolveStructure(rawOutlines);
+      if (outlines && typeof outlines.get === 'function' && typeof outlines.keys === 'function') {
+        if (_claimWalkObject(outlineState, outlines, 0, _structureFail)
+          && _dictKeysWithin(outlines, OUTLINE_ROOT_KEYS, _structureFail)) {
+          var outlinesType = String(outlines.get(nm('Type')) || '');
+          if (outlinesType && outlinesType !== '/Outlines') _structureFail();
+          var rawFirstItem = outlines.get(nm('First'));
+          if (rawFirstItem) _scanOutlineItems(rawFirstItem, 1);
+        }
+      } else if (outlines) {
+        _structureFail();
+      }
+    }
+    // XFA is deliberately outside the key set: an XFA packet is a script host
+    // of its own and stays unexamined.
+    var ACROFORM_KEYS = _keySet(['Fields', 'NeedAppearances', 'SigFlags', 'CO', 'DR', 'DA', 'Q']);
+    var formState = _newWalkState();
+    var _scanFormFields = function (rawFields, depth) {
+      var fields = _resolveStructure(rawFields);
+      if (!fields) return;
+      if (!_isArrayObject(fields)) { _structureFail(); return; }
+      if (!_claimWalkObject(formState, fields, depth, _structureFail)) return;
+      var fieldCount;
+      try { fieldCount = _arraySize(fields); } catch (_) { _structureFail(); return; }
+      if (fieldCount > MAX_CONTAINER_ENTRIES) { _structureFail(); fieldCount = MAX_CONTAINER_ENTRIES; }
+      for (var fi = 0; fi < fieldCount; fi++) {
+        var rawField;
+        try { rawField = _arrayGet(fields, fi); } catch (_) { _structureFail(); continue; }
+        var field = _resolveStructure(rawField);
+        // An unresolvable reference was already counted by the resolver; an
+        // empty slot is malformed in its own right.
+        if (!field) { if (!rawField) _structureFail(); continue; }
+        if (typeof field.get !== 'function') { _structureFail(); continue; }
+        if (!_claimWalkObject(formState, field, depth + 1, _structureFail)) continue;
+        _scanAssociatedFiles(field, _resolveStructure, _structureFail);
+        // A field merged with its widget was already classified by the page walk.
+        if (!(_seenAnnotations && _seenAnnotations.has(field))) {
+          _scanActionEntries(field, _resolveStructure, _structureFail, false);
+        }
+        var rawKids = field.get(nm('Kids'));
+        if (rawKids) _scanFormFields(rawKids, depth + 2);
+      }
+    };
+    var rawAcroForm = catalog.get(nm('AcroForm'));
+    if (rawAcroForm) {
+      var acroForm = _resolveStructure(rawAcroForm);
+      if (acroForm && typeof acroForm.get === 'function' && typeof acroForm.keys === 'function') {
+        if (_claimWalkObject(formState, acroForm, 0, _structureFail)
+          && _dictKeysWithin(acroForm, ACROFORM_KEYS, _structureFail)) {
+          var rawFields = acroForm.get(nm('Fields'));
+          if (rawFields) _scanFormFields(rawFields, 1);
+          else _structureFail();
+          var rawCalcOrder = acroForm.get(nm('CO'));
+          if (rawCalcOrder) _scanFormFields(rawCalcOrder, 1);
+          // Default resources can carry Form XObjects; the resource walk
+          // reports any failure through its own counter.
+          var rawDefaultResources = acroForm.get(nm('DR'));
+          if (rawDefaultResources) _scanResources(rawDefaultResources, 0);
+        }
+      } else if (acroForm) {
+        _structureFail();
+      }
+    }
+    // An /OpenAction that is a destination, or a bare /GoTo, is viewer
+    // navigation. Anything else is disclosed as before and now also classified,
+    // so JavaScript on open surfaces under its own type.
+    var GOTO_ACTION_KEYS = _keySet(['Type', 'S', 'D', 'SD']);
+    var _isPassiveOpenAction = function (value) {
+      if (_isArrayObject(value) || typeof value === 'string') return true;
+      try {
+        if ((NS.PDFName && value instanceof NS.PDFName)
+          || (NS.PDFString && value instanceof NS.PDFString)
+          || (NS.PDFHexString && value instanceof NS.PDFHexString)) return true;
+      } catch (_) {}
+      if (typeof value.get !== 'function' || typeof value.keys !== 'function') return false;
+      if (String(value.get(nm('S')) || '') !== '/GoTo' || value.get(nm('Next'))) return false;
+      return _dictKeysWithin(value, GOTO_ACTION_KEYS, function () {});
+    };
+    var rawOpenAction = catalog.get(nm('OpenAction'));
+    if (rawOpenAction) {
+      var openAction = _resolveStructure(rawOpenAction);
+      if (openAction && !_isPassiveOpenAction(openAction)) {
+        counts.openAction = 1;
+        _classifyAction(openAction, _resolveStructure, _structureFail, false);
       }
     }
     var findings = [];
