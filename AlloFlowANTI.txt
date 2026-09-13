@@ -4536,15 +4536,6 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         getState: () => ({ ..._state }),
     };
 }
-/**
- * Driving Questions Board — the host wiring for question_board activities.
- *
- * This component deliberately holds NO board logic. Visibility, caps, the
- * k-anonymity floor and every refusal reason come from the contract and the
- * server; what lives here is React state, a poll, and error reporting. That
- * split is what lets the same board surface run over a different transport
- * later without touching the UI (spec §10.3).
- */
 // Shared assignment activities extracted to shared_activity_source.jsx / shared_activity_module.js.
 // The privacy-sensitive pure helpers retain exact local fallbacks for the loader's hard-timeout path;
 // the stateful panels remain CDN-owned and show a recoverable status surface while loading.

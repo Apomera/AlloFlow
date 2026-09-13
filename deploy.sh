@@ -196,6 +196,20 @@ if [[ "${SKIP_CDN_DEPLOYABLE:-0}" != "1" ]]; then
   echo "  ✓ CDN-deployable: no ≥25MiB tracked files; root lock passes npm-10 ci."
 fi
 
+# ── Step 0.75: host comment budget ──────────────────────────────────
+# AlloFlowANTI.txt is pasted into Gemini Canvas verbatim, so every comment byte
+# ships. Comments are agent-to-agent regression notes and worth keeping, but a
+# previous full strip regrew to 336 KB (12.6% of the file, 2026-09-13). This is
+# a RATCHET like the __alloT key gate: the total may only go down. To add a
+# note, condense or remove another. Re-baseline: node dev-tools/
+# check_anti_comment_budget.cjs --update (down) / --allow-increase (up, on purpose).
+if [[ "${SKIP_COMMENT_BUDGET:-0}" != "1" ]]; then
+  echo ""
+  echo "=== Step 0.75: host comment budget (ratchet) ==="
+  node dev-tools/check_anti_comment_budget.cjs --quiet
+  echo "  ✓ AlloFlowANTI.txt comment bytes are at or under the ratchet baseline."
+fi
+
 # ── Step 0.8: behavioural gate (tests affected by this change) ─────
 # Every gate above this line is STATIC — it reads source, it never RUNS it. That
 # is why two ReferenceError crashes (an undeclared __alloT in an SVG aria-label,
