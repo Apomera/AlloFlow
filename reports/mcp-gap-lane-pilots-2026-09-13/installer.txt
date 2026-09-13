@@ -12,3 +12,6 @@ The bundle lives at desktop/dist/mcpb/ (gitignored) and was not published or sen
 Rebuilt again at 14:35 local after the headless palette-prompt fix (see reports/mcp-keyless-performance-2026-09-13/): 71,150,584 bytes, SHA-256 86831fe731fe60e7aa4fc4c3f31e8bb1cb860b00193c1afaf81e941070d09cfd.
 This later build supersedes 7bd8ba60 above; both carry fixes 1-5, only the later one skips the 20 s palette wait on the connector.
 Not published or sent anywhere.
+
+Rebuilt again at 14:56 local after the UNCHANGED reply, verification export and SIMD Tesseract core (a67ae4919): 70,572,456 bytes, SHA-256 5ac99487db787d82f8e319c0bf82577a7cc5a9f1e7de67189a94376dcf484f29. This is the build to hand out; it supersedes both earlier builds above.
+Not published or sent anywhere.

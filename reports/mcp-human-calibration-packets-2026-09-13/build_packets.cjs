@@ -65,9 +65,11 @@ for (const spec of specs) {
   const cc = report.contentCoverage || {};
   const verdict = report.verdict || {};
 
-  // Observation record. Layers whose raw audit object the connector does not export are
-  // reconstructed from the report's counts and the pipeline's own log lines, and say so.
-  const verification = {
+  // Observation record. From connector build a67ae4919 the report carries compact per-engine
+  // evidence (report.verification) and it is used as is. Older reports have no such block, so
+  // their layers are reconstructed from the report's counts and the pipeline's own log lines,
+  // and say so.
+  const verification = report.verification && typeof report.verification === 'object' ? Object.assign({}, report.verification, { aiIncomplete: report.aiVerificationIncomplete === true, _source: 'report.verification (exported by the connector)' }) : {
     ai: facts.aiScore === null ? null : { score: facts.aiScore, issueCount: facts.aiIssues, passCount: facts.passes, chunksRequested: null, chunksAudited: null, _source: 'pipeline log: final AI semantic audit' },
     axe: facts.axeScore === null ? null : { score: facts.axeScore, totalViolations: num(report.remainingAxeViolations), totalIncomplete: null, _source: 'report.remainingAxeViolations + pipeline log: final headline' },
     equalAccess: facts.eaScore === null ? null : { score: facts.eaScore, failViolations: num(report.remainingEqualAccessFailures), reviewFindingCount: facts.eaReview, _source: 'report.remainingEqualAccessFailures + pipeline log: final headline / pass summary' },

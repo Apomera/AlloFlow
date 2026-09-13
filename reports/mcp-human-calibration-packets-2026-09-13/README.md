@@ -22,7 +22,7 @@ Drop `--dry-run` to write the entry into `tests/fixtures/pdf_calibration/manifes
 
 ## A caveat on the observation records
 
-The connector's report does not export the raw axe, Equal Access and AI audit objects the corpus format expects under `observed.verification`. The packets reconstruct per-layer summaries (score, remaining violations, review-finding counts) from the report fields and the pipeline's own log lines, and each layer says where its numbers came from (`_source`). Counts the connector never emitted (axe incomplete checks, AI chunk coverage) are `null`, which the evaluator reports as partial evidence rather than as a pass. Exporting the audit objects from the connector would remove this caveat; it is noted as a follow-up in the performance report.
+These five packets were produced before the connector exported its per-engine audit evidence. Their observation records therefore reconstruct per-layer summaries (score, remaining violations, review-finding counts) from the report fields and the pipeline's own log lines, and each layer says where its numbers came from (`_source`). Counts the connector did not emit at the time (axe incomplete checks, AI chunk coverage) are `null`, which the evaluator reports as partial evidence rather than as a pass. From connector build a67ae4919 on, every report carries a `verification` block with those objects and `build_packets.cjs` uses it as is, so packets built from newer runs will not carry this caveat.
 
 ## Regenerating
 
