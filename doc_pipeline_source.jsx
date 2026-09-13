@@ -182,6 +182,28 @@ function _alloUsableAxeAudit(audit) {
 function _alloHeadlessHost() {
   try { return typeof window !== 'undefined' && window.__alloHeadlessHost === true; } catch (_) { return false; }
 }
+// Opening-audit routing (2026-09-13). A document goes to the sliced audit from the start when it
+// is too big for one Vision call, too long for one answer, or IMAGE-HEAVY: a scanned 8-page,
+// 5.4 MB PDF sat under both older limits, so the whole file went to three auditors and then two
+// adaptive ones (35 MB inside a minute) and Canvas throttled the account for 25 minutes.
+// Returns { chunkFirst, reason } with reason one of bytes | pages | image-heavy | null.
+function _alloAuditRoute(dataSizeKB, pageCount, limits) {
+  var l = limits || {};
+  var kb = Number(dataSizeKB) || 0;
+  var pages = Number.isFinite(Number(pageCount)) && Number(pageCount) > 0 ? Number(pageCount) : null;
+  if (kb > (l.bytesKb || 9000)) return { chunkFirst: true, reason: 'bytes' };
+  if (pages && pages > (l.pages || 20)) return { chunkFirst: true, reason: 'pages' };
+  if (pages && kb > (l.probeKb || 1500) && (kb / pages) > (l.kbPerPage || 300)) return { chunkFirst: true, reason: 'image-heavy' };
+  return { chunkFirst: false, reason: null };
+}
+// Adaptive auditors re-upload the whole document once per extra auditor. Allowed only when the
+// document is light and no throttle is active. Returns { allowed, reason }.
+function _alloAdaptiveAuditAllowed(dataSizeKB, storming, limits) {
+  var l = limits || {};
+  if (storming) return { allowed: false, reason: 'active throttle' };
+  if ((Number(dataSizeKB) || 0) > (l.probeKb || 1500)) return { allowed: false, reason: 'heavy document' };
+  return { allowed: true, reason: null };
+}
 function _alloLiveAbortSignalOrNull(signal) {
   return signal && signal.aborted !== true ? signal : null;
 }
@@ -2359,6 +2381,13 @@ function _reattachSourceLinks(html, srcLinks) {
     budget.set(l, Number.isFinite(n) && n >= 1 ? Math.min(Math.floor(n), 50) : 1);
   }
   let anchorDepth = 0, skipDepth = 0, count = 0;
+  // Text hidden from assistive technology (aria-hidden="true": the visible copy of an image
+  // description whose alt already carries it) must not gain a link: a keyboard user could reach
+  // it while a screen-reader user never hears it (axe aria-hidden-focus, IBM
+  // aria_hidden_nontabbable; seen on the NCES tables pilot, 2026-09-13). Open hidden elements
+  // are tracked by tag name with a nesting depth so same-name tags inside them close correctly.
+  const hidden = [];
+  const VOID_TAG = /^(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/;
   let out = '';
   let i = 0;
   while (i < html.length) {
@@ -2375,6 +2404,12 @@ function _reattachSourceLinks(html, srcLinks) {
       const selfClosing = /\/>$/.test(tag);
       if (name === 'a' && !selfClosing) anchorDepth = closing ? Math.max(0, anchorDepth - 1) : anchorDepth + 1;
       else if ((name === 'style' || name === 'script' || name === 'title') && !selfClosing) skipDepth = closing ? Math.max(0, skipDepth - 1) : skipDepth + 1;
+      if (!selfClosing && !VOID_TAG.test(name)) {
+        const top = hidden[hidden.length - 1];
+        if (closing) { if (top && top.name === name && --top.depth === 0) hidden.pop(); }
+        else if (top && top.name === name) top.depth++;
+        else if (/\saria-hidden\s*=\s*["']?true["']?/i.test(tag)) hidden.push({ name, depth: 1 });
+      }
     }
     out += tag;
     i = gt + 1;
@@ -2382,7 +2417,7 @@ function _reattachSourceLinks(html, srcLinks) {
   return { html: out, count };
 
   function _rewriteTextRun(run) {
-    if (!run || anchorDepth > 0 || skipDepth > 0) return run;
+    if (!run || anchorDepth > 0 || skipDepth > 0 || hidden.length > 0) return run;
     for (const l of links) {
       if ((budget.get(l) || 0) <= 0) continue;
       const at = run.indexOf(l.text);
@@ -7420,6 +7455,12 @@ var createDocPipeline = function(deps) {
   // Recovery stays responsive: any success clamps the pause back down (see _geminiNoteSuccess).
   var _GEMINI_STORM_SUSTAINED = 6;                // consecutive failures past which a storm is sustained, not a blip
   var _GEMINI_COOLDOWN_CAP_MS = 25000;            // ceiling while it may still be a blip (the 2026-07 decision, unchanged)
+  var _GEMINI_HOLD_SIGNATURE_MS = 45000;          // (2026-09-13) an auth failure that took this long is the Canvas proxy HOLDING the request before refusing it
+  var _GEMINI_HOLD_TRIP = 3;                      // consecutive held auth failures that switch to long waits + a cheap probe before the next real call
+  var _GEMINI_HOLD_COOLDOWN_MS = 120000;          // first long wait once the hold signature is confirmed (grows 1.5x per further held failure, capped at the sustained ceiling)
+  var _geminiHoldStreak = 0;                      // consecutive auth failures that carried the hold signature
+  var _geminiHoldGateArmed = false;               // the next real call sends a 1 KB probe first
+  var _geminiLastAuthAttemptMs = null;            // transport duration of the auth failure being noted (set by the call wrapper)
   var _GEMINI_SUSTAINED_COOLDOWN_CAP_MS = 180000; // ceiling once it is demonstrably sustained
   var _geminiStormCooldownMs = function (streak, trip) {
     var _ceil = (streak >= _GEMINI_STORM_SUSTAINED) ? _GEMINI_SUSTAINED_COOLDOWN_CAP_MS : _GEMINI_COOLDOWN_CAP_MS;
@@ -7976,13 +8017,27 @@ var createDocPipeline = function(deps) {
     return ms;
   };
   var _geminiNoteAuthFail = function(stats, owner) {
+    // The attempt's transport duration arrives through _geminiLastAuthAttemptMs (set by the call
+    // wrapper just before this note) so the signature the older tests slice on stays put.
+    var attemptMs = _geminiLastAuthAttemptMs; _geminiLastAuthAttemptMs = null;
+    if (Number.isFinite(Number(attemptMs)) && Number(attemptMs) >= _GEMINI_HOLD_SIGNATURE_MS) _geminiHoldStreak++;
+    else if (Number.isFinite(Number(attemptMs))) _geminiHoldStreak = 0;
     _geminiOkStreak = 0;
     _geminiAuthStreak++;
     _pipeThrottleScoreProbe("fail", owner);
     if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
       // Escalate the cooldown as the storm PERSISTS (12s → up to 90s): stop hammering a throttled
       // proxy so its quota window can recover. Each new call / retry waits the longer cooldown.
-      var _cd = _geminiStormCooldownMs(_geminiAuthStreak, _GEMINI_STORM_TRIP); // 25s ceiling for a blip; grows past _GEMINI_STORM_SUSTAINED (see the constants)
+      var _cd = _geminiStormCooldownMs(_geminiAuthStreak, _GEMINI_STORM_TRIP);
+      if (_geminiHoldStreak >= _GEMINI_HOLD_TRIP) {
+        // The proxy is holding requests about a minute before refusing them: short cooldowns only
+        // buy another minute-long refusal per attempt. Wait long, then probe cheaply.
+        var _holdCd = Math.min(_GEMINI_SUSTAINED_COOLDOWN_CAP_MS, Math.round(_GEMINI_HOLD_COOLDOWN_MS * Math.pow(1.5, _geminiHoldStreak - _GEMINI_HOLD_TRIP)));
+        if (_holdCd > _cd) _cd = _holdCd;
+        _geminiHoldGateArmed = true;
+        warnLog('[GeminiGate] Canvas proxy is holding requests before refusing them (' + _geminiHoldStreak + ' held failures in a row) — waiting ' + Math.round(_cd / 1000) + 's, then a 1 KB probe must answer before the next full call is sent.');
+        _pipeThrottleEvent('hold_signature', { holdStreak: _geminiHoldStreak, cooldownMs: _cd }, owner);
+      } // 25s ceiling for a blip; grows past _GEMINI_STORM_SUSTAINED (see the constants)
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown');
       var _capBefore = _geminiCap;
       _geminiCap = _GEMINI_STORM_MIN;
@@ -8091,6 +8146,8 @@ var createDocPipeline = function(deps) {
     _geminiOffRouteOkStreak = 0;
     _geminiAuthStreak = 0;
     _geminiTransientStreak = 0;
+    _geminiHoldStreak = 0;
+    _geminiHoldGateArmed = false;
     _geminiLastFailureProfile = null;
     if (_geminiCap < _geminiEffectiveMax) {
       // (2026-08-15) A success is evidence the wall has eased, so it must also SHORTEN a
@@ -8248,6 +8305,8 @@ var createDocPipeline = function(deps) {
       cooldownRemainingMs: cooldownRemainingMs,
       authStreak: _geminiAuthStreak,
       transientStreak: _geminiTransientStreak,
+      holdStreak: _geminiHoldStreak,
+      holdGateArmed: _geminiHoldGateArmed,
       lastRetryAfterMs: _geminiLastRetryAfterMs,
       capped: _geminiCap < _geminiEffectiveMax,
       storming: cooldownRemainingMs > 0
@@ -8799,6 +8858,7 @@ var createDocPipeline = function(deps) {
       var _outcomeNoted = false;
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
       var _attemptQueuedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+      var _attemptTransportAt = 0; // set when the transport starts; the breaker reads the attempt's duration from it
       // ── M15 (audit 2026-07-26): record the breaker outcome BEFORE the slot is released ──────
       // _geminiGate released the slot one `.then` link off the transport hold and pumped the queue
       // immediately, while the breaker note sat two-plus links further downstream in the handlers
@@ -8855,7 +8915,7 @@ var createDocPipeline = function(deps) {
             : null;
           if (_repeatState && _repeatState.suppressed) return;
           _rememberGeminiFailure(requestProfile);
-          if (_canvasAuth) _geminiNoteAuthFail(_callStats, owner);
+          if (_canvasAuth) { _geminiLastAuthAttemptMs = _attemptTransportAt ? Math.max(0, ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _attemptTransportAt) : null; _geminiNoteAuthFail(_callStats, owner); }
           else _geminiNoteTransientFail(_callStats, owner);
           return;
         }
@@ -8886,7 +8946,24 @@ var createDocPipeline = function(deps) {
         if (typeof onTransportStart === 'function') {
           try { onTransportStart({ attempt: n, queuedMs: Math.max(0, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _attemptQueuedAt)) }); } catch (_) {}
         }
-        var _underlying = Promise.resolve().then(fn);
+        _attemptTransportAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+        // Hold signature armed: a 1 KB probe goes first, inside this call's own slot. A refusal
+        // fails this call the same way the full request would have (same classification, same
+        // breaker note, same retry policy) at a fraction of the upload; an answer disarms the gate
+        // and the real request follows at once.
+        var _underlying = (_geminiHoldGateArmed && typeof _rawCallGemini === 'function')
+          ? Promise.resolve().then(function () { return _rawCallGemini(_geminiMinimalProbePrompt(), false, false, null, null, _gateSignal); }).then(function (probeReply) {
+              if (!/^OK(?:\s|[.!?]|$)/i.test(String(probeReply || '').trim())) {
+                var _held = new Error('API_AUTH_FAILED');
+                _held.canvasTransientAuth = true;
+                _held.holdProbe = true;
+                throw _held;
+              }
+              _geminiHoldGateArmed = false;
+              _pipeLog('Throttle', 'Recovery probe (1KB) answered — sending the real request', null, owner || null);
+              return fn();
+            })
+          : Promise.resolve().then(fn);
         var _raced = _withTimeout(_underlying, timeoutMs, label + (n ? ' (retry ' + n + ')' : ''));
         // Hold the slot until the UNDERLYING call settles: when the timer wins the race the fetch
         // is still consuming a real connection. Ceiling: 45s past the timeout, so a wedged
@@ -18317,6 +18394,7 @@ var createDocPipeline = function(deps) {
   const _AUDIT_SLICE_BYTES_KB = 9000;   // > ~9MB raw (~12MB base64): near Gemini's inline limit — whole-doc WILL fail → chunk-first
   const _AUDIT_SLICE_PROBE_KB = 1500;   // below this, skip the page-count probe entirely (no pdf-lib cost on small docs)
   const _AUDIT_SLICE_PAGES   = 20;      // page-count threshold: above this, chunk-first even if bytes are modest (output-truncation risk)
+  const _AUDIT_SLICE_KB_PER_PAGE = 300; // (2026-09-13) above this many KB per page the pages are images (scans): slice from the start rather than send every page to every auditor
   const _AUDIT_SLICE_PAGES_PER = 4;     // pages per slice — small enough to fit the model reliably
   const _AUDIT_SLICE_MAX     = 40;      // cap total slices (throttle/cost guard); pages-per-slice grows past this
   // P4 (deep dive 2026-07-02): delegate to _b64ToBytes — this duplicate had NO 200MB OOM cap,
@@ -19084,16 +19162,18 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         _applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: _imageInputMime ? 'the opening image audit' : 'the opening PDF audit' });
       } catch (_) {}
       let _chunkFirst = false;
+      let _chunkFirstReason = null;
       if (_sliceCapable) {
-        if (dataSizeKB > _AUDIT_SLICE_BYTES_KB) _chunkFirst = true;
-        else if (dataSizeKB > _AUDIT_SLICE_PROBE_KB) {
-          const _pc = await _pdfAuditPageCount(base64Data);
-          if (_pc && _pc > _AUDIT_SLICE_PAGES) _chunkFirst = true;
-        }
+        // The page count is probed only when the size alone does not decide (no pdf-lib cost on
+        // small documents); image-heavy detection needs it.
+        const _pc = (dataSizeKB > _AUDIT_SLICE_BYTES_KB || dataSizeKB <= _AUDIT_SLICE_PROBE_KB) ? null : await _pdfAuditPageCount(base64Data);
+        const _route = _alloAuditRoute(dataSizeKB, _pc, { bytesKb: _AUDIT_SLICE_BYTES_KB, pages: _AUDIT_SLICE_PAGES, probeKb: _AUDIT_SLICE_PROBE_KB, kbPerPage: _AUDIT_SLICE_KB_PER_PAGE });
+        _chunkFirst = _route.chunkFirst;
+        _chunkFirstReason = _route.reason;
       }
       if (_chunkFirst) {
         if (_cancelAuditNow()) return null;
-        warnLog(`[PDF Audit] Large document (~${dataSizeKB}KB) — auditing in page slices from the start (a whole-document pass would exceed the Vision model).`);
+        warnLog(`[PDF Audit] ${_chunkFirstReason === 'image-heavy' ? 'Image-heavy document' : 'Large document'} (~${dataSizeKB}KB${_chunkFirstReason === 'image-heavy' ? ', scanned or picture pages' : ''}) — auditing in page slices from the start (${_chunkFirstReason === 'image-heavy' ? 'a whole-document pass would send every page image to each auditor' : 'a whole-document pass would exceed the Vision model'}).`);
         if (_auditUiCurrent()) {
         if (!_skipUi) addToast && addToast('📄 Large PDF — auditing in page slices…', 'info');
         }
@@ -19194,7 +19274,14 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       const lowConfidence = parsedAudits.some(a => a.confidence === 'low');
       const initialRange = initialScores.length > 1 ? Math.max(...initialScores) - Math.min(...initialScores) : 0;
 
-      if (!_auditCancelled() && parsedAudits.length >= 2 && parsedAudits.length < allVariants.length && (initialRange > 20 || lowConfidence)) {
+      const _adaptiveGate = _alloAdaptiveAuditAllowed(dataSizeKB, !!(_geminiThrottleInfo && _geminiThrottleInfo().storming), { probeKb: _AUDIT_SLICE_PROBE_KB });
+      if (!_adaptiveGate.allowed && !_auditCancelled() && parsedAudits.length >= 2 && parsedAudits.length < allVariants.length && (initialRange > 20 || lowConfidence)) {
+        // (2026-09-13) Each extra auditor re-uploads the whole document; on a heavy document or
+        // into an active throttle that is what trips Canvas. The reliability band below reports
+        // the disagreement honestly instead.
+        warnLog(`[PDF Audit] Adaptive auditors skipped (${_adaptiveGate.reason}): scores ${initialScores.join(', ')} stand as the panel.`);
+      }
+      if (_adaptiveGate.allowed && !_auditCancelled() && parsedAudits.length >= 2 && parsedAudits.length < allVariants.length && (initialRange > 20 || lowConfidence)) {
         const reason = initialRange > 20 ? `score divergence (${initialRange} point spread: ${initialScores.join(', ')})` : 'low confidence flagged by auditor';
         // $5: escalate to the user's configured auditor count (at least the historical +2),
         // bounded by the variant pool — the 3-auditor start only sticks for well-behaved docs.
@@ -22207,9 +22294,13 @@ HTML section ${chunkNum}/${chunks.length}:
       const cols = (parsed.chartData && Array.isArray(parsed.chartData.columns)) ? parsed.chartData.columns.slice(0, 8) : [];
       const rows = (parsed.chartData && Array.isArray(parsed.chartData.rows)) ? parsed.chartData.rows.slice(0, 8) : [];
       const esc2 = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // A data table needs a caption (the pipeline's own audit rubric deducts without one); name
+      // the chart it was read from so the table is meaningful when reached out of context.
+      const _capAlt = String(im.getAttribute('alt') || '').trim();
+      const _chartCaption = 'Chart data, AI-estimated' + (_capAlt ? ': ' + _capAlt.slice(0, 160) : '');
       det.innerHTML = '<summary>Chart description (AI-generated)</summary>'
         + (parsed.chartSummary ? '<p>' + esc2(String(parsed.chartSummary).slice(0, 1200)) + '</p>' : '')
-        + (rows.length ? ('<table><thead><tr>' + cols.map((c) => '<th scope="col">' + esc2(c) + '</th>').join('') + '</tr></thead><tbody>'
+        + (rows.length ? ('<table><caption>' + esc2(_chartCaption) + '</caption><thead><tr>' + cols.map((c) => '<th scope="col">' + esc2(c) + '</th>').join('') + '</tr></thead><tbody>'
           + rows.map((r) => '<tr>' + (Array.isArray(r) ? r : [r]).slice(0, 8).map((c) => '<td>' + esc2(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>') : '')
         + '<p><em>Values are AI-estimated from the image — verify against the source data before relying on them.</em></p>';
       if (im.parentNode) im.parentNode.insertBefore(det, im.nextSibling);
@@ -29712,7 +29803,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                     const _ownedControls = _childTag === 'DIV'
                       && _childText.replace(/\s+/g, '') === 'UploadimagePickextracted'
                       && !!node.querySelector('label input[type="file"]')
-                      && !!node.querySelector('button[aria-label="Pick from extracted images"]');
+                      && !!node.querySelector('button[aria-label="Pick extracted image from this document"],button[aria-label="Pick from extracted images"]');
                     if (!_ownedLabel && !_ownedIcon && !_ownedControls) _keep.push(node.outerHTML);
                   });
                   return;
@@ -29786,15 +29877,15 @@ ${hasSrc
   : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
 <span style="font-size:13px;color:#334155;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
 
-<span style="font-size:11px;color:#64748b;font-style:italic">Drag an extracted image here, or:</span>`}
+<span style="font-size:11px;color:#475569;font-style:italic">Drag an extracted image here, or:</span>`}
 <div data-alloflow-image-toolbar="${imgId}" style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
 <label data-alloflow-image-replace="${imgId}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:${hasSrc ? '#475569' : '#1d4ed8'};color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${hasSrc ? '#334155' : '#1e3a8a'}">
 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${hasSrc ? '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>' : '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'}</svg>
 <span style="color:#ffffff !important">${hasSrc ? (isRegenerated ? 'Replace (AI generated)' : 'Replace') : 'Upload image'}</span>
 <input type="file" accept="image/*" style="display:none" onchange="${_uploadHandler2}">
 </label>
-${!hasSrc ? `<button type="button" onclick="${_pickHandler2}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick from extracted images"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>` : ''}
-${!hasSrc ? `<button type="button" data-allo-genai onclick="(function(b){b.disabled=true;var s0=b.querySelector('span');if(s0)s0.textContent='⏳ Generating…';try{if(window.parent&&window.parent.__alloflowGenerateImage){window.parent.__alloflowGenerateImage('${imgId}');}else{if(s0)s0.textContent='AI unavailable';}}catch(_){if(s0)s0.textContent='AI unavailable';}})(this)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#0d9488;color:#ffffff !important;border:1px solid #0f766e;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Generate an AI illustration from the description"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg><span style="color:#ffffff !important">✨ Generate (AI)</span></button>` : ''}
+${!hasSrc ? `<button type="button" onclick="${_pickHandler2}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick extracted image from this document"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>` : ''}
+${!hasSrc ? `<button type="button" data-allo-genai onclick="(function(b){b.disabled=true;var s0=b.querySelector('span');if(s0)s0.textContent='⏳ Generating…';try{if(window.parent&&window.parent.__alloflowGenerateImage){window.parent.__alloflowGenerateImage('${imgId}');}else{if(s0)s0.textContent='AI unavailable';}}catch(_){if(s0)s0.textContent='AI unavailable';}})(this)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#0f766e;color:#ffffff !important;border:1px solid #115e59;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Generate (AI) illustration from the description"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg><span style="color:#ffffff !important">Generate (AI)</span></button>` : ''}
 ${hasCropData ? `<button data-alloflow-crop-control="${imgId}" onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#6d28d9;color:#ffffff;border:1px solid #4c1d95;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Adjust crop for this image"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>Adjust Crop</button>` : ''}
 </div>
 </div>
