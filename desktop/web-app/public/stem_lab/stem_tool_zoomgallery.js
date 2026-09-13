@@ -286,13 +286,31 @@
     measure_first_sr: 'First point marked. Mark the second.',
     measure_sr: 'Distance between the points: {d}.',
     measure_result: 'Distance: {d}',
+    chal_heading: 'Scale challenge',
+    chal_estimate_label: 'Your estimate first',
+    chal_unit_km: 'km',
+    chal_unit_ly: 'light years',
+    chal_lock: 'Lock in my estimate',
+    chal_locked: 'You estimated {est}. Now measure it: Measure is on, so click the two ends.',
+    chal_hint_label: 'How to measure it',
+    chal_show_answer: 'Show the accepted value',
+    chal_answer: 'Accepted value: {ans}.',
+    chal_answer_approx: 'Accepted value: {ans}, itself approximate.',
+    chal_measured: 'You measured {m}, which is within {pct}% of the accepted value.',
+    chal_measured_far: 'You measured {m}, which is {factor} times the accepted value. Check that you measured the right two ends.',
+    chal_est_spot: 'Your estimate was spot on.',
+    chal_est_close: 'Your estimate was close: within a factor of {factor}.',
+    chal_est_off: 'Your estimate was {factor} times out, which is {dec} powers of ten.',
+    chal_reset: 'Try another estimate',
+    chal_invalid: 'Enter a number for your estimate.',
+    chal_locked_sr: 'Estimate locked in at {est}. Measure mode is on: mark the two ends.',
     credit: 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'
   };
 
   // ── Curated openly-licensed images (identical to the companion window) ──
   var IMAGES = [
     { id: 'earthrise', emoji: '🌍', name: 'Earthrise (Apollo 8, 1968)', type: 'image', cors: false, width: 3000, height: 3000,
-      scale: { px: 453, metres: 1.2742e7, ref: 'the Earth', approx: false, basis: 'The Earth is 12,742 km across (mean diameter). Its disc measures about 453 pixels across in this scan; that sets the scale at the Earth. The lunar horizon in the foreground is far closer, so the bar does not apply to it.' },
+      scale: { px: 453, metres: 1.2742e7, ref: 'the Earth', approx: false, basis: 'The Earth is 12,742 km across (mean diameter). Its disc measures about 453 pixels across in this scan; that sets the scale at the Earth. The lunar horizon in the foreground is far closer, so the bar does not apply to it.', challenge: { ask: 'How wide is the Earth in this photograph, at its widest?', unit: 'km', answerMetres: 1.2742e7, tol: 0.15, hint: 'Measure straight across the lit disc at its widest point. The dark part of the Earth is there too; the widest lit stretch is close to the full width.' } },
       src: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~orig.jpg',
       thumb: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~thumb.jpg',
       source: 'NASA', credit: 'NASA / Apollo 8 (public domain)', link: 'https://images.nasa.gov/details/as08-14-2383',
@@ -309,7 +327,7 @@
       notice: 'Zoom into the rim of the print, where the soil was pushed up. How sharp are those edges? Then look at the small black crosses spread evenly over the whole picture, and decide whether they are on the Moon or not.',
       wonder: 'This print was made in a place with no wind, no rain and almost no air. What would have to happen for it to be rubbed out?' },
     { id: 'pillars', emoji: '🌌', name: 'Pillars of Creation in near-infrared (Hubble)', type: 'image', cors: false, width: 1920, height: 1800,
-      scale: { px: 1540, metres: 4.73e16, ref: 'the tallest pillar', approx: true, basis: 'NASA describes the pillars as about 5 light-years tall; the tallest one spans about 1,540 pixels of this frame. Distances to the Eagle Nebula carry real uncertainty, so treat the bar as a guide, not a measurement.' },
+      scale: { px: 1540, metres: 4.73e16, ref: 'the tallest pillar', approx: true, basis: 'NASA describes the pillars as about 5 light-years tall; the tallest one spans about 1,540 pixels of this frame. Distances to the Eagle Nebula carry real uncertainty, so treat the bar as a guide, not a measurement.', challenge: { ask: 'How tall is the tallest pillar, from its tip to the bottom of the frame?', unit: 'ly', answerMetres: 4.73e16, tol: 0.4, hint: 'Start at the very tip of the left pillar and finish at the bottom edge of the picture. NASA puts the pillars at about 5 light-years, so treat the answer as approximate.' } },
       src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000842/GSFC_20171208_Archive_e000842~large.jpg',
       thumb: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000842/GSFC_20171208_Archive_e000842~thumb.jpg',
       source: 'NASA/ESA Hubble', credit: 'NASA, ESA / Hubble Space Telescope (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e000842',
@@ -318,7 +336,7 @@
       notice: 'Zoom into the knobbly tip of the tallest column. Count how many separate bright points you can find that sit inside or right at the edge of the dark material, rather than in the open sky.',
       wonder: 'This was taken in near-infrared light, which passes through dust that blocks visible light. Looking at how see-through these columns are, what would you expect the same view to look like in ordinary light?' },
     { id: 'carina', emoji: '✨', name: 'Cosmic Cliffs, Carina Nebula (Webb)', type: 'image', cors: false, width: 1920, height: 1100,
-      scale: { px: 770, metres: 6.62e16, ref: 'the tallest peaks', approx: true, basis: 'NASA describes the tallest peaks of the Cosmic Cliffs as about 7 light-years high; that height spans roughly 770 pixels of this frame. Treat the bar as a guide, not a measurement.' },
+      scale: { px: 770, metres: 6.62e16, ref: 'the tallest peaks', approx: true, basis: 'NASA describes the tallest peaks of the Cosmic Cliffs as about 7 light-years high; that height spans roughly 770 pixels of this frame. Treat the bar as a guide, not a measurement.', challenge: { ask: 'How high are the tallest peaks of the cliffs, from the ridge down to the bottom of the frame?', unit: 'ly', answerMetres: 6.62e16, tol: 0.4, hint: 'Start at the top of the highest ridge and finish at the bottom edge of the picture. NASA puts the tallest peaks at about 7 light-years, so treat the answer as approximate.' } },
       src: 'https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~large.jpg',
       thumb: 'https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~thumb.jpg',
       source: 'NASA/ESA/CSA Webb', credit: 'NASA, ESA, CSA, STScI / James Webb Space Telescope (public domain)', link: 'https://images.nasa.gov/details/carina_nebula',
@@ -343,7 +361,7 @@
       notice: 'Zoom into the rock right beside the rover’s wheels. Is it loose sand or solid layered stone, and how can you tell? Look for any place the rover has disturbed it.',
       wonder: 'This picture was taken by a camera on the end of the rover’s own arm, yet no arm appears anywhere in it. How could that be?' },
     { id: 'solarflare', emoji: '☀️', name: 'X-class Solar Flare (SDO, 2014)', type: 'image', cors: false, width: 4096, height: 4096,
-      scale: { px: 3280, metres: 1.3914e9, ref: 'the Sun', approx: false, basis: 'The Sun is 1,391,400 km across. Its disc measures about 3,280 pixels across in this image (the extreme-ultraviolet limb is soft, so allow a percent or two).' },
+      scale: { px: 3280, metres: 1.3914e9, ref: 'the Sun', approx: false, basis: 'The Sun is 1,391,400 km across. Its disc measures about 3,280 pixels across in this image (the extreme-ultraviolet limb is soft, so allow a percent or two).', challenge: { ask: 'How wide is the Sun, edge to edge?', unit: 'km', answerMetres: 1.3914e9, tol: 0.12, hint: 'Measure across the disc through its middle, from the left edge of the glowing surface to the right edge. Do not include the flare or the faint corona.' } },
       src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001209/GSFC_20171208_Archive_e001209~orig.jpg',
       thumb: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001209/GSFC_20171208_Archive_e001209~thumb.jpg',
       source: 'NASA SDO', credit: 'NASA / Solar Dynamics Observatory (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e001209',
@@ -500,7 +518,9 @@
       { id: 'zoom_notice', label: 'Record what you notice up close', icon: '🔬',
         check: function (d) { return !!(d && (d.noticedCount || 0) >= 1); } },
       { id: 'zoom_coach', label: 'Take your observation to the coach', icon: '💬',
-        check: function (d) { return !!(d && (d.coachCount || 0) >= 1); } }
+        check: function (d) { return !!(d && (d.coachCount || 0) >= 1); } },
+      { id: 'zoom_scale', label: 'Estimate a real size, then measure it', icon: '📏',
+        check: function (d) { return !!(d && (d.scaleChallengeCount || 0) >= 1); } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -543,6 +563,14 @@
       var _mpts = React.useState([]); var measurePts = _mpts[0], setMeasurePts = _mpts[1];
       var measurePtsRef = React.useRef([]);
       var measureSvgRef = React.useRef(null);
+      // Scale challenge: estimate first, then measure. Locked estimate in metres.
+      var _chalGuess = React.useState(''); var chalGuess = _chalGuess[0], setChalGuess = _chalGuess[1];
+      var _chalLocked = React.useState(null); var chalLocked = _chalLocked[0], setChalLocked = _chalLocked[1];
+      var _chalReveal = React.useState(false); var chalReveal = _chalReveal[0], setChalReveal = _chalReveal[1];
+      var chalCountedRef = React.useRef(false);
+      // Read by the viewer's click handler, which is registered once and would
+      // otherwise see the first render's value forever.
+      var chalLockedRef = React.useRef(null); chalLockedRef.current = chalLocked;
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
       var _navOn = React.useState(true); var navOn = _navOn[0], setNavOn = _navOn[1];
       var navOnRef = React.useRef(true);
@@ -657,6 +685,56 @@
         var m = px * (it.scale.metres / it.scale.px);
         return (it.scale.approx ? I('scale_about') + ' ' : '') + fmtLen(m);
       }
+      function chalUnitMetres(unit) { return unit === 'ly' ? 9.4607e15 : 1e3; }
+      function chalLockIn() {
+        var ch = currentRef.current && currentRef.current.scale && currentRef.current.scale.challenge; if (!ch) return;
+        var n = parseFloat(String(chalGuess).replace(/,/g, ''));
+        if (!(n > 0)) { say(I('chal_invalid')); return; }
+        var metres = n * chalUnitMetres(ch.unit);
+        setChalLocked(metres); setChalReveal(false); chalCountedRef.current = false;
+        measurePtsRef.current = []; setMeasurePts([]); paintMeasure();
+        setMeasureMode(true); setPinMode(false); focusViewer();
+        say(I('chal_locked_sr', { est: fmtLen(metres) }));
+      }
+      function renderChallenge() {
+        var ch = current && current.scale && current.scale.challenge; if (!ch) return null;
+        var approx = !!current.scale.approx;
+        var measuredM = measurePts.length === 2 ? Math.hypot(measurePts[1].x - measurePts[0].x, measurePts[1].y - measurePts[0].y) * (current.scale.metres / current.scale.px) : null;
+        var lines = [];
+        if (chalLocked != null && measuredM) {
+          var ratioM = measuredM / ch.answerMetres;
+          lines.push(ratioM > 0.5 && ratioM < 2
+            ? I('chal_measured', { m: fmtLen(measuredM), pct: Math.max(1, Math.round(Math.abs(ratioM - 1) * 100)) })
+            : I('chal_measured_far', { m: fmtLen(measuredM), factor: (Math.round((ratioM >= 1 ? ratioM : 1 / ratioM) * 10) / 10).toString() }));
+          var ratioE = chalLocked / ch.answerMetres, fE = ratioE >= 1 ? ratioE : 1 / ratioE;
+          lines.push(fE <= 1 + ch.tol ? I('chal_est_spot') : fE <= 3 ? I('chal_est_close', { factor: (Math.round(fE * 10) / 10).toString() })
+            : I('chal_est_off', { factor: Math.round(fE).toLocaleString('en-US'), dec: (Math.round(Math.log(fE) / Math.LN10 * 10) / 10).toString() }));
+        }
+        if ((chalLocked != null && measuredM) || chalReveal) lines.push(approx ? I('chal_answer_approx', { ans: fmtLen(ch.answerMetres) }) : I('chal_answer', { ans: fmtLen(ch.answerMetres) }));
+        return h('div', { style: { marginTop: 4 } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, I('chal_heading')),
+          h('div', { style: card },
+            h('p', { style: { margin: '0 0 6px' } }, ch.ask),
+            chalLocked == null ? h('div', null,
+              h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } }, I('chal_estimate_label'),
+                h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 } },
+                  h('input', { type: 'text', inputMode: 'decimal', value: chalGuess, onChange: function (e) { setChalGuess(e.target.value); },
+                    onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); chalLockIn(); } },
+                    'aria-label': I('chal_estimate_label') + ' (' + (ch.unit === 'ly' ? I('chal_unit_ly') : I('chal_unit_km')) + ')',
+                    style: { flex: '1 1 90px', minWidth: 0, padding: '6px 8px', borderRadius: 8, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.8125rem' } }),
+                  h('span', { style: { fontSize: '0.75rem', color: P.text } }, ch.unit === 'ly' ? I('chal_unit_ly') : I('chal_unit_km')))),
+              h('div', { style: { display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' } },
+                h('button', { type: 'button', onClick: chalLockIn, style: goBtn }, I('chal_lock')),
+                !chalReveal ? h('button', { type: 'button', onClick: function () { setChalReveal(true); }, style: btnBase }, I('chal_show_answer')) : null),
+              lines.length ? h('div', { role: 'status', style: Object.assign({}, card, { marginTop: 6, borderColor: P.accent, fontSize: '0.78125rem' }) }, lines.map(function (l, i) { return h('p', { key: i, style: { margin: i ? '6px 0 0' : 0 } }, l); })) : null)
+            : h('div', null,
+              h('p', { style: { margin: '0 0 6px', fontSize: '0.78125rem' } }, I('chal_locked', { est: fmtLen(chalLocked) })),
+              h('details', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 6 } }, h('summary', { style: { cursor: 'pointer' } }, I('chal_hint_label')), h('p', { style: { margin: '4px 0 0' } }, ch.hint)),
+              lines.length ? h('div', { role: 'status', style: Object.assign({}, card, { borderColor: P.accent, fontSize: '0.78125rem' }) }, lines.map(function (l, i) { return h('p', { key: i, style: { margin: i ? '6px 0 0' : 0 } }, l); })) : null,
+              h('div', { style: { display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' } },
+                !lines.length ? h('button', { type: 'button', onClick: function () { setChalReveal(true); }, style: btnBase }, I('chal_show_answer')) : null,
+                h('button', { type: 'button', onClick: function () { setChalLocked(null); setChalReveal(false); setChalGuess(''); chalCountedRef.current = false; }, style: btnBase }, I('chal_reset'))))));
+      }
       function paintMeasure() {
         var svg = measureSvgRef.current, v = viewerRef.current;
         if (!svg) return;
@@ -688,7 +766,10 @@
         var next = prev.length >= 2 ? [{ x: img.x, y: img.y }] : prev.concat([{ x: img.x, y: img.y }]);
         measurePtsRef.current = next; setMeasurePts(next);
         paintMeasure();
-        if (next.length === 2) { var d = measureDistance(next); if (d) say(I('measure_sr', { d: d })); bumpSlice('measureCount'); }
+        if (next.length === 2) {
+          var d = measureDistance(next); if (d) say(I('measure_sr', { d: d })); bumpSlice('measureCount');
+          if (chalLockedRef.current != null && !chalCountedRef.current) { chalCountedRef.current = true; bumpSlice('scaleChallengeCount'); }
+        }
         else say(I('measure_first_sr'));
         return true;
       }
@@ -974,6 +1055,7 @@
       function openImage(id) {
         setPinMode(false); setStep('notice'); setCopied(''); setLinkState('');
         setMeasureMode(false); measurePtsRef.current = []; setMeasurePts([]);
+        setChalGuess(''); setChalLocked(null); setChalReveal(false); chalCountedRef.current = false;
         setCurrentId(id);
         bumpSlice('openedCount');
       }
@@ -1265,6 +1347,7 @@
           h('aside', { 'aria-label': W('coach_aria'), style: { flex: '0 1 300px', minWidth: 240, alignSelf: 'flex-start', background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 } },
             h('h3', { style: { margin: 0, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, W('coach_heading')),
             renderCoach(),
+            renderChallenge(),
             // Text alternative for the picture itself. A deep-zoom viewer is a
             // canvas: without this there is nothing for a screen reader to read,
             // and no way into Notice/Wonder for a student who cannot see it.

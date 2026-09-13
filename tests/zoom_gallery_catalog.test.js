@@ -531,3 +531,44 @@ describe('Zoom Gallery measure tool', () => {
     }
   });
 });
+
+// 2026-09-13. Scale challenge: estimate first, then measure, then compare
+// both with the accepted value. Real host: estimate 800 km, measured
+// 12,738 km ("within 1%"), "your estimate was 16 times out, which is 1.2
+// powers of ten"; the reveal-only path on the Pillars reads "5 light years,
+// itself approximate".
+describe('Zoom Gallery scale challenge', () => {
+  it('every image with a scale has a challenge whose answer is the scale reference, in a unit a student can type', () => {
+    for (const it of toolImages.filter((i) => i.scale)) {
+      const ch = it.scale.challenge;
+      expect(ch, it.id + ' challenge').toBeTruthy();
+      expect(ch.ask.length).toBeGreaterThan(20);
+      expect(ch.hint.length).toBeGreaterThan(40);
+      expect(['km', 'ly']).toContain(ch.unit);
+      expect(Math.abs(ch.answerMetres / it.scale.metres - 1), it.id + ' answer is the reference').toBeLessThan(0.01);
+      // approximate references get a wider tolerance and say so in the hint
+      if (it.scale.approx) { expect(ch.tol).toBeGreaterThanOrEqual(0.3); expect(ch.hint).toMatch(/approximate/); } else expect(ch.tol).toBeLessThanOrEqual(0.15);
+    }
+    for (const it of toolImages.filter((i) => !i.scale)) expect(it.scale).toBeUndefined();
+  });
+  it('locking in an estimate turns Measure on, and the click handler reads the lock through a ref', () => {
+    const lock = toolSrc.slice(toolSrc.indexOf('function chalLockIn'), toolSrc.indexOf('function renderChallenge'));
+    expect(lock).toMatch(/setMeasureMode\(true\); setPinMode\(false\); focusViewer\(\);/);
+    expect(lock).toMatch(/var metres = n \* chalUnitMetres\(ch\.unit\);/);
+    expect(toolSrc).toMatch(/var chalLockedRef = React\.useRef\(null\); chalLockedRef\.current = chalLocked;/);
+    expect(toolSrc).toMatch(/if \(chalLockedRef\.current != null && !chalCountedRef\.current\) \{ chalCountedRef\.current = true; bumpSlice\('scaleChallengeCount'\); \}/);
+    expect(toolSrc).toMatch(/id: 'zoom_scale'[\s\S]{0,200}scaleChallengeCount/);
+  });
+  it('never says "wrong": the verdict names the factor, the accepted value is always available, and a percent floor of 1', () => {
+    const r = toolSrc.slice(toolSrc.indexOf('function renderChallenge'), toolSrc.indexOf('function paintMeasure'));
+    expect(r).toMatch(/fE <= 1 \+ ch\.tol \? I\('chal_est_spot'\) : fE <= 3 \? I\('chal_est_close'/);
+    expect(r).toMatch(/Math\.max\(1, Math\.round\(Math\.abs\(ratioM - 1\) \* 100\)\)/);
+    expect(r).toMatch(/\(chalLocked != null && measuredM\) \|\| chalReveal\) lines\.push/);
+    // the lines render on the unlocked (reveal-only) branch too
+    expect((r.match(/lines\.length \? h\('div', \{ role: 'status'/g) || []).length).toBe(2);
+    for (const k of ['chal_heading', 'chal_estimate_label', 'chal_lock', 'chal_locked', 'chal_show_answer', 'chal_answer', 'chal_answer_approx', 'chal_measured', 'chal_measured_far', 'chal_est_spot', 'chal_est_close', 'chal_est_off', 'chal_reset', 'chal_invalid', 'chal_locked_sr']) {
+      expect(toolInl[k], 'INL ' + k).toBeTruthy();
+      for (const rel of UI_STRINGS_COPIES) expect(JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8')).stem.zoomGallery[k], rel + ' ' + k).toBe(toolInl[k]);
+    }
+  });
+});
