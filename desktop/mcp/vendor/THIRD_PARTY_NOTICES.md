@@ -11,7 +11,7 @@ redistributed artifacts.
 - `fontkit.umd.min.js`: `@pdf-lib/fontkit@1.1.1`, MIT.
 - `axe.min.js`: `axe-core@4.10.2`, Mozilla Public License 2.0.
 - `tesseract.min.js`, `tesseract.worker.min.js`: `tesseract.js@5.1.1`, Apache-2.0.
-- `tesseract-core.wasm`, `tesseract-core.wasm.js`: `tesseract.js-core@5.1.0`, Apache-2.0.
+- `tesseract-core-simd-lstm.wasm`, `tesseract-core-simd-lstm.wasm.js`: `tesseract.js-core@5.1.0` (SIMD LSTM build), Apache-2.0.
 - `tessdata/eng.traineddata.gz`: English traineddata from the pinned
   `@tesseract.js-data/eng/4.0.0_best_int` distribution, Apache-2.0.
 

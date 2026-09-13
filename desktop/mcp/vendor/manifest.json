@@ -14,8 +14,8 @@
     {
       "path": "THIRD_PARTY_NOTICES.md",
       "normalization": "lf",
-      "sha256": "6458f02d08267f92c0f02e476f652fe904d63667da18916d97837ad7f5bd8cff",
-      "bytes": 1536
+      "sha256": "96abfbc22bb59ec71b371797b3db22b2d7ae712eb9a7f2c58d1b0ffce308624b",
+      "bytes": 1574
     },
     {
       "path": "axe.min.js",
