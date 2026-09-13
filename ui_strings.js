@@ -12908,7 +12908,7 @@
     "scaleExplorer": {
       "back_to_tools": "Back to STEAM Lab tools",
       "blurb": "Every step across the screen is one power of ten, so the same distance always means the same ratio. Zoom out far enough and the Earth is a dot; zoom in far enough and an atom fills the view.",
-      "canvas_aria": "Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale.",
+      "canvas_aria": "Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.",
       "cmp_a": "First thing",
       "cmp_b": "Second thing",
       "cmp_from_focus": "Compare this",
@@ -13105,7 +13105,20 @@
       "view_line": "You are looking at things about {len} across ({p}).",
       "sci_toggle": "Also show sizes in scientific notation (the exponent is the power of ten)",
       "stair_aria": "Steps of ten from {small} to {big}",
-      "stair_caption": "{n} steps of ten from {small} to {big}. Each arrow is one power of ten; each chip is something that size."
+      "stair_caption": "{n} steps of ten from {small} to {big}. Each arrow is one power of ten; each chip is something that size.",
+      "film_fast": "Fast",
+      "film_group": "Play the zoom",
+      "film_in": "▶ Play the zoom in to the proton",
+      "film_normal": "Normal",
+      "film_out": "▶ Play the zoom out to the universe",
+      "film_pause": "⏸ Pause",
+      "film_paused": "Paused. Press play to continue.",
+      "film_reduced": "Reduced motion is on, so this plays one power of ten at a time.",
+      "film_slow": "Slow",
+      "film_speed": "Speed",
+      "film_speed_aria": "Film speed, in powers of ten per second",
+      "film_start_in": "Playing the zoom inward. Press space to pause.",
+      "film_start_out": "Playing the zoom outward. Press space to pause."
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",

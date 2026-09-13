@@ -297,7 +297,12 @@
     // stretch below that still reads best in light years, but as a fraction.
     if (a >= 9.461e15) return bigCount(m / 9.461e15) + ' light years';
     if (a >= 1e14) return round2(m / 9.461e15) + ' light years';
-    if (a >= 1.496e11) return bigCount(m / 1.496e11) + ' times the Earth–Sun distance';
+    if (a >= 1.496e11) {
+      var au = m / 1.496e11;
+      // "1 times the Earth–Sun distance" read badly on the AU rung itself.
+      if (au < 1.05) return 'the Earth–Sun distance';
+      return bigCount(au) + ' times the Earth–Sun distance';
+    }
     if (a >= 1000) return bigCount(m / 1000) + ' km';
     if (a >= 1) return round2(m) + ' m';
     if (a >= 0.01) return round2(m * 100) + ' cm';
@@ -385,6 +390,16 @@
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
       var _journey = React.useState(0); var journey = _journey[0], setJourney = _journey[1];
       var journeyRef = React.useRef(null);
+      // The film: a continuous, constant-rate zoom along the axis. Direction and
+      // progress live in refs (they move every frame); React holds only the
+      // on/off state the buttons render from, and the chosen speed.
+      var filmRef = React.useRef({ dir: 0, from: 0, to: 0, last: 0 });
+      var filmRafRef = React.useRef(0);
+      var _film = React.useState(0); var film = _film[0], setFilm = _film[1];
+      var _filmSpeed = React.useState((slice.filmSpeed === 'slow' || slice.filmSpeed === 'fast') ? slice.filmSpeed : 'normal');
+      var filmSpeed = _filmSpeed[0], setFilmSpeed = _filmSpeed[1];
+      var filmSpeedRef = React.useRef(filmSpeed); filmSpeedRef.current = filmSpeed;
+      var FILM_RATE = { slow: 0.35, normal: 0.7, fast: 1.4 }; // powers of ten per second
       var journeyDirRef = React.useRef(0);
       var _showLadder = React.useState(true); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
       var _sci = React.useState(!!slice.sci); var sci = _sci[0], setSci = _sci[1];
@@ -519,6 +534,61 @@
       function stopJourney() {
         if (journeyRef.current) { clearInterval(journeyRef.current); journeyRef.current = null; }
         if (journeyDirRef.current !== 0) { journeyDirRef.current = 0; setJourney(0); }
+        stopFilm();
+      }
+      // ── The film ────────────────────────────────────────────────────────
+      // The Eames experience is one unbroken zoom, not a slideshow: the camera
+      // moves at a steady number of powers of ten per second from wherever you
+      // are to the end of the ladder, and the focus card, the stage labels and
+      // the per-decade announcement keep up on their own. Under reduced motion
+      // it becomes the stepwise journey, which says the same things.
+      function stopFilm() {
+        if (filmRafRef.current) { cancelAnimationFrame(filmRafRef.current); filmRafRef.current = 0; }
+        if (filmRef.current.dir !== 0) {
+          filmRef.current.dir = 0;
+          setFilm(0);
+          targetRef.current = expRef.current;
+          settleExp(expRef.current);
+          draw();
+        }
+      }
+      function startFilm(dir) {
+        if (reduceMotion) { startJourney(dir); return; }
+        stopJourney();
+        if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; }
+        var here = expRef.current;
+        var end = dir > 0 ? log10(sorted[0].size) + 0.4 : log10(sorted[sorted.length - 1].size) - 0.4;
+        if ((dir > 0 && here >= end - 0.01) || (dir < 0 && here <= end + 0.01)) { say(S('journey_end', 'That is as far as the ladder goes.')); return; }
+        intentRef.current = null;
+        filmRef.current = { dir: dir, from: here, to: end, last: 0 };
+        targetRef.current = end;
+        setFilm(dir);
+        say(dir > 0 ? S('film_start_out', 'Playing the zoom outward. Press space to pause.') : S('film_start_in', 'Playing the zoom inward. Press space to pause.'));
+        filmRafRef.current = requestAnimationFrame(filmStep);
+      }
+      function filmStep(ts) {
+        filmRafRef.current = 0;
+        var f = filmRef.current;
+        if (!f.dir) return;
+        var dt = f.last ? Math.min(0.1, (ts - f.last) / 1000) : 0;
+        f.last = ts;
+        var rate = FILM_RATE[filmSpeedRef.current] || FILM_RATE.normal;
+        var next = expRef.current + f.dir * rate * dt;
+        var done = f.dir > 0 ? next >= f.to : next <= f.to;
+        expRef.current = done ? f.to : next;
+        paintReadout();
+        draw();
+        afterMove();
+        if (done) {
+          stopFilm();
+          say(S('journey_end', 'That is as far as the ladder goes.'));
+          return;
+        }
+        filmRafRef.current = requestAnimationFrame(filmStep);
+      }
+      function toggleFilm(dir) {
+        if (filmRef.current.dir !== 0) { stopFilm(); say(S('film_paused', 'Paused. Press play to continue.')); return; }
+        startFilm(dir || 1);
       }
       function startJourney(dir) {
         stopJourney();
@@ -716,6 +786,28 @@
         }
         g.globalAlpha = 1;
         g.textBaseline = 'middle';
+
+        // Film chrome: a progress strip across the top (how far along the ladder
+        // the camera is) and a caption with the power of ten and the length it
+        // means. Painted here so it costs nothing when the film is not playing.
+        var fm = filmRef.current;
+        if (fm.dir !== 0) {
+          var lo = Math.min(fm.from, fm.to), hi = Math.max(fm.from, fm.to);
+          var prog = hi > lo ? clamp((e - lo) / (hi - lo), 0, 1) : 0;
+          g.fillStyle = P.axis; g.globalAlpha = 0.35; g.fillRect(0, 0, cssW, 4);
+          g.globalAlpha = 1; g.fillStyle = P.ringHot;
+          g.fillRect(0, 0, cssW * prog, 4);
+          var dec = Math.floor(e + 1e-9);
+          var cap = powerLabel(dec) + '  ·  ' + humanLength(Math.pow(10, e));
+          g.font = '700 15px system-ui, -apple-system, "Segoe UI", sans-serif';
+          g.textAlign = 'left'; g.textBaseline = 'top';
+          var cw = g.measureText(cap).width;
+          g.fillStyle = P.stage; g.globalAlpha = 0.82;
+          g.fillRect(10, 12, cw + 18, 30);
+          g.globalAlpha = 1; g.fillStyle = P.stageFg;
+          g.fillText(cap, 19, 19);
+          g.textBaseline = 'middle';
+        }
       }
 
       React.useEffect(function () {
@@ -733,6 +825,7 @@
           window.removeEventListener('resize', onResize);
           if (ro) { try { ro.disconnect(); } catch (_) {} }
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          if (filmRafRef.current) cancelAnimationFrame(filmRafRef.current);
           if (journeyRef.current) clearInterval(journeyRef.current);
           clearTimeout(speakTimerRef.current);
           clearTimeout(linkTimerRef.current);
@@ -749,10 +842,12 @@
         if (k === 'PageUp') { ev.preventDefault(); zoomBy(3); return; }
         if (k === 'PageDown') { ev.preventDefault(); zoomBy(-3); return; }
         if (k === 'Home') { ev.preventDefault(); flyTo(byId.human); return; }
-        if (k === 'End') { ev.preventDefault(); goTo(MAX_EXP); return; }
+        if (k === 'End') { ev.preventDefault(); stopJourney(); goTo(MAX_EXP); return; }
+        if (k === ' ' || k === 'Spacebar') { ev.preventDefault(); toggleFilm(filmRef.current.dir || (ev.shiftKey ? -1 : 1)); return; }
       }
       function onWheel(ev) {
         ev.preventDefault();
+        stopJourney();
         goTo(targetRef.current + (ev.deltaY > 0 ? -0.22 : 0.22));
       }
 
@@ -984,7 +1079,7 @@
           h('div', { style: { flex: '1 1 520px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
             h('div', { style: { position: 'relative', flex: '1 1 auto', minHeight: 'min(56vh, 420px)', maxHeight: 'max(420px, 78vh)', borderRadius: 12, border: '1px solid ' + P.line, overflow: 'hidden', background: P.stage } },
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
-                'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale.'),
+                'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.'),
                 'aria-describedby': descId,
                 onKeyDown: onCanvasKey, onWheel: onWheel,
                 style: { display: 'block', width: '100%', height: '100%', outlineOffset: '-3px' } })
@@ -1002,6 +1097,26 @@
                 onPointerCancel: function () { scrubDragRef.current = false; },
                 onBlur: function () { scrubDragRef.current = false; },
                 style: { width: '100%', marginTop: 4, accentColor: P.accent } })),
+            // Play the zoom: the whole ladder as one continuous shot. Outward from
+            // here to the observable universe, or inward to the proton.
+            h('div', { role: 'group', 'aria-label': S('film_group', 'Play the zoom'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
+              h('button', { type: 'button', 'aria-pressed': film > 0 ? 'true' : 'false',
+                style: film > 0 ? Object.assign({}, goBtn, { padding: '6px 10px' }) : Object.assign({}, btn, { fontWeight: 700 }),
+                onClick: function () { film > 0 ? toggleFilm(1) : startFilm(1); } },
+                film > 0 ? S('film_pause', '⏸ Pause') : S('film_out', '▶ Play the zoom out to the universe')),
+              h('button', { type: 'button', 'aria-pressed': film < 0 ? 'true' : 'false',
+                style: film < 0 ? Object.assign({}, goBtn, { padding: '6px 10px' }) : Object.assign({}, btn, { fontWeight: 700 }),
+                onClick: function () { film < 0 ? toggleFilm(-1) : startFilm(-1); } },
+                film < 0 ? S('film_pause', '⏸ Pause') : S('film_in', '▶ Play the zoom in to the proton')),
+              h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.71875rem', color: P.dim } },
+                S('film_speed', 'Speed'),
+                h('select', { value: filmSpeed, 'aria-label': S('film_speed_aria', 'Film speed, in powers of ten per second'),
+                  onChange: function (e) { var v = e.target.value; setFilmSpeed(v); updateSlice(function (cur) { cur.filmSpeed = v; }); },
+                  style: Object.assign({}, sel, { padding: '4px 6px', fontSize: '0.71875rem' }) },
+                  h('option', { value: 'slow' }, S('film_slow', 'Slow')),
+                  h('option', { value: 'normal' }, S('film_normal', 'Normal')),
+                  h('option', { value: 'fast' }, S('film_fast', 'Fast')))),
+              reduceMotion ? h('span', { style: { fontSize: '0.6875rem', color: P.dim } }, S('film_reduced', 'Reduced motion is on, so this plays one power of ten at a time.')) : null),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); }, 'aria-label': S('out_one', 'Zoom out one power of ten') }, '− 10×'),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); }, 'aria-label': S('in_one', 'Zoom in one power of ten') }, '+ 10×'),

@@ -629,3 +629,51 @@ describe('Scale Explorer shows orders of magnitude, not just names them', () => 
     expect(src).toMatch(/minHeight: 'min\(56vh, 420px\)', maxHeight: 'max\(420px, 78vh\)'/);
   });
 });
+
+// 2026-09-13. "Play the zoom": one unbroken constant-rate zoom along the axis
+// (the Eames film), on its own rAF, painted imperatively like every other
+// per-frame value here, with a caption and progress strip on the stage. Rates
+// and stopping were measured in the real host (about 1.4 decades/s at "fast";
+// manual navigation stops it; it ends at the top of the ladder).
+describe('Scale Explorer film mode', () => {
+  const film = src.slice(src.indexOf('// ── The film ───'), src.indexOf('function startJourney'));
+  it('moves at a fixed number of powers of ten per second, frame-time based, never per-frame state', () => {
+    expect(src).toMatch(/var FILM_RATE = \{ slow: 0\.35, normal: 0\.7, fast: 1\.4 \}/);
+    expect(film).toMatch(/var dt = f\.last \? Math\.min\(0\.1, \(ts - f\.last\) \/ 1000\) : 0;/);
+    expect(film).toMatch(/expRef\.current \+ f\.dir \* rate \* dt/);
+    // the per-frame path paints and draws; React state is settled only when it stops
+    expect(film).toMatch(/paintReadout\(\);\s*draw\(\);\s*afterMove\(\);/);
+    expect(film).not.toMatch(/setExp\(/);
+    expect(film).toMatch(/settleExp\(expRef\.current\)/);
+  });
+  it('stops on any manual navigation, at the ladder end, on space, and on unmount', () => {
+    expect(src).toMatch(/function stopJourney\(\) \{[\s\S]*?stopFilm\(\);\s*\}/);
+    expect(film).toMatch(/var done = f\.dir > 0 \? next >= f\.to : next <= f\.to;/);
+    expect(film).toMatch(/say\(S\('journey_end'/);
+    expect(src).toMatch(/if \(k === ' ' \|\| k === 'Spacebar'\) \{ ev\.preventDefault\(\); toggleFilm/);
+    expect(src).toMatch(/function onWheel\(ev\) \{\s*ev\.preventDefault\(\);\s*stopJourney\(\);/);
+    expect(src).toMatch(/if \(filmRafRef\.current\) cancelAnimationFrame\(filmRafRef\.current\);/);
+  });
+  it('falls back to the stepwise journey under reduced motion, and says so', () => {
+    expect(film).toMatch(/if \(reduceMotion\) \{ startJourney\(dir\); return; \}/);
+    expect(src).toMatch(/S\('film_reduced'/);
+  });
+  it('paints the caption and progress strip only while playing, and the controls carry pressed state', () => {
+    const chrome = src.slice(src.indexOf('// Film chrome:'), src.indexOf('React.useEffect(function () {\n        draw();'));
+    expect(chrome).toMatch(/if \(fm\.dir !== 0\) \{/);
+    expect(chrome).toMatch(/powerLabel\(dec\) \+ '  ·  ' \+ humanLength\(Math\.pow\(10, e\)\)/);
+    expect(src).toMatch(/'aria-pressed': film > 0 \? 'true' : 'false'/);
+    expect(src).toMatch(/'aria-pressed': film < 0 \? 'true' : 'false'/);
+    expect(src).toMatch(/'aria-label': S\('film_speed_aria'/);
+    expect(src).toMatch(/space plays or pauses the zoom/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['film_out', 'film_in', 'film_pause', 'film_speed', 'film_start_out', 'film_start_in', 'film_paused', 'film_reduced']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+  it('names the astronomical unit itself without a count of one', () => {
+    const start = src.indexOf('function humanLength');
+    const body = src.slice(start, src.indexOf('function round2'));
+    expect(body).toMatch(/if \(au < 1\.05\) return 'the Earth–Sun distance';/);
+  });
+});
