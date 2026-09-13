@@ -21,3 +21,6 @@ Not published or sent anywhere.
 
 Final build of the day at 18:52 local (after the sliced-audit fix 3f3ae1896 and the keyless-lane guidance in the bundled skill f30ee4fa9): 70,573,214 bytes, SHA-256 1c89336639c4dad2ba195e10ded921d8eb35257eac054ac5f5d3b7a1cd9814ef. This is the build to hand out; every earlier build listed above is superseded.
 Not published or sent anywhere.
+
+Rebuilt at 20:05 local after the Canvas throttle fixes (0309732e9) and the review-finding triage (49c1c2138): 70,583,081 bytes, SHA-256 5dd1ec5aa99731c380b5e77374052d6aa844605924b9413e7d5c0ff0520de5cc. This is the build to hand out; every earlier build listed above is superseded.
+Not published or sent anywhere.
