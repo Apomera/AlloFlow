@@ -163,7 +163,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (rendered && canvasEl._cellSimPaused) schedulePausedOverlayFrame();');
       expect(source).toContain('if (canvasEl._cellSimPaused) renderStaticFrame(); else scheduleLoop();');
       expect(source).toContain('var hoverChanged = hoveredOrg !== foundHover;');
-      expect(source).toContain('if (hoverChanged && canvasEl._cellSimPaused) renderStaticFrame();');
+      expect(source).toContain('if ((hoverChanged || labelChanged) && canvasEl._cellSimPaused) renderStaticFrame();');
       expect(source).toContain('canvasEl._cellSimSetPaused = function (p)');
       expect(source).not.toContain('if (canvasEl._cellSimPaused) { animId = requestAnimationFrame(loop); return; }');
 
@@ -173,7 +173,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (renderMotion) {');
       expect(source).toContain('v.trail.push({ x: v.x, y: v.y });');
       expect(source).toContain('var ttAgeMs = tt.startTime ? renderNow - tt.startTime : (world.tick - tt.startTick) * (1000 / 60);');
-      expect(source).toContain('if (playAsOrg && ttAgeMs > 5000) world._tooltip = null;');
+      expect(source).toContain('if (explanation && (explanation.org !== focalOrganism || (playAsOrg && explanationAge > 5000)))');
       expect(source).toContain('var hlAgeMs = hl.startTime ? renderNow - hl.startTime : (world.tick - hl.startTick) * (1000 / 60);');
       expect(source).toContain('if (hlAgeMs > 1000)');
       expect(source).toContain('startTime: canvasNow()');
@@ -183,9 +183,9 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain("var labelTextColor = '#0f172a';");
       expect(source).toContain("var labelShadowColor = 'rgba(2,6,23,0.18)';");
       expect(source).toContain('canvasEl._cellSimGetAnatomyLabels = function ()');
-      expect(source).toContain('_labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o });');
+      expect(source).toContain('_labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o,');
       expect(source).toContain('cctx.shadowColor = labelShadowColor;');
-      expect(source).toContain('cctx.fillStyle = labelFillColor;');
+      expect(source).toContain("cctx.fillStyle = box.emphasized ? '#ecfdf5' : labelFillColor;");
       expect(source).toContain('cctx.fillStyle = labelTextColor;');
       expect(source).not.toContain("cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))';");
 

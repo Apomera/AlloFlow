@@ -16,3 +16,32 @@ describe('anatomy annotation geometry',()=>{
  });
  it('handles an empty selection',()=>expect(layout([],{left:0,right:320,top:0,bottom:400},{x:160,y:200},80,6)).toEqual([]));
 });
+
+
+describe('stable anatomy annotation slots', () => {
+ const anatomy = [[-.6, -.4], [-.2, .5], [.2, -.5], [.6, .4], [0, 0], [0, .6]].map(([layoutX, layoutY], i) => ({name: 'organelle ' + i, layoutX, layoutY, w: 100, h: 26}));
+ for (const width of [320, 390, 1200]) it('preserves rows and sides through a full rotation at ' + width, () => {
+  const bounds = {left: 8, right: width - 8, top: 250, bottom: 440};
+  const center = {x: width / 2, y: 350};
+  const frame = angle => anatomy.map(a => ({...a,
+   sx: center.x + 100 * (a.layoutX * Math.cos(angle) - a.layoutY * Math.sin(angle)),
+   sy: center.y + 100 * (a.layoutX * Math.sin(angle) + a.layoutY * Math.cos(angle))}));
+  const initial = layout(frame(0), bounds, center, 140, 6);
+  for (let step = 1; step <= 120; step++) {
+   const items = frame(step * Math.PI * 2 / 120);
+   const snapshot = JSON.stringify(items);
+   const boxes = layout(items, bounds, center, 140, 6);
+   expect(JSON.stringify(items)).toBe(snapshot);
+   boxes.forEach((box, i) => {
+    expect([box.side, box.x, box.y]).toEqual([initial[i].side, initial[i].x, initial[i].y]);
+    expect([box.sx, box.sy]).toEqual([items[i].sx, items[i].sy]);
+   });
+  }
+  const resized = layout(frame(Math.PI), {...bounds, right: width * 2 - 8, bottom: 700}, {x: width, y: 400}, 280, 6);
+  expect(resized.map(b => b.side)).toEqual(initial.map(b => b.side));
+  for (const side of ['left', 'right']) {
+   const order = boxes => boxes.filter(b => b.side === side).sort((a,b) => a.y - b.y).map(b => b.name);
+   expect(order(resized)).toEqual(order(initial));
+  }
+ });
+});

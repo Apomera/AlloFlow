@@ -974,16 +974,17 @@ window.StemLab = window.StemLab || {
   // Sample the actual envelope: elliptical in animals, rounded walls in plants and bacteria.
   // Using an ellipse for every type left lipid heads floating inside the rectangular wall.
   // Lay out two ordered annotation columns in canvas coordinates. Inputs stay untouched.
+  // Stable layout coordinates preserve slots while screen anchors rotate with the cell.
   function layoutCellAnatomyLabels(items, bounds, center, radius, gap) {
     if (!items.length) return [];
     var mid = (bounds.left + bounds.right) / 2;
     var columnWidth = Math.max(1, (bounds.right - bounds.left - gap) / 2);
     var sorted = items.map(function(item, index) { return Object.assign({ index: index }, item); });
-    sorted.sort(function(a, b) { return a.sx - b.sx || a.index - b.index; });
+    sorted.sort(function(a, b) { return (a.layoutX ?? a.sx) - (b.layoutX ?? b.sx) || a.index - b.index; });
     var split = Math.ceil(sorted.length / 2);
     var result = [];
     [sorted.slice(0, split), sorted.slice(split)].forEach(function(column, side) {
-      column.sort(function(a, b) { return a.sy - b.sy || a.index - b.index; });
+      column.sort(function(a, b) { return (a.layoutY ?? a.sy) - (b.layoutY ?? b.sy) || a.index - b.index; });
       var slot = (bounds.bottom - bounds.top) / Math.max(1, column.length);
       column.forEach(function(item, index) {
         var w = Math.min(item.w, columnWidth);
@@ -20571,13 +20572,14 @@ var d = labToolData.cell || {};
 
 
 
-            // Annotation positions are computed directly; there is no easing state.
+            // Label slots use the specimen's unrotated anatomy; only leader anchors follow rotation.
 
 
 
             // ── Organelle label hit regions for click-to-explain ──
 
             var _labelHitRegions = [];
+            var hoveredAnatomyLabel = null;
 
 
 
@@ -20609,21 +20611,32 @@ var d = labToolData.cell || {};
               }
               var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
               var items = visibleAnatomy.filter(function(a) { return typeof a.lx !== 'undefined'; }).map(function(a) {
-                return { anatomy: a, sx: p.x + (a.lx * cos - a.ly * sin) * sz,
+                return { anatomy: a, layoutX: a.lx, layoutY: a.ly,
+                  sx: p.x + (a.lx * cos - a.ly * sin) * sz,
                   sy: p.y + (a.lx * sin + a.ly * cos) * sz,
                   w: cctx.measureText(a.name).width + 20 * dpr, h: 26 * dpr };
               });
               var labelBoxes = layoutCellAnatomyLabels(items,
                 { left: 8 * dpr, right: W - 8 * dpr, top: labelSafeTop, bottom: Math.max(labelSafeTop + 30 * dpr, labelSafeBottom) },
                 p, sz * 1.45, 6 * dpr);
-              // Leaders are drawn first so none can paint over another label's text.
               labelBoxes.forEach(function(box) {
+                box.selected = !!(world._tooltip && world._tooltip.org === o && world._tooltip.anatomy === box.anatomy);
+                box.hovered = !!(hoveredAnatomyLabel && hoveredAnatomyLabel.org === o && hoveredAnatomyLabel.anatomy === box.anatomy);
+                box.emphasized = box.selected || box.hovered;
+              });
+              // Draw emphasized leaders last, underneath the pills, to make their paths easy to trace.
+              labelBoxes.slice().sort(function(a, b) { return Number(a.emphasized) - Number(b.emphasized); }).forEach(function(box) {
                 var ex = box.side === 'left' ? box.x + box.w : box.x;
                 var ey = box.y + box.h / 2;
                 cctx.beginPath(); cctx.moveTo(box.sx, box.sy);
                 cctx.lineTo(ex + (box.side === 'left' ? 10 : -10) * dpr, ey); cctx.lineTo(ex, ey);
                 cctx.strokeStyle = 'rgba(255,255,255,0.85)'; cctx.lineWidth = 3 * dpr; cctx.stroke();
-                cctx.strokeStyle = hexToRgba(def.color, 0.72); cctx.lineWidth = 1.1 * dpr; cctx.stroke();
+                cctx.strokeStyle = box.emphasized ? '#0f766e' : hexToRgba(def.color, 0.72); cctx.lineWidth = (box.emphasized ? 2.4 : 1.1) * dpr; cctx.stroke();
+                if (box.emphasized) {
+                  cctx.beginPath(); cctx.arc(box.sx, box.sy, 6 * dpr, 0, Math.PI * 2);
+                  cctx.strokeStyle = '#ffffff'; cctx.lineWidth = 4 * dpr; cctx.stroke();
+                  cctx.strokeStyle = '#0f766e'; cctx.lineWidth = 2 * dpr; cctx.stroke();
+                }
                 cctx.beginPath(); cctx.arc(box.sx, box.sy, 2.5 * dpr, 0, Math.PI * 2);
                 cctx.fillStyle = def.color; cctx.fill();
                 cctx.strokeStyle = '#fff'; cctx.lineWidth = dpr; cctx.stroke();
@@ -20637,12 +20650,12 @@ var d = labToolData.cell || {};
                 cctx.arcTo(pillX, pillY + pillH, pillX, pillY, r);
                 cctx.arcTo(pillX, pillY, pillX + pillW, pillY, r); cctx.closePath();
                 cctx.shadowColor = labelShadowColor; cctx.shadowBlur = 5 * dpr; cctx.shadowOffsetY = 2 * dpr;
-                cctx.fillStyle = labelFillColor; cctx.fill();
+                cctx.fillStyle = box.emphasized ? '#ecfdf5' : labelFillColor; cctx.fill();
                 cctx.shadowBlur = 0; cctx.shadowOffsetY = 0;
-                cctx.strokeStyle = hexToRgba(def.color, 0.65); cctx.lineWidth = dpr; cctx.stroke();
+                cctx.strokeStyle = box.emphasized ? '#0f766e' : hexToRgba(def.color, 0.65); cctx.lineWidth = (box.emphasized ? 2.5 : 1) * dpr; cctx.stroke();
                 cctx.fillStyle = labelTextColor;
                 cctx.fillText(box.anatomy.name, pillX + 10 * dpr, pillY + pillH / 2, pillW - 20 * dpr);
-                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o });
+                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o, selected: box.selected, hovered: box.hovered, sx: box.sx, sy: box.sy });
               });
               cctx.restore();
             }
@@ -21838,6 +21851,15 @@ var d = labToolData.cell || {};
               // Organisms
 
               var focalOrganism = playAsOrg || selectedOrg;
+              // Explanations and transient focus belong to one specimen, including duplicate species.
+              var explanation = world._tooltip;
+              var explanationAge = explanation && (explanation.startTime ? renderNow - explanation.startTime : (world.tick - explanation.startTick) * (1000 / 60));
+              // Clear before drawing labels so paused play cannot retain a stale selection outline.
+              if (explanation && (explanation.org !== focalOrganism || (playAsOrg && explanationAge > 5000))) {
+                world._tooltip = null;
+                world._highlightOrganelle = null;
+              }
+              if (hoveredAnatomyLabel && hoveredAnatomyLabel.org !== focalOrganism) hoveredAnatomyLabel = null;
               world.organisms.forEach(function (o) {
                 if (o === focalOrganism) return;
                 cctx.save();
@@ -22030,10 +22052,6 @@ var d = labToolData.cell || {};
                   cctx.fillText(line, ttX + ttPadX, ttY + ttHeaderH + li * ttFontSize * 1.55);
 
                 });
-
-                // Play cues clear quickly; observation explanations remain until dismissed.
-
-                if (playAsOrg && ttAgeMs > 5000) world._tooltip = null;
 
                 cctx.restore();
 
@@ -22529,21 +22547,24 @@ var d = labToolData.cell || {};
             var activePointerId = null;
 
             function updateHoverFromPoint(clientX, clientY) {
-              if (playAsOrg) return;
               var rect = canvasEl.getBoundingClientRect();
               var hx = (clientX - rect.left) * dpr;
               var hy = (clientY - rect.top) * dpr;
+              var overExplanation = hitCellExplanationBody(hx, hy);
+              var foundLabel = !dragging && !overExplanation ? findOrganelleLabelHit(hx, hy) : null;
+              var labelChanged = (hoveredAnatomyLabel && hoveredAnatomyLabel.anatomy) !== (foundLabel && foundLabel.anatomy) || (hoveredAnatomyLabel && hoveredAnatomyLabel.org) !== (foundLabel && foundLabel.org);
+              hoveredAnatomyLabel = foundLabel;
               var foundHover = null;
-              world.organisms.forEach(function (o) {
+              if (!playAsOrg && !foundLabel && !overExplanation) world.organisms.forEach(function (o) {
                 var sp = toScreen(o.x, o.y);
                 var dd = Math.hypot(sp.x - hx, sp.y - hy);
                 if (dd < o.size * cam.zoom * dpr * 1.5) foundHover = o;
               });
               var hoverChanged = hoveredOrg !== foundHover;
               hoveredOrg = foundHover;
-              var nextCursor = dragging ? 'grabbing' : (foundHover ? 'pointer' : 'grab');
+              var nextCursor = dragging ? 'grabbing' : hitCellExplanationClose(hx, hy) || foundLabel || foundHover ? 'pointer' : overExplanation ? 'default' : playAsOrg ? 'crosshair' : 'grab';
               if (canvasEl.style.cursor !== nextCursor) canvasEl.style.cursor = nextCursor;
-              if (hoverChanged && canvasEl._cellSimPaused) renderStaticFrame();
+              if ((hoverChanged || labelChanged) && canvasEl._cellSimPaused) renderStaticFrame();
             }
 
             function findOrganelleLabelHit(mx, my) {
@@ -22572,7 +22593,7 @@ var d = labToolData.cell || {};
               return true;
             }
             function showOrganelleLabelTooltip(hitLabel) {
-              world._tooltip = { anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick, startTime: canvasNow() };
+              world._tooltip = { org: hitLabel.org, anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick, startTime: canvasNow() };
               if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(hitLabel.anatomy.name);
               rewardPlantStructure(hitLabel.org, hitLabel.anatomy);
               if (canvasEl._cellSimPaused) renderStaticFrame();
@@ -22581,6 +22602,7 @@ var d = labToolData.cell || {};
             function dismissCellExplanation() {
               if (!world._tooltip) return false;
               world._tooltip = null;
+              world._highlightOrganelle = null;
               if (canvasEl._cellSimPaused) renderStaticFrame();
               return true;
             }
@@ -22610,6 +22632,7 @@ var d = labToolData.cell || {};
               }
 
               world._tooltip = null;
+              world._highlightOrganelle = null;
               var clicked = null, bestDist = Infinity;
               world.organisms.forEach(function (o) {
                 var p = toScreen(o.x, o.y);
@@ -22677,12 +22700,14 @@ var d = labToolData.cell || {};
               dragging = false;
               activePointerId = null;
               hoveredOrg = null;
+              hoveredAnatomyLabel = null;
               canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
               if (canvasEl._cellSimPaused) renderStaticFrame();
             }
             function onPointerLeave() {
               if (!dragging) {
                 hoveredOrg = null;
+                hoveredAnatomyLabel = null;
                 canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
                 if (canvasEl._cellSimPaused) renderStaticFrame();
               }
@@ -22934,7 +22959,7 @@ var d = labToolData.cell || {};
             };
             canvasEl._cellSimSetObservationLabels = function (visible) {
               observationLabelsVisible = visible !== false;
-              if (!observationLabelsVisible && !playAsOrg) { world._tooltip = null; _labelHitRegions = []; }
+              if (!observationLabelsVisible && !playAsOrg) { world._tooltip = null; world._highlightOrganelle = null; hoveredAnatomyLabel = null; _labelHitRegions = []; }
               if (canvasEl._cellSimPaused) renderStaticFrame();
             };
 
@@ -23110,6 +23135,8 @@ var d = labToolData.cell || {};
 
               world._tooltip = {
 
+                org: o,
+
                 anatomy: a,
 
                 def: def,
@@ -23173,7 +23200,8 @@ var d = labToolData.cell || {};
             canvasEl._cellSimGetAnatomyLabels = function () {
               return _labelHitRegions.map(function(region) {
                 return { name: region.anatomy.name, x: region.x / dpr, y: region.y / dpr,
-                  width: region.w / dpr, height: region.h / dpr };
+                  width: region.w / dpr, height: region.h / dpr, selected: region.selected, hovered: region.hovered,
+                  anchorX: region.sx / dpr, anchorY: region.sy / dpr };
               });
             };
 
