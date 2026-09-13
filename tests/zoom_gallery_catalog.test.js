@@ -417,7 +417,10 @@ describe('Zoom Gallery shareable images', () => {
   });
 
   it('opens the linked image at mount, offers the control only for catalog images, and registers its strings', () => {
-    expect(toolSrc).toMatch(/var id = linkImageId\(IMAGES\);\s*if \(id\) openImage\(id\);/);
+    // the link wins over a hand-off from another tool; either opens the image once at mount
+    expect(toolSrc).toMatch(/var id = linkImageId\(IMAGES\);[\s\S]{0,600}?if \(id\) openImage\(id\);/);
+    expect(toolSrc).toMatch(/if \(!id && hand && hand\.image && IMAGES\.some/);
+    expect(toolSrc).toMatch(/window\.__alloZoomGalleryStart = null;/);
     expect(toolSrc).toMatch(/current && current\.id !== 'custom' \? h\('button', \{ type: 'button', style: btnBase, onClick: copyLink/);
     expect(toolSrc).toMatch(/linkState === 'failed' && current \? h\('div'/);
     for (const k of ['copy_link', 'copy_link_title', 'link_copied', 'link_copied_sr', 'link_failed', 'link_field_aria']) {
@@ -492,5 +495,39 @@ describe('Zoom Gallery scale bar', () => {
     // the group is named, carries its basis as a title, and is never a live region
     expect(toolSrc).toMatch(/role: 'group', 'aria-label': I\('scale_group'\), title: I\('scale_basis_title'\) \+ ': ' \+ current\.scale\.basis/);
     expect(toolSrc).not.toMatch(/ref: scaleBarRef[^\n]*aria-live/);
+  });
+});
+
+// 2026-09-13. Measure: two points on an image with a scale, joined by an
+// overlay repainted on the viewer's animation frames, with the distance in
+// real units. Real host: two clicks 40% of the view apart read 49,396 km
+// against 49,414 km expected; Enter, pan, Enter measured 10,253 km from the
+// keyboard; the bar and overlay now paint as soon as the image opens (the
+// viewer's 'open' fires before the render that mounts them).
+describe('Zoom Gallery measure tool', () => {
+  it('is offered only where the image has a scale, and shares the pin paths for click and keyboard', () => {
+    expect(toolSrc).toMatch(/current\.scale \? h\('button', \{ type: 'button', 'aria-pressed': measureMode \? 'true' : 'false'/);
+    expect(toolSrc).toMatch(/if \(measureModeRef\.current\) \{ if \(addMeasurePoint\(vp\)\) ev\.preventDefaultAction = true; return; \}/);
+    expect(toolSrc).toMatch(/if \(measureModeRef\.current\) addMeasurePoint\(v\.viewport\.getCenter\(true\)\);/);
+    expect(toolSrc).toMatch(/I\('measure_center'\)/); // a button for the keyboard-only student too
+  });
+  it('measures in image pixels times the image scale, and says "about" when the scale is', () => {
+    const fn = toolSrc.slice(toolSrc.indexOf('function measureDistance'), toolSrc.indexOf('function paintMeasure'));
+    expect(fn).toMatch(/Math\.hypot\(pts\[1\]\.x - pts\[0\]\.x, pts\[1\]\.y - pts\[0\]\.y\)/);
+    expect(fn).toMatch(/px \* \(it\.scale\.metres \/ it\.scale\.px\)/);
+    expect(fn).toMatch(/it\.scale\.approx \? I\('scale_about'\) \+ ' ' : ''/);
+  });
+  it('paints the overlay imperatively, clears it on a new image, and paints when the open state lands', () => {
+    const paint = toolSrc.slice(toolSrc.indexOf('function paintMeasure'), toolSrc.indexOf('function addMeasurePoint'));
+    expect(paint).toMatch(/imageToViewerElementCoordinates/);
+    expect(paint).not.toMatch(/setMeasurePts|setState/);
+    expect(toolSrc).toMatch(/v\.addHandler\('animation', paintMeasure\);/);
+    expect(toolSrc).toMatch(/setMeasureMode\(false\); measurePtsRef\.current = \[\]; setMeasurePts\(\[\]\);/);
+    expect(toolSrc).toMatch(/React\.useEffect\(function \(\) \{ updateScaleBar\(\); paintMeasure\(\); \}, \[imgState, currentId\]\);/);
+    expect(toolSrc).toMatch(/h\('svg', \{ ref: measureSvgRef, 'aria-hidden': 'true', focusable: 'false'/);
+    for (const k of ['measure_btn', 'measure_active', 'measure_center', 'measure_clear', 'measure_hint', 'measure_first_sr', 'measure_sr', 'measure_result']) {
+      expect(toolInl[k], 'INL ' + k).toBeTruthy();
+      for (const rel of UI_STRINGS_COPIES) expect(JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8')).stem.zoomGallery[k], rel + ' ' + k).toBe(toolInl[k]);
+    }
   });
 });

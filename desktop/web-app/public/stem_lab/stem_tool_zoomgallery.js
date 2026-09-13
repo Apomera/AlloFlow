@@ -278,6 +278,14 @@
     scale_open_sx: '⚖️ See this size in Scale Explorer',
     scale_open_sx_title: 'Open Scale Explorer at the width of this view',
     scale_basis_title: 'How this scale was set',
+    measure_btn: '📏 Measure',
+    measure_active: '📏 Measuring: click two points',
+    measure_center: 'Mark a point at the centre',
+    measure_clear: 'Clear measurement',
+    measure_hint: 'Click two points on the image to measure between them. From the keyboard: pan to a spot and press Enter, twice.',
+    measure_first_sr: 'First point marked. Mark the second.',
+    measure_sr: 'Distance between the points: {d}.',
+    measure_result: 'Distance: {d}',
     credit: 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'
   };
 
@@ -527,6 +535,14 @@
       var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
       var scaleBarRef = React.useRef(null); var scaleLineRef = React.useRef(null); var scaleTextRef = React.useRef(null); var scaleViewRef = React.useRef(null);
       var visibleMetresRef = React.useRef(0);
+      // Measuring: two points in image coordinates. The overlay that joins them
+      // is repainted on the viewer's animation frames, so the points live in a
+      // ref as well as in state (state renders the buttons and the result).
+      var _measure = React.useState(false); var measureMode = _measure[0], setMeasureMode = _measure[1];
+      var measureModeRef = React.useRef(false); measureModeRef.current = measureMode;
+      var _mpts = React.useState([]); var measurePts = _mpts[0], setMeasurePts = _mpts[1];
+      var measurePtsRef = React.useRef([]);
+      var measureSvgRef = React.useRef(null);
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
       var _navOn = React.useState(true); var navOn = _navOn[0], setNavOn = _navOn[1];
       var navOnRef = React.useRef(true);
@@ -614,6 +630,10 @@
           scaleViewRef.current.textContent = I('scale_view', { w: (sc.approx ? I('scale_about') + ' ' : '') + fmtLen(visibleMetresRef.current) });
         } catch (_) { box.style.display = 'none'; }
       }
+      // The viewer's 'open' fires before the render that puts the bar in the DOM,
+      // so the handler above finds no element then. Paint again once the open
+      // state has landed; otherwise the bar waits for the first zoom or pan.
+      React.useEffect(function () { updateScaleBar(); paintMeasure(); }, [imgState, currentId]);
       function openInScaleExplorer() {
         var w = visibleMetresRef.current;
         if (!(w > 0) || typeof setStemLabTool !== 'function') return;
@@ -630,6 +650,49 @@
       }
       // One code path for every way of dropping a pin (mouse click, keyboard Enter,
       // the explicit "pin the centre" button), so they cannot drift apart.
+      function measureDistance(pts) {
+        var it = currentRef.current;
+        if (!it || !it.scale || pts.length < 2) return null;
+        var px = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+        var m = px * (it.scale.metres / it.scale.px);
+        return (it.scale.approx ? I('scale_about') + ' ' : '') + fmtLen(m);
+      }
+      function paintMeasure() {
+        var svg = measureSvgRef.current, v = viewerRef.current;
+        if (!svg) return;
+        var pts = measurePtsRef.current;
+        if (!v || !pts.length || !v.world.getItemAt(0) || !window.OpenSeadragon) { svg.style.display = 'none'; return; }
+        try {
+          var P0 = v.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(pts[0].x, pts[0].y));
+          var P1 = pts[1] ? v.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(pts[1].x, pts[1].y)) : null;
+          svg.style.display = 'block';
+          var c0 = svg.querySelector('[data-m="a"]'), c1 = svg.querySelector('[data-m="b"]'), lns = svg.querySelectorAll('[data-m="line"]'), tx = svg.querySelector('[data-m="text"]'), bg = svg.querySelector('[data-m="bg"]');
+          var ln = { setAttribute: function (k, val) { lns.forEach(function (l) { l.setAttribute(k, val); }); }, style: { set display(d) { lns.forEach(function (l) { l.style.display = d; }); } } };
+          c0.setAttribute('cx', P0.x); c0.setAttribute('cy', P0.y);
+          if (P1) {
+            c1.style.display = ''; ln.style.display = ''; tx.style.display = ''; bg.style.display = '';
+            c1.setAttribute('cx', P1.x); c1.setAttribute('cy', P1.y);
+            ln.setAttribute('x1', P0.x); ln.setAttribute('y1', P0.y); ln.setAttribute('x2', P1.x); ln.setAttribute('y2', P1.y);
+            var mx = (P0.x + P1.x) / 2, my = (P0.y + P1.y) / 2 - 10;
+            tx.textContent = measureDistance(pts) || '';
+            tx.setAttribute('x', mx); tx.setAttribute('y', my);
+            var w = tx.getBBox ? tx.getBBox().width : 60;
+            bg.setAttribute('x', mx - w / 2 - 6); bg.setAttribute('y', my - 13); bg.setAttribute('width', w + 12); bg.setAttribute('height', 18);
+          } else { c1.style.display = 'none'; ln.style.display = 'none'; tx.style.display = 'none'; bg.style.display = 'none'; }
+        } catch (_) { svg.style.display = 'none'; }
+      }
+      function addMeasurePoint(vpPoint) {
+        var v = viewerRef.current; if (!v || !vpPoint || !v.world.getItemAt(0)) return false;
+        var img = v.viewport.viewportToImageCoordinates(vpPoint);
+        var prev = measurePtsRef.current;
+        var next = prev.length >= 2 ? [{ x: img.x, y: img.y }] : prev.concat([{ x: img.x, y: img.y }]);
+        measurePtsRef.current = next; setMeasurePts(next);
+        paintMeasure();
+        if (next.length === 2) { var d = measureDistance(next); if (d) say(I('measure_sr', { d: d })); bumpSlice('measureCount'); }
+        else say(I('measure_first_sr'));
+        return true;
+      }
+      function clearMeasure() { measurePtsRef.current = []; setMeasurePts([]); paintMeasure(); }
       function addPinAtViewportPoint(vpPoint) {
         var v = viewerRef.current; var it = currentRef.current;
         if (!v || !it || !vpPoint) return false;
@@ -815,9 +878,14 @@
             v.addHandler('animation', updateScaleBar);
             v.addHandler('open', updateScaleBar);
             v.addHandler('resize', updateScaleBar);
+            v.addHandler('animation', paintMeasure);
+            v.addHandler('open', paintMeasure);
+            v.addHandler('resize', paintMeasure);
             v.addHandler('canvas-click', function (ev) {
-              if (!pinModeRef.current || !ev.quick) return;
+              if (!ev.quick) return;
               var vp = v.viewport.pointFromPixel(ev.position);
+              if (measureModeRef.current) { if (addMeasurePoint(vp)) ev.preventDefaultAction = true; return; }
+              if (!pinModeRef.current) return;
               if (addPinAtViewportPoint(vp)) ev.preventDefaultAction = true;
             });
             // Keyboard parity for pinning. OpenSeadragon already handles arrows and
@@ -829,10 +897,11 @@
               if (canvasEl) {
                 osdCanvasRef.current = canvasEl;
                 canvasEl.addEventListener('keydown', function (e) {
-                  if (!pinModeRef.current) return;
+                  if (!pinModeRef.current && !measureModeRef.current) return;
                   if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
                   e.preventDefault(); e.stopPropagation();
-                  addPinAtViewportPoint(v.viewport.getCenter(true));
+                  if (measureModeRef.current) addMeasurePoint(v.viewport.getCenter(true));
+                  else addPinAtViewportPoint(v.viewport.getCenter(true));
                 });
               }
             } catch (_) {}
@@ -904,6 +973,7 @@
 
       function openImage(id) {
         setPinMode(false); setStep('notice'); setCopied(''); setLinkState('');
+        setMeasureMode(false); measurePtsRef.current = []; setMeasurePts([]);
         setCurrentId(id);
         bumpSlice('openedCount');
       }
@@ -911,6 +981,12 @@
       // picker stays one click away through Back to gallery.
       React.useEffect(function () {
         var id = linkImageId(IMAGES);
+        // Or handed over by another tool (Scale Explorer's "See a real photo").
+        try {
+          var hand = window.__alloZoomGalleryStart;
+          if (!id && hand && hand.image && IMAGES.some(function (i) { return i.id === hand.image; })) id = hand.image;
+          window.__alloZoomGalleryStart = null;
+        } catch (_) {}
         if (id) openImage(id);
         return function () { clearTimeout(linkTimerRef.current); };
       }, []);
@@ -1139,13 +1215,29 @@
         h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch' } },
           // Stage (or picker)
           h('div', { style: { flex: '1 1 520px', minWidth: 0, position: 'relative', background: current ? P.stage : 'transparent', borderRadius: 12, border: current ? '1px solid ' + P.line : 'none', overflow: 'hidden', minHeight: current ? 'min(64vh, 720px)' : 0 } },
-            current ? h('div', { ref: stageRef, style: { position: 'absolute', inset: 0, cursor: pinMode ? 'crosshair' : undefined } }) : renderPicker(),
+            current ? h('div', { ref: stageRef, style: { position: 'absolute', inset: 0, cursor: (pinMode || measureMode) ? 'crosshair' : undefined } }) : renderPicker(),
+            // Measurement overlay: never interactive, painted by paintMeasure.
+            current && current.scale ? h('svg', { ref: measureSvgRef, 'aria-hidden': 'true', focusable: 'false', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5, display: 'none', overflow: 'visible' } },
+              h('line', { 'data-m': 'line', stroke: '#0b1220', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.6 }),
+              h('line', { 'data-m': 'line', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '6 4' }),
+              h('circle', { 'data-m': 'a', r: 6, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 2 }),
+              h('circle', { 'data-m': 'b', r: 6, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 2 }),
+              h('rect', { 'data-m': 'bg', rx: 5, fill: '#0b1220', opacity: 0.85 }),
+              h('text', { 'data-m': 'text', textAnchor: 'middle', fill: '#fbbf24', fontSize: 13, fontWeight: 700, fontFamily: 'system-ui, sans-serif' })) : null,
             current ? h('div', { style: { position: 'absolute', top: 8, left: 8, right: 8, zIndex: 6, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'flex-start' } },
               h('button', { type: 'button', 'aria-pressed': pinMode ? 'true' : 'false', onClick: function () { var on = !pinMode; setPinMode(on); if (on) { focusViewer(); say(W('pin_hint')); } },
                 style: Object.assign({}, chipBtn, pinMode ? { color: P.pin, borderColor: P.pin } : null) },
                 pinMode ? W('pin_drop_active', { n: mem.pins.length + 1 }) : W('pin_drop')),
               pinMode ? h('button', { type: 'button', onClick: function () { var v = viewerRef.current; if (v) addPinAtViewportPoint(v.viewport.getCenter(true)); }, style: chipBtn }, W('pin_center')) : null,
               mem.pins.length ? h('button', { type: 'button', onClick: function () { setNote(current.id, { pins: [] }); say(I('pins_cleared_sr')); }, style: chipBtn }, W('pin_clear')) : null,
+              // Measure: only where the image has a scale, so a distance means something.
+              current.scale ? h('button', { type: 'button', 'aria-pressed': measureMode ? 'true' : 'false',
+                onClick: function () { var on = !measureMode; setMeasureMode(on); if (on) { setPinMode(false); focusViewer(); say(I('measure_hint')); } },
+                style: Object.assign({}, chipBtn, measureMode ? { color: '#fbbf24', borderColor: '#fbbf24' } : null) },
+                measureMode ? I('measure_active') : I('measure_btn')) : null,
+              current.scale && measureMode ? h('button', { type: 'button', onClick: function () { var v = viewerRef.current; if (v) addMeasurePoint(v.viewport.getCenter(true)); }, style: chipBtn }, I('measure_center')) : null,
+              current.scale && measurePts.length ? h('button', { type: 'button', onClick: function () { clearMeasure(); }, style: chipBtn }, I('measure_clear')) : null,
+              current.scale && measurePts.length === 2 ? h('span', { role: 'status', style: Object.assign({}, chipBox, { padding: '6px 10px', fontSize: '0.75rem', fontWeight: 700 }) }, I('measure_result', { d: measureDistance(measurePts) || '' })) : null,
               // Our own zoom controls: OpenSeadragon's are unlabelled focusable divs.
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                 h('button', { type: 'button', 'aria-label': W('zoom_in'), title: W('zoom_in'), onClick: function () { zoomBy(1.6); }, style: zoomBtn }, '＋'),

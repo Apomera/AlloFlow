@@ -779,3 +779,17 @@ describe('Scale Explorer accepts a hand-off from another tool', () => {
     expect(src).toMatch(/React\.useEffect\(function \(\) \{\s*try \{ window\.__alloScaleExplorerStart = null; \} catch \(_\) \{\}\s*draw\(\);/);
   });
 });
+
+describe('Scale Explorer: a real photograph one click away', () => {
+  it('the Earth and the Sun point at their gallery images; nothing else does', () => {
+    const withPhoto = ITEMS.filter((i) => i.photo).map((i) => [i.id, i.photo]);
+    expect(withPhoto).toEqual([['sun', 'solarflare'], ['earth', 'earthrise']]);
+    expect(src).toMatch(/focused\.photo && typeof ctx\.setStemLabTool === 'function' \? h\('button'/);
+    expect(src).toMatch(/window\.__alloZoomGalleryStart = \{ image: focused\.photo, from: 'scaleExplorer' \}/);
+    expect(src).toMatch(/ctx\.setStemLabTool\('zoomGallery'\)/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['see_photo', 'see_photo_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});

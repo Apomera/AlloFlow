@@ -13130,7 +13130,9 @@
       "you_label": "Make the person your height:",
       "you_name": "You",
       "you_reset": "Back to average",
-      "you_set_sr": "The person is now you, {len} tall."
+      "you_set_sr": "The person is now you, {len} tall.",
+      "see_photo": "See a real photo",
+      "see_photo_aria": "Open a real photograph of {name} in Zoom Gallery"
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",
@@ -84649,7 +84651,15 @@
       "scale_group": "Scale of this view",
       "scale_open_sx": "⚖️ See this size in Scale Explorer",
       "scale_open_sx_title": "Open Scale Explorer at the width of this view",
-      "scale_view": "This view is {w} across"
+      "scale_view": "This view is {w} across",
+      "measure_active": "📏 Measuring: click two points",
+      "measure_btn": "📏 Measure",
+      "measure_center": "Mark a point at the centre",
+      "measure_clear": "Clear measurement",
+      "measure_first_sr": "First point marked. Mark the second.",
+      "measure_hint": "Click two points on the image to measure between them. From the keyboard: pan to a spot and press Enter, twice.",
+      "measure_result": "Distance: {d}",
+      "measure_sr": "Distance between the points: {d}."
     },
     "circuitShelf": {
       "popup_blocked": "The Circuit Shelf window was blocked. Allow pop-ups for this page, then try again.",
