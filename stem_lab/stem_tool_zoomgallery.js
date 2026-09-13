@@ -68,6 +68,43 @@
   var OSD_VERSION = '5.0.1';
   var OSD_BASE = 'https://cdn.jsdelivr.net/npm/openseadragon@' + OSD_VERSION + '/build/openseadragon/';
   var ZOOM_GALLERY_CDN_URL = 'https://alloflow-cdn.pages.dev/zoom_gallery/zoom_gallery.html?v=2';
+  // ── Shareable images ───────────────────────────────────────────────────
+  // /zoom-gallery → /app/?tool=zoomGallery opens the picker; `&image=<id>`
+  // opens straight onto one image, so a teacher can send the class to the
+  // Apollo bootprint rather than to a menu. Read only when the link names this
+  // tool. The host keeps location.search after boot (verified live 2026-09-13).
+  function linkImageId(images) {
+    try {
+      var p = new URLSearchParams(window.location.search || '');
+      var tool = String(p.get('tool') || p.get('stem_tool') || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (tool !== 'zoomgallery') return null;
+      var id = String(p.get('image') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+      for (var i = 0; i < images.length; i++) if (images[i].id === id && id !== 'custom') return id;
+    } catch (_) {}
+    return null;
+  }
+  // Inside Gemini Canvas, the desktop app or a dev server the current address
+  // is not reachable by students, so a copied link points at the public shell.
+  function shareBase() {
+    try {
+      var loc = window.location, host = loc.hostname || '';
+      if (/(^|\.)alloflow/i.test(host) || /\.pages\.dev$/i.test(host) || /\.web\.app$/i.test(host)) return loc.origin + loc.pathname;
+    } catch (_) {}
+    return 'https://alloflow-cdn.pages.dev/app/';
+  }
+  function shareLinkFor(id) { return shareBase() + '?tool=zoomGallery&image=' + encodeURIComponent(id); }
+  // Clipboard the house way: the shell's alloCopyText (works inside Canvas),
+  // then the async API, then the legacy textarea. Resolves true on success.
+  function copyPlain(text) {
+    return Promise.resolve().then(function () {
+      if (typeof window.alloCopyText === 'function') return window.alloCopyText(text);
+      if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(function () { return true; });
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0'; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+      ta.remove(); return ok;
+    }).then(function (r) { return r !== false; }, function () { return false; });
+  }
   function companionUrl(path, cdnUrl) {
     try {
       var loc = window.location || {};
@@ -197,6 +234,12 @@
     blocked_note: 'Pop-up blocked — allow pop-ups for this page and try again.',
     open_note: 'Zoom Gallery is open. Keep this AlloFlow window open too — it powers the AI coach.',
     closed_note: 'Zoom Gallery was closed. You can reopen it whenever you are ready.',
+    copy_link: '🔗 Copy link to this image',
+    copy_link_title: 'Copy a link that opens Zoom Gallery on this image',
+    link_copied: 'Link copied',
+    link_copied_sr: 'Link to {name} copied.',
+    link_failed: 'Copying was blocked here. Select the link and copy it by hand:',
+    link_field_aria: 'Link to this image',
     credit: 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'
   };
 
@@ -439,6 +482,7 @@
       var _zoom = React.useState(1); var zoomX = _zoom[0], setZoomX = _zoom[1];
       var _busy = React.useState(false); var busy = _busy[0], setBusy = _busy[1];
       var _copied = React.useState(''); var copied = _copied[0], setCopied = _copied[1];
+      var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
       var _navOn = React.useState(true); var navOn = _navOn[0], setNavOn = _navOn[1];
       var navOnRef = React.useRef(true);
@@ -780,10 +824,17 @@
       }, [pinSig, imgState, currentId, P.pin]);
 
       function openImage(id) {
-        setPinMode(false); setStep('notice'); setCopied('');
+        setPinMode(false); setStep('notice'); setCopied(''); setLinkState('');
         setCurrentId(id);
         bumpSlice('openedCount');
       }
+      // A shared link that names an image opens on it. Once, at mount; the
+      // picker stays one click away through Back to gallery.
+      React.useEffect(function () {
+        var id = linkImageId(IMAGES);
+        if (id) openImage(id);
+        return function () { clearTimeout(linkTimerRef.current); };
+      }, []);
       function backToGallery() {
         setPinMode(false);
         try { if (viewerRef.current) viewerRef.current.close(); } catch (_) {}
@@ -820,6 +871,17 @@
           lines.push('');
         });
         return lines.join('\n');
+      }
+      var linkTimerRef = React.useRef(null);
+      function copyLink() {
+        if (!current || current.id === 'custom') return;
+        var item = current;
+        clearTimeout(linkTimerRef.current);
+        copyPlain(shareLinkFor(item.id)).then(function (ok) {
+          setLinkState(ok ? 'copied' : 'failed');
+          if (ctx.announceToSR) ctx.announceToSR(ok ? I('link_copied_sr', { name: imgText(item, 'name') }) : I('link_failed'));
+          if (ok) linkTimerRef.current = setTimeout(function () { setLinkState(''); }, 2400);
+        });
       }
       function copyNotes() {
         var text = notesText();
@@ -969,6 +1031,8 @@
             ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null, I('back_to_tools')),
           h('h2', { style: { margin: 0, fontSize: '1.0625rem', fontWeight: 700, color: P.text, flex: '1 1 auto' } }, I('title')),
           current ? h('button', { type: 'button', style: btnBase, onClick: backToGallery }, W('back_gallery')) : null,
+          current && current.id !== 'custom' ? h('button', { type: 'button', style: btnBase, onClick: copyLink, title: I('copy_link_title'), 'aria-label': I('copy_link_title') },
+            linkState === 'copied' ? '✓ ' + I('link_copied') : I('copy_link')) : null,
           h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: P.dim } },
             h('span', { className: 'sr-only' }, W('select_label')),
             h('select', { value: current && current.id !== 'custom' ? current.id : '', 'aria-label': W('select_label'),
@@ -982,6 +1046,11 @@
         !current ? h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } }, I('blurb')) : null,
         h('div', { style: { fontSize: '0.71875rem', color: P.dim } }, aiOn ? '✨ ' + I('ai_inline_on') : '🌱 ' + I('ai_inline_off')),
         popupState === 'blocked' ? h('p', { role: 'alert', style: { margin: 0, fontSize: '0.75rem', color: P.warn } }, I('blocked_note')) : null,
+        linkState === 'failed' && current ? h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+          h('span', { style: { fontSize: '0.71875rem', color: P.dim } }, I('link_failed')),
+          h('input', { type: 'text', readOnly: true, value: shareLinkFor(current.id), 'aria-label': I('link_field_aria'),
+            onFocus: function (e) { try { e.target.select(); } catch (_) {} },
+            style: { flex: '1 1 260px', fontSize: '0.71875rem', padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text } })) : null,
         popupState === 'open' ? h('p', { style: { margin: 0, fontSize: '0.75rem', color: P.ok } }, I('open_note')) : null,
         popupState === 'closed' ? h('p', { style: { margin: 0, fontSize: '0.75rem', color: P.dim } }, I('closed_note')) : null,
 

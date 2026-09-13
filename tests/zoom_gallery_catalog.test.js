@@ -380,3 +380,49 @@ describe('zoomGallery registers even when it runs before stem_lab_module.js', ()
     expect(shim[0]).not.toMatch(/ensureThree/);
   });
 });
+
+// 2026-09-13. ?tool=zoomGallery&image=<id> opens straight onto an image, and an
+// open image offers a "Copy link to this image" control whose link points at
+// the public shell from anywhere a class cannot reach (Canvas, localhost, the
+// desktop app). Verified end to end on the dev server: image=bootprint opened
+// the bootprint and the clipboard held the public link.
+describe('Zoom Gallery shareable images', () => {
+  function lift(name, until) {
+    const s = toolSrc.indexOf('function ' + name + '(');
+    const e = toolSrc.indexOf('function ' + until + '(', s);
+    if (s < 0 || e < 0) throw new Error('could not lift ' + name);
+    return toolSrc.slice(s, e);
+  }
+  const helpers = lift('linkImageId', 'shareBase') + lift('shareBase', 'copyPlain');
+  function evalWith(search, hostname) {
+    const ctx = { window: { location: { search, hostname, origin: 'https://' + hostname, pathname: '/app/' } }, URLSearchParams, encodeURIComponent };
+    vm.runInNewContext(helpers + '\nthis.linkImageId = linkImageId; this.shareLinkFor = shareLinkFor;', ctx);
+    return ctx;
+  }
+
+  it('reads the image only when the link names this tool, and never the custom slot', () => {
+    expect(evalWith('?tool=zoomGallery&image=bootprint', 'x').linkImageId(toolImages)).toBe('bootprint');
+    expect(evalWith('?tool=zoom-gallery&image=EARTHRISE', 'x').linkImageId(toolImages)).toBe('earthrise');
+    expect(evalWith('?tool=scaleExplorer&image=bootprint', 'x').linkImageId(toolImages)).toBeNull();
+    expect(evalWith('?tool=zoomGallery&image=custom', 'x').linkImageId(toolImages)).toBeNull();
+    expect(evalWith('?tool=zoomGallery&image=nothing', 'x').linkImageId(toolImages)).toBeNull();
+    expect(evalWith('', 'x').linkImageId(toolImages)).toBeNull();
+  });
+
+  it('copies the public link off-host and the current origin on an AlloFlow host', () => {
+    expect(evalWith('', 'alloflow-cdn.pages.dev').shareLinkFor('bootprint')).toBe('https://alloflow-cdn.pages.dev/app/?tool=zoomGallery&image=bootprint');
+    for (const host of ['localhost', 'abc.usercontent.goog']) {
+      expect(evalWith('', host).shareLinkFor('pillars')).toBe('https://alloflow-cdn.pages.dev/app/?tool=zoomGallery&image=pillars');
+    }
+  });
+
+  it('opens the linked image at mount, offers the control only for catalog images, and registers its strings', () => {
+    expect(toolSrc).toMatch(/var id = linkImageId\(IMAGES\);\s*if \(id\) openImage\(id\);/);
+    expect(toolSrc).toMatch(/current && current\.id !== 'custom' \? h\('button', \{ type: 'button', style: btnBase, onClick: copyLink/);
+    expect(toolSrc).toMatch(/linkState === 'failed' && current \? h\('div'/);
+    for (const k of ['copy_link', 'copy_link_title', 'link_copied', 'link_copied_sr', 'link_failed', 'link_field_aria']) {
+      expect(toolInl[k], 'INL ' + k).toBeTruthy();
+      for (const rel of UI_STRINGS_COPIES) expect(JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8')).stem.zoomGallery[k], rel + ' ' + k).toBe(toolInl[k]);
+    }
+  });
+});

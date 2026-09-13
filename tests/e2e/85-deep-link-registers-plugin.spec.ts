@@ -87,3 +87,24 @@ test('an unknown tool id still opens the plain app (the map validates, it does n
   const opened = await page.evaluate(() => !!document.querySelector('[data-stem-lab="true"]'));
   expect(opened, 'an unknown ?tool= must not open the STEAM Lab overlay').toBe(false);
 });
+
+// 2026-09-13: a link can name a place. Both tools read their own parameter only
+// when ?tool= names them, and the host keeps location.search after boot.
+test('?tool=scaleExplorer&focus=rbc opens with the red blood cell in focus', async ({ page }) => {
+  await page.goto('./?tool=scaleExplorer&focus=rbc', { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await page.waitForFunction(() => { const w = window as any; return !!(w.StemLab && w.StemLab._registry && w.StemLab._registry.scaleExplorer); }, null, { timeout: 150000 });
+  const focusHeading = page.getByRole('heading', { name: /in focus/i });
+  await expect(focusHeading).toBeVisible({ timeout: 60000 });
+  await expect(page.locator('body')).toContainText(/red blood cell/i);
+  await expect(page.getByRole('button', { name: /Copy a link that opens Scale Explorer at/ })).toBeVisible();
+});
+
+test('?tool=zoomGallery&image=bootprint opens straight onto the bootprint', async ({ page }) => {
+  await page.goto('./?tool=zoomGallery&image=bootprint', { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await page.waitForFunction(() => { const w = window as any; return !!(w.StemLab && w.StemLab._registry && w.StemLab._registry.zoomGallery); }, null, { timeout: 150000 });
+  // The image picker is the combobox labelled "Choose an image" (WIN.select_label).
+  await expect(page.getByRole('combobox', { name: /choose an image/i })).toHaveValue('bootprint', { timeout: 60000 });
+  await expect(page.getByRole('button', { name: /Copy a link that opens Zoom Gallery on this image/ })).toBeVisible();
+  // the picker's prompt is not shown when an image is open
+  await expect(page.locator('body')).not.toContainText(/Pick an image/i);
+});

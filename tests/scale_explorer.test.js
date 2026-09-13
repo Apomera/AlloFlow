@@ -475,3 +475,70 @@ describe('scaleExplorer registers even when it runs before stem_lab_module.js', 
     expect(shim[0]).not.toMatch(/ensureThree/);
   });
 });
+
+// 2026-09-13. A shared link can name a place: ?tool=scaleExplorer&focus=<id> or
+// &at=<power of ten>. The functions are module-level, so they are lifted out of
+// the source and run against a fake window; the real-host run on the dev
+// server confirmed the same behaviour end to end (focus=rbc landed on the red
+// blood cell, at=-9 on the DNA helix, and the copied link was the public one).
+describe('Scale Explorer shareable views', () => {
+  function lift(name, until) {
+    const s = src.indexOf('function ' + name + '(');
+    const e = src.indexOf('function ' + until + '(', s);
+    if (s < 0 || e < 0) throw new Error('could not lift ' + name);
+    return src.slice(s, e);
+  }
+  const helpers = lift('linkNamesThisTool', 'shareBase') + lift('shareBase', 'copyPlain');
+  function evalWith(search, hostname) {
+    const ctx = {
+      window: { location: { search, hostname, origin: 'https://' + hostname, pathname: '/app/' } },
+      URLSearchParams,
+      MIN_EXP: -16.2, MAX_EXP: 27.6,
+      log10: (v) => Math.log(v) / Math.LN10,
+      encodeURIComponent,
+    };
+    vm.runInNewContext(helpers + '\nthis.readStartFromLink = readStartFromLink; this.shareLinkFor = shareLinkFor;', ctx);
+    return ctx;
+  }
+  const items = ITEMS;
+
+  it('opens at a named item, and only when the link names this tool', () => {
+    expect(evalWith('?tool=scaleExplorer&focus=rbc', 'alloflow-cdn.pages.dev').readStartFromLink(items)).toMatchObject({ focusId: 'rbc' });
+    expect(evalWith('?tool=scale_explorer&focus=RBC', 'x').readStartFromLink(items)).toMatchObject({ focusId: 'rbc' });
+    // another tool's focus= is not ours
+    expect(evalWith('?tool=zoomGallery&focus=rbc', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('?tool=scaleExplorer&focus=nonsense', 'x').readStartFromLink(items)).toBeNull();
+  });
+
+  it('opens at a power of ten with the nearest item in focus, and ignores values off the ladder', () => {
+    const at = evalWith('?tool=scaleExplorer&at=-9', 'x').readStartFromLink(items);
+    expect(at.exp).toBe(-9);
+    expect(at.focusId).toBe('dna'); // 2 nm is the nearest entry to 1 nm
+    expect(evalWith('?tool=scaleExplorer&at=999', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('?tool=scaleExplorer&at=abc', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('?tool=scaleExplorer&at=27.6', 'x').readStartFromLink(items).exp).toBe(27.6);
+  });
+
+  it('copies a link students can open: the current origin on an AlloFlow host, the public shell elsewhere', () => {
+    expect(evalWith('', 'alloflow-cdn.pages.dev').shareLinkFor({ id: 'rbc' })).toBe('https://alloflow-cdn.pages.dev/app/?tool=scaleExplorer&focus=rbc');
+    // Gemini Canvas, localhost and the desktop app are not reachable by a class
+    for (const host of ['localhost', '123-abc.usercontent.goog', '127.0.0.1']) {
+      expect(evalWith('', host).shareLinkFor({ id: 'oort' })).toBe('https://alloflow-cdn.pages.dev/app/?tool=scaleExplorer&focus=oort');
+    }
+  });
+
+  it('starts state and refs from the link, and offers the copy control with a spoken name', () => {
+    expect(src).toMatch(/var start = React\.useMemo\(function \(\) \{ return readStartFromLink\(ITEMS\)/);
+    expect(src).toMatch(/React\.useState\(start\.focusId \|\| 'human'\)/);
+    expect(src).toMatch(/var expRef = React\.useRef\(start\.exp\)/);
+    expect(src).toMatch(/'aria-label': S\('copy_link_aria'/);
+    expect(src).toMatch(/S\('link_copied_sr', 'Link to \{name\} copied\.'/);
+    // failure path shows the link for hand copying instead of failing silently
+    expect(src).toMatch(/linkState === 'failed' \? h\('div'/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['copy_link', 'copy_link_aria', 'copy_link_title', 'link_copied', 'link_copied_sr', 'link_failed', 'link_field_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});

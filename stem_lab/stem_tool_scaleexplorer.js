@@ -209,6 +209,60 @@
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function fmt(s, vars) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return vars && k in vars ? vars[k] : m; }); }
 
+  // ── Shareable views ───────────────────────────────────────────────────
+  // The shell deep link (/scale-explorer → /app/?tool=scaleExplorer) opens the
+  // tool; these two extra parameters open it AT a place, so a teacher can send
+  // a class straight to a red blood cell or the Oort cloud:
+  //   ?tool=scaleExplorer&focus=rbc      an item id from ITEMS
+  //   ?tool=scaleExplorer&at=-9          a power of ten (log10 metres)
+  // Read only when the link names this tool, so another tool's `focus` cannot
+  // steer this one. The host keeps location.search after boot (verified live).
+  function linkNamesThisTool() {
+    try {
+      var p = new URLSearchParams(window.location.search || '');
+      var tool = String(p.get('tool') || p.get('stem_tool') || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return tool === 'scaleexplorer' ? p : null;
+    } catch (_) { return null; }
+  }
+  function readStartFromLink(items) {
+    var p = linkNamesThisTool();
+    if (!p) return null;
+    var focus = String(p.get('focus') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+    for (var i = 0; i < items.length; i++) if (items[i].id === focus) return { focusId: items[i].id, exp: log10(items[i].size) };
+    var at = parseFloat(p.get('at'));
+    if (isFinite(at) && at >= MIN_EXP && at <= MAX_EXP) {
+      // The camera lands at the power of ten; the focus card should describe
+      // whatever is nearest, exactly as it would after a move.
+      var best = null, bestD = Infinity;
+      for (var j = 0; j < items.length; j++) { var d = Math.abs(log10(items[j].size) - at); if (d < bestD) { bestD = d; best = items[j]; } }
+      return { focusId: best ? best.id : null, exp: at };
+    }
+    return null;
+  }
+  // Where a copied link should point. Inside Gemini Canvas, the desktop app or a
+  // dev server the current address is not reachable by students, so the public
+  // shell is used; on an AlloFlow host the current origin is kept.
+  function shareBase() {
+    try {
+      var loc = window.location, host = loc.hostname || '';
+      if (/(^|\.)alloflow/i.test(host) || /\.pages\.dev$/i.test(host) || /\.web\.app$/i.test(host)) return loc.origin + loc.pathname;
+    } catch (_) {}
+    return 'https://alloflow-cdn.pages.dev/app/';
+  }
+  function shareLinkFor(item) { return shareBase() + '?tool=scaleExplorer&focus=' + encodeURIComponent(item.id); }
+  // Clipboard, the house way: the shell's alloCopyText (works inside Canvas),
+  // then the async API, then the legacy textarea. Resolves true on success.
+  function copyPlain(text) {
+    return Promise.resolve().then(function () {
+      if (typeof window.alloCopyText === 'function') return window.alloCopyText(text);
+      if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(function () { return true; });
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0'; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+      ta.remove(); return ok;
+    }).then(function (r) { return r !== false; }, function () { return false; });
+  }
+
   var SUPERSCRIPT = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
   function powerLabel(n) {
     return '10' + String(n).split('').map(function (ch) { return SUPERSCRIPT[ch] || ch; }).join('') + ' m';
@@ -304,8 +358,12 @@
       function itemText(item, field, fb) { return t('stem.scaleExplorer.item_' + item.id.replace(/-/g, '_') + '_' + field, fb != null ? fb : item[field]); }
       function say(text) { if (ctx.announceToSR && text) ctx.announceToSR(text); }
 
-      var _focus = React.useState('human'); var focusId = _focus[0], setFocusId = _focus[1];
-      var _exp = React.useState(log10(HUMAN)); var exp = _exp[0], setExp = _exp[1];
+      // A shared link may name a starting place; otherwise the person, the
+      // scale everything else is easiest to feel from.
+      var start = React.useMemo(function () { return readStartFromLink(ITEMS) || { focusId: 'human', exp: log10(HUMAN) }; }, []);
+      var _focus = React.useState(start.focusId || 'human'); var focusId = _focus[0], setFocusId = _focus[1];
+      var _exp = React.useState(start.exp); var exp = _exp[0], setExp = _exp[1];
+      var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
       var _cmpA = React.useState('human'); var cmpA = _cmpA[0], setCmpA = _cmpA[1];
       var _cmpB = React.useState('rbc'); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
@@ -326,11 +384,11 @@
       // down on the thumb; under the keyboard the thumb should follow.
       var scrubDragRef = React.useRef(false);
       var wrapRef = React.useRef(null);
-      var targetRef = React.useRef(log10(HUMAN));
-      var expRef = React.useRef(log10(HUMAN));
+      var targetRef = React.useRef(start.exp);
+      var expRef = React.useRef(start.exp);
       var rafRef = React.useRef(0);
-      var lastDecadeRef = React.useRef(Math.round(log10(HUMAN)));
-      var nearestRef = React.useRef('human');
+      var lastDecadeRef = React.useRef(Math.round(start.exp));
+      var nearestRef = React.useRef(start.focusId || 'human');
       // Read through a ref, not the render closure: the animation loop outlives
       // the render that created it.
       var focusIdRef = React.useRef(focusId);
@@ -608,6 +666,7 @@
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
           if (journeyRef.current) clearInterval(journeyRef.current);
           clearTimeout(speakTimerRef.current);
+          clearTimeout(linkTimerRef.current);
         };
       }, []);
       React.useEffect(function () { draw(); }, [theme, focusId, uiLang]);
@@ -644,6 +703,16 @@
         Promise.resolve(ctx.callTTS(String(text), null, null, { force: true }))
           .then(function (url) { settle(!url); })
           .catch(function () { settle(true); });
+      }
+      var linkTimerRef = React.useRef(null);
+      function copyLink() {
+        var item = focused;
+        clearTimeout(linkTimerRef.current);
+        copyPlain(shareLinkFor(item)).then(function (ok) {
+          setLinkState(ok ? 'copied' : 'failed');
+          say(ok ? S('link_copied_sr', 'Link to {name} copied.', { name: itemText(item, 'name') }) : S('link_failed', 'Copying was blocked here. Select the link and copy it by hand:'));
+          if (ok) linkTimerRef.current = setTimeout(function () { setLinkState(''); }, 2400);
+        });
       }
       function speakBtn(key, text) {
         if (typeof ctx.callTTS !== 'function' || !text) return null;
@@ -825,8 +894,17 @@
                   S('size_line', '{len} {dim}', { len: humanLength(focused.size), dim: S('dim_' + focused.dim.replace(/\s+/g, '_'), focused.dim) })),
                 h('p', { style: { margin: 0 } }, itemText(focused, 'describe')),
                 focused.note ? h('p', { style: { margin: '6px 0 0', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, '⚖️ ' + itemText(focused, 'note')) : null,
-                speakBtn('focus', itemText(focused, 'describe') + (focused.note ? ' ' + itemText(focused, 'note') : '')) ?
-                  h('div', { style: { marginTop: 8 } }, speakBtn('focus', itemText(focused, 'describe') + (focused.note ? ' ' + itemText(focused, 'note') : ''))) : null)),
+                h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
+                  speakBtn('focus', itemText(focused, 'describe') + (focused.note ? ' ' + itemText(focused, 'note') : '')),
+                  h('button', { type: 'button', onClick: copyLink, 'aria-label': S('copy_link_aria', 'Copy a link that opens Scale Explorer at {name}', { name: itemText(focused, 'name') }),
+                    title: S('copy_link_title', 'Copy a link that opens Scale Explorer here'),
+                    style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) },
+                    linkState === 'copied' ? '✓ ' + S('link_copied', 'Link copied') : '🔗 ' + S('copy_link', 'Copy link to this view'))),
+                linkState === 'failed' ? h('div', { style: { marginTop: 6 } },
+                  h('div', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 4 } }, S('link_failed', 'Copying was blocked here. Select the link and copy it by hand:')),
+                  h('input', { type: 'text', readOnly: true, value: shareLinkFor(focused), 'aria-label': S('link_field_aria', 'Link to this view'),
+                    onFocus: function (e) { try { e.target.select(); } catch (_) {} },
+                    style: { width: '100%', boxSizing: 'border-box', fontSize: '0.71875rem', padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text } })) : null)),
 
             // Estimate first, then check: the house Predict → Explore → Explain
             // shape. The reveal is never withheld and never scored.
