@@ -33,10 +33,23 @@ const MANIFEST = path.join(__dirname, 'host_handlers_wave3_manifest.json');
 const MODULE_KEY = 'HostHandlers';
 const SOURCE_FILE = 'host_handlers_source.jsx';
 const OUTPUT_FILE = 'host_handlers_module.js';
-const WAVE = 4;
+// --wave=N stamps the manifest so a wave never re-applies; wave 5 (2026-09-13) reran this
+// same extractor at --min=400 for the remaining small handlers.
+const WAVE = Number((process.argv.find(a => a.startsWith('--wave=')) || '--wave=4').slice(7));
 
 const DRY = process.argv.includes('--dry-run');
 const MIN = Number((process.argv.find(a => a.startsWith('--min=')) || '--min=900').slice(6));
+// --exclude-tested: skip any handler whose name appears in a test file. 415 test files read the
+// host as text and some slice a handler out and execute it; moving those bodies would turn
+// each such test into a `_alloHostHandlers is not defined` failure (wave 5 lesson, 2026-09-13).
+const EXCLUDE_TESTED = process.argv.includes('--exclude-tested');
+const TESTED_NAMES = (() => {
+  if (!EXCLUDE_TESTED) return null;
+  const dir = path.join(ROOT, 'tests');
+  const files = fs.readdirSync(dir).filter(f => /\.test\.(js|mjs|ts)$/.test(f));
+  return files.map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
+})();
+const mentionedInTests = (name) => TESTED_NAMES !== null && new RegExp('(^|[^\\w$])' + name.replace(/\$/g, '\\$') + '(?![\\w$])').test(TESTED_NAMES);
 
 const GLOBALS = new Set([
   'Array', 'Blob', 'Boolean', 'CustomEvent', 'Date', 'Error', 'JSON', 'Map', 'Math', 'NaN', 'Number',
@@ -93,13 +106,18 @@ function syncExecuted(fnPath) {
   if ((p.type === 'CallExpression' || p.type === 'NewExpression') && p.arguments.includes(fnPath.node)) return !isAsyncCallee(p.callee);
   if (p.type === 'JSXExpressionContainer' && parent.parentPath && parent.parentPath.node.type === 'JSXAttribute'
       && parent.parentPath.node.name && parent.parentPath.node.name.name === 'ref') return true;
+  // An effect's cleanup runs synchronously in a later commit (and at mount under StrictMode):
+  // both `useEffect(() => { return () => {...}; })` and the concise `useEffect(() => () => {...})`.
+  const isEffectCall = (node) => {
+    if (!node || node.type !== 'CallExpression') return false;
+    const c = node.callee; const n = c.type === 'Identifier' ? c.name : (c.property && c.property.name);
+    return /^use(Layout|Insertion)?Effect$/.test(n || '');
+  };
   if (p.type === 'ReturnStatement') {
     const enclosing = fnPath.findParent(x => isFnNode(x.node));
-    if (enclosing && enclosing.parentPath && enclosing.parentPath.node.type === 'CallExpression') {
-      const c = enclosing.parentPath.node.callee; const n = c.type === 'Identifier' ? c.name : (c.property && c.property.name);
-      if (/^use(Layout|Insertion)?Effect$/.test(n || '')) return true;
-    }
+    if (enclosing && enclosing.parentPath && isEffectCall(enclosing.parentPath.node)) return true;
   }
+  if (p.type === 'ArrowFunctionExpression' && p.body === fnPath.node && parent.parentPath && isEffectCall(parent.parentPath.node)) return true;
   return false;
 }
 
@@ -245,6 +263,7 @@ function main() {
     if (entry.fnPath.node.generator) { reject('generator'); continue; }
     if (/\b(use[A-Z][A-Za-z]*)\s*\(/.test(source.slice(entry.fnPath.node.start, entry.fnPath.node.end))) { reject('calls a hook'); continue; }
     if (R.has(name)) { reject('invoked at render/effect'); continue; }
+    if (mentionedInTests(name)) { reject('mentioned in a test file'); continue; }
     if (text.includes('__d') || text.includes('__alloHostDeps')) { reject('name collision'); continue; }
     let ownThis = false;
     entry.fnPath.traverse({

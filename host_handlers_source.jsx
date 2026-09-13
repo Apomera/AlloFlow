@@ -10267,5 +10267,1036 @@ const handlePresentationOptionClick = (qIndex, option) => {
           };
       });
   };
-  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, executeRoleSelect, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, prepareMailboxResourceImages, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, clearCanvasWorkspaceState, buildCanvasWorkspaceSnapshot, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, showSpotlight, highlightElement, _alloBlueprintLearningWebResource, _alloAlignmentRegistryRecordFromResource, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, _mbPushOneResource, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, applyMbDownPayload, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, onUpdateResource, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, runGlossaryHealthCheck, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick };
+const _alloUpdateBrainstormActivity = (index, updater) => {
+    __d.setGeneratedContent(previous => {
+      if (!previous || previous.type !== 'brainstorm' || !Array.isArray(previous.data) || !previous.data[index]) return previous;
+      const activity = previous.data[index];
+      const nextActivity = typeof updater === 'function' ? updater(activity, previous) : activity;
+      if (!nextActivity || nextActivity === activity) return previous;
+      const updatedContent = { ...previous, data: previous.data.map((item, itemIndex) => itemIndex === index ? nextActivity : item) };
+      __d.setHistory(prev => prev.map(item => item.id === previous.id ? updatedContent : item));
+      return updatedContent;
+    });
+  };
+const _alloStampBrainstormDerivative = (index, kind, patch = {}) => {
+    const dispatcher = __d._alloActivityDispatcher();
+    if (!dispatcher || typeof dispatcher.stampActivityDerivative !== 'function') return;
+    _alloUpdateBrainstormActivity(index, activity => dispatcher.stampActivityDerivative(
+      activity,
+      __d.generatedContent && __d.generatedContent.id,
+      index,
+      kind,
+      patch
+    ));
+  };
+const _alloActivityRetryable = (error) => {
+    const message = String(error && error.message || error || '').toLowerCase();
+    const code = String(error && error.code || '').toLowerCase();
+    const status = Number(error && (error.status || error.statusCode || error.httpStatus));
+    if (/401|403|blocked|safety|quota|billing|api key|not configured|permission|forbidden|daily usage/.test(message)
+      || /auth|permission|forbidden|unauthorized|safety|policy|quota|billing/.test(code)) return false;
+    if ([408, 409, 425, 429].includes(status) || status >= 500) return true;
+    return !message || /network|fetch|timeout|timed out|429|502|503|504|overload|parse|json|valid|empty|response|unusable/.test(message);
+  };
+const _alloCheckpointSupports = () => {
+      const seen = __d._alloCheckpointSupportsRef.current;
+      if (!seen) return [];
+      const P = __d._alloProvenanceApi();
+      const allowed = (P && P.CHECKPOINT_ALWAYS_ALLOWED) || [];
+      // Only access supports belong on a check-in record. A generative helper
+      // during a checkpoint is a policy question, not an accommodation note.
+      return Array.from(seen).filter(k => allowed.indexOf(k) >= 0).sort();
+  };
+const handleResetScaffolds = () => {
+      if (!__d.generatedContent?.id) return;
+      __d.setConfirmDialog({ message: __d.t('scaffolds.reset_confirm') || 'Reset all answers?', onConfirm: () => {
+          __d.setStudentResponses(prev => {
+              const newState = { ...prev };
+              delete newState[__d.generatedContent.id];
+              return newState;
+          });
+          __d.addToast(__d.t('scaffolds.answers_cleared'), "info");
+      } });
+  };
+function openReadingStudy(selection) {
+    if (!selection || !selection.text) return;
+    __d.stopPlayback();
+    __d.setReadingStudySource({ ...selection, ownerScope: __d.readingProfileScope, requestId: String(Date.now()) });
+    __d.setIsReadingLibraryOpen(false);
+    __d.setLabToolData(prev => ({ ...prev, lumen: { ...(prev.lumen || {}), mode: 'study' } }));
+    __d.setStemLabTool('lumen'); __d.setStemLabTab('explore'); __d.setShowStemLab(true);
+  }
+const ensureReadingLibraryIndex = () => {
+    if (__d.readingLibraryIndexPromiseRef.current) return __d.readingLibraryIndexPromiseRef.current;
+    const urls = ['reading_library/index.json', '/reading_library/index.json', 'https://alloflow-cdn.pages.dev/reading_library/index.json'];
+    __d.readingLibraryIndexPromiseRef.current = (async () => {
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { cache: 'force-cache' });
+          if (!res || !res.ok) continue;
+          const data = await res.json();
+          if (data && Array.isArray(data.books)) __d.setReadingLibraryIndexForBot(data);
+          return data;
+        } catch (_) {}
+      }
+      __d.readingLibraryIndexPromiseRef.current = null;
+      return null;
+    })();
+    return __d.readingLibraryIndexPromiseRef.current;
+  };
+const recordGameCompletion = (resourceId, gameType, data) => {
+      const entry = {
+          resourceId: resourceId || 'unknown',
+          completedAt: new Date().toISOString(),
+          ...data
+      };
+      __d.setGameCompletions(prev => ({
+          ...prev,
+          [gameType]: [...(prev[gameType] || []), entry]
+      }));
+      try {
+          const winOnlyGames = new Set(['bingo', 'crossword', 'memory']);
+          const isPerfect = (data && data.isPerfect === true) || winOnlyGames.has(gameType);
+          window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', {
+              detail: { kind: isPerfect ? 'backflip' : 'puff', confetti: true }
+          }));
+      } catch (_) {}
+  };
+const closeOrganizerPreview = (type, setPlaying, setInteractive) => {
+      setPlaying(false);
+      if (!__d.isTeacherMode) setInteractive(false);
+      else if (__d.activeInteractiveOrganizerTypeRef.current === type) {
+          __d.addToast('Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.', 'info');
+      }
+  // `addToast` is declared later; reading it in this dependency array crashes
+  // the initial render, while resolving it when the callback runs is safe.
+  };
+const openLiveActivityDashboard = (snapshot) => {
+    if (!snapshot || typeof snapshot !== 'object') return;
+    if (snapshot.family === 'polling') {
+      __d.setLivePollPreset(null);
+      __d.setShowLivePollingPanel(true);
+      __d.setShowLiveDock(false);
+      return;
+    }
+    if (snapshot.family === 'pictionary') {
+      __d.setPictionaryPreparedInteraction(null);
+      __d.setPictionaryInitialMode(snapshot.kind === 'sketch_response' ? 'sketch' : 'pictionary');
+      __d.setShowPictionaryHost(true);
+      __d.setShowLiveDock(false);
+      return;
+    }
+    if (snapshot.family === 'quiz') {
+      __d.setActiveView('quiz');
+      __d.setShowLiveDock(false);
+    }
+  };
+const retryLiveSessionResources = () => {
+    if (__d.liveResourceHydrationRetryTimerRef.current) clearTimeout(__d.liveResourceHydrationRetryTimerRef.current);
+    __d.liveResourceHydrationRetryTimerRef.current = null;
+    __d.lastResourcesStringRef.current = null;
+    __d.lastPackRefRef.current = null;
+    __d.liveResourceHydrationAttemptsRef.current = { signature: '', count: 0 };
+    __d.setLiveResourceLoadState({ status: 'loading', attempt: 0 });
+    __d.setLiveResourceRetryEpoch(value => value + 1);
+  };
+const handleToggleAllTools = () => {
+      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
+      const areAllExpanded = allToolIds.every(id => __d.expandedTools.includes(id));
+      if (areAllExpanded) {
+          __d.setExpandedTools([]);
+      } else {
+          __d.setExpandedTools(allToolIds);
+      }
+  };
+const _alloAlignmentExportFromRegistryEntry = (entry, linkedResourceId) => {
+      if (!__d._alloIsAlignmentGraph(entry?.graph)) return null;
+      const provenance = entry?.provenance || {};
+      return {
+          schema: __d._alloAlignmentExportSchema,
+          graph: entry.graph,
+          originalGraph: null,
+          audit: {
+              registryGraphId: String(entry.id || '').slice(0, 240),
+              linkedResourceId: String(linkedResourceId || '').slice(0, 240),
+              title: String(entry.title || 'Alignment Map').slice(0, 200),
+              provider: String(provenance.provider || '').slice(0, 120),
+              datasetVersion: String(provenance.datasetVersion || '').slice(0, 120),
+          },
+      };
+  };
+const toggleOverlay = () => {
+      const modes = ['none', 'blue', 'peach', 'yellow'];
+      const nextIndex = (modes.indexOf(__d.colorOverlay) + 1) % modes.length;
+      const nextMode = modes[nextIndex];
+      __d.setColorOverlay(nextMode);
+      if (nextMode !== 'none') {
+          __d.addToast(__d.t('toasts.overlay_set', { mode: nextMode.charAt(0).toUpperCase() + nextMode.slice(1) }) || `Overlay: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)}`, 'info');
+      } else {
+          __d.addToast(__d.t('toasts.overlay_disabled'), 'info');
+      }
+  };
+const submitExploreScore = () => {
+    if (__d.exploreScore.total === 0) return;
+    const pct = Math.round((__d.exploreScore.correct / __d.exploreScore.total) * 100);
+    const entry = {
+      type: 'explore-challenge',
+      tool: __d.stemLabTool || 'mixed',
+      correct: __d.exploreScore.correct,
+      total: __d.exploreScore.total,
+      percentage: pct,
+      date: new Date().toISOString(),
+      label: 'Explore Challenge: ' + (__d.stemLabTool || 'mixed') + ' (' + __d.exploreScore.correct + '/' + __d.exploreScore.total + ')'
+    };
+    __d.setHistory(prev => [...prev, entry]);
+    if (typeof __d.addToast === 'function') __d.addToast(__d.t('toasts.explore_score_saved') + __d.exploreScore.correct + '/' + __d.exploreScore.total + ' (' + pct + '%)', 'success');
+    __d.setExploreScore({ correct: 0, total: 0 });
+  };
+const handleNodeMouseMove = (e) => {
+      if (!__d.draggedNodeId) return;
+      const newX = e.clientX - __d.dragOffset.x;
+      const newY = e.clientY - __d.dragOffset.y;
+      const containerW = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetWidth : 1200;
+      const containerH = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetHeight : 800;
+      const clampedX = Math.max(0, Math.min(containerW, newX));
+      const clampedY = Math.max(0, Math.min(containerH, newY));
+      __d.setConceptMapNodes(prev => prev.map(n =>
+          n.id === __d.draggedNodeId ? { ...n, x: clampedX, y: clampedY } : n
+      ));
+  };
+const handleNodeMouseUp = () => {
+      if (__d.draggedNodeId) {
+          __d.setConceptMapNodes(prevNodes => {
+              return prevNodes.map(node => {
+                  if (node.id === __d.draggedNodeId && node.type === 'venn-token') {
+                      const zone = __d.getVennZone(node.x, node.y);
+                      if (zone === 'bank' && node.y < __d.VENN_ZONES.BANK_Y) {
+                          return {
+                              ...node,
+                              x: 100 + Math.random() * 600,
+                              y: 530 + Math.random() * 50
+                          };
+                      }
+                      return node;
+                  }
+                  return node;
+              });
+          });
+      }
+      __d.setDraggedNodeId(null);
+  };
+const handleAddManualNode = () => {
+      if (!__d.nodeInputText.trim()) return;
+      const newNode = {
+          id: `manual-${Date.now()}`,
+          x: 350 + (Math.random() * 100 - 50),
+          y: 300 + (Math.random() * 100 - 50),
+          text: __d.nodeInputText.trim(),
+          type: 'item',
+      };
+      __d.setConceptMapNodes(prev => [...prev, newNode]);
+      __d.setNodeInputText('');
+      if (__d.playSound) __d.playSound('click');
+      __d.addToast(__d.t('concept_map.notifications.node_added'), "success");
+  };
+const handleResetLayout = () => {
+      if (__d.conceptMapNodes.length === 0) return;
+      const w = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetWidth : 800;
+      const h = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetHeight : 600;
+      __d.setConceptMapNodes(prev => prev.map(node => ({
+          ...node,
+          x: Math.max(50, Math.min(w - 50, 50 + Math.random() * (w - 100))),
+          y: Math.max(50, Math.min(h - 50, 50 + Math.random() * (h - 100)))
+      })));
+      __d.addToast(__d.t('concept_map.notifications.layout_randomized'), "info");
+  };
+const handleRetryChallenge = () => {
+      if (__d.conceptMapEdges.length === 0 && !__d.challengeFeedback) return;
+      __d.setConfirmDialog({ message: __d.t('concept_map.notifications.confirm_reset') || 'Reset the challenge?', onConfirm: () => {
+          __d.setConceptMapEdges([]);
+          __d.setChallengeFeedback(null);
+          __d.addToast(__d.t('concept_map.notifications.board_reset'), "info");
+          if(__d.playSound) __d.playSound('click');
+      } });
+  };
+const handleWordSoundsPreparedAudioStatus = (report) => {
+      const allowed = new Set(['checking', 'ready', 'missing', 'unsupported', 'damaged', 'blocked', 'unknown']);
+      const status = report && allowed.has(report.status) ? report.status : 'unknown';
+      const total = Math.max(0, Math.min(100000, Number(report?.total) || 0));
+      const ready = Math.max(0, Math.min(total, Number(report?.ready) || 0));
+      const failed = Math.max(0, Math.min(total, Number(report?.failed) || 0));
+      const deliveryAt = Math.max(0, Math.min(999999999999999, Number(report?.deliveryAt) || 0));
+      __d.setWordSoundsPreparedAudioStatus({ status, ready, total, failed, deliveryAt });
+  };
+const exportAssignmentCenterCsv = () => {
+      if (!__d.assignmentCenterRows.length) return;
+      const csv = __d._alloBuildAssignmentCenterCsv(__d.assignmentCenterRows);
+      __d.safeDownloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'alloflow-assignment-summary-' + new Date().toISOString().slice(0, 10) + '.csv');
+      __d.addToast('Privacy-safe assignment summary exported.', 'success');
+  };
+const downloadHomeworkShelfJson = (shelf) => {
+      try {
+          const payload = shelf || __d.homeworkShelf;
+          if (!payload) return;
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'alloflow-homework-' + String(payload.savedAt || '').slice(0, 10) + '.json';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (_) {} }, 4000);
+      } catch (e) { __d.warnLog('Homework download failed', e); }
+  };
+const getEndSessionSummaryApi = () => {
+      const api = window.AlloModules && window.AlloModules.SessionModal;
+      if (api
+          && typeof api.buildRosterSessionSummary === 'function'
+          && typeof api.shouldSaveRosterSessionSummary === 'function'
+          && typeof api.saveRosterSessionSummary === 'function') return api;
+      __d.requestSessionManagementModule();
+      __d.addToast('End-session review tools are still loading. Your live session remains open; please try again.', 'warning');
+      return null;
+  };
+const readSavedFollowUpLiveSessionIdentity = () => {
+      const current = __d.liveSessionCommandStateRef.current || {};
+      const isMailbox = Boolean(current.mbLive);
+      const sessionCode = String(current.activeSessionCode || current.mbLive?.code || '').trim().slice(0, 24);
+      const sessionAppId = String(current.activeSessionAppId || __d.appId).trim().slice(0, 160);
+      const sessionMode = isMailbox ? (current.mbMode === 'sync' ? 'sync' : 'async') : (current.sessionData?.mode === 'sync' ? 'sync' : 'async');
+      return {
+          isActive: Boolean(sessionCode && current.sessionData && current.sessionData.isActive !== false && current.sessionData.status !== 'ended'),
+          sessionCode,
+          sessionAppId,
+          sessionMode,
+          transportKind: isMailbox ? 'mailbox' : 'firebase',
+      };
+  };
+const sharePortableAacResource = (rawPackage) => {
+      const id = __d.savePortableAacResourceToHistory(rawPackage);
+      if (!id) return Promise.resolve(false);
+      if (__d.pendingAacHistoryShareRef.current && typeof __d.pendingAacHistoryShareRef.current.resolve === 'function') {
+          __d.pendingAacHistoryShareRef.current.resolve(false);
+      }
+      return new Promise((resolve) => {
+          __d.pendingAacHistoryShareRef.current = { id, resolve };
+          __d.setAacHistoryRevision((revision) => revision + 1);
+      });
+  };
+const addAssignmentCenterSurveyItem = () => {
+      __d.setSharedAssignmentActivity(previous => {
+          const rows = (Array.isArray(previous?.surveyItems) ? previous.surveyItems : []).slice(0, 12);
+          if (rows.length >= 12) return previous;
+          return { ...(previous || {}), surveyItems: [...rows, { type: 'likert', text: '', steps: 5, required: false }] };
+      });
+  };
+const setRangeRejected = (firstId, lastId, rejected) => {
+    __d.setDiffChunks(prev => {
+      if (!prev) return prev;
+      const lo = Math.min(firstId, lastId);
+      const hi = Math.max(firstId, lastId);
+      return prev.map(c => {
+        if (c.type === 'same') return c;
+        if (c.id < lo || c.id > hi) return c;
+        return { ...c, rejected };
+      });
+    });
+    __d.setDiffSelection(null);
+  };
+const saveExportPreset = (name) => {
+    const key = name.toLowerCase().replace(/\s+/g, '_');
+    const updated = {
+      ...__d.exportPresets,
+      [key]: {
+        name,
+        emoji: '💾',
+        config: { ...__d.exportConfig },
+        theme: __d.exportTheme,
+        format: __d.exportPreviewMode,
+        _schemaVersion: __d._EXPORT_PRESET_SCHEMA_VERSION,
+      },
+    };
+    let persisted = false;
+    try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); persisted = true; } catch (_) {}
+    __d.setExportPresets(updated);
+    if (persisted) __d.addToast && __d.addToast(__d.t('toasts.preset_saved', { name }) || `Preset "${name}" saved!`, 'success');
+    else __d.addToast && __d.addToast(`Preset "${name}" is available for this session, but browser storage is blocked or full.`, 'info');
+  };
+const deleteExportPreset = (key) => {
+    const updated = { ...__d.exportPresets };
+    delete updated[key];
+    let persisted = false;
+    try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); persisted = true; } catch (_) {}
+    __d.setExportPresets(updated);
+    if (!persisted) __d.addToast && __d.addToast('Preset removed for this session, but browser storage could not be updated.', 'info');
+  };
+const applyExportPreset = (preset) => {
+    // Belt-and-suspenders: merge over defaults at apply time too, in case a
+    // preset survived migration but the schema has advanced since.
+    __d.setExportConfig({ ...__d.DEFAULT_EXPORT_CONFIG, ...((preset && preset.config) || {}) });
+    __d.setExportTheme((preset && preset.theme) || 'professional');
+    __d.setExportPreviewMode((preset && preset.format) || 'print');
+  };
+function _beginReadThisPageVoiceSpeech() {
+    const current = __d.rtpVoiceSpeechLeaseRef.current;
+    if (current && (typeof current.isActive !== 'function' || current.isActive())) return current;
+    __d.rtpVoiceSpeechLeaseRef.current = null;
+    try {
+      const loop = window.__alloVoiceLoop;
+      if (!loop || typeof loop.beginExternalSpeech !== 'function' || (typeof loop.isActive === 'function' && !loop.isActive())) return null;
+      const lease = loop.beginExternalSpeech(() => __d.pauseReadThisPage({ fromVoiceLoop: true }), {
+        source: 'read-this-page',
+        message: 'Reading page content aloud.'
+      });
+      if (lease) __d.rtpVoiceSpeechLeaseRef.current = lease;
+      return lease || null;
+    } catch (_) {
+      return null;
+    }
+  }
+const handleSaveProfile = () => {
+      if (!__d.newProfileName.trim()) return;
+      const newProfile = {
+          id: Date.now().toString(),
+          name: __d.newProfileName.trim(),
+          config: {
+              gradeLevel: __d.gradeLevel,
+              leveledTextLanguage: __d.leveledTextLanguage,
+              translationMode: __d.translationMode,
+              selectedLanguages: __d.selectedLanguages,
+              studentInterests: __d.studentInterests,
+              leveledTextCustomInstructions: __d.leveledTextCustomInstructions,
+              adventureCustomInstructions: __d.adventureCustomInstructions,
+              dokLevel: __d.dokLevel,
+              targetStandards: __d.targetStandards,
+              useEmojis: __d.useEmojis,
+              textFormat: __d.textFormat
+          }
+      };
+      __d.setProfiles(prev => [...prev, newProfile]);
+      __d.setSelectedProfileId(newProfile.id);
+      __d.setNewProfileName('');
+      __d.setIsProfileModalOpen(false);
+      __d.addToast(__d.t('profiles.saved', { name: newProfile.name }), "success");
+  };
+const handleAddStandard = () => {
+      if (!__d.standardInputValue.trim()) return;
+      if (__d.targetStandards.length >= 3) {
+          __d.addToast(__d.t('standards.toast_max_limit'), "error");
+          return;
+      }
+      if (__d.targetStandards.includes(__d.standardInputValue.trim())) {
+          __d.addToast(__d.t('standards.toast_duplicate'), "info");
+          __d.setStandardInputValue('');
+          return;
+      }
+      __d.setResolvedStandardsSelection(null);
+      __d.setTargetStandards([...__d.targetStandards, __d.standardInputValue.trim()]);
+      __d.setStandardInputValue('');
+      __d.addToast(__d.t('standards.toast_added'), "success");
+  };
+const handleOpenWordSounds = () => {
+        __d.setIsWordSoundsMode(false);
+        __d.setActiveView('word-sounds-generator');
+        const rawText = __d.sourceVocabulary || "";
+        const derivedTerms = typeof rawText === 'string'
+            ? rawText.split(/[\n,]+/).map(t => t.trim()).filter(t => t.length > 0)
+            : (Array.isArray(rawText) ? rawText : []);
+        __d.setWordSoundsCustomTerms(derivedTerms);
+    };
+const evaluateMathExpression = (expr) => {
+    try {
+      if (!expr || typeof expr !== 'string') return null;
+      const sanitized = expr.replace(/[^0-9+\-*/().%^ ]/g, '');
+      if (!sanitized.trim()) return null;
+      const jsExpr = sanitized.replace(/\^/g, '**');
+      const result = Function('"use strict"; return (' + jsExpr + ')')();
+      return typeof result === 'number' && isFinite(result) ? Math.round(result * 10000) / 10000 : null;
+    } catch { return null; }
+  };
+const handleGenerateBingo = () => {
+      if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
+      const cards = __d.generateBingoCards(__d.generatedContent?.data, __d.bingoSettings.cardCount, __d.bingoSettings.gridSize);
+      if (cards) {
+          const terms = __d.generatedContent?.data.map(i => i.term);
+          __d.setBingoState({
+              cards,
+              drawPile: __d.fisherYatesShuffle(terms),
+              calledTerms: [],
+              currentCall: null
+          });
+          __d.addToast(__d.t('toasts.bingo_cards_count', { count: __d.bingoSettings.cardCount }) || `Generated ${__d.bingoSettings.cardCount} Bingo cards!`, "success");
+      }
+  };
+const handleSelectMainSearchOption = async (option) => {
+      if (!option || !option.url) return;
+      if (__d.isGoogleRedirect(option.url)) {
+          window.open(option.url, '_blank');
+          __d.setIsUrlSearchMode(false);
+          __d.setSearchOptions([]);
+          __d.setUrlToFetch('');
+          __d.addToast(__d.t('quick_start.copy_paste_instruction'), "info");
+          return;
+      }
+      __d.setUrlToFetch(option.url);
+      __d.setIsUrlSearchMode(false);
+      __d.setSearchOptions([]);
+      await __d.handleUrlFetch(option.url);
+  };
+const ensureTitleHeading = (text) => {
+        if (!text) return text;
+        const lines = text.split('\n');
+        const firstNonEmptyIdx = lines.findIndex(l => l.trim().length > 0);
+        if (firstNonEmptyIdx === -1) return text;
+        const firstLine = lines[firstNonEmptyIdx].trim();
+        if (/^#{1,6}\s/.test(firstLine)) return text;
+        if (firstLine.length > 120) return text;
+        const nonEmptyCount = lines.filter(l => l.trim().length > 0).length;
+        if (nonEmptyCount < 2) return text;
+        const titlePrefixMatch = firstLine.match(/^Title:\s*(.+)/i);
+        if (titlePrefixMatch) {
+            lines[firstNonEmptyIdx] = `# ${titlePrefixMatch[1]}`;
+        } else {
+            lines[firstNonEmptyIdx] = `# ${firstLine}`;
+        }
+        return lines.join('\n');
+    };
+const _updatePanelInPlan = (panelIdx, mutator) => {
+      const plan = __d.generatedContent && __d.generatedContent.data && __d.generatedContent.data.visualPlan;
+      if (!plan || !plan.panels || !plan.panels[panelIdx]) return null;
+      const updatedPanels = [...plan.panels];
+      const before = updatedPanels[panelIdx];
+      const after = mutator(before);
+      if (!after) return null;
+      updatedPanels[panelIdx] = after;
+      const updatedPlan = { ...plan, panels: updatedPanels };
+      __d.setGeneratedContent((prev) => ({ ...prev, data: { ...prev.data, visualPlan: updatedPlan } }));
+      return after;
+  };
+const handleSetPanelFps = async (panelIdx, fps) => {
+      // Re-encodes the GIF with a new delay per Graphic Control Extension
+      // entry. Frames themselves don't change so this is cheap (no API calls).
+      const plan = __d.generatedContent && __d.generatedContent.data && __d.generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames || panel.frames.length < 2) return;
+      const safeFps = Math.max(2, Math.min(24, parseInt(fps, 10) || 3));
+      try {
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const gifUrl = await __d.encodeFramesToGif(panel.frames, w, h, safeFps);
+          _updatePanelInPlan(panelIdx, (p) => ({ ...p, fps: safeFps, imageUrl: gifUrl }));
+      } catch (e) {
+          __d.warnLog('[VisualPanel] handleSetPanelFps failed:', e);
+      }
+  };
+const _getContentEngine = () => {
+    if (__d._contentEngineRef.current) return __d._contentEngineRef.current;
+    const factory = window.AlloModules && window.AlloModules.createContentEngine;
+    if (!factory) { console.warn('[ContentEngine] Factory not found on window.AlloModules'); return null; }
+    try {
+      __d._contentEngineRef.current = factory({ callGemini: __d.callGemini, addToast: __d.addToast, t: __d.t, getBilingualPromptInstruction: __d.getBilingualPromptInstruction, flyToElement: __d.flyToElement, callTTS: __d.callTTS, getState: () => __d.contentEngineStateRef.current });
+      console.log('[ContentEngine] Factory created successfully:', Object.keys(__d._contentEngineRef.current || {}));
+    } catch(err) {
+      console.error('[ContentEngine] Factory creation FAILED:', err);
+      return null;
+    }
+    return __d._contentEngineRef.current;
+  };
+const handleCreateGroup = async (groupName = null) => {
+      const nameToUse = groupName || __d.newGroupName.trim();
+      if (!nameToUse) return;
+      const groupId = "grp_" + Date.now().toString(36);
+      const sessionRef = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      try {
+        await __d.updateDoc(sessionRef, {
+            [`groups.${groupId}`]: { name: nameToUse, resourceId: null, language: null, readingLevel: null, ttsSpeed: 1.0, karaokeMode: false, visualDensity: "normal", communicationMode: "verbal", simplifyLevel: null, dokLevel: null, complexityLevel: null }
+        });
+        if (!groupName) __d.setNewGroupName("");
+        __d.addToast(__d.t('groups.created'), "success");
+      } catch (error) {
+          __d.warnLog("Error creating group:", error);
+          __d.addToast(__d.t('toasts.group_create_failed'), "error");
+      }
+  };
+const handleDeleteGroup = async (groupId) => {
+      const sessionRef = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      try {
+        const updates = {};
+        if (__d.sessionData && __d.sessionData.roster) {
+            Object.entries(__d.sessionData.roster).forEach(([uid, student]) => {
+                if (student.groupId === groupId) {
+                    updates[`roster.${uid}.groupId`] = null;
+                }
+            });
+        }
+        updates[`groups.${groupId}`] = null;
+        await __d.updateDoc(sessionRef, updates);
+        __d.addToast(__d.t('groups.deleted'), "info");
+      } catch (error) {
+        __d.warnLog("Error deleting group:", error);
+      }
+  };
+const handleToggleInteractive = async () => {
+      if (!__d.activeSessionCode) return;
+      const sessionRef = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      try { await __d.updateDoc(sessionRef, { "forceStatic": !__d.sessionData?.forceStatic }); } catch(e) { __d.warnLog('Firestore sync failed:', e); }
+      __d.addToast(__d.sessionData?.forceStatic ? __d.t('session.interactive_unlocked') : __d.t('session.forced_static'), "success");
+  };
+const _readBuilderDraftStreamBounded = async (stream, maxBytes) => {
+    if (!stream || typeof stream.getReader !== 'function' || typeof TextDecoder === 'undefined') return null;
+    const reader = stream.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        total += part.value.byteLength;
+        if (total > maxBytes) { try { await reader.cancel(); } catch (_) {} return null; }
+        chunks.push(part.value);
+      }
+    } finally { try { reader.releaseLock(); } catch (_) {} }
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    chunks.forEach((chunk) => { merged.set(chunk, offset); offset += chunk.byteLength; });
+    return new TextDecoder().decode(merged);
+  };
+const getCanvasRecoveryVaultController = async () => {
+      if (__d.canvasRecoveryVaultControllerRef.current) return __d.canvasRecoveryVaultControllerRef.current;
+      const deviceStorage = await __d._alloGetCanvasDeviceStorage();
+      const stack = await __d._alloGetRecoveryVaultStack();
+      const controller = stack.integration.createController(deviceStorage, {
+          vaultModule: stack.vault,
+          crypto: stack.crypto
+      });
+      __d.canvasRecoveryVaultControllerRef.current = controller;
+      return controller;
+  };
+const publishCanvasRecoveryVaultLockedState = (status = {}) => {
+      const lockedStatus = { available: true, ...status, enabled: true, locked: true };
+      const empty = __d.emptyCanvasRecoveryVaultView(lockedStatus);
+      __d.canvasRecoveryStoreRef.current = empty;
+      __d.setCanvasRecoveryStore(empty);
+      __d.setCanvasRecoveryStoreAuthoritative(true);
+      __d.setCanvasRecoveryVaultState(lockedStatus);
+      __d.setCanvasRecoverySaveStatus('locked');
+      return empty;
+  };
+const downloadCanvasRecoveryCode = () => {
+      const code = __d.canvasRecoveryVaultForm.recoveryCode;
+      if (!code) return;
+      const text = 'AlloFlow recovery key\n\n' + code + '\n\nKeep this somewhere private. Anyone with this key and an encrypted backup can unlock the protected recovery workspaces.\n';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow-Recovery-Key.txt';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  };
+const exportCanvasRecoveryVaultBackup = async () => {
+      try {
+          const controller = await getCanvasRecoveryVaultController();
+          const backup = await controller.exportEncryptedBackup();
+          const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'AlloFlow-Protected-Recovery-' + new Date().toISOString().slice(0, 10) + '.json';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+      } catch (error) {
+          __d.setCanvasRecoveryError(String(error?.message || 'The encrypted backup could not be created.'));
+      }
+  };
+const getEducatorAccessCodeApi = async () => __d._alloLoadScriptGlobal(
+      'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=security-v2',
+      () => {
+          const api = window.AlloModules?.DeviceAccessCode;
+          return api && api.MIN_CODE_LENGTH >= 6 && typeof api.verify === 'function' && typeof api.setCode === 'function' ? api : null;
+      },
+      { cacheKey: 'allo-device-access-code-v2', label: (__d.t('storage.educator_access_code_module') || 'Educator access-code module') }
+  );
+const refreshEducatorAccessState = async () => {
+      try {
+          const api = await getEducatorAccessCodeApi();
+          const status = api.status();
+          __d.setEducatorAccessState(current => ({ ...current, configured: status.configured, error: '' }));
+      } catch (error) {
+          __d.setEducatorAccessState(current => ({ ...current, error: String(error?.message || 'Educator access-code settings are unavailable.') }));
+      }
+  };
+const requestCanvasRecoveryErase = (snapshotId) => {
+      __d.setCanvasRecoveryEraseId(snapshotId);
+      setTimeout(() => {
+          const candidates = Array.from(__d.canvasRecoveryDialogRef.current?.querySelectorAll('[data-recovery-confirm]') || []);
+          const confirm = candidates.find(node => node.dataset.recoveryConfirm === snapshotId);
+          if (confirm && typeof confirm.focus === 'function') confirm.focus();
+      }, 0);
+  };
+const downloadSubmissionBackup = (submissionData, filename) => {
+      const blob = new Blob([JSON.stringify(submissionData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+  };
+const loadProjectFromJson = (parsed) => {
+    try {
+      const jsonString = JSON.stringify(parsed);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const fileName = (parsed && parsed.title ? parsed.title : 'community-lesson') + '.json';
+      const file = new File([blob], fileName, { type: 'application/json' });
+      const fakeEvent = { target: { files: [file] } };
+      __d.handleLoadProject(fakeEvent);
+    } catch (err) {
+      __d.addToast && __d.addToast(__d.t('toasts.failed_load_lesson') + (err && err.message), 'error');
+    }
+  };
+const handleBotFinishedSpeaking = () => {
+      setTimeout(() => {
+          __d.isBotSpeakingRef.current = false;
+          if (__d.isDictationActiveRef.current && __d.recognitionRef.current) {
+              try {
+                  __d.debugLog("Restarting dictation after bot speech...");
+                  __d.recognitionRef.current.start();
+              } catch (e) {
+              }
+          }
+      }, 1000);
+  };
+const handleStartSequel = () => {
+      const previousSummary = __d.adventureState.narrativeLedger || "A successful journey completed.";
+      const previousLevel = __d.adventureState.level;
+      const sequelContext = `
+          PREQUEL CONTEXT: The student previously completed an adventure with this summary: "${previousSummary}".
+          TASK: Start a NEW adventure that acts as a direct sequel or thematic follow-up.
+          - It should build upon the skills/concepts learned in the previous one.
+          - It can introduce a new threat or challenge related to the consequences of the previous victory.
+          - Maintain the user's Level (${previousLevel}) context if applicable.
+      `;
+      __d.executeStartAdventure(sequelContext);
+  };
+const handleRetryAdventureTurn = () => {
+      if (!__d.failedAdventureAction) return;
+      const actionToRetry = __d.failedAdventureAction;
+      __d.setFailedAdventureAction(null);
+      if (actionToRetry.type === 'choice') {
+          __d.handleAdventureChoice(actionToRetry.payload);
+      } else {
+          __d.setAdventureTextInput(actionToRetry.payload);
+          __d.handleAdventureTextSubmit(actionToRetry.payload);
+      }
+  };
+const handleAdventureCrashRecovery = () => {
+      if (__d.lastTurnSnapshot.current) {
+          __d.debugLog("Crash Recovery: Restoring last valid adventure state...");
+          __d.setAdventureState(prev => ({
+              ...__d.lastTurnSnapshot.current,
+              isLoading: false,
+              isImageLoading: false
+          }));
+          if (__d.failedAdventureAction) {
+               __d.addToast(__d.t('toasts.simulation_stabilized'), "info");
+          } else {
+               __d.addToast(__d.t('toasts.visual_glitch_rewind'), "warning");
+          }
+      } else {
+          __d.warnLog("Crash Recovery: No snapshot available. Resetting to menu.");
+          __d.setAdventureState(prev => ({
+              ...prev,
+              currentScene: null,
+              isLoading: false
+          }));
+          __d.addToast(__d.t('toasts.critical_error_return'), "error");
+      }
+  };
+const handleRemoveFrayerImage = () => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'outline') return;
+    const data = __d.generatedContent?.data || {};
+    if (data.structureType !== 'Frayer Model' || !data.frayerExampleImage) return;
+    const { frayerExampleImage, ...rest } = data;
+    const updatedContent = { ...__d.generatedContent, data: rest };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    __d.addToast(__d.t('toasts.frayer_image_removed'), 'info');
+  };
+const handleReflectionChange = (rIndex, value, isEn = false) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'quiz') return;
+    const newData = { ...__d.generatedContent?.data };
+    let newReflections = [...newData.reflections];
+    if (typeof newReflections[rIndex] === 'string') {
+        newReflections[rIndex] = { text: newReflections[rIndex] };
+    }
+    if (isEn) {
+        newReflections[rIndex] = { ...newReflections[rIndex], text_en: value };
+    } else {
+        newReflections[rIndex] = { ...newReflections[rIndex], text: value };
+    }
+    newData.reflections = newReflections;
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleCopyBlueprintDiagnostics = async () => {
+    const diagnostic = __d.buildSanitizedBlueprintDiagnostic();
+    if (!diagnostic) return false;
+    try {
+      if (!(await __d._copySanitizedDiagnostic(diagnostic))) throw new Error('Clipboard write was unavailable');
+      __d.addToast('Sanitized Blueprint diagnostics copied.', 'success');
+      return true;
+    } catch (error) {
+      __d.warnLog('[Blueprint] could not copy diagnostics:', error && (error.message || error));
+      __d.addToast('Could not copy Blueprint diagnostics.', 'warning');
+      return false;
+    }
+  };
+const handleDownloadBlueprintDiagnostics = () => {
+    const report = __d.buildSanitizedBlueprintDiagnostic();
+    if (!report) return false;
+    try {
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'blueprint-diagnostics-' + String(report.runId || 'run').slice(-12) + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      __d.addToast('Sanitized Blueprint diagnostic report downloaded.', 'success');
+      return true;
+    } catch (error) {
+      __d.warnLog('[Blueprint] could not download diagnostics:', error && (error.message || error));
+      __d.addToast('Could not download Blueprint diagnostics.', 'warning');
+      return false;
+    }
+  };
+const handleRemoveFullPackPlanResource = (resourceKey, groupId = null) => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (_m && typeof _m.handleRemoveFullPackPlanResource === 'function') {
+      return _m.handleRemoveFullPackPlanResource(__d.fullPackRun, resourceKey, __d._alloGenerationHelpersDeps(), groupId);
+    }
+    __d.addToast(__d.t('fullpack.remove_unavailable') || 'This plan could not be edited. Refresh it and try again.', 'warning');
+    return __d.fullPackRun;
+  };
+const handleCopyFullPackDiagnostics = async () => {
+    const diagnostic = __d.buildSanitizedFullPackDiagnostic();
+    if (!diagnostic) return false;
+    try {
+      if (!(await __d._copySanitizedDiagnostic(diagnostic))) throw new Error('Clipboard write was unavailable');
+      __d.addToast('Sanitized Full Pack diagnostics copied.', 'success');
+      return true;
+    } catch (error) {
+      __d.warnLog('[FullPack] could not copy diagnostics:', error && (error.message || error));
+      __d.addToast('Could not copy Full Pack diagnostics.', 'warning');
+      return false;
+    }
+  };
+const handleLockTimelineMode = () => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
+    const data = __d.generatedContent.data;
+    if (Array.isArray(data) || !data?.mode) return;
+    if (data.autoDetected === false) return;
+    const updated = { ...__d.generatedContent, data: { ...data, autoDetected: false } };
+    __d.setGeneratedContent(updated);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updated : item));
+    __d.setTimelineMode(data.mode);
+    const lbl = __d.TIMELINE_MODE_DEFINITIONS[data.mode]?.label || data.mode;
+    __d.addToast(__d.t('timeline.mode_locked', { mode: lbl }) || `Mode locked: ${lbl}`, 'success');
+  };
+const handleDeleteTimelineStep = (index) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
+    const data = __d.generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    newItems.splice(index, 1);
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleConceptSpacePersist = (arrangement, key = 'conceptSpace') => {
+      if (!__d.generatedContent || __d.generatedContent.type !== 'outline' || !__d.generatedContent?.data) return;
+      const storeKey = (key === 'conceptSpaceLive' || key === 'memoryPalace' || key === 'conceptArt' || key === 'constellation') ? key : 'conceptSpace';
+      const newData = { ...__d.generatedContent.data };
+      if (arrangement) newData[storeKey] = arrangement; else delete newData[storeKey];
+      const updatedContent = { ...__d.generatedContent, data: newData };
+      __d.setGeneratedContent(updatedContent);
+      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? { ...item, data: newData } : item));
+  };
+const launchInteractiveFlashcards = (mode = 'standard') => {
+      __d.setFlashcardMode(mode);
+      __d.setFlashcardIndex(0);
+      __d.setIsFlashcardFlipped(false);
+      __d.setIsInteractiveFlashcards(true);
+      __d.setStandardDeckLang('English Only');
+      __d.setShowFlashcardImages(false);
+      __d.setFlashcardScore(0);
+      __d.setIsFlashcardQuizMode(__d.isIndependentMode);
+      __d.setFlashcardOptions([]);
+      __d.setFlashcardFeedback(null);
+      __d.setQuizSelectedOption(null);
+      if (mode === 'language') {
+          if (__d.leveledTextLanguage !== 'English' && __d.leveledTextLanguage !== 'All Selected Languages') {
+              __d.setFlashcardLang(__d.leveledTextLanguage);
+          } else if (__d.selectedLanguages.length > 0) {
+              __d.setFlashcardLang(__d.selectedLanguages[0]);
+          }
+      }
+  };
+const handleGlossaryChange = (index, field, value, lang = null) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
+    const newData = [...__d.generatedContent?.data];
+    const updatedItem = { ...newData[index] };
+    if (lang) {
+        updatedItem.translations = {
+            ...updatedItem.translations,
+            [lang]: value
+        };
+    } else {
+        updatedItem[field] = value;
+    }
+    newData[index] = updatedItem;
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleGlossarySelectionChange = (index) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
+    const newData = [...__d.generatedContent?.data];
+    if (!newData[index]) return;
+    const current = newData[index].isSelected !== false;
+    newData[index] = { ...newData[index], isSelected: !current };
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleGlossarySelectAll = (e) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
+    const isChecked = e.target.checked;
+    const newData = __d.generatedContent?.data.map(item => ({
+        ...item,
+        isSelected: isChecked
+    }));
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleDeleteGlossaryItem = (index) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
+    const newData = [...__d.generatedContent?.data];
+    newData.splice(index, 1);
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    __d.addToast(__d.t('glossary.actions.term_deleted'), "info");
+  };
+const handleDeleteTermImage = (index) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
+    const newData = [...__d.generatedContent?.data];
+    const { image, ...rest } = newData[index];
+    newData[index] = rest;
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    __d.addToast(__d.t('glossary.actions.icon_removed'), "info");
+  };
+const _applySimplifiedTextMutation = (item, value) => {
+    const evidence = __d._getFreshTextComplexityEvidence(item, value);
+    const updated = {
+      ...item,
+      data: value,
+      targetGradeLevel: evidence.targetGrade,
+      instructionalText: evidence.instructionalText,
+      ...(evidence.localStats ? { localStats: evidence.localStats } : {})
+    };
+    if (!evidence.localStats && updated.localStats) delete updated.localStats;
+    if (updated.levelCheck) delete updated.levelCheck;
+    if (updated.alignmentCheck) delete updated.alignmentCheck;
+    return updated;
+  };
+const handleContentMouseUp = () => {
+      if (__d.annotationMode !== 'highlight' || !__d.contentAreaRef.current) return;
+      const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+      if (!_m || !_m.createHighlightFromSelection) return;
+      const sel = typeof window !== 'undefined' ? window.getSelection && window.getSelection() : null;
+      if (!sel || sel.isCollapsed) return;
+      const authorName = __d.studentNickname || __d.studentProjectSettings?.nickname || '';
+      const newHighlight = _m.createHighlightFromSelection(__d.contentAreaRef.current, sel, {
+          color: __d.highlightColor,
+          isTeacher: __d.isTeacherMode,
+          authorName: authorName,
+      });
+      if (!newHighlight) return;
+      __d.setStickers(prev => [...prev, newHighlight]);
+      try { sel.removeAllRanges(); } catch (_) {}
+      __d.playSound('click');
+  };
+const handleCheckAlignment = async () => {
+    const api = __d.getSimplifiedRigorApi();
+    if (!api) return;
+    return api.checkAlignment({
+      generatedContent: __d.generatedContent, gradeLevel: __d.gradeLevel, leveledTextLanguage: __d.leveledTextLanguage, activeResolvedStandardsContext: __d.activeResolvedStandardsContext,
+      standardsInput: __d.standardsInput, targetStandards: __d.targetStandards, alloBotRef: __d.alloBotRef, t: __d.t, addToast: __d.addToast, setIsCheckingAlignment: __d.setIsCheckingAlignment,
+      callGemini: __d.callGemini, cleanJson: __d.cleanJson, setGeneratedContent: __d.setGeneratedContent, setHistory: __d.setHistory, speak: __d.speak, warnLog: __d.warnLog, setError: __d.setError
+    });
+  };
+const handleRegenerateWithRigor = async () => {
+    const api = __d.getSimplifiedRigorApi();
+    if (!api) return;
+    return api.regenerateWithRigor({
+      generatedContent: __d.generatedContent, setIsProcessing: __d.setIsProcessing, splitReferencesFromBody: __d.splitReferencesFromBody, extractSourceTextForProcessing: __d.extractSourceTextForProcessing,
+      activeResolvedStandardsContext: __d.activeResolvedStandardsContext, standardsInput: __d.standardsInput, targetStandards: __d.targetStandards, gradeLevel: __d.gradeLevel,
+      leveledTextLanguage: __d.leveledTextLanguage, translationTargetChoices: __d.translationTargetChoices, currentUiLanguage: __d.currentUiLanguage, selectedLanguages: __d.selectedLanguages,
+      resolveTranslationPolicy: __d.resolveTranslationPolicy, translationMode: __d.translationMode, generateBilingualText: __d.generateBilingualText, callGemini: __d.callGemini,
+      applySimplifiedTextMutation: _applySimplifiedTextMutation, setGeneratedContent: __d.setGeneratedContent, setHistory: __d.setHistory,
+      addToast: __d.addToast, t: __d.t, warnLog: __d.warnLog, setError: __d.setError
+    });
+  };
+const _readTextDomain = (entry) => {
+    const live = __d._textUndoLiveRef.current;
+    if (entry.domain === 'input') return { ok: true, value: live.inputText || '' };
+    const item = (live.history || []).find(it => it && it.id === entry.id && it.type === entry.domain);
+    if (!item) return { ok: false };
+    if (entry.domain === 'analysis') return { ok: true, value: (item.data && item.data.originalText) || '' };
+    return { ok: true, value: typeof item.data === 'string' ? item.data : '' };
+  };
+const handleTextUndo = () => {
+    const h = __d.textUndoRef.current;
+    if (__d._shiftTextStack(h.undo, h.redo, 'undo')) return true;
+    // Nothing in the text history — fall back to annotation undo so the old
+    // Ctrl+Z behavior still reaches sticker users, then report empty.
+    if (__d.annotationUndoStackRef.current.length > 0) { __d.handleAnnotationUndo(); return true; }
+    __d.addToast(__d.t('toasts.nothing_undo_yet') || 'Nothing to undo yet.', 'info');
+    return false;
+  };
+const handleScaffoldChange = (index, field, value, isEn = false) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'sentence-frames') return;
+    const newData = { ...__d.generatedContent?.data };
+    if (newData.mode === 'list') {
+        const newItems = [...newData.items];
+        const updatedItem = { ...newItems[index] };
+        if (isEn) {
+            updatedItem.text_en = value;
+        } else {
+            updatedItem.text = value;
+        }
+        newItems[index] = updatedItem;
+        newData.items = newItems;
+    }
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleScaffoldTextChange = (field, value) => {
+     if (!__d.generatedContent || __d.generatedContent.type !== 'sentence-frames') return;
+     const newData = { ...__d.generatedContent?.data };
+     newData[field] = value;
+     const updatedContent = { ...__d.generatedContent, data: newData };
+     __d.setGeneratedContent(updatedContent);
+     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  }
+  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, executeRoleSelect, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, prepareMailboxResourceImages, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, clearCanvasWorkspaceState, buildCanvasWorkspaceSnapshot, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, showSpotlight, highlightElement, _alloBlueprintLearningWebResource, _alloAlignmentRegistryRecordFromResource, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, _mbPushOneResource, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, applyMbDownPayload, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, onUpdateResource, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, runGlossaryHealthCheck, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleNodeMouseMove, handleNodeMouseUp, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, getCanvasRecoveryVaultController, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleTextUndo, handleScaffoldChange, handleScaffoldTextChange };
 }

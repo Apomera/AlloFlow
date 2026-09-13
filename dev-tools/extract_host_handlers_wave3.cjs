@@ -105,14 +105,19 @@ function syncExecuted(fnPath) {
   // JSX ref callbacks run synchronously in React's commit phase.
   if (p.type === 'JSXExpressionContainer' && parent.parentPath && parent.parentPath.node.type === 'JSXAttribute'
       && parent.parentPath.node.name && parent.parentPath.node.name.name === 'ref') return true;
-  // An effect's returned cleanup runs synchronously in a later commit.
-  if (p.type === 'ReturnStatement' && fnPath.parentPath.parentPath && fnPath.parentPath.parentPath.parentPath) {
+  // An effect's cleanup runs synchronously in a later commit (and at mount under StrictMode):
+  // both `useEffect(() => { return () => {...}; })` and the concise `useEffect(() => () => {...})`.
+  // (The concise form was missed until wave 5, 2026-09-13; kept in sync with the wave-4 script.)
+  const isEffectCall = (node) => {
+    if (!node || node.type !== 'CallExpression') return false;
+    const c = node.callee; const n = c.type === 'Identifier' ? c.name : (c.property && c.property.name);
+    return /^use(Layout|Insertion)?Effect$/.test(n || '');
+  };
+  if (p.type === 'ReturnStatement') {
     const enclosing = fnPath.findParent(x => isFnNode(x.node));
-    if (enclosing && enclosing.parentPath && enclosing.parentPath.node.type === 'CallExpression') {
-      const c = enclosing.parentPath.node.callee; const n = c.type === 'Identifier' ? c.name : (c.property && c.property.name);
-      if (/^use(Layout|Insertion)?Effect$/.test(n || '')) return true;
-    }
+    if (enclosing && enclosing.parentPath && isEffectCall(enclosing.parentPath.node)) return true;
   }
+  if (p.type === 'ArrowFunctionExpression' && p.body === fnPath.node && parent.parentPath && isEffectCall(parent.parentPath.node)) return true;
   return false; // JSX attribute, assigned, returned, property value, array element...
 }
 
