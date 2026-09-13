@@ -1,0 +1,396 @@
+{
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\figures\\fda-nexium-prea-letter.pdf",
+  "files": {
+    "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\fda-nexium-letter\\fda-nexium-prea-letter-accessible.html",
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\fda-nexium-letter\\fda-nexium-prea-letter-remediation-report.json",
+    "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\fda-nexium-letter\\fda-nexium-prea-letter-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 4,
+    "cautionCount": 1
+  },
+  "beforeScore": 20,
+  "afterScore": 86,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 2299,
+    "outputTokens": 2576,
+    "matchedTokens": 2133,
+    "missingTokens": 166,
+    "tokenRecall": 0.9278,
+    "missingPassages": [
+      {
+        "sourceUnit": 1,
+        "startToken": 0,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 2,
+        "startToken": 40,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 3,
+        "startToken": 80,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 5,
+        "startToken": 160,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 7,
+        "startToken": 240,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 8,
+        "startToken": 280,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 9,
+        "startToken": 320,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 10,
+        "startToken": 360,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 12,
+        "startToken": 440,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 13,
+        "startToken": 480,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 14,
+        "startToken": 520,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 15,
+        "startToken": 560,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 16,
+        "startToken": 600,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 17,
+        "startToken": 640,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 18,
+        "startToken": 680,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 19,
+        "startToken": 720,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 20,
+        "startToken": 760,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 21,
+        "startToken": 800,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 22,
+        "startToken": 840,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 23,
+        "startToken": 880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 24,
+        "startToken": 920,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 25,
+        "startToken": 960,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 28,
+        "startToken": 1080,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 29,
+        "startToken": 1120,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 30,
+        "startToken": 1160,
+        "expectedTokens": 40,
+        "missingTokens": 12
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 32,
+        "startToken": 1240,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 33,
+        "startToken": 1280,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 35,
+        "startToken": 1360,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 36,
+        "startToken": 1400,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 37,
+        "startToken": 1440,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 38,
+        "startToken": 1480,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 42,
+        "startToken": 1640,
+        "expectedTokens": 40,
+        "missingTokens": 11
+      },
+      {
+        "sourceUnit": 43,
+        "startToken": 1680,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 44,
+        "startToken": 1720,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 45,
+        "startToken": 1760,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 48,
+        "startToken": 1880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 49,
+        "startToken": 1920,
+        "expectedTokens": 40,
+        "missingTokens": 16
+      },
+      {
+        "sourceUnit": 50,
+        "startToken": 1960,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 51,
+        "startToken": 2000,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 52,
+        "startToken": 2040,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 53,
+        "startToken": 2080,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 54,
+        "startToken": 2120,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 55,
+        "startToken": 2160,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 56,
+        "startToken": 2200,
+        "expectedTokens": 40,
+        "missingTokens": 18
+      },
+      {
+        "sourceUnit": 57,
+        "startToken": 2240,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 58,
+        "startToken": 2280,
+        "expectedTokens": 19,
+        "missingTokens": 3
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 7,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1",
+    "htmlSha256": "e6cf52ee50c6826272eba8e94b46df4259c195951e9dc12d59657647cdbd6a09"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": "1 source numeric value(s) not found unchanged in the output (021957). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+  "fidelityNotes": [
+    {
+      "kind": "numeric",
+      "msg": "1 source numeric value(s) not found unchanged in the output (021957). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+    }
+  ],
+  "candidateRejectionCount": 0,
+  "candidateRejections": [],
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": true,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "content_coverage_requires_review",
+  "runId": "run-mu04f6xt-tp8y8b",
+  "stats": {
+    "apiCalls": 19,
+    "visionCalls": 6,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "verificationChecks": {
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required"
+}

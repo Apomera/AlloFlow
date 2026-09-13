@@ -1,0 +1,12 @@
+{
+  "status": "pending",
+  "method": "human",
+  "independent": false,
+  "reviewer": "",
+  "reviewedAt": "",
+  "evidenceRef": "packets/irs-f1040-2025-form/review-notes.md",
+  "artifactSha256": "25d26d3cacb2f6a6ae0c13d273a69c5c12d320fce2ee6544c8d094f1235a537e",
+  "readiness": null,
+  "layers": {},
+  "findings": []
+}

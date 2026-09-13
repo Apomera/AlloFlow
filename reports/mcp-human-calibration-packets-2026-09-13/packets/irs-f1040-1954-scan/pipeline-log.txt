@@ -1,0 +1,63 @@
+# Pipeline log lines for arun-0084bf67 (connector stderr, filtered to the decision-bearing lines)
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-1 (vision) in 58s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-2 (vision) in 58s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-3 (vision) in 58s
+progress: fix — step 1: Step 1/4 📄 Reading Document (4 pages) — Scanned PDF detected — running Tesseract + AI Vision OCR in parallel...  (typically ~10-20s)
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-4 (vision) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-5 (vision) in 0s
+[Tesseract] background-worker rasterization unavailable on this host — using the main-thread renderer (a hidden tab will slow page rendering)
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-6 (vision) in 0s
+progress: toast: OCR reconciled — 4 pages where Tesseract & Vision disagree. Review in the fidelity panel.
+[PDF Fix] Extracted 17840 chars from 4 pages in 2 chunk(s) (~4460 chars/page)
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-7 (vision) in 0s
+[PDF Fix] Found 0 meaningful images
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-8 (vision) in 0s
+[PDF Fix] Extracted doc style: {headingColor: #111111, accentColor: #111111, bgColor: #ffffff, headerBg: #ffffff, headerText: #111111}
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-9 (vision) in 1s
+[PDF Fix] JSON pipeline: 90 blocks rendered (no legend repairs)
+[PDF Fix] Final HTML: 59803 chars from 17840 chars extracted text
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-10 (text) in 30s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-11 (text) in 33s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-12 (text) in 33s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-13 (text) in 33s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-14 (text) in 0s
+[PDF Fix] Applied 10 deterministic accessibility fixes
+[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)
+[Auto-fix] Starting three-engine fix loop: 3 engine findings (3 AI, 0 axe, 0 Equal Access), score 63, target 95
+[aiFixChunked:pdf-pass-1] $4 routing: 2/9 violation(s) element-routed, 0/4 chunk(s) skipped
+[aiFixChunked:pdf-pass-1] splitting 46826 chars into 4 chunks (parallel)
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-15 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-16 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-17 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-18 (text) in 0s
+[Auto-fix] Pass 1: fixer chunks were throttle-deferred this pass — deferring the 3-call AI re-audit instead of firing it into the same storm (axe still verifies locally; the final audit completes AI coverage)
+[Auto-fix] Pass 1: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.
+[Auto-fix] Pass 1: evidence incomplete - 1 fixer chunk(s) shipped as original; AI audit section coverage was incomplete; score delta is not comparable and will not drive a regression verdict.
+[Auto-fix] Pass 1: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.
+[Auto-fix] Pass 1: AI null/100, axe 0 violations, Equal Access 1 failures + 6 review findings
+[Auto-fix] Pass 1: AI verification skipped this pass (no AI chunk applied) — axe 0 violation(s), Equal Access 1 failure(s); not treating as three-engine clean
+[aiFixChunked:pdf-pass-2] $4 routing: 2/10 violation(s) element-routed, 0/4 chunk(s) skipped
+[aiFixChunked:pdf-pass-2] splitting 48664 chars into 4 chunks (parallel)
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-19 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-20 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-21 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-22 (text) in 0s
+[Auto-fix] Pass 2: fixer chunks were throttle-deferred this pass — deferring the 3-call AI re-audit instead of firing it into the same storm (axe still verifies locally; the final audit completes AI coverage)
+[Auto-fix] Pass 2: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.
+[Auto-fix] Pass 2: evidence incomplete - 3 fixer chunk(s) shipped as original; AI audit section coverage was incomplete; score delta is not comparable and will not drive a regression verdict.
+[Auto-fix] Pass 2: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.
+[Auto-fix] Pass 2: AI null/100, axe 0 violations, Equal Access 0 failures + 6 review findings
+[Auto-fix] Pass 2: AI verification skipped this pass (no AI chunk applied) — axe 0 violation(s), Equal Access 0 failure(s); not treating as three-engine clean
+[Auto-fix] Shipping best verified version (AI 63, axe 0, Equal Access 0) instead of the loop's last working state.
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-23 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-24 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-25 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-26 (text) in 0s
+[PDF Fix] Final AI semantic audit: AI layer score 65, 2 remaining issues, 42 passes
+[PDF Fix] Final headline (weakest-layer): min(AI 65, deterministic 88 [axe 100, EqualAccess 88, using the more conservative]) = 65
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-27 (text) in 0s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-28 (text) in 348s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-29 (text) in 348s
+client answered mreq-ed4effb5-bf98-4e71-b7c6-1a3d2ef1e5c2-30 (text) in 1s
+[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 65, deterministic 88) = 65 (was 65)
+completed: verdict review

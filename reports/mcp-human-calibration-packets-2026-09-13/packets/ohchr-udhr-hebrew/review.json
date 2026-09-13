@@ -1,0 +1,12 @@
+{
+  "status": "pending",
+  "method": "human",
+  "independent": false,
+  "reviewer": "",
+  "reviewedAt": "",
+  "evidenceRef": "packets/ohchr-udhr-hebrew/review-notes.md",
+  "artifactSha256": "72ece37c24ddbdb2cc462dd921f38d47eb17e80703d6cb89dc9c914177177688",
+  "readiness": null,
+  "layers": {},
+  "findings": []
+}

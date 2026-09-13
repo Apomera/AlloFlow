@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\forms\\irs-f1040.pdf",
+    "sizeBytes": 220237,
+    "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982"
+  },
+  "compatibility": {
+    "optionsSha256": "45f503332609c48df6147f9440df45f1e71ea640442a437ce1e5be1a26a22b57",
+    "engineSha256": "059648bb528adc85dcdcc4e7b426047aa4fa5cf22137f22fc8875bb72425bf2d"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-13T17:07:40.745Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "irs-f1040-accessible.html",
+      "sizeBytes": 42025,
+      "sha256": "25d26d3cacb2f6a6ae0c13d273a69c5c12d320fce2ee6544c8d094f1235a537e"
+    },
+    {
+      "role": "report",
+      "relativePath": "irs-f1040-remediation-report.json",
+      "sizeBytes": 7930,
+      "sha256": "4828606f67ce52691d8c50a83c4ddbe3437e5555854de4285de846720818ea4b"
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "status": 200,
+  "isError": false,
+  "structuredContent": {
+    "runId": "arun-eea9603c-27b4-47f4-abb0-bc0baaf3b24b",
+    "status": "completed",
+    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ed-parent-guide-idea.pdf",
+    "startedAt": "2026-09-13T17:50:58.538Z",
+    "modelCallsSoFar": 16,
+    "pendingCount": 0,
+    "log": [
+      "console: [DocPipe][API←][q4u5ij/e1] +274.1s — callGemini #6 done (179ms, 955 bytes response)",
+      "console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor",
+      "console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 26 passes (12 structural), raw deductions 5, pass factor 1.00, score 95",
+      "[PDF Fix] Final AI semantic audit: AI layer score 95, 1 remaining issues, 26 passes",
+      "console: [Contrast Fix] Fixed 0 color-contrast issues deterministically",
+      "console: [List Fix] Fixed 0 list-structure issues deterministically",
+      "console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: \"img-src data: blob:\". The action has been blocked.",
+      "console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: \"img-src data: blob:\". The action has been blocked.",
+      "console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: \"img-src data: blob:\". The action has been blocked.",
+      "[PDF Fix] Final headline (weakest-layer): min(AI 95, deterministic 90 [axe 100, EqualAccess 90, using the more conservative]) = 90",
+      "[PDF Fix] Note: the fix loop reached its AI target (95 >= 95) but a deterministic engine governs the headline at 90 — the displayed score is the weakest verified layer, not the loop's stop score.",
+      "console: [Integrity] Final text: 6502 chars / source: 5716 chars (100% coverage, method=pdfjs+normalized)",
+      "console: [AltQuality] 1/1 image description(s) flagged (0 high): \"Banner of the Office of Special Educatio\" [too-long]",
+      "console: [DocPipe][Vision→][q4u5ij/e1] +276.4s — callGeminiVision #4 queued",
+      "[DocPipe][Vision-start][q4u5ij/e1] +276.4s — callGeminiVision #4 transport start after 0ms queued",
+      "client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-13 (vision) in 18s",
+      "console: [DocPipe][Vision←][q4u5ij/e1] +294.6s — callGeminiVision #4 done (18164ms, 191 bytes response)",
+      "console: [AltSpotCheck] 1/1 sampled image description(s) match their image (of 1 candidates).",
+      "console: [DocPipe][Images][q4u5ij/e1] +294.6s — Restored 1/1 image data URL(s) from placeholder tokens",
+      "console: [DocPipe][Vision→][q4u5ij/e1] +294.6s — callGeminiVision #5 queued",
+      "[DocPipe][Vision-start][q4u5ij/e1] +294.6s — callGeminiVision #5 transport start after 0ms queued",
+      "client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-14 (vision) in 37s",
+      "console: [DocPipe][Vision←][q4u5ij/e1] +331.4s — callGeminiVision #5 done (36840ms, 252 bytes response)",
+      "[PDF Fix] STEM image intelligence: 1 image(s) classified (0 equation(s), 0 chart(s)) in 1 Vision call(s)",
+      "console: [DocPipe][Audit][q4u5ij/e1] +331.4s — output audit launched (trigger: post-mutation-reaudit (html changed after final audit))",
+      "console: [DocPipe][API→][q4u5ij/e1] +331.4s — callGemini #7 queued (21KB prompt)",
+      "console: [DocPipe][API→][q4u5ij/e1] +331.4s — callGemini #8 queued (6KB prompt)",
+      "[DocPipe][API-start][q4u5ij/e1] +331.4s — callGemini #7 transport start after 0ms queued",
+      "[DocPipe][API-start][q4u5ij/e1] +331.4s — callGemini #8 transport start after 0ms queued",
+      "client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-15 (text) in 0s",
+      "client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-16 (text) in 0s",
+      "console: [DocPipe][API←][q4u5ij/e1] +331.8s — callGemini #7 done (380ms, 1485 bytes response)",
+      "console: [DocPipe][API←][q4u5ij/e1] +331.8s — callGemini #8 done (381ms, 955 bytes response)",
+      "console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor",
+      "console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 26 passes (12 structural), raw deductions 5, pass factor 1.00, score 95",
+      "[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 95, deterministic 90) = 90 (was 90)",
+      "console: [DocPipe][Step 4][q4u5ij/e1] +333.3s — Complete (95.7s) — 2 fix passes, final headline score: 90/100",
+      "console: [DocPipe][Payload][q4u5ij/e1] +333.3s — uploaded 0.68MB across 16 call(s) — vision:other 0.27MB/3, vision:transform 0.09MB/1, text:auto-fix loop 0.08MB/6, vision:image-inventory 0.08MB/1, vision:style 0.08MB/1, vision:auto-fix loop 0.04MB/2, text:audit (axe + AI) 0.04MB/2",
+      "console: [DocPipe][Done][q4u5ij/e1] +333.3s — Primary remediation pass complete (host may continue: auto-continuation, final audit, tagged export, validation) {totalElapsed: 333s, apiCalls: 8, visionCalls: 5, totalApiTime: 445s, retries: 0}",
+      "completed: verdict review"
+    ],
+    "progress": {
+      "total": 1,
+      "completed": 1,
+      "failed": 0,
+      "currentFile": null
+    },
+    "resumable": true,
+    "pendingRequests": [],
+    "result": {
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ed-parent-guide-idea.pdf",
+      "files": {
+        "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\ed-parent-guide\\ed-parent-guide-idea-accessible.html",
+        "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\ed-parent-guide\\ed-parent-guide-idea-remediation-report.json",
+        "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\ed-parent-guide\\ed-parent-guide-idea-remediation-completion.json"
+      },
+      "pdfUa": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      },
+      "verdict": {
+        "level": "review",
+        "reviewCount": 1,
+        "cautionCount": 1
+      },
+      "beforeScore": 90,
+      "afterScore": 90,
+      "aiVerificationIncomplete": false,
+      "scoreSource": "min",
+      "estimatedMinimumScore": null,
+      "contentCoverage": {
+        "status": "matched",
+        "reviewRequired": false,
+        "method": "normalized-token-occurrence-check",
+        "sourceTokens": 910,
+        "outputTokens": 1056,
+        "matchedTokens": 910,
+        "missingTokens": 0,
+        "tokenRecall": 1,
+        "missingPassages": [],
+        "missingPassagesTruncated": 0,
+        "extraction": {
+          "method": "pdfjs",
+          "pagesExamined": 2,
+          "emptyPageCandidates": 0,
+          "pageErrorCount": 0,
+          "lowConfidencePageCount": 0,
+          "errorPages": [],
+          "lowConfidencePages": []
+        },
+        "scope": {
+          "pageRange": null,
+          "wholeDocument": true
+        },
+        "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+        "sourceSha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5",
+        "htmlSha256": "ad225a63992087f1164ea74100680746b6b38586e40aabc76c9e5c7177bd4954"
+      },
+      "integrityCoverage": 100,
+      "integrityWarning": null,
+      "fidelityNotes": [],
+      "candidateRejectionCount": 2,
+      "candidateRejections": [
+        {
+          "chunkId": "1",
+          "phase": "single",
+          "reason": "text-shrink",
+          "pass": 1
+        },
+        {
+          "chunkId": "1",
+          "phase": "single",
+          "reason": "text-shrink",
+          "pass": 2
+        }
+      ],
+      "verificationState": "review-required",
+      "verificationHtmlBound": true,
+      "remainingAxeViolations": 0,
+      "remainingEqualAccessFailures": 0,
+      "taggedPdfDelivery": null,
+      "taggedPdfExportMode": "original_layout",
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "auditCoverage": {
+        "configuredAuditorCap": 5,
+        "requestedAuditors": 3,
+        "completedAuditors": 3,
+        "sliced": false
+      },
+      "taggedPdfError": "distribution_review_required",
+      "runId": "run-mu044hta-q4u5ij",
+      "stats": {
+        "apiCalls": 8,
+        "visionCalls": 5,
+        "retries": 0,
+        "recoveredRetries": 0,
+        "authThrottles": 0,
+        "terminalFailures": 0
+      },
+      "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+      "htmlVerificationState": "review-required",
+      "verificationChecks": {
+        "pdfUa": {
+          "standard": "PDF/UA-1 (ISO 14289-1)",
+          "profile": "ua1",
+          "scope": "machine-verifiable PDF/UA checks",
+          "status": "not-applicable",
+          "reason": "No tagged PDF was produced."
+        }
+      },
+      "deliveryReviewReasons": [],
+      "reviewRequired": true,
+      "deliveryStatus": "review-required",
+      "resources": [
+        {
+          "role": "source",
+          "label": "Original document (before)",
+          "uri": "alloflow-remediation://artifact/run-mu044hta-q4u5ij/source",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ed-parent-guide-idea.pdf",
+          "mimeType": "application/pdf"
+        },
+        {
+          "role": "accessibleHtml",
+          "label": "Accessible HTML (after)",
+          "uri": "alloflow-remediation://artifact/run-mu044hta-q4u5ij/accessibleHtml",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\ed-parent-guide\\ed-parent-guide-idea-accessible.html",
+          "mimeType": "text/html"
+        },
+        {
+          "role": "report",
+          "label": "Remediation report",
+          "uri": "alloflow-remediation://artifact/run-mu044hta-q4u5ij/report",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\ed-parent-guide\\ed-parent-guide-idea-remediation-report.json",
+          "mimeType": "application/json"
+        },
+        {
+          "role": "completionManifest",
+          "label": "Completion manifest",
+          "uri": "alloflow-remediation://artifact/run-mu044hta-q4u5ij/completionManifest",
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-human-calibration-packets-2026-09-13\\runs\\ed-parent-guide\\ed-parent-guide-idea-remediation-completion.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "modelTransport": "agent-bridge",
+      "modelCallsAnswered": 16,
+      "bridgeStats": {
+        "pipelineModelCalls": 16,
+        "requestsPublished": 16,
+        "coalescedReasks": 0,
+        "replayedAnswers": 0,
+        "clientLatencySeconds": {
+          "count": 16,
+          "mean": 54,
+          "max": 144
+        }
+      }
+    },
+    "note": "Run is completed."
+  },
+  "images": [],
+  "error": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"runId\": \"arun-eea9603c-27b4-47f4-abb0-bc0baaf3b24b\",\n  \"status\": \"completed\",\n  \"file\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ed-parent-guide-idea.pdf\",\n  \"startedAt\": \"2026-09-13T17:50:58.538Z\",\n  \"modelCallsSoFar\": 16,\n  \"pendingCount\": 0,\n  \"log\": [\n    \"console: [DocPipe][API←][q4u5ij/e1] +274.1s — callGemini #6 done (179ms, 955 bytes response)\",\n    \"console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor\",\n    \"console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 26 passes (12 structural), raw deductions 5, pass factor 1.00, score 95\",\n    \"[PDF Fix] Final AI semantic audit: AI layer score 95, 1 remaining issues, 26 passes\",\n    \"console: [Contrast Fix] Fixed 0 color-contrast issues deterministically\",\n    \"console: [List Fix] Fixed 0 list-structure issues deterministically\",\n    \"console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: \\\"img-src data: blob:\\\". The action has been blocked.\",\n    \"console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: \\\"img-src data: blob:\\\". The action has been blocked.\",\n    \"console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: \\\"img-src data: blob:\\\". The action has been blocked.\",\n    \"[PDF Fix] Final headline (weakest-layer): min(AI 95, deterministic 90 [axe 100, EqualAccess 90, using the more conservative]) = 90\",\n    \"[PDF Fix] Note: the fix loop reached its AI target (95 >= 95) but a deterministic engine governs the headline at 90 — the displayed score is the weakest verified layer, not the loop's stop score.\",\n    \"console: [Integrity] Final text: 6502 chars / source: 5716 chars (100% coverage, method=pdfjs+normalized)\",\n    \"console: [AltQuality] 1/1 image description(s) flagged (0 high): \\\"Banner of the Office of Special Educatio\\\" [too-long]\",\n    \"console: [DocPipe][Vision→][q4u5ij/e1] +276.4s — callGeminiVision #4 queued\",\n    \"[DocPipe][Vision-start][q4u5ij/e1] +276.4s — callGeminiVision #4 transport start after 0ms queued\",\n    \"client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-13 (vision) in 18s\",\n    \"console: [DocPipe][Vision←][q4u5ij/e1] +294.6s — callGeminiVision #4 done (18164ms, 191 bytes response)\",\n    \"console: [AltSpotCheck] 1/1 sampled image description(s) match their image (of 1 candidates).\",\n    \"console: [DocPipe][Images][q4u5ij/e1] +294.6s — Restored 1/1 image data URL(s) from placeholder tokens\",\n    \"console: [DocPipe][Vision→][q4u5ij/e1] +294.6s — callGeminiVision #5 queued\",\n    \"[DocPipe][Vision-start][q4u5ij/e1] +294.6s — callGeminiVision #5 transport start after 0ms queued\",\n    \"client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-14 (vision) in 37s\",\n    \"console: [DocPipe][Vision←][q4u5ij/e1] +331.4s — callGeminiVision #5 done (36840ms, 252 bytes response)\",\n    \"[PDF Fix] STEM image intelligence: 1 image(s) classified (0 equation(s), 0 chart(s)) in 1 Vision call(s)\",\n    \"console: [DocPipe][Audit][q4u5ij/e1] +331.4s — output audit launched (trigger: post-mutation-reaudit (html changed after final audit))\",\n    \"console: [DocPipe][API→][q4u5ij/e1] +331.4s — callGemini #7 queued (21KB prompt)\",\n    \"console: [DocPipe][API→][q4u5ij/e1] +331.4s — callGemini #8 queued (6KB prompt)\",\n    \"[DocPipe][API-start][q4u5ij/e1] +331.4s — callGemini #7 transport start after 0ms queued\",\n    \"[DocPipe][API-start][q4u5ij/e1] +331.4s — callGemini #8 transport start after 0ms queued\",\n    \"client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-15 (text) in 0s\",\n    \"client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-16 (text) in 0s\",\n    \"console: [DocPipe][API←][q4u5ij/e1] +331.8s — callGemini #7 done (380ms, 1485 bytes response)\",\n    \"console: [DocPipe][API←][q4u5ij/e1] +331.8s — callGemini #8 done (381ms, 955 bytes response)\",\n    \"console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor\",\n    \"console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 26 passes (12 structural), raw deductions 5, pass factor 1.00, score 95\",\n    \"[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 95, deterministic 90) = 90 (was 90)\",\n    \"console: [DocPipe][Step 4][q4u5ij/e1] +333.3s — Complete (95.7s) — 2 fix passes, final headline score: 90/100\",\n    \"console: [DocPipe][Payload][q4u5ij/e1] +333.3s — uploaded 0.68MB across 16 call(s) — vision:other 0.27MB/3, vision:transform 0.09MB/1, text:auto-fix loop 0.08MB/6, vision:image-inventory 0.08MB/1, vision:style 0.08MB/1, vision:auto-fix loop 0.04MB/2, text:audit (axe + AI) 0.04MB/2\",\n    \"console: [DocPipe][Done][q4u5ij/e1] +333.3s — Primary remediation pass complete (host may continue: auto-continuation, final audit, tagged export, validation) {totalElapsed: 333s, apiCalls: 8, visionCalls: 5, totalApiTime: 445s, retries: 0}\",\n    \"completed: verdict review\"\n  ],\n  \"progress\": {\n    \"total\": 1,\n    \"completed\": 1,\n    \"failed\": 0,\n    \"currentFile\": null\n  },\n  \"resumable\": true,\n  \"pendingRequests\": [],\n  \"result\": {\n    \"input\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ed-parent-guide-idea.pdf\",\n    \"files\": {\n      \"accessibleHtml\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-human-calibration-packets-2026-09-13\\\\runs\\\\ed-parent-guide\\\\ed-parent-guide-idea-accessible.html\",\n      \"report\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-human-calibration-packets-2026-09-13\\\\runs\\\\ed-parent-guide\\\\ed-parent-guide-idea-remediation-report.json\",\n      \"completionManifest\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-human-calibration-packets-2026-09-13\\\\runs\\\\ed-parent-guide\\\\ed-parent-guide-idea-remediation-completion.json\"\n    },\n    \"pdfUa\": {\n      \"standard\": \"PDF/UA-1 (ISO 14289-1)\",\n      \"profile\": \"ua1\",\n      \"scope\": \"machine-verifiable PDF/UA checks\",\n      \"status\": \"not-applicable\",\n      \"reason\": \"No tagged PDF was produced.\"\n    },\n    \"verdict\": {\n      \"level\": \"review\",\n      \"reviewCount\": 1,\n      \"cautionCount\": 1\n    },\n    \"beforeScore\": 90,\n    \"afterScore\": 90,\n    \"aiVerificationIncomplete\": false,\n    \"scoreSource\": \"min\",\n    \"estimatedMinimumScore\": null,\n    \"contentCoverage\": {\n      \"status\": \"matched\",\n      \"reviewRequired\": false,\n      \"method\": \"normalized-token-occurrence-check\",\n      \"sourceTokens\": 910,\n      \"outputTokens\": 1056,\n      \"matchedTokens\": 910,\n      \"missingTokens\": 0,\n      \"tokenRecall\": 1,\n      \"missingPassages\": [],\n      \"missingPassagesTruncated\": 0,\n      \"extraction\": {\n        \"method\": \"pdfjs\",\n        \"pagesExamined\": 2,\n        \"emptyPageCandidates\": 0,\n        \"pageErrorCount\": 0,\n        \"lowConfidencePageCount\": 0,\n        \"errorPages\": [],\n        \"lowConfidencePages\": []\n      },\n      \"scope\": {\n        \"pageRange\": null,\n        \"wholeDocument\": true\n      },\n      \"note\": \"Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.\",\n      \"sourceSha256\": \"31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5\",\n      \"htmlSha256\": \"ad225a63992087f1164ea74100680746b6b38586e40aabc76c9e5c7177bd4954\"\n    },\n    \"integrityCoverage\": 100,\n    \"integrityWarning\": null,\n    \"fidelityNotes\": [],\n    \"candidateRejectionCount\": 2,\n    \"candidateRejections\": [\n      {\n        \"chunkId\": \"1\",\n        \"phase\": \"single\",\n        \"reason\": \"text-shrink\",\n        \"pass\": 1\n      },\n      {\n        \"chunkId\": \"1\",\n        \"phase\": \"single\",\n        \"reason\": \"text-shrink\",\n        \"pass\": 2\n      }\n    ],\n    \"verificationState\": \"review-required\",\n    \"verificationHtmlBound\": true,\n    \"remainingAxeViolations\": 0,\n    \"remainingEqualAccessFailures\": 0,\n    \"taggedPdfDelivery\": null,\n    \"taggedPdfExportMode\": \"original_layout\",\n    \"activeContentScanVerified\": true,\n    \"activeContentDetected\": false,\n    \"auditCoverage\": {\n      \"configuredAuditorCap\": 5,\n      \"requestedAuditors\": 3,\n      \"completedAuditors\": 3,\n      \"sliced\": false\n    },\n    \"taggedPdfError\": \"distribution_review_required\",\n    \"runId\": \"run-mu044hta-q4u5ij\",\n    \"stats\": {\n      \"apiCalls\": 8,\n      \"visionCalls\": 5,\n      \"retries\": 0,\n      \"recoveredRetries\": 0,\n      \"authThrottles\": 0,\n      \"terminalFailures\": 0\n    },\n    \"note\": \"Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.\",\n    \"htmlVerificationState\": \"review-required\",\n    \"verificationChecks\": {\n      \"pdfUa\": {\n        \"standard\": \"PDF/UA-1 (ISO 14289-1)\",\n        \"profile\": \"ua1\",\n        \"scope\": \"machine-verifiable PDF/UA checks\",\n        \"status\": \"not-applicable\",\n        \"reason\": \"No tagged PDF was produced.\"\n      }\n    },\n    \"deliveryReviewReasons\": [],\n    \"reviewRequired\": true,\n    \"deliveryStatus\": \"review-required\",\n    \"resources\": [\n      {\n        \"role\": \"source\",\n        \"label\": \"Original document (before)\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu044hta-q4u5ij/source\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\mcp-testing\\\\corpus\\\\born-digital\\\\ed-parent-guide-idea.pdf\",\n        \"mimeType\": \"application/pdf\"\n      },\n      {\n        \"role\": \"accessibleHtml\",\n        \"label\": \"Accessible HTML (after)\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu044hta-q4u5ij/accessibleHtml\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-human-calibration-packets-2026-09-13\\\\runs\\\\ed-parent-guide\\\\ed-parent-guide-idea-accessible.html\",\n        \"mimeType\": \"text/html\"\n      },\n      {\n        \"role\": \"report\",\n        \"label\": \"Remediation report\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu044hta-q4u5ij/report\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-human-calibration-packets-2026-09-13\\\\runs\\\\ed-parent-guide\\\\ed-parent-guide-idea-remediation-report.json\",\n        \"mimeType\": \"application/json\"\n      },\n      {\n        \"role\": \"completionManifest\",\n        \"label\": \"Completion manifest\",\n        \"uri\": \"alloflow-remediation://artifact/run-mu044hta-q4u5ij/completionManifest\",\n        \"path\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\mcp-human-calibration-packets-2026-09-13\\\\runs\\\\ed-parent-guide\\\\ed-parent-guide-idea-remediation-completion.json\",\n        \"mimeType\": \"application/json\"\n      }\n    ],\n    \"modelTransport\": \"agent-bridge\",\n    \"modelCallsAnswered\": 16,\n    \"bridgeStats\": {\n      \"pipelineModelCalls\": 16,\n      \"requestsPublished\": 16,\n      \"coalescedReasks\": 0,\n      \"replayedAnswers\": 0,\n      \"clientLatencySeconds\": {\n        \"count\": 16,\n        \"mean\": 54,\n        \"max\": 144\n      }\n    }\n  },\n  \"note\": \"Run is completed.\"\n}"
+    }
+  ]
+}

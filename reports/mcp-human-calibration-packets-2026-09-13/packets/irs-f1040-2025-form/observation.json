@@ -1,0 +1,101 @@
+{
+  "id": "irs-f1040-2025-form-bcdd26fc",
+  "documentKind": "form",
+  "evidenceKind": "unreviewed",
+  "artifact": {
+    "sha256": "25d26d3cacb2f6a6ae0c13d273a69c5c12d320fce2ee6544c8d094f1235a537e",
+    "file": "irs-f1040-accessible.html",
+    "bytes": 42025,
+    "mimeType": "text/html"
+  },
+  "source": {
+    "corpusPath": "mcp-testing/corpus/forms/irs-f1040.pdf",
+    "url": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
+    "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982",
+    "pages": 2
+  },
+  "run": {
+    "runId": "arun-bcdd26fc",
+    "modelTransport": "agent-bridge",
+    "modelCallsAnswered": 23,
+    "connectorBuild": "v0.11.0 with all five fixes of 13 September (first run on the corrected auto-fix loop)",
+    "completedAt": "2026-09-13T17:07:40.745Z"
+  },
+  "observed": {
+    "targetScore": 95,
+    "verification": {
+      "ai": {
+        "score": 95,
+        "issueCount": 1,
+        "passCount": 28,
+        "chunksRequested": null,
+        "chunksAudited": null,
+        "_source": "pipeline log: final AI semantic audit"
+      },
+      "axe": {
+        "score": 100,
+        "totalViolations": 0,
+        "totalIncomplete": null,
+        "_source": "report.remainingAxeViolations + pipeline log: final headline"
+      },
+      "equalAccess": {
+        "score": 94,
+        "failViolations": 0,
+        "reviewFindingCount": 3,
+        "_source": "report.remainingEqualAccessFailures + pipeline log: final headline / pass summary"
+      },
+      "aiIncomplete": false
+    },
+    "result": {
+      "beforeScore": 63,
+      "afterScore": 94,
+      "scoreSource": "min",
+      "verificationState": "review-required",
+      "integrityCoverage": 100,
+      "integrityWarning": "18 source numeric value(s) not found unchanged in the output (31, 20, 10, 14, 15, 16, 17, 18, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+      "fidelityNotes": [
+        {
+          "kind": "formFields",
+          "msg": "Form fields: the source is a fillable form with 199 field(s) but the output has 0 — the accessible version can be read but not filled in. Give learners the tagged PDF, or an editable copy, if they need to type answers."
+        },
+        {
+          "kind": "numeric",
+          "msg": "18 source numeric value(s) not found unchanged in the output (31, 20, 10, 14, 15, 16, 17, 18, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+        },
+        {
+          "kind": "activeContent",
+          "msg": "The ORIGINAL PDF contains 3 embedded JavaScript action(s). The remediated HTML and generated exports do not carry active content, but the standard tagged-PDF export preserves the original bytes — including these. For a distributable PDF without them, use the 🧼 Rebuild-clean export."
+        }
+      ],
+      "needsExpertReview": true,
+      "deliveryStatus": "review-required",
+      "deliveryReviewReasons": [],
+      "contentCoverage": {
+        "status": "review_required",
+        "tokenRecall": 0.9523,
+        "missingTokens": 76,
+        "sourceTokens": 1593
+      },
+      "activeContentScanVerified": false,
+      "activeContentDetected": false,
+      "candidateRejections": [],
+      "verdict": {
+        "level": "review",
+        "reviewCount": 4,
+        "cautionCount": 2
+      }
+    },
+    "pdf": {
+      "produced": false,
+      "taggedPdfError": "active_content_scan_unavailable",
+      "validation": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      }
+    }
+  },
+  "provenance": "Scores and counts copied from irs-f1040-remediation-report.json and from the connector log lines in pipeline-log.txt; nothing measured by a person yet. Layers marked _source are reconstructed summaries, not the raw audit objects (the connector does not export those)."
+}

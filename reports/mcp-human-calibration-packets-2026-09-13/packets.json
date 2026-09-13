@@ -1,0 +1,72 @@
+[
+  {
+    "slug": "irs-f1040-1954-scan",
+    "title": "IRS Form 1040 (1954), scanned, image-only",
+    "documentKind": "scan",
+    "pages": 4,
+    "source": "mcp-testing/corpus/scanned/irs-f1040-1954-scan.pdf",
+    "sourceUrl": "https://www.irs.gov/pub/irs-prior/f1040--1954.pdf",
+    "runDir": "reports/mcp-gap-lane-pilots-2026-09-13/scan-1954-replay",
+    "runId": "arun-0084bf67",
+    "logFile": "server-8766-b.log",
+    "build": "v0.11.0 after the OCR reconciliation, list-marker, Tesseract and console fixes (b77f0376b) but before the auto-fix loop fix (ede873969)",
+    "notes": "The source has no text layer at all: everything in the output came from OCR (Tesseract plus the answering model's transcription of the page images) and from the model's structuring of that text. The fix loop of this build discarded the client's fixes (a defect fixed the same afternoon), so the output is the structured baseline without the header landmark and row headers the client had supplied. The pipeline withheld the tagged PDF because 10.9% of source tokens were not found in the output; most of those are the model's own 'Item N.' prefixes and reworded table headers.",
+    "modelCalls": 30
+  },
+  {
+    "slug": "ohchr-udhr-hebrew",
+    "title": "Universal Declaration of Human Rights, Hebrew (OHCHR)",
+    "documentKind": "reading",
+    "pages": 4,
+    "source": "mcp-testing/corpus/born-digital/ohchr-udhr-hebrew.pdf",
+    "sourceUrl": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/hbr.pdf",
+    "runDir": "reports/mcp-gap-lane-pilots-2026-09-13/hebrew-udhr",
+    "runId": "arun-fe680c0b",
+    "logFile": "server-8766.log",
+    "build": "v0.11.0 morning build (before the five fixes of 13 September)",
+    "notes": "Right-to-left Hebrew. The source's text layer decodes to control characters (fonts without a ToUnicode map), so the pipeline re-read the pages by OCR; Tesseract has no Hebrew model in this bundle, so the text is the answering model's transcription. The output declares lang=\"he\" dir=\"rtl\" and renders right-to-left in Chromium. A Hebrew reader is needed to judge fidelity; the pipeline withheld the tagged PDF over nine clause numerals, a coverage defect fixed the same day.",
+    "modelCalls": 20
+  },
+  {
+    "slug": "irs-f1040-2025-form",
+    "title": "IRS Form 1040 (current), fillable form with XFA and JavaScript",
+    "documentKind": "form",
+    "pages": 2,
+    "source": "mcp-testing/corpus/forms/irs-f1040.pdf",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
+    "runDir": "reports/mcp-gap-lane-pilots-2026-09-13/f1040-form",
+    "runId": "arun-bcdd26fc",
+    "logFile": "server-8766-d.log",
+    "build": "v0.11.0 with all five fixes of 13 September (first run on the corrected auto-fix loop)",
+    "notes": "The 199 fillable fields became read-only text and the checkboxes are rendered as box characters; the pipeline discloses this in its fidelity notes. The tagged PDF was withheld because the source carries an XFA form the Document Safety scan does not examine. Judge the HTML as a readable copy of the form, not as a form to fill in.",
+    "modelCalls": 23
+  },
+  {
+    "slug": "ed-osep-dear-colleague-letter",
+    "title": "OSEP Dear Colleague letter on translating IEPs for LEP parents (ED, 2016)",
+    "documentKind": "reading",
+    "pages": 2,
+    "source": "mcp-testing/corpus/born-digital/ed-parent-guide-idea.pdf",
+    "sourceUrl": "https://sites.ed.gov/idea/files/policy_speced_guid_idea_memosdcltrs_iep-translation-06-14-2016.pdf",
+    "runDir": "reports/mcp-human-calibration-packets-2026-09-13/runs/ed-parent-guide",
+    "runId": "arun-eea9603c",
+    "logFile": "server-8766-e.log",
+    "build": "v0.11.0 with all five fixes of 13 September plus the headless palette-prompt skip",
+    "notes": "A tagged two-page letter with no headings in the source. The answering model gave it a title banner and a Footnotes heading. Its fix pass (a header landmark plus a shorter alt for the banner image) was rejected whole by the pipeline's text-shrink gate because the shorter alt reduced the text, so the delivered output keeps the banner as a plain div and the 287-character alt; Equal Access flags that alt as too long and asks for five items to be confirmed by a person, which is why the verdict is review.",
+    "modelCalls": 16
+  },
+  {
+    "slug": "fda-nexium-prea-letter",
+    "title": "AstraZeneca response to FDA PREA non-compliance letter (NEXIUM, 2019)",
+    "documentKind": "figures",
+    "pages": 7,
+    "source": "mcp-testing/corpus/figures/fda-nexium-prea-letter.pdf",
+    "sourceUrl": "https://www.fda.gov/media/135691/download",
+    "runDir": "reports/mcp-human-calibration-packets-2026-09-13/runs/fda-nexium-letter",
+    "runId": "arun-daa7061e",
+    "logFile": "server-8766-e.log",
+    "build": "v0.11.0 with all five fixes of 13 September plus the headless palette-prompt skip",
+    "notes": "An untagged seven-page regulatory letter with a logo, a four-row timelines table, bulleted and numbered lists, block quotations and a gray FOIA (b)(4) redaction box covering four list items. The answering model transcribed the letter from the page images and described the redaction as withheld content. The pipeline withheld the tagged PDF because 7.2% of source tokens were not found in the output: the running header that repeats on six pages was transcribed once, and the page 1 footer address moved to the end of the letter. Its integrity check also notes that the NDA number 021957 occurs fewer times than in the source for the same reason; a reviewer should confirm no number changed.",
+    "modelCalls": 28
+  }
+]

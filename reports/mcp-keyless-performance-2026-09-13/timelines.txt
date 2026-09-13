@@ -1,0 +1,85 @@
+
+== arun-0084bf67 (server-8766-b.log) irs-f1040-1954-scan.pdf: last stamp +593.4s, 0 timed model calls, client-side wait 0s (0%)
+  +    0.3s  (          ) callGeminiVision #1 transport start after 3ms queued
+  +    0.5s  (          ) callGeminiVision #2 transport start after 1ms queued
+  +    0.5s  (          ) callGeminiVision #3 transport start after 0ms queued
+  +  147.5s  (+147s gap ) callGeminiVision #4 transport start after 1ms queued
+  +  147.8s  (          ) callGeminiVision #5 transport start after 0ms queued
+  +  168.0s  (+20s gap  ) callGeminiVision #6 transport start after 1ms queued
+  +  200.8s  (+32s gap  ) callGemini #2 transport start after 0ms queued
+  +  233.3s  (+33s gap  ) callGemini #5 transport start after 0ms queued
+  +  593.4s  (+348s gap ) callGemini #21 transport start after 1ms queued
+== arun-f0272a52 (server-8766-c.log) nces-condition-of-education.pdf: no stamped lines (31 lines)
+
+== arun-cce6811e (server-8766-d.log) nces-condition-of-education.pdf: last stamp +1.5s, 0 timed model calls, client-side wait 0s (0%)
+  +    1.5s  (          ) callGeminiVision #1 queued
+  +    1.5s  (          ) callGeminiVision #1 transport start after 3ms queued
+
+== arun-bcdd26fc (server-8766-d.log) irs-f1040.pdf: last stamp +346.2s, 17 timed model calls, client-side wait 649s (187%)
+  +    0.5s  (          ) callGeminiVision #1 queued
+  +    0.5s  (          ) callGeminiVision #1 transport start after 2ms queued
+  +   25.5s  (+25s gap  ) callGeminiVision #1 done (24915ms, 13 bytes response)
+  +   25.5s  (          ) Complete (25.5s) — 10113 chars extracted
+  +   25.5s  (          ) callGeminiVision #2 queued
+  +   25.5s  (          ) callGeminiVision #2 transport start after 2ms queued
+  +   25.8s  (          ) callGeminiVision #2 done (339ms, 307 bytes response)
+  +   45.8s  (+20s gap  ) User kept original styling (or timed out)
+  +   45.8s  (          ) callGeminiVision #3 queued
+  +   45.8s  (          ) callGeminiVision #3 transport start after 0ms queued
+  +  122.6s  (+77s gap  ) callGeminiVision #3 done (76768ms, 13438 bytes response)
+  +  122.7s  (          ) Skipping grammar check — text was extracted deterministically (no OCR artifacts)
+  +  122.7s  (          ) Complete (97.2s) — 49814 chars HTML generated
+  +  239.5s  (+115s gap ) callGemini #1 done (115277ms, 2266 bytes response)
+  +  239.5s  (          ) callGemini #2 done (115281ms, 1796 bytes response)
+  +  239.5s  (          ) callGemini #3 done (115283ms, 1694 bytes response)
+  +  239.6s  (          ) callGemini #4 done (93ms, 1884 bytes response)
+  +  241.3s  (          ) Complete (118.6s) — AI: 58/100, axe: 0 violations, Equal Access: 0 failures
+  +  288.4s  (+47s gap  ) callGemini #5 done (47101ms, 11616 bytes response)
+  +  288.5s  (          ) callGemini #6 done (47165ms, 16937 bytes response)
+  +  288.5s  (          ) callGemini #7 done (47194ms, 12044 bytes response)
+  +  341.9s  (+53s gap  ) callGemini #8 done (53213ms, 1679 bytes response)
+  +  341.9s  (          ) callGemini #9 done (53286ms, 913 bytes response)
+  +  341.9s  (          ) callGemini #10 done (53288ms, 958 bytes response)
+  +  342.1s  (          ) callGemini #11 done (162ms, 12219 bytes response)
+  +  342.3s  (          ) callGemini #12 done (315ms, 10379 bytes response)
+  +  342.3s  (          ) callGemini #13 done (339ms, 15979 bytes response)
+  +  342.4s  (          ) callGemini #14 done (463ms, 2625 bytes response)
+  +  342.7s  (          ) callGemini #15 done (91ms, 1679 bytes response)
+  +  342.7s  (          ) callGemini #16 done (167ms, 913 bytes response)
+  +  342.7s  (          ) callGemini #17 done (168ms, 958 bytes response)
+  +  346.2s  (          ) Complete (104.9s) — 2 fix passes, final headline score: 94/100
+  +  346.2s  (          ) uploaded 1.97MB across 23 call(s) — vision:other 0.86MB/3, vision:transform 0.29MB/1, vision:image-inventory 0.28MB/1, vision:style 0.28MB/1, text:aut
+  +  346.2s  (          ) Primary remediation pass complete (host may continue: auto-continuation, final audit, tagged export, validation) {totalElapsed: 346s, apiCalls: 17, vi
+
+== arun-96487fa0 (server-8766.log) irs-f1040-1954-scan.pdf: last stamp +1219s, 0 timed model calls, client-side wait 0s (0%)
+  +    0.5s  (          ) callGeminiVision #1 transport start after 11ms queued
+  +   26.6s  (+26s gap  ) callGeminiVision #2 transport start after 1ms queued
+  +   26.6s  (          ) callGeminiVision #3 transport start after 1ms queued
+  +  490.3s  (+464s gap ) callGeminiVision #4 transport start after 1ms queued
+  +  518.6s  (+28s gap  ) callGeminiVision #5 transport start after 0ms queued
+  +  557.3s  (+39s gap  ) callGeminiVision #6 transport start after 0ms queued
+  +  672.1s  (+115s gap ) callGemini #1 transport start after 0ms queued
+  +  750.3s  (+78s gap  ) callGemini #2 transport start after 0ms queued
+  +  882.0s  (+132s gap ) callGemini #5 transport start after 0ms queued
+  +  911.7s  (+30s gap  ) callGemini #6 transport start after 6ms queued
+  + 1009.5s  (+98s gap  ) callGemini #9 transport start after 97749ms queued
+  + 1022.7s  (+13s gap  ) callGemini #10 transport start after 1ms queued
+  + 1049.2s  (+27s gap  ) callGemini #13 transport start after 26475ms queued
+  + 1062.2s  (+13s gap  ) callGemini #14 transport start after 1ms queued
+  + 1149.1s  (+87s gap  ) callGemini #17 transport start after 3ms queued
+  + 1170.5s  (+21s gap  ) callGemini #18 transport start after 1ms queued
+  + 1219.0s  (+49s gap  ) callGemini #21 transport start after 1ms queued
+
+== arun-fe680c0b (server-8766.log) ohchr-udhr-hebrew.pdf: last stamp +1608.2s, 0 timed model calls, client-side wait 0s (0%)
+  +    1.2s  (          ) callGeminiVision #1 transport start after 2ms queued
+  +   11.2s  (+10s gap  ) callGeminiVision #2 transport start after 0ms queued
+  +   11.2s  (          ) callGeminiVision #3 transport start after 0ms queued
+  + 1323.8s  (+1313s gap) callGeminiVision #4 transport start after 1ms queued
+  + 1337.9s  (+14s gap  ) callGeminiVision #5 transport start after 1ms queued
+  + 1372.0s  (+34s gap  ) callGeminiVision #6 transport start after 0ms queued
+  + 1416.7s  (+45s gap  ) callGemini #1 transport start after 1ms queued
+  + 1430.8s  (+14s gap  ) callGemini #2 transport start after 1ms queued
+  + 1503.2s  (+72s gap  ) callGemini #4 transport start after 0ms queued
+  + 1555.2s  (+52s gap  ) callGemini #6 transport start after 1ms queued
+  + 1594.8s  (+40s gap  ) callGemini #8 transport start after 1ms queued
+  + 1608.2s  (+13s gap  ) callGemini #10 transport start after 0ms queued

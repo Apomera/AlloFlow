@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ed-parent-guide-idea.pdf",
+    "sizeBytes": 64871,
+    "sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5"
+  },
+  "compatibility": {
+    "optionsSha256": "45f503332609c48df6147f9440df45f1e71ea640442a437ce1e5be1a26a22b57",
+    "engineSha256": "b047e43fb57a3b6314f5dc72fbbca465d25b8f4808bf31008b8990e1ef7cabc2"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-13T17:59:01.727Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "ed-parent-guide-idea-accessible.html",
+      "sizeBytes": 37681,
+      "sha256": "ad225a63992087f1164ea74100680746b6b38586e40aabc76c9e5c7177bd4954"
+    },
+    {
+      "role": "report",
+      "relativePath": "ed-parent-guide-idea-remediation-report.json",
+      "sizeBytes": 3957,
+      "sha256": "4e4a039c7dd62dfcf465cd6a083d129d7270eea6d6066465fb3c9a65f44f2611"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"kind":"image-of-text","alt":"AstraZeneca logo: the company name in purple with a gold and purple swirl.","latex":"","chartSummary":"","chartData":{"columns":[],"rows":[]},"extractedText":"AstraZeneca"}

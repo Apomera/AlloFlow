@@ -1,0 +1,12 @@
+{
+  "status": "pending",
+  "method": "human",
+  "independent": false,
+  "reviewer": "",
+  "reviewedAt": "",
+  "evidenceRef": "packets/fda-nexium-prea-letter/review-notes.md",
+  "artifactSha256": "e6cf52ee50c6826272eba8e94b46df4259c195951e9dc12d59657647cdbd6a09",
+  "readiness": null,
+  "layers": {},
+  "findings": []
+}

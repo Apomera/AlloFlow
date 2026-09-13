@@ -1,0 +1,1 @@
+{"kind":"image-of-text","alt":"OSEP, Office of Special Education Programs banner with the U.S. Department of Education seal.","latex":"","chartSummary":"","chartData":{"columns":[],"rows":[]},"extractedText":"OSEP Office of Special Education Programs"}

@@ -1,0 +1,1 @@
+{"kind":"photo","alt":"Solid gray redaction block marked (b)(4) covering four bulleted items; the content was withheld from the public copy.","latex":"","chartSummary":"","chartData":{"columns":[],"rows":[]},"extractedText":""}

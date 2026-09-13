@@ -1,0 +1,93 @@
+{
+  "id": "fda-nexium-prea-letter-daa7061e",
+  "documentKind": "figures",
+  "evidenceKind": "unreviewed",
+  "artifact": {
+    "sha256": "e6cf52ee50c6826272eba8e94b46df4259c195951e9dc12d59657647cdbd6a09",
+    "file": "fda-nexium-prea-letter-accessible.html",
+    "bytes": 99649,
+    "mimeType": "text/html"
+  },
+  "source": {
+    "corpusPath": "mcp-testing/corpus/figures/fda-nexium-prea-letter.pdf",
+    "url": "https://www.fda.gov/media/135691/download",
+    "sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1",
+    "pages": 7
+  },
+  "run": {
+    "runId": "arun-daa7061e",
+    "modelTransport": "agent-bridge",
+    "modelCallsAnswered": 28,
+    "connectorBuild": "v0.11.0 with all five fixes of 13 September plus the headless palette-prompt skip",
+    "completedAt": "2026-09-13T18:08:50.150Z"
+  },
+  "observed": {
+    "targetScore": 95,
+    "verification": {
+      "ai": {
+        "score": 100,
+        "issueCount": 0,
+        "passCount": 36,
+        "chunksRequested": null,
+        "chunksAudited": null,
+        "_source": "pipeline log: final AI semantic audit"
+      },
+      "axe": {
+        "score": 100,
+        "totalViolations": 0,
+        "totalIncomplete": null,
+        "_source": "report.remainingAxeViolations + pipeline log: final headline"
+      },
+      "equalAccess": {
+        "score": 86,
+        "failViolations": 0,
+        "reviewFindingCount": 7,
+        "_source": "report.remainingEqualAccessFailures + pipeline log: final headline / pass summary"
+      },
+      "aiIncomplete": false
+    },
+    "result": {
+      "beforeScore": 20,
+      "afterScore": 86,
+      "scoreSource": "min",
+      "verificationState": "review-required",
+      "integrityCoverage": 100,
+      "integrityWarning": "1 source numeric value(s) not found unchanged in the output (021957). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+      "fidelityNotes": [
+        {
+          "kind": "numeric",
+          "msg": "1 source numeric value(s) not found unchanged in the output (021957). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+        }
+      ],
+      "needsExpertReview": true,
+      "deliveryStatus": "review-required",
+      "deliveryReviewReasons": [],
+      "contentCoverage": {
+        "status": "review_required",
+        "tokenRecall": 0.9278,
+        "missingTokens": 166,
+        "sourceTokens": 2299
+      },
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "candidateRejections": [],
+      "verdict": {
+        "level": "review",
+        "reviewCount": 4,
+        "cautionCount": 1
+      }
+    },
+    "pdf": {
+      "produced": false,
+      "taggedPdfError": "content_coverage_requires_review",
+      "validation": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      }
+    }
+  },
+  "provenance": "Scores and counts copied from fda-nexium-prea-letter-remediation-report.json and from the connector log lines in pipeline-log.txt; nothing measured by a person yet. Layers marked _source are reconstructed summaries, not the raw audit objects (the connector does not export those)."
+}

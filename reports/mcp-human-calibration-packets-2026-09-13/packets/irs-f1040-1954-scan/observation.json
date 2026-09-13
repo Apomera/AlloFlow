@@ -1,0 +1,97 @@
+{
+  "id": "irs-f1040-1954-scan-0084bf67",
+  "documentKind": "scan",
+  "evidenceKind": "unreviewed",
+  "artifact": {
+    "sha256": "eee0be982f92bc59e5ee8089bb89c39c2b233fdc670e336f36e94e3fa29c3f68",
+    "file": "irs-f1040-1954-scan-accessible.html",
+    "bytes": 50060,
+    "mimeType": "text/html"
+  },
+  "source": {
+    "corpusPath": "mcp-testing/corpus/scanned/irs-f1040-1954-scan.pdf",
+    "url": "https://www.irs.gov/pub/irs-prior/f1040--1954.pdf",
+    "sha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc",
+    "pages": 4
+  },
+  "run": {
+    "runId": "arun-0084bf67",
+    "modelTransport": "agent-bridge",
+    "modelCallsAnswered": 30,
+    "connectorBuild": "v0.11.0 after the OCR reconciliation, list-marker, Tesseract and console fixes (b77f0376b) but before the auto-fix loop fix (ede873969)",
+    "completedAt": "2026-09-13T16:48:17.444Z"
+  },
+  "observed": {
+    "targetScore": 95,
+    "verification": {
+      "ai": {
+        "score": 65,
+        "issueCount": 2,
+        "passCount": 42,
+        "chunksRequested": null,
+        "chunksAudited": null,
+        "_source": "pipeline log: final AI semantic audit"
+      },
+      "axe": {
+        "score": 100,
+        "totalViolations": 0,
+        "totalIncomplete": null,
+        "_source": "report.remainingAxeViolations + pipeline log: final headline"
+      },
+      "equalAccess": {
+        "score": 88,
+        "failViolations": 0,
+        "reviewFindingCount": 6,
+        "_source": "report.remainingEqualAccessFailures + pipeline log: final headline / pass summary"
+      },
+      "aiIncomplete": false
+    },
+    "result": {
+      "beforeScore": 0,
+      "afterScore": 65,
+      "scoreSource": "min",
+      "verificationState": "review-required",
+      "integrityCoverage": 100,
+      "integrityWarning": "6 source numeric value(s) not found unchanged in the output (65, 10, 11, 12, 16, 70997). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+      "fidelityNotes": [
+        {
+          "kind": "numeric",
+          "msg": "6 source numeric value(s) not found unchanged in the output (65, 10, 11, 12, 16, 70997). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+        },
+        {
+          "kind": "lowOcrConfidence",
+          "msg": "1 page(s) were OCR’d at low confidence (mean <60) (page 2) — the recognized text may contain errors; verify against the original before distributing."
+        }
+      ],
+      "needsExpertReview": true,
+      "deliveryStatus": "review-required",
+      "deliveryReviewReasons": [],
+      "contentCoverage": {
+        "status": "review_required",
+        "tokenRecall": 0.8906,
+        "missingTokens": 332,
+        "sourceTokens": 3036
+      },
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "candidateRejections": [],
+      "verdict": {
+        "level": "review",
+        "reviewCount": 4,
+        "cautionCount": 2
+      }
+    },
+    "pdf": {
+      "produced": false,
+      "taggedPdfError": "content_coverage_requires_review",
+      "validation": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      }
+    }
+  },
+  "provenance": "Scores and counts copied from irs-f1040-1954-scan-remediation-report.json and from the connector log lines in pipeline-log.txt; nothing measured by a person yet. Layers marked _source are reconstructed summaries, not the raw audit objects (the connector does not export those)."
+}

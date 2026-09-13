@@ -1,0 +1,12 @@
+{
+  "status": "pending",
+  "method": "human",
+  "independent": false,
+  "reviewer": "",
+  "reviewedAt": "",
+  "evidenceRef": "packets/ed-osep-dear-colleague-letter/review-notes.md",
+  "artifactSha256": "ad225a63992087f1164ea74100680746b6b38586e40aabc76c9e5c7177bd4954",
+  "readiness": null,
+  "layers": {},
+  "findings": []
+}

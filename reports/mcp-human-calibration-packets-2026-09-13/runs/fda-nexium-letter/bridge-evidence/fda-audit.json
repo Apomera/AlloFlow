@@ -1,0 +1,31 @@
+{
+  "score": 55,
+  "confidence": "medium",
+  "summary": "A crisp seven-page born-digital letter with a searchable text layer, high-contrast black-on-white text and visible email links, but it ships no structure: the underlined section titles are not headings, the timelines table has no header cells, the bulleted and numbered lists are plain text, the logo and the redaction block have no text alternative, and a running header repeats on six pages.",
+  "critical": [
+    {"ruleId": "image-alt", "claimKind": "absence", "issue": "The AstraZeneca logo on page 1 and the gray redaction block marked (b)(4) on page 5 carry no alternative text, so a screen reader user is not told that a logo is present or that four bulleted items were withheld.", "wcag": "1.1.1", "count": 2, "location": "page 1"}
+  ],
+  "serious": [
+    {"ruleId": "heading-root", "claimKind": "absence", "issue": "No heading structure exists; the underlined titles Background, Clinical study design and timing, Deferral Extension Request and the bold labels Submission Information, Module 1 and Module 5 are plain text.", "wcag": "1.3.1", "count": 1, "location": "Background"},
+    {"ruleId": "table-header", "claimKind": "absence", "issue": "The study timelines table on page 6 has a visual header row of S. No., Study and Timelines but no header cells or scope, so the four rows cannot be associated with their columns.", "wcag": "1.3.1", "count": 1, "location": "Final Protocol Submission"}
+  ],
+  "moderate": [
+    {"ruleId": "semantic-list", "claimKind": "structure", "issue": "The lettered options a) and b), the bulleted literature-review and study-result summaries, the numbered conclusions 1 to 3 and the bulleted waiver-denial reasons are set as plain paragraphs with bullet and number characters rather than list structure.", "wcag": "1.3.1", "count": 5, "location": "reviewing, assessing, and submitting the available published"},
+    {"ruleId": "reading-order", "claimKind": "structure", "issue": "The running header NDA 021957: NEXIUM (esomeprazole magnesium) suspension, delayed-release oral repeats at the top of pages 2 to 7 and the page 1 footer address block sits inside the text flow, so both are read as body content at every page break.", "wcag": "1.3.2", "count": 1, "location": "NDA 021957: NEXIUM"}
+  ],
+  "minor": [],
+  "passes": [
+    "4. CONTRAST: body text is black on white and the three email links are blue on white, all above 7:1; the only colour block is the gray redaction rectangle, which carries no text.",
+    "5. FORMS: the document contains no form fields.",
+    "6. LANGUAGE: the text is English throughout; the language declaration itself is not visible in the rendering.",
+    "7. LINKS: the four email links show the address itself, which identifies the destination.",
+    "9. TEXT: the pages are born-digital with crisp text, not scanned images.",
+    "10. METADATA: not verifiable from the rendered pages."
+  ],
+  "pageCount": 7,
+  "hasSearchableText": true,
+  "hasImages": true,
+  "hasTables": true,
+  "hasForms": false,
+  "documentLanguage": "en"
+}

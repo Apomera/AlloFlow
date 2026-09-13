@@ -1,0 +1,1 @@
+{"headingColor":"#000000","accentColor":"#0000ee","bgColor":"#ffffff","headerBg":"#ffffff","headerText":"#000000","bodyFont":"Times New Roman, Times, serif","tableBg":"#f2f2f2","tableBorder":"#000000","sectionBorderColor":"#000000","hasHeaderBanner":false,"hasSidebarAccents":false,"accentBorderSide":"none"}

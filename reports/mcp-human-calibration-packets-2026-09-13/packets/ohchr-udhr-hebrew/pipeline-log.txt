@@ -1,0 +1,46 @@
+# Pipeline log lines for arun-fe680c0b (connector stderr, filtered to the decision-bearing lines)
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-1 (vision) in 76s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-2 (vision) in 76s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-3 (vision) in 76s
+[PDF Det] content-stream spacing repair: removed 17 spurious space(s) across 4 page(s) — characters untouched
+[PDF Det] content-stream spacing repair: removed 17 spurious space(s) across 4 page(s) — characters untouched
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-4 (vision) in 10s
+[Tesseract] background-worker rasterization unavailable on this host — using the main-thread renderer (a hidden tab will slow page rendering)
+[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p1 lang=heb))) — falling back to fresh-spawn attempts (p1)
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-5 (vision) in 127s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-6 (vision) in 195s
+[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p1)
+[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p2 lang=heb))) — falling back to fresh-spawn attempts (p2)
+[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p2)
+[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p3 lang=heb))) — falling back to fresh-spawn attempts (p3)
+[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p3)
+[Tesseract] shared-worker path failed (Timeout after 120s (Tesseract.createWorker (p4 lang=heb))) — falling back to fresh-spawn attempts (p4)
+[Tesseract] recognize recovered on attempt 3/4 (lang=eng, p4)
+progress: toast: OCR reconciled — 4 pages where Tesseract & Vision disagree. Review in the fidelity panel.
+[PDF Fix] Extracted 7354 chars from 4 pages in 2 chunk(s) (~1839 chars/page)
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-7 (vision) in 14s
+[PDF Fix] Found 0 meaningful images
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-8 (vision) in 14s
+[PDF Fix] Extracted doc style: {headingColor: #111111, accentColor: #111111, bgColor: #ffffff, headerBg: #ffffff, headerText: #111111}
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-9 (vision) in 45s
+[PDF Fix] JSON pipeline: 89 blocks rendered (no legend repairs)
+[PDF Fix] Final HTML: 29362 chars from 7354 chars extracted text
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-10 (text) in 13s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-11 (text) in 71s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-12 (text) in 71s
+[PDF Fix] Applied 1 deterministic accessibility fixes
+[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)
+[Auto-fix] Starting three-engine fix loop: 5 engine findings (5 AI, 0 axe, 0 Equal Access), score 63, target 95
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-13 (text) in 52s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-14 (text) in 52s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-15 (text) in 39s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-16 (text) in 39s
+[Auto-fix] Pass 1: AI 100/100, axe 0 violations, Equal Access 0 failures + 2 review findings
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-17 (text) in 13s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-18 (text) in 13s
+[Auto-fix] Pass 2: no changes produced — skipping re-audit of identical HTML (stall 1/2)
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-20 (text) in 19s
+client answered mreq-f5281d86-4564-4414-84b3-d39b583d5b78-19 (text) in 30s
+[PDF Fix] Final AI semantic audit: AI layer score 100, 0 remaining issues, 30 passes
+[PDF Fix] Final headline (weakest-layer): min(AI 100, deterministic 96 [axe 100, EqualAccess 96, using the more conservative]) = 96
+completed: verdict review

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-hebrew.pdf",
+    "sizeBytes": 29785,
+    "sha256": "d38e6f39e98af665f49157796b6cd807dacec381ca1e35157a6453e0292e49a8"
+  },
+  "compatibility": {
+    "optionsSha256": "45f503332609c48df6147f9440df45f1e71ea640442a437ce1e5be1a26a22b57",
+    "engineSha256": "47e9741f889e2788f1e0a340ed273ff94e074036e6da4424cf6570d2ecf62110"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-13T16:21:02.385Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "ohchr-udhr-hebrew-accessible.html",
+      "sizeBytes": 26673,
+      "sha256": "72ece37c24ddbdb2cc462dd921f38d47eb17e80703d6cb89dc9c914177177688"
+    },
+    {
+      "role": "report",
+      "relativePath": "ohchr-udhr-hebrew-remediation-report.json",
+      "sizeBytes": 4442,
+      "sha256": "0efac50dcf3141cf30c8078f0f0e59db6b57274e2a20826c91fd208b90eee0c5"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "ohchr-udhr-hebrew-fe680c0b",
+  "documentKind": "reading",
+  "evidenceKind": "unreviewed",
+  "artifact": {
+    "sha256": "72ece37c24ddbdb2cc462dd921f38d47eb17e80703d6cb89dc9c914177177688",
+    "file": "ohchr-udhr-hebrew-accessible.html",
+    "bytes": 26673,
+    "mimeType": "text/html"
+  },
+  "source": {
+    "corpusPath": "mcp-testing/corpus/born-digital/ohchr-udhr-hebrew.pdf",
+    "url": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/hbr.pdf",
+    "sha256": "d38e6f39e98af665f49157796b6cd807dacec381ca1e35157a6453e0292e49a8",
+    "pages": 4
+  },
+  "run": {
+    "runId": "arun-fe680c0b",
+    "modelTransport": "agent-bridge",
+    "modelCallsAnswered": 20,
+    "connectorBuild": "v0.11.0 morning build (before the five fixes of 13 September)",
+    "completedAt": "2026-09-13T16:21:02.385Z"
+  },
+  "observed": {
+    "targetScore": 95,
+    "verification": {
+      "ai": {
+        "score": 100,
+        "issueCount": 0,
+        "passCount": 30,
+        "chunksRequested": null,
+        "chunksAudited": null,
+        "_source": "pipeline log: final AI semantic audit"
+      },
+      "axe": {
+        "score": 100,
+        "totalViolations": 0,
+        "totalIncomplete": null,
+        "_source": "report.remainingAxeViolations + pipeline log: final headline"
+      },
+      "equalAccess": {
+        "score": 96,
+        "failViolations": 0,
+        "reviewFindingCount": 2,
+        "_source": "report.remainingEqualAccessFailures + pipeline log: final headline / pass summary"
+      },
+      "aiIncomplete": false
+    },
+    "result": {
+      "beforeScore": 0,
+      "afterScore": 96,
+      "scoreSource": "min",
+      "verificationState": "review-required",
+      "integrityCoverage": 100,
+      "integrityWarning": null,
+      "fidelityNotes": [],
+      "needsExpertReview": true,
+      "deliveryStatus": "review-required",
+      "deliveryReviewReasons": [],
+      "contentCoverage": {
+        "status": "review_required",
+        "tokenRecall": 0.993,
+        "missingTokens": 9,
+        "sourceTokens": 1287
+      },
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "candidateRejections": [],
+      "verdict": {
+        "level": "review",
+        "reviewCount": 2,
+        "cautionCount": 0
+      }
+    },
+    "pdf": {
+      "produced": false,
+      "taggedPdfError": "content_coverage_requires_review",
+      "validation": {
+        "standard": "PDF/UA-1 (ISO 14289-1)",
+        "profile": "ua1",
+        "scope": "machine-verifiable PDF/UA checks",
+        "status": "not-applicable",
+        "reason": "No tagged PDF was produced."
+      }
+    }
+  },
+  "provenance": "Scores and counts copied from ohchr-udhr-hebrew-remediation-report.json and from the connector log lines in pipeline-log.txt; nothing measured by a person yet. Layers marked _source are reconstructed summaries, not the raw audit objects (the connector does not export those)."
+}

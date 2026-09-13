@@ -8,3 +8,7 @@ Build line: MCPB ARTIFACT: PASS (v0.11.0, 41 tools, 1 skill, 1 prompt, 59 hashed
 The earlier build of the same version from this morning (before the OCR, list-marker, Tesseract, console and auto-fix fixes) was 71,105,830 bytes, SHA-256 8a6a3eb013af6de361c636f22b88ed2a04062a6bb90832c003e713c6af0f7af6; it should not be handed out.
 
 The bundle lives at desktop/dist/mcpb/ (gitignored) and was not published or sent anywhere.
+
+Rebuilt again at 14:35 local after the headless palette-prompt fix (see reports/mcp-keyless-performance-2026-09-13/): 71,150,584 bytes, SHA-256 86831fe731fe60e7aa4fc4c3f31e8bb1cb860b00193c1afaf81e941070d09cfd.
+This later build supersedes 7bd8ba60 above; both carry fixes 1-5, only the later one skips the 20 s palette wait on the connector.
+Not published or sent anywhere.

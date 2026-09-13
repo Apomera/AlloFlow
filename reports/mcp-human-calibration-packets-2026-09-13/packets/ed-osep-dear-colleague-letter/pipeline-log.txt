@@ -1,0 +1,70 @@
+# Pipeline log lines for arun-eea9603c (connector stderr, filtered to the decision-bearing lines)
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-1 (vision) in 132s
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-2 (vision) in 144s
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-3 (vision) in 144s
+[PDF Det] 4 hyperlink annotation(s) in the source — the output is expected to carry them
+console: [fixAndVerifyPdf] auditResult.pageCount=2, fullPageCount=2, effective pageCount=2, auditResult keys: [score, _scoreUnavailableReason, _sliceCoverage, _partialAudit, _aiPanelMeanScore, _consolidatedDeductions, scores, scoreSD, scoreRange, scoreSEM, ci95, icc, cronbachAlpha, auditorCount, requestedAud
+[PDF Det] 4 hyperlink annotation(s) in the source — the output is expected to carry them
+[PDF Fix] Extracted 5717 chars from 2 pages in 1 chunk(s) (~2859 chars/page)
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-4 (vision) in 23s
+[PDF Fix] Found 1 meaningful images
+[PDF Fix] Cropped image from page 1: 702x124 at (108,123)
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-5 (vision) in 14s
+[PDF Fix] Extracted doc style: {headingColor: #1f2a5a, accentColor: #0000ee, bgColor: #ffffff, headerBg: #2b3a72, headerText: #ffffff}
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-6 (vision) in 78s
+[PDF Fix] JSON pipeline: 22 blocks rendered (no legend repairs)
+[PDF Fix] Final HTML: 28858 chars from 5717 chars extracted text
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-7 (text) in 119s
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-8 (text) in 119s
+console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor
+console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 27 passes (12 structural), raw deductions 5, pass factor 1.00, score 95
+[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[Auto-fix] Starting three-engine fix loop: 1 engine findings (1 AI, 0 axe, 0 Equal Access), score 95, target 95
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-9 (text) in 35s
+[aiFixChunked:pdf-pass-1] rejected single candidate for chunk 1: text-shrink; preserving the input
+[aiFixChunked:pdf-pass-1] single-chunk rejected — keeping original
+[Auto-fix] Pass 1: no AI chunk applied (deterministic-only changes) — skipping the AI re-audit; axe verifies the deterministic fixes locally (no API calls)
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[Auto-fix] Pass 1: 1 of 1 fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.
+[Auto-fix] Pass 1: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.
+[Auto-fix] Pass 1: evidence incomplete - AI audit section coverage was incomplete; score delta is not comparable and will not drive a regression verdict.
+[Auto-fix] Pass 1: AI audit evidence was incomplete (0% section coverage or unusable score); it cannot stop the loop or promote best-so-far.
+[Auto-fix] Pass 1: AI null/100, axe 0 violations, Equal Access 0 failures + 5 review findings
+[Auto-fix] Pass 1: AI verification skipped this pass (no AI chunk applied) — axe 0 violation(s), Equal Access 0 failure(s); not treating as three-engine clean
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-10 (text) in 0s
+[aiFixChunked:pdf-pass-2] rejected single candidate for chunk 1: text-shrink; preserving the input
+[aiFixChunked:pdf-pass-2] single-chunk rejected — keeping original
+[Auto-fix] Pass 2: no changes produced — skipping re-audit of identical HTML (stall 1/2)
+[Auto-fix] Shipping best verified version (AI 95, axe 0, Equal Access 0) instead of the loop's last working state.
+console: [DocPipe][Cleanup][q4u5ij/e1] +273.9s — Final contrast revalidation: fixed 1 color issues
+console: [DocPipe][Cleanup][q4u5ij/e1] +273.9s — Final WCAG sanitization: fixed 5 issues
+console: [DocPipe][Audit][q4u5ij/e1] +273.9s — output audit launched (trigger: primary-final-audit)
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-11 (text) in 0s
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-12 (text) in 0s
+console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor
+console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 26 passes (12 structural), raw deductions 5, pass factor 1.00, score 95
+[PDF Fix] Final AI semantic audit: AI layer score 95, 1 remaining issues, 26 passes
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_1__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[PDF Fix] Final headline (weakest-layer): min(AI 95, deterministic 90 [axe 100, EqualAccess 90, using the more conservative]) = 90
+[PDF Fix] Note: the fix loop reached its AI target (95 >= 95) but a deterministic engine governs the headline at 90 — the displayed score is the weakest verified layer, not the loop's stop score.
+console: [Integrity] Final text: 6502 chars / source: 5716 chars (100% coverage, method=pdfjs+normalized)
+console: [AltQuality] 1/1 image description(s) flagged (0 high): "Banner of the Office of Special Educatio" [too-long]
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-13 (vision) in 18s
+console: [AltSpotCheck] 1/1 sampled image description(s) match their image (of 1 candidates).
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-14 (vision) in 37s
+[PDF Fix] STEM image intelligence: 1 image(s) classified (0 equation(s), 0 chart(s)) in 1 Vision call(s)
+console: [DocPipe][Audit][q4u5ij/e1] +331.4s — output audit launched (trigger: post-mutation-reaudit (html changed after final audit))
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-15 (text) in 0s
+client answered mreq-d438c3de-bf98-4a40-8ef5-d71dd3a12f42-16 (text) in 0s
+console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor
+console: [Output Audit] Chunked: 2/2 sections returned, 1 unique issues, 26 passes (12 structural), raw deductions 5, pass factor 1.00, score 95
+[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 95, deterministic 90) = 90 (was 90)
+console: [DocPipe][Step 4][q4u5ij/e1] +333.3s — Complete (95.7s) — 2 fix passes, final headline score: 90/100
+console: [DocPipe][Done][q4u5ij/e1] +333.3s — Primary remediation pass complete (host may continue: auto-continuation, final audit, tagged export, validation) {totalElapsed: 333s, apiCalls: 8, visionCalls: 5, totalApiTime: 445s, retries: 0}
+completed: verdict review
