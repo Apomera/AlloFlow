@@ -659,7 +659,7 @@ describe('Scale Explorer film mode', () => {
     expect(src).toMatch(/S\('film_reduced'/);
   });
   it('paints the caption and progress strip only while playing, and the controls carry pressed state', () => {
-    const chrome = src.slice(src.indexOf('// Film chrome:'), src.indexOf('React.useEffect(function () {\n        draw();'));
+    const chrome = src.slice(src.indexOf('// Film chrome:'), src.indexOf('// The stage now grows to match the side panel'));
     expect(chrome).toMatch(/if \(fm\.dir !== 0\) \{/);
     expect(chrome).toMatch(/powerLabel\(dec\) \+ '  ·  ' \+ humanLength\(Math\.pow\(10, e\)\)/);
     expect(src).toMatch(/'aria-pressed': film > 0 \? 'true' : 'false'/);
@@ -737,7 +737,7 @@ describe('Scale Explorer: the person can be the student', () => {
     expect(src).toMatch(/var items = React\.useMemo\(function \(\) \{\s*if \(!yourCm\) return ITEMS;/);
     expect(src).toMatch(/return items\.slice\(\)\.sort\(function \(a, b\) \{ return b\.size - a\.size; \}\);\s*\}, \[items\]\);/);
     expect(src).toMatch(/var sortedRef = React\.useRef\(sorted\); sortedRef\.current = sorted;/);
-    const draw = src.slice(src.indexOf('function draw()'), src.indexOf('React.useEffect(function () {\n        draw();'));
+    const draw = src.slice(src.indexOf('function draw()'), src.indexOf('// The stage now grows to match the side panel'));
     expect(draw).toMatch(/var list = sortedRef\.current;/);
     expect(draw).not.toMatch(/for \(var i = 0; i < sorted\.length/);
     const near = src.slice(src.indexOf('function nearestItem'), src.indexOf('function stopJourney'));
@@ -754,5 +754,28 @@ describe('Scale Explorer: the person can be the student', () => {
       const sec = JSON.parse(read(rel)).stem.scaleExplorer;
       for (const k of ['you_name', 'you_describe', 'you_label', 'you_input_aria', 'you_apply', 'you_reset', 'you_invalid', 'you_set_sr', 'you_cleared_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
     }
+  });
+});
+
+describe('Scale Explorer accepts a hand-off from another tool', () => {
+  function lift(name, until) { const a = src.indexOf('function ' + name + '('); const b = src.indexOf('function ' + until + '(', a); return src.slice(a, b); }
+  const helpers = lift('linkNamesThisTool', 'shareBase');
+  function evalWith(win) {
+    const ctx = { window: Object.assign({ location: { search: '', hostname: 'x' } }, win), URLSearchParams, MIN_EXP: -16.2, MAX_EXP: 27.6, log10: (v) => Math.log(v) / Math.LN10, Math };
+    vm.runInNewContext(helpers + '\nthis.read = readStartFromLink;', ctx);
+    return ctx;
+  }
+  it('opens at the handed-over width with the nearest item in focus, clamped to the ladder', () => {
+    const r = evalWith({ __alloScaleExplorerStart: { exp: 7.48, from: 'zoomGallery' } }).read(ITEMS);
+    expect(r.exp).toBeCloseTo(7.48, 6);
+    expect(r.focusId).toBe('earth');
+    expect(evalWith({ __alloScaleExplorerStart: { exp: 99 } }).read(ITEMS).exp).toBe(27.6);
+    expect(evalWith({ __alloScaleExplorerStart: { exp: 'nope' } }).read(ITEMS)).toBeNull();
+  });
+  it('does not consume the hand-off in the initialiser (StrictMode runs it twice); the mount effect clears it', () => {
+    const c = evalWith({ __alloScaleExplorerStart: { exp: 7.48 } });
+    c.read(ITEMS); c.read(ITEMS);
+    expect(c.window.__alloScaleExplorerStart).toBeTruthy();
+    expect(src).toMatch(/React\.useEffect\(function \(\) \{\s*try \{ window\.__alloScaleExplorerStart = null; \} catch \(_\) \{\}\s*draw\(\);/);
   });
 });

@@ -426,3 +426,71 @@ describe('Zoom Gallery shareable images', () => {
     }
   });
 });
+
+// 2026-09-13. A live scale bar on the four images whose real size is known:
+// two measured discs (Earth in Earthrise, the Sun in the SDO flare, fitted
+// with a circle to the image pixels) and two NASA-stated nebula heights,
+// flagged approximate. Checked in the real host: Earthrise 20,000 km at home,
+// 2,000 km after four zoom steps; Pillars about 1 light-year; no bar on the
+// bootprint; the hand-off opened Scale Explorer at 30 thousand km with the
+// Earth in focus, and a plain reopen afterwards started at the person.
+describe('Zoom Gallery scale bar', () => {
+  const withScale = toolImages.filter((i) => i.scale).map((i) => i.id).sort();
+  it('only images with a defensible reference carry a scale, and each says how it was set', () => {
+    expect(withScale).toEqual(['carina', 'earthrise', 'pillars', 'solarflare']);
+    for (const it of toolImages.filter((i) => i.scale)) {
+      expect(it.scale.px).toBeGreaterThan(100);
+      expect(it.scale.metres).toBeGreaterThan(0);
+      expect(typeof it.scale.approx).toBe('boolean');
+      expect(it.scale.basis.length).toBeGreaterThan(60);
+      expect(it.scale.px).toBeLessThanOrEqual(Math.max(it.width, it.height));
+    }
+    // the two discs are measured, not stated; the two nebulae are stated, and say so
+    expect(toolImages.find((i) => i.id === 'earthrise').scale.approx).toBe(false);
+    expect(toolImages.find((i) => i.id === 'solarflare').scale.approx).toBe(false);
+    expect(toolImages.find((i) => i.id === 'pillars').scale.approx).toBe(true);
+    expect(toolImages.find((i) => i.id === 'carina').scale.approx).toBe(true);
+    // the museum objects are photographed in perspective: deliberately no bar
+    for (const id of ['apollo-cm', 'wright-flyer', 'bootprint', 'curiosity', 'iss-cupola']) expect(toolImages.find((i) => i.id === id).scale).toBeUndefined();
+  });
+  it('the Earth and Sun references agree with the known diameters to a few percent', () => {
+    const e = toolImages.find((i) => i.id === 'earthrise').scale, s = toolImages.find((i) => i.id === 'solarflare').scale;
+    expect(Math.abs(e.metres / 1.2742e7 - 1)).toBeLessThan(0.01);
+    expect(Math.abs(s.metres / 1.3914e9 - 1)).toBeLessThan(0.01);
+    // measured 2026-09-13: circle fit 453 px (bright width 448) and 3277 px (bright height 3258-3340)
+    expect(e.px).toBe(453);
+    expect(s.px).toBe(3280);
+  });
+  it('formats lengths a person can read and picks a round bar between 60 and 180 px', () => {
+    const lift = (a, b) => toolSrc.slice(toolSrc.indexOf('function ' + a + '('), toolSrc.indexOf('function ' + b + '('));
+    const ctx = { Math }; vm.runInNewContext(lift('fmtLen', 'niceBarMetres') + lift('niceBarMetres', 'copyPlain') + '\nthis.fmtLen = fmtLen; this.nice = niceBarMetres;', ctx);
+    expect(ctx.fmtLen(5e6)).toBe('5000 km');
+    expect(ctx.fmtLen(3.016e7)).toBe('30,160 km');
+    expect(ctx.fmtLen(1.2742e7)).toBe('12,742 km');
+    expect(ctx.fmtLen(9.4607e15)).toBe('1 light year');
+    expect(ctx.fmtLen(2e15)).toBe('0.21 light years');
+    expect(ctx.fmtLen(0.33)).toBe('33 cm');
+    expect(ctx.fmtLen(2.5e-6)).toBe('2.5 µm');
+    for (const mpp of [1, 33, 2.1e6, 1e14, 1e-7]) {
+      const bar = ctx.nice(mpp);
+      expect(bar, 'metres per px ' + mpp).toBeTruthy();
+      expect(bar.px).toBeGreaterThanOrEqual(60); expect(bar.px).toBeLessThanOrEqual(180);
+      const mant = bar.metres / Math.pow(10, Math.floor(Math.log10(bar.metres) + 1e-9));
+      const isLy = bar.metres >= 9.4607e14;
+      if (!isLy) expect([1, 2, 5].some((k) => Math.abs(mant - k) < 1e-6), 'round mantissa ' + bar.metres).toBe(true);
+    }
+  });
+  it('paints from the viewer mapping on animation frames, and hands the visible width to Scale Explorer', () => {
+    const fn = toolSrc.slice(toolSrc.indexOf('function updateScaleBar'), toolSrc.indexOf('function currentZoom'));
+    expect(fn).toMatch(/imageToViewerElementCoordinates\(new window\.OpenSeadragon\.Point\(0, 0\)\)/);
+    expect(fn).toMatch(/imageToViewerElementCoordinates\(new window\.OpenSeadragon\.Point\(it\.width, 0\)\)/);
+    expect(fn).toMatch(/scaleTextRef\.current\.textContent =/); // painted, not bound
+    expect(fn).not.toMatch(/setState|setZoomX|setCopied/);
+    expect(toolSrc).toMatch(/v\.addHandler\('animation', updateScaleBar\);\s*v\.addHandler\('open', updateScaleBar\);\s*v\.addHandler\('resize', updateScaleBar\);/);
+    expect(fn).toMatch(/window\.__alloScaleExplorerStart = \{ exp: Math\.log\(w\) \/ Math\.LN10, from: 'zoomGallery' \}/);
+    expect(fn).toMatch(/setStemLabTool\('scaleExplorer'\)/);
+    // the group is named, carries its basis as a title, and is never a live region
+    expect(toolSrc).toMatch(/role: 'group', 'aria-label': I\('scale_group'\), title: I\('scale_basis_title'\) \+ ': ' \+ current\.scale\.basis/);
+    expect(toolSrc).not.toMatch(/ref: scaleBarRef[^\n]*aria-live/);
+  });
+});

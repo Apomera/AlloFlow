@@ -84643,7 +84643,13 @@
       "zoom_fit": "Fit the whole image",
       "zoom_in": "Zoom in",
       "zoom_out": "Zoom out",
-      "zoom_readout": "Zoom {z}×"
+      "zoom_readout": "Zoom {z}×",
+      "scale_about": "about",
+      "scale_basis_title": "How this scale was set",
+      "scale_group": "Scale of this view",
+      "scale_open_sx": "⚖️ See this size in Scale Explorer",
+      "scale_open_sx_title": "Open Scale Explorer at the width of this view",
+      "scale_view": "This view is {w} across"
     },
     "circuitShelf": {
       "popup_blocked": "The Circuit Shelf window was blocked. Allow pop-ups for this page, then try again.",

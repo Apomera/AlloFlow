@@ -93,6 +93,38 @@
     return 'https://alloflow-cdn.pages.dev/app/';
   }
   function shareLinkFor(id) { return shareBase() + '?tool=zoomGallery&image=' + encodeURIComponent(id); }
+  // ── Scale bar ─────────────────────────────────────────────────────────
+  // Four images carry a reference length (a measured disc, or a NASA-stated
+  // height). OpenSeadragon maps image pixels to screen pixels, so the bar can
+  // say what a stretch of screen means in metres and follow the zoom.
+  function fmtLen(m) {
+    var ly = 9.4607e15;
+    var f = function (v) { return v >= 100 ? String(Math.round(v)) : v >= 10 ? (Math.round(v * 10) / 10).toString() : (Math.round(v * 100) / 100).toString(); };
+    var grp = function (v) { var r = Math.round(v); return r >= 10000 ? r.toLocaleString('en-US') : String(r); };
+    if (m >= ly * 0.1) { var lyv = f(m / ly); return lyv + (lyv === '1' ? ' light year' : ' light years'); }
+    if (m >= 1e7) return grp(m / 1e3) + ' km';
+    if (m >= 1e3) return f(m / 1e3) + ' km';
+    if (m >= 1) return f(m) + ' m';
+    if (m >= 1e-2) return f(m * 100) + ' cm';
+    if (m >= 1e-3) return f(m * 1e3) + ' mm';
+    if (m >= 1e-6) return f(m * 1e6) + ' µm';
+    return f(m * 1e9) + ' nm';
+  }
+  // A round length (1, 2 or 5 times a power of ten metres; or of a light year
+  // once that is the unit) that paints between 60 and 180 px at this scale.
+  function niceBarMetres(metresPerPx) {
+    var ly = 9.4607e15, out = null;
+    var units = metresPerPx * 60 >= ly * 0.1 ? ly : 1;
+    for (var e = -12; e <= 27; e++) {
+      var base = Math.pow(10, e) * units;
+      [1, 2, 5].forEach(function (k) {
+        var L = k * base, px = L / metresPerPx;
+        if (px >= 60 && px <= 180 && (!out || px > out.px)) out = { metres: L, px: px };
+      });
+    }
+    return out;
+  }
+
   // Clipboard the house way: the shell's alloCopyText (works inside Canvas),
   // then the async API, then the legacy textarea. Resolves true on success.
   function copyPlain(text) {
@@ -240,12 +272,19 @@
     link_copied_sr: 'Link to {name} copied.',
     link_failed: 'Copying was blocked here. Select the link and copy it by hand:',
     link_field_aria: 'Link to this image',
+    scale_group: 'Scale of this view',
+    scale_about: 'about',
+    scale_view: 'This view is {w} across',
+    scale_open_sx: '⚖️ See this size in Scale Explorer',
+    scale_open_sx_title: 'Open Scale Explorer at the width of this view',
+    scale_basis_title: 'How this scale was set',
     credit: 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'
   };
 
   // ── Curated openly-licensed images (identical to the companion window) ──
   var IMAGES = [
     { id: 'earthrise', emoji: '🌍', name: 'Earthrise (Apollo 8, 1968)', type: 'image', cors: false, width: 3000, height: 3000,
+      scale: { px: 453, metres: 1.2742e7, ref: 'the Earth', approx: false, basis: 'The Earth is 12,742 km across (mean diameter). Its disc measures about 453 pixels across in this scan; that sets the scale at the Earth. The lunar horizon in the foreground is far closer, so the bar does not apply to it.' },
       src: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~orig.jpg',
       thumb: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~thumb.jpg',
       source: 'NASA', credit: 'NASA / Apollo 8 (public domain)', link: 'https://images.nasa.gov/details/as08-14-2383',
@@ -262,6 +301,7 @@
       notice: 'Zoom into the rim of the print, where the soil was pushed up. How sharp are those edges? Then look at the small black crosses spread evenly over the whole picture, and decide whether they are on the Moon or not.',
       wonder: 'This print was made in a place with no wind, no rain and almost no air. What would have to happen for it to be rubbed out?' },
     { id: 'pillars', emoji: '🌌', name: 'Pillars of Creation in near-infrared (Hubble)', type: 'image', cors: false, width: 1920, height: 1800,
+      scale: { px: 1540, metres: 4.73e16, ref: 'the tallest pillar', approx: true, basis: 'NASA describes the pillars as about 5 light-years tall; the tallest one spans about 1,540 pixels of this frame. Distances to the Eagle Nebula carry real uncertainty, so treat the bar as a guide, not a measurement.' },
       src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000842/GSFC_20171208_Archive_e000842~large.jpg',
       thumb: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000842/GSFC_20171208_Archive_e000842~thumb.jpg',
       source: 'NASA/ESA Hubble', credit: 'NASA, ESA / Hubble Space Telescope (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e000842',
@@ -270,6 +310,7 @@
       notice: 'Zoom into the knobbly tip of the tallest column. Count how many separate bright points you can find that sit inside or right at the edge of the dark material, rather than in the open sky.',
       wonder: 'This was taken in near-infrared light, which passes through dust that blocks visible light. Looking at how see-through these columns are, what would you expect the same view to look like in ordinary light?' },
     { id: 'carina', emoji: '✨', name: 'Cosmic Cliffs, Carina Nebula (Webb)', type: 'image', cors: false, width: 1920, height: 1100,
+      scale: { px: 770, metres: 6.62e16, ref: 'the tallest peaks', approx: true, basis: 'NASA describes the tallest peaks of the Cosmic Cliffs as about 7 light-years high; that height spans roughly 770 pixels of this frame. Treat the bar as a guide, not a measurement.' },
       src: 'https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~large.jpg',
       thumb: 'https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~thumb.jpg',
       source: 'NASA/ESA/CSA Webb', credit: 'NASA, ESA, CSA, STScI / James Webb Space Telescope (public domain)', link: 'https://images.nasa.gov/details/carina_nebula',
@@ -294,6 +335,7 @@
       notice: 'Zoom into the rock right beside the rover’s wheels. Is it loose sand or solid layered stone, and how can you tell? Look for any place the rover has disturbed it.',
       wonder: 'This picture was taken by a camera on the end of the rover’s own arm, yet no arm appears anywhere in it. How could that be?' },
     { id: 'solarflare', emoji: '☀️', name: 'X-class Solar Flare (SDO, 2014)', type: 'image', cors: false, width: 4096, height: 4096,
+      scale: { px: 3280, metres: 1.3914e9, ref: 'the Sun', approx: false, basis: 'The Sun is 1,391,400 km across. Its disc measures about 3,280 pixels across in this image (the extreme-ultraviolet limb is soft, so allow a percent or two).' },
       src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001209/GSFC_20171208_Archive_e001209~orig.jpg',
       thumb: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001209/GSFC_20171208_Archive_e001209~thumb.jpg',
       source: 'NASA SDO', credit: 'NASA / Solar Dynamics Observatory (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e001209',
@@ -483,6 +525,8 @@
       var _busy = React.useState(false); var busy = _busy[0], setBusy = _busy[1];
       var _copied = React.useState(''); var copied = _copied[0], setCopied = _copied[1];
       var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
+      var scaleBarRef = React.useRef(null); var scaleLineRef = React.useRef(null); var scaleTextRef = React.useRef(null); var scaleViewRef = React.useRef(null);
+      var visibleMetresRef = React.useRef(0);
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
       var _navOn = React.useState(true); var navOn = _navOn[0], setNavOn = _navOn[1];
       var navOnRef = React.useRef(true);
@@ -507,6 +551,7 @@
       // Used only to re-resolve strings when the language changes.
       var uiLang = ctx.lang || (typeof window !== 'undefined' ? window.__alloTextLanguage : null) || 'en';
       var current = currentId ? (customItem && customItem.id === currentId ? customItem : IMAGES.find(function (s) { return s.id === currentId; }) || null) : null;
+      var currentRef = React.useRef(current); currentRef.current = current;
       currentRef.current = current;
       var mem = current ? (savedNotes[current.id] || { notice: '', wonder: '', feedback: '', pins: [] }) : null;
 
@@ -546,6 +591,37 @@
       // mid-flight value. The readout wants the live number so it moves smoothly;
       // an announcement wants the target, or a screen reader is told "2.3 times"
       // about a zoom that is on its way to 2.6.
+      // Painted straight into its nodes on every viewer animation frame; going
+      // through state would re-render the coach panel per frame of a zoom.
+      function updateScaleBar() {
+        var box = scaleBarRef.current; if (!box) return;
+        var v = viewerRef.current, it = currentRef.current;
+        var sc = it && it.scale;
+        if (!v || !sc || !v.world.getItemAt(0) || !window.OpenSeadragon) { box.style.display = 'none'; return; }
+        try {
+          var a = v.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(0, 0));
+          var b = v.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(it.width, 0));
+          var screenPerImage = Math.abs(b.x - a.x) / it.width;
+          if (!(screenPerImage > 0)) { box.style.display = 'none'; return; }
+          var metresPerScreenPx = (sc.metres / sc.px) / screenPerImage;
+          var bar = niceBarMetres(metresPerScreenPx);
+          if (!bar) { box.style.display = 'none'; return; }
+          var containerW = v.viewport.getContainerSize().x;
+          visibleMetresRef.current = containerW * metresPerScreenPx;
+          box.style.display = 'block';
+          scaleLineRef.current.style.width = Math.round(bar.px) + 'px';
+          scaleTextRef.current.textContent = (sc.approx ? I('scale_about') + ' ' : '') + fmtLen(bar.metres);
+          scaleViewRef.current.textContent = I('scale_view', { w: (sc.approx ? I('scale_about') + ' ' : '') + fmtLen(visibleMetresRef.current) });
+        } catch (_) { box.style.display = 'none'; }
+      }
+      function openInScaleExplorer() {
+        var w = visibleMetresRef.current;
+        if (!(w > 0) || typeof setStemLabTool !== 'function') return;
+        // Scale Explorer reads this once at mount, the same way it reads ?at=.
+        try { window.__alloScaleExplorerStart = { exp: Math.log(w) / Math.LN10, from: 'zoomGallery' }; } catch (_) {}
+        bumpSlice('toScaleCount');
+        setStemLabTool('scaleExplorer');
+      }
       function currentZoom(useTarget) {
         try {
           var v = viewerRef.current; if (!v || !v.world.getItemAt(0)) return 1;
@@ -736,6 +812,9 @@
               ajaxWithCredentials: false
             });
             v.addHandler('zoom', function () { setZoomX(currentZoom()); });
+            v.addHandler('animation', updateScaleBar);
+            v.addHandler('open', updateScaleBar);
+            v.addHandler('resize', updateScaleBar);
             v.addHandler('canvas-click', function (ev) {
               if (!pinModeRef.current || !ev.quick) return;
               var vp = v.viewport.pointFromPixel(ev.position);
@@ -1073,6 +1152,16 @@
                 h('button', { type: 'button', 'aria-label': W('zoom_out'), title: W('zoom_out'), onClick: function () { zoomBy(1 / 1.6); }, style: zoomBtn }, '－'),
                 h('button', { type: 'button', 'aria-label': W('zoom_fit'), title: W('zoom_fit'), onClick: zoomHome, style: zoomBtn }, '⤢'))) : null,
             current && imgState === 'open' ? h('div', { 'aria-hidden': 'true', style: Object.assign({}, chipBox, { position: 'absolute', top: 48, right: 8, zIndex: 6, fontSize: '0.6875rem', padding: '3px 8px' }) }, W('zoom_readout', { z: zoomX })) : null,
+            // The scale bar. Hidden until the viewer reports a mapping; its text
+            // is painted by updateScaleBar, never bound, and it is not live.
+            current && current.scale && imgState === 'open' ? h('div', { ref: scaleBarRef, role: 'group', 'aria-label': I('scale_group'), title: I('scale_basis_title') + ': ' + current.scale.basis,
+              style: Object.assign({}, chipBox, { position: 'absolute', top: 48, left: 8, zIndex: 6, fontSize: '0.6875rem', padding: '5px 9px', display: 'none', maxWidth: 260 }) },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { ref: scaleLineRef, 'aria-hidden': 'true', style: { display: 'inline-block', height: 0, borderTop: '3px solid currentColor', borderLeft: '2px solid currentColor', borderRight: '2px solid currentColor', boxSizing: 'border-box', width: 80, paddingTop: 5 } }),
+                h('span', { ref: scaleTextRef, style: { fontWeight: 700 } }, '')),
+              h('div', { ref: scaleViewRef, style: { marginTop: 3, opacity: 0.9 } }, ''),
+              typeof setStemLabTool === 'function' ? h('button', { type: 'button', onClick: openInScaleExplorer, title: I('scale_open_sx_title'),
+                style: { marginTop: 4, padding: '2px 6px', fontSize: '0.65625rem', fontWeight: 700, borderRadius: 6, border: '1px solid currentColor', background: 'transparent', color: 'inherit', cursor: 'pointer' } }, I('scale_open_sx')) : null) : null,
             stageMsg ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.chipFg, fontSize: '0.8125rem', zIndex: 3, textAlign: 'center', padding: 20, pointerEvents: 'none' } }, stageMsg) : null,
             current && imgState === 'open' ? h('div', { style: Object.assign({}, chipBox, { position: 'absolute', bottom: 8, left: 8, right: navOn ? 218 : 8, zIndex: 6, fontSize: '0.65625rem', padding: '4px 9px', lineHeight: 1.35, pointerEvents: 'none' }) },
               '📷 ' + current.credit + ' · ', h('a', { href: current.link, target: '_blank', rel: 'noopener noreferrer', style: { color: P.chipLink, textDecoration: 'underline', pointerEvents: 'auto', display: 'inline-block', padding: '5px 2px' } }, W('source_record'))) : null

@@ -225,6 +225,20 @@
     } catch (_) { return null; }
   }
   function readStartFromLink(items) {
+    // Another tool can hand over a width to look at (Zoom Gallery's scale bar
+    // does): read it once and clear it, so a later plain open starts normally.
+    try {
+      var hand = window.__alloScaleExplorerStart;
+      // Not cleared here: React may run this initialiser twice in development
+      // (StrictMode), and the second run must see the same value. The mount
+      // effect clears it once the tool is actually on screen.
+      if (hand && isFinite(hand.exp)) {
+        var he = Math.max(MIN_EXP, Math.min(MAX_EXP, hand.exp));
+        var hb = null, hd = Infinity;
+        for (var q = 0; q < items.length; q++) { var dq = Math.abs(log10(items[q].size) - he); if (dq < hd) { hd = dq; hb = items[q]; } }
+        return { focusId: hb ? hb.id : null, exp: he };
+      }
+    } catch (_) {}
     var p = linkNamesThisTool();
     if (!p) return null;
     var focus = String(p.get('focus') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
@@ -855,6 +869,7 @@
       }
 
       React.useEffect(function () {
+        try { window.__alloScaleExplorerStart = null; } catch (_) {}
         draw();
         var onResize = function () { draw(); };
         window.addEventListener('resize', onResize);
