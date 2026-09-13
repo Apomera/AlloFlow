@@ -3696,6 +3696,15 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <details class="dinolab-3d-controls-disclosure" style="margin-top:8px">
 <summary style="cursor:pointer;color:var(--allo-stem-text, #f1f5f9);font-size:12.5px;font-weight:900;padding:6px 0">View controls &amp; layers<span class="dinolab-camera-state" role="status" aria-live="polite" aria-atomic="true" style="display:inline-flex;align-items:center;margin-left:8px;padding:2px 7px;border-radius:999px;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text-soft, #94a3b8);font-size:11.5px;font-weight:800">Free orbit | drag + wheel</span>
 </summary>
+<div class="dinolab-studio-light-controls" role="group" aria-label="Studio light angle" style="margin-top:10px;margin-bottom:10px">
+<div style="font-size:12px;font-weight:800;color:var(--allo-stem-text-soft, #94a3b8);margin-bottom:6px">Studio light angle</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<button type="button" aria-label="Balanced studio lighting" aria-pressed="true" style="min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid #0f766e;background:#0f766e;color:#ffffff;cursor:pointer;font-size:12px;font-weight:800">Balanced</button>
+<button type="button" aria-label="Surface detail studio lighting" aria-pressed="false" style="min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Surface detail</button>
+<button type="button" aria-label="Rim light studio lighting" aria-pressed="false" style="min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Rim light</button>
+</div>
+<div class="dinolab-lighting-description" style="color:var(--allo-stem-text-soft, #94a3b8);font-size:11.5px;line-height:1.5;margin-top:6px">Even studio lighting gives an overall view of the reconstruction.</div>
+</div>
 <div class="dinolab-3d-view-controls" role="group" aria-label="3D camera viewpoints and body inference opacity" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
 <button type="button" aria-label="Front camera view" aria-pressed="false" style="padding:7px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:11.5px;font-weight:800">Front</button>
 <button type="button" aria-label="Side camera view" aria-pressed="false" style="padding:7px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:11.5px;font-weight:800">Side</button>

@@ -1,0 +1,73 @@
+{
+  "date": "2026-09-12",
+  "feature": "Dino Lab studio-light studies",
+  "status": "implementation-and-validation-complete",
+  "presets": [
+    "balanced",
+    "detail",
+    "rim"
+  ],
+  "focused": {
+    "passed": 112,
+    "files": 4,
+    "lighting": 10,
+    "shadows": 14,
+    "accessibility": 15,
+    "golden": 73,
+    "log": "focused-results.txt"
+  },
+  "browser": {
+    "passed": 7,
+    "unique": true,
+    "lightingCycles": 3,
+    "persistence": 1,
+    "phoneKeyboard": 1,
+    "existingCameraRegressions": 2,
+    "log": "browser-results.txt",
+    "environment": "Chromium software WebGL with application stylesheet; phone viewport emulated"
+  },
+  "snapshot": {
+    "updated": 1,
+    "name": "field3d",
+    "review": "Only new lighting-control markup inserted",
+    "normalGoldenVerification": "passed",
+    "log": "snapshot-update.txt"
+  },
+  "review": {
+    "images": [
+      "tyrannosaurus-balanced.png",
+      "tyrannosaurus-detail.png",
+      "tyrannosaurus-rim.png",
+      "anchiornis-rim.png",
+      "brachiosaurus-detail.png",
+      "triceratops-rim-mobile.png"
+    ],
+    "initialReview": "One repeated T. rex pass; final acceptance strengthens shadow texture check to assert an actual UUID"
+  },
+  "integrity": {
+    "syntax": "passed",
+    "scopedWhitespace": "passed",
+    "rendererCopies": "canonical/public/existing ignored app-build match",
+    "sha256": "B005C19BB6463DAF70AAC8769732635A1BE394C1158A2FCE7791318A52156F30"
+  },
+  "preservation": [
+    "model UUID",
+    "camera position and projection",
+    "root rotation",
+    "material identity and colors",
+    "texture maps",
+    "renderer geometry and texture counts",
+    "shadow render texture",
+    "saved investigation data"
+  ],
+  "limits": [
+    "Phone viewport emulation; no physical-device claim",
+    "Phone pause check validates setting and root rotation, not all animated mesh poses",
+    "Pixel comparisons are not a hardware performance benchmark"
+  ],
+  "delivery": {
+    "push": false,
+    "deployment": false,
+    "packagedBuild": false
+  }
+}

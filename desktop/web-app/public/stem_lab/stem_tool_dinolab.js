@@ -6568,6 +6568,12 @@ window.StemLab = window.StemLab || {
     return material;
   }
 
+  function dinoStudioLightProfile(mode) {
+    if (mode === 'detail') return { id: 'detail', label: 'Surface detail', sceneLabel: 'Surface detail', description: 'Lower side lighting reveals surface relief and overlapping forms.', ambient: 0.16, hemisphere: 0.42, key: 1.45, keyPosition: [-10, 4, 12], fill: 0.22, fillPosition: [10, 7, 8], rim: 0.55, rimPosition: [2, 8, -12] };
+    if (mode === 'rim') return { id: 'rim', label: 'Rim light', sceneLabel: 'Rim light', description: 'Stronger rear lighting separates the silhouette, crests and feathers.', ambient: 0.18, hemisphere: 0.48, key: 0.78, keyPosition: [-8, 12, 10], fill: 0.28, fillPosition: [10, 6, 8], rim: 1.85, rimPosition: [2, 8, -12] };
+    return { id: 'balanced', label: 'Balanced', sceneLabel: 'Neutral studio', description: 'Even studio lighting gives an overall view of the reconstruction.', ambient: 0.30, hemisphere: 0.65, key: 1.25, keyPosition: [-8, 12, 10], fill: 0.50, fillPosition: [10, 6, 8], rim: 0.95, rimPosition: [2, 8, -12] };
+  }
+
   // Count only active visible time; a stalled frame cannot cause a large pose jump.
   function dinoMotionStep(clock, now, running) {
     var previous = clock.last;
@@ -7317,6 +7323,16 @@ window.StemLab = window.StemLab || {
         var rendererRef = React.useRef(null);
         var cameraControlRef = React.useRef(null);
         var visualMaterialsRef = React.useRef(null);
+        var lightingControlRef = React.useRef(null);
+        var studioLightRef = React.useRef('balanced');
+        var studioLightState = React.useState('balanced'), studioLightMode = studioLightState[0], setStudioLightMode = studioLightState[1];
+        var selectedStudioLight = dinoStudioLightProfile(studioLightMode);
+        function selectStudioLight(mode) {
+          if (props.stage === 'habitat') return;
+          var profile = dinoStudioLightProfile(mode);
+          studioLightRef.current = profile.id; setStudioLightMode(profile.id);
+          if (lightingControlRef.current) lightingControlRef.current(profile.id, true);
+        }
         var motionClockRef = React.useRef({ last: null, elapsed: 0 });
         var motionPausedState = React.useState(false), motionPaused = motionPausedState[0], setMotionPaused = motionPausedState[1];
         var motionPausedRef = React.useRef(false);
@@ -7396,6 +7412,7 @@ window.StemLab = window.StemLab || {
           var lastCameraReadout = '';
           var cleanupFns = [];
           var activeCameraControl = null;
+          var activeLightingControl = null;
           var activeMaterialSet = null;
 
           function setStatus(msg) {
@@ -7539,8 +7556,10 @@ window.StemLab = window.StemLab || {
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.setClearColor(habitat.clear, 1);
 
-            scene.add(new THREE.AmbientLight(habitat.ambient, habitat.ambientIntensity));
-            scene.add(new THREE.HemisphereLight(habitat.hemiSky, habitat.hemiGround, habitat.hemiIntensity));
+            var ambientLight = new THREE.AmbientLight(habitat.ambient, habitat.ambientIntensity);
+            ambientLight.name = 'dinolab-ambient-light'; scene.add(ambientLight);
+            var hemisphereLight = new THREE.HemisphereLight(habitat.hemiSky, habitat.hemiGround, habitat.hemiIntensity);
+            hemisphereLight.name = 'dinolab-hemisphere-light'; scene.add(hemisphereLight);
             var sun = new THREE.DirectionalLight(habitat.sun, habitat.sunIntensity);
             sun.position.set(habitat.sunPosition[0], habitat.sunPosition[1], habitat.sunPosition[2]).multiplyScalar(Math.max(0.15, len / 12));
             sun.castShadow = true;
@@ -7555,10 +7574,10 @@ window.StemLab = window.StemLab || {
             scene.add(sun.target);
             var fill = new THREE.DirectionalLight(habitat.fill, habitat.fillIntensity);
             fill.position.set(habitat.fillPosition[0], habitat.fillPosition[1], habitat.fillPosition[2]);
-            scene.add(fill);
+            fill.name = 'dinolab-fill-light'; scene.add(fill);
             var rim = new THREE.DirectionalLight(habitat.rim, habitat.rimIntensity);
             rim.position.set(habitat.rimPosition[0], habitat.rimPosition[1], habitat.rimPosition[2]);
-            scene.add(rim);
+            rim.name = 'dinolab-rim-light'; scene.add(rim);
 
             var groundWidth = studio ? Math.max(40, len * 40) : Math.max(26, len * 1.7);
             var groundDepth = studio ? Math.max(40, len * 40) : Math.max(16, len * 0.95);
@@ -9988,6 +10007,26 @@ window.StemLab = window.StemLab || {
               });
             }
             sun.userData.dinoShadowFit = dinoFitShadow(THREE, sun, shadowBounds, studio ? 0 : -0.25, ht);
+            if (studio) {
+              activeLightingControl = function (mode, announce) {
+                var lightProfile = dinoStudioLightProfile(mode);
+                ambientLight.intensity = lightProfile.ambient; hemisphereLight.intensity = lightProfile.hemisphere;
+                sun.intensity = lightProfile.key; fill.intensity = lightProfile.fill; rim.intensity = lightProfile.rim;
+                // Reset the direction before fitting: the previous fit moved the light target.
+                sun.position.fromArray(lightProfile.keyPosition).multiplyScalar(Math.max(0.15, len / 12));
+                sun.target.position.set(0, 0, 0);
+                fill.position.fromArray(lightProfile.fillPosition); rim.position.fromArray(lightProfile.rimPosition);
+                sun.userData.dinoShadowFit = dinoFitShadow(THREE, sun, shadowBounds, 0, ht);
+                sun.shadow.needsUpdate = true;
+                scene.userData.dinoStudioLighting = lightProfile.id;
+                if (announce) setStatus(lightProfile.label + ' lighting. ' + lightProfile.description);
+              };
+              lightingControlRef.current = activeLightingControl;
+              activeLightingControl(studioLightRef.current, false);
+            } else {
+              scene.userData.dinoStudioLighting = 'habitat';
+              lightingControlRef.current = null;
+            }
             var modelCenter = specimenBounds.getCenter(new THREE.Vector3());
             var modelHalf = specimenBounds.getSize(new THREE.Vector3()).multiplyScalar(0.5);
             var scanKey = props.showEvidence && props.scanActive ? scanTargetId : '';
@@ -10295,6 +10334,7 @@ window.StemLab = window.StemLab || {
             if (resizeObserver) { try { resizeObserver.disconnect(); } catch (e) {} }
             if (intersectionObserver) { try { intersectionObserver.disconnect(); } catch (e) {} }
             if (cameraControlRef.current === activeCameraControl) cameraControlRef.current = null;
+            if (lightingControlRef.current === activeLightingControl) lightingControlRef.current = null;
             if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
 
           };
@@ -10431,7 +10471,7 @@ var evidenceRoute = [
           el('canvas', { id: 'dinolab-3d-canvas-' + props.species.id, ref: canvasRef, className: 'dinolab-3d-canvas', tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Environment scene hypothesis: ' + habitat.shortLabel + '. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
-            readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : 'Neutral studio'), 'rgba(20,184,166,0.65)'),
+            readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : selectedStudioLight.sceneLabel), 'rgba(20,184,166,0.65)'),
             readoutChip('Pose ' + posture.shortLabel, 'rgba(245,158,11,0.62)'),
             readoutChip('Body ' + postcranialSurface.shortLabel, 'rgba(251,146,60,0.62)'),
             readoutChip('Head ' + cranialSurface.shortLabel, 'rgba(167,139,250,0.62)'),
@@ -10480,6 +10520,15 @@ var evidenceRoute = [
           renderEvidenceRoute(),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
             el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 12.5, fontWeight: 900, padding: '6px 0' } }, 'View controls & layers', el('span', { className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-flex', alignItems: 'center', marginLeft: 8, padding: '2px 7px', borderRadius: 999, border: '1px solid ' + (cameraPreset ? 'rgba(94,234,212,0.55)' : T.border), background: cameraPreset ? 'rgba(20,184,166,0.12)' : 'transparent', color: cameraPreset ? T.text : T.soft, fontSize: 11.5, fontWeight: 800 } }, cameraPreset ? (cameraPreset === 'reset' ? 'Reset view' : 'Preset: ' + cap(cameraPreset)) : 'Free orbit | drag + wheel')),
+            props.stage !== 'habitat' ? el('div', { className: 'dinolab-studio-light-controls', role: 'group', 'aria-label': 'Studio light angle', style: { marginTop: 10, marginBottom: 10 } },
+              el('div', { style: { fontSize: 12, fontWeight: 800, color: T.soft, marginBottom: 6 } }, __alloT('stem.dinolab.studio_light_angle', 'Studio light angle')),
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, ['balanced', 'detail', 'rim'].map(function (mode) {
+                var lightProfile = dinoStudioLightProfile(mode), selected = studioLightMode === mode;
+                return el('button', { key: mode, type: 'button', onClick: function () { selectStudioLight(mode); }, 'aria-label': lightProfile.label + ' studio lighting', 'aria-pressed': selected ? 'true' : 'false',
+                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, lightProfile.label);
+              })),
+              el('div', { className: 'dinolab-lighting-description', style: { color: T.soft, fontSize: 11.5, lineHeight: 1.5, marginTop: 6 } }, selectedStudioLight.description)
+            ) : null,
             el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_camera_viewpoints_and_body_inference_opacity', '3D camera viewpoints and body inference opacity'), style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 } },
             ['front', 'side', 'overhead', 'reset'].map(function (preset) {
               var label = preset === 'overhead' ? 'Overhead' : (preset === 'reset' ? 'Reset view' : cap(preset));

@@ -1,0 +1,8 @@
+{
+  "mode": "detail",
+  "memory": {
+    "geometries": 348,
+    "textures": 8
+  },
+  "shadowOutside": 0
+}

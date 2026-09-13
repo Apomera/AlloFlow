@@ -1,0 +1,18 @@
+
+Running 7 tests using 1 worker
+
+(node:41224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-lighting.spec.ts:32:73 › tyrannosaurus changes illumination without rebuilding the specimen (1.3m)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-lighting.spec.ts:32:73 › anchiornis changes illumination without rebuilding the specimen (56.6s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-lighting.spec.ts:32:73 › brachiosaurus changes illumination without rebuilding the specimen (1.1m)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-lighting.spec.ts:46:5 › lighting survives layer changes and returns after the Habitat scene (1.9m)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-lighting.spec.ts:57:5 › phone keyboard lighting keeps paused motion and camera study intact (1.2m)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:66:5 › keyboard study selection resets on species change and keeps evidence data intact (19.1s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-studies.spec.ts:76:5 › explicit scan target takes priority while layer changes preserve the study (40.5s)
+
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-lighting.spec.ts (6.5m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  7 passed (7.6m)
