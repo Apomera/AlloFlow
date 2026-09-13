@@ -198,7 +198,9 @@ describe.each([
   path.join('desktop', 'web-app', 'src', 'AlloFlowANTI.txt'),
   path.join('desktop', 'web-app', 'src', 'App.jsx'),
 ])('%s — linked worksheet revision contract', (relPath) => {
-  const src = read(relPath);
+  // Since wave 3/4 (2026-09-13) the handler bodies live in host_handlers_source.jsx (read via
+  // `__d.<name>`); every host copy keeps one-line shims, so assert on host + handlers together.
+  const src = read(relPath) + '\n' + read('host_handlers_source.jsx');
 
   it('uses content fingerprints for conflict checks and returns the next revision', () => {
     expect(src).toMatch(/worksheetMeta\.contentHash/);
@@ -410,16 +412,19 @@ describe('kind-aware ladder prompts and export (2026-08-16 follow-up)', () => {
   const ANTI_COPIES = ['AlloFlowANTI.txt', path.join('desktop', 'web-app', 'src', 'AlloFlowANTI.txt')];
 
   it.each(ANTI_COPIES)('%s defines the activity-context shim and uses it in all four prompt sites', (antiPath) => {
-    const anti = read(antiPath);
+    // The four prompt handlers moved to host_handlers_source.jsx (wave 3, 2026-09-13), where
+    // host bindings are read as `__d.<name>`; the activity-context helper itself stays in the host.
+    const handlers = read('host_handlers_source.jsx');
+    const anti = read(antiPath) + '\n' + handlers;
     expect(anti.match(/const _alloActivityContext = /g), 'shim defined once').toHaveLength(1);
     // guide + worksheet + rubric + worksheet-cover all route through the shim
     expect(anti.match(/_alloActivityContext\(activity\)/g).length).toBeGreaterThanOrEqual(4);
     // the raw description read is gone from the brainstorm ladder prompts
     // Lesson extensions read the captured origin activity while awaiting AI.
     expect(anti.match(/Context: \$\{activity\.description\}/g) || []).toHaveLength(0);
-    const extension = anti.slice(anti.indexOf('const handleGenerateExtensionGuide'), anti.indexOf('const handleGenerateProgression'));
+    const extension = handlers.slice(handlers.indexOf('const handleGenerateExtensionGuide'), handlers.indexOf('const handleGenerateProgression'));
     expect(extension).toContain('activity.description');
-    expect(extension).toContain('const activity = generatedContent.data.extensions[index]');
+    expect(extension).toMatch(/const activity = (__d\.)?generatedContent\.data\.extensions\[index\]/);
   });
 
   it.each([

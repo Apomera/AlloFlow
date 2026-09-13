@@ -7,7 +7,9 @@ const dataSource = fs.readFileSync('allo_data_source.jsx', 'utf8');
 const shopSource = fs.readFileSync('adventure_source.jsx', 'utf8');
 const inventorySource = fs.readFileSync('view_adventure_source.jsx', 'utf8');
 const uiStrings = fs.readFileSync('ui_strings.js', 'utf8');
-const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+// handleUseItem moved to host_handlers_source.jsx in wave 3 (2026-09-13); the host keeps a shim
+// and the module reads host bindings as `__d.<name>`, so app-level assertions look at both.
+const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8') + '\n' + fs.readFileSync('host_handlers_source.jsx', 'utf8');
 const saveSource = fs.readFileSync('phase_k_helpers_source.jsx', 'utf8');
 const restoreSource = fs.readFileSync('misc_handlers_source.jsx', 'utf8');
 
@@ -211,7 +213,7 @@ describe('Adventure Guiding Hand shop item', () => {
     expect(uiStrings).toContain('"xp_boost_label": "XP Boost"');
     expect(uiStrings).toContain('"story_assist_label": "Story Assist"');
     expect(appSource).toContain("if (item.effectType === 'story_assist')");
-    expect(appSource).toContain('await handleGuidingHand(item)');
+    expect(appSource).toMatch(/await (__d\.)?handleGuidingHand\(item\)/);
     expect(handlerSource.match(/historyContext \+= getAssistedKnowledgeContext\(adventureState\);/g)).toHaveLength(2);
     expect(handlerSource).toContain('ASSISTED, NOT DEMONSTRATED MASTERY');
     expect(saveSource).toContain('assistedKnowledge: Array.isArray(adventureState.assistedKnowledge)');

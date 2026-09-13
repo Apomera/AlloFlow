@@ -15,12 +15,18 @@ const SURFACE = readFileSync('view_assignment_center_source.jsx', 'utf8');
 
 // The handler body, so assertions are about the suggestion path and not the
 // rest of a 1200-line header.
+// Since wave 4 (2026-09-13) the body lives in host_handlers_source.jsx (bindings read as
+// `__d.<name>`); the host keeps `const suggestPollTimes = useCallback((...__a) => ..., [deps])`.
+const HANDLERS = readFileSync('host_handlers_source.jsx', 'utf8');
 const handler = (() => {
-  const start = SRC.indexOf('const suggestPollTimes = useCallback(async () => {');
+  if (!/const suggestPollTimes = useCallback\(/.test(SRC)) throw new Error('suggestPollTimes shim not found in the host');
+  const start = HANDLERS.indexOf('const suggestPollTimes = async () => {');
   if (start < 0) throw new Error('suggestPollTimes not found');
-  const end = SRC.indexOf('\n  }, [', start);
-  if (end < 0) throw new Error('could not find the end of suggestPollTimes');
-  return SRC.slice(start, end);
+  // Handlers sit at column 0 in the module source; the next one (or the return) ends this one.
+  const next = HANDLERS.slice(start + 1).search(/\n(const |function |async function |  return \{ )/);
+  const end = next < 0 ? HANDLERS.length : start + 1 + next;
+  if (end <= start) throw new Error('could not find the end of suggestPollTimes');
+  return HANDLERS.slice(start, end);
 })();
 
 describe('the model proposes, it does not decide', () => {

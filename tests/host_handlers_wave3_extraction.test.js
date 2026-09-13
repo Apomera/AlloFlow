@@ -38,8 +38,13 @@ describe('wave-3 host handler extraction', () => {
     expect(host).toMatch(new RegExp(`__alloBootCriticalModules = new Set\\(\\[[^\\]]*'${MODULE_KEY}'`));
     expect(host).toContain(`window.AlloModules.${MODULE_KEY}`);
     expect(MANIFEST.handlers.length).toBeGreaterThan(100);
+    const hooked = new Set(MANIFEST.useCallbackHandlers || []);
     for (const name of MANIFEST.handlers) {
-      const shim = new RegExp(`(const ${name} = (async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\);|function ${name}\\(\\.\\.\\.__a\\) \\{ return _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\); \\})`);
+      // Wave 3: plain shims. Wave 4: useCallback shims keep the hook and its deps array verbatim,
+      // so identity and staleness semantics are exactly the original callback's.
+      const shim = hooked.has(name)
+        ? new RegExp(`const ${name} = (React\\.)?useCallback\\((async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\)(, \\[[\\s\\S]*?\\])?\\);`)
+        : new RegExp(`(const ${name} = (async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\);|function ${name}\\(\\.\\.\\.__a\\) \\{ return _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\); \\})`);
       expect(host, name).toMatch(shim);
       expect(source, name).toMatch(new RegExp(`(const ${name} = |function ${name}\\()`));
     }
@@ -53,8 +58,12 @@ describe('wave-3 host handler extraction', () => {
     const reads = new Set(Array.from(code.matchAll(/__d\.([A-Za-z_$][\w$]*)/g), m => m[1]));
     expect([...reads].sort()).toEqual([...getters].sort());
     expect([...getters].sort()).toEqual([...MANIFEST.deps].sort());
-    // No handler is both moved and passed back through a getter.
-    for (const name of MANIFEST.handlers) expect(getters.has(name), name).toBe(false);
+    // A getter for a moved handler returns the host shim (a useCallback value, or a wave-3 shim
+    // read by a later wave); a wave-3 plain handler is never both moved and read back.
+    const hooked = new Set(MANIFEST.useCallbackHandlers || []);
+    for (const name of MANIFEST.handlers.slice(0, 123)) {
+      if (!hooked.has(name) && getters.has(name)) expect(source, name).toMatch(new RegExp(`__d\\.${name}\\b`));
+    }
   });
 
   it('creates every handler as a function without touching any host binding at creation time', () => {

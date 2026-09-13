@@ -6220,5 +6220,4052 @@ const handleAutoGrade = async () => {
           __d.setIsGrading(false);
       }
   };
-  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, executeRoleSelect, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, prepareMailboxResourceImages, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, clearCanvasWorkspaceState, buildCanvasWorkspaceSnapshot, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade };
+const mergeCloudAndLocal = (localItems, cloudItems) => {
+      const itemMap = new Map();
+      localItems.forEach(item => {
+          const instanceId = __d.getArtifactInstanceId(item);
+          itemMap.set(instanceId ? 'instance:' + instanceId : 'legacy:' + __d.getArtifactPublicId(item), item);
+      });
+      cloudItems.forEach(cloudItem => {
+          const instanceId = __d.getArtifactInstanceId(cloudItem);
+          const mergeKey = instanceId ? 'instance:' + instanceId : 'legacy:' + __d.getArtifactPublicId(cloudItem);
+          const localItem = itemMap.get(mergeKey);
+          if (localItem) {
+              const localTime = new Date(localItem.timestamp).getTime();
+              const cloudTime = new Date(cloudItem.timestamp).getTime();
+              if (cloudTime > localTime) {
+                  itemMap.set(mergeKey, cloudItem);
+              }
+          } else {
+              itemMap.set(mergeKey, cloudItem);
+          }
+      });
+      return Array.from(itemMap.values()).sort((a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+  };
+const applyGuidedPlanToRemaining = (preset) => {
+    const currentId = __d.guidedActiveSteps[__d.guidedStep]?.id || 'source-input';
+    const currentGlobalIndex = Math.max(0, __d.GUIDED_STEP_IDS.indexOf(currentId));
+    const visitedIds = new Set(__d.guidedActiveSteps.slice(0, __d.guidedStep + 1).map(item => item.id));
+    const requestedIds = new Set(Array.isArray(preset?.stepIds) ? preset.stepIds : __d.GUIDED_STEP_IDS);
+    const protectedIds = new Set(['source-input', 'directions', 'package-deliver', '_final']);
+    const mergedIds = __d.GUIDED_STEP_IDS.filter((id, index) => protectedIds.has(id) || visitedIds.has(id) || (index > currentGlobalIndex && requestedIds.has(id)));
+    const mergedActiveIds = __d.GUIDED_STEP_IDS.filter(id => protectedIds.has(id) || mergedIds.includes(id));
+    const nextIndex = Math.max(0, mergedActiveIds.indexOf(currentId));
+    __d.setGuidedSelectedIds(mergedIds);
+    __d.setGuidedPlanBrief(__d.normalizeGuidedPlanBrief(preset));
+    __d.setGuidedStep(nextIndex);
+    __d.setGuidedSkippedIds(previous => (previous || []).filter(id => mergedIds.includes(id)));
+    try { localStorage.removeItem('allo_guided_readiness_checks'); } catch (_) {}
+  };
+const handleCompleteGuidedMode = (summary = {}) => {
+    const completedAt = new Date().toISOString();
+    const entry = { version: 1, completedAt, selectedIds: __d.guidedSelectedIds, completedSteps: __d.guidedCompletedIds, skippedSteps: __d.guidedSkippedIds, createdHistoryIds: __d.guidedCreatedHistoryIds, deliveryEvidence: __d.guidedDeliveryEvidence, ...summary };
+    try {
+      const prior = JSON.parse(localStorage.getItem('allo_guided_completed_runs') || '[]');
+      localStorage.setItem('allo_guided_completed_runs', JSON.stringify([entry, ...(Array.isArray(prior) ? prior : [])].slice(0, 10)));
+      localStorage.setItem('allo_guided_last_completion', JSON.stringify(entry));
+      localStorage.removeItem('allo_guided_progress');
+      localStorage.removeItem('allo_guided_readiness_checks');
+    } catch (_) {}
+    __d.setGuidedMode(false); __d.setGuidedStep(0); __d.setGuidedSelectedIds(null); __d.setGuidedCompletedIds([]); __d.setGuidedSkippedIds([]); __d.setGuidedCreatedHistoryIds([]); __d.setGuidedDeliveryEvidence({}); __d.setGuidedPlanBrief(null); __d.setGuidedAdvanceNotice(null); __d.setGuidedNavigationUndo(null); __d.setGuidedProgressSaveState({ status: 'idle', at: null });
+    __d.addToast(__d.t('guided.completed_toast') || 'Guided lesson completed. Your summary is saved on this device.', 'success');
+  };
+const _alloRunActivityGeneration = async ({ prompt, jsonMode = false, parse }) => {
+    let currentPrompt = String(prompt || '');
+    let lastError = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const raw = await __d.callGemini(currentPrompt, jsonMode);
+        const value = typeof parse === 'function' ? parse(raw) : raw;
+        if (value == null || (typeof value === 'string' && !value.trim())) throw new Error('Activity generation returned empty output.');
+        return { value, attempts: attempt };
+      } catch (error) {
+        lastError = error;
+        if (attempt >= 2 || !__d._alloActivityRetryable(error)) throw error;
+        currentPrompt += '\nRECOVERY: Return a complete, plain response that follows the requested format. Do not add commentary or a markdown fence.';
+        await new Promise(resolve => setTimeout(resolve, 350));
+      }
+    }
+    throw lastError || new Error('Activity generation failed.');
+  };
+const _alloNoteStudentText = (resourceId, questionKey, value) => {
+      const led = __d._alloEnsureLedger();
+      if (!led) return;
+      const key = String(resourceId || '') + '::' + String(questionKey || '');
+      const len = String(value == null ? '' : value).length;
+      const prevLen = __d._alloLastLenRef.current[key] || 0;
+      __d._alloLastLenRef.current[key] = len;
+      const delta = len - prevLen;
+      try {
+          // Origin is DELIBERATELY not asserted. A dictation flush, an AAC
+          // device, an IME composition, a word-prediction commit and an
+          // autocorrect replacement all arrive as the same unattributable
+          // jump; stamping them 'external' manufactures the accusation-shaped
+          // signal this design exists to prevent, and hits assistive-tech
+          // users hardest. The sanitizer records 'unknown'.
+          if (delta >= 40) led.append('paste', { field: key, chars: delta });
+          else led.noteEdit(key, delta, len);
+      } catch (_) {}
+  };
+const _alloCheckpointArtifact = () => {
+      const parts = [];
+      const provided = [];
+      try {
+          Object.keys(__d.studentResponses || {}).forEach(resourceId => {
+              const answers = __d.studentResponses[resourceId] || {};
+              Object.keys(answers).forEach(k => {
+                  const v = answers[k];
+                  if (typeof v === 'string' && v.trim()) parts.push(v.trim());
+              });
+          });
+          (__d.generatedContent?.data || []).forEach(item => {
+              ['question', 'prompt', 'frame', 'starter', 'text'].forEach(key => {
+                  const v = item && item[key];
+                  if (typeof v === 'string' && v.trim()) provided.push(v.trim());
+              });
+          });
+          if (__d.assignmentDirections) provided.push(String(__d.assignmentDirections));
+      } catch (_) {}
+      // Blank line between answers so the module's sentence splitter never
+      // fuses the end of one response onto the start of the next.
+      return { text: parts.join(String.fromCharCode(10, 10)), providedTexts: provided };
+  };
+const applyAppUpdate = async () => {
+    if (!('serviceWorker' in navigator) || __d.appUpdateApplying) return false;
+    __d.setAppUpdateApplying(true);
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration || !registration.waiting) {
+        if (registration) await registration.update().catch(() => {});
+        __d.setAppUpdateApplying(false);
+        if (__d.addToastRef.current) __d.addToastRef.current('The update is still being prepared. AlloFlow will notify you when it is ready.', 'info');
+        return false;
+      }
+      window.__alloReloadForUpdate = true;
+      registration.waiting.postMessage({ type: 'ALLOFLOW_ACTIVATE_UPDATE' });
+      // controllerchange is the primary path. The timeout covers embedded
+      // browsers that activate correctly but fail to deliver that event.
+      setTimeout(() => { try { window.location.reload(); } catch (_) {} }, 1800);
+      return true;
+    } catch (_) {
+      window.__alloReloadForUpdate = false;
+      __d.setAppUpdateApplying(false);
+      if (__d.addToastRef.current) __d.addToastRef.current('AlloFlow could not apply the update yet. Your work is safe; try again shortly.', 'warning');
+      return false;
+    }
+  };
+const handleStemArtworkUse = (artwork, destination) => {
+    if (!artwork || typeof artwork.src !== 'string' || !artwork.src) {
+      if (__d.addToastRef.current) __d.addToastRef.current('This tool does not have a prepared image to use yet.', 'info');
+      return;
+    }
+    const safeArtworkUrl = (value) => /^https:\/\//i.test(String(value || '').trim()) ? String(value).trim().slice(0, 2048) : '';
+    const prepared = artwork.preparation && typeof artwork.preparation === 'object' ? artwork.preparation : {};
+    const normalized = {
+      src: artwork.src,
+      title: String(artwork.title || 'Visual asset').trim().slice(0, 120),
+      altText: String(artwork.altText || '').trim().slice(0, 300),
+      sourceTool: String(artwork.sourceTool || 'artStudio').trim().slice(0, 60),
+      sourceTab: String(artwork.sourceTab || '').trim().slice(0, 60),
+      assetId: String(artwork.assetId || '').trim().slice(0, 100),
+      provider: String(artwork.provider || '').trim().slice(0, 100),
+      sourceUrl: safeArtworkUrl(artwork.sourceUrl),
+      license: String(artwork.license || '').trim().slice(0, 160),
+      licenseUrl: safeArtworkUrl(artwork.licenseUrl),
+      rightsType: String(artwork.rightsType || '').trim().slice(0, 20),
+      rightsNote: String(artwork.rightsNote || '').replace(/\s+/g, ' ').trim().slice(0, 500),
+      attribution: String(artwork.attribution || '').replace(/\s+/g, ' ').trim().slice(0, 1200),
+      preparation: {
+        mode: prepared.mode === 'crop' || prepared.mode === 'tile' ? prepared.mode : 'fit',
+        zoom: Math.max(100, Math.min(220, Number.isFinite(Number(prepared.zoom)) ? Number(prepared.zoom) : 100)),
+        x: Math.max(0, Math.min(100, Number.isFinite(Number(prepared.x)) ? Number(prepared.x) : 50)),
+        y: Math.max(0, Math.min(100, Number.isFinite(Number(prepared.y)) ? Number(prepared.y) : 50)),
+        tile: Math.max(60, Math.min(360, Number.isFinite(Number(prepared.tile)) ? Number(prepared.tile) : 180)),
+        usageIntent: ['flexible', 'background', 'focal', 'reference', 'texture', 'accent'].includes(prepared.usageIntent) ? prepared.usageIntent : 'flexible',
+      },
+      createdAt: Date.now(),
+    };
+    if (destination === 'visual-support') {
+      __d.setStemArtworkHandoff(normalized);
+      __d.setStemArtworkLabel(normalized.title);
+      __d.setStemArtworkDestination('board:new');
+      __d.setShowStemLab(false);
+      return;
+    }
+    __d.setShowStemLab(false);
+    __d.setAlloStudioInitialArtwork(normalized);
+    __d.setAlloStudioInitialFile(null);
+    __d.setAlloStudioInitialAction('insert-visual-asset');
+    __d.setIsAlloStudioOpen(true);
+  };
+const saveStemArtworkAsVisualSupport = () => {
+    const artwork = __d.stemArtworkHandoff;
+    const label = String(__d.stemArtworkLabel || '').trim().slice(0, 80);
+    if (!artwork || !artwork.src || !label) {
+      if (__d.addToastRef.current) __d.addToastRef.current('Add a short label before saving this artwork as a visual support.', 'info');
+      return;
+    }
+    const parts = String(__d.stemArtworkDestination || 'board:new').split(':');
+    const kind = parts[0] === 'schedule' ? 'schedule' : 'board';
+    const targetId = parts.slice(1).join(':') || 'new';
+    const base = kind === 'schedule' ? 'alloSchedules' : 'alloSymbolBoards';
+    const collection = __d._alloReadVisualSupportCollection(base).map(item => item && typeof item === 'object' ? item : {});
+    const now = Date.now();
+    let target = targetId === 'new' ? null : collection.find(item => String(item.id || '') === targetId);
+    if (!target) {
+      target = kind === 'schedule'
+        ? { id: 'artstudio-schedule-' + now, title: 'Art Studio supports', items: [] }
+        : { id: 'artstudio-board-' + now, title: 'Art Studio supports', cols: 4, words: [] };
+      collection.push(target);
+    }
+    if (kind === 'schedule') {
+      const items = Array.isArray(target.items) ? target.items.slice() : [];
+      items.push({
+        id: 'artstudio-step-' + now,
+        label,
+        image: artwork.src,
+        complete: false,
+        origin: { tool: artwork.sourceTool, tab: artwork.sourceTab, createdAt: artwork.createdAt },
+      });
+      target.items = items;
+    } else {
+      const words = Array.isArray(target.words) ? target.words.slice() : [];
+      words.push({
+        id: 'artstudio-symbol-' + now,
+        label,
+        category: 'other',
+        image: artwork.src,
+        origin: { tool: artwork.sourceTool, tab: artwork.sourceTab, createdAt: artwork.createdAt },
+      });
+      target.words = words;
+    }
+    if (!__d._alloWriteVisualSupportCollection(base, collection)) {
+      if (__d.addToastRef.current) __d.addToastRef.current('The visual support could not be saved on this device.', 'error');
+      return;
+    }
+    __d.setStemArtworkHandoff(null);
+    __d.setStemArtworkLabel('');
+    __d.setVsTab(kind === 'schedule' ? 'schedules' : 'boards');
+    __d.setShowVisualSupports(true);
+    if (__d.addToastRef.current) __d.addToastRef.current('Visual support saved: ' + label, 'success');
+  };
+const handleGameCompletion = (gameType, data) => {
+    __d.recordGameCompletion(__d.generatedContent?.id, gameType, data);
+    const remoteOrganizer = __d.sessionData?.interactiveOrganizer;
+    if (!__d.isTeacherMode && __d.activeSessionCode && __d.user?.uid && remoteOrganizer?.activityId
+        && String(remoteOrganizer.resourceId || '') === String(__d.generatedContent?.id || '')) {
+      const isAttempt = /Attempt$/.test(String(gameType || ''));
+      const total = Number(data?.totalItems ?? data?.totalConnections ?? data?.itemsSorted ?? 0) || 0;
+      const correct = Number(data?.correctPlacements ?? data?.connectionsBuilt ?? data?.itemsSorted ?? (isAttempt ? 0 : total)) || 0;
+      const receipt = __d.normalizeLiveOrganizerProgress({
+        activityId: remoteOrganizer.activityId,
+        type: remoteOrganizer.type,
+        gameType,
+        status: isAttempt ? 'attempted' : 'complete',
+        score: data?.score ?? data?.bestScore ?? 0,
+        correct,
+        total,
+        attempts: data?.attempts ?? data?.incorrectAttempts ?? 0,
+        at: Date.now(),
+      });
+      if (receipt) {
+        const receiptSig = `${receipt.activityId}|${receipt.status}|${receipt.gameType}|${receipt.score}|${receipt.correct}|${receipt.total}|${receipt.attempts}`;
+        if (__d.lastOrganizerProgressWriteRef.current !== receiptSig) {
+          __d.lastOrganizerProgressWriteRef.current = receiptSig;
+          try {
+            const progressRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId || __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+            const progressUpdates = { [`roster.${__d.user.uid}.organizerProgress`]: receipt };
+            if (__d.canWriteLiveActivityProgress()) {
+              progressUpdates[`roster.${__d.user.uid}.activityProgress`] = __d.normalizeLiveActivityProgress({ version: 1, activityId: receipt.activityId, kind: 'visual_organizer', status: receipt.status, completed: receipt.correct, total: receipt.total, at: receipt.at });
+            }
+            __d.writeToSession(progressRef, progressUpdates)
+              .catch(error => __d.warnLog('Organizer completion receipt skipped:', error));
+          } catch (error) { __d.warnLog('Organizer completion receipt unavailable:', error); }
+        }
+      }
+    }
+    // Auto-unarm the teacher-armed interactive flag once a student completes the activity.
+    // Silent un-arm: the student stays on the Victory screen until they close it. When they do,
+    // the render gate falls back to the static diagram (because isInteractiveX is now false).
+    // Teachers keep their armed flag on so they can preview their own playthrough.
+    if (!__d.isTeacherMode) {
+      switch (gameType) {
+        case 'tchartSort': __d.setIsInteractiveTChart(false); break;
+        case 'causeEffectSort': __d.setIsInteractiveCESort(false); break;
+        case 'pipelineBuilder': __d.setIsInteractivePipeline(false); break;
+        case 'conceptMapSort': __d.setIsInteractiveConceptMapSort(false); break;
+        case 'problemSolutionSort': __d.setIsInteractiveProblemSolutionSort(false); break;
+        case 'fishboneSort': __d.setIsInteractiveFishboneSort(false); break;
+        case 'outlineSort': __d.setIsInteractiveOutlineSort(false); break;
+        case 'frayerSort': __d.setIsInteractiveFrayerSort(false); break;
+        case 'seeThinkWonderSort': __d.setIsInteractiveSeeThinkWonderSort(false); break;
+        case 'storyMapSort': __d.setIsInteractiveStoryMapSort(false); break;
+      }
+    }
+  };
+const handleAnnotationUndo = () => {
+    // 2E guard: voice recording in flight. Cancelling through setStickers
+    // would push another snapshot, making undo pop the wrong thing.
+    // Cleaner to refuse and prompt the user to use the Cancel button.
+    if (__d.voiceRecording) {
+      if (__d.addToast) __d.addToast(__d.t('toasts.cancel_active_recording_before_undoing'), 'warning');
+      return;
+    }
+    const stack = __d.annotationUndoStackRef.current;
+    if (stack.length === 0) return;
+    let prev = stack.pop();
+    __d.setAnnotationUndoCount(stack.length);
+    __d.isUndoingAnnotationRef.current = true;
+    // 2D: re-attach voice audio from the registry. Snapshots strip
+    // audioBase64 to bound memory; this hydrates the popped state.
+    if (Array.isArray(prev)) {
+      const reg = __d.voiceAudioRegistryRef.current;
+      prev = prev.map((a) => {
+        if (a && a.kind === 'voice' && !a.audioBase64 && reg[a.id]) {
+          return Object.assign({}, a, reg[a.id]);
+        }
+        return a;
+      });
+    }
+    __d.setStickers(prev);
+    // 2B: visual confirmation so Ctrl/Cmd+Z isn't an invisible action.
+    if (__d.addToast) __d.addToast(__d.t('toasts.undid_last_annotation'), 'info');
+    try {
+      const btn = document.querySelector('[data-allo-undo-btn]');
+      if (btn) {
+        btn.classList.remove('alloflow-undo-flash');
+        void btn.offsetWidth; // force reflow so the re-add re-triggers
+        btn.classList.add('alloflow-undo-flash');
+        setTimeout(() => { try { btn.classList.remove('alloflow-undo-flash'); } catch (_) {} }, 500);
+      }
+    } catch (_) {}
+    // Note: `addToast` is intentionally NOT in deps — it's declared later
+    // in the component body (line ~6408). Listing it in deps causes a TDZ
+    // ReferenceError on first render because React reads the deps array
+    // synchronously at useCallback call time. The closure still resolves
+    // `addToast` at click time when it's safely initialized.
+  };
+const playAacSpeech = async (text, cell) => {
+    __d.stopAacPlayback();
+    const playback = __d.aacPlaybackRef.current;
+    const epoch = playback.epoch;
+    const playUrl = async (value) => {
+      if (!value || playback.epoch !== epoch) return false;
+      let audio;
+      try {
+        audio = value && typeof value.play === 'function' ? value : new Audio(value);
+        playback.audio = audio;
+        const clear = () => {
+          if (playback.epoch === epoch && playback.audio === audio) playback.audio = null;
+        };
+        audio.onended = clear;
+        audio.onerror = clear;
+        await audio.play();
+        return playback.epoch === epoch;
+      } catch (_) {
+        if (playback.epoch === epoch && playback.audio === audio) playback.audio = null;
+        return false;
+      }
+    };
+    if (cell && cell.audio && typeof cell.audio.data === 'string') {
+      if (await playUrl(cell.audio.data)) return true;
+      if (playback.epoch !== epoch) return false;
+    }
+    const locale = __d.visualSupportsPayloadRef.current?.package?.board?.locale;
+    const resolved = await __d.handleAudio(text, locale);
+    if (playback.epoch !== epoch) return false;
+    return playUrl(resolved);
+  };
+const handleLaunchMathProbe = (grade, form, student) => {
+    const bank = window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[grade] && window.MATH_PROBE_BANKS[grade][form];
+    if (!bank || !Array.isArray(bank.problems) || bank.problems.length === 0) {
+      __d.addToast(__d.t('toasts.math_probe_bank_unavailable') || 'No fixed math form for that grade and form yet.', 'warning');
+      return;
+    }
+    // Parked for the panel's handoff consumer, which validates every field and
+    // ignores a slot older than two minutes.
+    try {
+      window.__alloFluencyPendingConfig = {
+        mode: 'benchmark',
+        grade: String(grade),
+        form: String(form),
+        student: student || null,
+        at: Date.now()
+      };
+      window.dispatchEvent(new CustomEvent('alloflow:fluency-pending-config'));
+    } catch (e) {}
+    __d.setMathMode('Fluency Probes');
+    __d.setExpandedTools(prev => {
+      const list = Array.isArray(prev) ? prev : [];
+      return list.includes('math') ? list : [...list, 'math'];
+    });
+    __d.setActiveView('math');
+    __d.addToast(__d.t('toasts.math_probe_ready_press_start') || 'Fixed math form ready. Review the settings, then press Start.', 'info');
+  };
+const deleteStudentRecords = (studentName) => {
+    if (!studentName) return;
+    __d.setProbeHistory(prev => {
+      if (!(studentName in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[studentName];
+      try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    __d.setInterventionLogs(prev => {
+      if (!(studentName in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[studentName];
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    __d.setRtiGoals(prev => {
+      if (!(studentName in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[studentName];
+      try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+const mergeStudentRecords = (fromName, toName) => {
+    if (!fromName || !toName || fromName === toName) return;
+    const recordTime = (v) => { const raw = v && v.timestamp; const n = typeof raw === 'number' ? raw : Date.parse(raw); return isFinite(n) ? n : 0; };
+    __d.setProbeHistory(prev => {
+      if (!(fromName in prev)) return prev;
+      const updated = { ...prev };
+      const merged = [...(updated[toName] || []), ...updated[fromName]];
+      merged.sort((a, b) => recordTime(a) - recordTime(b));
+      updated[toName] = merged;
+      delete updated[fromName];
+      try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    __d.setInterventionLogs(prev => {
+      if (!(fromName in prev)) return prev;
+      const updated = { ...prev };
+      updated[toName] = [...(updated[toName] || []), ...updated[fromName]];
+      delete updated[fromName];
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    __d.setRtiGoals(prev => {
+      if (!(fromName in prev)) return prev;
+      const updated = { ...prev };
+      if (!(toName in updated)) updated[toName] = updated[fromName];
+      delete updated[fromName];
+      try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+const requestWordSoundsAudioConfirmation = (resource, onConfirm, actionLabel = 'start', onReview = null) => {
+      const coverage = __d.getWordSoundsPortableAudioCoverage(resource);
+      if (!coverage || coverage.total === 0 || coverage.missing === 0) return false;
+      const missingLabels = Array.isArray(coverage.missingLabels) ? coverage.missingLabels : coverage.missingWords;
+      const missingPreview = missingLabels.slice(0, 5);
+      const remainingMissing = Math.max(0, missingLabels.length - missingPreview.length);
+      const reviewAudio = typeof onReview === 'function' ? onReview : () => {
+          const words = Array.isArray(resource.wsPreloadedWords) && resource.wsPreloadedWords.length > 0
+              ? resource.wsPreloadedWords
+              : (Array.isArray(resource.data) ? resource.data : []);
+          const sequence = Array.isArray(resource.lessonPlanSequence) ? resource.lessonPlanSequence : [];
+          const initialActivity = sequence[0] || 'counting';
+          __d.setGeneratedContent({ ...resource });
+          __d.setWsPreloadedWords(words.map(word => ({ ...word, _audioRequested: false })));
+          __d.setWsActivitySequence(sequence);
+          __d.prepareWordSoundsSession({ ...(resource.sessionConfig || {}), resourceId: resource.id || null, initialActivity });
+          __d.setCurrentWordSoundsWord(null);
+          __d.setWordSoundsPhonemes(null);
+          __d.setWordSoundsActivity(initialActivity);
+          __d.setWordSoundsAutoReview(true);
+          __d.setActiveView('word-sounds');
+          __d.setIsWordSoundsMode(true);
+      };
+      __d.setConfirmDialog({
+          title: __d.t('word_sounds.audio_preflight_title') || 'Some activity audio is not ready',
+          message: actionLabel === 'send'
+              ? (__d.t('word_sounds.audio_preflight_message_send', { missing: coverage.missing, total: coverage.total }) || `${coverage.missing} of ${coverage.total} required audio clips are missing. Students with live AI disabled may hear silence. Review and prepare the missing audio, or send anyway.`)
+              : (__d.t('word_sounds.audio_preflight_message_start', { missing: coverage.missing, total: coverage.total }) || `${coverage.missing} of ${coverage.total} required audio clips are missing. Students with live AI disabled may hear silence. Review and prepare the missing audio, or start anyway.`),
+          detail: remainingMissing > 0
+              ? (__d.t('word_sounds.audio_preflight_detail_more', { clips: missingPreview.join(', '), remaining: remainingMissing }) || `Missing audio: ${missingPreview.join(', ')}, plus ${remainingMissing} more.`)
+              : (__d.t('word_sounds.audio_preflight_detail', { clips: missingPreview.join(', ') }) || `Missing audio: ${missingPreview.join(', ')}.`),
+          confirmText: actionLabel === 'send'
+              ? (__d.t('word_sounds.audio_preflight_send_anyway') || 'Send anyway')
+              : (__d.t('word_sounds.audio_preflight_start_anyway') || 'Start anyway'),
+          cancelText: __d.t('word_sounds.audio_preflight_review') || 'Review audio',
+          tone: 'warning',
+          onConfirm: () => { if (typeof onConfirm === 'function') onConfirm(); },
+          onCancel: reviewAudio,
+      });
+      return true;
+  };
+const setPersonaAutoReadSafely = (nextValue) => {
+      const wasEnabled = __d.personaAutoReadRef.current;
+      const enabled = Boolean(typeof nextValue === 'function'
+          ? nextValue(__d.personaAutoReadRef.current)
+          : nextValue);
+      const shouldStop = !enabled && (
+          __d.personaAutoReadRef.current ||
+          __d.personaTtsQueueRunningRef.current ||
+          __d.personaTtsQueueRef.current.length > 0
+      );
+      // Update synchronously; async queue callbacks must see toggle-off before
+      // React commits the state update.
+      __d.personaAutoReadRef.current = enabled;
+      if (!enabled) {
+          __d.personaTtsQueueGenerationRef.current += 1;
+          __d.personaTtsQueueRef.current = [];
+          __d.personaTtsQueuedMessageKeysRef.current.clear();
+          __d.personaAutoReadWasEnabledRef.current = false;
+          __d.setPanelTtsPending([]);
+          if (shouldStop) {
+              try { __d.stopPlayback(); } catch (_) {}
+          }
+      } else if (!wasEnabled) {
+          // An off -> on pair can be batched back to the same React boolean.
+          // This epoch still forces the latest reply to be queued and warmed.
+          __d.personaAutoReadWasEnabledRef.current = false;
+          __d.setPersonaAutoReadEpoch(value => value + 1);
+      }
+      __d.setPersonaAutoRead(enabled);
+  };
+const launchPreparedLiveInteraction = (checkpoint, item, audience) => {
+    const api = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.LiveLessonRun;
+    if (!api || typeof api.buildLivePreparedInteractionDescriptor !== 'function') return;
+    const descriptor = api.buildLivePreparedInteractionDescriptor(checkpoint, item, audience);
+    if (!descriptor) return;
+
+    if (descriptor.owner === 'live-polling') {
+      __d.setLivePollPreset(descriptor.preset);
+      __d.setShowLivePollingPanel(true);
+      __d.setShowLiveDock(false);
+      return;
+    }
+
+    if (descriptor.owner === 'concept-pictionary') {
+      __d.setPictionaryPreparedInteraction(descriptor);
+      __d.setPictionaryInitialMode('sketch');
+      __d.setShowPictionaryHost(true);
+      __d.setShowLiveDock(false);
+      return;
+    }
+
+    if (descriptor.owner === 'quiz' && item && item.type === 'quiz') {
+      const quizAlreadyActive = !!(__d.sessionData && __d.sessionData.quizState && __d.sessionData.quizState.isActive);
+      __d.handleRestoreView(item);
+      __d.setShowLiveDock(false);
+      if (!quizAlreadyActive) __d.handleStartLiveSession(item);
+    }
+  };
+const showSpotlight = (element, title, text) => {
+      const rect = element.getBoundingClientRect();
+        const isBotAvatar = element.getAttribute('data-help-key') === 'bot_avatar';
+        const fixedBotRect = isBotAvatar ? {
+            top: rect.bottom - 120,
+            left: rect.right - 100,
+            bottom: rect.bottom - 20,
+            right: rect.right,
+            width: 100,
+            height: 100,
+            x: rect.right - 100,
+            y: rect.bottom - 120
+        } : rect;
+        __d.setTourRect(fixedBotRect);
+      __d.setBotSpotlightPos({ x: isBotAvatar ? rect.right - 50 : rect.left + rect.width/2, y: isBotAvatar ? rect.bottom - 70 : rect.top + rect.height/2 });
+      __d.setSpotlightMessage({ title, text });
+      __d.spotlightOpenTimeRef.current = Date.now();
+      __d.setIsSpotlightMode(true);
+      // Screen-reader users get the help/tour text read immediately (the popup is otherwise silent).
+      try { if (window.alloAnnounce) window.alloAnnounce((title ? title + '. ' : '') + (text || ''), 'polite'); } catch (_) {}
+  };
+const highlightElement = (elementId) => {
+      const stepIndex = __d.tourSteps.findIndex(s => s.id === elementId);
+      const toolId = __d.DOM_TO_TOOL_ID_MAP[elementId];
+      let delay = 0;
+      if (toolId) {
+          const changed = __d.ensureToolVisible(toolId);
+          if (changed) delay = 400;
+      }
+      setTimeout(() => {
+          const el = document.getElementById(elementId);
+          if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+              setTimeout(() => {
+                  const rect = el.getBoundingClientRect();
+                  __d.setTourRect({
+                      top: rect.top,
+                      left: rect.left,
+                      width: rect.width,
+                      height: rect.height,
+                      bottom: rect.bottom,
+                      right: rect.right
+                  });
+                  if (stepIndex !== -1) {
+                      __d.setTourStep(stepIndex);
+                  }
+                  __d.spotlightOpenTimeRef.current = Date.now();
+      __d.setIsSpotlightMode(true);
+                  __d.setRunTour(true);
+              }, 600);
+          } else {
+              __d.addToast(__d.t('toasts.element_not_found', { id: elementId }) || `Element not found: ${elementId}`, "error");
+          }
+      }, delay);
+  };
+const _alloBlueprintLearningWebResource = (blueprint) => {
+      if (!blueprint || !Array.isArray(blueprint.resourcePlan) || !blueprint.resourcePlan.length) return null;
+      const bounded = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+      const resourcePlan = blueprint.resourcePlan.slice(0, 80).map((row, index) => ({
+          id: bounded(row?.uiId || row?.stepId || ('step-' + (index + 1)), 160),
+          title: bounded(row?.title || row?.label || row?.tool || row?.type || ('Step ' + (index + 1)), 200),
+          type: bounded(row?.type || row?.tool || 'resource', 100),
+          resourceId: bounded(row?.resourceId, 200),
+      }));
+      const idSeed = bounded(blueprint.id || blueprint.planId || blueprint.title || blueprint.name || 'active', 160);
+      return {
+          id: 'blueprint:' + idSeed,
+          type: 'blueprint',
+          title: bounded(blueprint.title || blueprint.name || 'Active Blueprint', 200),
+          resourcePlan,
+      };
+  };
+const _alloAlignmentRegistryRecordFromResource = (resource, scopeId) => {
+      if (!resource || resource.type !== 'alignment-report') return null;
+      const comprehensive = resource?.data?.comprehensive;
+      const graph = comprehensive?.alignmentMapGraph;
+      if (!__d._alloIsAlignmentGraph(graph)) return null;
+      const confirmations = (graph.edges || []).flatMap(edge => Array.isArray(edge?.attributionHistory) ? edge.attributionHistory : []);
+      const confirmedAt = confirmations.map(item => Date.parse(item?.confirmedAt || '')).filter(Number.isFinite).sort((a, b) => b - a)[0];
+      const resourceTime = Date.parse(resource?.updatedAt || resource?.timestamp || graph?.meta?.alignmentAudit?.generatedAt || '') || Date.now();
+      return {
+          id: 'alignment-map:' + String(resource.id || '').slice(0, 200),
+          graph,
+          scopeId,
+          kind: 'alignment-map',
+          title: String(resource.title || 'Alignment Map').slice(0, 200),
+          resourceId: String(resource.id || '').slice(0, 200),
+          resourceType: resource.type,
+          resourceTitle: resource.title,
+          updatedAt: new Date(confirmedAt || resourceTime).toISOString(),
+          provenance: graph?.meta?.alignmentAudit || {},
+      };
+  };
+const handleRegisterLearningWebGraph = (payload) => {
+      try {
+          const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+          const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function' ? registryApi.getDefaultRegistry() : null;
+          const candidate = payload?.graph || payload;
+          const graph = __d._alloBoundLearningWebGraphForExplorer(candidate, registryApi);
+          if (!registry || !graph || typeof registry.saveGraph !== 'function') return false;
+          const bounded = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+          const resourceId = bounded(payload?.resourceId || __d.generatedContent?.id || 'lingua-session', 200);
+          const title = bounded(payload?.title || __d.generatedContent?.title || 'Lingua Word Connections', 200);
+          const graphId = bounded(payload?.id, 200) || ('lexical-graph:' + resourceId);
+          const graphMeta = graph.meta?.lexicalGraph || graph.meta || {};
+          const graphManifest = graphMeta?.source?.manifest || graphMeta?.manifest || {};
+          const saved = registry.saveGraph(graph, {
+              id: graphId,
+              scopeId: __d._alloLearningWebScopeId(),
+              kind: 'lexical-graph',
+              title,
+              resourceId,
+              resourceType: bounded(payload?.resourceType || __d.generatedContent?.type || 'lingua-practice', 100),
+              resourceTitle: title,
+              provenance: {
+                  provider: bounded(graphManifest.provider || graphMeta.provider, 120),
+                  datasetVersion: bounded(graphManifest.datasetVersion || graphMeta.datasetVersion || graphMeta.version, 120),
+                  snapshotId: bounded(graphManifest.snapshotId || graphMeta.snapshotId, 160),
+                  license: bounded(graphManifest.license || graphMeta.license, 120),
+                  attribution: bounded(graphManifest.attribution || graphMeta.attribution, 300),
+                  reviewedAt: bounded(graphManifest.reviewedAt || graphMeta.reviewedAt, 80),
+              },
+          });
+          if (saved) __d.setLearningWebRegistryRevision(value => value + 1);
+          return saved || false;
+      } catch (_) { return false; }
+  };
+const handleRegisterUnitPathGraph = (payload) => {
+      try {
+          const scopeId = __d._alloLearningWebScopeId();
+          const payloadScopeId = String(payload?.scopeId || '');
+          if (payloadScopeId && payloadScopeId !== scopeId) return false;
+          const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+          const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function' ? registryApi.getDefaultRegistry() : null;
+          const candidate = payload?.graph;
+          if (!registry || typeof registry.saveGraph !== 'function'
+              || !candidate || candidate.version !== 'acg/v1'
+              || !Array.isArray(candidate.nodes) || !candidate.nodes.length || candidate.nodes.length > 240
+              || !Array.isArray(candidate.edges) || candidate.edges.length > 480) return false;
+          const graph = typeof registryApi.normalizeGraph === 'function' ? registryApi.normalizeGraph(candidate) : null;
+          if (!graph || !graph.nodes.length || graph.nodes.length > 240 || graph.edges.length > 480) return false;
+          const bounded = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+          const graphId = bounded(payload?.id, 200);
+          if (!/^unit-path:[A-Za-z0-9._:-]{1,180}$/.test(graphId)) return false;
+          const exactResourceId = (value) => {
+              const id = String(value || '');
+              return id && id.length <= 200 ? id : '';
+          };
+          const knownById = new Map();
+          const latestContext = __d.learningWebOpenContextRef.current || { current: null, history: [] };
+          [latestContext.current].concat(Array.isArray(latestContext.history) ? latestContext.history : []).forEach(item => {
+              const id = exactResourceId(item?.id);
+              if (id && !knownById.has(id)) knownById.set(id, item);
+          });
+          const resourceRefs = Array.from(new Set((Array.isArray(payload?.resourceRefs) ? payload.resourceRefs : [])
+              .slice(0, 240)
+              .map(ref => exactResourceId(typeof ref === 'string' ? ref : ref?.id))
+              .filter(id => id && knownById.has(id))))
+              .sort()
+              .map(id => {
+                  const item = knownById.get(id);
+                  return {
+                      id,
+                      type: bounded(item?.type || 'resource', 100),
+                      title: bounded(item?.title || id, 200),
+                  };
+              });
+          const title = bounded(payload?.title || 'Learning Web: Unit Path', 200);
+          const saved = registry.saveGraph(graph, {
+              id: graphId,
+              scopeId,
+              kind: 'unit-path',
+              title,
+              resourceRefs,
+              provenance: {
+                  provider: 'AlloFlow Unit Path',
+                  datasetVersion: 'unit-path/acg-v1',
+                  unitId: graphId.slice('unit-path:'.length),
+              },
+          });
+          if (!saved || saved.storagePersisted === false) return false;
+          __d.setLearningWebRegistryRevision(value => value + 1);
+          return saved;
+      } catch (_) { return false; }
+  };
+const handleUnregisterUnitPathGraph = (payload) => {
+      try {
+          const graphId = String(payload?.id || '');
+          if (!/^unit-path:[A-Za-z0-9._:-]{1,180}$/.test(graphId)) return false;
+          const scopeId = __d._alloLearningWebScopeId();
+          if (String(payload?.scopeId || '') !== scopeId) return false;
+          const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+          const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function' ? registryApi.getDefaultRegistry() : null;
+          if (!registry || typeof registry.removeGraphOfKind !== 'function') return false;
+          if (typeof registry.getGraph === 'function') {
+              const entry = registry.getGraph(graphId, scopeId);
+              if (entry && (String(entry.scopeId || '') !== scopeId
+                  || String(entry.graphKind || entry.kind || '') !== 'unit-path')) return false;
+          }
+          // An absent in-memory entry still goes through the durable API so a
+          // prior failed write can be flushed when storage becomes available.
+          const result = registry.removeGraphOfKind(graphId, scopeId, 'unit-path');
+          if (!result || result.ok !== true) return false;
+          __d.setLearningWebRegistryRevision(value => value + 1);
+          return true;
+      } catch (_) { return false; }
+  };
+const openAdventureActionVote = () => {
+    if (!__d.isTeacherMode || !__d.activeSessionCode) {
+      __d.addToast(__d.t('toasts.start_live_session_first_use') || 'Start a live session first.', 'info');
+      return;
+    }
+    const sceneContext = String(__d.adventureState?.currentScene?.text || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 360);
+    __d.setLivePollPreset({
+      source: 'adventure-free-response',
+      type: 'freetext',
+      prompt: (__d.t('adventure.class_action_prompt') || 'What should the class do next in this adventure?')
+        + (sceneContext ? ' ' + (__d.t('adventure.current_situation') || 'Current situation:') + ' ' + sceneContext : ''),
+      afterSubmitMode: 'wait',
+      feedbackEnabled: false,
+      peerVoteCriterion: __d.t('adventure.class_action_vote_criterion') || 'Which action is thoughtful, creative, and most likely to move the story forward?',
+    });
+    __d.setShowLivePollingPanel(true);
+    __d.setShowLiveDock(false);
+  };
+const handleImportResearchJSON = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.probeHistory) {
+          __d.setProbeHistory(data.probeHistory);
+          try { localStorage.setItem('alloflow_probe_history', JSON.stringify(data.probeHistory)); } catch {}
+        }
+        if (data.surveyResponses) {
+          __d.setSurveyResponses(data.surveyResponses);
+          try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(data.surveyResponses)); } catch {}
+        }
+        if (data.fidelityLog) {
+          __d.setFidelityLog(data.fidelityLog);
+          try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(data.fidelityLog)); } catch {}
+        }
+        if (data.sessionCounter !== undefined) {
+          __d.setSessionCounter(data.sessionCounter);
+          try { localStorage.setItem('alloflow_session_counter', String(data.sessionCounter)); } catch {}
+        }
+        if (data.externalCBMScores) {
+          __d.setExternalCBMScores(data.externalCBMScores);
+          try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(data.externalCBMScores)); } catch {}
+        }
+        if (data.interventionLogs) {
+          __d.setInterventionLogs(data.interventionLogs);
+          try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
+        }
+        // The Assessment Center module keeps its own copies of the research
+        // stores; tell it the keys changed underneath it (same contract as a
+        // study-bundle import) so it re-reads instead of staying stale.
+        try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { source: 'research-json-import' } })); } catch {}
+        if (__d.addToast) __d.addToast(__d.t('toasts.research_data_imported_successfully'), 'success');
+      } catch (err) {
+        __d.warnLog('Failed to import research JSON:', err);
+        if (__d.addToast) __d.addToast(__d.t('toasts.invalid_research_data_file'), 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+const handleOpenPrincipalEvaluationFromSettings = () => {
+    __d.setIsProjectSettingsOpen(false);
+    __d.setIsAdminHubOpen(false);
+    const portalUrl = __d.normalizeAlloEvaluationPortalUrl(__d.evaluationPortalUrl);
+    if (portalUrl) {
+      try {
+        const portalWindow = window.open(portalUrl, '_blank', 'noopener,noreferrer');
+        if (!portalWindow) {
+          if (!__d._isDesktopBundledApp) __d.addToast('The district portal was blocked. Allow pop-ups for AlloFlow and try again.', 'error');
+          return;
+        }
+        portalWindow.opener = null;
+      } catch (_) {
+        __d.addToast('The district portal could not open. Check your pop-up settings and try again.', 'error');
+      }
+      return;
+    }
+    if (typeof window.__alloLazyEducatorEvaluation === 'function') {
+      try { window.__alloLazyEducatorEvaluation(); } catch (_) {}
+    }
+    __d.setIsEducatorEvaluationOpen(true);
+  };
+const handleOpenSchoolRewardsPortal = (recognitionView = false) => {
+    const portalUrl = __d.normalizeAlloEvaluationPortalUrl(__d.schoolRewardsPortalUrl);
+    if (!portalUrl) { __d.addToast('Connect School Rewards first: paste the deployment URL in the panel.', 'info'); return false; }
+    let portalWindow;
+    try {
+      portalWindow = window.open(portalUrl + (recognitionView === true ? '?view=recognition' : ''), '_blank', 'noopener,noreferrer');
+    } catch (_) {
+      __d.addToast('The School Rewards opening request could not be sent. Use the direct link in the Store launcher to try again.', 'error');
+      return false;
+    }
+    // noopener may return null even after dispatching the request; it is not an open-status check.
+    if (!portalWindow) __d.addToast('Opening requested. If no tab appears, use the direct link in the Store launcher.', 'info');
+    else { try { portalWindow.opener = null; } catch (_) {} }
+    return true;
+  };
+const handleSaveSchoolRewardsPortalUrl = (value) => {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      if (__d.safeRemoveItem(__d.ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY) !== true) {
+        const error = 'This browser could not remove the School Rewards launcher. The previous connection was kept.';
+        __d.addToast(error, 'error');
+        return { ok: false, error };
+      }
+      __d.setSchoolRewardsPortalUrl('');
+      __d.addToast('School Rewards launcher removed from this device.', 'success');
+      return { ok: true, url: '', connected: false };
+    }
+    const normalized = __d.normalizeAlloEvaluationPortalUrl(raw);
+    if (!normalized) {
+      const error = 'Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.';
+      __d.addToast(error, 'error');
+      return { ok: false, error };
+    }
+    if (__d.safeSetItem(__d.ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY, normalized) !== true) {
+      const error = 'This browser could not save the School Rewards launcher. The previous connection was kept.';
+      __d.addToast(error, 'error');
+      return { ok: false, error };
+    }
+    __d.setSchoolRewardsPortalUrl(normalized);
+    __d.addToast('School Rewards launcher saved on this device.', 'success');
+    return { ok: true, url: normalized, connected: true };
+  };
+const handleToggleShowExportMenu = () => {
+    const opening = !__d.showExportMenu;
+    // Let the pressed state paint before reconciling the large header/menu
+    // subtree. This keeps the click responsive even on a busy, low-end CPU.
+    setTimeout(() => {
+      const toggleMenu = () => __d.setShowExportMenu(prev => !prev);
+      if (typeof __d.React.startTransition === 'function') __d.React.startTransition(toggleMenu);
+      else toggleMenu();
+
+      // Give the menu two paint opportunities before parsing its pinned local
+      // export helpers. Feature actions still await the same shared promise.
+      if (opening) {
+        const prepareWhenIdle = () => {
+          if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(__d.ensureExportLibraries, { timeout: 2000 });
+          } else {
+            setTimeout(__d.ensureExportLibraries, 500);
+          }
+        };
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(() => requestAnimationFrame(prepareWhenIdle));
+        } else {
+          setTimeout(prepareWhenIdle, 100);
+        }
+      }
+    }, 40);
+  };
+const clearMathResourceState = (resourceId, clearAssessment = false, legacyProblemKeys = []) => {
+      const key = String(resourceId ?? '');
+      if (!key) return;
+      window.AlloModules?.MathHelpers?.invalidateMathResourceRequests?.(key);
+      const removeNestedResource = previous => {
+          if (!previous || typeof previous !== 'object' || !Object.prototype.hasOwnProperty.call(previous, key)) return previous || {};
+          const next = { ...previous };
+          delete next[key];
+          return next;
+      };
+      __d.setStudentResponses(removeNestedResource);
+      __d.setMathCheckResults(removeNestedResource);
+      __d.setMathHintData(previous => {
+          const next = { ...(previous || {}) };
+          delete next[key];
+          legacyProblemKeys.forEach(problemKey => delete next[`${key}_${String(problemKey)}`]);
+          return next;
+      });
+      __d.setMathEditingProblem(previous => Object.fromEntries(
+          Object.entries(previous || {}).filter(([entryKey]) => {
+              try {
+                  const decoded = JSON.parse(entryKey);
+                  return !Array.isArray(decoded) || String(decoded[0]) !== key;
+              } catch (_) {
+                  return !legacyProblemKeys.some(problemKey => entryKey === `${key}_${String(problemKey)}`);
+              }
+          })
+      ));
+      if (clearAssessment) {
+          __d.setMathStudentAnswers({});
+          __d.setMathSelfGradeMode(false);
+          __d.setShowMathAnswers(false);
+      }
+  };
+const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
+    if (!__d.isTeacherMode) return { ok: false, reason: 'teacher-only' };
+    if (!__d.activeSessionCode) {
+      __d.addToast('Start a live session before sending this activity to students.', 'info');
+      return { ok: false, reason: 'no-session' };
+    }
+    const previousType = __d.activeInteractiveOrganizerTypeRef.current || __d.sessionData?.interactiveOrganizer?.type || null;
+    __d.setInteractiveOrganizerSync({ status: type ? 'starting' : 'stopping', type: type || previousType, activityId: null, error: null });
+    __d.addToast(type ? 'Starting the student activityâ€¦' : 'Stopping the student activityâ€¦', 'info');
+    const previousWrite = __d.interactiveOrganizerWriteQueueRef.current;
+    let releaseWrite;
+    __d.interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });
+    await previousWrite.catch(() => {});
+    try {
+      const targetAppId = __d.activeSessionAppId || __d.appId;
+      const sessionRef = __d.doc(__d.db, 'artifacts', targetAppId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      const armedAt = Date.now();
+      const resourceId = String(__d.generatedContent?.id || '').trim().slice(0, 160);
+      const structureType = String(__d.generatedContent?.data?.structureType || '').trim().slice(0, 80);
+      const readiness = type ? __d.getLiveOrganizerReadiness(type, __d.generatedContent) : { ok: true };
+      if (type && (!resourceId || !structureType || !readiness.ok)) {
+        throw new Error(readiness.message || 'Open and save the visual organizer before starting its student activity.');
+      }
+      const resourceRevision = type ? __d.getLiveOrganizerResourceRevision(__d.generatedContent) : '';
+      const sharedResource = Array.isArray(__d.sessionData?.resources)
+        ? __d.sessionData.resources.find(resource => resource && String(resource.id) === resourceId)
+        : null;
+      if (type && !__d._alloMbBridgeActive() && !sharedResource) {
+        throw new Error('This organizer is still syncing to the live session. Wait a moment and try again.');
+      }
+      if (type && !__d._alloMbBridgeActive() && __d.getLiveOrganizerResourceRevision(sharedResource) !== resourceRevision) {
+        throw new Error('The latest organizer changes are still syncing. Wait a moment and try again.');
+      }
+      const activityResourceToken = resourceId.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 96);
+      const activityId = type ? `organizer:${activityResourceToken}:${type}:${armedAt.toString(36)}`.slice(0, 160) : null;
+      let interactiveOrganizer = type ? { type, activityId, resourceId, resourceRevision, structureType, armedAt } : null;
+      if (type === 'venn') {
+        const gameData = __d.normalizeInteractiveVennGameData(activityConfig?.gameData);
+        if (!__d.isPlayableInteractiveVennData(gameData)) throw new Error('Venn activity setup is incomplete.');
+        interactiveOrganizer = { ...interactiveOrganizer, gameData };
+      }
+      await window.__alloWriteToSession(sessionRef, { interactiveOrganizer });
+      if (type) {
+        __d.activeInteractiveOrganizerTypeRef.current = type;
+        __d._setOnlyInteractiveOrganizer(type);
+        __d.setInteractiveOrganizerSync({ status: 'live', type, activityId, error: null });
+        __d.addToast('Interactive organizer is live for students.', 'success');
+      } else {
+        __d._setOnlyInteractiveOrganizer(null);
+        __d.activeInteractiveOrganizerTypeRef.current = null;
+        __d.setInteractiveOrganizerSync({ status: 'idle', type: null, activityId: null, error: null });
+        __d.addToast('Interactive organizer stopped for students.', 'success');
+      }
+      return { ok: true, interactiveOrganizer };
+    } catch (e) {
+      try { __d.warnLog('interactiveOrganizer sync failed:', e); } catch(_) {}
+      if (type) {
+        const previousRemote = __d.sessionData?.interactiveOrganizer;
+        if (previousRemote?.type && __d.LIVE_ORGANIZER_TYPES.has(previousRemote.type)) {
+          __d._setOnlyInteractiveOrganizer(previousRemote.type);
+          __d.activeInteractiveOrganizerTypeRef.current = previousRemote.type;
+          __d.setInteractiveOrganizerSync({ status: 'live', type: previousRemote.type, activityId: previousRemote.activityId || null, error: String(e?.message || e) });
+        } else {
+          __d._setOnlyInteractiveOrganizer(null);
+          __d.activeInteractiveOrganizerTypeRef.current = null;
+          __d.setInteractiveOrganizerSync({ status: 'error', type, activityId: null, error: String(e?.message || e) });
+        }
+        __d.addToast(`Could not start the student activity: ${String(e?.message || 'please try again.')}`, 'error');
+      } else {
+        __d._setOnlyInteractiveOrganizer(previousType);
+        __d.activeInteractiveOrganizerTypeRef.current = previousType;
+        __d.setInteractiveOrganizerSync({ status: 'live', type: previousType, activityId: __d.sessionData?.interactiveOrganizer?.activityId || null, error: String(e?.message || e) });
+        __d.addToast('The activity could not be stopped and remains live. Please try again.', 'error');
+      }
+      return { ok: false, error: e };
+    } finally {
+      releaseWrite();
+    }
+  };
+const retryInteractiveOrganizerStudents = async (uids) => {
+    const remote = __d.sessionData?.interactiveOrganizer;
+    const retryUids = Array.from(new Set((Array.isArray(uids) ? uids : []).map(uid => String(uid || '').trim().slice(0, 128)).filter(Boolean))).slice(0, 250);
+    if (!__d.isTeacherMode || !__d.activeSessionCode || !remote?.activityId || !retryUids.length) return { ok: false, reason: 'no-targets' };
+    __d.setInteractiveOrganizerRetrying(true);
+    const previousWrite = __d.interactiveOrganizerWriteQueueRef.current;
+    let releaseWrite;
+    __d.interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });
+    await previousWrite.catch(() => {});
+    try {
+      const sessionRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId || __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      const retryAt = Date.now();
+      await window.__alloWriteToSession(sessionRef, {
+        interactiveOrganizer: { ...remote, retryAt, retryUids },
+      });
+      __d.addToast(`Retry sent to ${retryUids.length} student${retryUids.length === 1 ? '' : 's'}.`, 'success');
+      return { ok: true, retryAt, retryUids };
+    } catch (error) {
+      __d.warnLog('interactiveOrganizer targeted retry failed:', error);
+      __d.addToast('Could not retry the activity for those students. The current activity remains live.', 'error');
+      return { ok: false, error };
+    } finally {
+      __d.setInteractiveOrganizerRetrying(false);
+      releaseWrite();
+    }
+  };
+const handleNodeClick = (e, nodeId) => {
+      e.stopPropagation();
+      if (__d.connectingSourceId === null) {
+          __d.setConnectingSourceId(nodeId);
+          __d.addToast(__d.t('concept_map.overlay.standard_instructions'), "info");
+      } else {
+          if (__d.connectingSourceId === nodeId) {
+              __d.setConnectingSourceId(null);
+              __d.addToast(__d.t('concept_map.venn.selection_cancelled'), "info");
+              return;
+          }
+          const exists = __d.conceptMapEdges.some(edge =>
+              (edge.fromId === __d.connectingSourceId && edge.toId === nodeId) ||
+              (edge.fromId === nodeId && edge.toId === __d.connectingSourceId)
+          );
+          if (exists) {
+              __d.addToast(__d.t('concept_map.notifications.connection_exists'), "warning");
+              __d.setConnectingSourceId(null);
+              return;
+          }
+          const newEdge = {
+              id: `e-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+              fromId: __d.connectingSourceId,
+              toId: nodeId
+          };
+          __d.setConceptMapEdges(prev => [...prev, newEdge]);
+          __d.setConnectingSourceId(null);
+          __d.addToast(__d.t('concept_map.notifications.connected'), "success");
+          if (__d.playSound) __d.playSound('click');
+      }
+  };
+const handleCheckChallenge = () => {
+      if (!__d.challengeTarget) return;
+      const normalize = (id1, id2) => [id1, id2].sort().join('-');
+      const targetSet = new Set(__d.challengeTarget.map(e => normalize(e.fromId, e.toId)));
+      let correctCount = 0;
+      const checkedEdges = __d.conceptMapEdges.map(edge => {
+          const key = normalize(edge.fromId, edge.toId);
+          const isCorrect = targetSet.has(key);
+          if (isCorrect) correctCount++;
+          return { ...edge, status: isCorrect ? 'correct' : 'incorrect' };
+      });
+      const totalTarget = targetSet.size;
+      const score = Math.max(0, Math.round((correctCount / Math.max(totalTarget, __d.conceptMapEdges.length)) * 100));
+      __d.setChallengeFeedback({
+          score,
+          checkedEdges: checkedEdges
+      });
+      const xpAwarded = score * 2;
+      if (score === 100) {
+          __d.playSound('correct');
+          __d.addToast(__d.t('concept_map.notifications.perfect_match', { xp: xpAwarded }), "success");
+      } else if (score > 0) {
+          if (score > 60) __d.playSound('click'); else __d.playSound('incorrect');
+          __d.addToast(__d.t('concept_map.notifications.good_match', { score, xp: xpAwarded }), "info");
+      } else {
+          __d.playSound('incorrect');
+          __d.addToast(__d.t('concept_map.notifications.try_again', { score }), "warning");
+      }
+      if (xpAwarded > 0) {
+          __d.handleScoreUpdate(xpAwarded, "Concept Map Challenge", __d.generatedContent?.id);
+      }
+  };
+const handleExitChallenge = () => {
+      __d.setConfirmDialog({ message: __d.t('concept_map.notifications.confirm_exit') || 'Exit the challenge?', onConfirm: () => {
+          const edgesToRestore = __d.challengeTarget || __d.generatedContent?.data?.challenge?.targetEdges || [];
+          __d.setConceptMapEdges(edgesToRestore);
+          __d.setIsChallengeActive(false);
+          __d.setChallengeFeedback(null);
+          __d.setChallengeTarget(null);
+          __d.setActiveChallengeMode('strict');
+          if (__d.generatedContent) {
+              const newData = { ...__d.generatedContent?.data };
+              delete newData.challenge;
+              newData.edges = edgesToRestore;
+              const updatedContent = { ...__d.generatedContent, data: newData };
+              __d.setGeneratedContent(updatedContent);
+              __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+          }
+          __d.addToast(__d.t('concept_map.notifications.challenge_ended'), "success");
+      } });
+  };
+const downloadKokoroModel = () => {
+    if (__d._isIOSCanvasEnv) {
+      __d.addToast('Kokoro is paused inside Gemini Canvas on iPhone or iPad because loading its on-device model can restart the Canvas. Browser voice will be used instead.', 'info');
+      return;
+    }
+    // Kokoro has no file list of our own — loading it IS the download, and the
+    // worker's cache proxy persists it into model_cache on the way through.
+    if (typeof window.__loadKokoroTTS !== 'function') { __d.addToast('The voice model loader is still starting up — try again in a moment.', 'info'); return; }
+    __d.setAlloModelStatus(prev => ({ ...prev, busy: 'kokoro' }));
+    Promise.resolve(window.__loadKokoroTTS()).then((ok) => {
+      __d.addToast(ok === false ? 'The voice model could not be downloaded.' : 'Natural voice model saved on this device.', ok === false ? 'error' : 'success');
+    }).catch((e) => {
+      __d.addToast('Could not download the voice model: ' + ((e && e.message) || 'unknown'), 'error');
+    }).finally(() => { __d.setAlloModelStatus(prev => ({ ...prev, busy: '' })); __d.refreshAlloModelStatus(); });
+  };
+const saveFluencyReview = (reviewedResult) => {
+    if (!reviewedResult || !reviewedResult.recordId) return;
+    const recordId = reviewedResult.recordId;
+    const reviewStatus = reviewedResult.review?.status || 'reviewed';
+    __d.setFluencyResult(reviewedResult);
+    __d.setFluencyAssessments(prev => {
+      const items = Array.isArray(prev) ? prev : [];
+      const found = items.some(item => (item?.recordId || item?.id) === recordId);
+      return found
+        ? items.map(item => ((item?.recordId || item?.id) === recordId ? reviewedResult : item))
+        : [...items, reviewedResult];
+    });
+    __d.setHistory(prev => prev.map(item => {
+      if (!item || item.id !== recordId || item.type !== 'fluency-record') return item;
+      return {
+        ...item,
+        title: `Oral Fluency Check (${reviewedResult.accuracy || 0}%)`,
+        meta: `${reviewedResult.wcpm || 0} WCPM - ${Math.round(reviewedResult.durationSeconds || 0)}s - ${reviewStatus}`,
+        data: {
+          ...(item.data || {}),
+          wordData: reviewedResult.wordData,
+          insertions: reviewedResult.insertions || [],
+          passageMetadata: reviewedResult.passageMetadata || item.data?.passageMetadata || null,
+          automatedSnapshot: reviewedResult.automatedSnapshot || null,
+          review: reviewedResult.review || null,
+          reviewAudit: reviewedResult.reviewAudit || [],
+          metrics: {
+            ...(item.data?.metrics || {}),
+            ...(reviewedResult.metrics || {}),
+            accuracy: reviewedResult.accuracy || 0,
+            wcpm: reviewedResult.wcpm || 0,
+            correctWords: reviewedResult.correctWords || 0
+          }
+        }
+      };
+    }));
+    __d.addToast('Teacher review saved. The automated result remains in the audit trail.', 'success');
+  };
+const handleWordSoundsPreparedAudioRetry = async (coverage) => {
+      if (__d.isTeacherMode || !__d.activeSessionCode || !__d.user || !__d.user.uid) {
+          __d.addToast(__d.t('word_sounds.audio_retry_teacher_needed') || 'Ask your teacher to resend the Word Sounds activity.', 'info');
+          return false;
+      }
+      try {
+          const isMailboxStudent = new URLSearchParams(window.location.search || '').has('allo_mb');
+          if (isMailboxStudent && Number(__d.alloReadMailboxConfigCache()?.v || 0) < 16) {
+              __d.addToast(__d.t('word_sounds.audio_retry_mailbox_update') || 'Your teacher needs the latest Class Mailbox before resend requests can be sent.', 'info');
+              return false;
+          }
+      } catch (_) {}
+      const requestedAt = Date.now();
+      const safeCoverage = coverage && typeof coverage === 'object' ? coverage : null;
+      const payload = {
+          kind: 'practice',
+          activity: typeof __d.wordSoundsActivity === 'string' ? __d.wordSoundsActivity.slice(0, 32) : null,
+          correct: __d.wordSoundsScore.correct || 0,
+          total: __d.wordSoundsScore.total || 0,
+          goal: __d.wordSoundsSessionGoal || 0,
+          done: false,
+          audioStatus: 'requested',
+          audioReady: safeCoverage ? Math.max(0, Number(safeCoverage.ready) || 0) : 0,
+          audioTotal: safeCoverage ? Math.max(0, Number(safeCoverage.total) || 0) : 0,
+          audioRequestAt: requestedAt,
+          ...(__d.wordSoundsAudioDeliveryAt > 0 ? { audioDeliveryAt: __d.wordSoundsAudioDeliveryAt } : {}),
+          at: requestedAt,
+      };
+      try {
+          const progressRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId || __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+          const progressUpdates = { [`roster.${__d.user.uid}.wsProgress`]: payload };
+          const activityId = String(__d.wordSoundsSessionConfig?.resourceId || __d.generatedContent?.id || ('word-sounds:' + (payload.activity || 'practice'))).trim().replace(/[^A-Za-z0-9:_-]/g, '-').slice(0, 160);
+          const activityReceipt = __d.normalizeLiveActivityProgress({ version: 1, activityId, kind: 'word_sounds', status: 'working', completed: payload.correct, total: payload.total, at: payload.at });
+          if (activityReceipt && __d.canWriteLiveActivityProgress()) progressUpdates[`roster.${__d.user.uid}.activityProgress`] = activityReceipt;
+          await __d.writeToSession(progressRef, progressUpdates);
+          __d.addToast(__d.t('word_sounds.audio_retry_request_sent') || 'Your teacher has been asked to resend the activity.', 'success');
+          return true;
+      } catch (_error) {
+          __d.addToast(__d.t('word_sounds.audio_retry_request_failed') || 'The resend request could not be sent. Ask your teacher directly.', 'error');
+          return false;
+      }
+  };
+const exportMailboxConfig = () => {
+      const payload = __d.alloMailboxConfigExportPayload(__d.mbConfig, new Date().toISOString());
+      if (!payload) { __d.addToast('Connect a mailbox first, then you can save a copy of its setup.', 'info'); return; }
+      try {
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'alloflow-mailbox-' + new Date().toISOString().slice(0, 10) + '.json';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+          __d.addToast('Saved. This file contains an access key for your mailbox, so keep it like a password.', 'success');
+      } catch (error) { __d.addToast('Could not save the file: ' + ((error && error.message) || 'unknown'), 'error'); }
+  };
+const suggestPollTimes = async () => {
+    const ask = String(__d.pollAsk || '').trim();
+    if (!ask || __d.pollAiBusy) return;
+    if (typeof window.callGemini !== 'function') {
+      __d.addToast('The assistant is not available right now. You can still type the options yourself.', 'info');
+      return;
+    }
+    __d.setPollAiBusy(true);
+    try {
+      const reply = await window.callGemini(
+        'A teacher is scheduling something and needs the OPTIONS for a poll or sign-up sheet. '
+        + 'Return ONE option per line. No numbering, no bullets, no commentary, no heading. '
+        + 'At most 12 lines, each under 60 characters. Write times the way a person says them and include the day. '
+        + 'Do NOT convert time zones or add a time zone unless the request mentions one. '
+        + 'Do not invent attendees or any other detail. Request: ' + ask
+      );
+      const drafted = String(reply || '')
+        .split(/\r?\n/)
+        .map(line => line.replace(/^[\s\-*\u2022]*\d*[.)]?\s*/, '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
+        .filter(Boolean)
+        .slice(0, 12);
+      if (!drafted.length) {
+        __d.addToast('The assistant did not suggest any options. Try describing the window you have in mind.', 'info');
+        return;
+      }
+      __d.setSharedAssignmentActivity(previous => ({ ...(previous || {}), optionsText: drafted.join('\n') }));
+      __d.addToast('Suggested ' + drafted.length + ' options. Edit them before you share.', 'success');
+    } catch (error) { __d.addToast('Could not suggest options: ' + ((error && error.message) || 'unknown'), 'error'); }
+    finally { __d.setPollAiBusy(false); }
+  };
+const extendAssignmentCenterShare = async (share) => {
+      if (!share?.url || share.type !== 'assignment-pack-hosted' || share.revokedAt) return;
+      const currentExpiry = Date.parse(share.expiresAt || '');
+      const now = Date.now();
+      if (Number.isFinite(currentExpiry) && currentExpiry <= now) {
+          __d.addToast('Expired assignments cannot be revived. Duplicate this assignment instead.', 'info');
+          return;
+      }
+      if (!__d.mbConfig?.url || !__d.mbConfig?.admin || Number(__d.mbConfig.v || 0) < 12) {
+          __d.addToast('Update and reconnect your Class Mailbox to v12 before changing assignment deadlines.', 'info');
+          __d.setMbPanelOpen(true);
+          return;
+      }
+      const ceiling = now + 365 * 24 * 60 * 60 * 1000;
+      const baseline = Number.isFinite(currentExpiry) ? Math.max(now, currentExpiry) : now;
+      const nextExpiry = Math.min(ceiling, baseline + __d.homeworkExpiryDays * 24 * 60 * 60 * 1000);
+      if (Number.isFinite(currentExpiry) && nextExpiry <= currentExpiry) {
+          __d.addToast('This assignment is already at the one-year expiration limit.', 'info');
+          return;
+      }
+      __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: 'extending' } }));
+      try {
+          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'extendpack', admin: __d.mbConfig.admin, id: share.packId, expiresAt: new Date(nextExpiry).toISOString() });
+          const expiresAt = new Date(nextExpiry).toISOString();
+          __d.setRecentQrShares(previous => previous.map(item => item.url === share.url ? { ...item, expiresAt } : item));
+          __d.setQrShareModal(previous => previous?.url === share.url ? { ...previous, expiresAt } : previous);
+          __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '' } }));
+          __d.addToast('Assignment deadline extended.', 'success');
+      } catch (error) {
+          __d.warnLog('Assignment extension failed:', error);
+          __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '', error: 'Deadline extension failed. Reconnect the Class Mailbox and try again.' } }));
+          __d.addToast('Could not extend this assignment.', 'error');
+      }
+  };
+const duplicateAssignmentCenterShare = async (share) => {
+      const sourceExpiry = Date.parse(share?.expiresAt || '');
+      if (!share?.url || share.type !== 'assignment-pack-hosted' || share.revokedAt || !Number.isFinite(sourceExpiry) || sourceExpiry > Date.now()) return;
+      if (!__d.mbConfig?.url || !__d.mbConfig?.admin || Number(__d.mbConfig.v || 0) < 12) {
+          __d.addToast('Update and reconnect your Class Mailbox to v12 before duplicating assignments.', 'info');
+          __d.setMbPanelOpen(true);
+          return;
+      }
+      __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: 'duplicating' } }));
+      try {
+          const id = 'PK-' + __d.generateUUID();
+          const secret = __d._alloRandomToken(16);
+          const createdAt = new Date().toISOString();
+          const expiresAt = new Date(Date.now() + __d.homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
+          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'clonepack', admin: __d.mbConfig.admin, sourceId: share.packId, id, k: secret, expiresAt });
+          const url = __d._buildAlloMailboxEntryUrl('allo_mbp', { u: __d.mbConfig.url, id, k: secret, aiPolicy: share.aiPolicy });
+          if (!url) throw new Error('No student app URL is configured');
+          const duplicate = { ...share, url, packId: id, packSecret: secret, createdAt, expiresAt, revokedAt: undefined };
+          __d.setAssignmentCenterStatusByUrl(previous => ({ ...previous, [url]: { state: 'idle' } }));
+          __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '' } }));
+          __d.copyToClipboard(url);
+          __d.openQrShareModal(duplicate);
+          __d.setShowRecentQrShares(false);
+          __d.addToast('Fresh assignment copy created with empty student activity and a new private link.', 'success');
+      } catch (error) {
+          __d.warnLog('Assignment duplication failed:', error);
+          __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '', error: 'Duplication failed. The original assignment was not changed.' } }));
+          __d.addToast('Could not duplicate this assignment.', 'error');
+      }
+  };
+const openHomeworkShelf = () => {
+      const shelf = __d.homeworkShelf;
+      if (!shelf || !Array.isArray(shelf.resources) || !shelf.resources.length) return;
+      // Mirror the homework-QR assignment loader's state sets (the proven at-home viewing
+      // mode) minus the network fetch — the shelf IS the already-hydrated packet.
+      __d.setHasSelectedMode(true);
+      __d.setHasSelectedRole(true);
+      __d.setShowWizard(false);
+      __d.setShowStudentWelcome(false);
+      __d.setIsTeacherMode(false);
+      __d.setIsParentMode(false);
+      __d.setIsIndependentMode(false);
+      __d.setIsStudentLinkMode(true);
+      __d.setShowStudentEntry(true);
+      __d.setHistory(shelf.resources);
+      __d.hydratedHistoryRef.current = shelf.resources;
+      // Directions first: the assignment brief is the front page of homework.
+      const first = shelf.resources.find(r => r && r.type === 'directions') || shelf.resources[0];
+      if (first) __d.setPendingQrAssignmentResource(first);
+      __d.addToast(__d.t('takehome.loaded', { title: shelf.title || 'saved pack' }) || ('Homework loaded: ' + (shelf.title || 'saved pack')), 'success');
+  };
+const connectMailbox = async () => {
+      const execUrl = __d._alloCleanMailboxUrl(__d.mbUrlInput);
+      if (!execUrl) {
+          __d.setMbStatus('That does not look like an Apps Script web app URL (it should end in /exec on script.google.com).');
+          return;
+      }
+      __d.setMbBusy(true);
+      __d.setMbStatus('Testing mailbox…');
+      try {
+          const t0 = Date.now();
+          const mbHello = await __d._alloMailboxCall(execUrl, { a: 'hello' });
+          const pasted = String(__d.mbAdminInput || '').trim();
+          let stored = '';
+          try { stored = localStorage.getItem(__d.ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
+          let admin = '';
+          let freshlyClaimed = false;
+          if (pasted) {
+              const check = await __d._alloMailboxCall(execUrl, { a: 'auth', admin: pasted });
+              if (!check.admin) {
+                  __d.setMbStatus('That admin token was not accepted by this mailbox. Double-check it, or reset it in the Apps Script editor (Project Settings → Script properties → delete "admin").');
+                  __d.setMbBusy(false);
+                  return;
+              }
+              admin = pasted;
+          } else if (stored) {
+              const check = await __d._alloMailboxCall(execUrl, { a: 'auth', admin: stored });
+              if (check.admin) admin = stored;
+          }
+          if (!admin) {
+              try {
+                  const claimed = await __d._alloMailboxCall(execUrl, { a: 'claim' });
+                  admin = String(claimed.admin || '');
+                  freshlyClaimed = true;
+              } catch (claimErr) {
+                  if (String(claimErr?.code || '').includes('claimed')) {
+                      __d.setMbStatus('This mailbox is already claimed. Paste its admin token above (shown when it was first connected), or reset it in the Apps Script editor: Project Settings → Script properties → delete "admin".');
+                      __d.setMbBusy(false);
+                      return;
+                  }
+                  throw claimErr;
+              }
+          }
+          try {
+              __d.alloPersistMailboxConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0 });
+              localStorage.setItem(__d.ALLO_MB_URL_KEY, execUrl);
+              if (admin) localStorage.setItem(__d.ALLO_MB_ADMIN_KEY, admin);
+              localStorage.setItem(__d.ALLO_MB_VERSION_KEY, String(Number(mbHello && mbHello.v) || 0));
+          } catch (_) {}
+          __d.setMbAdminInput('');
+          __d.setMbConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0, latencyMs: Date.now() - t0 });
+          __d.setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms.' + (freshlyClaimed ? ' SAVE YOUR ADMIN TOKEN (shown below): you will paste it to reconnect from a new device or a fresh Canvas.' : ' Ready for live sessions and hosted homework QR.'));
+          // Server-side resume: ask the mailbox for any still-open sessions
+          // this admin owns. Works in Canvas where local storage does not.
+          if (admin && !__d.mbLive) {
+              try {
+                  const mine = await __d._alloMailboxCall(execUrl, { a: 'mysessions', admin });
+                  const open = Array.isArray(mine.sessions) ? mine.sessions.filter(s => s && s.c && s.k) : [];
+                  if (open.length) __d.setMbResumable(open);
+              } catch (resumeErr) { __d.warnLog('mysessions query failed', resumeErr?.message); }
+          }
+      } catch (e) {
+          __d.warnLog('Mailbox connect failed', e);
+          __d.setMbStatus('Could not reach the mailbox (' + (e?.message || e) + '). Check the /exec URL and that the deployment access is set to "Anyone".');
+      }
+      __d.setMbBusy(false);
+  };
+const rotateMailboxAdmin = async () => {
+      if (!__d.mbConfig?.url || !__d.mbConfig?.admin) return;
+      __d.setMbBusy(true);
+      try {
+          const rotated = await __d._alloMailboxCall(__d.mbConfig.url, { a: 'rotateadmin', admin: __d.mbConfig.admin });
+          const admin = String(rotated.admin || '');
+          if (!admin) throw new Error('rotation returned no token');
+          try { localStorage.setItem(__d.ALLO_MB_ADMIN_KEY, admin); } catch (_) {}
+          __d.setMbConfig(prev => prev ? { ...prev, admin } : prev);
+          __d.setMbShowAdmin(true);
+          __d.setMbStatus('Admin token rotated. Save the new token; the old one no longer works.');
+      } catch (e) {
+          const active = String(e?.code || '').includes('sessions-active');
+          __d.setMbStatus(active
+              ? 'Close or resume the mailbox sessions listed above before rotating the admin token.'
+              : 'Could not rotate the admin token: ' + (e?.message || e));
+      }
+      __d.setMbBusy(false);
+  };
+const closeAllMailboxSessions = async () => {
+      if (!__d.mbConfig?.url || !__d.mbConfig?.admin) return;
+      // In-app dialog, not window.confirm: the sandboxed Canvas iframe can
+      // silently return false from confirm(), leaving a dead button.
+      const confirmed = await new Promise(resolve => __d.setConfirmDialog({
+          title: 'Close all mailbox sessions?',
+          message: 'Close every live session remembered by this mailbox? Students will be disconnected.',
+          confirmText: 'Close all sessions',
+          tone: 'danger',
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+      }));
+      if (!confirmed) return;
+      __d.setMbBusy(true);
+      try {
+          const result = await __d._alloMailboxCall(__d.mbConfig.url, { a: 'closeall', admin: __d.mbConfig.admin });
+          __d.setMbResumable([]);
+          __d.setMbStatus('Closed ' + (result.closed || 0) + ' mailbox session(s).');
+      } catch (e) {
+          __d.setMbStatus('Could not close mailbox sessions: ' + (e?.message || e));
+      }
+      __d.setMbBusy(false);
+  };
+const startMailboxLiveSession = async () => {
+      if (!__d.mbConfig?.url || !__d.mbConfig?.admin) return;
+      if (Number(__d.mbConfig.v || 0) < 8) {
+          __d.setMbStatus('Update the mailbox script to v8 before starting a secure QR session with automatic Drive submissions.');
+          return;
+      }
+      __d.setMbBusy(true);
+      __d.setMbStatus('Opening live session…');
+      try {
+          const secret = __d._alloRandomToken(16);
+          // Phase C — single pathway: install the session-doc bridge FIRST,
+          // then run the SAME startClassSession as Firestore sessions. Its
+          // session-doc setDoc is rerouted by the bridge, which claims the
+          // generated code on the mailbox (adopt-on-create). Roster, polls,
+          // quiz, groups and pictionary all ride that one session doc.
+          __d._alloMbInstallBridge({ url: __d.mbConfig.url, admin: __d.mbConfig.admin, secret, isTeacher: true });
+          const hasResources = Array.isArray(__d.history) && __d.history.some(h => h && h.id);
+          if (hasResources && typeof __d.startClassSessionRef.current === 'function') {
+              // Best-effort: if the PhaseO module is not loaded yet (or its
+              // flow fails before the session doc write), fall through to the
+              // direct doc creation below — the pack auto-sync still delivers
+              // resources, so a mailbox start never dies on module timing.
+              try { await __d.startClassSessionRef.current(); }
+              catch (startErr) { __d.warnLog('Unified start unavailable, using direct mailbox session doc:', startErr?.message); }
+          }
+          let code = (__d._alloMbBridgeState && __d._alloMbBridgeState.code) || null;
+          if (!code) {
+              // Resource-less start (mailbox classes may begin empty and push
+              // later): create the canonical empty session doc directly.
+              const freshCode = __d.generateSessionCode();
+              const sessionRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId, 'public', 'data', 'sessions', freshCode);
+              await __d.setDoc(sessionRef, __d._mbEmptySessionShape());
+              __d.setActiveSessionCode(freshCode);
+              __d.setShowSessionModal(true);
+              code = (__d._alloMbBridgeState && __d._alloMbBridgeState.code) || freshCode;
+          }
+          // Fail before showing a QR if the deployed script cannot issue and
+          // honor a participant capability. This catches stale deployments
+          // and permission mistakes on the teacher device.
+          const preflight = await __d._alloMailboxCall(__d.mbConfig.url, { a: 'join', c: code, k: secret });
+          if (!preflight?.uid || !preflight?.pt) throw new Error('mailbox v7 participant preflight failed');
+          const preflightRead = await __d._alloMailboxCall(__d.mbConfig.url, {
+              a: 'dget', c: code, uid: preflight.uid, pt: preflight.pt, ps: [{ p: 's' }]
+          });
+          if (!Array.isArray(preflightRead.docs) || preflightRead.docs[0]?.missing) {
+              throw new Error('mailbox student read preflight failed');
+          }
+          const joinUrl = __d._buildAlloMailboxEntryUrl('allo_mb', { u: __d.mbConfig.url, c: code, k: secret, aiPolicy: __d.studentAiPolicyForShare });
+          if (!joinUrl) throw new Error('no student app URL is configured for the QR');
+          __d.mbUpCursorRef.current = 0;
+          __d.mbSentPacksRef.current = {};
+          __d.mbPackItemsRef.current = [];
+          __d.setMbMode('sync');
+          __d.setMbRoster({});
+          const liveRecord = { code, secret, joinUrl, aiPolicy: __d.studentAiPolicyForShare, savedAt: new Date().toISOString() };
+          try { localStorage.setItem(__d.ALLO_MB_LIVE_KEY, JSON.stringify(liveRecord)); } catch (_) {}
+          __d.setMbLive(liveRecord);
+          __d.setMbStatus('');
+      } catch (e) {
+          __d.warnLog('Mailbox live start failed', e);
+          const failedCode = __d._alloMbBridgeState && __d._alloMbBridgeState.code;
+          if (failedCode) {
+              try { await __d._alloMailboxCall(__d.mbConfig.url, { a: 'end', admin: __d.mbConfig.admin, c: failedCode }); } catch (_) {}
+          }
+          __d._alloMbTeardownBridge();
+          __d.setActiveSessionCode(null);
+          __d.setShowSessionModal(false);
+          __d.setMbStatus('Could not start securely: ' + (e?.message || e));
+      }
+      __d.setMbBusy(false);
+  };
+const resumeMailboxLiveSession = async (session) => {
+      if (!session?.c || !session?.k || !__d.mbConfig?.url) return;
+      const code = String(session.c).toUpperCase();
+      const secret = String(session.k);
+      const joinUrl = __d._buildAlloMailboxEntryUrl('allo_mb', { u: __d.mbConfig.url, c: code, k: secret, aiPolicy: __d.studentAiPolicyForShare });
+      if (!joinUrl) { __d.setMbStatus('Could not rebuild the join link for this session on this host.'); return; }
+      __d.mbUpCursorRef.current = 0;
+      __d.mbSentPacksRef.current = {};
+      __d.mbPackItemsRef.current = [];
+      __d.setMbResumable([]);
+      __d.setMbRoster({});
+      // Phase C — unified resume: reattach the standard session pathway to
+      // the server-held session doc, so the roster and any live quiz/poll
+      // state repopulate immediately after a refresh (not on the next
+      // heartbeat). Recreate the doc if the mailbox evicted it or the
+      // teacher's script pre-dates v7.
+      __d._alloMbInstallBridge({ url: __d.mbConfig.url, admin: __d.mbConfig.admin || '', secret, code, isTeacher: true });
+      try {
+          const sessionRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId, 'public', 'data', 'sessions', code);
+          const snap = await __d.getDoc(sessionRef);
+          if (!snap.exists()) await __d.setDoc(sessionRef, __d._mbEmptySessionShape());
+          __d.setActiveSessionCode(code);
+      } catch (reattachErr) {
+          __d.warnLog('Mailbox resume: session doc reattach failed (legacy pack flow still runs):', reattachErr?.message);
+      }
+      const liveRecord = { code, secret, joinUrl, aiPolicy: __d.studentAiPolicyForShare, savedAt: new Date().toISOString() };
+      try { localStorage.setItem(__d.ALLO_MB_LIVE_KEY, JSON.stringify(liveRecord)); } catch (_) {}
+      __d.setMbLive(liveRecord);
+      __d.setMbStatus('Resumed session ' + code + '. Students are still connected.');
+  };
+const describeSavedFollowUpLiveFailure = (reason) => {
+      if (reason === 'inactive-session') return 'Start or resume a live session before sending this follow-up.';
+      if (reason === 'plan-completed') return 'Reopen this follow-up plan before sending it to a live session.';
+      if (reason === 'resource-unavailable') return 'The planned resource is no longer available in student-safe History. Nothing was sent.';
+      if (reason === 'resource-syncing') return 'This resource is still syncing to the live session. Wait a moment and try again.';
+      if (reason === 'cohort-unavailable') return 'The saved evidence cohort is no longer available. Review the plan; nothing was sent.';
+      if (reason === 'no-cohort-learners') return 'No uniquely matched learners from this cohort have a recent live heartbeat. Nothing was sent.';
+      if (reason === 'no-live-learners') return 'No learner devices have checked in recently to this live session.';
+      if (reason === 'teacher-paced-required') return 'Switch the current session to Teacher-Paced to present a whole-class follow-up, or use Prepare assignment link for asynchronous work.';
+      return 'This saved follow-up plan is no longer available. Review and save it again.';
+  };
+const _mbPushOneResource = async (item, opts = {}) => {
+      if (!__d.mbLive || !__d.mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
+      const assertCurrent = () => { if (opts.isCurrent && !opts.isCurrent()) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
+      assertCurrent();
+      const flags = { open: opts.open !== false, quiet: opts.quiet === true };
+      const packItem = await __d.prepareMailboxResourceImages(item);
+      if (!packItem) return { rtcCount: 0 };
+      const encoded = await __d._alloEncodeAlloPack(JSON.stringify(packItem));
+      assertCurrent();
+      const parts = __d._alloSplitPackChunks(encoded);
+      const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      let rtcCount = 0;
+      const openPeers = Object.entries(__d.mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
+      for (const [, peer] of openPeers) {
+          try {
+              for (let i = 0; i < parts.length; i += 1) {
+                  assertCurrent();
+                  await __d._alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet }));
+              }
+              rtcCount += 1;
+          } catch (dcErr) { if (dcErr?.name === 'AbortError') throw dcErr; __d.warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
+      }
+      for (let i = 0; i < parts.length; i += 1) {
+          assertCurrent();
+          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'send', admin: __d.mbConfig.admin, c: __d.mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
+      }
+      return { rtcCount };
+  };
+const pushResourceToMailbox = async (targetItem, opts = {}) => {
+      if (!__d.mbLive || !__d.mbConfig?.url) return;
+      const candidates = __d._alloStudentSafeResources(__d.history);
+      const item = __d._alloStudentSafeResources([targetItem])[0]
+          || __d._alloStudentSafeResources([__d.generatedContent])[0] || candidates[candidates.length - 1];
+      if (!item) {
+          if (!opts.silentTeacher) __d.addToast('Open a student-safe resource first, then push it to the class.', 'info');
+          return;
+      }
+      if (!opts.allowIncompleteAudio && __d.requestWordSoundsAudioConfirmation(
+          item,
+          () => pushResourceToMailbox(item, { ...opts, allowIncompleteAudio: true }),
+          'send'
+      )) return;
+      if (!opts.silentTeacher) __d.setMbBusy(true);
+      try {
+          const { rtcCount } = await __d._mbPushOneResource(item, opts);
+          if (!opts.silentTeacher) {
+              const total = Object.keys(__d.mbRoster).length;
+              __d.addToast('Pushed "' + (item.title || item.type) + '" — ' + rtcCount + ' instant, ' + Math.max(0, total - rtcCount) + ' via mailbox.', 'success');
+          }
+      } catch (e) {
+          __d.warnLog('Mailbox push failed', e);
+          if (!opts.silentTeacher) __d.addToast('Push failed: ' + (e?.message || e), 'error');
+      }
+      if (!opts.silentTeacher) __d.setMbBusy(false);
+  };
+const shareFullPackToMailbox = async () => {
+      if (!__d.mbLive || !__d.mbConfig?.url) return;
+      const candidates = __d._alloStudentSafeResources(__d.history);
+      if (!candidates.length) {
+          __d.addToast('No student-safe resources to share yet.', 'info');
+          return;
+      }
+      __d.setMbBusy(true);
+      let shared = 0;
+      for (const item of candidates) {
+          try {
+              await __d._mbPushOneResource(item, { open: false, quiet: true });
+              shared += 1;
+          } catch (e) { __d.warnLog('Pack share failed for one resource:', e?.message); }
+      }
+      try {
+          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'send', admin: __d.mbConfig.admin, c: __d.mbLive.code, from: 'teacher', box: 'down', v: { kind: 'packdone', count: shared } });
+      } catch (_) {}
+      __d.addToast('Shared ' + shared + ' of ' + candidates.length + ' resources with the class.', shared ? 'success' : 'error');
+      __d.setMbBusy(false);
+  };
+const addDirectionsToPack = () => {
+      const d = __d.mbDirectionsDraft || {};
+      const title = String(d.title || '').trim().slice(0, 140) || 'Assignment Directions';
+      const body = String(d.body || '').trim();
+      if (!body) { __d.addToast(__d.t('takehome.directions_empty') || 'Write the directions first — students see them as the front page of the assignment.', 'info'); return; }
+      const due = String(d.due || '').trim().slice(0, 80);
+       const md = (due ? '**Due:** ' + due + '\n\n' : '') + body;
+       const _choiceDrafts = Array.isArray(d.choiceBoard?.choices) ? d.choiceBoard.choices : [];
+       const _availableChoiceIds = new Set(__d._alloDirectionsGoalResources.map(resource => resource.id));
+       const _staleChoiceCount = _choiceDrafts.filter(choice => !choice || !_availableChoiceIds.has(choice.resourceRef)).length;
+      if (d.choiceBoard?.enabled === true && _staleChoiceCount > 0) {
+          __d.addToast('Remove unavailable activities from the choice board before saving.', 'info');
+          return;
+      }
+      if (d.choiceBoard?.enabled === true && _choiceDrafts.length < 2) {
+          __d.addToast('Select at least two activities before saving the choice board.', 'info');
+          return;
+      }
+      // Objectives Phase 1: structured data only when goals exist — a plain string
+      // otherwise, so v2 items and every legacy reader stay byte-compatible.
+      const _normalizedDir = __d._alloNormalizeDirectionsData({ body: md, objectives: d.objectives, softGate: d.softGate, choiceBoard: d.choiceBoard });
+      const _objectives = _normalizedDir.objectives;
+      const _dirData = (_objectives.length || _normalizedDir.choiceBoard)
+          ? { body: md, ...(_objectives.length ? { objectives: _objectives } : {}), ...(d.softGate ? { softGate: true } : {}), ...(_normalizedDir.choiceBoard ? { choiceBoard: _normalizedDir.choiceBoard } : {}) }
+          : md;
+      const item = { id: __d.generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: _dirData, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };
+      __d.setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
+      if (__d.guidedMode) {
+          __d.markGuidedDeliveryEvidence('directionsSaved');
+          if (__d.guidedActiveSteps[__d.guidedStep]?.id === 'directions') __d.markGuidedStepDone('directions');
+      }
+      __d.setMbDirectionsDraft(null);
+      __d.setShowDirectionsComposer(false);
+      __d.addToast(__d.t('takehome.directions_added') || 'Directions added to the class pack — they sync to students automatically.', 'success');
+   };
+const deriveDirectionsDraft = async () => {
+      if (__d.directionsDeriving) return;
+      __d.setDirectionsDeriving(true);
+      try {
+          const plan = (Array.isArray(__d.history) ? __d.history : []).slice().reverse().find(h => h && h.type === 'lesson-plan');
+          const planText = plan ? String(typeof plan.data === 'string' ? plan.data : JSON.stringify(plan.data || '')).slice(0, 8000) : '';
+          const packItems = __d._alloStudentSafeResources(__d.history).filter(h => h.type !== 'directions');
+          // Context widening (Aaron 2026-07-19): each STUDENT-SAFE resource contributes a short
+          // plain-text excerpt (tags stripped, ~250 chars, ~6k total budget) so drafts can say
+          // what the activities actually contain — teacher-only items still contribute NOTHING.
+          const _excerptOf = (it) => {
+              try {
+                  let txt = typeof it.data === 'string' ? it.data : (it.data ? JSON.stringify(it.data) : '');
+                  txt = String(txt).replace(/<[^>]+>/g, ' ').replace(/[{}"\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+                  return txt.slice(0, 250);
+              } catch (_) { return ''; }
+          };
+          let _excerptBudget = 6000;
+          const manifest = packItems.map(it => {
+              const _ex = _excerptBudget > 0 ? _excerptOf(it) : '';
+              _excerptBudget -= _ex.length;
+              return '- ' + String(it.title || it.type).slice(0, 120) + ' (' + it.type + ')' + (_ex ? ' — ' + _ex : '');
+          }).join('\n');
+          if (!planText && !manifest) {
+              __d.addToast(__d.t('takehome.derive_nothing') || 'Nothing to draft from yet — generate a lesson plan or add resources first.', 'info');
+              __d.setDirectionsDeriving(false);
+              return;
+          }
+          const prompt = 'You write short, warm, student-facing assignment directions for a K-12 class.\n' +
+              'Write directions for students working through the resources below' + (planText ? ", guided by the teacher's lesson plan" : '') + '.\n' +
+              'RULES: Speak directly to the student ("you"). Short imperative steps in the order the resources should be used. Reference ONLY the student resources listed. 120 words max. Plain markdown: one intro paragraph, a numbered list with each step on its own line, and one encouraging closer. Put a blank line between the intro, the list, and the closer. Never run the numbered steps together in one paragraph. No headings.\n' +
+              'PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.\n' +
+              (manifest ? '\nSTUDENT RESOURCES:\n' + manifest + '\n' : '') +
+              (planText ? '\nTEACHER LESSON PLAN (context only — never quote it or surface teacher-only details):\n"""\n' + planText + '\n"""\n' : '') +
+              '\nReturn ONLY the directions markdown.';
+          const out = await __d.callGemini(prompt);
+          const body = String(out || '').trim();
+          if (!body) throw new Error('The draft came back empty.');
+          __d.setMbDirectionsDraft(prev => ({
+              ...(prev || {}),
+              body,
+              title: (prev && prev.title) || (plan && plan.title ? String(plan.title).slice(0, 120) : ''),
+              derivedFrom: plan ? plan.id : 'pack-manifest',
+          }));
+          __d.addToast(__d.t('takehome.derive_done') || 'Draft ready — review and edit before adding. You know your students; the AI does not.', 'success');
+      } catch (e) {
+          __d.warnLog('Directions draft failed', e);
+          __d.addToast((__d.t('takehome.derive_failed') || 'Drafting failed — write the directions manually, or try again: ') + (e?.message || e), 'error');
+      }
+      __d.setDirectionsDeriving(false);
+  };
+const sendPackHome = async () => {
+      if (!__d.mbLive || !__d.mbConfig?.url) return;
+      const candidates = __d._alloStudentSafeResources(__d.history);
+      if (!candidates.length) { __d.addToast(__d.t('takehome.nothing_to_send') || 'Nothing student-safe to send home yet — create or share a resource first.', 'info'); return; }
+      __d.setMbBusy(true);
+      try {
+          const title = String(__d.sourceTopic || 'Homework').trim().slice(0, 140) || 'Homework';
+          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'send', admin: __d.mbConfig.admin, c: __d.mbLive.code, from: 'teacher', box: 'down', v: { kind: 'takehome', title, at: Date.now() } });
+          __d.addToast(__d.t('takehome.sent') || '📥 Sent home — each connected device saves the pack for offline homework.', 'success');
+      } catch (e) {
+          __d.warnLog('Send home failed', e);
+          __d.addToast((__d.t('takehome.send_failed') || 'Send home failed: ') + (e?.message || e), 'error');
+      }
+      __d.setMbBusy(false);
+  };
+const applyMbDownPayload = async (v) => {
+      if (!v) return;
+      if (v.kind === 'sdocv') {
+          // Bridge nudge over the data channel: the teacher just wrote to the
+          // session doc store — pull it soon (jittered: the nudge reaches the
+          // whole class at once, and simultaneous pulls collide with Apps
+          // Script's concurrency ceiling).
+          __d._alloMbNudge();
+          return;
+      }
+      if (v.kind === 'end') {
+          __d.addToast('The teacher ended this live session.', 'info');
+          __d.setMbStudent(null);
+          return;
+      }
+      if (v.kind === 'takehome') {
+          // Take-Home Pack v1: persist the CURRENT student-safe pack to this device so it
+          // survives the session (IndexedDB via storageDB — stable-origin). The pack channel
+          // already delivered/self-healed the resources; this message only flips persistence.
+          const items = __d._alloStudentSafeResources(__d.hydratedHistoryRef.current || []);
+          if (!items.length) { __d.addToast(__d.t('takehome.empty_pack') || 'Your teacher sent homework, but no resources have arrived yet — stay connected a moment and ask them to resend.', 'info'); return; }
+          const shelf = {
+              v: 1,
+              savedAt: new Date().toISOString(),
+              code: (typeof __d.mbLive === 'object' && __d.mbLive) ? (__d.mbLive.code || null) : null,
+              title: String(v.title || '').slice(0, 140) || 'Homework',
+              note: String(v.note || '').slice(0, 2000),
+              resources: items,
+          };
+          try {
+              const ok = await __d.storageDB.set('allo_homework_shelf_v1', shelf);
+              if (ok === false) throw new Error('storage unavailable');
+              __d.setHomeworkShelf(shelf);
+              __d.addToast(__d.t('takehome.saved', { title: shelf.title || 'saved pack', count: items.length }) || ('📥 ' + shelf.title + ' saved to THIS device (' + items.length + ' resources). Open AlloFlow at home to continue — no code needed.'), 'success');
+          } catch (persistErr) {
+              // Honest fallback (shared/locked-down devices): storage refused — offer the file.
+              __d.warnLog('Take-home persist failed', persistErr);
+              __d.setHomeworkShelf(shelf); // in-memory for this visit so the banner's download button works
+              __d.addToast(__d.t('takehome.save_failed') || 'This device would not save the homework — use the Download button on the homework banner to keep a file copy.', 'warning');
+          }
+          return;
+      }
+      if (v.kind === 'packdone') {
+          __d.addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+          return;
+      }
+      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
+          __d.setHistory(prev => {
+              const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
+              __d.hydratedHistoryRef.current = next;
+              return next;
+          });
+          return;
+      }
+      if (v.kind === 'res') {
+          const store = __d.mbChunkStoreRef.current || (__d.mbChunkStoreRef.current = { parts: {}, applied: new Set() });
+          const assembled = __d._alloCollectResChunk(store, v);
+          if (!assembled) return;
+          try {
+              let resource = JSON.parse(await __d._alloDecodeAlloPack(assembled) || 'null');
+              resource = __d._alloStudentSafeResources([resource])[0];
+              if (!resource) throw new Error('The transferred resource is not a valid student resource');
+              if (__d.mbChunkStoreRef.current !== store) return;
+              __d.setHistory(prev => {
+                  const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                  const next = [...rest, resource];
+                  // The pack IS the mailbox session's resource pool: keep the ref
+                  // the session-doc consumers read (sync jump, group/individual
+                  // pushes) pointing at it. Idempotent under double invocation.
+                  __d.hydratedHistoryRef.current = next;
+                  return next;
+              });
+              // open=false delivers quietly into the pack (async-mode share);
+              // open=true (default) follows the teacher like sync mode.
+              if (v.open !== false) __d.setPendingQrAssignmentResource(resource);
+              __d._alloFinishResChunk(store, v.rid, true);
+              __d.setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
+              if (!v.quiet) __d.addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+          } catch (decodeErr) {
+              if (__d.mbChunkStoreRef.current !== store) return;
+              __d._alloFinishResChunk(store, v.rid, false);
+              __d.setMbResourceReceiveError(true);
+              if ((store.failures?.[v.rid]?.count || 0) < 3) __d.mbStudentCursorRef.current = 0;
+              __d.warnLog('Mailbox resource decode failed', decodeErr);
+          }
+      }
+  };
+const savePortableAacResourceToHistory = (rawPackage) => {
+      const portable = __d._alloNormalizePortableAacBoardPackage(rawPackage, {
+          allowAudio: true,
+          maxImageChars: __d.ALLO_AAC_PACK_IMAGE_CHARS,
+          maxImageItemChars: __d.ALLO_AAC_PACK_IMAGE_ITEM_CHARS,
+          maxAudioChars: __d.ALLO_AAC_PACK_AUDIO_CHARS,
+          maxAudioItemChars: __d.ALLO_AAC_PACK_AUDIO_ITEM_CHARS
+      });
+      if (!portable) return null;
+      const fingerprint = __d._alloAacHash({
+          board: portable.board,
+          pages: portable.pages,
+          metadata: portable.metadata
+      });
+      const id = 'aac-board-' + __d._alloAacId(portable.board.id, 'board') + '-' + fingerprint;
+      const timestamp = Date.now();
+      const resource = {
+          id,
+          type: 'aac-board',
+          title: __d._alloAacText(portable.board.title, 160) || 'AAC Board',
+          data: portable,
+          meta: 'Portable AAC Board',
+          timestamp,
+          source: 'symbol-studio'
+      };
+      __d.setHistory((previous) => {
+          const list = Array.isArray(previous) ? previous : [];
+          const existingIndex = list.findIndex((candidate) => candidate && candidate.id === id && candidate.type === 'aac-board');
+          if (existingIndex < 0) return list.concat([resource]);
+          const next = list.slice();
+          next[existingIndex] = resource;
+          return next;
+      });
+      return id;
+  };
+const printQrSheet = (svg, heading, detail, modeLabel, fallbackCode = '') => {
+      if (!svg || typeof window === 'undefined') {
+          __d.addToast('Wait for the QR code to finish loading before printing.', 'info');
+          return;
+      }
+      const popup = window.open('', '_blank', 'width=720,height=900');
+      if (!popup) {
+          __d.addToast('Allow pop-ups to print this QR code.', 'info');
+          return;
+      }
+      try { popup.opener = null; } catch (_) {}
+      const escapeText = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      const safeHeading = escapeText(heading);
+      const safeDetail = escapeText(detail);
+      const safeMode = escapeText(modeLabel);
+      const safeCode = escapeText(String(fallbackCode || '').replace(/[^A-Z0-9-]/gi, ''));
+      popup.document.open();
+      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeHeading}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.detail{font-size:18px;font-weight:700;margin-bottom:8px}.mode{font-weight:700;color:#6d28d9;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 52px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>${safeHeading}</h1><div class="detail">${safeDetail}</div><div class="mode">${safeMode}</div><div class="qr">${svg}</div>${safeCode ? '<div>Fallback class code</div><div class="code">' + safeCode + '</div>' : ''}<div class="note">Scan with a phone or tablet camera. If scanning is unavailable, ask the teacher for the link${safeCode ? ' or class code' : ''}.</div></body></html>`);
+      popup.document.close();
+      setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
+  };
+const revokeHomeworkAssignment = async (shareOverride = null) => {
+      const current = shareOverride && typeof shareOverride === 'object' && shareOverride.url ? shareOverride : __d.qrShareModal;
+      if (!current || current.type === 'assignment-pack') return;
+      // In-app dialog, not window.confirm: the sandboxed Canvas iframe can
+      // silently return false from confirm(), leaving a dead button.
+      const confirmed = await new Promise(resolve => __d.setConfirmDialog({
+          title: 'Revoke homework link?',
+          message: 'Revoke this homework link now? Students will no longer be able to open it.',
+          confirmText: 'Revoke link',
+          tone: 'danger',
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+      }));
+      if (!confirmed) return;
+      __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [current.url]: { kind: 'revoking' } }));
+      try {
+          if (current.type === 'assignment-pack-hosted') {
+              if (!__d.mbConfig?.url || !__d.mbConfig?.admin || !current.packId) throw new Error('Mailbox connection is unavailable');
+              await __d._alloMailboxCall(__d.mbConfig.url, { a: 'delpack', admin: __d.mbConfig.admin, id: current.packId });
+          } else {
+              await __d.deleteDoc(__d.doc(__d.db, 'artifacts', current.hostAppId || __d.appId, 'public', 'data', 'sessions', current.assignmentId));
+          }
+          __d.setQrShareModal(previous => previous?.url === current.url ? null : previous);
+          __d.setRecentQrShares(previous => previous.map(item => item.url === current.url
+              ? { ...item, revokedAt: new Date().toISOString() }
+              : item));
+          __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [current.url]: { kind: '' } }));
+          __d.setShowRecentQrShares(true);
+          __d.addToast('Homework link revoked. Its local record remains in the Assignment Control Center.', 'success');
+      } catch (e) {
+          __d.warnLog('Homework revocation failed:', e);
+          __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [current.url]: { kind: '', error: 'Revocation failed. Students can still use the existing link.' } }));
+          __d.addToast('Could not revoke this homework link. Try again while connected.', 'error');
+      }
+  };
+const patchAssignmentCenterActivity = (patch) => {
+      if (!patch || typeof patch !== 'object' || Array.isArray(patch)) return;
+      const owns = key => Object.prototype.hasOwnProperty.call(patch, key);
+      __d.setSharedAssignmentActivity(previous => {
+          const next = { ...(previous || {}) };
+          if (owns('enabled')) next.enabled = patch.enabled === true;
+          if (owns('type') && ['word_cloud', 'rating', 'availability', 'signup', 'survey'].includes(patch.type)) next.type = patch.type;
+          if (owns('prompt')) next.prompt = String(patch.prompt || '').slice(0, 240);
+          if (owns('optionsText')) next.optionsText = String(patch.optionsText || '').slice(0, 4000);
+          if (owns('identityMode')) next.identityMode = ['real_name', 'codename', 'anonymous'].includes(patch.identityMode) ? patch.identityMode : '';
+          if (owns('allowMaybe')) next.allowMaybe = patch.allowMaybe !== false;
+          if (owns('multiSelect')) next.multiSelect = patch.multiSelect !== false;
+          if (owns('maxPerPerson')) next.maxPerPerson = Math.max(1, Math.min(10, Math.trunc(Number(patch.maxPerPerson) || 1)));
+          if (owns('surveyInfo')) next.surveyInfo = String(patch.surveyInfo || '').slice(0, 600);
+          return next;
+      });
+  };
+const patchAssignmentCenterSurveyItem = (index, patch) => {
+      if (!Number.isInteger(index) || index < 0 || index >= 12 || !patch || typeof patch !== 'object' || Array.isArray(patch)) return;
+      const owns = key => Object.prototype.hasOwnProperty.call(patch, key);
+      __d.setSharedAssignmentActivity(previous => {
+          const rows = [...(Array.isArray(previous?.surveyItems) ? previous.surveyItems : [])].slice(0, 12);
+          if (index >= rows.length) return previous;
+          const nextItem = { ...(rows[index] || {}) };
+          if (owns('type') && ['likert', 'choice', 'freetext', 'numeric'].includes(patch.type)) nextItem.type = patch.type;
+          if (owns('text')) nextItem.text = String(patch.text || '').slice(0, 240);
+          if (owns('steps') && [3, 4, 5, 7].includes(Number(patch.steps))) nextItem.steps = Number(patch.steps);
+          if (owns('required')) nextItem.required = patch.required === true;
+          if (owns('lowLabel')) nextItem.lowLabel = String(patch.lowLabel || '').slice(0, 60);
+          if (owns('highLabel')) nextItem.highLabel = String(patch.highLabel || '').slice(0, 60);
+          if (owns('optionsText')) nextItem.optionsText = String(patch.optionsText || '').slice(0, 4000);
+          if (owns('min')) nextItem.min = String(patch.min ?? '').slice(0, 32);
+          if (owns('max')) nextItem.max = String(patch.max ?? '').slice(0, 32);
+          rows[index] = nextItem;
+          return { ...(previous || {}), surveyItems: rows };
+      });
+  };
+const _ensurePdfLib = () => {
+    if (typeof window === 'undefined') return Promise.resolve(false);
+    if (window.PDFLib && window.PDFLib.PDFDocument) return Promise.resolve(true);
+    if (document.getElementById('pdflib-cdn')) {
+      return new Promise((resolve) => {
+        const t = setInterval(() => {
+          if (window.PDFLib && window.PDFLib.PDFDocument) { clearInterval(t); resolve(true); }
+        }, 50);
+        setTimeout(() => { clearInterval(t); resolve(!!(window.PDFLib && window.PDFLib.PDFDocument)); }, 10000);
+      });
+    }
+    // Mirror chain (each HTTP-200-verified): locked-down school networks often
+    // block a single CDN host — one blocked mirror must not kill tagged-PDF export.
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+    ];
+    return new Promise((resolve) => {
+      const tryAt = (i) => {
+        if (i >= urls.length) { try { console.warn('[pdf-lib] all ' + urls.length + ' CDN mirrors failed — tagged-PDF export unavailable on this network'); } catch (_) {} resolve(false); return; }
+        const s = document.createElement('script');
+        s.id = 'pdflib-cdn';
+        s.src = urls[i];
+        s.async = true;
+        s.onload = () => resolve(!!(window.PDFLib && window.PDFLib.PDFDocument));
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
+    });
+  };
+const openCachedPdfRemediation = (closeStorageManager = false) => {
+    const activeFixResult = __d.pdfFixResult || __d.pdfFixResultRef.current;
+    if (!__d.lastPdfAuditResultRef.current && !activeFixResult) {
+      __d.addToast(__d.t('toasts.remediation_cache_unavailable') || 'That cached remediation is no longer available on this device.', 'warning');
+      return false;
+    }
+    if (typeof localStorage !== 'undefined') __d.ALLO_PDF_REMEDIATION_CACHE.clearDismissal(localStorage);
+    __d.setPdfReturnPillDismissed(false);
+    __d.setPdfRemediationDeleteConfirm(null);
+    const restoredAudit = __d.lastPdfAuditResultRef.current || {
+      score: activeFixResult?.beforeScore ?? null, scores: [], critical: [], major: [], minor: [],
+      passes: [], summary: 'Reopened remediation', pageCount: activeFixResult?.pageCount,
+      hasSearchableText: true, hasImages: ((activeFixResult && activeFixResult.imageCount) || 0) > 0,
+    };
+    __d.setPdfAuditResult(restoredAudit);
+    if (closeStorageManager) __d.closeCanvasRecoveryDialog(null);
+    return true;
+  };
+const onUpdateResource = (resourceId, updater) => {
+    if (resourceId == null || typeof updater !== 'function') return false;
+    const id = String(resourceId);
+    const current = __d._resourceMutationStateRef.current;
+    const artifact = (Array.isArray(current.history) ? current.history : []).find(item => item && String(item.id) === id)
+      || (current.generatedContent && String(current.generatedContent.id) === id ? current.generatedContent : null);
+    if (!artifact) return false;
+    const candidate = updater(artifact);
+    if (!candidate || candidate === artifact) return false;
+    const updatedAt = new Date().toISOString();
+    const apply = previous => {
+      if (!previous || String(previous.id) !== id || previous.type !== artifact.type) return previous;
+      const next = previous === artifact ? candidate : updater(previous);
+      if (!next || next === previous) return previous;
+      return { ...next, id: previous.id, type: previous.type, updatedAt };
+    };
+    __d.setHistory(previous => previous.map(apply));
+    __d.setGeneratedContent(apply);
+    return true;
+  };
+function resumeReadThisPage() {
+    if (!__d.rtpPausedRef.current) return false;
+    __d.rtpPausedRef.current = false;
+    __d._settleReadThisPagePauseWaiters();
+    const audio = __d.rtpCurrentAudioRef.current;
+    const voiceSpeechLease = __d._beginReadThisPageVoiceSpeech();
+    if (audio) {
+      try {
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.then(() => { if (voiceSpeechLease && typeof voiceSpeechLease.start === 'function') voiceSpeechLease.start(); }).catch(() => __d.stopReadThisPage());
+        } else if (voiceSpeechLease && typeof voiceSpeechLease.start === 'function') {
+          voiceSpeechLease.start();
+        }
+      } catch (_) {
+        __d.stopReadThisPage();
+        return false;
+      }
+    } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.resume();
+        if (voiceSpeechLease && typeof voiceSpeechLease.start === 'function') voiceSpeechLease.start();
+      } catch (_) {}
+    }
+    __d.setRtpPlaybackState('reading');
+    return true;
+  }
+const handleApplyLessonTemplate = (id) => {
+    const S = window.AlloModules && window.AlloModules.AgentCoreBlueprintService;
+    const lib = __d._lessonTemplateLib();
+    if (!S || !lib) return;
+    const tpl = lib.get(id);
+    if (!tpl) { __d.addToast(__d.t('blueprint.template_missing') || 'That template is no longer saved.', 'warning'); return; }
+    try {
+      // The outgoing plan may hold a finished run — file it before replacing.
+      archiveLivePlan();
+      __d.setActiveBlueprint(S.applyLessonTemplate(tpl));
+      // REQUIRED: templates reuse uiIds, so a run record left over from the
+      // previous plan would render as though it described this one — landed
+      // badges on rows that have never been generated.
+      __d.setBlueprintExecutionResult(null);
+      __d.setShowUDLGuide(true);
+      __d.addToast(__d.t('blueprint.template_applied', { name: tpl.name }) || `Started from "${tpl.name}".`, 'info');
+    } catch (e) { __d.warnLog('[Template] apply failed:', e?.message || e); }
+  };
+const archiveLivePlan = () => {
+    if (!__d.activeBlueprint || !__d.blueprintExecutionResult || !__d.blueprintExecutionResult.rows) return;
+    if (!Object.keys(__d.blueprintExecutionResult.rows).length) return;
+    const S = window.AlloModules && window.AlloModules.AgentCoreBlueprintService;
+    const lib = __d._blueprintArchiveLib();
+    if (!S || !lib || typeof S.toArchivedPlan !== 'function') return;
+    try {
+      const _unit = (Array.isArray(__d.units) ? __d.units : []).find(u => u && u.id === __d.activeUnitId);
+      const rec = S.toArchivedPlan(__d.activeBlueprint, __d.blueprintExecutionResult, {
+        name: (__d.sourceTopic && String(__d.sourceTopic).trim()) || 'Lesson plan',
+        savedAt: new Date().toISOString(),
+        unitId: (__d.activeUnitId && __d.activeUnitId !== 'all' && __d.activeUnitId !== 'uncategorized') ? __d.activeUnitId : null,
+        unitName: _unit ? _unit.name : null
+      });
+      if (!rec) return;
+      if (!lib.add(rec)) {
+        __d.addToast(__d.t('blueprint.archive_save_failed') || 'Could not archive the previous plan — storage may be full.', 'warning');
+        return;
+      }
+      __d.setArchivedPlans(lib.list());
+    } catch (e) { __d.warnLog('[BlueprintArchive] file failed:', e?.message || e); }
+  };
+const handleRestoreArchivedPlan = (id) => {
+    if (__d.isExecutingBlueprint) { __d.addToast(__d.t('blueprint.archive_restore_while_running') || 'Wait for the current plan to finish generating first.', 'info'); return; }
+    const lib = __d._blueprintArchiveLib();
+    const rec = lib && lib.get(id);
+    if (!rec || !rec.plan) { __d.addToast(__d.t('blueprint.archive_missing') || 'That plan is no longer archived.', 'warning'); return; }
+    // File the outgoing live plan first — restoring must never destroy work.
+    archiveLivePlan();
+    __d.setActiveBlueprint(rec.plan);
+    // Restored rows go through the SAME demotion as the boot hydrate: a record
+    // archived mid-run must not come back as a spinner that never resolves.
+    __d.setBlueprintExecutionResult((rec.run && rec.run.rows)
+      ? Object.assign({}, rec.run, { rows: __d._demoteInFlightRows(rec.run.rows), done: true, restored: true })
+      : null);
+    // Deliberately does NOT touch persistedLessonDNA. A restore is a view of an
+    // old plan, not a workspace time machine — retargeting ambient DNA here is
+    // the same leak class the DA clinical-isolation work closed.
+    __d.setShowUDLGuide(true);
+    __d.addToast(__d.t('blueprint.archive_restored', { name: rec.name }) || ('Restored "' + rec.name + '".'), 'success');
+  };
+const handleApplyRosterGroup = (groupId) => {
+      const group = __d.rosterKey?.groups?.[groupId];
+      if (!group?.profile) return;
+      const p = group.profile;
+      if (p.gradeLevel) __d.setGradeLevel(p.gradeLevel);
+      if (p.leveledTextLanguage) __d.setLeveledTextLanguage(p.leveledTextLanguage);
+      if (typeof p.translationMode === 'string') __d.setTranslationMode(p.translationMode);
+      if (p.studentInterests) {
+          const interests = Array.isArray(p.studentInterests) ? p.studentInterests : p.studentInterests.split(',').map(s => s.trim()).filter(Boolean);
+          __d.setStudentInterests(interests);
+      }
+      if (p.dokLevel) __d.setDokLevel(p.dokLevel);
+      if (p.leveledTextCustomInstructions) __d.setLeveledTextCustomInstructions(p.leveledTextCustomInstructions);
+      if (p.adventureCustomInstructions) __d.setAdventureCustomInstructions(p.adventureCustomInstructions);
+      if (p.selectedLanguages && Array.isArray(p.selectedLanguages)) __d.setSelectedLanguages(p.selectedLanguages);
+      if (p.targetStandards && Array.isArray(p.targetStandards)) { __d.setTargetStandards(p.targetStandards); __d.setStandardInputValue(''); }
+      if (p.useEmojis !== undefined) __d.setUseEmojis(p.useEmojis);
+      if (p.textFormat) __d.setTextFormat(p.textFormat);
+      __d.addToast(__d.t('roster.applied', { name: group.name }) || `Applied "${group.name}" settings to generator`, "info");
+  };
+const handleImportProfiles = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+          try {
+              const loadedProfiles = JSON.parse(event.target.result);
+              if (Array.isArray(loadedProfiles)) {
+                  __d.setProfiles(prev => {
+                      const existingIds = new Set(prev.map(p => p.id));
+                      const newProfiles = loadedProfiles.filter(p => !existingIds.has(p.id));
+                      return [...prev, ...newProfiles];
+                  });
+                  __d.addToast(__d.t('profiles.import_success', { count: loadedProfiles.length }), "success");
+              }
+          } catch (err) {
+              __d.warnLog("Unhandled error:", err);
+              __d.addToast(__d.t('profiles.import_error'), "error");
+          }
+      };
+      reader.readAsText(file);
+      if (__d.profileInputRef.current) __d.profileInputRef.current.value = '';
+  };
+const verifyMathProblems = (problems) => {
+    return problems.map(p => {
+      const verification = { verified: false, mismatch: false, computed: null, autoCorrected: false };
+      if (p.expression) {
+        const computed = __d.evaluateMathExpression(p.expression);
+        if (computed !== null) {
+          const answerStr = String(p.answer || '').replace(/[^0-9.\-]/g, '');
+          const answerNum = parseFloat(answerStr);
+          verification.computed = computed;
+          if (!isNaN(answerNum)) {
+            verification.verified = Math.abs(computed - answerNum) < 0.01;
+            verification.mismatch = !verification.verified;
+            if (verification.mismatch) {
+              p._originalAnswer = p.answer;
+              p.answer = String(computed);
+              verification.autoCorrected = true;
+            }
+          }
+        }
+      }
+      if (Array.isArray(p.steps)) {
+        p.steps = p.steps.map(s => {
+          if (s.expression) {
+            const stepResult = __d.evaluateMathExpression(s.expression);
+            if (stepResult !== null) {
+              s._computedResult = stepResult;
+              s._verified = true;
+            }
+          }
+          return s;
+        });
+      }
+      return { ...p, _verification: verification };
+    });
+  };
+const getTeachingScriptController = () => {
+    if (!__d.teachingScriptControllerRef.current && window.AlloModules?.LessonTeachingScriptHost) {
+      __d.teachingScriptControllerRef.current = window.AlloModules.LessonTeachingScriptHost.createController({
+        getState: () => __d.teachingScriptStateRef.current,
+        core: () => window.AlloModules.LessonTeachingScript,
+        research: () => window.AlloModules.LessonTeachingResearch,
+        ensureResearch: () => window.__alloEnsureLazyModule('LessonTeachingResearchModule', '__alloLazyLessonTeachingResearch', 'LessonTeachingResearch'),
+        callText: (prompt, signal) => __d.teachingScriptStateRef.current.callText(prompt, signal),
+        search: (query, maxResults, searchQueryOverride) => __d.WebSearchProvider?.search ? __d.WebSearchProvider.search(query, maxResults, searchQueryOverride || query) : Promise.resolve({ results: [] }),
+        read: (url, options) => window.AlloModules.LessonTeachingResearch.readPublicGuidance(url, options),
+        updateResource: __d.onUpdateResource,
+        onStatus: status => __d.setTeachingScriptRuns(previous => ({ ...previous, [status.planId]: status }))
+      });
+    }
+    return __d.teachingScriptControllerRef.current;
+  };
+const runGlossaryHealthCheck = async (terms, sourceText) => {
+    const module = window.AlloModules && window.AlloModules.ExportHandlers;
+    const live = __d.glossaryLiveRef.current.resource;
+    if (!module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;
+    const signature = JSON.stringify(terms.map(item => item && [item.term, item.def, item.tier]));
+    const task = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask({
+        generatedContent: live, getGlossaryLive: () => __d.glossaryLiveRef.current,
+        glossaryTaskRegistry: __d.glossaryTaskRegistryRef.current,
+    }, null, [], 'health');
+    if (!task) return null;
+    const current = () => task.visible() && signature === JSON.stringify((__d.glossaryLiveRef.current.resource?.data || []).map(item => item && [item.term, item.def, item.tier]));
+    __d.glossaryHealthCheckIdRef.current = String(live.id) + ':' + signature;
+    try {
+        const result = await module.runGlossaryHealthCheck(terms, sourceText, {
+            debugLog: __d.debugLog, warnLog: __d.warnLog,
+            callGemini: (...args) => { args[5] = task.signal; return __d.callGemini(...args); },
+            setIsRunningHealthCheck: value => { if (current()) __d.setIsRunningHealthCheck(value); },
+            setShowHealthCheckPanel: value => { if (current()) __d.setShowHealthCheckPanel(value); },
+            setGlossaryHealthCheck: value => { if (current()) __d.setGlossaryHealthCheck(value); },
+        });
+        return current() ? result : null;
+    } finally { task.finish(); }
+  };
+const fetchReplacementSuggestion = async (existingTerms, addedTerm, sourceText) => {
+    try {
+      const termNames = existingTerms.map(t => t.term || t.word || (typeof t === 'string' ? t : '')).filter(Boolean);
+      termNames.push(addedTerm);
+      const prompt = `You are a literacy specialist. A student glossary already contains these terms: ${termNames.join(', ')}.
+Suggest exactly 1 NEW important vocabulary term that is missing from this glossary and would strengthen a student's understanding of the source text.
+${sourceText ? `SOURCE TEXT (first 400 chars):\n${sourceText.substring(0, 400)}` : ''}
+Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why it should be included (max 15 words)"}`;
+      const result = await __d.callGemini(prompt, true);
+      if (result) {
+        const cleaned = result.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        let parsed;
+        try { parsed = JSON.parse(cleaned); } catch(e) {
+          const m = result.match(/\{[\s\S]*\}/);
+          if (m) parsed = JSON.parse(m[0]);
+        }
+        if (parsed && parsed.term) return parsed;
+      }
+    } catch(e) {
+      __d.debugLog('🩺 [HealthCheck] fetchReplacementSuggestion failed:', e.message);
+    }
+    return null;
+  };
+const generateDynamicBridge = async (currentStage, nextStage, contextData) => {
+      const contextStr = Object.entries(contextData)
+          .filter(([_, v]) => v !== null && v !== undefined)
+          .map(([k, v]) => `- ${k}: ${v}`)
+          .join('\n');
+      const prompt = `
+        You are an expert pedagogical guide assisting a teacher in building a lesson plan.
+        We are transitioning from the "${currentStage}" step to the "${nextStage}" step.
+        Recent Context:
+        ${contextStr}
+        Task:
+        Generate a concise, conversational (1-2 sentences) transition message proposing the next step.
+        - Acknowledge the previous result (e.g., "That analysis found some tricky vocabulary.").
+        - Propose the next tool/step logically (e.g., "Shall we build a Glossary to support that?").
+        - If the context suggests a specific need (e.g. low reading level), suggest a specific setting tweak for the next step.
+        Do not include "Teacher:" or "AI:" labels. Just the message.
+      `;
+      try {
+          return await __d.callGemini(prompt);
+      } catch (e) {
+          __d.warnLog("Bridge generation failed", e);
+          return `Moving on. Shall we set up the ${nextStage.replace(/-/g, ' ')}?`;
+      }
+  };
+const generatePixelArtItem = async (itemName, itemDescription) => {
+      try {
+          const context = itemDescription ? ` matching this description: "${itemDescription}"` : "";
+          const prompt = `Single 8-bit pixel art icon of ${itemName}${context} for a retro RPG video game inventory. White background. High contrast, colorful, isolated object.`;
+          let imageUrl = await __d.callImagen(prompt);
+          try {
+              const rawBase64 = imageUrl.split(',')[1];
+              const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
+              imageUrl = await __d.callGeminiImageEdit(editPrompt, rawBase64);
+          } catch (refineErr) {
+              __d.warnLog("Pixel art refinement failed, using original.", refineErr);
+          }
+          return imageUrl;
+      } catch (e) {
+          __d.warnLog("Pixel art gen failed", e);
+          return null;
+      }
+  };
+const toggleLetterSelection = (r, c) => {
+      const key = `${r}-${c}`;
+      const newSet = new Set(__d.selectedLetters);
+      if (newSet.has(key)) newSet.delete(key);
+      else newSet.add(key);
+      __d.setSelectedLetters(newSet);
+      if (__d.gameData && __d.gameData.wordLocations) {
+          Object.entries(__d.gameData.wordLocations).forEach(([word, coords]) => {
+              if (!__d.foundWords.has(word)) {
+                  const isComplete = coords.every(coord => newSet.has(coord));
+                  if (isComplete) {
+                      __d.setFoundWords(prev => {
+                          const next = new Set(prev);
+                          next.add(word);
+                          return next;
+                      });
+                      __d.playSound('correct');
+                      __d.addToast(__d.t('glossary.word_search_notifications.found', { word }), "success");
+                      __d.handleScoreUpdate(5, "Word Search Find", __d.generatedContent?.id);
+                  }
+              }
+          });
+      }
+  };
+const handleUrlFetch = async (urlOverride = null) => {
+      let targetUrl = urlOverride || __d.urlToFetch;
+      if (!targetUrl || !targetUrl.trim()) return;
+      targetUrl = targetUrl.trim();
+      __d.setIsExtracting(true);
+      __d.setGenerationStep(__d.t('status_steps.extracting_text'));
+      __d.setError(null);
+      __d.addToast(__d.t('status.fetching_url'), "info");
+      try {
+        const content = await __d.fetchAndCleanUrl(targetUrl, __d.callGemini, __d.addToast);
+        if (content) {
+            __d.setInputText(content);
+            __d.recordSourceProvenance({ title: __d.sourceTopic || targetUrl, locator: targetUrl, type: 'url', importMethod: 'url-fetch' }, content);
+            __d.setShowUrlInput(false);
+            __d.setUrlToFetch('');
+            __d.addToast(__d.t('quick_start.article_imported'), "success");
+        }
+      } catch (err) {
+        __d.warnLog("Main URL Fetch Error:", err);
+        __d.setError(err.message || __d.t('quick_start.error_extract'));
+      } finally {
+        __d.setIsExtracting(false);
+        __d.flyToElement('tour-input-panel');
+      }
+  };
+const applyGlobalCitations = (text, supports, localToGlobalMap) => {
+    if (!supports || !localToGlobalMap) return text;
+    let insertions = [];
+    supports.forEach(support => {
+        const chunkIndices = support.groundingChunkIndices;
+        if (!chunkIndices || chunkIndices.length === 0) return;
+        let idx = support.segment?.endIndex;
+        if (idx === undefined) return;
+        const globalIds = chunkIndices
+            .map(localId => localToGlobalMap.get(localId))
+            .filter(id => id !== undefined)
+            .sort((a, b) => a - b);
+        if (globalIds.length > 0) {
+            const label = " " + globalIds.map(id => `[${id}]`).join(', ');
+            insertions.push({ idx, label });
+        }
+    });
+    insertions.sort((a, b) => b.idx - a.idx);
+    let newText = text;
+    insertions.forEach(({ idx, label }) => {
+        if (idx <= newText.length) {
+            newText = newText.slice(0, idx) + label + newText.slice(idx);
+        }
+    });
+    newText = newText.replace(/(\s*\[[\d,\s\[\]]+\])([.!?])/g, '$2$1');
+    return newText;
+  };
+const handleAnimatePanel = async (panelIdx, motionPrompt, frameCount) => {
+      if (!motionPrompt || !motionPrompt.trim()) {
+          __d.addToast(__d.t('toasts.animation_prompt_required') || 'Describe the motion before animating.', 'warning');
+          return;
+      }
+      const plan = __d.generatedContent && __d.generatedContent.data && __d.generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel) return;
+      __d.setIsProcessing(true);
+      __d.setGenerationStep(__d.t('toasts.animating_panel') || 'Animating panel…');
+      try {
+          const animatedPanel = await __d.generateAnimatedPanel(
+              { ...panel, type: 'process_animation', motionPrompt: motionPrompt.trim(), frameCount: frameCount || 6 },
+              400, 0.9, __d.visualStyle === 'custom' ? (__d.visualCustomStyle || '') : (__d.visualStyle === 'Default' ? '' : __d.visualStyle)
+          );
+          __d._updatePanelInPlan(panelIdx, () => animatedPanel);
+          __d.addToast(__d.t('toasts.panel_animated') || 'Panel animated.', 'success');
+      } catch (e) {
+          __d.warnLog('[VisualPanel] handleAnimatePanel failed:', e);
+          __d.addToast((__d.t('toasts.animation_failed') || 'Animation failed') + ': ' + (e && e.message || ''), 'error');
+      } finally {
+          __d.setIsProcessing(false);
+          __d.setGenerationStep('');
+      }
+  };
+const handleDuplicatePanelFrame = async (panelIdx, frameIdx) => {
+      // Holds the chosen frame longer by inserting a copy right after it.
+      // motionSteps gets a passthrough entry ("hold previous") so anchor
+      // cascade-regen later doesn't try to mutate the duplicated frame.
+      const plan = __d.generatedContent && __d.generatedContent.data && __d.generatedContent.data.visualPlan;
+      const panel = plan && plan.panels && plan.panels[panelIdx];
+      if (!panel || !panel.frames || !panel.frames[frameIdx]) return;
+      try {
+          const newFrames = [...panel.frames.slice(0, frameIdx + 1), panel.frames[frameIdx], ...panel.frames.slice(frameIdx + 1)];
+          const newSteps = Array.isArray(panel.motionSteps)
+              ? [...panel.motionSteps.slice(0, frameIdx), 'hold previous frame (no motion)', ...panel.motionSteps.slice(frameIdx)]
+              : panel.motionSteps;
+          const w = panel.frameWidth || 400;
+          const h = panel.frameHeight || 400;
+          const gifUrl = await __d.encodeFramesToGif(newFrames, w, h, panel.fps || 3);
+          __d._updatePanelInPlan(panelIdx, (p) => ({ ...p, frames: newFrames, motionSteps: newSteps, imageUrl: gifUrl }));
+      } catch (e) {
+          __d.warnLog('[VisualPanel] handleDuplicatePanelFrame failed:', e);
+          __d.addToast((__d.t('toasts.frame_duplicate_failed') || 'Could not duplicate frame') + ': ' + (e && e.message || ''), 'error');
+      }
+  };
+const handleUpdateVisualLabel = (panelIdx, labelIdx, newText) => {
+      if (!__d.generatedContent?.data?.visualPlan) return;
+      const plan = __d.generatedContent?.data.visualPlan;
+      const updatedPanels = [...plan.panels];
+      const updatedLabels = [...(updatedPanels[panelIdx].labels || [])];
+      if (newText === null) {
+          updatedLabels.splice(labelIdx, 1);
+      } else {
+          updatedLabels[labelIdx] = { ...updatedLabels[labelIdx], text: newText };
+      }
+      updatedPanels[panelIdx] = { ...updatedPanels[panelIdx], labels: updatedLabels };
+      const updatedPlan = { ...plan, panels: updatedPanels };
+      const updatedContent = {
+          ...__d.generatedContent,
+          data: { ...__d.generatedContent?.data, visualPlan: updatedPlan }
+      };
+      __d.setGeneratedContent(updatedContent);
+      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleFetchWordImage = async (word) => {
+      const key = (word || '').toLowerCase().trim();
+      if (!key) return;
+      const cached = __d.wordImageCacheRef.current.get(key);
+      if (cached) {
+          __d.setDefinitionData(prev => prev ? { ...prev, imageUrl: cached } : prev);
+          return;
+      }
+      __d.setDefinitionData(prev => prev ? { ...prev, imageLoading: true } : prev);
+      try {
+          const prompt = `Icon style illustration of "${word}". Simple, clear, flat vector art style. White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
+          const url = await __d.callImagen(prompt, 256, 0.8);
+          if (url) {
+              __d.wordImageCacheRef.current.set(key, url);
+              __d.setDefinitionData(prev => prev ? { ...prev, imageUrl: url, imageLoading: false } : prev);
+          } else {
+              __d.setDefinitionData(prev => prev ? { ...prev, imageLoading: false, imageError: true } : prev);
+          }
+      } catch (err) {
+          __d.warnLog('Word image fetch failed:', err);
+          __d.setDefinitionData(prev => prev ? { ...prev, imageLoading: false, imageError: true } : prev);
+      }
+  };
+const _legacyResolveReadAloudAudio = async (sentence, requestOptions) => {
+    if (!sentence) return null;
+    const voice = __d.selectedVoice || window.__alloSelectedVoice || 'Kore';
+    const speed = (typeof __d.voiceSpeed === 'number' && __d.voiceSpeed > 0) ? __d.voiceSpeed : 1;
+    const language = __d.leveledTextLanguage || __d.currentUiLanguage || 'English';
+    try {
+      const st = __d._ensureKaraokeStore('reference');
+      if (st) {
+        if (typeof st.getCompatible === 'function') {
+          const compatible = st.getCompatible(sentence, { voice, speed, language });
+          if (compatible) return compatible;
+        } else if (typeof st.get === 'function') {
+          const stored = st.get(sentence);
+          if (stored) return stored;
+        }
+      }
+    } catch (_) {}
+    if (typeof __d.callTTS !== 'function') return null;
+    const options = Object.assign({
+      language,
+      maxRetries: 1,
+      priority: 'interactive',
+    }, requestOptions || {});
+    options.language = language;
+    try { return await __d.callTTS(sentence, voice, speed, options, language); }
+    catch (_) { return null; }
+  };
+const deriveVerificationState = (input) => {
+    if (__d._docPipeline && typeof __d._docPipeline.deriveVerificationState === 'function') {
+      return __d._docPipeline.deriveVerificationState(input || {});
+    }
+    const policy = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.VerificationPolicy;
+    if (policy && typeof policy.deriveVerificationState === 'function') {
+      return policy.deriveVerificationState(input || {});
+    }
+    const coverage = {
+      standard: 'WCAG 2.2 AA',
+      ai: 'unavailable',
+      axe: 'unavailable',
+      equalAccess: 'unavailable',
+      pdfUaSelfCheck: 'not-run',
+    };
+    return {
+      verificationCoverage: coverage,
+      coverage,
+      verificationState: 'unavailable',
+      executionState: 'unavailable',
+      outcomeState: 'unknown',
+      verificationScope: 'full-output',
+      testedScopeComplete: false,
+      engineExecutionComplete: false,
+      fullyVerifiedSuccess: false,
+      success: false,
+      afterScoreVerified: false,
+      requiresManualReview: true,
+      reviewCount: 1,
+      knownFindingCount: 0,
+      knownFindings: { aiIssues: null, axeViolations: null, equalAccessFailures: null, total: 0 },
+      scoreEvidence: { ai: null, axe: null, equalAccess: null },
+      reasons: ['verification-policy-module-unavailable'],
+    };
+  };
+const handlePrintResourceSheet = (item, options = {}) => {
+      const resource = item && typeof item === 'object' && item.type ? item : __d.generatedContent;
+      if (!resource || !resource.type || typeof __d.generateFullPackHTML !== 'function') return false;
+      let html = '';
+      try {
+          html = __d.generateFullPackHTML([resource], __d.sourceTopic || resource.title || '', options.worksheet !== false, {}, {
+              ...(__d.exportConfig || {}),
+              includeTeacherKey: options.teacherKey === true,
+              annotations: [],
+          });
+      } catch (err) {
+          __d.warnLog('[Print] resource sheet render failed:', err);
+          return false;
+      }
+      if (!html) return false;
+      const win = window.open('', '_blank');
+      if (!win) {
+          __d.addToast(__d.t('toasts.pop_up_blocked_allow_pop') || 'Allow pop-ups to open the printable sheet.', 'error');
+          return true;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      try { win.focus(); } catch (_) {}
+      setTimeout(() => { try { win.print(); } catch (_) {} }, 600);
+      return true;
+  };
+const handleUpdateHavenRecognitionConfig = async (patch) => {
+      if (!__d.activeSessionCode || __d.havenConfigBusy) return;
+      const requestedCap = Math.floor(Number(patch && patch.perStudentTokenCap) || __d.havenRecognitionConfig.perStudentTokenCap);
+      const nextConfig = {
+          enabled: patch && typeof patch.enabled === 'boolean' ? patch.enabled : __d.havenRecognitionConfig.enabled,
+          perStudentTokenCap: __d.ALLOHAVEN_RECOGNITION_CAPS.includes(requestedCap) ? requestedCap : __d.havenRecognitionConfig.perStudentTokenCap,
+          updatedAt: Date.now()
+      };
+      const sessionRef = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      __d.setHavenConfigBusy(true);
+      try {
+          await __d.writeToSession(sessionRef, { havenRecognitionConfig: nextConfig });
+          __d.setHavenRewardReceipt(null);
+          __d.addToast(
+              nextConfig.enabled
+                  ? ('AlloHaven recognition enabled · ' + nextConfig.perStudentTokenCap + '-token session cap per student.')
+                  : 'AlloHaven recognition is off for this session.',
+              'success'
+          );
+      } catch (error) {
+          __d.warnLog('Could not update AlloHaven recognition settings.', error);
+          __d.addToast('Could not update the recognition settings. Please try again.', 'error');
+      } finally {
+          __d.setHavenConfigBusy(false);
+      }
+  };
+const _bumpClassGoalMet = (goal, metBy, studentsAwarded) => {
+      const at = Date.now();
+      __d.setRosterKey(prev => {
+          const prevGoals = __d.normalizeClassGoals(prev && prev.classGoals);
+          const log = Array.isArray(prev && prev.classGoalLog) ? prev.classGoalLog : [];
+          return {
+              ...(prev || { groups: {}, students: {} }),
+              classGoals: prevGoals.map(item => item.id === goal.id
+                  ? { ...item, metCount: item.metCount + (metBy || 1), lastMetAt: at }
+                  : item),
+              // Device-local award log, sessionCode-stamped so the roster's
+              // session summary can report which goals ran in which session.
+              classGoalLog: log.concat([{
+                  goalId: goal.id,
+                  label: goal.label,
+                  mode: goal.mode,
+                  tokens: goal.tokens,
+                  delivered: Math.max(0, Math.floor(Number(studentsAwarded) || 0)),
+                  sessionCode: __d.activeSessionCode || null,
+                  at,
+              }]).slice(-60),
+          };
+      });
+  };
+const handleAwardClassGoal = async (goalId) => {
+      const goals = __d.normalizeClassGoals(__d.rosterKey && __d.rosterKey.classGoals);
+      const goal = goals.find(item => item.id === goalId);
+      if (!goal) return;
+      const teamUids = __d.resolveClassGoalTeamUids(goal, (__d.sessionData && __d.sessionData.roster) || {}, __d.rosterKey);
+      if (!teamUids.length) {
+          __d.addToast(goal.team.indexOf('pod:') === 0
+              ? 'No connected students matched this pod — check the seating chart’s active layout.'
+              : 'No connected students are on this goal’s team.', 'info');
+          return;
+      }
+      const delivered = await __d.handleRecognizeStudents(
+          teamUids,
+          goal.team === 'class' ? 'students · class goal met' : 'students · team goal met',
+          { reasonId: 'group_goal', amount: goal.tokens }
+      );
+      if (!delivered) return;
+      _bumpClassGoalMet(goal, 1, delivered);
+  };
+const openExportPreview = (mode = 'print', resourceIds = null) => {
+    // A restored edited project can retain its scoped document on the first open.
+    const restoredDraft = window.__alloBuilderEditedPack;
+    if (resourceIds === null && restoredDraft?.restoredFromProject && Array.isArray(restoredDraft.resourceIds)) resourceIds = restoredDraft.resourceIds;
+    const selection = __d.selectBuilderResources(__d.history, resourceIds);
+    if (!selection.ready || (resourceIds !== null && !__d.getExportableHistory(selection.items).length)) return __d.reportBuilderResourceProblem();
+    __d.setBuilderResourceIds(selection.ids);
+    if (restoredDraft?.restoredFromProject) restoredDraft.restoredFromProject = false;
+    __d.requestExportPreviewModules();
+    __d.ensureExportLibraries();
+    try { __d._builderOpenerElRef.current = document.activeElement; } catch (_) {}
+    __d._builderDraftRestoreRef.current = false;
+    __d._builderReviewSessionRef.current = null;
+    __d.setExportPreviewSource('history');
+    __d.setBuilderWorkspaceMode('author');
+    __d.setExportPreviewMode(mode);
+    __d.setShowExportPreview(true);
+    __d.setShowExportMenu(false);
+  };
+const _decodeBuilderDraftPayload = async (candidate) => {
+    if (!candidate || typeof candidate.payload !== 'string' || candidate.payload.length > __d.BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES * 2) return null;
+    if (candidate.encoding === 'plain-json') {
+      if (__d._builderUtf8ByteLength(candidate.payload) > __d.BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      return candidate.payload;
+    }
+    if (candidate.encoding !== 'deflate-raw-base64' || typeof __d.DecompressionStream !== 'function' || typeof Blob !== 'function') return null;
+    const bytes = __d._builderBase64ToBytes(candidate.payload);
+    if (!bytes || bytes.byteLength > __d.BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) return null;
+    try {
+      const stream = new Blob([bytes]).stream().pipeThrough(new __d.DecompressionStream('deflate-raw'));
+      return await __d._readBuilderDraftStreamBounded(stream, __d.BUILDER_PROJECT_DRAFT_MAX_BYTES);
+    } catch (_) { return null; }
+  };
+const syncCanvasRecoveryVaultState = async (controller, options = {}) => {
+      const status = await controller.getStatus();
+      if (status.enabled && !status.locked && options.loadPlaintext !== false) {
+          try {
+              const store = await __d.readUnlockedCanvasRecoveryVaultStore(controller);
+              __d.canvasRecoveryStoreRef.current = store;
+              __d.setCanvasRecoveryStore(store);
+              __d.setCanvasRecoveryStoreAuthoritative(true);
+              __d.setCanvasRecoveryVaultState({ available: true, ...status });
+              return { status, store };
+          } catch (error) {
+              controller.lock();
+              __d.publishCanvasRecoveryVaultLockedState({ ...status, locked: true });
+              throw error;
+          }
+      }
+      if (status.enabled && status.locked) __d.publishCanvasRecoveryVaultLockedState(status);
+      else __d.setCanvasRecoveryVaultState({ available: true, ...status });
+      return { status, store: null };
+  };
+const enableCanvasRecoveryVault = async () => {
+      const form = __d.canvasRecoveryVaultForm;
+      if (!form.password || form.password.length < 10) {
+          __d.setCanvasRecoveryError('Use a saved-work password of at least 10 characters.');
+          return;
+      }
+      if (form.password !== form.confirmPassword) {
+          __d.setCanvasRecoveryError('The saved-work passwords do not match.');
+          return;
+      }
+      if (!form.useRecoveryKey) {
+          await __d.commitCanvasRecoveryVaultEnable(form.password, null);
+          return;
+      }
+      try {
+          const stack = await __d._alloGetRecoveryVaultStack();
+          const recoveryCode = stack.crypto.generateRecoveryCode();
+          __d.canvasRecoveryVaultPendingActionRef.current = { action: 'enable', password: form.password };
+          __d.setCanvasRecoveryVaultForm(current => ({
+              ...current,
+              mode: 'confirm-recovery-code',
+              password: '',
+              confirmPassword: '',
+              recoveryCode,
+              recoveryConfirmation: ''
+          }));
+          __d.setCanvasRecoveryError('');
+      } catch (error) {
+          __d.setCanvasRecoveryError(String(error?.message || 'A recovery key could not be generated.'));
+      }
+  };
+const unlockCanvasRecoveryVault = async () => {
+      if (!__d.canvasRecoveryVaultForm.password) return;
+      __d.setCanvasRecoveryBusyId('vault-unlock');
+      try {
+          const controller = await __d.getCanvasRecoveryVaultController();
+          await controller.unlock(__d.canvasRecoveryVaultForm.password);
+          const { store } = await syncCanvasRecoveryVaultState(controller);
+          __d.clearCanvasRecoveryVaultSecrets('idle');
+          __d.setCanvasRecoveryError('');
+          __d.setCanvasRecoverySaveStatus(store?.snapshots?.length ? 'saved' : 'idle');
+          if (!__d.canvasRecoveryDecisionMade && store?.snapshots?.length) __d.setCanvasRecoveryDialogMode('choice');
+          else __d.setCanvasRecoveryDialogMode('manage');
+      } catch (error) {
+          __d.clearCanvasRecoveryVaultSecrets('unlock');
+          __d.setCanvasRecoveryError('That password could not unlock the protected recovery workspaces.');
+      } finally {
+          __d.setCanvasRecoveryBusyId(null);
+      }
+  };
+const changeCanvasRecoveryVaultPassword = async () => {
+      const form = __d.canvasRecoveryVaultForm;
+      if (!form.currentPassword || !form.newPassword || form.newPassword.length < 10
+          || form.newPassword !== form.confirmNewPassword) {
+          __d.setCanvasRecoveryError('Enter the current password and matching new passwords of at least 10 characters.');
+          return;
+      }
+      __d.setCanvasRecoveryBusyId('vault-change-password');
+      try {
+          const controller = await __d.getCanvasRecoveryVaultController();
+          await controller.changePassword(form.currentPassword, form.newPassword);
+          __d.clearCanvasRecoveryVaultSecrets('idle');
+          __d.setCanvasRecoveryError('');
+          __d.addToast((__d.t('storage.saved_work_password_changed_other_already') || 'Saved-work password changed. Other already-unlocked tabs are not revoked.'), 'success');
+      } catch (error) {
+          __d.clearCanvasRecoveryVaultSecrets('change-password');
+          __d.setCanvasRecoveryError('The current password was incorrect or the vault could not be updated.');
+      } finally {
+          __d.setCanvasRecoveryBusyId(null);
+      }
+  };
+const rotateCanvasRecoveryKey = async () => {
+      if (!__d.canvasRecoveryVaultForm.currentPassword) {
+          __d.setCanvasRecoveryError('Enter the saved-work password before creating a new recovery key.');
+          return;
+      }
+      __d.setCanvasRecoveryBusyId('vault-rotate-recovery');
+      try {
+          const controller = await __d.getCanvasRecoveryVaultController();
+          await controller.unlock(__d.canvasRecoveryVaultForm.currentPassword);
+          const stack = await __d._alloGetRecoveryVaultStack();
+          const recoveryCode = stack.crypto.generateRecoveryCode();
+          __d.canvasRecoveryVaultPendingActionRef.current = { action: 'rotate' };
+          __d.setCanvasRecoveryVaultForm(current => ({
+              ...current,
+              mode: 'confirm-recovery-code',
+              currentPassword: '',
+              recoveryCode,
+              recoveryConfirmation: ''
+          }));
+          __d.setCanvasRecoveryError('');
+      } catch (error) {
+          __d.clearCanvasRecoveryVaultSecrets('rotate-recovery');
+          __d.setCanvasRecoveryError('The saved-work password was incorrect, so the existing recovery key was not changed.');
+      } finally {
+          __d.setCanvasRecoveryBusyId(null);
+      }
+  };
+const removeCanvasRecoveryKey = async () => {
+      if (!__d.canvasRecoveryVaultForm.currentPassword) {
+          __d.setCanvasRecoveryError('Enter the saved-work password before removing the recovery key.');
+          return;
+      }
+      const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm((__d.t('storage.remove_the_optional_recovery_key_if') || 'Remove the optional recovery key? If you later forget the password, protected saved work cannot be recovered.'))
+          : false;
+      if (!confirmed) return;
+      __d.setCanvasRecoveryBusyId('vault-remove-recovery');
+      try {
+          const controller = await __d.getCanvasRecoveryVaultController();
+          await controller.removeRecoveryKey(__d.canvasRecoveryVaultForm.currentPassword);
+          await syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+          __d.clearCanvasRecoveryVaultSecrets('idle');
+          __d.setCanvasRecoveryError('');
+          __d.addToast((__d.t('storage.optional_recovery_key_removed') || 'Optional recovery key removed.'), 'info');
+      } catch (error) {
+          __d.clearCanvasRecoveryVaultSecrets('remove-recovery');
+          __d.setCanvasRecoveryError('The saved-work password was incorrect or the recovery key could not be removed.');
+      } finally {
+          __d.setCanvasRecoveryBusyId(null);
+      }
+  };
+const saveEducatorAccessCode = async () => {
+      const form = __d.educatorAccessState;
+      if (!form.newCode || form.newCode !== form.confirmCode) {
+          __d.setEducatorAccessState(current => ({ ...current, error: (__d.t('storage.enter_matching_new_educator_access_codes') || 'Enter matching new educator access codes.') }));
+          return;
+      }
+      __d.setEducatorAccessState(current => ({ ...current, busy: true, error: '' }));
+      try {
+          const api = await __d.getEducatorAccessCodeApi();
+          if (form.configured) {
+              const result = await api.changeCode(form.currentCode, form.newCode);
+              if (!result.ok) throw new Error(result.reason === 'backoff'
+                  ? 'Too many attempts. Wait before trying the current code again.'
+                  : 'The current educator access code was incorrect.');
+          } else {
+              await api.setCode(form.newCode);
+          }
+          __d.setEducatorAccessState({ configured: true, mode: 'idle', currentCode: '', newCode: '', confirmCode: '', busy: false, error: '' });
+          __d.addToast(form.configured ? 'Educator access code changed.' : 'Educator access code enabled on this device.', 'success');
+      } catch (error) {
+          __d.setEducatorAccessState(current => ({ ...current, busy: false, currentCode: '', error: String(error?.message || 'The educator access code could not be saved.') }));
+      }
+  };
+const removeEducatorAccessCode = async () => {
+      __d.setEducatorAccessState(current => ({ ...current, busy: true, error: '' }));
+      try {
+          const api = await __d.getEducatorAccessCodeApi();
+          const result = await api.removeCode(__d.educatorAccessState.currentCode);
+          if (!result.ok) throw new Error(result.reason === 'backoff'
+              ? 'Too many attempts. Wait before trying again.'
+              : 'The current educator access code was incorrect.');
+          __d.setEducatorAccessState({ configured: false, mode: 'idle', currentCode: '', newCode: '', confirmCode: '', busy: false, error: '' });
+          __d.addToast((__d.t('storage.educator_access_code_removed_from_this') || 'Educator access code removed from this device.'), 'info');
+      } catch (error) {
+          __d.setEducatorAccessState(current => ({ ...current, busy: false, currentCode: '', error: String(error?.message || 'The educator access code could not be removed.') }));
+      }
+  };
+const exportCanvasRecoverySnapshot = (candidate) => {
+      const snapshot = __d.ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(candidate);
+      if (!snapshot) return;
+      if (__d.canvasRecoveryVaultState.enabled) {
+          const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+              ? window.confirm((__d.t('storage.export_a_readable_copy_this_file') || 'Export a readable copy? This file will not be encrypted, even though the device recovery workspace is protected.'))
+              : false;
+          if (!confirmed) return;
+      }
+      const project = {
+          mode: 'teacher',
+          timestamp: snapshot.savedAt,
+          history: snapshot.workspace.history,
+          builderDraft: snapshot.workspace.builderDraft || null,
+          responses: snapshot.workspace.projectState?.responses || {},
+          progressLog: snapshot.workspace.projectState?.progressLog || [],
+          stickers: snapshot.workspace.projectState?.stickers || [],
+          workspaceRecovery: snapshot
+      };
+      const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow-Workspace-' + snapshot.savedAt.slice(0, 10) + '.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  };
+const executeExportFromPreview = async () => {
+    if (__d.exportPreviewSource === 'history' && !__d.selectBuilderResources(__d.history, __d.builderResourceIds).ready) return __d.reportBuilderResourceProblem();
+    __d._removeBuilderCropUi(); // the module serializes the live iframe — crop chrome must not ride along
+    const _m = window.AlloModules && window.AlloModules.ExportHandlers;
+    if (_m && typeof _m.executeExportFromPreview === 'function') {
+      return _m.executeExportFromPreview({
+        _docPipeline: __d._docPipeline, addToast: __d.addToast, t: __d.t,
+        exportPreviewMode: __d.exportPreviewMode, exportPreviewRef: __d.exportPreviewRef,
+        generateFullPackHTML: __d.generateFullPackHTML, getExportableHistory: __d.getBuilderExportableHistory, getSkippedResources: __d.getBuilderSkippedResources,
+        sourceTopic: __d.sourceTopic, studentResponses: __d.studentResponses, exportConfig: __d.exportConfig, history: __d.getBuilderHistory(),
+        callTTS: __d.callTTS, selectedVoice: __d.selectedVoice,
+        setShowExportPreview: __d.setShowExportPreviewWrapped, handleExportSlides: (options = {}) => __d.handleExportSlides({ ...options, history: __d.getBuilderHistory() })
+      });
+    }
+    __d.addToast && __d.addToast(__d.t('toasts.export_tools_still_loading_try'), 'error');
+  };
+const sanitizeSubmissionData = (historyItems) => {
+      return historyItems.map(item => {
+          const cleanItem = structuredClone(item);
+          if (cleanItem.data && cleanItem.data.imageUrl) {
+              cleanItem.data.imageUrl = "[Image Removed for Submission]";
+          }
+          if (cleanItem.type === 'adventure' && cleanItem.data) {
+              if (cleanItem.data.sceneImage) cleanItem.data.sceneImage = "[Image Removed]";
+              if (Array.isArray(cleanItem.data.inventory)) {
+                  cleanItem.data.inventory.forEach(inv => {
+                      if (inv.image) inv.image = null;
+                  });
+              }
+          }
+          if (cleanItem.type === 'glossary' && Array.isArray(cleanItem.data)) {
+              cleanItem.data.forEach(term => {
+                  if (term.image) term.image = null;
+              });
+          }
+          if (cleanItem.type === 'persona' && Array.isArray(cleanItem.data)) {
+              cleanItem.data.forEach(p => {
+                  if (p.avatarUrl) p.avatarUrl = null;
+              });
+          }
+          return cleanItem;
+      });
+  };
+const formatLessonDNA = (dna) => {
+      if (!dna) return "";
+      let dnaBlock = `\n*** LESSON DNA (MANDATORY ALIGNMENT) ***\n`;
+      if (dna.grade) dnaBlock += `Target Grade: ${dna.grade}\n`;
+      if (dna.topic) dnaBlock += `Central Topic: "${dna.topic}"\n`;
+      if (dna.standard) dnaBlock += `Aligned Standard: "${dna.standard}"\n`;
+      if (dna.concepts && dna.concepts.length > 0) {
+          dnaBlock += `Core Concepts (Golden Thread): ${dna.concepts.join(', ')}\n`;
+      }
+      if (dna.keyTerms && dna.keyTerms.length > 0) {
+          dnaBlock += `Required Vocabulary: ${dna.keyTerms.join(', ')}\n`;
+      }
+      if (dna.essentialQuestion) {
+          dnaBlock += `Essential Question: "${dna.essentialQuestion}"\n`;
+      }
+      if (dna.visualContext) {
+           dnaBlock += `Visual Context: "${dna.visualContext}"\n`;
+      }
+      dnaBlock += `******************************************\n`;
+      return dnaBlock;
+  };
+const saveAdventureFluencyResult = async (result) => {
+    if (!result || !result.recordId) throw new Error('No Adventure reading result is available to save.');
+    const { audioBase64, sourceText, ...assessment } = result;
+    const historyItem = {
+      id: result.recordId,
+      type: 'fluency-record',
+      title: `Adventure Reading Practice (${result.accuracy || 0}%)`,
+      timestamp: result.timestamp || new Date().toISOString(),
+      meta: `${result.wcpm || 0} WCPM - ${Math.round(result.durationSeconds || 0)}s - descriptive only`,
+      data: {
+        audioRecording: audioBase64 || '',
+        mimeType: result.mimeType || 'audio/webm',
+        sourceText: sourceText || '',
+        sourceKind: 'adventure-scene',
+        sceneId: result.sceneId || null,
+        turnCount: result.turnCount || null,
+        wordData: result.wordData || [],
+        insertions: result.insertions || [],
+        feedback: result.feedback || '',
+        confidence: result.confidence || null,
+        prosody: result.prosody || null,
+        passageMetadata: { ...(result.passageMetadata || {}), calibrated: false },
+        review: { status: 'unreviewed' },
+        metrics: result.metrics || {}
+      },
+      config: { descriptiveOnly: true, benchmarkEligible: false }
+    };
+    __d.setFluencyAssessments(prev => [...(Array.isArray(prev) ? prev : []), {
+      ...assessment,
+      sourceKind: 'adventure-scene',
+      passageMetadata: { ...(assessment.passageMetadata || {}), calibrated: false },
+      review: { status: 'unreviewed' }
+    }]);
+    __d.setHistory(prev => [...prev, historyItem]);
+    __d.addToast(__d.t('adventure.fluency_saved') || 'Reading practice saved to history.', 'success');
+  };
+const handleShopPurchase = (item) => {
+      if (__d.adventureState.gold < item.cost) {
+          __d.addToast(__d.t('adventure.status_messages.not_enough_gold'), "error");
+          __d.playSound('incorrect');
+          return;
+      }
+      const localizedName = __d.t(`adventure.shop_items.${item.id}_name`) || item.name;
+      const localizedDesc = __d.t(`adventure.shop_items.${item.id}_desc`) || item.description;
+      __d.setAdventureState(prev => {
+          const newItem = {
+              id: Date.now(),
+              name: localizedName,
+              image: null,
+              icon: item.icon,
+              description: localizedDesc,
+              effectType: item.effectType,
+              effectValue: item.effectValue,
+              isLoading: false
+          };
+          return {
+              ...prev,
+              gold: prev.gold - item.cost,
+              inventory: [...prev.inventory, newItem]
+          };
+      });
+      __d.playSound('correct');
+      __d.addToast(__d.t('adventure.status_messages.bought', { item: localizedName }), "success");
+  };
+const toggleDemocracyMode = async () => {
+      const targetAppId = __d.activeSessionAppId || __d.appId;
+      if (!__d.activeSessionCode || !__d.sessionData) return;
+      const newState = !__d.sessionData.democracy?.isActive;
+      const activeOptions = Array.from(new Set((__d.adventureState.currentScene?.options || [])
+          .map(option => String(typeof option === 'object' && option?.action ? option.action : option).trim())
+          .filter(Boolean))).slice(0, 12);
+      const sessionRef = __d.doc(__d.db, 'artifacts', targetAppId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      try {
+        await __d.updateDoc(sessionRef, newState ? {
+            'democracy.isActive': true,
+            'democracy.phase': 'voting',
+            'democracy.activeOptions': activeOptions,
+            'democracy.votes': {}
+        } : {
+            'democracy.isActive': false,
+            'democracy.phase': 'idle',
+            'democracy.activeOptions': [],
+            'democracy.votes': {}
+        });
+        __d.addToast(newState ? (__d.t('toasts.democracy_mode_on') || "Democracy Mode Enabled: Class Voting ON") : (__d.t('toasts.democracy_mode_off') || "Democracy Mode Disabled: Solo Play"), "info");
+      } catch(e) {
+          __d.warnLog("Failed to toggle democracy mode", e);
+          __d.addToast(__d.t('toasts.mode_toggle_failed'), "error");
+      }
+  };
+const moveItem = (e, itemInstanceId, direction, adjacentInstanceId) => {
+    e.stopPropagation();
+    const newHistory = [...__d.history];
+    const index = newHistory.findIndex(item => __d._alloArtifactMatchesInstanceId(item, itemInstanceId));
+    const adjacentIndex = adjacentInstanceId
+      ? newHistory.findIndex(item => __d._alloArtifactMatchesInstanceId(item, adjacentInstanceId))
+      : index + (direction === 'up' ? -1 : 1);
+    if (index < 0 || adjacentIndex < 0 || adjacentIndex >= newHistory.length || index === adjacentIndex) return;
+    const movedItemTitle = newHistory[index].title || "Item";
+    [newHistory[index], newHistory[adjacentIndex]] = [newHistory[adjacentIndex], newHistory[index]];
+    __d.setHistory(newHistory);
+    if (direction === 'up') {
+      __d.addToast(__d.t('toasts.resource_moved_up', { title: movedItemTitle }) || `Moved ${movedItemTitle} up`, "info");
+    } else {
+      __d.addToast(__d.t('toasts.resource_moved_down', { title: movedItemTitle }) || `Moved ${movedItemTitle} down`, "info");
+    }
+  };
+const handleQuizBulkOptionChange = (updates) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'quiz') return;
+    if (!Array.isArray(updates) || updates.length === 0) return;
+    const newData = { ...__d.generatedContent?.data };
+    const newQuestions = [...newData.questions];
+    updates.forEach((u) => {
+        if (!u || typeof u.qIdx !== 'number' || typeof u.optIdx !== 'number' || !u.newText) return;
+        const q = newQuestions[u.qIdx];
+        if (!q || !Array.isArray(q.options)) return;
+        const updatedQuestion = { ...q };
+        const oldVal = updatedQuestion.options[u.optIdx];
+        const wasCorrect = oldVal === updatedQuestion.correctAnswer;
+        const newOpts = [...updatedQuestion.options];
+        newOpts[u.optIdx] = u.newText;
+        updatedQuestion.options = newOpts;
+        if (wasCorrect) updatedQuestion.correctAnswer = u.newText;
+        updatedQuestion.factCheck = null;
+        newQuestions[u.qIdx] = updatedQuestion;
+    });
+    newData.questions = newQuestions;
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? { ...item, data: newData } : item));
+  };
+const handleQuizImageRefine = (qIndex, target, optIndex, newDataUrl) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'quiz') return;
+    if (!newDataUrl) return;
+    const newData = { ...__d.generatedContent?.data };
+    const newQuestions = [...newData.questions];
+    const updatedQuestion = { ...newQuestions[qIndex] };
+    if (target === 'question') {
+        updatedQuestion.imageUrl = newDataUrl;
+    } else if (target === 'option' && typeof optIndex === 'number') {
+        const newUrls = Array.isArray(updatedQuestion.optionImageUrls)
+            ? [...updatedQuestion.optionImageUrls]
+            : new Array(updatedQuestion.options ? updatedQuestion.options.length : 4).fill(null);
+        newUrls[optIndex] = newDataUrl;
+        updatedQuestion.optionImageUrls = newUrls;
+    } else {
+        return;
+    }
+    newQuestions[qIndex] = updatedQuestion;
+    newData.questions = newQuestions;
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? { ...item, data: newData } : item));
+  };
+const handleUpdateQuestionRoutingRules = (rulesByQ) => {
+    if (!rulesByQ || typeof rulesByQ !== 'object') return;
+    __d.setGeneratedContent(prev => {
+      if (!prev || prev.type !== 'quiz' || !prev.data || !Array.isArray(prev.data.questions)) return prev;
+      let changed = false;
+      const nextQuestions = prev.data.questions.map((q, i) => {
+        if (!Object.prototype.hasOwnProperty.call(rulesByQ, i)) return q;
+        const incoming = rulesByQ[i];
+        const incomingArr = Array.isArray(incoming) ? incoming : [];
+        const currentArr = Array.isArray(q && q.routingRules) ? q.routingRules : [];
+        // Cheap equality check: same length AND every rule has matching
+        // id+version. Avoids re-rendering the whole content tree on identical
+        // writes (e.g. mount-time seeding writes the SAME rules back).
+        if (currentArr.length === incomingArr.length && currentArr.every((r, idx) => {
+          const o = incomingArr[idx];
+          return r && o && r.id === o.id && r.version === o.version;
+        })) {
+          return q;
+        }
+        changed = true;
+        return Object.assign({}, q, { routingRules: incomingArr });
+      });
+      if (!changed) return prev;
+      const nextData = Object.assign({}, prev.data, { questions: nextQuestions });
+      // Mirror to history so the saveHistory debounce picks it up.
+      __d.setHistory(h => h.map(item => item.id === prev.id ? Object.assign({}, item, { data: nextData }) : item));
+      return Object.assign({}, prev, { data: nextData });
+    });
+  };
+const captureIntentSnapshot = (label) => {
+      try {
+          __d.lastIntentSnapshotRef.current = {
+              label: label || 'last action',
+              state: {
+                  gradeLevel: __d.gradeLevel,
+                  sourceLevel: __d.sourceLevel,
+                  sourceTopic: __d.sourceTopic,
+                  sourceVocabulary: __d.sourceVocabulary,
+                  sourceCustomInstructions: __d.sourceCustomInstructions,
+                  studentInterests: Array.isArray(__d.studentInterests) ? __d.studentInterests.slice() : [],
+                  selectedLanguages: Array.isArray(__d.selectedLanguages) ? __d.selectedLanguages.slice() : [],
+                  leveledTextLanguage: __d.leveledTextLanguage,
+                  leveledTextCustomInstructions: __d.leveledTextCustomInstructions,
+                  sourceTone: __d.sourceTone,
+                  sourceLength: __d.sourceLength,
+                  textFormat: __d.textFormat,
+                  dokLevel: __d.dokLevel,
+                  visualStyle: __d.visualStyle,
+                  visualCustomStyle: __d.visualCustomStyle,
+                  includeSourceCitations: __d.includeSourceCitations,
+                  fullPackTargetGroup: __d.fullPackTargetGroup,
+                  differentiationRange: __d.differentiationRange,
+                  targetStandards: Array.isArray(__d.targetStandards) ? __d.targetStandards.slice() : [],
+                  voiceSpeed: __d.voiceSpeed,
+                  voiceVolume: __d.voiceVolume,
+                  selectedVoice: __d.selectedVoice,
+              }
+          };
+      } catch (e) { __d.warnLog("captureIntentSnapshot failed", e); }
+  };
+const _editMainVoiceEditableField = (fieldId, operation, dictatedValue) => {
+    const field = __d._listMainVoiceEditableFields().find((candidate) => candidate.id === fieldId);
+    if (!field || typeof field.setValue !== 'function') return { ok: false, message: 'That field is no longer available.' };
+    const current = String(field.value || '');
+    const incoming = String(dictatedValue || '').trim();
+    let next = operation === 'clear'
+      ? ''
+      : (operation === 'append' ? [current.trim(), incoming].filter(Boolean).join(' ') : incoming);
+    const limit = Math.max(1, Number(field.maxLength) || 8000);
+    if (next.length > limit) next = next.slice(0, limit);
+    field.setValue(next);
+    __d._voiceEditableFieldSelectionRef.current = field.id;
+    return {
+      ok: true,
+      message: operation === 'clear'
+        ? field.label + ' cleared.'
+        : (operation === 'append' ? 'Text appended to ' + field.label + '.' : field.label + ' updated.')
+    };
+  };
+const handleReturnToStart = () => {
+    try {
+      const ctx = __d._alloCmdCtxRef.current || __d._alloCmdCtx();
+      if (ctx && typeof ctx.stopVoiceLoop === 'function') ctx.stopVoiceLoop();
+    } catch (_) {}
+    try {
+      const voice = window.AlloFlowVoice;
+      if (voice && typeof voice.stopActiveVoiceSession === 'function') voice.stopActiveVoiceSession('return-to-start');
+    } catch (_) {}
+    try {
+      if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+    } catch (_) {}
+    __d.setRunTour(false);
+    __d.setIsSpotlightMode(false);
+    __d.setSpotlightMessage('');
+    __d.setShowReadThisPage(false);
+    __d.setShowWizard(false);
+    if (__d.isCanvas) {
+      __d.canvasRecoveryImmediateSaveRef.current = true;
+      __d.setCanvasRecoveryRevision(value => value + 1);
+    }
+    // A shell deep link normally suppresses LaunchPad. Once the user explicitly
+    // asks for Start, retire that one-shot entry so the Start page can render.
+    __d.setShellDeepLinkTool(null);
+    __d.setHasSelectedMode(false);
+  };
+const saveFullChat = () => {
+      if (__d.udlMessages.length <= 1) {
+          __d.addToast(__d.t('toasts.no_conversation_yet'), "info");
+          return;
+      }
+      const chatLog = __d.udlMessages.map(m => `**${m.role === 'user' ? 'Teacher' : 'UDL Guide'}:**\n${m.text}`).join('\n\n---\n\n');
+      const newItem = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          type: 'udl-advice',
+          data: chatLog,
+          meta: __d.t('output.meta_full_chat_log') || "Full Chat Log",
+          title: __d.t('output.title_udl_consultation_log') || "UDL Consultation Log",
+          timestamp: new Date(),
+          config: {}
+      };
+      __d.setHistory(prev => [...prev, newItem]);
+      __d.setGeneratedContent({ type: 'udl-advice', data: chatLog, id: newItem.id });
+      __d.setActiveView('udl-advice');
+      __d.setShowUDLGuide(false);
+      if (__d.isUDLGuideExpanded) __d.setIsUDLGuideExpanded(false);
+      __d.addToast(__d.t('chat_guide.history_saved_toast'), "success");
+  };
+const buildSanitizedBlueprintDiagnostic = () => {
+    if (!__d.blueprintExecutionResult) return null;
+    const resourceStatuses = ['planned', 'running', 'retrying', 'landed', 'failed', 'interrupted', 'stopped', 'skipped'];
+    const rows = Object.values(__d.blueprintExecutionResult.rows || {}).slice(0, 1000).map((row, index) => {
+      if (!row) return { row: index + 1, status: 'unknown' };
+      const safeReason = row.failReason ? __d._alloDiagnosticReason(row.failReason) : null;
+      return {
+        row: index + 1,
+        tool: __d._alloDiagnosticResourceType(row.tool),
+        status: resourceStatuses.includes(row.status) ? row.status : 'unknown',
+        failureCode: safeReason ? safeReason.code : null,
+        failReason: safeReason ? safeReason.summary : null,
+        elapsedMs: __d._alloDiagnosticBoundedInt(row.elapsedMs, 24 * 60 * 60 * 1000),
+        startedAt: __d._alloDiagnosticTimestamp(row.startedAt),
+        finishedAt: __d._alloDiagnosticTimestamp(row.finishedAt),
+      };
+    });
+    return {
+      reportVersion: 2,
+      generatorCapability: __d.ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT,
+      exportedAt: new Date().toISOString(),
+      runId: __d._alloDiagnosticRunId(__d.blueprintExecutionResult.runId, 'blueprint'),
+      done: __d.blueprintExecutionResult.done === true,
+      persistenceWarning: __d.blueprintExecutionResult.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+      rows,
+      observability: __d.ALLO_GENERATION_METRICS.snapshot(),
+    };
+  };
+const _copySanitizedDiagnostic = async diagnostic => {
+    const text = JSON.stringify(diagnostic, null, 2);
+    try {
+      if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+        if (await window.alloCopyText(text)) return true;
+      }
+    } catch (_) {}
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      textarea.remove();
+      return copied === true;
+    } catch (_) {
+      return false;
+    }
+  };
+const handleTranscriptSourceAction = (action) => {
+    const context = __d.videoTranscriptSourceContext;
+    if (!context) {
+      __d.addToast('No video transcript is loaded in Source yet.', 'info');
+      return;
+    }
+
+    if (action === 'dismiss') {
+      __d.setGeneratedContent(null);
+      __d.setMbJoinError(false);
+      __d.setMbJoinRetryable(false);
+      __d.setMbJoinStatus('Contacting the class mailbox…');
+      __d.setActiveView('input');
+      __d.addToast('Transcript shortcuts hidden. The source text is still available.', 'info');
+      return;
+    }
+
+    const actionToolMap = {
+      quiz: 'quiz',
+      glossary: 'glossary',
+      'note-taking': 'note-taking',
+      'anchor-chart': 'anchor-chart',
+      simplified: 'simplified'
+    };
+    const toolId = actionToolMap[action];
+    __d.setInputText(context.transcript);
+    __d.setSourceTopic(context.title);
+    __d.setActiveSidebarTab('create');
+    __d.setExpandedTools(prev => {
+      const needed = ['source-input', ...(toolId ? [toolId] : [])];
+      return Array.from(new Set([...needed, ...prev]));
+    });
+
+    const transcriptGuidance = 'Use this as a video lesson transcript. Focus on the taught ideas, examples, vocabulary, teacher explanations, and likely misconceptions. Do not ask students to recall timestamps unless the timing matters.';
+    const actions = {
+      quiz: () => {
+        __d.setQuizMode('exit-ticket');
+        __d.handleGenerate('quiz', null, false, context.transcript, {
+          quizMode: 'exit-ticket',
+          quizMcqCount: 4,
+          customInstructions: `${transcriptGuidance} Create a concise exit ticket from the transcript.`
+        });
+      },
+      glossary: () => __d.handleGenerate('glossary', null, false, context.transcript, {
+        customInstructions: `${transcriptGuidance} Prioritize academic and domain vocabulary from the transcript.`
+      }),
+      'note-taking': () => {
+        __d.setNoteTakingTemplateType('guided-notes');
+        __d.handleGenerate('note-taking', null, false, context.transcript, {
+          templateType: 'guided-notes',
+          customInstructions: `${transcriptGuidance} Turn the transcript into guided notes with clear blanks and checkpoints.`
+        });
+      },
+      'anchor-chart': () => {
+        __d.setAnchorChartType('concept-map');
+        __d.handleGenerate('anchor-chart', null, false, context.transcript, {
+          chartType: 'concept-map',
+          customInstructions: `${transcriptGuidance} Create an anchor chart that distills the lesson into the most important ideas.`
+        });
+      },
+      simplified: () => __d.handleGenerate('simplified', null, false, context.transcript, {
+        customInstructions: `${transcriptGuidance} Rewrite the transcript as a clear, student-facing summary.`
+      })
+    };
+
+    if (actions[action]) actions[action]();
+  };
+const handleDownloadFullPackDiagnostics = () => {
+    const diagnostic = __d.buildSanitizedFullPackDiagnostic();
+    if (!diagnostic) return false;
+    try {
+      const blob = new Blob([JSON.stringify(diagnostic, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'full-pack-diagnostics-' + String(diagnostic.runId || 'run').slice(-12) + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      __d.addToast('Sanitized Full Pack diagnostic report downloaded.', 'success');
+      return true;
+    } catch (error) {
+      __d.warnLog('[FullPack] could not download diagnostics:', error && (error.message || error));
+      __d.addToast('Could not download Full Pack diagnostics.', 'warning');
+      return false;
+    }
+  };
+const handleAddToMapList = (text) => {
+    if (!text || !text.trim()) return;
+    if (!__d.generatedContent || __d.generatedContent.type !== 'outline') return;
+    const newData = { ...__d.generatedContent?.data };
+    const newBranches = newData.branches ? [...newData.branches] : [];
+    newBranches.push({ title: text.trim(), items: [] });
+    newData.branches = newBranches;
+    let synchronizedData = newData;
+    if (Array.isArray(__d.generatedContent.data?.nodes)) {
+      const synchronize = window.AlloModules?.UtilsPure?.synchronizeSavedOutline;
+      if (typeof synchronize !== 'function') { __d.addToast('Organizer tools are still loading. Please try the edit again.', 'error'); return; }
+      synchronizedData = synchronize(__d.generatedContent.data, newData, { type: 'add-branch' });
+    }
+    const updatedContent = { ...__d.generatedContent, data: synchronizedData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    __d.setMapAddInput('');
+    __d.addToast(__d.t('toasts.concept_added', { text }) || `Added concept: ${text}`, "success");
+  };
+const handleTimelineChange = (index, field, value, isEn = false) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
+    const data = __d.generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const updatedItem = { ...newItems[index] };
+    if (field && typeof field === 'object') {
+         // Multi-field patch (alt text + provenance + hash) in ONE write; sequential
+         // single-field calls would each start from the same stale snapshot.
+         Object.assign(updatedItem, field);
+    } else if (isEn) {
+         updatedItem[`${field}_en`] = value;
+    } else {
+         updatedItem[field] = value;
+    }
+    newItems[index] = updatedItem;
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleTimelineDragOver = (e, index) => {
+    e.preventDefault();
+    if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
+    if (__d.draggedTimelineIndex === null || __d.draggedTimelineIndex === index) return;
+    const data = __d.generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const draggedItem = newItems[__d.draggedTimelineIndex];
+    newItems.splice(__d.draggedTimelineIndex, 1);
+    newItems.splice(index, 0, draggedItem);
+    const renumberedItems = newItems.map((item, i) => {
+        if (item.date && /^Step\s+\d+$/i.test(item.date)) {
+            return { ...item, date: `Step ${i + 1}` };
+        }
+        return item;
+    });
+    const newData = isArrayShape ? renumberedItems : { ...data, items: renumberedItems };
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setDraggedTimelineIndex(index);
+  };
+const handleTimelineMove = (fromIndex, toIndex) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
+    const data = __d.generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    if (fromIndex < 0 || fromIndex >= currentItems.length || toIndex < 0 || toIndex >= currentItems.length || fromIndex === toIndex) return;
+    const newItems = [...currentItems];
+    const [movedItem] = newItems.splice(fromIndex, 1);
+    newItems.splice(toIndex, 0, movedItem);
+    const renumberedItems = newItems.map((item, i) => item.date && /^Step\s+\d+$/i.test(item.date) ? { ...item, date: `Step ${i + 1}` } : item);
+    const newData = isArrayShape ? renumberedItems : { ...data, items: renumberedItems };
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    __d.setDraggedTimelineIndex(null);
+    __d.addToast(__d.t('timeline.moved_position', { position: toIndex + 1 }) || `Moved timeline item to position ${toIndex + 1}.`, 'info');
+  };
+const handleAddTimelineStep = () => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
+    const data = __d.generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    const newItems = [...currentItems];
+    const newIdx = newItems.length;
+    newItems.push({
+        date: __d.t('timeline.default_step_label', { n: newItems.length + 1 }),
+        event: __d.t('timeline.new_step_placeholder') || "New step — describe this position in the sequence",
+        date_en: "",
+        event_en: "",
+    });
+    const newData = isArrayShape ? newItems : { ...data, items: newItems };
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    setTimeout(() => {
+        try {
+            const rows = document.querySelectorAll('[data-timeline-row]');
+            const row = rows[newIdx];
+            if (row) {
+                const input = row.querySelector('input[data-timeline-event]');
+                if (input && typeof input.focus === 'function') {
+                    input.focus();
+                    if (typeof input.select === 'function') input.select();
+                }
+            }
+        } catch {}
+    }, 50);
+  };
+const handleLessonPlanChange = (field, value, index = null) => {
+      if (!__d.generatedContent || __d.generatedContent.type !== 'lesson-plan') return;
+      // Apply only this edit to the latest saved plan so an arriving script or
+      // extension guide is not replaced by the editor's older render snapshot.
+      __d.onUpdateResource(__d.generatedContent.id, previous => {
+          if (previous.type !== 'lesson-plan') return previous;
+          const data = previous.data || {};
+          if (index !== null) {
+              if (!Number.isInteger(index) || index < 0) return previous;
+              const items = Array.isArray(data[field]) ? data[field].slice() : (data[field] == null ? [] : [data[field]]);
+              if (index >= items.length) return previous;
+              items[index] = typeof value === 'function' ? value(items[index]) : value;
+              return { ...previous, data: { ...data, [field]: items } };
+          }
+          return { ...previous, data: { ...data, [field]: typeof value === 'function' ? value(data[field]) : value } };
+      });
+  };
+const handleQuizOptionClick = (e, option) => {
+      e.stopPropagation();
+      if (__d.quizSelectedOption) return;
+      const currentItem = __d.generatedContent?.data[__d.flashcardIndex];
+      const correctAnswer = __d.flashcardCorrectAnswer(currentItem, __d.flashcardMode, __d.flashcardLang);
+      const isCorrect = option === correctAnswer;
+      __d.setQuizSelectedOption(option);
+      if (isCorrect) {
+          __d.setFlashcardFeedback('correct');
+          const newScore = __d.flashcardScore + 20;
+          __d.setFlashcardScore(newScore);
+          __d.handleScoreUpdate(newScore, "Flashcard Quiz MCQ", __d.generatedContent.id);
+          __d.playSound('correct');
+      } else {
+          __d.setFlashcardFeedback('incorrect');
+          __d.playSound('incorrect');
+      }
+      setTimeout(() => {
+          if (__d.flashcardIndex < __d.generatedContent?.data.length - 1) {
+              __d.nextFlashcard(null);
+          } else {
+              const finalScore = __d.flashcardScore + (isCorrect ? 20 : 0);
+              __d.addToast(__d.t('flashcards.quiz_complete', { score: finalScore }), "success");
+              try {
+                  const totalPossible = (__d.generatedContent?.data?.length || 0) * 20;
+                  if (totalPossible > 0 && finalScore / totalPossible >= 0.9) {
+                      window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } }));
+                  }
+              } catch (_) {}
+          }
+      }, 1500);
+  };
+const handleGenerateConceptItem = async (term, categories, targetCategoryId = null, runGuard = null) => {
+      if (!term || !categories || categories.length === 0) return null;
+      const budget = __d.csGeneratedItemBudgetRef.current;
+      const budgetDocumentId = __d.csLiveDocumentIdRef.current || '';
+      if (budget.documentId !== budgetDocumentId) { budget.documentId = budgetDocumentId; budget.used = 0; }
+      if (budget.used >= __d.CS_GENERATED_ITEM_BUDGET) {
+          __d.addToast((__d.t('concept_sort.actions.add_limit') || 'This activity has reached its limit of {limit} generated cards for this session. Edit existing cards, or reload to continue.').replace('{limit}', String(__d.CS_GENERATED_ITEM_BUDGET)), 'error');
+          return null;
+      }
+      budget.used += 1;
+      const stillCurrent = () => !runGuard || runGuard();
+      try {
+          let categoryId;
+          let content;
+              if (!stillCurrent()) return null;
+          if (targetCategoryId) {
+              // Caller already knows the category (e.g. csAddItem when the user
+              // clicks "+ Add" inside a specific category). Skip the AI
+              // classification round-trip and only ask the model to refine the
+              // term text — saves one Gemini call per add.
+              const refinePrompt = `
+                Task: Refine the educational term "${term}" for ${__d.gradeLevel} students.
+                - Correct spelling and clarify wording if needed.
+                - Keep it short (1-5 words for lower grades, up to ~12 for upper grades).
+                Return ONLY JSON: { "content": "Refined term text" }
+              `;
+              const result = await __d.callGemini(refinePrompt, true);
+              try {
+                  const refined = JSON.parse(__d.cleanJson(result));
+                  content = (refined && refined.content) || term;
+              } catch (jsonError) {
+                  __d.warnLog("Concept Item refine JSON Parse Error:", jsonError);
+                  // Fall back to the user's input verbatim. Refinement is a
+                  // nice-to-have; don't fail the whole add over it.
+                  content = term;
+              }
+              categoryId = targetCategoryId;
+          } else {
+              const categoryLabels = categories.map(c => `${c.id}: "${c.label}"`).join(', ');
+              const prompt = `
+                Task: Classify the educational term "${term}" into exactly one of the provided categories.
+              if (!stillCurrent()) return null;
+                Categories: [${categoryLabels}]
+                Target Audience: ${__d.gradeLevel} students.
+                Instructions:
+                1. Choose the category ID that best fits the term.
+                2. Refine the term text if necessary (e.g. correct spelling or simplify for ${__d.gradeLevel}).
+                Return ONLY JSON:
+                {
+                    "categoryId": "The ID of the matching category",
+                    "content": "Refined term text"
+                }
+              `;
+              const result = await __d.callGemini(prompt, true);
+              let classification;
+              try {
+                  classification = JSON.parse(__d.cleanJson(result));
+              } catch (jsonError) {
+                  __d.warnLog("Concept Item JSON Parse Error:", jsonError);
+                  // Re-throw so the outer catch surfaces a toast — silent null
+                  // return left teachers with a phantom-spinner-then-nothing UX.
+                  throw jsonError;
+              }
+              if (!classification.categoryId) throw new Error("Failed to classify");
+              categoryId = classification.categoryId;
+                  if (!stillCurrent()) return null;
+              content = classification.content;
+          }
+          const newWordCount = String(content || '').trim().split(/\s+/).filter(Boolean).length;
+          const shouldGenerateImage =
+              __d.conceptImageMode === 'always' ||
+              (__d.conceptImageMode === 'auto' && newWordCount <= 6);
+          let imageUrl = null;
+                              if (!stillCurrent()) return null;
+          if (shouldGenerateImage) {
+              try {
+                  const _csStyle = (__d.universalImageStyle || '').trim();
+                  const styleInstruction = _csStyle ? `Style: ${_csStyle}.` : 'Educational style.';
+                          if (!stillCurrent()) return null;
+                  const imgPrompt = `Simple, clear vector icon or illustration of: "${content}". White background. ${styleInstruction} No text.`;
+                  imageUrl = await __d.callImagen(imgPrompt);
+                  // Auto-strip pass: same chain as csRegenerateItemImage. Best-effort
+                  // — if the strip fails the un-stripped image is still returned.
+                  if (!stillCurrent()) return null;
+                  if (imageUrl && __d.conceptSortAutoRemoveWords && typeof __d.callGeminiImageEdit === 'function') {
+                      try {
+                          const rawB64 = String(imageUrl).split(',')[1];
+                          if (rawB64) {
+                              const stripped = await __d.callGeminiImageEdit('Remove all text, labels, letters, and words from the image. Keep the illustration clean.', rawB64);
+                              if (stripped) imageUrl = stripped;
+                          }
+                      } catch (stripErr) {
+                          __d.warnLog('handleGenerateConceptItem auto-strip failed (using un-stripped image)', stripErr);
+                      }
+          if (!stillCurrent()) return null;
+                  }
+              } catch (imgErr) {
+                  __d.warnLog("Added-item image gen failed", imgErr);
+              }
+          }
+          return {
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              content,
+              categoryId,
+              image: imageUrl
+          };
+      } catch (e) {
+          __d.warnLog("Item generation failed", e);
+          __d.addToast(__d.t('toasts.categorize_failed'), "error");
+          return null;
+      }
+  };
+const csRegenerateItem = async (item, categories) => {
+      if (!item || !item.id) return;
+      const run = __d.csBeginAsyncRun();
+      if (!run) return;
+      __d.setCsBusyId(item.id);
+      try {
+          // Pass the existing categoryId so the AI doesn't silently teleport
+          // the item to a different bucket on regenerate. Teachers who manually
+          // moved an item expect "regenerate" to refresh text+image, not
+          // re-classify. (Bonus: this also skips the classification round-trip.)
+          const refreshed = await __d.handleGenerateConceptItem(item.content, categories, item.categoryId, () => __d.csAsyncRunIsCurrent(run));
+          if (refreshed && __d.csAsyncRunIsCurrent(run)) {
+              const merged = Object.assign({}, refreshed, { id: item.id, categoryId: item.categoryId });
+              __d.csUpdateData((data) => Object.assign({}, data, {
+                  items: (data.items || []).map(i => i.id === item.id ? merged : i)
+              }), run.identity);
+          }
+      } finally {
+          if (__d.csAsyncRunIsCurrent(run)) __d.setCsBusyId(null);
+      }
+  };
+const csAddItem = async (categoryId, term, categories) => {
+      if (!term || !term.trim()) return;
+      const run = __d.csBeginAsyncRun();
+      if (!run) return;
+      __d.setCsBusyId('__adding__');
+      try {
+          // Pass the user's chosen categoryId so handleGenerateConceptItem skips
+          // the AI classification round-trip. The teacher already picked the
+          // bucket via the per-category "+ Add" button — no need to ask Gemini.
+          const created = await __d.handleGenerateConceptItem(term.trim(), categories, categoryId, () => __d.csAsyncRunIsCurrent(run));
+          if (created && __d.csAsyncRunIsCurrent(run)) {
+              __d.csUpdateData((data) => Object.assign({}, data, {
+                  items: [...(data.items || []), created]
+              }), run.identity);
+          }
+      } finally {
+          if (__d.csAsyncRunIsCurrent(run)) {
+              __d.setCsBusyId(null);
+              __d.setCsAddingCatId(null);
+              __d.setCsAddingText('');
+          }
+      }
+  };
+const csRegenerateItemImage = async (item) => {
+      if (!item || !item.id || typeof __d.callImagen !== 'function') return;
+      const run = __d.csBeginAsyncRun();
+      if (!run) return;
+      __d.setCsBusyId(item.id);
+      try {
+          const _csStyle2 = (__d.universalImageStyle || '').trim();
+          const styleInstruction = _csStyle2 ? `Style: ${_csStyle2}.` : 'Educational style.';
+          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
+          let imageUrl = await __d.callImagen(imgPrompt);
+          // Auto-strip pass: when toggle ON and we got an image back, run a single
+          if (!__d.csAsyncRunIsCurrent(run)) return;
+          // image-to-image edit to remove any text Imagen ignored. Best-effort —
+          // if the strip fails the un-stripped image is still saved.
+          if (imageUrl && __d.conceptSortAutoRemoveWords && typeof __d.callGeminiImageEdit === 'function') {
+              try {
+                  const rawB64 = String(imageUrl).split(',')[1];
+                  if (rawB64) {
+                      const stripped = await __d.callGeminiImageEdit('Remove all text, labels, letters, and words from the image. Keep the illustration clean.', rawB64);
+                      if (stripped) imageUrl = stripped;
+                      if (!__d.csAsyncRunIsCurrent(run)) return;
+                  }
+              } catch (stripErr) {
+                  __d.warnLog('csRegenerateItemImage auto-strip failed (using un-stripped image)', stripErr);
+                  if (!__d.csAsyncRunIsCurrent(run)) return;
+              }
+          }
+          // callImagen and callGeminiImageEdit both throw on failure; the catch
+          // below handles that. No need for an unreachable else branch here.
+          __d.csUpdateData((data) => Object.assign({}, data, {
+              items: (data.items || []).map(i => i.id === item.id ? Object.assign({}, i, { image: imageUrl }) : i)
+          }), run.identity);
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.image_regenerated') || 'Image regenerated.', 'success');
+      } catch (e) {
+          if (!__d.csAsyncRunIsCurrent(run)) return;
+          __d.warnLog('csRegenerateItemImage failed', e);
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.image_regen_failed') || 'Image regeneration failed. Try again or upload your own.', 'error');
+      } finally {
+          if (__d.csAsyncRunIsCurrent(run)) __d.setCsBusyId(null);
+      }
+  };
+const csRefineItemImage = async (itemId, instructionOverride = null) => {
+      if (!itemId || typeof __d.callGeminiImageEdit !== 'function') return;
+      const items = (__d.generatedContent && __d.generatedContent.data && __d.generatedContent.data.items) || [];
+      const item = items.find(i => i.id === itemId);
+      if (!item || !item.image) {
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.no_image_refine') || 'No image to refine — generate or upload one first.', 'error');
+          return;
+      }
+      const instruction = instructionOverride || (__d.csRefinementInputs[itemId] || '').trim();
+      if (!instruction) return;
+      const run = __d.csBeginAsyncRun();
+      if (!run) return;
+      __d.setCsBusyId(itemId);
+      if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.refining_image') || 'Refining image...', 'info');
+      try {
+          const rawBase64 = String(item.image).split(',')[1];
+          if (!rawBase64) throw new Error('Image not in base64 dataURL form');
+          const refinementPrompt = `Edit this concept-sort card icon. Instruction: ${instruction}. Maintain the simple, flat vector art style. White background.`;
+          const newImageUrl = await __d.callGeminiImageEdit(refinementPrompt, rawBase64);
+          if (!__d.csAsyncRunIsCurrent(run)) return;
+          // callGeminiImageEdit throws on failure rather than returning falsy;
+          // the catch below handles that path.
+          __d.csUpdateData((data) => Object.assign({}, data, {
+              items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { image: newImageUrl }) : i)
+          }), run.identity);
+          if (!instructionOverride) {
+              __d.setCsRefinementInputs(prev => Object.assign({}, prev, { [itemId]: '' }));
+          }
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.image_refined') || 'Image refined.', 'success');
+      } catch (e) {
+          if (!__d.csAsyncRunIsCurrent(run)) return;
+          __d.warnLog('csRefineItemImage failed', e);
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.image_refine_failed') || 'Image refinement failed. Try again or rephrase the prompt.', 'error');
+      } finally {
+          if (__d.csAsyncRunIsCurrent(run)) __d.setCsBusyId(null);
+      }
+  };
+const csUploadItemImage = (itemId, file) => {
+      if (!itemId || !file) return;
+      // Validate: must be image, <=5MB. Skipping format-specific checks since the
+      // browser's <img> tag will accept anything image/* anyway.
+      if (!/^image\//.test(file.type)) {
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.upload_not_image') || 'That file is not an image.', 'error');
+          return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.upload_too_large') || 'Image is too large (max 5 MB).', 'error');
+          return;
+      }
+      const run = __d.csBeginAsyncRun();
+      if (!run) return;
+      const reader = new FileReader();
+      const abortReader = () => {
+          try { if (reader.readyState === 1) reader.abort(); } catch (_) {}
+      };
+      const cleanupReader = () => {
+          run.controller.signal.removeEventListener('abort', abortReader);
+      };
+      run.controller.signal.addEventListener('abort', abortReader, { once: true });
+      reader.onabort = cleanupReader;
+      reader.onload = (ev) => {
+          cleanupReader();
+          if (!__d.csAsyncRunIsCurrent(run)) return;
+          const dataUrl = ev.target && ev.target.result;
+          if (typeof dataUrl !== 'string' || !dataUrl) return;
+          __d.csUpdateData((data) => Object.assign({}, data, {
+              items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { image: dataUrl }) : i)
+          }), run.identity);
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.image_uploaded') || 'Image uploaded.', 'success');
+      };
+      reader.onerror = () => {
+          cleanupReader();
+          if (!__d.csAsyncRunIsCurrent(run)) return;
+          if (typeof __d.addToast === 'function') __d.addToast(__d.t('concept_sort.actions.upload_failed') || 'Upload failed.', 'error');
+      };
+      reader.readAsDataURL(file);
+  };
+const handleExplainConceptSortItem = async (item, correctCategory, chosenCategory) => {
+      try {
+          const prompt = `
+            A ${__d.gradeLevel} student placed the item "${item.content}" into the category "${chosenCategory?.label || 'unknown'}".
+            The correct category is "${correctCategory?.label || 'unknown'}".
+            Write a brief, supportive 2-3 sentence explanation for the student.
+            IMPORTANT: The student got this WRONG. Do NOT open with "Great job", "Nice work", or any positive affirmation — those read as sarcastic when paired with corrective feedback. Open with a warm but honest framing like "Close — but actually..." or "Let's look at this one together..."
+            - State which category is correct and why.
+            - Point out one concrete feature of the item that signals the right category.
+            - Acknowledge the mistake kindly; stay warm and instructive; never shame.
+            Return plain text only, no markdown, no quotes.
+          `;
+          const result = await __d.callGemini(prompt, false);
+          return (result || '').trim();
+      } catch (e) {
+          __d.warnLog("Explain concept sort item failed", e);
+          return __d.t('concept_sort.explanation_unavailable') || "Couldn't generate an explanation right now. Try again in a moment.";
+      }
+  };
+const handleNavigateResource = (direction) => {
+      const filtered = __d.getFilteredHistory();
+      if (!__d.generatedContent || filtered.length === 0) return;
+      const currentIndex = filtered.findIndex(item => item.id === __d.generatedContent.id);
+      if (currentIndex === -1) return;
+      const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+      if (newIndex >= 0 && newIndex < filtered.length) {
+          const targetItem = filtered[newIndex];
+          __d.setIsMapLocked(false);
+          if (__d.contentRef.current) {
+              setTimeout(() => {
+                  const container = __d.contentRef.current.closest('.overflow-y-auto');
+                  if (container) container.scrollTop = 0;
+              }, 50);
+          }
+          // Preserve the artifact-owned grade, standards, role, source links, and
+          // complexity evidence when navigating history. Rebuilding three fields
+          // here made later checks silently fall back to ambient Universal settings.
+          __d.setGeneratedContent({ ...targetItem });
+          __d.setActiveView(targetItem.type);
+          __d.setStickers([]);
+          __d.stopPlayback();
+          __d._alloFollowResourceLive(targetItem, { blockedToast: __d.t('toasts.teacher_view_only') });
+      }
+  };
+const handleAnalysisTextChange = (value) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'analysis') return;
+    __d._recordTextChange('analysis', __d.generatedContent.id, (__d.generatedContent.data && __d.generatedContent.data.originalText) || '', value);
+    const evidence = __d._getFreshTextComplexityEvidence(__d.generatedContent, value);
+    const newData = {
+        ...__d.generatedContent?.data,
+        originalText: value,
+        ...(evidence.localStats ? { localStats: evidence.localStats } : {})
+    };
+    if (!evidence.localStats && newData.localStats) delete newData.localStats;
+    const updatedContent = {
+        ...__d.generatedContent,
+        data: newData,
+        targetGradeLevel: evidence.targetGrade,
+        instructionalText: evidence.instructionalText
+    };
+    if (updatedContent.levelCheck) delete updatedContent.levelCheck;
+    if (updatedContent.alignmentCheck) delete updatedContent.alignmentCheck;
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const _applyTextDomain = (entry) => {
+    if (entry.domain === 'input') {
+      __d.textUndoRef.current.applyingInput = true;
+      __d.setInputText(entry.value);
+      return;
+    }
+    const patch = (item) => {
+      if (entry.domain !== 'analysis') return __d._applySimplifiedTextMutation(item, entry.value);
+      const evidence = __d._getFreshTextComplexityEvidence(item, entry.value);
+      const data = {
+        ...item.data,
+        originalText: entry.value,
+        ...(evidence.localStats ? { localStats: evidence.localStats } : {})
+      };
+      if (!evidence.localStats && data.localStats) delete data.localStats;
+      const updated = {
+        ...item,
+        data,
+        targetGradeLevel: evidence.targetGrade,
+        instructionalText: evidence.instructionalText
+      };
+      if (updated.levelCheck) delete updated.levelCheck;
+      if (updated.alignmentCheck) delete updated.alignmentCheck;
+      return updated;
+    };
+    __d.setHistory(prev => prev.map(item => (item && item.id === entry.id && item.type === entry.domain) ? patch(item) : item));
+    __d.setGeneratedContent(prev => (prev && prev.id === entry.id && prev.type === entry.domain) ? patch(prev) : prev);
+  };
+const _shiftTextStack = (from, to, verb) => {
+    const h = __d.textUndoRef.current;
+    while (from.length) {
+      const entry = from.pop();
+      const cur = __d._readTextDomain(entry);
+      if (!cur.ok) continue;                       // artifact was deleted — skip to the next step
+      if (cur.value === entry.value) continue;     // no-op step — keep walking
+      to.push({ domain: entry.domain, id: entry.id, value: cur.value });
+      h.lastKey = null; h.burstUntil = 0;          // an undo/redo always ends the typing burst
+      _applyTextDomain(entry);
+      const label = __d._textDomainLabel(entry.domain);
+      const msg = verb === 'undo'
+        ? (__d.t('toasts.text_undone', { domain: label }) || ('Undid the last ' + label + ' change.'))
+        : (__d.t('toasts.text_redone', { domain: label }) || ('Redid the last ' + label + ' change.'));
+      __d.addToast(msg, 'info');
+      try { if (window.alloAnnounce) window.alloAnnounce(msg, 'polite'); } catch (_) {}
+      return true;
+    }
+    return false;
+  };
+const handleBrainstormChange = (index, field, value) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'brainstorm') return;
+    const newData = [...__d.generatedContent?.data];
+    const current = newData[index];
+    const next = { ...current, [field]: value };
+    const derivativeKind = field === 'coverImage' ? 'cover' : (['guide', 'worksheet', 'rubric'].includes(field) ? field : null);
+    const dispatcher = __d._alloActivityDispatcher();
+    newData[index] = derivativeKind && dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+      ? dispatcher.stampActivityDerivative(next, __d.generatedContent.id, index, derivativeKind, { status: 'edited', bumpVersion: false, updatedAt: new Date().toISOString(), lastError: null })
+      : next;
+    const updatedContent = { ...__d.generatedContent, data: newData };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+  };
+const handleOpenActivityInStudio = (index) => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'brainstorm' || !__d.generatedContent.data || !__d.generatedContent.data[index]) return;
+    const activity = __d.generatedContent.data[index];
+    if (!activity.worksheet) return;
+    const dispatcher = __d._alloActivityDispatcher();
+    const derivatives = dispatcher && typeof dispatcher.normalizeActivityDerivatives === 'function'
+      ? dispatcher.normalizeActivityDerivatives(activity, __d.generatedContent.id, index)
+      : (activity.derivatives || {});
+    const worksheetMeta = derivatives.worksheet || {};
+    __d.setAlloStudioInitialResource({
+      parentResourceId: __d.generatedContent.id,
+      activityIndex: index,
+      artifactId: worksheetMeta.artifactId || (__d.generatedContent.id + '-activity-' + index + '-worksheet'),
+      activityKind: activity.kind || 'idea',
+      title: activity.title || 'Activity worksheet',
+      worksheet: activity.worksheet,
+      guide: activity.guide || '',
+      rubric: activity.rubric || null,
+      coverImage: activity.coverImage || '',
+      sourceRevision: worksheetMeta.contentHash || worksheetMeta.sourceRevision || String(worksheetMeta.version || 0),
+      sourceTitle: __d.generatedContent.title || 'Activities'
+    });
+    __d.setAlloStudioInitialFile(null);
+    __d.setAlloStudioInitialArtwork(null);
+    __d.setAlloStudioInitialAction('worksheet-from-activity');
+    __d.setIsAlloStudioOpen(true);
+  };
+const handleAnalyzePOS = () => {
+    if (!__d.generatedContent || __d.generatedContent.type !== 'simplified') return;
+    if (__d.isImmersiveReaderActive) {
+        __d.setIsImmersiveReaderActive(false);
+        return;
+    }
+    if (__d.generatedContent.immersiveData && __d.generatedContent.posEnriched) {
+        __d.setIsImmersiveReaderActive(true);
+        return;
+    }
+    const textToAnalyze = __d._stripForImmersive(__d.generatedContent?.data);
+    if (!textToAnalyze.trim()) {
+        __d.warnLog('handleAnalyzePOS: empty text after stripping links/URLs/citations.');
+        __d.addToast(__d.t('process.grammar_failed') || 'Nothing to display — text is empty after stripping links/citations.', 'error');
+        return;
+    }
+    const parsedData = __d.parseTaggedContent(textToAnalyze);
+    const updatedContent = { ...__d.generatedContent, immersiveData: parsedData, posEnriched: false };
+    __d.setGeneratedContent(updatedContent);
+    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+    __d.setIsImmersiveReaderActive(true);
+  };
+const launchGradingSession = () => {
+     let initialText = '';
+     const responses = __d.studentResponses[__d.generatedContent?.id] || {};
+     if (__d.generatedContent?.type === 'sentence-frames' && __d.generatedContent?.data) {
+         if (__d.generatedContent?.data.mode === 'list') {
+             initialText = __d.generatedContent?.data.items
+                 .map((item, idx) => {
+                     const resp = responses[idx];
+                     if (!resp || !resp.trim()) return null;
+                     return `${item.text.trim()} ${resp.trim()}`;
+                 })
+                 .filter(Boolean)
+                 .join('\n\n');
+         } else {
+             const frames = window.AlloModules && window.AlloModules.SentenceFramesView;
+             initialText = frames && typeof frames.serializeParagraph === 'function'
+                 ? frames.serializeParagraph(__d.generatedContent.data.text, responses)
+                 : String(__d.generatedContent.data.text || '').split(/(\[.*?\])/).map((part, index) => index % 2
+                     ? (String(responses['paragraph-' + index] || '').trim() || '_____') : part).join('');
+         }
+     }
+     __d.setGradingSession({
+        isOpen: true,
+        status: 'writing',
+        draftText: initialText,
+        previousDraft: '',
+        feedback: null,
+        draftCount: 1
+     });
+  };
+const submitGradingSession = async () => {
+    if (!__d.gradingSession.draftText) return;
+    __d.setGradingSession(prev => ({ ...prev, status: 'grading' }));
+    try {
+        const topic = __d.sourceTopic || "Current Topic";
+        const rubric = __d.generatedContent?.data?.rubric || "Standard grading criteria for clarity, accuracy, and depth.";
+        const result = await __d.handleMasteryGrading(
+            __d.gradingSession.draftText,
+            rubric,
+            topic,
+            __d.gradingSession.draftCount
+        );
+        __d.setGradingSession(prev => ({
+            ...prev,
+            status: result.status,
+            feedback: result.gradingDetails,
+            previousDraft: result.status === 'revision' ? __d.gradingSession.draftText : prev.previousDraft,
+            draftText: result.status === 'revision' ? '' : __d.gradingSession.draftText,
+            draftCount: result.draftCount
+        }));
+        if (result.status === 'mastery') {
+            __d.playSound('correct');
+            __d.addToast(`${__d.t('mastery.mastery_achieved')} +100 XP`, "success");
+            __d.handleScoreUpdate(100, "Mastery Writing", __d.generatedContent.id);
+        } else {
+            __d.addToast(__d.t('toasts.feedback_revisions'), "info");
+        }
+    } catch (e) {
+        __d.warnLog("Unhandled error:", e);
+        __d.addToast(e.message || "Grading failed.", "error");
+        __d.setGradingSession(prev => ({ ...prev, status: 'writing' }));
+    }
+  };
+const handlePresentationOptionClick = (qIndex, option) => {
+      if (__d.presentationState[qIndex]?.showAnswer && __d.presentationState[qIndex]?.isCorrect) return;
+      const question = __d.generatedContent?.data.questions[qIndex];
+      const isCorrect = __d.quizAnswerMatches(option, question.correctAnswer);
+      const currentAttempts = __d.presentationState[qIndex]?.attempts || 0;
+      if (isCorrect) {
+          let xpEarned = 0;
+          if (currentAttempts === 0) xpEarned = 20;
+          else if (currentAttempts === 1) xpEarned = 10;
+          if (xpEarned > 0) {
+              __d.addXp(xpEarned);
+              __d.addToast(`+${xpEarned} XP!`, "success");
+          }
+          __d.playSound('correct');
+      } else {
+          __d.playSound('incorrect');
+      }
+      __d.setPresentationState(prev => {
+          const prevAttempts = prev[qIndex]?.attempts || 0;
+          return {
+            ...prev,
+            [qIndex]: {
+                ...prev[qIndex],
+                selectedOption: option,
+                isCorrect: isCorrect,
+                showAnswer: isCorrect ? true : (prev[qIndex]?.showAnswer || false),
+                attempts: isCorrect ? prevAttempts : prevAttempts + 1
+            }
+          };
+      });
+  };
+  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, executeRoleSelect, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, prepareMailboxResourceImages, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, clearCanvasWorkspaceState, buildCanvasWorkspaceSnapshot, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, showSpotlight, highlightElement, _alloBlueprintLearningWebResource, _alloAlignmentRegistryRecordFromResource, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, _mbPushOneResource, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, applyMbDownPayload, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, onUpdateResource, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, runGlossaryHealthCheck, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick };
 }

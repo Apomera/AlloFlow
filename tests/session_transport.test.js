@@ -60,8 +60,13 @@ function expectLearnerActivities(items) {
 }
 
 
-const liveFollowStart = anti.indexOf('const _alloFollowResourceLive = (item, options = {}) => {');
-const liveFollowEnd = anti.indexOf('const handleRestoreView', liveFollowStart);
+// Since wave 3 (2026-09-13) the helper body lives in host_handlers_source.jsx, where host
+// bindings are read as `__d.<name>`; the host keeps a one-line shim under the same name.
+const handlersSource = fs.readFileSync(path.join(ROOT, 'host_handlers_source.jsx'), 'utf8');
+if (!anti.includes('const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);')) throw new Error('Live follow shim is missing from the host');
+const liveFollowStart = handlersSource.indexOf('const _alloFollowResourceLive = (item, options = {}) => {');
+const liveFollowNext = liveFollowStart < 0 ? -1 : handlersSource.slice(liveFollowStart + 1).search(/\n(const |function |async function |  return \{ )/);
+const liveFollowEnd = liveFollowNext < 0 ? -1 : liveFollowStart + 1 + liveFollowNext;
 if (liveFollowStart < 0 || liveFollowEnd < 0) throw new Error('Live follow helper markers are missing');
 
 function makeLiveFollowHarness(overrides = {}) {
@@ -87,7 +92,9 @@ function makeLiveFollowHarness(overrides = {}) {
     ...overrides,
   };
   // eslint-disable-next-line no-new-func
-  const follow = new Function(...Object.keys(deps), anti.slice(liveFollowStart, liveFollowEnd) + '\nreturn _alloFollowResourceLive;')(...Object.values(deps));
+  // `__d` carries the host bindings the module reads; the same values stay injected by name so
+  // bare globals (the fake `window`) and sibling handlers resolve exactly as they did in the host.
+  const follow = new Function('__d', ...Object.keys(deps), handlersSource.slice(liveFollowStart, liveFollowEnd) + '\nreturn _alloFollowResourceLive;')(deps, ...Object.values(deps));
   return { follow, deps };
 }
 
@@ -417,19 +424,27 @@ describe('ANTI wiring pins', () => {
     // Five of the eight class-follow surfaces moved into misc_handlers with
     // the resource-open handlers (2026-08-22); the total contract is unchanged.
     const handlers = fs.readFileSync(path.resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
-    const calls = anti.split('_alloFollowResourceLive(').length - 1
-      + handlers.split('_alloFollowResourceLive(').length - 1;
+    // Waves 3/4 (2026-09-13) moved the helper and two of its callers into host_handlers_source.jsx.
+    // The host now holds only the plumbing for the helper — its one-line shim and its getter —
+    // which is not a call site; real sites are counted across all three files.
+    const hostSites = anti
+      .replace(/get _alloFollowResourceLive\(\)/g, '')
+      .replace(/_alloHostHandlers\(\)\._alloFollowResourceLive\(/g, '');
+    const calls = hostSites.split('_alloFollowResourceLive(').length - 1
+      + handlers.split('_alloFollowResourceLive(').length - 1
+      + handlersSource.split('_alloFollowResourceLive(').length - 1;
     expect(calls).toBe(8);
-    expect(anti.split('currentResourceId: item.id').length - 1).toBe(1);
-    expect(anti).toContain('const _alloFollowResourceLive = (item, options = {}) => {');
-    expect(anti).toContain('options.awaitDelivery === true');
-    expect(anti).toContain('await _alloFollowResourceLive(after.resource, { awaitDelivery: true })');
-    expect(anti).toContain('firebasePublishedResourcesRef.current.sessionKey === publishSessionKey');
-    expect(anti).toContain('enqueueLiveSessionResourcePublish({');
-    expect(anti).toContain('publishedIds: result.publishedIds');
-    expect(anti).toContain('firebasePublication.sessionKey === expectedFirebaseSessionKey');
-    expect(anti).toContain('firebasePublication.fingerprints?.[resource.id] === fingerprint');
-    expect(anti).toContain("publishedSessionResources.some(item => item && String(item.id || '') === String(resource.id || ''))");
+    const hostAndHandlers = anti + '\n' + handlersSource;
+    expect(hostAndHandlers.split('currentResourceId: item.id').length - 1).toBe(1);
+    expect(handlersSource).toContain('const _alloFollowResourceLive = (item, options = {}) => {');
+    expect(handlersSource).toContain('options.awaitDelivery === true');
+    expect(handlersSource).toContain('await _alloFollowResourceLive(after.resource, { awaitDelivery: true })');
+    expect(hostAndHandlers).toContain('firebasePublishedResourcesRef.current.sessionKey === publishSessionKey');
+    expect(hostAndHandlers).toContain('enqueueLiveSessionResourcePublish({');
+    expect(hostAndHandlers).toContain('publishedIds: result.publishedIds');
+    expect(hostAndHandlers).toContain('firebasePublication.sessionKey === expectedFirebaseSessionKey');
+    expect(hostAndHandlers).toContain('firebasePublication.fingerprints?.[resource.id] === fingerprint');
+    expect(hostAndHandlers).toContain("publishedSessionResources.some(item => item && String(item.id || '') === String(resource.id || ''))");
   });
 
   it('the inline sync fallbacks are retired: transport-unavailable is surfaced, not duplicated', () => {
