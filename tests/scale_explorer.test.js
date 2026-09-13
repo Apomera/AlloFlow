@@ -618,7 +618,7 @@ describe('Scale Explorer shows orders of magnitude, not just names them', () => 
     expect(src).toMatch(/itemText\(i, 'name'\) \+ ' — ' \+ lengthText\(i\.size\)/);
     expect(src).toMatch(/sciRef\.current \? sciNotation\(lo\.size\) : humanLength\(lo\.size\)/);
     expect(src).toMatch(/updateSlice\(function \(cur\) \{ cur\.sci = on; \}\)/);
-    expect(src).toMatch(/React\.useEffect\(function \(\) \{ draw\(\); \}, \[theme, focusId, uiLang, sci\]\)/);
+    expect(src).toMatch(/React\.useEffect\(function \(\) \{ draw\(\); \}, \[theme, focusId, uiLang, sci, items\]\)/);
     for (const rel of UI_COPIES) {
       const sec = JSON.parse(read(rel)).stem.scaleExplorer;
       for (const k of ['sci_toggle', 'stair_caption', 'stair_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
@@ -708,6 +708,51 @@ describe('Scale Explorer tiling and population strip', () => {
     for (const rel of UI_COPIES) {
       const sec = JSON.parse(read(rel)).stem.scaleExplorer;
       for (const k of ['fit_line', 'fit_line_close']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+// 2026-09-13. "Make the person your height": the one personalisation that
+// changes what every other number means. Checked in the real host: 999 is
+// refused, 152 makes the card read "You, 1.52 m tall", the select and Compare
+// say "you" ("About 16 of you fit side by side across a blue whale"), it
+// survives closing and reopening the tool, and "Back to average" restores 1.7 m.
+describe('Scale Explorer: the person can be the student', () => {
+  it('accepts a height between 50 and 250 cm and nothing else', () => {
+    const ctx = {};
+    vm.runInNewContext(src.slice(src.indexOf('function validHeightCm'), src.indexOf('function round2')) + '\nthis.v = validHeightCm;', ctx);
+    expect(ctx.v('152')).toBe(152);
+    expect(ctx.v(50)).toBe(50);
+    expect(ctx.v(250)).toBe(250);
+    for (const bad of ['999', '49', '', 'abc', null, undefined, '1e9']) expect(ctx.v(bad), String(bad)).toBeNull();
+  });
+  it('"You" is a card name and "you" is a sentence word', () => {
+    const ctx = {};
+    vm.runInNewContext(src.slice(src.indexOf('function lowerArticle'), src.indexOf('// The person can be made')) + '\nthis.la = lowerArticle;', ctx);
+    expect(ctx.la('You')).toBe('you');
+    expect(ctx.la('The Earth')).toBe('the Earth');
+    expect(ctx.la('Jupiter')).toBe('Jupiter');
+  });
+  it('everything reads from one derived list, and the animation loop reads it through a ref', () => {
+    expect(src).toMatch(/var items = React\.useMemo\(function \(\) \{\s*if \(!yourCm\) return ITEMS;/);
+    expect(src).toMatch(/return items\.slice\(\)\.sort\(function \(a, b\) \{ return b\.size - a\.size; \}\);\s*\}, \[items\]\);/);
+    expect(src).toMatch(/var sortedRef = React\.useRef\(sorted\); sortedRef\.current = sorted;/);
+    const draw = src.slice(src.indexOf('function draw()'), src.indexOf('React.useEffect(function () {\n        draw();'));
+    expect(draw).toMatch(/var list = sortedRef\.current;/);
+    expect(draw).not.toMatch(/for \(var i = 0; i < sorted\.length/);
+    const near = src.slice(src.indexOf('function nearestItem'), src.indexOf('function stopJourney'));
+    expect(near).toMatch(/var list = sortedRef\.current/);
+    expect(src).toMatch(/\[theme, focusId, uiLang, sci, items\]\)/);
+  });
+  it('setting the height persists, re-centres on the person, and can be undone', () => {
+    const fn = src.slice(src.indexOf('function applyHeight'), src.indexOf('function submitHeight'));
+    expect(fn).toMatch(/updateSlice\(function \(cur\) \{ if \(cm\) cur\.yourHeightCm = cm; else delete cur\.yourHeightCm; \}\)/);
+    expect(fn).toMatch(/setFocusId\('human'\);\s*goTo\(log10\(size\)\)/);
+    expect(src).toMatch(/validHeightCm\(slice\.yourHeightCm\)/);
+    expect(src).toMatch(/S\('you_reset', 'Back to average'\)/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['you_name', 'you_describe', 'you_label', 'you_input_aria', 'you_apply', 'you_reset', 'you_invalid', 'you_set_sr', 'you_cleared_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
     }
   });
 });

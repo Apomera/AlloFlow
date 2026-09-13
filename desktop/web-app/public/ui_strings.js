@@ -13120,7 +13120,17 @@
       "film_start_in": "Playing the zoom inward. Press space to pause.",
       "film_start_out": "Playing the zoom outward. Press space to pause.",
       "fit_line": "About {n} of {small} fit side by side across {big}.",
-      "fit_line_close": "{big} is only {n} times as wide as {small}: nearly the same size."
+      "fit_line_close": "{big} is only {n} times as wide as {small}: nearly the same size.",
+      "you_apply": "Use my height",
+      "you_cleared_sr": "Back to an average adult, 1.7 m tall.",
+      "you_cm": "cm",
+      "you_describe": "That is you, at {len}. Everything else here is measured against you.",
+      "you_input_aria": "Your height in centimetres",
+      "you_invalid": "Enter a height between 50 and 250 centimetres.",
+      "you_label": "Make the person your height:",
+      "you_name": "You",
+      "you_reset": "Back to average",
+      "you_set_sr": "The person is now you, {len} tall."
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",

@@ -314,8 +314,13 @@
   }
   // Mid-sentence, "A person" and "The Earth" need their article lowered.
   function lowerArticle(name) {
-    return /^(A|An|The) /.test(name) ? name.charAt(0).toLowerCase() + name.slice(1) : name;
+    if (/^(A|An|The) /.test(name)) return name.charAt(0).toLowerCase() + name.slice(1);
+    // The personalised person is "You" on its card and "you" inside a sentence.
+    return name === 'You' ? 'you' : name;
   }
+  // The person can be made the student's own height. Kept between 50 cm and
+  // 2.5 m: anything outside that is a typo, not a person.
+  function validHeightCm(v) { var n = Number(v); return isFinite(n) && n >= 50 && n <= 250 ? n : null; }
   function round2(v) {
     var a = Math.abs(v);
     var d = a >= 100 ? 0 : a >= 10 ? 1 : 2;
@@ -372,12 +377,44 @@
       var uiLang = ctx.lang || (typeof window !== 'undefined' ? window.__alloTextLanguage : null) || 'en';
 
       function S(key, fb, vars) { var v = t('stem.scaleExplorer.' + key, fb); return vars ? fmt(v, vars) : v; }
-      function itemText(item, field, fb) { return t('stem.scaleExplorer.item_' + item.id.replace(/-/g, '_') + '_' + field, fb != null ? fb : item[field]); }
+      function itemText(item, field, fb) {
+        if (item.you) {
+          if (field === 'name') return S('you_name', 'You');
+          if (field === 'describe') return S('you_describe', 'That is you, at {len}. Everything else here is measured against you.', { len: humanLength(item.size) });
+        }
+        return t('stem.scaleExplorer.item_' + item.id.replace(/-/g, '_') + '_' + field, fb != null ? fb : item[field]);
+      }
+      // Setting or clearing the height re-centres on the person, so the change
+      // is seen, and is remembered with the rest of the tool's state.
+      function applyHeight(cm) {
+        setYourCm(cm);
+        updateSlice(function (cur) { if (cm) cur.yourHeightCm = cm; else delete cur.yourHeightCm; });
+        var size = cm ? cm / 100 : HUMAN;
+        stopJourney();
+        intentRef.current = 'human'; nearestRef.current = 'human'; setFocusId('human');
+        goTo(log10(size));
+        say(cm ? S('you_set_sr', 'The person is now you, {len} tall.', { len: humanLength(size) }) : S('you_cleared_sr', 'Back to an average adult, 1.7 m tall.'));
+      }
+      function submitHeight() {
+        var cm = validHeightCm(heightDraft);
+        if (!cm) { say(S('you_invalid', 'Enter a height between 50 and 250 centimetres.')); return; }
+        applyHeight(cm);
+        setHeightDraft('');
+      }
       function say(text) { if (ctx.announceToSR && text) ctx.announceToSR(text); }
 
       // A shared link may name a starting place; otherwise the person, the
       // scale everything else is easiest to feel from.
-      var start = React.useMemo(function () { return readStartFromLink(ITEMS) || { focusId: 'human', exp: log10(HUMAN) }; }, []);
+      // "Your height": the person becomes the student. One derived list, and
+      // everything below (sort order, lookups, the stage, Compare, the
+      // staircase, the estimate pairs) reads from it rather than from ITEMS.
+      var _yourCm = React.useState(validHeightCm(slice.yourHeightCm)); var yourCm = _yourCm[0], setYourCm = _yourCm[1];
+      var _heightDraft = React.useState(''); var heightDraft = _heightDraft[0], setHeightDraft = _heightDraft[1];
+      var items = React.useMemo(function () {
+        if (!yourCm) return ITEMS;
+        return ITEMS.map(function (i) { return i.id === 'human' ? Object.assign({}, i, { size: yourCm / 100, you: true }) : i; });
+      }, [yourCm]);
+      var start = React.useMemo(function () { return readStartFromLink(ITEMS) || { focusId: 'human', exp: log10(yourCm ? yourCm / 100 : HUMAN) }; }, []);
       var _focus = React.useState(start.focusId || 'human'); var focusId = _focus[0], setFocusId = _focus[1];
       var _exp = React.useState(start.exp); var exp = _exp[0], setExp = _exp[1];
       var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
@@ -435,11 +472,16 @@
       var descId = React.useMemo(function () { return 'sx-desc-' + Math.random().toString(36).slice(2, 8); }, []);
 
       var sorted = React.useMemo(function () {
-        return ITEMS.slice().sort(function (a, b) { return b.size - a.size; });
-      }, []);
+        return items.slice().sort(function (a, b) { return b.size - a.size; });
+      }, [items]);
       var byId = React.useMemo(function () {
-        var m = {}; ITEMS.forEach(function (i) { m[i.id] = i; }); return m;
-      }, []);
+        var m = {}; items.forEach(function (i) { m[i.id] = i; }); return m;
+      }, [items]);
+      // The animation loop outlives the render that started it, so the stage
+      // and the nearest-item search read the list through a ref, as they do
+      // the focus id; otherwise the last frame after "Use my height" would
+      // paint the old person at the new camera position.
+      var sortedRef = React.useRef(sorted); sortedRef.current = sorted;
       var focused = byId[focusId] || byId.human;
 
       function updateSlice(fn) {
@@ -524,10 +566,10 @@
       // walks one power of ten at a time and names what lives at each, which is
       // the part a student cannot get by dragging.
       function nearestItem(e) {
-        var best = null, bestD = Infinity;
-        for (var i = 0; i < sorted.length; i++) {
-          var d = Math.abs(log10(sorted[i].size) - e);
-          if (d < bestD) { bestD = d; best = sorted[i]; }
+        var list = sortedRef.current, best = null, bestD = Infinity;
+        for (var i = 0; i < list.length; i++) {
+          var d = Math.abs(log10(list[i].size) - e);
+          if (d < bestD) { bestD = d; best = list[i]; }
         }
         return best;
       }
@@ -557,7 +599,8 @@
         stopJourney();
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; }
         var here = expRef.current;
-        var end = dir > 0 ? log10(sorted[0].size) + 0.4 : log10(sorted[sorted.length - 1].size) - 0.4;
+        var list = sortedRef.current;
+        var end = dir > 0 ? log10(list[0].size) + 0.4 : log10(list[list.length - 1].size) - 0.4;
         if ((dir > 0 && here >= end - 0.01) || (dir < 0 && here <= end + 0.01)) { say(S('journey_end', 'That is as far as the ladder goes.')); return; }
         intentRef.current = null;
         filmRef.current = { dir: dir, from: here, to: end, last: 0 };
@@ -659,8 +702,9 @@
         // label, which is what actually carries the scale information.
         var laneGap = Math.min(cssH * 0.15, 84);
         var cands = [];
-        for (var i = 0; i < sorted.length; i++) {
-          var it = sorted[i];
+        var list = sortedRef.current;
+        for (var i = 0; i < list.length; i++) {
+          var it = list[i];
           var lg = log10(it.size);
           var dist = Math.abs(lg - e);
           if (dist > DECADES_ACROSS * 1.6) continue;
@@ -831,7 +875,7 @@
           clearTimeout(linkTimerRef.current);
         };
       }, []);
-      React.useEffect(function () { draw(); }, [theme, focusId, uiLang, sci]);
+      React.useEffect(function () { draw(); }, [theme, focusId, uiLang, sci, items]);
 
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
@@ -1220,6 +1264,20 @@
                   h('input', { type: 'text', readOnly: true, value: shareLinkFor(focused), 'aria-label': S('link_field_aria', 'Link to this view'),
                     onFocus: function (e) { try { e.target.select(); } catch (_) {} },
                     style: { width: '100%', boxSizing: 'border-box', fontSize: '0.71875rem', padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text } })) : null)),
+
+            // Your height: the one personalisation that changes what every other
+            // number means. Shown when the person is in focus, and always once set.
+            (focused.id === 'human' || yourCm) ? h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: '0.71875rem', color: P.dim } },
+              h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
+                S('you_label', 'Make the person your height:'),
+                h('input', { type: 'number', min: 50, max: 250, step: 1, inputMode: 'numeric', value: heightDraft, placeholder: yourCm ? String(yourCm) : '170',
+                  'aria-label': S('you_input_aria', 'Your height in centimetres'),
+                  onChange: function (e) { setHeightDraft(e.target.value); },
+                  onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); submitHeight(); } },
+                  style: { width: 64, padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.75rem' } }),
+                S('you_cm', 'cm')),
+              h('button', { type: 'button', onClick: submitHeight, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_apply', 'Use my height')),
+              yourCm ? h('button', { type: 'button', onClick: function () { applyHeight(null); }, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_reset', 'Back to average')) : null) : null,
 
             // Estimate first, then check: the house Predict → Explore → Explain
             // shape. The reveal is never withheld and never scored.
