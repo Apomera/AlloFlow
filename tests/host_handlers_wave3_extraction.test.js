@@ -2,10 +2,15 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import vm from 'node:vm';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Every pin here parses or regex-scans the 2.7 MB host or Babel-compiles ~500 KB of handler
+// source; vitest's 5 s default trips on a busy machine.
+vi.setConfig({ testTimeout: 30000 });
 
 const require = createRequire(import.meta.url);
 const { CONFIGS, buildFirstWaveModule } = require('../_build_first_wave_view_modules.js');
+const parser = require('@babel/parser');
 
 // Wave 3 (2026-09-13): 123 plain handler closures of AlloFlowContent moved to
 // host_handlers_module.js. The host keeps a one-line shim per handler and ONE
@@ -81,7 +86,36 @@ describe('wave-3 host handler extraction', () => {
     expect(touched).toEqual([]);
   });
 
+  it('never moves a handler that an effect body can reach, at any depth', () => {
+    // A mount-time effect reaches timers, listeners, promise chains and helpers it declares
+    // before any CDN module has landed. 2026-09-13: executeRoleSelect threw "[HostHandlers]
+    // module not loaded" from a setTimeout in the role-restore effect on every reload with a
+    // remembered role, and clearCanvasWorkspaceState from a helper inside the Canvas boot
+    // recovery effect. Fourteen handlers went back to the host; this keeps them there.
+    const ast = parser.parse(host, { sourceType: 'module', plugins: ['jsx'] });
+    const moved = new Set(MANIFEST.handlers);
+    const reached = new Map();
+    // Only the effect CALLBACK counts (its deps array merely lists identities); inside it, every
+    // reference counts, whatever the depth.
+    const walk = (node, inEffect) => {
+      if (!node || typeof node.type !== 'string') return;
+      if (node.type === 'CallExpression') {
+        const c = node.callee; const n = c.type === 'Identifier' ? c.name : (c.property && c.property.name);
+        if (/^use(Layout|Insertion)?Effect$/.test(n || '') && node.arguments[0]) { walk(node.arguments[0], true); return; }
+      }
+      if (inEffect && node.type === 'Identifier' && moved.has(node.name)) reached.set(node.name, (reached.get(node.name) || 0) + 1);
+      for (const k of Object.keys(node)) {
+        if (k === 'loc' || k === 'leadingComments' || k === 'trailingComments') continue;
+        const v = node[k];
+        if (Array.isArray(v)) v.forEach(ch => walk(ch, inEffect)); else if (v && typeof v.type === 'string') walk(v, inEffect);
+      }
+    };
+    walk(ast.program, false);
+    expect([...reached.keys()].sort(), 'moved handlers referenced inside effect bodies').toEqual([]);
+  });
+
   it('rebuilds byte-identical CDN artifacts and mirrors them for desktop use', () => {
+    // Babel compiles ~500 KB of handler source here; well over vitest's 5 s default on a busy box.
     const expected = buildFirstWaveModule(MODULE_KEY, source);
     expect(readFileSync(MODULE, 'utf8')).toBe(expected);
     expect(readFileSync(`desktop/web-app/public/${MODULE}`, 'utf8')).toBe(expected);
@@ -90,5 +124,5 @@ describe('wave-3 host handler extraction', () => {
     expect(build).toContain(`'${MODULE}',`);
     expect(build).toContain(`filename: '${MODULE}'`);
     expect(build).toContain(`buildFirstWaveModule('${MODULE_KEY}', src)`);
-  });
+  }, 30000);
 });

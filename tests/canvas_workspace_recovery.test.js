@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
+// Since waves 2-5 (2026-09-13) the recovery dialog lives in view_canvas_recovery_dialog_source.jsx and
+// most workspace handlers in host_handlers_source.jsx, where host bindings read as __d.<name> and
+// the host keeps one-line shims. For these text pins: drop the shim lines (so a name lookup finds
+// the real body, appended below) and normalize the module bodies back to the host spelling.
+const stripHostShims = (text) => text.replace(/^[ \t]*(?:const|let|async function|function) [\w$]+[^\n]*_alloHostHandlers\(\)[^\n]*\n/gm, '');
+const hostSpelling = (text) => text.replace(/\b([A-Za-z_$][\w$]*): __d\.\1\b/g, '$1').replace(/__d\./g, '');
+const dialogSource = readFileSync(resolve(process.cwd(), 'view_canvas_recovery_dialog_source.jsx'), 'utf8');
+const handlerBodies = hostSpelling(readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8'));
+const anti = stripHostShims(readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8')) /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n') + '\n' + dialogSource + '\n' + handlerBodies;
 const historyPanel = readFileSync(resolve(process.cwd(), 'view_history_panel_source.jsx'), 'utf8');
 
 function loadRecoveryHelpers() {
@@ -509,7 +517,8 @@ describe('Canvas workspace recovery integration contracts', () => {
     // gates (DOM order = paint order for these siblings), keeps its
     // data-attribute + top z-band, and LaunchPadView precedes OnboardingCoach.
     const recoveryGate = anti.indexOf("{isAppReady && canvasRecoveryDialogMode && (isCanvas || canvasRecoveryDialogMode === 'manage') && (");
-    const recoveryGateHeader = anti.slice(recoveryGate, anti.indexOf('role="dialog"', recoveryGate));
+    // The dialog itself (scrim + z-band) moved to view_canvas_recovery_dialog_source.jsx; the host keeps the gate.
+    const recoveryGateHeader = dialogSource.slice(0, dialogSource.indexOf('role="dialog"'));
     // 2026-08: both landing gates additionally wait for the recovery DECISION —
     // the same invariant this test guards, now explicit in the predicate.
     // Shell deep links now suppress both landing surfaces, but do not change their
@@ -547,7 +556,10 @@ describe('Canvas workspace recovery integration contracts', () => {
 
   it('saves full history and excludes credential configuration from the snapshot builder', () => {
     const start = anti.indexOf('const buildCanvasWorkspaceSnapshot');
-    const end = anti.indexOf('const restoreCanvasWorkspaceSnapshot', start);
+    // buildCanvasWorkspaceSnapshot is host-resident again (the autosave effect reaches it), while
+    // restoreCanvasWorkspaceSnapshot lives in the handlers module: end the builder at the next
+    // top-level closure rather than at the restore.
+    const end = Math.min(...[anti.indexOf('\n  const ', start + 1), anti.indexOf('\nconst ', start + 1)].filter(i => i > 0));
     const builder = anti.slice(start, end);
     expect(builder).toContain('history,');
     expect(builder).toContain('selectedProfileId,');
@@ -562,7 +574,9 @@ describe('Canvas workspace recovery integration contracts', () => {
   it('keeps profile and project settings inside the workspace envelope and restores after initialization', () => {
     const builderStart = anti.indexOf('const buildCanvasWorkspaceSnapshot');
     const restoreStart = anti.indexOf('const restoreCanvasWorkspaceSnapshot', builderStart);
-    const builder = anti.slice(builderStart, restoreStart);
+    // the builder is host-resident, the restore is module-resident: end the builder at its own next closure
+    const builderEnd = Math.min(...[anti.indexOf('\n  const ', builderStart + 1), anti.indexOf('\nconst ', builderStart + 1)].filter(i => i > 0));
+    const builder = anti.slice(builderStart, builderEnd);
     const workspaceStart = builder.indexOf('workspace: {');
     const lessonSettingsStart = builder.indexOf('lessonSettings: {', workspaceStart);
     const projectStateStart = builder.indexOf('projectState: {', lessonSettingsStart);
@@ -572,7 +586,8 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(projectSettingsField).toBeGreaterThan(projectStateStart);
     expect(projectSettingsField).not.toBeLessThan(lessonSettingsStart);
 
-    const restoreEnd = anti.indexOf('const startFreshCanvasWorkspace', restoreStart);
+    // startFreshCanvasWorkspace stayed in the host; the restore body is in the module, so end at its next top-level handler.
+    const restoreEnd = anti.indexOf('\nconst ', restoreStart + 1);
     const restore = anti.slice(restoreStart, restoreEnd);
     expect(restore.indexOf('const projectState = workspace.projectState || {}')).toBeLessThan(
       restore.indexOf('setStudentProjectSettings(_alloNormalizeStudentProjectSettings(projectState.studentProjectSettings))')
@@ -649,7 +664,10 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(autosave).not.toContain('const rawStore = await deviceStorage.get');
     expect(autosave).not.toContain('const baseStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore)');
 
-    const reset = anti.slice(anti.indexOf('const resetCanvasWorkspaceSettings'), anti.indexOf('const clearCanvasWorkspaceState'));
+    // resetCanvasWorkspaceSettings is module-resident, clearCanvasWorkspaceState host-resident:
+    // end the reset at its own next top-level closure.
+    const resetStart = anti.indexOf('const resetCanvasWorkspaceSettings');
+    const reset = anti.slice(resetStart, Math.min(...[anti.indexOf('\n  const ', resetStart + 1), anti.indexOf('\nconst ', resetStart + 1)].filter(i => i > 0)));
     expect(reset).toContain("setGradeLevel('5th Grade')");
     expect(reset).toContain('setStudentInterests([])');
     expect(reset).toContain("setSourceCustomInstructions('')");

@@ -226,6 +226,12 @@ function main() {
       const arg = cp.get('arguments.0'); if (!arg || !isFnNode(arg.node)) return;
       effectRoots += 1;
       for (const name of syncInvokedNames(arg)) if (!R.has(name)) { R.add(name); effectNames += 1; }
+      // ANY reference inside an effect body, at any depth, disqualifies a handler: a mount-time
+      // effect reaches timers, listeners, promise chains and locally declared helpers before any
+      // CDN module has landed (2026-09-13: executeRoleSelect threw from a setTimeout in the
+      // role-restore effect; clearCanvasWorkspaceState from a helper declared in the Canvas boot
+      // recovery effect). Pinned by tests/host_handlers_wave3_extraction.test.js.
+      arg.traverse({ Identifier(ip) { const n = ip.node.name; if (fnByName.has(n) && !R.has(n)) { R.add(n); effectNames += 1; } } });
     },
     AssignmentExpression(ap) {
       let obj = ap.node.left; while (obj && obj.type === 'MemberExpression') obj = obj.object;

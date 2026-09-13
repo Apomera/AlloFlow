@@ -428,58 +428,6 @@ const savePersonaTeacherEditor = () => {
       __d.setPersonaTeacherEditor(null);
       __d.addToast(__d.t('persona.character_updated'), 'success');
   };
-const executeRoleSelect = (role) => {
-      // Promote the setup wizard just after the role-selection feedback frame;
-      // its local script evaluation should never lengthen the role click.
-      if (role !== 'student') {
-          setTimeout(() => { try { window.__alloLazyQuickStartWizard?.(); } catch (_) {} }, 80);
-      }
-      if (role === 'student') {
-          __d.setIsTeacherMode(false);
-          __d.setIsParentMode(false);
-          __d.setIsIndependentMode(false);
-          __d.setIsStudentLinkMode(true);
-          __d.setShowWizard(false);
-          __d.setShowStudentEntry(true);
-          __d.setIsAdventureStoryMode(false);
-      } else if (role === 'parent') {
-          __d.setIsTeacherMode(true);
-          __d.setIsParentMode(true);
-          __d.setIsIndependentMode(false);
-          __d.setIsStudentLinkMode(false);
-          __d.setExpandedTools(['source-input', 'adventure', 'glossary', 'simplified']);
-          __d.addToast(__d.t('toasts.mode_parent_enabled'), "success");
-          __d.setIsAdventureStoryMode(true);
-      } else if (role === 'independent') {
-          __d.setIsTeacherMode(true);
-          __d.setIsParentMode(false);
-          __d.setIsStudentLinkMode(false);
-          __d.setIsIndependentMode(true);
-          __d.setShowStudentEntry(false);
-          // Self-study is mostly adults (adult education, licensure prep). Lift the
-          // untouched K-12 default; the Quick Start wizard that follows still asks,
-          // and a value the learner already set is left alone.
-          __d.setGradeLevel(prev => (prev === '5th Grade' ? 'College' : prev));
-          __d.addToast(__d.t('toasts.mode_independent_enabled'), "success");
-          __d.setIsAdventureStoryMode(false);
-      } else {
-          __d.setIsTeacherMode(true);
-          __d.setIsParentMode(false);
-          __d.setIsIndependentMode(false);
-          __d.setIsStudentLinkMode(false);
-          __d.addToast(__d.t('toasts.mode_teacher_enabled'), "success");
-          __d.setIsAdventureStoryMode(false);
-      }
-      __d.setHasSelectedRole(true);
-      // Remember the choice so RoleSelectionModal can badge "last time" next boot.
-      // Deliberately a HINT, not an auto-skip: there is no switch-role affordance
-      // after selection (the wizard never reopens), so skipping it would trap a
-      // shared device in one role. 'student' is not remembered — that path opens
-      // the student entry flow, which link-based entry already handles.
-      if (role !== 'student') {
-          try { localStorage.setItem('alloflow_last_role', role); } catch (_) {}
-      }
-  };
 const _alloAlignmentGraphExportForContext = (resource, selectedUnitId, projectHistory) => {
       const items = Array.isArray(projectHistory) ? projectHistory : [];
       const unitId = String(selectedUnitId || '');
@@ -1184,31 +1132,6 @@ const completeLiveSessionEnd = async (saveSummary, allowUnconfirmed = false) => 
           __d.setEndSessionPreview(prev => prev ? { ...prev, busy: false } : prev);
           __d.addToast(__d.t('session.error_end_session') || 'Failed to end session.', 'error');
       }
-  };
-const prepareMailboxResourceImages = async (item) => {
-      const cache = __d.mbPreparedImagesRef.current;
-      if (cache.has(item)) return cache.get(item).promise;
-      const entry = {};
-      entry.promise = (async () => {
-          const api = __d._alloLiveAacModule();
-          if (!api?.prepareMailboxResource) throw new Error('Image delivery tools are still loading. Please retry.');
-          const result = await api.prepareMailboxResource(item, { sanitizeHistoryForCloud: __d.sanitizeHistoryForCloud, stripUndefined: __d.stripUndefined, audioChannel: 'live' });
-          entry.resource = result.resource;
-          const report = result.report;
-          if (report.omitted || report.resized) {
-              const signature = JSON.stringify(report);
-              if (__d.mbImageNoticeRef.current.get(item.id) !== signature) {
-                  __d.mbImageNoticeRef.current.set(item.id, signature);
-                  if (__d.mbImageNoticeRef.current.size > 100) __d.mbImageNoticeRef.current.delete(__d.mbImageNoticeRef.current.keys().next().value);
-                  __d.addToast('"' + (item.title || item.type) + '": ' + (report.omitted
-                      ? report.omitted + ' image(s) could not be included' + (report.tooLarge ? ' because they exceed the size limit' : ' because their format or URL is unsupported') + '. Use a smaller PNG, JPEG, WebP or AVIF picture and resend.'
-                      : report.resized + ' image(s) resized for delivery. Your original pictures are unchanged.'), report.omitted ? 'warning' : 'info');
-              }
-          }
-          return result.resource;
-      })().catch(error => { cache.delete(item); throw error; });
-      cache.set(item, entry);
-      return entry.promise;
   };
 const resolveSavedFollowUpLiveDeliverySnapshot = (sessionId) => {
       const current = __d.liveSessionCommandStateRef.current || {};
@@ -3206,142 +3129,6 @@ const resetCanvasWorkspaceSettings = () => {
       __d.setFullPackTargetGroup('none');
       __d._alloApplyCanvasSelAuthoringState(null);
       __d.setSelectedProfileId('');
-  };
-const clearCanvasWorkspaceState = (options = {}) => {
-      __d.cancelActiveProjectLoad();
-      __d.cancelActiveFileIntakeOperations('canvas-workspace-clear');
-      __d.invalidateLocalDataHydration();
-      __d.resetAllMathRuntimeState();
-      try { window.__alloBuilderEditedPack = null; } catch (_) {}
-      __d.setHistory([]);
-      __d.setGeneratedContent(null);
-      __d.setActiveView('input');
-      __d.setActiveSidebarTab('create');
-      __d.setInputText('');
-      __d.setSourceTopic('');
-      __d.setUnits([]);
-      __d.setProfiles([]);
-      __d.setActiveUnitId('all');
-      __d.setPersistedLessonDNA(null);
-      // The plan and its run record describe the workspace we are clearing —
-      // leaving them behind strands a status board pointing at resources that
-      // no longer exist, and the rows would invite a rebuild that duplicates
-      // work. Clear them with the history they belong to.
-      // Continuity: the archive key is deliberately NOT cleared here, and the
-      // outgoing plan is filed before the wipe — clearing a workspace must not
-      // silently empty the cabinet, or the archive is worse than nothing.
-      if (options.archivePlan !== false) __d.archiveLivePlan();
-      __d.setActiveBlueprint(null);
-      __d.setBlueprintExecutionResult(null);
-      resetCanvasWorkspaceSettings();
-      __d.setStudentProgressLog([]);
-      __d.setStickers([]);
-      __d.setGuidedMode(false);
-      __d.resetGuidedProgress();
-      __d.setAdventureState(__d.ADVENTURE_INITIAL);
-      __d.setHasSavedAdventure(false);
-      __d.setWordSoundsHistory([]);
-      __d.wsDispatch({ type: 'WS_RESET' });
-      __d.setWordSoundsBadges([]);
-      __d.setPhonemeMastery({});
-      __d.setWordSoundsDailyProgress({ date: new Date().toDateString(), completed: 0, goalMet: false });
-      __d.setWordSoundsConfusionPatterns({});
-  };
-const buildCanvasWorkspaceSnapshot = async (workspaceId = __d.canvasRecoveryCurrentIdRef.current) => {
-
-      const existing = __d.canvasRecoveryStoreRef.current.snapshots.find(item => item.id === workspaceId);
-      let builderDraft = null;
-      try {
-          if (typeof window !== 'undefined' && window.__alloBuilderEditedPack) builderDraft = await __d._getBuilderDraftForProject();
-      } catch (_) {}
-      const savedAt = new Date().toISOString();
-      const title = String(__d.sourceTopic || __d.history[__d.history.length - 1]?.title || 'Untitled workspace').trim().slice(0, 160) || 'Untitled workspace';
-      const snapshot = {
-          version: __d.ALLO_WORKSPACE_RECOVERY.VERSION,
-          id: workspaceId,
-          title,
-          createdAt: existing?.createdAt || savedAt,
-          savedAt,
-          pinned: existing?.pinned === true,
-          assetPolicy: existing?.assetPolicy === 'text-only' ? 'text-only' : 'full',
-          omittedAssets: existing?.omittedAssets || 0,
-          omittedAssetManifest: Array.isArray(existing?.omittedAssetManifest) ? existing.omittedAssetManifest : [],
-          workspace: {
-              history: __d.history,
-              units: __d.units,
-              profiles: __d.profiles,
-              selectedProfileId: __d.selectedProfileId,
-              activeResourceId: __d.generatedContent?.id || null,
-              activeView: __d.activeView,
-              selAuthoringState: __d._alloCaptureCanvasSelAuthoringState(),
-              activeUnitId: __d.activeUnitId,
-              activeSidebarTab: __d.activeSidebarTab,
-              inputText: __d.inputText,
-              sourceTopic: __d.sourceTopic,
-              persistedLessonDNA: __d.persistedLessonDNA,
-              builderDraft,
-              guidedProgress: {
-                  enabled: __d.guidedMode,
-                  step: __d.guidedStep,
-                  selectedIds: __d.guidedSelectedIds,
-                  completedIds: __d.guidedCompletedIds,
-                  skippedIds: __d.guidedSkippedIds,
-                  createdHistoryIds: __d.guidedCreatedHistoryIds,
-                  deliveryEvidence: __d.guidedDeliveryEvidence,
-                  planBrief: __d.guidedPlanBrief
-              },
-              lessonSettings: {
-                  gradeLevel: __d.gradeLevel,
-                  differentiationRange: __d.differentiationRange,
-                  textFormat: __d.textFormat,
-                  leveledTextLength: __d.leveledTextLength,
-                  studentInterests: __d.studentInterests,
-                  leveledTextCustomInstructions: __d.leveledTextCustomInstructions,
-                  glossaryCustomInstructions: __d.glossaryCustomInstructions,
-                  adventureCustomInstructions: __d.adventureCustomInstructions,
-                  personaCustomInstructions: __d.personaCustomInstructions,
-                  useEmojis: __d.useEmojis,
-                  keepCitations: __d.keepCitations,
-                  includeCharts: __d.includeCharts,
-                  dokLevel: __d.dokLevel,
-                  targetStandards: __d.targetStandards,
-                  standardInputValue: __d.standardInputValue,
-                  standardMode: __d.standardMode,
-                  selectedLanguages: __d.selectedLanguages,
-                  leveledTextLanguage: __d.leveledTextLanguage,
-                  sourceTone: __d.sourceTone,
-                  sourceLevel: __d.sourceLevel,
-                  sourceVocabulary: __d.sourceVocabulary,
-                  sourceLength: __d.sourceLength,
-                  sourceCustomInstructions: __d.sourceCustomInstructions,
-                  resourceCount: __d.resourceCount,
-                  fullPackTargetGroup: __d.fullPackTargetGroup
-              },
-              projectState: {
-                  studentProjectSettings: __d._alloNormalizeStudentProjectSettings(__d.studentProjectSettings),
-                  responses: __d.studentResponses,
-                  progressLog: __d.studentProgressLog,
-                  stickers: Array.isArray(__d.stickers) ? __d.stickers : []
-              },
-              wordSoundsState: {
-                  history: __d.wordSoundsHistory,
-                  families: __d.wordSoundsFamilies,
-                  audioLibrary: __d.wordSoundsAudioLibrary,
-                  badges: __d.wordSoundsBadges,
-                  phonemeMastery: __d.phonemeMastery,
-                  dailyProgress: __d.wordSoundsDailyProgress,
-                  confusionPatterns: __d.wordSoundsConfusionPatterns,
-                  sessionScore: __d.wordSoundsScore
-              }
-          }
-      };
-      const sessionSafeSnapshot = __d.ALLO_WORKSPACE_RECOVERY.stripSessionOnlyAssets(snapshot);
-      if (existing?.assetPolicy === 'text-only') {
-          const explicitRemoval = existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media');
-          return __d.ALLO_WORKSPACE_RECOVERY.stripLargeAssets(
-              sessionSafeSnapshot, explicitRemoval ? 'user-remove-media' : 'device-quota');
-      }
-      return sessionSafeSnapshot;
   };
 const restoreCanvasWorkspaceSnapshot = async (candidate) => {
       const snapshot = __d.ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(candidate);
@@ -6757,27 +6544,6 @@ const launchPreparedLiveInteraction = (checkpoint, item, audience) => {
       if (!quizAlreadyActive) __d.handleStartLiveSession(item);
     }
   };
-const showSpotlight = (element, title, text) => {
-      const rect = element.getBoundingClientRect();
-        const isBotAvatar = element.getAttribute('data-help-key') === 'bot_avatar';
-        const fixedBotRect = isBotAvatar ? {
-            top: rect.bottom - 120,
-            left: rect.right - 100,
-            bottom: rect.bottom - 20,
-            right: rect.right,
-            width: 100,
-            height: 100,
-            x: rect.right - 100,
-            y: rect.bottom - 120
-        } : rect;
-        __d.setTourRect(fixedBotRect);
-      __d.setBotSpotlightPos({ x: isBotAvatar ? rect.right - 50 : rect.left + rect.width/2, y: isBotAvatar ? rect.bottom - 70 : rect.top + rect.height/2 });
-      __d.setSpotlightMessage({ title, text });
-      __d.spotlightOpenTimeRef.current = Date.now();
-      __d.setIsSpotlightMode(true);
-      // Screen-reader users get the help/tour text read immediately (the popup is otherwise silent).
-      try { if (window.alloAnnounce) window.alloAnnounce((title ? title + '. ' : '') + (text || ''), 'polite'); } catch (_) {}
-  };
 const highlightElement = (elementId) => {
       const stepIndex = __d.tourSteps.findIndex(s => s.id === elementId);
       const toolId = __d.DOM_TO_TOOL_ID_MAP[elementId];
@@ -6811,44 +6577,6 @@ const highlightElement = (elementId) => {
               __d.addToast(__d.t('toasts.element_not_found', { id: elementId }) || `Element not found: ${elementId}`, "error");
           }
       }, delay);
-  };
-const _alloBlueprintLearningWebResource = (blueprint) => {
-      if (!blueprint || !Array.isArray(blueprint.resourcePlan) || !blueprint.resourcePlan.length) return null;
-      const bounded = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
-      const resourcePlan = blueprint.resourcePlan.slice(0, 80).map((row, index) => ({
-          id: bounded(row?.uiId || row?.stepId || ('step-' + (index + 1)), 160),
-          title: bounded(row?.title || row?.label || row?.tool || row?.type || ('Step ' + (index + 1)), 200),
-          type: bounded(row?.type || row?.tool || 'resource', 100),
-          resourceId: bounded(row?.resourceId, 200),
-      }));
-      const idSeed = bounded(blueprint.id || blueprint.planId || blueprint.title || blueprint.name || 'active', 160);
-      return {
-          id: 'blueprint:' + idSeed,
-          type: 'blueprint',
-          title: bounded(blueprint.title || blueprint.name || 'Active Blueprint', 200),
-          resourcePlan,
-      };
-  };
-const _alloAlignmentRegistryRecordFromResource = (resource, scopeId) => {
-      if (!resource || resource.type !== 'alignment-report') return null;
-      const comprehensive = resource?.data?.comprehensive;
-      const graph = comprehensive?.alignmentMapGraph;
-      if (!__d._alloIsAlignmentGraph(graph)) return null;
-      const confirmations = (graph.edges || []).flatMap(edge => Array.isArray(edge?.attributionHistory) ? edge.attributionHistory : []);
-      const confirmedAt = confirmations.map(item => Date.parse(item?.confirmedAt || '')).filter(Number.isFinite).sort((a, b) => b - a)[0];
-      const resourceTime = Date.parse(resource?.updatedAt || resource?.timestamp || graph?.meta?.alignmentAudit?.generatedAt || '') || Date.now();
-      return {
-          id: 'alignment-map:' + String(resource.id || '').slice(0, 200),
-          graph,
-          scopeId,
-          kind: 'alignment-map',
-          title: String(resource.title || 'Alignment Map').slice(0, 200),
-          resourceId: String(resource.id || '').slice(0, 200),
-          resourceType: resource.type,
-          resourceTitle: resource.title,
-          updatedAt: new Date(confirmedAt || resourceTime).toISOString(),
-          provenance: graph?.meta?.alignmentAudit || {},
-      };
   };
 const handleRegisterLearningWebGraph = (payload) => {
       try {
@@ -7785,34 +7513,6 @@ const describeSavedFollowUpLiveFailure = (reason) => {
       if (reason === 'teacher-paced-required') return 'Switch the current session to Teacher-Paced to present a whole-class follow-up, or use Prepare assignment link for asynchronous work.';
       return 'This saved follow-up plan is no longer available. Review and save it again.';
   };
-const _mbPushOneResource = async (item, opts = {}) => {
-      if (!__d.mbLive || !__d.mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
-      const assertCurrent = () => { if (opts.isCurrent && !opts.isCurrent()) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
-      assertCurrent();
-      const flags = { open: opts.open !== false, quiet: opts.quiet === true };
-      const packItem = await __d.prepareMailboxResourceImages(item);
-      if (!packItem) return { rtcCount: 0 };
-      const encoded = await __d._alloEncodeAlloPack(JSON.stringify(packItem));
-      assertCurrent();
-      const parts = __d._alloSplitPackChunks(encoded);
-      const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-      let rtcCount = 0;
-      const openPeers = Object.entries(__d.mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
-      for (const [, peer] of openPeers) {
-          try {
-              for (let i = 0; i < parts.length; i += 1) {
-                  assertCurrent();
-                  await __d._alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet }));
-              }
-              rtcCount += 1;
-          } catch (dcErr) { if (dcErr?.name === 'AbortError') throw dcErr; __d.warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
-      }
-      for (let i = 0; i < parts.length; i += 1) {
-          assertCurrent();
-          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'send', admin: __d.mbConfig.admin, c: __d.mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
-      }
-      return { rtcCount };
-  };
 const pushResourceToMailbox = async (targetItem, opts = {}) => {
       if (!__d.mbLive || !__d.mbConfig?.url) return;
       const candidates = __d._alloStudentSafeResources(__d.history);
@@ -7961,93 +7661,6 @@ const sendPackHome = async () => {
           __d.addToast((__d.t('takehome.send_failed') || 'Send home failed: ') + (e?.message || e), 'error');
       }
       __d.setMbBusy(false);
-  };
-const applyMbDownPayload = async (v) => {
-      if (!v) return;
-      if (v.kind === 'sdocv') {
-          // Bridge nudge over the data channel: the teacher just wrote to the
-          // session doc store — pull it soon (jittered: the nudge reaches the
-          // whole class at once, and simultaneous pulls collide with Apps
-          // Script's concurrency ceiling).
-          __d._alloMbNudge();
-          return;
-      }
-      if (v.kind === 'end') {
-          __d.addToast('The teacher ended this live session.', 'info');
-          __d.setMbStudent(null);
-          return;
-      }
-      if (v.kind === 'takehome') {
-          // Take-Home Pack v1: persist the CURRENT student-safe pack to this device so it
-          // survives the session (IndexedDB via storageDB — stable-origin). The pack channel
-          // already delivered/self-healed the resources; this message only flips persistence.
-          const items = __d._alloStudentSafeResources(__d.hydratedHistoryRef.current || []);
-          if (!items.length) { __d.addToast(__d.t('takehome.empty_pack') || 'Your teacher sent homework, but no resources have arrived yet — stay connected a moment and ask them to resend.', 'info'); return; }
-          const shelf = {
-              v: 1,
-              savedAt: new Date().toISOString(),
-              code: (typeof __d.mbLive === 'object' && __d.mbLive) ? (__d.mbLive.code || null) : null,
-              title: String(v.title || '').slice(0, 140) || 'Homework',
-              note: String(v.note || '').slice(0, 2000),
-              resources: items,
-          };
-          try {
-              const ok = await __d.storageDB.set('allo_homework_shelf_v1', shelf);
-              if (ok === false) throw new Error('storage unavailable');
-              __d.setHomeworkShelf(shelf);
-              __d.addToast(__d.t('takehome.saved', { title: shelf.title || 'saved pack', count: items.length }) || ('📥 ' + shelf.title + ' saved to THIS device (' + items.length + ' resources). Open AlloFlow at home to continue — no code needed.'), 'success');
-          } catch (persistErr) {
-              // Honest fallback (shared/locked-down devices): storage refused — offer the file.
-              __d.warnLog('Take-home persist failed', persistErr);
-              __d.setHomeworkShelf(shelf); // in-memory for this visit so the banner's download button works
-              __d.addToast(__d.t('takehome.save_failed') || 'This device would not save the homework — use the Download button on the homework banner to keep a file copy.', 'warning');
-          }
-          return;
-      }
-      if (v.kind === 'packdone') {
-          __d.addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
-          return;
-      }
-      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
-          __d.setHistory(prev => {
-              const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
-              __d.hydratedHistoryRef.current = next;
-              return next;
-          });
-          return;
-      }
-      if (v.kind === 'res') {
-          const store = __d.mbChunkStoreRef.current || (__d.mbChunkStoreRef.current = { parts: {}, applied: new Set() });
-          const assembled = __d._alloCollectResChunk(store, v);
-          if (!assembled) return;
-          try {
-              let resource = JSON.parse(await __d._alloDecodeAlloPack(assembled) || 'null');
-              resource = __d._alloStudentSafeResources([resource])[0];
-              if (!resource) throw new Error('The transferred resource is not a valid student resource');
-              if (__d.mbChunkStoreRef.current !== store) return;
-              __d.setHistory(prev => {
-                  const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
-                  const next = [...rest, resource];
-                  // The pack IS the mailbox session's resource pool: keep the ref
-                  // the session-doc consumers read (sync jump, group/individual
-                  // pushes) pointing at it. Idempotent under double invocation.
-                  __d.hydratedHistoryRef.current = next;
-                  return next;
-              });
-              // open=false delivers quietly into the pack (async-mode share);
-              // open=true (default) follows the teacher like sync mode.
-              if (v.open !== false) __d.setPendingQrAssignmentResource(resource);
-              __d._alloFinishResChunk(store, v.rid, true);
-              __d.setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
-              if (!v.quiet) __d.addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
-          } catch (decodeErr) {
-              if (__d.mbChunkStoreRef.current !== store) return;
-              __d._alloFinishResChunk(store, v.rid, false);
-              __d.setMbResourceReceiveError(true);
-              if ((store.failures?.[v.rid]?.count || 0) < 3) __d.mbStudentCursorRef.current = 0;
-              __d.warnLog('Mailbox resource decode failed', decodeErr);
-          }
-      }
   };
 const savePortableAacResourceToHistory = (rawPackage) => {
       const portable = __d._alloNormalizePortableAacBoardPackage(rawPackage, {
@@ -8426,29 +8039,6 @@ const getTeachingScriptController = () => {
       });
     }
     return __d.teachingScriptControllerRef.current;
-  };
-const runGlossaryHealthCheck = async (terms, sourceText) => {
-    const module = window.AlloModules && window.AlloModules.ExportHandlers;
-    const live = __d.glossaryLiveRef.current.resource;
-    if (!module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;
-    const signature = JSON.stringify(terms.map(item => item && [item.term, item.def, item.tier]));
-    const task = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask({
-        generatedContent: live, getGlossaryLive: () => __d.glossaryLiveRef.current,
-        glossaryTaskRegistry: __d.glossaryTaskRegistryRef.current,
-    }, null, [], 'health');
-    if (!task) return null;
-    const current = () => task.visible() && signature === JSON.stringify((__d.glossaryLiveRef.current.resource?.data || []).map(item => item && [item.term, item.def, item.tier]));
-    __d.glossaryHealthCheckIdRef.current = String(live.id) + ':' + signature;
-    try {
-        const result = await module.runGlossaryHealthCheck(terms, sourceText, {
-            debugLog: __d.debugLog, warnLog: __d.warnLog,
-            callGemini: (...args) => { args[5] = task.signal; return __d.callGemini(...args); },
-            setIsRunningHealthCheck: value => { if (current()) __d.setIsRunningHealthCheck(value); },
-            setShowHealthCheckPanel: value => { if (current()) __d.setShowHealthCheckPanel(value); },
-            setGlossaryHealthCheck: value => { if (current()) __d.setGlossaryHealthCheck(value); },
-        });
-        return current() ? result : null;
-    } finally { task.finish(); }
   };
 const fetchReplacementSuggestion = async (existingTerms, addedTerm, sourceText) => {
     try {
@@ -10452,39 +10042,6 @@ const submitExploreScore = () => {
     if (typeof __d.addToast === 'function') __d.addToast(__d.t('toasts.explore_score_saved') + __d.exploreScore.correct + '/' + __d.exploreScore.total + ' (' + pct + '%)', 'success');
     __d.setExploreScore({ correct: 0, total: 0 });
   };
-const handleNodeMouseMove = (e) => {
-      if (!__d.draggedNodeId) return;
-      const newX = e.clientX - __d.dragOffset.x;
-      const newY = e.clientY - __d.dragOffset.y;
-      const containerW = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetWidth : 1200;
-      const containerH = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetHeight : 800;
-      const clampedX = Math.max(0, Math.min(containerW, newX));
-      const clampedY = Math.max(0, Math.min(containerH, newY));
-      __d.setConceptMapNodes(prev => prev.map(n =>
-          n.id === __d.draggedNodeId ? { ...n, x: clampedX, y: clampedY } : n
-      ));
-  };
-const handleNodeMouseUp = () => {
-      if (__d.draggedNodeId) {
-          __d.setConceptMapNodes(prevNodes => {
-              return prevNodes.map(node => {
-                  if (node.id === __d.draggedNodeId && node.type === 'venn-token') {
-                      const zone = __d.getVennZone(node.x, node.y);
-                      if (zone === 'bank' && node.y < __d.VENN_ZONES.BANK_Y) {
-                          return {
-                              ...node,
-                              x: 100 + Math.random() * 600,
-                              y: 530 + Math.random() * 50
-                          };
-                      }
-                      return node;
-                  }
-                  return node;
-              });
-          });
-      }
-      __d.setDraggedNodeId(null);
-  };
 const handleAddManualNode = () => {
       if (!__d.nodeInputText.trim()) return;
       const newNode = {
@@ -10858,17 +10415,6 @@ const _readBuilderDraftStreamBounded = async (stream, maxBytes) => {
     let offset = 0;
     chunks.forEach((chunk) => { merged.set(chunk, offset); offset += chunk.byteLength; });
     return new TextDecoder().decode(merged);
-  };
-const getCanvasRecoveryVaultController = async () => {
-      if (__d.canvasRecoveryVaultControllerRef.current) return __d.canvasRecoveryVaultControllerRef.current;
-      const deviceStorage = await __d._alloGetCanvasDeviceStorage();
-      const stack = await __d._alloGetRecoveryVaultStack();
-      const controller = stack.integration.createController(deviceStorage, {
-          vaultModule: stack.vault,
-          crypto: stack.crypto
-      });
-      __d.canvasRecoveryVaultControllerRef.current = controller;
-      return controller;
   };
 const publishCanvasRecoveryVaultLockedState = (status = {}) => {
       const lockedStatus = { available: true, ...status, enabled: true, locked: true };
@@ -11263,15 +10809,6 @@ const _readTextDomain = (entry) => {
     if (entry.domain === 'analysis') return { ok: true, value: (item.data && item.data.originalText) || '' };
     return { ok: true, value: typeof item.data === 'string' ? item.data : '' };
   };
-const handleTextUndo = () => {
-    const h = __d.textUndoRef.current;
-    if (__d._shiftTextStack(h.undo, h.redo, 'undo')) return true;
-    // Nothing in the text history — fall back to annotation undo so the old
-    // Ctrl+Z behavior still reaches sticker users, then report empty.
-    if (__d.annotationUndoStackRef.current.length > 0) { __d.handleAnnotationUndo(); return true; }
-    __d.addToast(__d.t('toasts.nothing_undo_yet') || 'Nothing to undo yet.', 'info');
-    return false;
-  };
 const handleScaffoldChange = (index, field, value, isEn = false) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'sentence-frames') return;
     const newData = { ...__d.generatedContent?.data };
@@ -11298,5 +10835,5 @@ const handleScaffoldTextChange = (field, value) => {
      __d.setGeneratedContent(updatedContent);
      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
   }
-  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, executeRoleSelect, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, prepareMailboxResourceImages, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, clearCanvasWorkspaceState, buildCanvasWorkspaceSnapshot, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, showSpotlight, highlightElement, _alloBlueprintLearningWebResource, _alloAlignmentRegistryRecordFromResource, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, _mbPushOneResource, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, applyMbDownPayload, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, onUpdateResource, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, runGlossaryHealthCheck, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleNodeMouseMove, handleNodeMouseUp, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, getCanvasRecoveryVaultController, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleTextUndo, handleScaffoldChange, handleScaffoldTextChange };
+  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, onUpdateResource, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange };
 }

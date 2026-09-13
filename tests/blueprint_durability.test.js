@@ -128,10 +128,16 @@ describe('durability wiring guardrails', () => {
   });
 
   it.each(HOSTS)('%s clears the plan with the workspace it belongs to', (file) => {
+    // clearCanvasWorkspaceState is host-resident on purpose: the Canvas boot recovery effect
+    // reaches it before any CDN module has loaded (2026-09-13).
     const src = read(file);
-    const clear = src.slice(src.indexOf('const clearCanvasWorkspaceState'), src.indexOf('resetCanvasWorkspaceSettings();', src.indexOf('const clearCanvasWorkspaceState')));
+    const clearStart = src.indexOf('const clearCanvasWorkspaceState = (options = {}) => {');
+    expect(clearStart, 'clearCanvasWorkspaceState must be a real closure in the host').toBeGreaterThan(0);
+    const clear = src.slice(clearStart, src.indexOf('resetCanvasWorkspaceSettings();', clearStart));
     expect(clear).toContain('setActiveBlueprint(null)');
     expect(clear).toContain('setBlueprintExecutionResult(null)');
+    // The Full Pack run record is the same kind of leftover (2026-09-13).
+    expect(clear).toContain('setFullPackRun(null)');
   });
 
   // "Persisting data without a mount is an invisible plan."

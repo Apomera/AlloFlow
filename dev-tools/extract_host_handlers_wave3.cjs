@@ -239,6 +239,10 @@ function main() {
       const arg = cp.get('arguments.0'); if (!arg || !isFnNode(arg.node)) return;
       effectRoots += 1;
       for (const name of syncInvokedNames(arg)) if (!R.has(name)) { R.add(name); effectNames += 1; }
+      // ANY reference inside an effect body, at any depth, disqualifies a handler (2026-09-13:
+      // timers, listeners, promise chains and locally declared helpers all fire at boot before
+      // a CDN module can land). Kept in sync with extract_host_handlers_wave4.cjs.
+      arg.traverse({ Identifier(ip) { const n = ip.node.name; if (fnByName.has(n) && !R.has(n)) { R.add(n); effectNames += 1; } } });
     },
     AssignmentExpression(ap) {
       let obj = ap.node.left; while (obj && obj.type === 'MemberExpression') obj = obj.object;

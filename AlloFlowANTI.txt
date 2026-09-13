@@ -11259,73 +11259,69 @@ const AlloFlowContent = () => {
   // module sees live values (later-declared consts included) exactly like the original
   // closures. Built once per render; the handler set is created lazily per render.
   const __alloHostDeps = {
-    get ADVENTURE_INITIAL() { return ADVENTURE_INITIAL; }, get ALLOHAVEN_CLASSROOM_REWARD_REASONS() { return ALLOHAVEN_CLASSROOM_REWARD_REASONS; }, get ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS() { return ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS; }, get ALLOHAVEN_RECOGNITION_CAPS() { return ALLOHAVEN_RECOGNITION_CAPS; },
-    get ALLO_AAC_PACK_AUDIO_CHARS() { return ALLO_AAC_PACK_AUDIO_CHARS; }, get ALLO_AAC_PACK_AUDIO_ITEM_CHARS() { return ALLO_AAC_PACK_AUDIO_ITEM_CHARS; }, get ALLO_AAC_PACK_IMAGE_CHARS() { return ALLO_AAC_PACK_IMAGE_CHARS; }, get ALLO_AAC_PACK_IMAGE_ITEM_CHARS() { return ALLO_AAC_PACK_IMAGE_ITEM_CHARS; },
-    get ALLO_ARTIFACT_INSTANCE_ID_FIELD() { return ALLO_ARTIFACT_INSTANCE_ID_FIELD; }, get ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT() { return ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT; }, get ALLO_GENERATION_METRICS() { return ALLO_GENERATION_METRICS; }, get ALLO_MB_ADMIN_KEY() { return ALLO_MB_ADMIN_KEY; },
-    get ALLO_MB_LIVE_KEY() { return ALLO_MB_LIVE_KEY; }, get ALLO_MB_URL_KEY() { return ALLO_MB_URL_KEY; }, get ALLO_MB_VERSION_KEY() { return ALLO_MB_VERSION_KEY; }, get ALLO_PDF_REMEDIATION_CACHE() { return ALLO_PDF_REMEDIATION_CACHE; },
-    get ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY() { return ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY; }, get ALLO_STORAGE_INVENTORY() { return ALLO_STORAGE_INVENTORY; }, get ALLO_STORAGE_RETENTION_POLICY_KEY() { return ALLO_STORAGE_RETENTION_POLICY_KEY; }, get ALLO_WORKSPACE_RECOVERY() { return ALLO_WORKSPACE_RECOVERY; },
-    get ALLO_WORKSPACE_RECOVERY_KEY() { return ALLO_WORKSPACE_RECOVERY_KEY; }, get ALLO_WORKSPACE_RECOVERY_NAMESPACE() { return ALLO_WORKSPACE_RECOVERY_NAMESPACE; }, get BUILDER_PROJECT_DRAFT_MAX_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_BYTES; }, get BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES; },
-    get CS_GENERATED_ITEM_BUDGET() { return CS_GENERATED_ITEM_BUDGET; }, get DEFAULT_EXPORT_CONFIG() { return DEFAULT_EXPORT_CONFIG; }, get DIGITAL_RUBRIC_CONSTRAINT() { return DIGITAL_RUBRIC_CONSTRAINT; }, get DOMException() { return DOMException; },
-    get DOM_TO_TOOL_ID_MAP() { return DOM_TO_TOOL_ID_MAP; }, get DecompressionStream() { return DecompressionStream; }, get GEMINI_MODELS() { return GEMINI_MODELS; }, get GUIDED_STEP_IDS() { return GUIDED_STEP_IDS; },
-    get GUIDED_TOUR_MAP() { return GUIDED_TOUR_MAP; }, get LIVE_ORGANIZER_TYPES() { return LIVE_ORGANIZER_TYPES; }, get ORF_SCREENING_PASSAGES() { return ORF_SCREENING_PASSAGES; }, get PDF_REGRESSION_TOLERANCE() { return PDF_REGRESSION_TOLERANCE; },
-    get React() { return React; }, get TIMELINE_MODE_DEFINITIONS() { return TIMELINE_MODE_DEFINITIONS; }, get TRANSLATION_MODE_AUTO() { return TRANSLATION_MODE_AUTO; }, get UI_ELEMENT_MAP() { return UI_ELEMENT_MAP; },
-    get VENN_ZONES() { return VENN_ZONES; }, get WebSearchProvider() { return WebSearchProvider; }, get _EXPORT_PRESET_SCHEMA_VERSION() { return _EXPORT_PRESET_SCHEMA_VERSION; }, get _aiConfig() { return _aiConfig; },
-    get _alloAacHash() { return _alloAacHash; }, get _alloAacId() { return _alloAacId; }, get _alloAacText() { return _alloAacText; }, get _alloActivityContext() { return _alloActivityContext; },
-    get _alloActivityDispatcher() { return _alloActivityDispatcher; }, get _alloActivityRetryable() { return _alloActivityRetryable; }, get _alloAlignmentAuditSummary() { return _alloAlignmentAuditSummary; }, get _alloAlignmentExportFromRegistryEntry() { return _alloAlignmentExportFromRegistryEntry; },
-    get _alloAlignmentExportSchema() { return _alloAlignmentExportSchema; }, get _alloApplyCanvasSelAuthoringState() { return _alloApplyCanvasSelAuthoringState; }, get _alloArtifactListLength() { return _alloArtifactListLength; }, get _alloArtifactMatchesInstanceId() { return _alloArtifactMatchesInstanceId; },
-    get _alloBeginGlossaryTask() { return _alloBeginGlossaryTask; }, get _alloBoundLearningWebGraphForExplorer() { return _alloBoundLearningWebGraphForExplorer; }, get _alloBuildAssignmentCenterCsv() { return _alloBuildAssignmentCenterCsv; }, get _alloCaptureCanvasSelAuthoringState() { return _alloCaptureCanvasSelAuthoringState; },
-    get _alloCheckpointArtifact() { return _alloCheckpointArtifact; }, get _alloCheckpointRecordsRef() { return _alloCheckpointRecordsRef; }, get _alloCheckpointSaltRef() { return _alloCheckpointSaltRef; }, get _alloCheckpointSupports() { return _alloCheckpointSupports; },
-    get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; }, get _alloCmdCtx() { return _alloCmdCtx; },
-    get _alloCmdCtxRef() { return _alloCmdCtxRef; }, get _alloCollectResChunk() { return _alloCollectResChunk; }, get _alloCreateDefaultStudentProjectSettings() { return _alloCreateDefaultStudentProjectSettings; }, get _alloDcSendDrained() { return _alloDcSendDrained; },
-    get _alloDecodeAlloPack() { return _alloDecodeAlloPack; }, get _alloDiagnosticBoundedInt() { return _alloDiagnosticBoundedInt; }, get _alloDiagnosticReason() { return _alloDiagnosticReason; }, get _alloDiagnosticResourceType() { return _alloDiagnosticResourceType; },
-    get _alloDiagnosticRunId() { return _alloDiagnosticRunId; }, get _alloDiagnosticTimestamp() { return _alloDiagnosticTimestamp; }, get _alloDirectionsGoalResources() { return _alloDirectionsGoalResources; }, get _alloEncodeAlloPack() { return _alloEncodeAlloPack; },
-    get _alloEnsureLedger() { return _alloEnsureLedger; }, get _alloFinishResChunk() { return _alloFinishResChunk; }, get _alloFollowResourceLive() { return _alloFollowResourceLive; }, get _alloGenerationHelpersDeps() { return _alloGenerationHelpersDeps; },
+    get ALLOHAVEN_CLASSROOM_REWARD_REASONS() { return ALLOHAVEN_CLASSROOM_REWARD_REASONS; }, get ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS() { return ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS; }, get ALLOHAVEN_RECOGNITION_CAPS() { return ALLOHAVEN_RECOGNITION_CAPS; }, get ALLO_AAC_PACK_AUDIO_CHARS() { return ALLO_AAC_PACK_AUDIO_CHARS; },
+    get ALLO_AAC_PACK_AUDIO_ITEM_CHARS() { return ALLO_AAC_PACK_AUDIO_ITEM_CHARS; }, get ALLO_AAC_PACK_IMAGE_CHARS() { return ALLO_AAC_PACK_IMAGE_CHARS; }, get ALLO_AAC_PACK_IMAGE_ITEM_CHARS() { return ALLO_AAC_PACK_IMAGE_ITEM_CHARS; }, get ALLO_ARTIFACT_INSTANCE_ID_FIELD() { return ALLO_ARTIFACT_INSTANCE_ID_FIELD; },
+    get ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT() { return ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT; }, get ALLO_GENERATION_METRICS() { return ALLO_GENERATION_METRICS; }, get ALLO_MB_ADMIN_KEY() { return ALLO_MB_ADMIN_KEY; }, get ALLO_MB_LIVE_KEY() { return ALLO_MB_LIVE_KEY; },
+    get ALLO_MB_URL_KEY() { return ALLO_MB_URL_KEY; }, get ALLO_MB_VERSION_KEY() { return ALLO_MB_VERSION_KEY; }, get ALLO_PDF_REMEDIATION_CACHE() { return ALLO_PDF_REMEDIATION_CACHE; }, get ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY() { return ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY; },
+    get ALLO_STORAGE_INVENTORY() { return ALLO_STORAGE_INVENTORY; }, get ALLO_STORAGE_RETENTION_POLICY_KEY() { return ALLO_STORAGE_RETENTION_POLICY_KEY; }, get ALLO_WORKSPACE_RECOVERY() { return ALLO_WORKSPACE_RECOVERY; }, get ALLO_WORKSPACE_RECOVERY_KEY() { return ALLO_WORKSPACE_RECOVERY_KEY; },
+    get ALLO_WORKSPACE_RECOVERY_NAMESPACE() { return ALLO_WORKSPACE_RECOVERY_NAMESPACE; }, get BUILDER_PROJECT_DRAFT_MAX_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_BYTES; }, get BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES; }, get CS_GENERATED_ITEM_BUDGET() { return CS_GENERATED_ITEM_BUDGET; },
+    get DEFAULT_EXPORT_CONFIG() { return DEFAULT_EXPORT_CONFIG; }, get DIGITAL_RUBRIC_CONSTRAINT() { return DIGITAL_RUBRIC_CONSTRAINT; }, get DOMException() { return DOMException; }, get DOM_TO_TOOL_ID_MAP() { return DOM_TO_TOOL_ID_MAP; },
+    get DecompressionStream() { return DecompressionStream; }, get GEMINI_MODELS() { return GEMINI_MODELS; }, get GUIDED_STEP_IDS() { return GUIDED_STEP_IDS; }, get GUIDED_TOUR_MAP() { return GUIDED_TOUR_MAP; },
+    get LIVE_ORGANIZER_TYPES() { return LIVE_ORGANIZER_TYPES; }, get ORF_SCREENING_PASSAGES() { return ORF_SCREENING_PASSAGES; }, get PDF_REGRESSION_TOLERANCE() { return PDF_REGRESSION_TOLERANCE; }, get React() { return React; },
+    get TIMELINE_MODE_DEFINITIONS() { return TIMELINE_MODE_DEFINITIONS; }, get TRANSLATION_MODE_AUTO() { return TRANSLATION_MODE_AUTO; }, get UI_ELEMENT_MAP() { return UI_ELEMENT_MAP; }, get WebSearchProvider() { return WebSearchProvider; },
+    get _EXPORT_PRESET_SCHEMA_VERSION() { return _EXPORT_PRESET_SCHEMA_VERSION; }, get _aiConfig() { return _aiConfig; }, get _alloAacHash() { return _alloAacHash; }, get _alloAacId() { return _alloAacId; },
+    get _alloAacText() { return _alloAacText; }, get _alloActivityContext() { return _alloActivityContext; }, get _alloActivityDispatcher() { return _alloActivityDispatcher; }, get _alloActivityRetryable() { return _alloActivityRetryable; },
+    get _alloAlignmentAuditSummary() { return _alloAlignmentAuditSummary; }, get _alloAlignmentExportFromRegistryEntry() { return _alloAlignmentExportFromRegistryEntry; }, get _alloAlignmentExportSchema() { return _alloAlignmentExportSchema; }, get _alloApplyCanvasSelAuthoringState() { return _alloApplyCanvasSelAuthoringState; },
+    get _alloArtifactListLength() { return _alloArtifactListLength; }, get _alloArtifactMatchesInstanceId() { return _alloArtifactMatchesInstanceId; }, get _alloBeginGlossaryTask() { return _alloBeginGlossaryTask; }, get _alloBoundLearningWebGraphForExplorer() { return _alloBoundLearningWebGraphForExplorer; },
+    get _alloBuildAssignmentCenterCsv() { return _alloBuildAssignmentCenterCsv; }, get _alloCheckpointArtifact() { return _alloCheckpointArtifact; }, get _alloCheckpointRecordsRef() { return _alloCheckpointRecordsRef; }, get _alloCheckpointSaltRef() { return _alloCheckpointSaltRef; },
+    get _alloCheckpointSupports() { return _alloCheckpointSupports; }, get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; },
+    get _alloCmdCtx() { return _alloCmdCtx; }, get _alloCmdCtxRef() { return _alloCmdCtxRef; }, get _alloCreateDefaultStudentProjectSettings() { return _alloCreateDefaultStudentProjectSettings; }, get _alloDiagnosticBoundedInt() { return _alloDiagnosticBoundedInt; },
+    get _alloDiagnosticReason() { return _alloDiagnosticReason; }, get _alloDiagnosticResourceType() { return _alloDiagnosticResourceType; }, get _alloDiagnosticRunId() { return _alloDiagnosticRunId; }, get _alloDiagnosticTimestamp() { return _alloDiagnosticTimestamp; },
+    get _alloDirectionsGoalResources() { return _alloDirectionsGoalResources; }, get _alloEnsureLedger() { return _alloEnsureLedger; }, get _alloFollowResourceLive() { return _alloFollowResourceLive; }, get _alloGenerationHelpersDeps() { return _alloGenerationHelpersDeps; },
     get _alloGetCanvasDeviceStorage() { return _alloGetCanvasDeviceStorage; }, get _alloGetRecoveryVaultStack() { return _alloGetRecoveryVaultStack; }, get _alloIsAlignmentGraph() { return _alloIsAlignmentGraph; }, get _alloLastLenRef() { return _alloLastLenRef; },
-    get _alloLearningWebScopeId() { return _alloLearningWebScopeId; }, get _alloLedgerRef() { return _alloLedgerRef; }, get _alloLiveAacModule() { return _alloLiveAacModule; }, get _alloLoadScriptGlobal() { return _alloLoadScriptGlobal; },
-    get _alloMailboxCall() { return _alloMailboxCall; }, get _alloMailboxCallWithRetry() { return _alloMailboxCallWithRetry; }, get _alloMbBridgeActive() { return _alloMbBridgeActive; }, get _alloMbBridgeState() { return _alloMbBridgeState; },
-    get _alloMbInstallBridge() { return _alloMbInstallBridge; }, get _alloMbNudge() { return _alloMbNudge; }, get _alloMbTeardownBridge() { return _alloMbTeardownBridge; }, get _alloMiscHandlersDeps() { return _alloMiscHandlersDeps; },
-    get _alloNormalizeAlignmentGraphExportForHost() { return _alloNormalizeAlignmentGraphExportForHost; }, get _alloNormalizeDirectionsData() { return _alloNormalizeDirectionsData; }, get _alloNormalizePortableAacBoardPackage() { return _alloNormalizePortableAacBoardPackage; }, get _alloNormalizeStudentProjectSettings() { return _alloNormalizeStudentProjectSettings; },
-    get _alloProvenanceApi() { return _alloProvenanceApi; }, get _alloQuickHash() { return _alloQuickHash; }, get _alloRandomToken() { return _alloRandomToken; }, get _alloReadVisualSupportCollection() { return _alloReadVisualSupportCollection; },
-    get _alloRefreshWorkStory() { return _alloRefreshWorkStory; }, get _alloRunActivityGeneration() { return _alloRunActivityGeneration; }, get _alloSafeArtifactField() { return _alloSafeArtifactField; }, get _alloSafeArtifactPublicIdValue() { return _alloSafeArtifactPublicIdValue; },
-    get _alloSerializeResourceForStudentPack() { return _alloSerializeResourceForStudentPack; }, get _alloSessionSyncTrace() { return _alloSessionSyncTrace; }, get _alloSplitPackChunks() { return _alloSplitPackChunks; }, get _alloStampBrainstormDerivative() { return _alloStampBrainstormDerivative; },
-    get _alloStudentSafeResources() { return _alloStudentSafeResources; }, get _alloUpdateBrainstormActivity() { return _alloUpdateBrainstormActivity; }, get _alloWriteVisualSupportCollection() { return _alloWriteVisualSupportCollection; }, get _applySimplifiedTextMutation() { return _applySimplifiedTextMutation; },
-    get _beginReadThisPageVoiceSpeech() { return _beginReadThisPageVoiceSpeech; }, get _blueprintArchiveLib() { return _blueprintArchiveLib; }, get _buildAlloMailboxEntryUrl() { return _buildAlloMailboxEntryUrl; }, get _builderBase64ToBytes() { return _builderBase64ToBytes; },
-    get _builderDraftRestoreRef() { return _builderDraftRestoreRef; }, get _builderOpenerElRef() { return _builderOpenerElRef; }, get _builderReviewSessionRef() { return _builderReviewSessionRef; }, get _builderUtf8ByteLength() { return _builderUtf8ByteLength; },
-    get _contentEngineRef() { return _contentEngineRef; }, get _copySanitizedDiagnostic() { return _copySanitizedDiagnostic; }, get _demoteInFlightRows() { return _demoteInFlightRows; }, get _docPipeline() { return _docPipeline; },
-    get _encodeReadAloudBridgeAudio() { return _encodeReadAloudBridgeAudio; }, get _ensureKaraokeStore() { return _ensureKaraokeStore; }, get _extensionGuideRequests() { return _extensionGuideRequests; }, get _getBuilderDraftForProject() { return _getBuilderDraftForProject; },
-    get _getBuilderHistorySignature() { return _getBuilderHistorySignature; }, get _getFreshTextComplexityEvidence() { return _getFreshTextComplexityEvidence; }, get _getPrivatePersonaArtifactStorage() { return _getPrivatePersonaArtifactStorage; }, get _isDesktopBundledApp() { return _isDesktopBundledApp; },
-    get _isIOSCanvasEnv() { return _isIOSCanvasEnv; }, get _isQrStudentAiDisabled() { return _isQrStudentAiDisabled; }, get _lessonTemplateLib() { return _lessonTemplateLib; }, get _listMainVoiceEditableFields() { return _listMainVoiceEditableFields; },
-    get _mbEmptySessionShape() { return _mbEmptySessionShape; }, get _mbPushOneResource() { return _mbPushOneResource; }, get _readBuilderDraftStreamBounded() { return _readBuilderDraftStreamBounded; }, get _readTextDomain() { return _readTextDomain; },
-    get _recordTextChange() { return _recordTextChange; }, get _releaseReadThisPageVoiceSpeech() { return _releaseReadThisPageVoiceSpeech; }, get _removeBuilderCropUi() { return _removeBuilderCropUi; }, get _resourceMutationStateRef() { return _resourceMutationStateRef; },
-    get _sanitizeBuilderProjectDraft() { return _sanitizeBuilderProjectDraft; }, get _setOnlyInteractiveOrganizer() { return _setOnlyInteractiveOrganizer; }, get _settleReadThisPagePauseWaiters() { return _settleReadThisPagePauseWaiters; }, get _shiftTextStack() { return _shiftTextStack; },
+    get _alloLearningWebScopeId() { return _alloLearningWebScopeId; }, get _alloLedgerRef() { return _alloLedgerRef; }, get _alloLoadScriptGlobal() { return _alloLoadScriptGlobal; }, get _alloMailboxCall() { return _alloMailboxCall; },
+    get _alloMailboxCallWithRetry() { return _alloMailboxCallWithRetry; }, get _alloMbBridgeActive() { return _alloMbBridgeActive; }, get _alloMbBridgeState() { return _alloMbBridgeState; }, get _alloMbInstallBridge() { return _alloMbInstallBridge; },
+    get _alloMbTeardownBridge() { return _alloMbTeardownBridge; }, get _alloMiscHandlersDeps() { return _alloMiscHandlersDeps; }, get _alloNormalizeAlignmentGraphExportForHost() { return _alloNormalizeAlignmentGraphExportForHost; }, get _alloNormalizeDirectionsData() { return _alloNormalizeDirectionsData; },
+    get _alloNormalizePortableAacBoardPackage() { return _alloNormalizePortableAacBoardPackage; }, get _alloNormalizeStudentProjectSettings() { return _alloNormalizeStudentProjectSettings; }, get _alloProvenanceApi() { return _alloProvenanceApi; }, get _alloQuickHash() { return _alloQuickHash; },
+    get _alloRandomToken() { return _alloRandomToken; }, get _alloReadVisualSupportCollection() { return _alloReadVisualSupportCollection; }, get _alloRefreshWorkStory() { return _alloRefreshWorkStory; }, get _alloRunActivityGeneration() { return _alloRunActivityGeneration; },
+    get _alloSafeArtifactField() { return _alloSafeArtifactField; }, get _alloSafeArtifactPublicIdValue() { return _alloSafeArtifactPublicIdValue; }, get _alloSerializeResourceForStudentPack() { return _alloSerializeResourceForStudentPack; }, get _alloSessionSyncTrace() { return _alloSessionSyncTrace; },
+    get _alloSplitPackChunks() { return _alloSplitPackChunks; }, get _alloStampBrainstormDerivative() { return _alloStampBrainstormDerivative; }, get _alloStudentSafeResources() { return _alloStudentSafeResources; }, get _alloUpdateBrainstormActivity() { return _alloUpdateBrainstormActivity; },
+    get _alloWriteVisualSupportCollection() { return _alloWriteVisualSupportCollection; }, get _applySimplifiedTextMutation() { return _applySimplifiedTextMutation; }, get _beginReadThisPageVoiceSpeech() { return _beginReadThisPageVoiceSpeech; }, get _blueprintArchiveLib() { return _blueprintArchiveLib; },
+    get _buildAlloMailboxEntryUrl() { return _buildAlloMailboxEntryUrl; }, get _builderBase64ToBytes() { return _builderBase64ToBytes; }, get _builderDraftRestoreRef() { return _builderDraftRestoreRef; }, get _builderOpenerElRef() { return _builderOpenerElRef; },
+    get _builderReviewSessionRef() { return _builderReviewSessionRef; }, get _builderUtf8ByteLength() { return _builderUtf8ByteLength; }, get _contentEngineRef() { return _contentEngineRef; }, get _copySanitizedDiagnostic() { return _copySanitizedDiagnostic; },
+    get _demoteInFlightRows() { return _demoteInFlightRows; }, get _docPipeline() { return _docPipeline; }, get _encodeReadAloudBridgeAudio() { return _encodeReadAloudBridgeAudio; }, get _ensureKaraokeStore() { return _ensureKaraokeStore; },
+    get _extensionGuideRequests() { return _extensionGuideRequests; }, get _getBuilderHistorySignature() { return _getBuilderHistorySignature; }, get _getFreshTextComplexityEvidence() { return _getFreshTextComplexityEvidence; }, get _getPrivatePersonaArtifactStorage() { return _getPrivatePersonaArtifactStorage; },
+    get _isDesktopBundledApp() { return _isDesktopBundledApp; }, get _isIOSCanvasEnv() { return _isIOSCanvasEnv; }, get _isQrStudentAiDisabled() { return _isQrStudentAiDisabled; }, get _lessonTemplateLib() { return _lessonTemplateLib; },
+    get _listMainVoiceEditableFields() { return _listMainVoiceEditableFields; }, get _mbEmptySessionShape() { return _mbEmptySessionShape; }, get _mbPushOneResource() { return _mbPushOneResource; }, get _readBuilderDraftStreamBounded() { return _readBuilderDraftStreamBounded; },
+    get _readTextDomain() { return _readTextDomain; }, get _recordTextChange() { return _recordTextChange; }, get _releaseReadThisPageVoiceSpeech() { return _releaseReadThisPageVoiceSpeech; }, get _removeBuilderCropUi() { return _removeBuilderCropUi; },
+    get _resourceMutationStateRef() { return _resourceMutationStateRef; }, get _sanitizeBuilderProjectDraft() { return _sanitizeBuilderProjectDraft; }, get _setOnlyInteractiveOrganizer() { return _setOnlyInteractiveOrganizer; }, get _settleReadThisPagePauseWaiters() { return _settleReadThisPagePauseWaiters; },
     get _stripForImmersive() { return _stripForImmersive; }, get _textDomainLabel() { return _textDomainLabel; }, get _textUndoLiveRef() { return _textUndoLiveRef; }, get _unpackBuilderProjectDraft() { return _unpackBuilderProjectDraft; },
     get _updatePanelInPlan() { return _updatePanelInPlan; }, get _voiceEditableFieldSelectionRef() { return _voiceEditableFieldSelectionRef; }, get _waitForReadThisPageResume() { return _waitForReadThisPageResume; }, get aacPlaybackRef() { return aacPlaybackRef; },
     get activeBlueprint() { return activeBlueprint; }, get activeChallengeMode() { return activeChallengeMode; }, get activeInteractiveOrganizerTypeRef() { return activeInteractiveOrganizerTypeRef; }, get activeResolvedStandardsContext() { return activeResolvedStandardsContext; },
     get activeSessionAppId() { return activeSessionAppId; }, get activeSessionCode() { return activeSessionCode; }, get activeSidebarTab() { return activeSidebarTab; }, get activeUnitId() { return activeUnitId; },
-    get activeView() { return activeView; }, get addToast() { return addToast; }, get addToastRef() { return addToastRef; }, get addXp() { return addXp; },
-    get adventureCustomInstructions() { return adventureCustomInstructions; }, get adventureImageDB() { return adventureImageDB; }, get adventureState() { return adventureState; }, get alloBotRef() { return alloBotRef; },
-    get alloMailboxConfigExportPayload() { return alloMailboxConfigExportPayload; }, get alloNormalizeLearnerReadingPreference() { return alloNormalizeLearnerReadingPreference; }, get alloNormalizeReadingTheme() { return alloNormalizeReadingTheme; }, get alloPersistMailboxConfig() { return alloPersistMailboxConfig; },
-    get alloReadMailboxConfigCache() { return alloReadMailboxConfigCache; }, get alloStableAssignmentId() { return alloStableAssignmentId; }, get annotationImportOwnerRef() { return annotationImportOwnerRef; }, get annotationLiveDocumentIdentityRef() { return annotationLiveDocumentIdentityRef; },
-    get annotationMode() { return annotationMode; }, get annotationUndoStackRef() { return annotationUndoStackRef; }, get appId() { return appId; }, get appUpdateApplying() { return appUpdateApplying; },
-    get archiveLivePlan() { return archiveLivePlan; }, get assignmentCenterRows() { return assignmentCenterRows; }, get assignmentDirections() { return assignmentDirections; }, get auditOutputAccessibility() { return auditOutputAccessibility; },
-    get autoRemoveWords() { return autoRemoveWords; }, get bingoSettings() { return bingoSettings; }, get blendAiAxe() { return blendAiAxe; }, get blueprintExecutionResult() { return blueprintExecutionResult; },
-    get buildSanitizedBlueprintDiagnostic() { return buildSanitizedBlueprintDiagnostic; }, get buildSanitizedFullPackDiagnostic() { return buildSanitizedFullPackDiagnostic; }, get buildSecurePersonaReflectionPrompt() { return buildSecurePersonaReflectionPrompt; }, get buildStudentResourcePatchBatches() { return buildStudentResourcePatchBatches; },
-    get buildUniqueRosterSessionCodenameIndex() { return buildUniqueRosterSessionCodenameIndex; }, get builderResourceIds() { return builderResourceIds; }, get callGemini() { return callGemini; }, get callGeminiImageEdit() { return callGeminiImageEdit; },
-    get callImagen() { return callImagen; }, get callTTS() { return callTTS; }, get canWriteLiveActivityProgress() { return canWriteLiveActivityProgress; }, get cancelActiveFileIntakeOperations() { return cancelActiveFileIntakeOperations; },
-    get cancelActiveProjectLoad() { return cancelActiveProjectLoad; }, get cancelAnnotationImports() { return cancelAnnotationImports; }, get canvasRecoveryCurrentIdRef() { return canvasRecoveryCurrentIdRef; }, get canvasRecoveryDecisionMade() { return canvasRecoveryDecisionMade; },
-    get canvasRecoveryDialogRef() { return canvasRecoveryDialogRef; }, get canvasRecoveryImmediateSaveRef() { return canvasRecoveryImmediateSaveRef; }, get canvasRecoveryMutationInProgressRef() { return canvasRecoveryMutationInProgressRef; }, get canvasRecoveryPendingSaveCountRef() { return canvasRecoveryPendingSaveCountRef; },
-    get canvasRecoverySaveTokenRef() { return canvasRecoverySaveTokenRef; }, get canvasRecoveryStoreRef() { return canvasRecoveryStoreRef; }, get canvasRecoveryVaultControllerRef() { return canvasRecoveryVaultControllerRef; }, get canvasRecoveryVaultForm() { return canvasRecoveryVaultForm; },
-    get canvasRecoveryVaultImportRef() { return canvasRecoveryVaultImportRef; }, get canvasRecoveryVaultPendingActionRef() { return canvasRecoveryVaultPendingActionRef; }, get canvasRecoveryVaultState() { return canvasRecoveryVaultState; }, get canvasRecoveryWriteQueueRef() { return canvasRecoveryWriteQueueRef; },
-    get capturePdfDocumentIntakeEpoch() { return capturePdfDocumentIntakeEpoch; }, get challengeFeedback() { return challengeFeedback; }, get challengeModeType() { return challengeModeType; }, get challengeTarget() { return challengeTarget; },
-    get checkpointState() { return checkpointState; }, get cleanJson() { return cleanJson; }, get clearCanvasRecoveryVaultSecrets() { return clearCanvasRecoveryVaultSecrets; }, get clearMathResourceState() { return clearMathResourceState; },
-    get closeCanvasRecoveryDialog() { return closeCanvasRecoveryDialog; }, get colorOverlay() { return colorOverlay; }, get commitCanvasRecoveryVaultEnable() { return commitCanvasRecoveryVaultEnable; }, get commitPdfFixResultIfCurrent() { return commitPdfFixResultIfCurrent; },
-    get conceptImageMode() { return conceptImageMode; }, get conceptMapEdges() { return conceptMapEdges; }, get conceptMapNodes() { return conceptMapNodes; }, get conceptSortAutoRemoveWords() { return conceptSortAutoRemoveWords; },
-    get connectingSourceId() { return connectingSourceId; }, get contentAreaRef() { return contentAreaRef; }, get contentEngineStateRef() { return contentEngineStateRef; }, get contentRef() { return contentRef; },
-    get copyToClipboard() { return copyToClipboard; }, get csAsyncRunIsCurrent() { return csAsyncRunIsCurrent; }, get csBeginAsyncRun() { return csBeginAsyncRun; }, get csGeneratedItemBudgetRef() { return csGeneratedItemBudgetRef; },
-    get csLiveDocumentIdRef() { return csLiveDocumentIdRef; }, get csRefinementInputs() { return csRefinementInputs; }, get csUpdateData() { return csUpdateData; }, get currentUiLanguage() { return currentUiLanguage; },
-    get db() { return db; }, get debugLog() { return debugLog; }, get deleteDoc() { return deleteDoc; }, get describeSavedFollowUpLiveFailure() { return describeSavedFollowUpLiveFailure; },
-    get differentiationRange() { return differentiationRange; }, get directionsDeriving() { return directionsDeriving; }, get doc() { return doc; }, get dokLevel() { return dokLevel; },
-    get downloadSubmissionBackup() { return downloadSubmissionBackup; }, get dragOffset() { return dragOffset; }, get draggedNodeId() { return draggedNodeId; }, get draggedTimelineIndex() { return draggedTimelineIndex; },
+    get addToast() { return addToast; }, get addToastRef() { return addToastRef; }, get addXp() { return addXp; }, get adventureCustomInstructions() { return adventureCustomInstructions; },
+    get adventureImageDB() { return adventureImageDB; }, get adventureState() { return adventureState; }, get alloBotRef() { return alloBotRef; }, get alloMailboxConfigExportPayload() { return alloMailboxConfigExportPayload; },
+    get alloNormalizeLearnerReadingPreference() { return alloNormalizeLearnerReadingPreference; }, get alloNormalizeReadingTheme() { return alloNormalizeReadingTheme; }, get alloPersistMailboxConfig() { return alloPersistMailboxConfig; }, get alloReadMailboxConfigCache() { return alloReadMailboxConfigCache; },
+    get alloStableAssignmentId() { return alloStableAssignmentId; }, get annotationImportOwnerRef() { return annotationImportOwnerRef; }, get annotationLiveDocumentIdentityRef() { return annotationLiveDocumentIdentityRef; }, get annotationMode() { return annotationMode; },
+    get annotationUndoStackRef() { return annotationUndoStackRef; }, get appId() { return appId; }, get appUpdateApplying() { return appUpdateApplying; }, get assignmentCenterRows() { return assignmentCenterRows; },
+    get assignmentDirections() { return assignmentDirections; }, get auditOutputAccessibility() { return auditOutputAccessibility; }, get autoRemoveWords() { return autoRemoveWords; }, get bingoSettings() { return bingoSettings; },
+    get blendAiAxe() { return blendAiAxe; }, get blueprintExecutionResult() { return blueprintExecutionResult; }, get buildSanitizedBlueprintDiagnostic() { return buildSanitizedBlueprintDiagnostic; }, get buildSanitizedFullPackDiagnostic() { return buildSanitizedFullPackDiagnostic; },
+    get buildSecurePersonaReflectionPrompt() { return buildSecurePersonaReflectionPrompt; }, get buildStudentResourcePatchBatches() { return buildStudentResourcePatchBatches; }, get buildUniqueRosterSessionCodenameIndex() { return buildUniqueRosterSessionCodenameIndex; }, get builderResourceIds() { return builderResourceIds; },
+    get callGemini() { return callGemini; }, get callGeminiImageEdit() { return callGeminiImageEdit; }, get callImagen() { return callImagen; }, get callTTS() { return callTTS; },
+    get canWriteLiveActivityProgress() { return canWriteLiveActivityProgress; }, get cancelActiveFileIntakeOperations() { return cancelActiveFileIntakeOperations; }, get cancelActiveProjectLoad() { return cancelActiveProjectLoad; }, get cancelAnnotationImports() { return cancelAnnotationImports; },
+    get canvasRecoveryCurrentIdRef() { return canvasRecoveryCurrentIdRef; }, get canvasRecoveryDecisionMade() { return canvasRecoveryDecisionMade; }, get canvasRecoveryDialogRef() { return canvasRecoveryDialogRef; }, get canvasRecoveryImmediateSaveRef() { return canvasRecoveryImmediateSaveRef; },
+    get canvasRecoveryMutationInProgressRef() { return canvasRecoveryMutationInProgressRef; }, get canvasRecoveryPendingSaveCountRef() { return canvasRecoveryPendingSaveCountRef; }, get canvasRecoverySaveTokenRef() { return canvasRecoverySaveTokenRef; }, get canvasRecoveryStoreRef() { return canvasRecoveryStoreRef; },
+    get canvasRecoveryVaultControllerRef() { return canvasRecoveryVaultControllerRef; }, get canvasRecoveryVaultForm() { return canvasRecoveryVaultForm; }, get canvasRecoveryVaultImportRef() { return canvasRecoveryVaultImportRef; }, get canvasRecoveryVaultPendingActionRef() { return canvasRecoveryVaultPendingActionRef; },
+    get canvasRecoveryVaultState() { return canvasRecoveryVaultState; }, get canvasRecoveryWriteQueueRef() { return canvasRecoveryWriteQueueRef; }, get capturePdfDocumentIntakeEpoch() { return capturePdfDocumentIntakeEpoch; }, get challengeFeedback() { return challengeFeedback; },
+    get challengeModeType() { return challengeModeType; }, get challengeTarget() { return challengeTarget; }, get checkpointState() { return checkpointState; }, get cleanJson() { return cleanJson; },
+    get clearCanvasRecoveryVaultSecrets() { return clearCanvasRecoveryVaultSecrets; }, get clearMathResourceState() { return clearMathResourceState; }, get closeCanvasRecoveryDialog() { return closeCanvasRecoveryDialog; }, get colorOverlay() { return colorOverlay; },
+    get commitCanvasRecoveryVaultEnable() { return commitCanvasRecoveryVaultEnable; }, get commitPdfFixResultIfCurrent() { return commitPdfFixResultIfCurrent; }, get conceptImageMode() { return conceptImageMode; }, get conceptMapEdges() { return conceptMapEdges; },
+    get conceptMapNodes() { return conceptMapNodes; }, get conceptSortAutoRemoveWords() { return conceptSortAutoRemoveWords; }, get connectingSourceId() { return connectingSourceId; }, get contentAreaRef() { return contentAreaRef; },
+    get contentEngineStateRef() { return contentEngineStateRef; }, get contentRef() { return contentRef; }, get copyToClipboard() { return copyToClipboard; }, get csAsyncRunIsCurrent() { return csAsyncRunIsCurrent; },
+    get csBeginAsyncRun() { return csBeginAsyncRun; }, get csGeneratedItemBudgetRef() { return csGeneratedItemBudgetRef; }, get csLiveDocumentIdRef() { return csLiveDocumentIdRef; }, get csRefinementInputs() { return csRefinementInputs; },
+    get csUpdateData() { return csUpdateData; }, get currentUiLanguage() { return currentUiLanguage; }, get db() { return db; }, get debugLog() { return debugLog; },
+    get deleteDoc() { return deleteDoc; }, get describeSavedFollowUpLiveFailure() { return describeSavedFollowUpLiveFailure; }, get differentiationRange() { return differentiationRange; }, get directionsDeriving() { return directionsDeriving; },
+    get doc() { return doc; }, get dokLevel() { return dokLevel; }, get downloadSubmissionBackup() { return downloadSubmissionBackup; }, get draggedTimelineIndex() { return draggedTimelineIndex; },
     get editingOptionsBuffer() { return editingOptionsBuffer; }, get educatorAccessState() { return educatorAccessState; }, get emptyCanvasRecoveryVaultView() { return emptyCanvasRecoveryVaultView; }, get encodeFramesToGif() { return encodeFramesToGif; },
     get endMailboxLiveSession() { return endMailboxLiveSession; }, get endSessionNote() { return endSessionNote; }, get endSessionPreview() { return endSessionPreview; }, get ensureArtifactInstanceId() { return ensureArtifactInstanceId; },
     get ensureExportLibraries() { return ensureExportLibraries; }, get ensureToolVisible() { return ensureToolVisible; }, get evaluateMathExpression() { return evaluateMathExpression; }, get evaluationPortalUrl() { return evaluationPortalUrl; },
@@ -11344,193 +11340,183 @@ const AlloFlowContent = () => {
     get getExportableHistory() { return getExportableHistory; }, get getFilteredHistory() { return getFilteredHistory; }, get getLiveOrganizerReadiness() { return getLiveOrganizerReadiness; }, get getLiveOrganizerResourceRevision() { return getLiveOrganizerResourceRevision; },
     get getMathResourceStateKey() { return getMathResourceStateKey; }, get getMathStoredProblemKeys() { return getMathStoredProblemKeys; }, get getPersonaVoiceOptions() { return getPersonaVoiceOptions; }, get getReadableContent() { return getReadableContent; },
     get getSavedLessonProgressionContext() { return getSavedLessonProgressionContext; }, get getSimplifiedRigorApi() { return getSimplifiedRigorApi; }, get getSkippedResources() { return getSkippedResources; }, get getSpeechLangCode() { return getSpeechLangCode; },
-    get getVennZone() { return getVennZone; }, get getWordSoundsPortableAudioCoverage() { return getWordSoundsPortableAudioCoverage; }, get globalPoints() { return globalPoints; }, get glossaryCustomInstructions() { return glossaryCustomInstructions; },
-    get glossaryHealthCheckIdRef() { return glossaryHealthCheckIdRef; }, get glossaryImageStyle() { return glossaryImageStyle; }, get glossaryLiveRef() { return glossaryLiveRef; }, get glossaryRefinementInputs() { return glossaryRefinementInputs; },
-    get glossaryTaskRegistryRef() { return glossaryTaskRegistryRef; }, get gradeLevel() { return gradeLevel; }, get gradingSession() { return gradingSession; }, get guidedActiveSteps() { return guidedActiveSteps; },
-    get guidedCompletedIds() { return guidedCompletedIds; }, get guidedCreatedHistoryIds() { return guidedCreatedHistoryIds; }, get guidedDeliveryEvidence() { return guidedDeliveryEvidence; }, get guidedMode() { return guidedMode; },
-    get guidedPlanBrief() { return guidedPlanBrief; }, get guidedSelectedIds() { return guidedSelectedIds; }, get guidedSkippedIds() { return guidedSkippedIds; }, get guidedStep() { return guidedStep; },
-    get handleAdventureChoice() { return handleAdventureChoice; }, get handleAdventureTextSubmit() { return handleAdventureTextSubmit; }, get handleAnalysisTextChange() { return handleAnalysisTextChange; }, get handleAnnotationUndo() { return handleAnnotationUndo; },
-    get handleAudio() { return handleAudio; }, get handleCheckChallenge() { return handleCheckChallenge; }, get handleExportSlides() { return handleExportSlides; }, get handleGenerate() { return handleGenerate; },
-    get handleGenerateConceptItem() { return handleGenerateConceptItem; }, get handleGuidingHand() { return handleGuidingHand; }, get handleLoadProject() { return handleLoadProject; }, get handleMasteryGrading() { return handleMasteryGrading; },
-    get handleRecognizeStudents() { return handleRecognizeStudents; }, get handleRestoreView() { return handleRestoreView; }, get handleScoreUpdate() { return handleScoreUpdate; }, get handleSpeak() { return handleSpeak; },
-    get handleStartLiveSession() { return handleStartLiveSession; }, get handleUrlFetch() { return handleUrlFetch; }, get havenConfigBusy() { return havenConfigBusy; }, get havenRecognitionConfig() { return havenRecognitionConfig; },
-    get havenRewardAmount() { return havenRewardAmount; }, get havenRewardBusy() { return havenRewardBusy; }, get havenRewardDraftsRef() { return havenRewardDraftsRef; }, get havenRewardReasonId() { return havenRewardReasonId; },
-    get havenRewardSendLockRef() { return havenRewardSendLockRef; }, get highlightColor() { return highlightColor; }, get highlightElement() { return highlightElement; }, get history() { return history; },
-    get homeworkExpiryDays() { return homeworkExpiryDays; }, get homeworkShelf() { return homeworkShelf; }, get hydrateHistory() { return hydrateHistory; }, get hydratedHistoryRef() { return hydratedHistoryRef; },
-    get includeCharts() { return includeCharts; }, get includeSourceCitations() { return includeSourceCitations; }, get inputText() { return inputText; }, get interactiveOrganizerWriteQueueRef() { return interactiveOrganizerWriteQueueRef; },
-    get invalidateLocalDataHydration() { return invalidateLocalDataHydration; }, get invalidatePdfDocumentOperations() { return invalidatePdfDocumentOperations; }, get isBotSpeakingRef() { return isBotSpeakingRef; }, get isBotVisible() { return isBotVisible; },
-    get isCanvas() { return isCanvas; }, get isCheckingChallenge() { return isCheckingChallenge; }, get isCommittedMathAssessmentContext() { return isCommittedMathAssessmentContext; }, get isDictationActiveRef() { return isDictationActiveRef; },
-    get isExecutingBlueprint() { return isExecutingBlueprint; }, get isGlobalMuted() { return isGlobalMuted; }, get isGoogleRedirect() { return isGoogleRedirect; }, get isImmersiveReaderActive() { return isImmersiveReaderActive; },
-    get isIndependentMode() { return isIndependentMode; }, get isPdfDocumentIntakeCurrent() { return isPdfDocumentIntakeCurrent; }, get isPersonaChatOpen() { return isPersonaChatOpen; }, get isPlayableInteractiveVennData() { return isPlayableInteractiveVennData; },
-    get isPlayingRef() { return isPlayingRef; }, get isSavedFollowUpLiveSessionCurrent() { return isSavedFollowUpLiveSessionCurrent; }, get isTeacherMode() { return isTeacherMode; }, get isUDLGuideExpanded() { return isUDLGuideExpanded; },
-    get isUndoingAnnotationRef() { return isUndoingAnnotationRef; }, get isVoiceRecording() { return isVoiceRecording; }, get isWide() { return isWide; }, get keepCitations() { return keepCitations; },
+    get getWordSoundsPortableAudioCoverage() { return getWordSoundsPortableAudioCoverage; }, get globalPoints() { return globalPoints; }, get glossaryImageStyle() { return glossaryImageStyle; }, get glossaryRefinementInputs() { return glossaryRefinementInputs; },
+    get gradeLevel() { return gradeLevel; }, get gradingSession() { return gradingSession; }, get guidedActiveSteps() { return guidedActiveSteps; }, get guidedCompletedIds() { return guidedCompletedIds; },
+    get guidedCreatedHistoryIds() { return guidedCreatedHistoryIds; }, get guidedDeliveryEvidence() { return guidedDeliveryEvidence; }, get guidedMode() { return guidedMode; }, get guidedPlanBrief() { return guidedPlanBrief; },
+    get guidedSelectedIds() { return guidedSelectedIds; }, get guidedSkippedIds() { return guidedSkippedIds; }, get guidedStep() { return guidedStep; }, get handleAdventureChoice() { return handleAdventureChoice; },
+    get handleAdventureTextSubmit() { return handleAdventureTextSubmit; }, get handleAnalysisTextChange() { return handleAnalysisTextChange; }, get handleAudio() { return handleAudio; }, get handleCheckChallenge() { return handleCheckChallenge; },
+    get handleExportSlides() { return handleExportSlides; }, get handleGenerate() { return handleGenerate; }, get handleGenerateConceptItem() { return handleGenerateConceptItem; }, get handleGuidingHand() { return handleGuidingHand; },
+    get handleLoadProject() { return handleLoadProject; }, get handleMasteryGrading() { return handleMasteryGrading; }, get handleRecognizeStudents() { return handleRecognizeStudents; }, get handleRestoreView() { return handleRestoreView; },
+    get handleScoreUpdate() { return handleScoreUpdate; }, get handleSpeak() { return handleSpeak; }, get handleStartLiveSession() { return handleStartLiveSession; }, get handleUrlFetch() { return handleUrlFetch; },
+    get havenConfigBusy() { return havenConfigBusy; }, get havenRecognitionConfig() { return havenRecognitionConfig; }, get havenRewardAmount() { return havenRewardAmount; }, get havenRewardBusy() { return havenRewardBusy; },
+    get havenRewardDraftsRef() { return havenRewardDraftsRef; }, get havenRewardReasonId() { return havenRewardReasonId; }, get havenRewardSendLockRef() { return havenRewardSendLockRef; }, get highlightColor() { return highlightColor; },
+    get highlightElement() { return highlightElement; }, get history() { return history; }, get homeworkExpiryDays() { return homeworkExpiryDays; }, get homeworkShelf() { return homeworkShelf; },
+    get hydrateHistory() { return hydrateHistory; }, get hydratedHistoryRef() { return hydratedHistoryRef; }, get includeSourceCitations() { return includeSourceCitations; }, get inputText() { return inputText; },
+    get interactiveOrganizerWriteQueueRef() { return interactiveOrganizerWriteQueueRef; }, get invalidateLocalDataHydration() { return invalidateLocalDataHydration; }, get invalidatePdfDocumentOperations() { return invalidatePdfDocumentOperations; }, get isBotSpeakingRef() { return isBotSpeakingRef; },
+    get isBotVisible() { return isBotVisible; }, get isCanvas() { return isCanvas; }, get isCheckingChallenge() { return isCheckingChallenge; }, get isCommittedMathAssessmentContext() { return isCommittedMathAssessmentContext; },
+    get isDictationActiveRef() { return isDictationActiveRef; }, get isExecutingBlueprint() { return isExecutingBlueprint; }, get isGlobalMuted() { return isGlobalMuted; }, get isGoogleRedirect() { return isGoogleRedirect; },
+    get isImmersiveReaderActive() { return isImmersiveReaderActive; }, get isIndependentMode() { return isIndependentMode; }, get isPdfDocumentIntakeCurrent() { return isPdfDocumentIntakeCurrent; }, get isPersonaChatOpen() { return isPersonaChatOpen; },
+    get isPlayableInteractiveVennData() { return isPlayableInteractiveVennData; }, get isPlayingRef() { return isPlayingRef; }, get isSavedFollowUpLiveSessionCurrent() { return isSavedFollowUpLiveSessionCurrent; }, get isTeacherMode() { return isTeacherMode; },
+    get isUDLGuideExpanded() { return isUDLGuideExpanded; }, get isUndoingAnnotationRef() { return isUndoingAnnotationRef; }, get isVoiceRecording() { return isVoiceRecording; }, get isWide() { return isWide; },
     get lastIntentSnapshotRef() { return lastIntentSnapshotRef; }, get lastOrganizerProgressWriteRef() { return lastOrganizerProgressWriteRef; }, get lastPackRefRef() { return lastPackRefRef; }, get lastPdfAuditResultRef() { return lastPdfAuditResultRef; },
     get lastPdfBytesRef() { return lastPdfBytesRef; }, get lastResourcesStringRef() { return lastResourcesStringRef; }, get lastTurnSnapshot() { return lastTurnSnapshot; }, get learningWebOpenContextRef() { return learningWebOpenContextRef; },
     get learningWebOpenTimerRef() { return learningWebOpenTimerRef; }, get learningWebRestoreViewRef() { return learningWebRestoreViewRef; }, get lessonHandoffRequestRef() { return lessonHandoffRequestRef; }, get lessonProgressionContextRef() { return lessonProgressionContextRef; },
-    get lessonProgressionRequestRef() { return lessonProgressionRequestRef; }, get leveledTextCustomInstructions() { return leveledTextCustomInstructions; }, get leveledTextLanguage() { return leveledTextLanguage; }, get leveledTextLength() { return leveledTextLength; },
-    get liveActivitySnapshots() { return liveActivitySnapshots; }, get liveQuizResponseCountsByUid() { return liveQuizResponseCountsByUid; }, get liveResourceHydrationAttemptsRef() { return liveResourceHydrationAttemptsRef; }, get liveResourceHydrationRetryTimerRef() { return liveResourceHydrationRetryTimerRef; },
-    get liveSessionCommandStateRef() { return liveSessionCommandStateRef; }, get mapContainerRef() { return mapContainerRef; }, get markGuidedDeliveryEvidence() { return markGuidedDeliveryEvidence; }, get markGuidedStepDone() { return markGuidedStepDone; },
-    get mathActiveResourceKeyRef() { return mathActiveResourceKeyRef; }, get mathSelfGradeContextKey() { return mathSelfGradeContextKey; }, get mathSelfGradeSubmissionRef() { return mathSelfGradeSubmissionRef; }, get mathStudentAnswers() { return mathStudentAnswers; },
-    get mbAdminInput() { return mbAdminInput; }, get mbChunkStoreRef() { return mbChunkStoreRef; }, get mbConfig() { return mbConfig; }, get mbDirectionsDraft() { return mbDirectionsDraft; },
-    get mbHostedAssignment() { return mbHostedAssignment; }, get mbImageNoticeRef() { return mbImageNoticeRef; }, get mbLive() { return mbLive; }, get mbMode() { return mbMode; },
-    get mbPackItemsRef() { return mbPackItemsRef; }, get mbPeersRef() { return mbPeersRef; }, get mbPreparedImagesRef() { return mbPreparedImagesRef; }, get mbRoster() { return mbRoster; },
-    get mbSentPacksRef() { return mbSentPacksRef; }, get mbStudent() { return mbStudent; }, get mbStudentCursorRef() { return mbStudentCursorRef; }, get mbUpCursorRef() { return mbUpCursorRef; },
-    get mbUrlInput() { return mbUrlInput; }, get newGroupName() { return newGroupName; }, get newProfileName() { return newProfileName; }, get nextFlashcard() { return nextFlashcard; },
-    get nodeInputText() { return nodeInputText; }, get normalizeAlloEvaluationPortalUrl() { return normalizeAlloEvaluationPortalUrl; }, get normalizeAlloHavenClassroomReward() { return normalizeAlloHavenClassroomReward; }, get normalizeClassGoals() { return normalizeClassGoals; },
-    get normalizeGuidedPlanBrief() { return normalizeGuidedPlanBrief; }, get normalizeGuidedProgress() { return normalizeGuidedProgress; }, get normalizeInteractiveVennGameData() { return normalizeInteractiveVennGameData; }, get normalizeLiveActivityProgress() { return normalizeLiveActivityProgress; },
-    get normalizeLiveOrganizerProgress() { return normalizeLiveOrganizerProgress; }, get normalizeQuizReceiptQuestionIndexes() { return normalizeQuizReceiptQuestionIndexes; }, get normalizeRosterSessionCodename() { return normalizeRosterSessionCodename; }, get noteColor() { return noteColor; },
-    get noteTemplate() { return noteTemplate; }, get onUpdateResource() { return onUpdateResource; }, get openQrShareModal() { return openQrShareModal; }, get openReadThisPagePanel() { return openReadThisPagePanel; },
-    get parseTaggedContent() { return parseTaggedContent; }, get pasteEvents() { return pasteEvents; }, get pauseReadThisPage() { return pauseReadThisPage; }, get pdfAutoContinueAbortCtrlRef() { return pdfAutoContinueAbortCtrlRef; },
-    get pdfAutoContinueAbortRef() { return pdfAutoContinueAbortRef; }, get pdfDocumentSelectionEpochRef() { return pdfDocumentSelectionEpochRef; }, get pdfFixResult() { return pdfFixResult; }, get pdfFixResultRef() { return pdfFixResultRef; },
-    get pendingAacHistoryShareRef() { return pendingAacHistoryShareRef; }, get persistedLessonDNA() { return persistedLessonDNA; }, get personaAutoReadRef() { return personaAutoReadRef; }, get personaAutoReadWasEnabledRef() { return personaAutoReadWasEnabledRef; },
-    get personaCustomInstructions() { return personaCustomInstructions; }, get personaReflectionIdentityRef() { return personaReflectionIdentityRef; }, get personaReflectionPromptAbortRef() { return personaReflectionPromptAbortRef; }, get personaReflectionPromptRequestRef() { return personaReflectionPromptRequestRef; },
+    get lessonProgressionRequestRef() { return lessonProgressionRequestRef; }, get leveledTextCustomInstructions() { return leveledTextCustomInstructions; }, get leveledTextLanguage() { return leveledTextLanguage; }, get liveActivitySnapshots() { return liveActivitySnapshots; },
+    get liveQuizResponseCountsByUid() { return liveQuizResponseCountsByUid; }, get liveResourceHydrationAttemptsRef() { return liveResourceHydrationAttemptsRef; }, get liveResourceHydrationRetryTimerRef() { return liveResourceHydrationRetryTimerRef; }, get liveSessionCommandStateRef() { return liveSessionCommandStateRef; },
+    get mapContainerRef() { return mapContainerRef; }, get markGuidedDeliveryEvidence() { return markGuidedDeliveryEvidence; }, get markGuidedStepDone() { return markGuidedStepDone; }, get mathActiveResourceKeyRef() { return mathActiveResourceKeyRef; },
+    get mathSelfGradeContextKey() { return mathSelfGradeContextKey; }, get mathSelfGradeSubmissionRef() { return mathSelfGradeSubmissionRef; }, get mathStudentAnswers() { return mathStudentAnswers; }, get mbAdminInput() { return mbAdminInput; },
+    get mbConfig() { return mbConfig; }, get mbDirectionsDraft() { return mbDirectionsDraft; }, get mbHostedAssignment() { return mbHostedAssignment; }, get mbLive() { return mbLive; },
+    get mbMode() { return mbMode; }, get mbPackItemsRef() { return mbPackItemsRef; }, get mbRoster() { return mbRoster; }, get mbSentPacksRef() { return mbSentPacksRef; },
+    get mbStudent() { return mbStudent; }, get mbUpCursorRef() { return mbUpCursorRef; }, get mbUrlInput() { return mbUrlInput; }, get newGroupName() { return newGroupName; },
+    get newProfileName() { return newProfileName; }, get nextFlashcard() { return nextFlashcard; }, get nodeInputText() { return nodeInputText; }, get normalizeAlloEvaluationPortalUrl() { return normalizeAlloEvaluationPortalUrl; },
+    get normalizeAlloHavenClassroomReward() { return normalizeAlloHavenClassroomReward; }, get normalizeClassGoals() { return normalizeClassGoals; }, get normalizeGuidedPlanBrief() { return normalizeGuidedPlanBrief; }, get normalizeGuidedProgress() { return normalizeGuidedProgress; },
+    get normalizeInteractiveVennGameData() { return normalizeInteractiveVennGameData; }, get normalizeLiveActivityProgress() { return normalizeLiveActivityProgress; }, get normalizeLiveOrganizerProgress() { return normalizeLiveOrganizerProgress; }, get normalizeQuizReceiptQuestionIndexes() { return normalizeQuizReceiptQuestionIndexes; },
+    get normalizeRosterSessionCodename() { return normalizeRosterSessionCodename; }, get noteColor() { return noteColor; }, get noteTemplate() { return noteTemplate; }, get onUpdateResource() { return onUpdateResource; },
+    get openQrShareModal() { return openQrShareModal; }, get openReadThisPagePanel() { return openReadThisPagePanel; }, get parseTaggedContent() { return parseTaggedContent; }, get pasteEvents() { return pasteEvents; },
+    get pauseReadThisPage() { return pauseReadThisPage; }, get pdfAutoContinueAbortCtrlRef() { return pdfAutoContinueAbortCtrlRef; }, get pdfAutoContinueAbortRef() { return pdfAutoContinueAbortRef; }, get pdfDocumentSelectionEpochRef() { return pdfDocumentSelectionEpochRef; },
+    get pdfFixResult() { return pdfFixResult; }, get pdfFixResultRef() { return pdfFixResultRef; }, get pendingAacHistoryShareRef() { return pendingAacHistoryShareRef; }, get personaAutoReadRef() { return personaAutoReadRef; },
+    get personaAutoReadWasEnabledRef() { return personaAutoReadWasEnabledRef; }, get personaReflectionIdentityRef() { return personaReflectionIdentityRef; }, get personaReflectionPromptAbortRef() { return personaReflectionPromptAbortRef; }, get personaReflectionPromptRequestRef() { return personaReflectionPromptRequestRef; },
     get personaState() { return personaState; }, get personaTeacherEditor() { return personaTeacherEditor; }, get personaTtsProcessorRef() { return personaTtsProcessorRef; }, get personaTtsQueueGenerationRef() { return personaTtsQueueGenerationRef; },
-    get personaTtsQueueRef() { return personaTtsQueueRef; }, get personaTtsQueueRunningRef() { return personaTtsQueueRunningRef; }, get personaTtsQueuedMessageKeysRef() { return personaTtsQueuedMessageKeysRef; }, get phonemeMastery() { return phonemeMastery; },
-    get playSound() { return playSound; }, get playbackSessionRef() { return playbackSessionRef; }, get pollAiBusy() { return pollAiBusy; }, get pollAsk() { return pollAsk; },
-    get prepareMailboxResourceImages() { return prepareMailboxResourceImages; }, get prepareReadAloudArtifactAudio() { return prepareReadAloudArtifactAudio; }, get prepareWordSoundsSession() { return prepareWordSoundsSession; }, get presentationState() { return presentationState; },
-    get profileInputRef() { return profileInputRef; }, get profiles() { return profiles; }, get publishCanvasRecoveryVaultLockedState() { return publishCanvasRecoveryVaultLockedState; }, get pushResourceToMailbox() { return pushResourceToMailbox; },
-    get qrShareModal() { return qrShareModal; }, get queueCanvasRecoveryStorage() { return queueCanvasRecoveryStorage; }, get quizAnswerMatches() { return quizAnswerMatches; }, get quizGuestRef() { return quizGuestRef; },
-    get quizMergedAllResponses() { return quizMergedAllResponses; }, get quizSelectedOption() { return quizSelectedOption; }, get readSavedFollowUpLiveSessionIdentity() { return readSavedFollowUpLiveSessionIdentity; }, get readUnlockedCanvasRecoveryVaultStore() { return readUnlockedCanvasRecoveryVaultStore; },
-    get readingLibraryIndexPromiseRef() { return readingLibraryIndexPromiseRef; }, get readingProfileScope() { return readingProfileScope; }, get recognitionRef() { return recognitionRef; }, get recordGameCompletion() { return recordGameCompletion; },
-    get recordSourceProvenance() { return recordSourceProvenance; }, get refreshAlloModelStatus() { return refreshAlloModelStatus; }, get rehydrateVerificationHtmlBinding() { return rehydrateVerificationHtmlBinding; }, get removeArtifactInstanceFromList() { return removeArtifactInstanceFromList; },
-    get reportBuilderResourceProblem() { return reportBuilderResourceProblem; }, get requestExportPreviewModules() { return requestExportPreviewModules; }, get requestPdfAuditModules() { return requestPdfAuditModules; }, get requestSessionManagementModule() { return requestSessionManagementModule; },
-    get requestWordSoundsAudioConfirmation() { return requestWordSoundsAudioConfirmation; }, get resetAllMathRuntimeState() { return resetAllMathRuntimeState; }, get resetGuidedProgress() { return resetGuidedProgress; }, get resolveClassGoalTeamUids() { return resolveClassGoalTeamUids; },
-    get resolveEndSessionCohortUids() { return resolveEndSessionCohortUids; }, get resolveSavedFollowUpLivePlanTarget() { return resolveSavedFollowUpLivePlanTarget; }, get resolveTranslationPolicy() { return resolveTranslationPolicy; }, get resourceCount() { return resourceCount; },
+    get personaTtsQueueRef() { return personaTtsQueueRef; }, get personaTtsQueueRunningRef() { return personaTtsQueueRunningRef; }, get personaTtsQueuedMessageKeysRef() { return personaTtsQueuedMessageKeysRef; }, get playSound() { return playSound; },
+    get playbackSessionRef() { return playbackSessionRef; }, get pollAiBusy() { return pollAiBusy; }, get pollAsk() { return pollAsk; }, get prepareReadAloudArtifactAudio() { return prepareReadAloudArtifactAudio; },
+    get prepareWordSoundsSession() { return prepareWordSoundsSession; }, get presentationState() { return presentationState; }, get profileInputRef() { return profileInputRef; }, get profiles() { return profiles; },
+    get publishCanvasRecoveryVaultLockedState() { return publishCanvasRecoveryVaultLockedState; }, get pushResourceToMailbox() { return pushResourceToMailbox; }, get qrShareModal() { return qrShareModal; }, get queueCanvasRecoveryStorage() { return queueCanvasRecoveryStorage; },
+    get quizAnswerMatches() { return quizAnswerMatches; }, get quizGuestRef() { return quizGuestRef; }, get quizMergedAllResponses() { return quizMergedAllResponses; }, get quizSelectedOption() { return quizSelectedOption; },
+    get readSavedFollowUpLiveSessionIdentity() { return readSavedFollowUpLiveSessionIdentity; }, get readUnlockedCanvasRecoveryVaultStore() { return readUnlockedCanvasRecoveryVaultStore; }, get readingLibraryIndexPromiseRef() { return readingLibraryIndexPromiseRef; }, get readingProfileScope() { return readingProfileScope; },
+    get recognitionRef() { return recognitionRef; }, get recordGameCompletion() { return recordGameCompletion; }, get recordSourceProvenance() { return recordSourceProvenance; }, get refreshAlloModelStatus() { return refreshAlloModelStatus; },
+    get rehydrateVerificationHtmlBinding() { return rehydrateVerificationHtmlBinding; }, get removeArtifactInstanceFromList() { return removeArtifactInstanceFromList; }, get reportBuilderResourceProblem() { return reportBuilderResourceProblem; }, get requestExportPreviewModules() { return requestExportPreviewModules; },
+    get requestPdfAuditModules() { return requestPdfAuditModules; }, get requestSessionManagementModule() { return requestSessionManagementModule; }, get requestWordSoundsAudioConfirmation() { return requestWordSoundsAudioConfirmation; }, get resetAllMathRuntimeState() { return resetAllMathRuntimeState; },
+    get resolveClassGoalTeamUids() { return resolveClassGoalTeamUids; }, get resolveEndSessionCohortUids() { return resolveEndSessionCohortUids; }, get resolveSavedFollowUpLivePlanTarget() { return resolveSavedFollowUpLivePlanTarget; }, get resolveTranslationPolicy() { return resolveTranslationPolicy; },
     get rosterKey() { return rosterKey; }, get rtpAudioFinishRef() { return rtpAudioFinishRef; }, get rtpCurrentAudioRef() { return rtpCurrentAudioRef; }, get rtpCurrentIndexRef() { return rtpCurrentIndexRef; },
     get rtpPausedRef() { return rtpPausedRef; }, get rtpReadRunRef() { return rtpReadRunRef; }, get rtpReadingRef() { return rtpReadingRef; }, get rtpStopRef() { return rtpStopRef; },
     get rtpTtsAbortRef() { return rtpTtsAbortRef; }, get rtpVoiceSpeechLeaseRef() { return rtpVoiceSpeechLeaseRef; }, get runAxeAudit() { return runAxeAudit; }, get safeDownloadBlob() { return safeDownloadBlob; },
-    get safeRemoveItem() { return safeRemoveItem; }, get safeSetItem() { return safeSetItem; }, get sameArtifactInstance() { return sameArtifactInstance; }, get sanitizeHistoryForCloud() { return sanitizeHistoryForCloud; },
-    get sanitizeSubmissionData() { return sanitizeSubmissionData; }, get savePortableAacResourceToHistory() { return savePortableAacResourceToHistory; }, get savedFollowUpLiveSendLockRef() { return savedFollowUpLiveSendLockRef; }, get schoolRewardsPortalUrl() { return schoolRewardsPortalUrl; },
-    get selectBuilderResources() { return selectBuilderResources; }, get selectedInventoryItem() { return selectedInventoryItem; }, get selectedLanguages() { return selectedLanguages; }, get selectedLetters() { return selectedLetters; },
-    get selectedPreviewImgRef() { return selectedPreviewImgRef; }, get selectedProfileId() { return selectedProfileId; }, get selectedVoice() { return selectedVoice; }, get sessionData() { return sessionData; },
-    get setAacHistoryRevision() { return setAacHistoryRevision; }, get setActiveBlueprint() { return setActiveBlueprint; }, get setActiveChallengeMode() { return setActiveChallengeMode; }, get setActiveSessionCode() { return setActiveSessionCode; },
-    get setActiveSidebarTab() { return setActiveSidebarTab; }, get setActiveUnitId() { return setActiveUnitId; }, get setActiveView() { return setActiveView; }, get setAdventureArtStyle() { return setAdventureArtStyle; },
-    get setAdventureChanceMode() { return setAdventureChanceMode; }, get setAdventureConsistentCharacters() { return setAdventureConsistentCharacters; }, get setAdventureCustomArtStyle() { return setAdventureCustomArtStyle; }, get setAdventureCustomInstructions() { return setAdventureCustomInstructions; },
-    get setAdventureDifficulty() { return setAdventureDifficulty; }, get setAdventureFreeResponseEnabled() { return setAdventureFreeResponseEnabled; }, get setAdventureInputMode() { return setAdventureInputMode; }, get setAdventureLanguageMode() { return setAdventureLanguageMode; },
-    get setAdventureState() { return setAdventureState; }, get setAdventureTextInput() { return setAdventureTextInput; }, get setAlloModelStatus() { return setAlloModelStatus; }, get setAlloStudioInitialAction() { return setAlloStudioInitialAction; },
-    get setAlloStudioInitialArtwork() { return setAlloStudioInitialArtwork; }, get setAlloStudioInitialFile() { return setAlloStudioInitialFile; }, get setAlloStudioInitialResource() { return setAlloStudioInitialResource; }, get setAnchorChartCustomInstructions() { return setAnchorChartCustomInstructions; },
-    get setAnchorChartType() { return setAnchorChartType; }, get setAnnotationUndoCount() { return setAnnotationUndoCount; }, get setAppUpdateApplying() { return setAppUpdateApplying; }, get setApplyingRemarkup() { return setApplyingRemarkup; },
-    get setArchivedPlans() { return setArchivedPlans; }, get setAssignmentCenterActionByUrl() { return setAssignmentCenterActionByUrl; }, get setAssignmentCenterStatusByUrl() { return setAssignmentCenterStatusByUrl; }, get setAutoRestoreSummary() { return setAutoRestoreSummary; },
-    get setBingoState() { return setBingoState; }, get setBlueprintExecutionResult() { return setBlueprintExecutionResult; }, get setBlueprintPreview() { return setBlueprintPreview; }, get setBoringPalettePrompt() { return setBoringPalettePrompt; },
-    get setBotSpotlightPos() { return setBotSpotlightPos; }, get setBrainstormCustomInstructions() { return setBrainstormCustomInstructions; }, get setBuilderResourceIds() { return setBuilderResourceIds; }, get setBuilderWorkspaceMode() { return setBuilderWorkspaceMode; },
-    get setCanvasRecoveryBusyId() { return setCanvasRecoveryBusyId; }, get setCanvasRecoveryDecisionMade() { return setCanvasRecoveryDecisionMade; }, get setCanvasRecoveryDialogMode() { return setCanvasRecoveryDialogMode; }, get setCanvasRecoveryEraseId() { return setCanvasRecoveryEraseId; },
-    get setCanvasRecoveryError() { return setCanvasRecoveryError; }, get setCanvasRecoveryErrorCode() { return setCanvasRecoveryErrorCode; }, get setCanvasRecoveryRemoveMediaId() { return setCanvasRecoveryRemoveMediaId; }, get setCanvasRecoveryRevision() { return setCanvasRecoveryRevision; },
-    get setCanvasRecoverySaveStatus() { return setCanvasRecoverySaveStatus; }, get setCanvasRecoveryStore() { return setCanvasRecoveryStore; }, get setCanvasRecoveryStoreAuthoritative() { return setCanvasRecoveryStoreAuthoritative; }, get setCanvasRecoveryVaultForm() { return setCanvasRecoveryVaultForm; },
-    get setCanvasRecoveryVaultState() { return setCanvasRecoveryVaultState; }, get setChallengeFeedback() { return setChallengeFeedback; }, get setChallengeTarget() { return setChallengeTarget; }, get setCheckpointState() { return setCheckpointState; },
-    get setChunkResumePrompt() { return setChunkResumePrompt; }, get setChunkSaveFlash() { return setChunkSaveFlash; }, get setColorOverlay() { return setColorOverlay; }, get setConceptInput() { return setConceptInput; },
-    get setConceptMapEdges() { return setConceptMapEdges; }, get setConceptMapNodes() { return setConceptMapNodes; }, get setConceptMasteryLocal() { return setConceptMasteryLocal; }, get setConceptSortCustomInstructions() { return setConceptSortCustomInstructions; },
-    get setConfirmDialog() { return setConfirmDialog; }, get setConnectingSourceId() { return setConnectingSourceId; }, get setCsAddingCatId() { return setCsAddingCatId; }, get setCsAddingText() { return setCsAddingText; },
-    get setCsBusyId() { return setCsBusyId; }, get setCsRefinementInputs() { return setCsRefinementInputs; }, get setCurrentWordSoundsWord() { return setCurrentWordSoundsWord; }, get setDbqCustomInstructions() { return setDbqCustomInstructions; },
-    get setDefinitionData() { return setDefinitionData; }, get setDiffChunks() { return setDiffChunks; }, get setDiffSelection() { return setDiffSelection; }, get setDiffViewOpen() { return setDiffViewOpen; },
-    get setDifferentiationRange() { return setDifferentiationRange; }, get setDirectionsDeriving() { return setDirectionsDeriving; }, get setDoc() { return setDoc; }, get setDokLevel() { return setDokLevel; },
-    get setDraggedNodeId() { return setDraggedNodeId; }, get setDraggedTimelineIndex() { return setDraggedTimelineIndex; }, get setDynamicReflectionQuestion() { return setDynamicReflectionQuestion; }, get setEducatorAccessState() { return setEducatorAccessState; },
-    get setEndSessionNote() { return setEndSessionNote; }, get setEndSessionPreview() { return setEndSessionPreview; }, get setError() { return setError; }, get setExpandedTools() { return setExpandedTools; },
-    get setExploreScore() { return setExploreScore; }, get setExportConfig() { return setExportConfig; }, get setExportPresets() { return setExportPresets; }, get setExportPreviewMode() { return setExportPreviewMode; },
-    get setExportPreviewSource() { return setExportPreviewSource; }, get setExportTheme() { return setExportTheme; }, get setExternalCBMScores() { return setExternalCBMScores; }, get setExtractedImagesList() { return setExtractedImagesList; },
-    get setExtractionData() { return setExtractionData; }, get setFailedAdventureAction() { return setFailedAdventureAction; }, get setFaqCustomInstructions() { return setFaqCustomInstructions; }, get setFidelityLog() { return setFidelityLog; },
-    get setFidelityResult() { return setFidelityResult; }, get setFixIssuesList() { return setFixIssuesList; }, get setFlashcardFeedback() { return setFlashcardFeedback; }, get setFlashcardIndex() { return setFlashcardIndex; },
-    get setFlashcardLang() { return setFlashcardLang; }, get setFlashcardMode() { return setFlashcardMode; }, get setFlashcardOptions() { return setFlashcardOptions; }, get setFlashcardScore() { return setFlashcardScore; },
-    get setFluencyAssessments() { return setFluencyAssessments; }, get setFluencyResult() { return setFluencyResult; }, get setFluencyStatus() { return setFluencyStatus; }, get setFoundWords() { return setFoundWords; },
-    get setFrameCustomInstructions() { return setFrameCustomInstructions; }, get setFullPackTargetGroup() { return setFullPackTargetGroup; }, get setGameCompletions() { return setGameCompletions; }, get setGeneratedContent() { return setGeneratedContent; },
-    get setGenerationStep() { return setGenerationStep; }, get setGlossaryCustomInstructions() { return setGlossaryCustomInstructions; }, get setGlossaryHealthCheck() { return setGlossaryHealthCheck; }, get setGlossaryRefinementInputs() { return setGlossaryRefinementInputs; },
+    get safeRemoveItem() { return safeRemoveItem; }, get safeSetItem() { return safeSetItem; }, get sameArtifactInstance() { return sameArtifactInstance; }, get sanitizeSubmissionData() { return sanitizeSubmissionData; },
+    get savePortableAacResourceToHistory() { return savePortableAacResourceToHistory; }, get savedFollowUpLiveSendLockRef() { return savedFollowUpLiveSendLockRef; }, get schoolRewardsPortalUrl() { return schoolRewardsPortalUrl; }, get selectBuilderResources() { return selectBuilderResources; },
+    get selectedInventoryItem() { return selectedInventoryItem; }, get selectedLanguages() { return selectedLanguages; }, get selectedLetters() { return selectedLetters; }, get selectedPreviewImgRef() { return selectedPreviewImgRef; },
+    get selectedVoice() { return selectedVoice; }, get sessionData() { return sessionData; }, get setAacHistoryRevision() { return setAacHistoryRevision; }, get setActiveBlueprint() { return setActiveBlueprint; },
+    get setActiveChallengeMode() { return setActiveChallengeMode; }, get setActiveSessionCode() { return setActiveSessionCode; }, get setActiveSidebarTab() { return setActiveSidebarTab; }, get setActiveUnitId() { return setActiveUnitId; },
+    get setActiveView() { return setActiveView; }, get setAdventureArtStyle() { return setAdventureArtStyle; }, get setAdventureChanceMode() { return setAdventureChanceMode; }, get setAdventureConsistentCharacters() { return setAdventureConsistentCharacters; },
+    get setAdventureCustomArtStyle() { return setAdventureCustomArtStyle; }, get setAdventureCustomInstructions() { return setAdventureCustomInstructions; }, get setAdventureDifficulty() { return setAdventureDifficulty; }, get setAdventureFreeResponseEnabled() { return setAdventureFreeResponseEnabled; },
+    get setAdventureInputMode() { return setAdventureInputMode; }, get setAdventureLanguageMode() { return setAdventureLanguageMode; }, get setAdventureState() { return setAdventureState; }, get setAdventureTextInput() { return setAdventureTextInput; },
+    get setAlloModelStatus() { return setAlloModelStatus; }, get setAlloStudioInitialAction() { return setAlloStudioInitialAction; }, get setAlloStudioInitialArtwork() { return setAlloStudioInitialArtwork; }, get setAlloStudioInitialFile() { return setAlloStudioInitialFile; },
+    get setAlloStudioInitialResource() { return setAlloStudioInitialResource; }, get setAnchorChartCustomInstructions() { return setAnchorChartCustomInstructions; }, get setAnchorChartType() { return setAnchorChartType; }, get setAnnotationUndoCount() { return setAnnotationUndoCount; },
+    get setAppUpdateApplying() { return setAppUpdateApplying; }, get setApplyingRemarkup() { return setApplyingRemarkup; }, get setArchivedPlans() { return setArchivedPlans; }, get setAssignmentCenterActionByUrl() { return setAssignmentCenterActionByUrl; },
+    get setAssignmentCenterStatusByUrl() { return setAssignmentCenterStatusByUrl; }, get setAutoRestoreSummary() { return setAutoRestoreSummary; }, get setBingoState() { return setBingoState; }, get setBlueprintExecutionResult() { return setBlueprintExecutionResult; },
+    get setBlueprintPreview() { return setBlueprintPreview; }, get setBoringPalettePrompt() { return setBoringPalettePrompt; }, get setBotSpotlightPos() { return setBotSpotlightPos; }, get setBrainstormCustomInstructions() { return setBrainstormCustomInstructions; },
+    get setBuilderResourceIds() { return setBuilderResourceIds; }, get setBuilderWorkspaceMode() { return setBuilderWorkspaceMode; }, get setCanvasRecoveryBusyId() { return setCanvasRecoveryBusyId; }, get setCanvasRecoveryDecisionMade() { return setCanvasRecoveryDecisionMade; },
+    get setCanvasRecoveryDialogMode() { return setCanvasRecoveryDialogMode; }, get setCanvasRecoveryEraseId() { return setCanvasRecoveryEraseId; }, get setCanvasRecoveryError() { return setCanvasRecoveryError; }, get setCanvasRecoveryErrorCode() { return setCanvasRecoveryErrorCode; },
+    get setCanvasRecoveryRemoveMediaId() { return setCanvasRecoveryRemoveMediaId; }, get setCanvasRecoveryRevision() { return setCanvasRecoveryRevision; }, get setCanvasRecoverySaveStatus() { return setCanvasRecoverySaveStatus; }, get setCanvasRecoveryStore() { return setCanvasRecoveryStore; },
+    get setCanvasRecoveryStoreAuthoritative() { return setCanvasRecoveryStoreAuthoritative; }, get setCanvasRecoveryVaultForm() { return setCanvasRecoveryVaultForm; }, get setCanvasRecoveryVaultState() { return setCanvasRecoveryVaultState; }, get setChallengeFeedback() { return setChallengeFeedback; },
+    get setChallengeTarget() { return setChallengeTarget; }, get setCheckpointState() { return setCheckpointState; }, get setChunkResumePrompt() { return setChunkResumePrompt; }, get setChunkSaveFlash() { return setChunkSaveFlash; },
+    get setColorOverlay() { return setColorOverlay; }, get setConceptInput() { return setConceptInput; }, get setConceptMapEdges() { return setConceptMapEdges; }, get setConceptMapNodes() { return setConceptMapNodes; },
+    get setConceptMasteryLocal() { return setConceptMasteryLocal; }, get setConceptSortCustomInstructions() { return setConceptSortCustomInstructions; }, get setConfirmDialog() { return setConfirmDialog; }, get setConnectingSourceId() { return setConnectingSourceId; },
+    get setCsAddingCatId() { return setCsAddingCatId; }, get setCsAddingText() { return setCsAddingText; }, get setCsBusyId() { return setCsBusyId; }, get setCsRefinementInputs() { return setCsRefinementInputs; },
+    get setCurrentWordSoundsWord() { return setCurrentWordSoundsWord; }, get setDbqCustomInstructions() { return setDbqCustomInstructions; }, get setDefinitionData() { return setDefinitionData; }, get setDiffChunks() { return setDiffChunks; },
+    get setDiffSelection() { return setDiffSelection; }, get setDiffViewOpen() { return setDiffViewOpen; }, get setDifferentiationRange() { return setDifferentiationRange; }, get setDirectionsDeriving() { return setDirectionsDeriving; },
+    get setDoc() { return setDoc; }, get setDokLevel() { return setDokLevel; }, get setDraggedTimelineIndex() { return setDraggedTimelineIndex; }, get setDynamicReflectionQuestion() { return setDynamicReflectionQuestion; },
+    get setEducatorAccessState() { return setEducatorAccessState; }, get setEndSessionNote() { return setEndSessionNote; }, get setEndSessionPreview() { return setEndSessionPreview; }, get setError() { return setError; },
+    get setExpandedTools() { return setExpandedTools; }, get setExploreScore() { return setExploreScore; }, get setExportConfig() { return setExportConfig; }, get setExportPresets() { return setExportPresets; },
+    get setExportPreviewMode() { return setExportPreviewMode; }, get setExportPreviewSource() { return setExportPreviewSource; }, get setExportTheme() { return setExportTheme; }, get setExternalCBMScores() { return setExternalCBMScores; },
+    get setExtractedImagesList() { return setExtractedImagesList; }, get setExtractionData() { return setExtractionData; }, get setFailedAdventureAction() { return setFailedAdventureAction; }, get setFaqCustomInstructions() { return setFaqCustomInstructions; },
+    get setFidelityLog() { return setFidelityLog; }, get setFidelityResult() { return setFidelityResult; }, get setFixIssuesList() { return setFixIssuesList; }, get setFlashcardFeedback() { return setFlashcardFeedback; },
+    get setFlashcardIndex() { return setFlashcardIndex; }, get setFlashcardLang() { return setFlashcardLang; }, get setFlashcardMode() { return setFlashcardMode; }, get setFlashcardOptions() { return setFlashcardOptions; },
+    get setFlashcardScore() { return setFlashcardScore; }, get setFluencyAssessments() { return setFluencyAssessments; }, get setFluencyResult() { return setFluencyResult; }, get setFluencyStatus() { return setFluencyStatus; },
+    get setFoundWords() { return setFoundWords; }, get setFrameCustomInstructions() { return setFrameCustomInstructions; }, get setFullPackTargetGroup() { return setFullPackTargetGroup; }, get setGameCompletions() { return setGameCompletions; },
+    get setGeneratedContent() { return setGeneratedContent; }, get setGenerationStep() { return setGenerationStep; }, get setGlossaryCustomInstructions() { return setGlossaryCustomInstructions; }, get setGlossaryRefinementInputs() { return setGlossaryRefinementInputs; },
     get setGlossaryTier2Count() { return setGlossaryTier2Count; }, get setGlossaryTier3Count() { return setGlossaryTier3Count; }, get setGradeLevel() { return setGradeLevel; }, get setGradingResult() { return setGradingResult; },
     get setGradingSession() { return setGradingSession; }, get setGuidedAdvanceNotice() { return setGuidedAdvanceNotice; }, get setGuidedCompletedIds() { return setGuidedCompletedIds; }, get setGuidedCreatedHistoryIds() { return setGuidedCreatedHistoryIds; },
     get setGuidedDeliveryEvidence() { return setGuidedDeliveryEvidence; }, get setGuidedFlowState() { return setGuidedFlowState; }, get setGuidedMode() { return setGuidedMode; }, get setGuidedNavigationUndo() { return setGuidedNavigationUndo; },
     get setGuidedPlanBrief() { return setGuidedPlanBrief; }, get setGuidedProgressSaveState() { return setGuidedProgressSaveState; }, get setGuidedSelectedIds() { return setGuidedSelectedIds; }, get setGuidedSkippedIds() { return setGuidedSkippedIds; },
-    get setGuidedStep() { return setGuidedStep; }, get setHasSavedAdventure() { return setHasSavedAdventure; }, get setHasSelectedMode() { return setHasSelectedMode; }, get setHasSelectedRole() { return setHasSelectedRole; },
-    get setHasUsedAutoFill() { return setHasUsedAutoFill; }, get setHavenConfigBusy() { return setHavenConfigBusy; }, get setHavenRewardBusy() { return setHavenRewardBusy; }, get setHavenRewardReceipt() { return setHavenRewardReceipt; },
-    get setHintHistory() { return setHintHistory; }, get setHistory() { return setHistory; }, get setHomeworkShelf() { return setHomeworkShelf; }, get setImageReinsertionReport() { return setImageReinsertionReport; },
-    get setImportedAlignmentGraphExport() { return setImportedAlignmentGraphExport; }, get setIncludeCharts() { return setIncludeCharts; }, get setIncludeSourceCitations() { return setIncludeSourceCitations; }, get setInputText() { return setInputText; },
-    get setInteractiveOrganizerRetrying() { return setInteractiveOrganizerRetrying; }, get setInteractiveOrganizerSync() { return setInteractiveOrganizerSync; }, get setInterventionLogs() { return setInterventionLogs; }, get setIsAdminHubOpen() { return setIsAdminHubOpen; },
-    get setIsAdventureStoryMode() { return setIsAdventureStoryMode; }, get setIsAlloStudioOpen() { return setIsAlloStudioOpen; }, get setIsAutoFillMode() { return setIsAutoFillMode; }, get setIsChallengeActive() { return setIsChallengeActive; },
-    get setIsChatProcessing() { return setIsChatProcessing; }, get setIsCheckingAlignment() { return setIsCheckingAlignment; }, get setIsCheckingChallenge() { return setIsCheckingChallenge; }, get setIsEditingOptions() { return setIsEditingOptions; },
-    get setIsEducatorEvaluationOpen() { return setIsEducatorEvaluationOpen; }, get setIsExtracting() { return setIsExtracting; }, get setIsFactChecking() { return setIsFactChecking; }, get setIsFlashcardFlipped() { return setIsFlashcardFlipped; },
-    get setIsFlashcardQuizMode() { return setIsFlashcardQuizMode; }, get setIsFluencyMode() { return setIsFluencyMode; }, get setIsGeneratingBrainstormRubric() { return setIsGeneratingBrainstormRubric; }, get setIsGeneratingExtension() { return setIsGeneratingExtension; },
-    get setIsGeneratingExtensionGuide() { return setIsGeneratingExtensionGuide; }, get setIsGeneratingGuide() { return setIsGeneratingGuide; }, get setIsGeneratingProgression() { return setIsGeneratingProgression; }, get setIsGeneratingReflectionPrompt() { return setIsGeneratingReflectionPrompt; },
-    get setIsGeneratingRubric() { return setIsGeneratingRubric; }, get setIsGeneratingTermImage() { return setIsGeneratingTermImage; }, get setIsGeneratingWorksheet() { return setIsGeneratingWorksheet; }, get setIsGeneratingWorksheetCover() { return setIsGeneratingWorksheetCover; },
-    get setIsGrading() { return setIsGrading; }, get setIsImmersiveReaderActive() { return setIsImmersiveReaderActive; }, get setIsIndependentMode() { return setIsIndependentMode; }, get setIsInteractiveCESort() { return setIsInteractiveCESort; },
-    get setIsInteractiveConceptMapSort() { return setIsInteractiveConceptMapSort; }, get setIsInteractiveFishboneSort() { return setIsInteractiveFishboneSort; }, get setIsInteractiveFlashcards() { return setIsInteractiveFlashcards; }, get setIsInteractiveFrayerSort() { return setIsInteractiveFrayerSort; },
-    get setIsInteractiveOutlineSort() { return setIsInteractiveOutlineSort; }, get setIsInteractivePipeline() { return setIsInteractivePipeline; }, get setIsInteractiveProblemSolutionSort() { return setIsInteractiveProblemSolutionSort; }, get setIsInteractiveSeeThinkWonderSort() { return setIsInteractiveSeeThinkWonderSort; },
-    get setIsInteractiveStoryMapSort() { return setIsInteractiveStoryMapSort; }, get setIsInteractiveTChart() { return setIsInteractiveTChart; }, get setIsLargeFileProcessing() { return setIsLargeFileProcessing; }, get setIsMapLocked() { return setIsMapLocked; },
-    get setIsParentMode() { return setIsParentMode; }, get setIsProcessing() { return setIsProcessing; }, get setIsProfileModalOpen() { return setIsProfileModalOpen; }, get setIsProjectSettingsOpen() { return setIsProjectSettingsOpen; },
-    get setIsPushingResource() { return setIsPushingResource; }, get setIsReadingLibraryOpen() { return setIsReadingLibraryOpen; }, get setIsRosterKeyOpen() { return setIsRosterKeyOpen; }, get setIsRunningHealthCheck() { return setIsRunningHealthCheck; },
-    get setIsSaveActionPulsing() { return setIsSaveActionPulsing; }, get setIsSavingAdvice() { return setIsSavingAdvice; }, get setIsSpotlightMode() { return setIsSpotlightMode; }, get setIsStudentLinkMode() { return setIsStudentLinkMode; },
-    get setIsTeacherMode() { return setIsTeacherMode; }, get setIsTranslateModalOpen() { return setIsTranslateModalOpen; }, get setIsUDLGuideExpanded() { return setIsUDLGuideExpanded; }, get setIsUniversalSettingsOpen() { return setIsUniversalSettingsOpen; },
-    get setIsUrlSearchMode() { return setIsUrlSearchMode; }, get setIsWordSoundsMode() { return setIsWordSoundsMode; }, get setKeepCitations() { return setKeepCitations; }, get setLabToolData() { return setLabToolData; },
-    get setLargeFileProgress() { return setLargeFileProgress; }, get setLargeFileStatus() { return setLargeFileStatus; }, get setLargeFileTotalChunks() { return setLargeFileTotalChunks; }, get setLastSaved() { return setLastSaved; },
-    get setLearningWebRegistryRevision() { return setLearningWebRegistryRevision; }, get setLessonCustomAdditions() { return setLessonCustomAdditions; }, get setLeveledTextCustomInstructions() { return setLeveledTextCustomInstructions; }, get setLeveledTextLanguage() { return setLeveledTextLanguage; },
-    get setLeveledTextLength() { return setLeveledTextLength; }, get setLiveChunkExpanded() { return setLiveChunkExpanded; }, get setLiveChunkRejected() { return setLiveChunkRejected; }, get setLiveChunkSessionActive() { return setLiveChunkSessionActive; },
-    get setLiveChunkStream() { return setLiveChunkStream; }, get setLivePollPreset() { return setLivePollPreset; }, get setLiveResourceLoadState() { return setLiveResourceLoadState; }, get setLiveResourceRetryEpoch() { return setLiveResourceRetryEpoch; },
-    get setMapAddInput() { return setMapAddInput; }, get setMathCheckResults() { return setMathCheckResults; }, get setMathEditingProblem() { return setMathEditingProblem; }, get setMathHintData() { return setMathHintData; },
-    get setMathInput() { return setMathInput; }, get setMathMode() { return setMathMode; }, get setMathProbeForm() { return setMathProbeForm; }, get setMathSelfGradeMode() { return setMathSelfGradeMode; },
-    get setMathStudentAnswers() { return setMathStudentAnswers; }, get setMbAdminInput() { return setMbAdminInput; }, get setMbBusy() { return setMbBusy; }, get setMbConfig() { return setMbConfig; },
-    get setMbDirectionsDraft() { return setMbDirectionsDraft; }, get setMbJoinError() { return setMbJoinError; }, get setMbJoinRetryable() { return setMbJoinRetryable; }, get setMbJoinStatus() { return setMbJoinStatus; },
-    get setMbLive() { return setMbLive; }, get setMbMode() { return setMbMode; }, get setMbPanelOpen() { return setMbPanelOpen; }, get setMbResourceReceiveError() { return setMbResourceReceiveError; },
+    get setGuidedStep() { return setGuidedStep; }, get setHasSelectedMode() { return setHasSelectedMode; }, get setHasSelectedRole() { return setHasSelectedRole; }, get setHasUsedAutoFill() { return setHasUsedAutoFill; },
+    get setHavenConfigBusy() { return setHavenConfigBusy; }, get setHavenRewardBusy() { return setHavenRewardBusy; }, get setHavenRewardReceipt() { return setHavenRewardReceipt; }, get setHintHistory() { return setHintHistory; },
+    get setHistory() { return setHistory; }, get setImageReinsertionReport() { return setImageReinsertionReport; }, get setImportedAlignmentGraphExport() { return setImportedAlignmentGraphExport; }, get setIncludeCharts() { return setIncludeCharts; },
+    get setIncludeSourceCitations() { return setIncludeSourceCitations; }, get setInputText() { return setInputText; }, get setInteractiveOrganizerRetrying() { return setInteractiveOrganizerRetrying; }, get setInteractiveOrganizerSync() { return setInteractiveOrganizerSync; },
+    get setInterventionLogs() { return setInterventionLogs; }, get setIsAdminHubOpen() { return setIsAdminHubOpen; }, get setIsAdventureStoryMode() { return setIsAdventureStoryMode; }, get setIsAlloStudioOpen() { return setIsAlloStudioOpen; },
+    get setIsAutoFillMode() { return setIsAutoFillMode; }, get setIsChallengeActive() { return setIsChallengeActive; }, get setIsChatProcessing() { return setIsChatProcessing; }, get setIsCheckingAlignment() { return setIsCheckingAlignment; },
+    get setIsCheckingChallenge() { return setIsCheckingChallenge; }, get setIsEditingOptions() { return setIsEditingOptions; }, get setIsEducatorEvaluationOpen() { return setIsEducatorEvaluationOpen; }, get setIsExtracting() { return setIsExtracting; },
+    get setIsFactChecking() { return setIsFactChecking; }, get setIsFlashcardFlipped() { return setIsFlashcardFlipped; }, get setIsFlashcardQuizMode() { return setIsFlashcardQuizMode; }, get setIsFluencyMode() { return setIsFluencyMode; },
+    get setIsGeneratingBrainstormRubric() { return setIsGeneratingBrainstormRubric; }, get setIsGeneratingExtension() { return setIsGeneratingExtension; }, get setIsGeneratingExtensionGuide() { return setIsGeneratingExtensionGuide; }, get setIsGeneratingGuide() { return setIsGeneratingGuide; },
+    get setIsGeneratingProgression() { return setIsGeneratingProgression; }, get setIsGeneratingReflectionPrompt() { return setIsGeneratingReflectionPrompt; }, get setIsGeneratingRubric() { return setIsGeneratingRubric; }, get setIsGeneratingTermImage() { return setIsGeneratingTermImage; },
+    get setIsGeneratingWorksheet() { return setIsGeneratingWorksheet; }, get setIsGeneratingWorksheetCover() { return setIsGeneratingWorksheetCover; }, get setIsGrading() { return setIsGrading; }, get setIsImmersiveReaderActive() { return setIsImmersiveReaderActive; },
+    get setIsIndependentMode() { return setIsIndependentMode; }, get setIsInteractiveCESort() { return setIsInteractiveCESort; }, get setIsInteractiveConceptMapSort() { return setIsInteractiveConceptMapSort; }, get setIsInteractiveFishboneSort() { return setIsInteractiveFishboneSort; },
+    get setIsInteractiveFlashcards() { return setIsInteractiveFlashcards; }, get setIsInteractiveFrayerSort() { return setIsInteractiveFrayerSort; }, get setIsInteractiveOutlineSort() { return setIsInteractiveOutlineSort; }, get setIsInteractivePipeline() { return setIsInteractivePipeline; },
+    get setIsInteractiveProblemSolutionSort() { return setIsInteractiveProblemSolutionSort; }, get setIsInteractiveSeeThinkWonderSort() { return setIsInteractiveSeeThinkWonderSort; }, get setIsInteractiveStoryMapSort() { return setIsInteractiveStoryMapSort; }, get setIsInteractiveTChart() { return setIsInteractiveTChart; },
+    get setIsLargeFileProcessing() { return setIsLargeFileProcessing; }, get setIsMapLocked() { return setIsMapLocked; }, get setIsParentMode() { return setIsParentMode; }, get setIsProcessing() { return setIsProcessing; },
+    get setIsProfileModalOpen() { return setIsProfileModalOpen; }, get setIsProjectSettingsOpen() { return setIsProjectSettingsOpen; }, get setIsPushingResource() { return setIsPushingResource; }, get setIsReadingLibraryOpen() { return setIsReadingLibraryOpen; },
+    get setIsRosterKeyOpen() { return setIsRosterKeyOpen; }, get setIsSaveActionPulsing() { return setIsSaveActionPulsing; }, get setIsSavingAdvice() { return setIsSavingAdvice; }, get setIsSpotlightMode() { return setIsSpotlightMode; },
+    get setIsStudentLinkMode() { return setIsStudentLinkMode; }, get setIsTeacherMode() { return setIsTeacherMode; }, get setIsTranslateModalOpen() { return setIsTranslateModalOpen; }, get setIsUDLGuideExpanded() { return setIsUDLGuideExpanded; },
+    get setIsUniversalSettingsOpen() { return setIsUniversalSettingsOpen; }, get setIsUrlSearchMode() { return setIsUrlSearchMode; }, get setIsWordSoundsMode() { return setIsWordSoundsMode; }, get setKeepCitations() { return setKeepCitations; },
+    get setLabToolData() { return setLabToolData; }, get setLargeFileProgress() { return setLargeFileProgress; }, get setLargeFileStatus() { return setLargeFileStatus; }, get setLargeFileTotalChunks() { return setLargeFileTotalChunks; },
+    get setLastSaved() { return setLastSaved; }, get setLearningWebRegistryRevision() { return setLearningWebRegistryRevision; }, get setLessonCustomAdditions() { return setLessonCustomAdditions; }, get setLeveledTextCustomInstructions() { return setLeveledTextCustomInstructions; },
+    get setLeveledTextLanguage() { return setLeveledTextLanguage; }, get setLeveledTextLength() { return setLeveledTextLength; }, get setLiveChunkExpanded() { return setLiveChunkExpanded; }, get setLiveChunkRejected() { return setLiveChunkRejected; },
+    get setLiveChunkSessionActive() { return setLiveChunkSessionActive; }, get setLiveChunkStream() { return setLiveChunkStream; }, get setLivePollPreset() { return setLivePollPreset; }, get setLiveResourceLoadState() { return setLiveResourceLoadState; },
+    get setLiveResourceRetryEpoch() { return setLiveResourceRetryEpoch; }, get setMapAddInput() { return setMapAddInput; }, get setMathCheckResults() { return setMathCheckResults; }, get setMathEditingProblem() { return setMathEditingProblem; },
+    get setMathHintData() { return setMathHintData; }, get setMathInput() { return setMathInput; }, get setMathMode() { return setMathMode; }, get setMathProbeForm() { return setMathProbeForm; },
+    get setMathSelfGradeMode() { return setMathSelfGradeMode; }, get setMathStudentAnswers() { return setMathStudentAnswers; }, get setMbAdminInput() { return setMbAdminInput; }, get setMbBusy() { return setMbBusy; },
+    get setMbConfig() { return setMbConfig; }, get setMbDirectionsDraft() { return setMbDirectionsDraft; }, get setMbJoinError() { return setMbJoinError; }, get setMbJoinRetryable() { return setMbJoinRetryable; },
+    get setMbJoinStatus() { return setMbJoinStatus; }, get setMbLive() { return setMbLive; }, get setMbMode() { return setMbMode; }, get setMbPanelOpen() { return setMbPanelOpen; },
     get setMbResumable() { return setMbResumable; }, get setMbRoster() { return setMbRoster; }, get setMbShowAdmin() { return setMbShowAdmin; }, get setMbStatus() { return setMbStatus; },
-    get setMbStudent() { return setMbStudent; }, get setMemoryAidCustomInstructions() { return setMemoryAidCustomInstructions; }, get setMicBannerDismissed() { return setMicBannerDismissed; }, get setMicPermissionStatus() { return setMicPermissionStatus; },
-    get setNewGroupName() { return setNewGroupName; }, get setNewProfileName() { return setNewProfileName; }, get setNodeInputText() { return setNodeInputText; }, get setNoteTakingCustomInstructions() { return setNoteTakingCustomInstructions; },
-    get setNoteTakingTemplateType() { return setNoteTakingTemplateType; }, get setOutlineCustomInstructions() { return setOutlineCustomInstructions; }, get setOutlineType() { return setOutlineType; }, get setPanelTtsPending() { return setPanelTtsPending; },
-    get setPdfActiveRemediationStorageKey() { return setPdfActiveRemediationStorageKey; }, get setPdfAuditLoading() { return setPdfAuditLoading; }, get setPdfAuditResult() { return setPdfAuditResult; }, get setPdfAuditTab() { return setPdfAuditTab; },
-    get setPdfAutoContinueRunning() { return setPdfAutoContinueRunning; }, get setPdfBatchCurrentIndex() { return setPdfBatchCurrentIndex; }, get setPdfBatchMode() { return setPdfBatchMode; }, get setPdfBatchProcessing() { return setPdfBatchProcessing; },
-    get setPdfBatchQueue() { return setPdfBatchQueue; }, get setPdfBatchStep() { return setPdfBatchStep; }, get setPdfBatchSummary() { return setPdfBatchSummary; }, get setPdfFixLoading() { return setPdfFixLoading; },
-    get setPdfFixResult() { return setPdfFixResult; }, get setPdfFixStep() { return setPdfFixStep; }, get setPdfMultiSession() { return setPdfMultiSession; }, get setPdfPageRange() { return setPdfPageRange; },
-    get setPdfPreviewOpen() { return setPdfPreviewOpen; }, get setPdfRemediationCacheEntries() { return setPdfRemediationCacheEntries; }, get setPdfRemediationDeleteConfirm() { return setPdfRemediationDeleteConfirm; }, get setPdfReturnPillDismissed() { return setPdfReturnPillDismissed; },
-    get setPdfWebMode() { return setPdfWebMode; }, get setPendingLargeFile() { return setPendingLargeFile; }, get setPendingPdfBase64() { return setPendingPdfBase64; }, get setPendingPdfFile() { return setPendingPdfFile; },
-    get setPendingQrAssignmentResource() { return setPendingQrAssignmentResource; }, get setPendingReadingBookSlug() { return setPendingReadingBookSlug; }, get setPendingReadingLocation() { return setPendingReadingLocation; }, get setPendingSync() { return setPendingSync; },
-    get setPersistedLessonDNA() { return setPersistedLessonDNA; }, get setPersonaAutoRead() { return setPersonaAutoRead; }, get setPersonaAutoReadEpoch() { return setPersonaAutoReadEpoch; }, get setPersonaCustomInstructions() { return setPersonaCustomInstructions; },
-    get setPersonaState() { return setPersonaState; }, get setPersonaTeacherEditor() { return setPersonaTeacherEditor; }, get setPhonemeMastery() { return setPhonemeMastery; }, get setPictionaryInitialMode() { return setPictionaryInitialMode; },
-    get setPictionaryPreparedInteraction() { return setPictionaryPreparedInteraction; }, get setPollAiBusy() { return setPollAiBusy; }, get setPresentationState() { return setPresentationState; }, get setProbeActivity() { return setProbeActivity; },
-    get setProbeGradeLevel() { return setProbeGradeLevel; }, get setProbeHistory() { return setProbeHistory; }, get setProcessingProgress() { return setProcessingProgress; }, get setProfiles() { return setProfiles; },
-    get setProgressionData() { return setProgressionData; }, get setQrShareModal() { return setQrShareModal; }, get setQuizCustomInstructions() { return setQuizCustomInstructions; }, get setQuizMcqCount() { return setQuizMcqCount; },
-    get setQuizMode() { return setQuizMode; }, get setQuizSelectedOption() { return setQuizSelectedOption; }, get setReadingLibraryIndexForBot() { return setReadingLibraryIndexForBot; }, get setReadingStudySource() { return setReadingStudySource; },
-    get setRecentQrShares() { return setRecentQrShares; }, get setResolvedStandardsSelection() { return setResolvedStandardsSelection; }, get setResourceCount() { return setResourceCount; }, get setRosterKey() { return setRosterKey; },
-    get setRtiGoals() { return setRtiGoals; }, get setRtpCurrentIndex() { return setRtpCurrentIndex; }, get setRtpPlaybackState() { return setRtpPlaybackState; }, get setRunTour() { return setRunTour; },
-    get setSchoolRewardsPortalUrl() { return setSchoolRewardsPortalUrl; }, get setSearchOptions() { return setSearchOptions; }, get setSelectedInventoryItem() { return setSelectedInventoryItem; }, get setSelectedLanguages() { return setSelectedLanguages; },
-    get setSelectedLetters() { return setSelectedLetters; }, get setSelectedProfileId() { return setSelectedProfileId; }, get setSelectedVoice() { return setSelectedVoice; }, get setSessionCounter() { return setSessionCounter; },
-    get setSessionData() { return setSessionData; }, get setSharedAssignmentActivity() { return setSharedAssignmentActivity; }, get setShellDeepLinkTool() { return setShellDeepLinkTool; }, get setShowDirectionsComposer() { return setShowDirectionsComposer; },
-    get setShowExportMenu() { return setShowExportMenu; }, get setShowExportPreview() { return setShowExportPreview; }, get setShowExportPreviewWrapped() { return setShowExportPreviewWrapped; }, get setShowFlashcardImages() { return setShowFlashcardImages; },
-    get setShowHealthCheckPanel() { return setShowHealthCheckPanel; }, get setShowLargeFileModal() { return setShowLargeFileModal; }, get setShowLearningWebExplorer() { return setShowLearningWebExplorer; }, get setShowLiveDock() { return setShowLiveDock; },
-    get setShowLivePollingPanel() { return setShowLivePollingPanel; }, get setShowMathAnswers() { return setShowMathAnswers; }, get setShowPictionaryHost() { return setShowPictionaryHost; }, get setShowReadThisPage() { return setShowReadThisPage; },
-    get setShowRecentQrShares() { return setShowRecentQrShares; }, get setShowSessionModal() { return setShowSessionModal; }, get setShowSourceGen() { return setShowSourceGen; }, get setShowStemLab() { return setShowStemLab; },
-    get setShowStudentEntry() { return setShowStudentEntry; }, get setShowStudentWelcome() { return setShowStudentWelcome; }, get setShowUDLGuide() { return setShowUDLGuide; }, get setShowUrlInput() { return setShowUrlInput; },
-    get setShowVisualSupports() { return setShowVisualSupports; }, get setShowWizard() { return setShowWizard; }, get setSingleImageOverride() { return setSingleImageOverride; }, get setSourceCustomInstructions() { return setSourceCustomInstructions; },
-    get setSourceLength() { return setSourceLength; }, get setSourceLevel() { return setSourceLevel; }, get setSourceRefineInstruction() { return setSourceRefineInstruction; }, get setSourceTone() { return setSourceTone; },
-    get setSourceTopic() { return setSourceTopic; }, get setSourceVocabulary() { return setSourceVocabulary; }, get setSpotlightMessage() { return setSpotlightMessage; }, get setStandardDeckLang() { return setStandardDeckLang; },
-    get setStandardInputValue() { return setStandardInputValue; }, get setStandardMode() { return setStandardMode; }, get setStandardsInput() { return setStandardsInput; }, get setStemArtworkDestination() { return setStemArtworkDestination; },
-    get setStemArtworkHandoff() { return setStemArtworkHandoff; }, get setStemArtworkLabel() { return setStemArtworkLabel; }, get setStemLabTab() { return setStemLabTab; }, get setStemLabTool() { return setStemLabTool; },
-    get setStickers() { return setStickers; }, get setStorageManagerInventory() { return setStorageManagerInventory; }, get setStudentInterests() { return setStudentInterests; }, get setStudentProgressLog() { return setStudentProgressLog; },
-    get setStudentProjectSettings() { return setStudentProjectSettings; }, get setStudentResponses() { return setStudentResponses; }, get setSurveyResponses() { return setSurveyResponses; }, get setTargetStandards() { return setTargetStandards; },
-    get setTeachingScriptRuns() { return setTeachingScriptRuns; }, get setTextFormat() { return setTextFormat; }, get setTimelineMode() { return setTimelineMode; }, get setTimelineTopic() { return setTimelineTopic; },
-    get setTourRect() { return setTourRect; }, get setTourStep() { return setTourStep; }, get setTranslationMode() { return setTranslationMode; }, get setUdlMessages() { return setUdlMessages; },
-    get setUnits() { return setUnits; }, get setUrlToFetch() { return setUrlToFetch; }, get setUseEmojis() { return setUseEmojis; }, get setVisualCustomInstructions() { return setVisualCustomInstructions; },
-    get setVisualCustomStyle() { return setVisualCustomStyle; }, get setVisualStyle() { return setVisualStyle; }, get setVoiceRecording() { return setVoiceRecording; }, get setVoiceSpeed() { return setVoiceSpeed; },
-    get setVoiceVolume() { return setVoiceVolume; }, get setVsTab() { return setVsTab; }, get setWordSoundsActivity() { return setWordSoundsActivity; }, get setWordSoundsAudioLibrary() { return setWordSoundsAudioLibrary; },
-    get setWordSoundsAutoReview() { return setWordSoundsAutoReview; }, get setWordSoundsBadges() { return setWordSoundsBadges; }, get setWordSoundsConfusionPatterns() { return setWordSoundsConfusionPatterns; }, get setWordSoundsCustomTerms() { return setWordSoundsCustomTerms; },
-    get setWordSoundsDailyProgress() { return setWordSoundsDailyProgress; }, get setWordSoundsFamilies() { return setWordSoundsFamilies; }, get setWordSoundsHistory() { return setWordSoundsHistory; }, get setWordSoundsPhonemes() { return setWordSoundsPhonemes; },
-    get setWordSoundsPreparedAudioStatus() { return setWordSoundsPreparedAudioStatus; }, get setWordSoundsScore() { return setWordSoundsScore; }, get setWorkspacePane() { return setWorkspacePane; }, get setWsActivitySequence() { return setWsActivitySequence; },
-    get setWsPreloadedWords() { return setWsPreloadedWords; }, get showExportMenu() { return showExportMenu; }, get showReadThisPage() { return showReadThisPage; }, get sourceCustomInstructions() { return sourceCustomInstructions; },
-    get sourceLength() { return sourceLength; }, get sourceLevel() { return sourceLevel; }, get sourceRefineInstruction() { return sourceRefineInstruction; }, get sourceTone() { return sourceTone; },
-    get sourceTopic() { return sourceTopic; }, get sourceVocabulary() { return sourceVocabulary; }, get speak() { return speak; }, get splitReferencesFromBody() { return splitReferencesFromBody; },
-    get spotlightOpenTimeRef() { return spotlightOpenTimeRef; }, get standardInputValue() { return standardInputValue; }, get standardMode() { return standardMode; }, get standardsInput() { return standardsInput; },
-    get startClassSessionRef() { return startClassSessionRef; }, get startVoiceRecording() { return startVoiceRecording; }, get stemArtworkDestination() { return stemArtworkDestination; }, get stemArtworkHandoff() { return stemArtworkHandoff; },
-    get stemArtworkLabel() { return stemArtworkLabel; }, get stemLabTool() { return stemLabTool; }, get stickerType() { return stickerType; }, get stickers() { return stickers; },
-    get stopAacPlayback() { return stopAacPlayback; }, get stopPlayback() { return stopPlayback; }, get stopReadThisPage() { return stopReadThisPage; }, get stopVoiceRecording() { return stopVoiceRecording; },
-    get storageDB() { return storageDB; }, get storageManagerInventory() { return storageManagerInventory; }, get storageManagerRefreshTokenRef() { return storageManagerRefreshTokenRef; }, get stripUndefined() { return stripUndefined; },
+    get setMemoryAidCustomInstructions() { return setMemoryAidCustomInstructions; }, get setMicBannerDismissed() { return setMicBannerDismissed; }, get setMicPermissionStatus() { return setMicPermissionStatus; }, get setNewGroupName() { return setNewGroupName; },
+    get setNewProfileName() { return setNewProfileName; }, get setNodeInputText() { return setNodeInputText; }, get setNoteTakingCustomInstructions() { return setNoteTakingCustomInstructions; }, get setNoteTakingTemplateType() { return setNoteTakingTemplateType; },
+    get setOutlineCustomInstructions() { return setOutlineCustomInstructions; }, get setOutlineType() { return setOutlineType; }, get setPanelTtsPending() { return setPanelTtsPending; }, get setPdfActiveRemediationStorageKey() { return setPdfActiveRemediationStorageKey; },
+    get setPdfAuditLoading() { return setPdfAuditLoading; }, get setPdfAuditResult() { return setPdfAuditResult; }, get setPdfAuditTab() { return setPdfAuditTab; }, get setPdfAutoContinueRunning() { return setPdfAutoContinueRunning; },
+    get setPdfBatchCurrentIndex() { return setPdfBatchCurrentIndex; }, get setPdfBatchMode() { return setPdfBatchMode; }, get setPdfBatchProcessing() { return setPdfBatchProcessing; }, get setPdfBatchQueue() { return setPdfBatchQueue; },
+    get setPdfBatchStep() { return setPdfBatchStep; }, get setPdfBatchSummary() { return setPdfBatchSummary; }, get setPdfFixLoading() { return setPdfFixLoading; }, get setPdfFixResult() { return setPdfFixResult; },
+    get setPdfFixStep() { return setPdfFixStep; }, get setPdfMultiSession() { return setPdfMultiSession; }, get setPdfPageRange() { return setPdfPageRange; }, get setPdfPreviewOpen() { return setPdfPreviewOpen; },
+    get setPdfRemediationCacheEntries() { return setPdfRemediationCacheEntries; }, get setPdfRemediationDeleteConfirm() { return setPdfRemediationDeleteConfirm; }, get setPdfReturnPillDismissed() { return setPdfReturnPillDismissed; }, get setPdfWebMode() { return setPdfWebMode; },
+    get setPendingLargeFile() { return setPendingLargeFile; }, get setPendingPdfBase64() { return setPendingPdfBase64; }, get setPendingPdfFile() { return setPendingPdfFile; }, get setPendingQrAssignmentResource() { return setPendingQrAssignmentResource; },
+    get setPendingReadingBookSlug() { return setPendingReadingBookSlug; }, get setPendingReadingLocation() { return setPendingReadingLocation; }, get setPendingSync() { return setPendingSync; }, get setPersistedLessonDNA() { return setPersistedLessonDNA; },
+    get setPersonaAutoRead() { return setPersonaAutoRead; }, get setPersonaAutoReadEpoch() { return setPersonaAutoReadEpoch; }, get setPersonaCustomInstructions() { return setPersonaCustomInstructions; }, get setPersonaState() { return setPersonaState; },
+    get setPersonaTeacherEditor() { return setPersonaTeacherEditor; }, get setPhonemeMastery() { return setPhonemeMastery; }, get setPictionaryInitialMode() { return setPictionaryInitialMode; }, get setPictionaryPreparedInteraction() { return setPictionaryPreparedInteraction; },
+    get setPollAiBusy() { return setPollAiBusy; }, get setPresentationState() { return setPresentationState; }, get setProbeActivity() { return setProbeActivity; }, get setProbeGradeLevel() { return setProbeGradeLevel; },
+    get setProbeHistory() { return setProbeHistory; }, get setProcessingProgress() { return setProcessingProgress; }, get setProfiles() { return setProfiles; }, get setProgressionData() { return setProgressionData; },
+    get setQrShareModal() { return setQrShareModal; }, get setQuizCustomInstructions() { return setQuizCustomInstructions; }, get setQuizMcqCount() { return setQuizMcqCount; }, get setQuizMode() { return setQuizMode; },
+    get setQuizSelectedOption() { return setQuizSelectedOption; }, get setReadingLibraryIndexForBot() { return setReadingLibraryIndexForBot; }, get setReadingStudySource() { return setReadingStudySource; }, get setRecentQrShares() { return setRecentQrShares; },
+    get setResolvedStandardsSelection() { return setResolvedStandardsSelection; }, get setResourceCount() { return setResourceCount; }, get setRosterKey() { return setRosterKey; }, get setRtiGoals() { return setRtiGoals; },
+    get setRtpCurrentIndex() { return setRtpCurrentIndex; }, get setRtpPlaybackState() { return setRtpPlaybackState; }, get setRunTour() { return setRunTour; }, get setSchoolRewardsPortalUrl() { return setSchoolRewardsPortalUrl; },
+    get setSearchOptions() { return setSearchOptions; }, get setSelectedInventoryItem() { return setSelectedInventoryItem; }, get setSelectedLanguages() { return setSelectedLanguages; }, get setSelectedLetters() { return setSelectedLetters; },
+    get setSelectedProfileId() { return setSelectedProfileId; }, get setSelectedVoice() { return setSelectedVoice; }, get setSessionCounter() { return setSessionCounter; }, get setSessionData() { return setSessionData; },
+    get setSharedAssignmentActivity() { return setSharedAssignmentActivity; }, get setShellDeepLinkTool() { return setShellDeepLinkTool; }, get setShowDirectionsComposer() { return setShowDirectionsComposer; }, get setShowExportMenu() { return setShowExportMenu; },
+    get setShowExportPreview() { return setShowExportPreview; }, get setShowExportPreviewWrapped() { return setShowExportPreviewWrapped; }, get setShowFlashcardImages() { return setShowFlashcardImages; }, get setShowLargeFileModal() { return setShowLargeFileModal; },
+    get setShowLearningWebExplorer() { return setShowLearningWebExplorer; }, get setShowLiveDock() { return setShowLiveDock; }, get setShowLivePollingPanel() { return setShowLivePollingPanel; }, get setShowMathAnswers() { return setShowMathAnswers; },
+    get setShowPictionaryHost() { return setShowPictionaryHost; }, get setShowReadThisPage() { return setShowReadThisPage; }, get setShowRecentQrShares() { return setShowRecentQrShares; }, get setShowSessionModal() { return setShowSessionModal; },
+    get setShowSourceGen() { return setShowSourceGen; }, get setShowStemLab() { return setShowStemLab; }, get setShowStudentEntry() { return setShowStudentEntry; }, get setShowStudentWelcome() { return setShowStudentWelcome; },
+    get setShowUDLGuide() { return setShowUDLGuide; }, get setShowUrlInput() { return setShowUrlInput; }, get setShowVisualSupports() { return setShowVisualSupports; }, get setShowWizard() { return setShowWizard; },
+    get setSingleImageOverride() { return setSingleImageOverride; }, get setSourceCustomInstructions() { return setSourceCustomInstructions; }, get setSourceLength() { return setSourceLength; }, get setSourceLevel() { return setSourceLevel; },
+    get setSourceRefineInstruction() { return setSourceRefineInstruction; }, get setSourceTone() { return setSourceTone; }, get setSourceTopic() { return setSourceTopic; }, get setSourceVocabulary() { return setSourceVocabulary; },
+    get setSpotlightMessage() { return setSpotlightMessage; }, get setStandardDeckLang() { return setStandardDeckLang; }, get setStandardInputValue() { return setStandardInputValue; }, get setStandardMode() { return setStandardMode; },
+    get setStandardsInput() { return setStandardsInput; }, get setStemArtworkDestination() { return setStemArtworkDestination; }, get setStemArtworkHandoff() { return setStemArtworkHandoff; }, get setStemArtworkLabel() { return setStemArtworkLabel; },
+    get setStemLabTab() { return setStemLabTab; }, get setStemLabTool() { return setStemLabTool; }, get setStickers() { return setStickers; }, get setStorageManagerInventory() { return setStorageManagerInventory; },
+    get setStudentInterests() { return setStudentInterests; }, get setStudentProgressLog() { return setStudentProgressLog; }, get setStudentProjectSettings() { return setStudentProjectSettings; }, get setStudentResponses() { return setStudentResponses; },
+    get setSurveyResponses() { return setSurveyResponses; }, get setTargetStandards() { return setTargetStandards; }, get setTeachingScriptRuns() { return setTeachingScriptRuns; }, get setTextFormat() { return setTextFormat; },
+    get setTimelineMode() { return setTimelineMode; }, get setTimelineTopic() { return setTimelineTopic; }, get setTourRect() { return setTourRect; }, get setTourStep() { return setTourStep; },
+    get setTranslationMode() { return setTranslationMode; }, get setUdlMessages() { return setUdlMessages; }, get setUnits() { return setUnits; }, get setUrlToFetch() { return setUrlToFetch; },
+    get setUseEmojis() { return setUseEmojis; }, get setVisualCustomInstructions() { return setVisualCustomInstructions; }, get setVisualCustomStyle() { return setVisualCustomStyle; }, get setVisualStyle() { return setVisualStyle; },
+    get setVoiceRecording() { return setVoiceRecording; }, get setVoiceSpeed() { return setVoiceSpeed; }, get setVoiceVolume() { return setVoiceVolume; }, get setVsTab() { return setVsTab; },
+    get setWordSoundsActivity() { return setWordSoundsActivity; }, get setWordSoundsAudioLibrary() { return setWordSoundsAudioLibrary; }, get setWordSoundsAutoReview() { return setWordSoundsAutoReview; }, get setWordSoundsBadges() { return setWordSoundsBadges; },
+    get setWordSoundsConfusionPatterns() { return setWordSoundsConfusionPatterns; }, get setWordSoundsCustomTerms() { return setWordSoundsCustomTerms; }, get setWordSoundsDailyProgress() { return setWordSoundsDailyProgress; }, get setWordSoundsFamilies() { return setWordSoundsFamilies; },
+    get setWordSoundsHistory() { return setWordSoundsHistory; }, get setWordSoundsPhonemes() { return setWordSoundsPhonemes; }, get setWordSoundsPreparedAudioStatus() { return setWordSoundsPreparedAudioStatus; }, get setWordSoundsScore() { return setWordSoundsScore; },
+    get setWorkspacePane() { return setWorkspacePane; }, get setWsActivitySequence() { return setWsActivitySequence; }, get setWsPreloadedWords() { return setWsPreloadedWords; }, get showExportMenu() { return showExportMenu; },
+    get showReadThisPage() { return showReadThisPage; }, get sourceCustomInstructions() { return sourceCustomInstructions; }, get sourceLength() { return sourceLength; }, get sourceLevel() { return sourceLevel; },
+    get sourceRefineInstruction() { return sourceRefineInstruction; }, get sourceTone() { return sourceTone; }, get sourceTopic() { return sourceTopic; }, get sourceVocabulary() { return sourceVocabulary; },
+    get speak() { return speak; }, get splitReferencesFromBody() { return splitReferencesFromBody; }, get spotlightOpenTimeRef() { return spotlightOpenTimeRef; }, get standardInputValue() { return standardInputValue; },
+    get standardsInput() { return standardsInput; }, get startClassSessionRef() { return startClassSessionRef; }, get startVoiceRecording() { return startVoiceRecording; }, get stemArtworkDestination() { return stemArtworkDestination; },
+    get stemArtworkHandoff() { return stemArtworkHandoff; }, get stemArtworkLabel() { return stemArtworkLabel; }, get stemLabTool() { return stemLabTool; }, get stickerType() { return stickerType; },
+    get stickers() { return stickers; }, get stopAacPlayback() { return stopAacPlayback; }, get stopPlayback() { return stopPlayback; }, get stopReadThisPage() { return stopReadThisPage; },
+    get stopVoiceRecording() { return stopVoiceRecording; }, get storageDB() { return storageDB; }, get storageManagerInventory() { return storageManagerInventory; }, get storageManagerRefreshTokenRef() { return storageManagerRefreshTokenRef; },
     get studentAiPolicyForShare() { return studentAiPolicyForShare; }, get studentInterests() { return studentInterests; }, get studentLanguage() { return studentLanguage; }, get studentNickname() { return studentNickname; },
-    get studentProgressLog() { return studentProgressLog; }, get studentProjectSettings() { return studentProjectSettings; }, get studentResponses() { return studentResponses; }, get studentWorkInput() { return studentWorkInput; },
-    get summarizeLiveSessionResourceDelivery() { return summarizeLiveSessionResourceDelivery; }, get syncCanvasRecoveryVaultState() { return syncCanvasRecoveryVaultState; }, get t() { return t; }, get targetStandards() { return targetStandards; },
-    get targetTranslationLang() { return targetTranslationLang; }, get teachingScriptControllerRef() { return teachingScriptControllerRef; }, get teachingScriptStateRef() { return teachingScriptStateRef; }, get textFormat() { return textFormat; },
-    get textUndoRef() { return textUndoRef; }, get tourSteps() { return tourSteps; }, get translateResourceItem() { return translateResourceItem; }, get translateScope() { return translateScope; },
-    get translationMode() { return translationMode; }, get translationTargetChoices() { return translationTargetChoices; }, get udlMessages() { return udlMessages; }, get units() { return units; },
-    get universalImageStyle() { return universalImageStyle; }, get updateDoc() { return updateDoc; }, get urlSearchQuery() { return urlSearchQuery; }, get urlToFetch() { return urlToFetch; },
-    get useEmojis() { return useEmojis; }, get useLowQualityVisuals() { return useLowQualityVisuals; }, get user() { return user; }, get validateDraftQuality() { return validateDraftQuality; },
-    get videoTranscriptSourceContext() { return videoTranscriptSourceContext; }, get visualCustomStyle() { return visualCustomStyle; }, get visualStyle() { return visualStyle; }, get visualSupportsPayloadRef() { return visualSupportsPayloadRef; },
-    get voiceAudioRegistryRef() { return voiceAudioRegistryRef; }, get voiceCapTimeoutRef() { return voiceCapTimeoutRef; }, get voiceRecording() { return voiceRecording; }, get voiceSpeed() { return voiceSpeed; },
-    get voiceStartTimeRef() { return voiceStartTimeRef; }, get voiceTickRef() { return voiceTickRef; }, get voiceVolume() { return voiceVolume; }, get warnLog() { return warnLog; },
-    get wordImageCacheRef() { return wordImageCacheRef; }, get wordSoundsActivity() { return wordSoundsActivity; }, get wordSoundsAudioDeliveryAt() { return wordSoundsAudioDeliveryAt; }, get wordSoundsAudioLibrary() { return wordSoundsAudioLibrary; },
-    get wordSoundsBadges() { return wordSoundsBadges; }, get wordSoundsConfusionPatterns() { return wordSoundsConfusionPatterns; }, get wordSoundsDailyProgress() { return wordSoundsDailyProgress; }, get wordSoundsFamilies() { return wordSoundsFamilies; },
-    get wordSoundsHistory() { return wordSoundsHistory; }, get wordSoundsScore() { return wordSoundsScore; }, get wordSoundsSessionConfig() { return wordSoundsSessionConfig; }, get wordSoundsSessionGoal() { return wordSoundsSessionGoal; },
-    get workspacePane() { return workspacePane; }, get writeToSession() { return writeToSession; }, get wsDispatch() { return wsDispatch; },
+    get studentProjectSettings() { return studentProjectSettings; }, get studentResponses() { return studentResponses; }, get studentWorkInput() { return studentWorkInput; }, get summarizeLiveSessionResourceDelivery() { return summarizeLiveSessionResourceDelivery; },
+    get syncCanvasRecoveryVaultState() { return syncCanvasRecoveryVaultState; }, get t() { return t; }, get targetStandards() { return targetStandards; }, get targetTranslationLang() { return targetTranslationLang; },
+    get teachingScriptControllerRef() { return teachingScriptControllerRef; }, get teachingScriptStateRef() { return teachingScriptStateRef; }, get textFormat() { return textFormat; }, get textUndoRef() { return textUndoRef; },
+    get tourSteps() { return tourSteps; }, get translateResourceItem() { return translateResourceItem; }, get translateScope() { return translateScope; }, get translationMode() { return translationMode; },
+    get translationTargetChoices() { return translationTargetChoices; }, get udlMessages() { return udlMessages; }, get units() { return units; }, get universalImageStyle() { return universalImageStyle; },
+    get updateDoc() { return updateDoc; }, get urlSearchQuery() { return urlSearchQuery; }, get urlToFetch() { return urlToFetch; }, get useEmojis() { return useEmojis; },
+    get useLowQualityVisuals() { return useLowQualityVisuals; }, get user() { return user; }, get validateDraftQuality() { return validateDraftQuality; }, get videoTranscriptSourceContext() { return videoTranscriptSourceContext; },
+    get visualCustomStyle() { return visualCustomStyle; }, get visualStyle() { return visualStyle; }, get visualSupportsPayloadRef() { return visualSupportsPayloadRef; }, get voiceAudioRegistryRef() { return voiceAudioRegistryRef; },
+    get voiceCapTimeoutRef() { return voiceCapTimeoutRef; }, get voiceRecording() { return voiceRecording; }, get voiceSpeed() { return voiceSpeed; }, get voiceStartTimeRef() { return voiceStartTimeRef; },
+    get voiceTickRef() { return voiceTickRef; }, get voiceVolume() { return voiceVolume; }, get warnLog() { return warnLog; }, get wordImageCacheRef() { return wordImageCacheRef; },
+    get wordSoundsActivity() { return wordSoundsActivity; }, get wordSoundsAudioDeliveryAt() { return wordSoundsAudioDeliveryAt; }, get wordSoundsScore() { return wordSoundsScore; }, get wordSoundsSessionConfig() { return wordSoundsSessionConfig; },
+    get wordSoundsSessionGoal() { return wordSoundsSessionGoal; }, get workspacePane() { return workspacePane; }, get writeToSession() { return writeToSession; },
   };
   let __alloHostHandlersCache = null;
   const _alloHostHandlers = () => {
@@ -14368,7 +14354,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=7470d542');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=b20033ad');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=2b2407ccf');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=2b2407ccf');
@@ -17752,6 +17738,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showLiveLessonPrep, setShowLiveLessonPrep] = useState(false);
   const [mbPanelOpen, setMbPanelOpen] = useState(false);
   useEffect(() => {
+      // Lets separately-mounted modules (the export preview's "Send to my Drive"
+      // group) open the mailbox setup without threading a prop through the bags.
+      // Same shape as window.__alloOpenAiSetup.
+      window.__alloOpenMailboxSetup = () => { try { setMbPanelOpen(true); } catch (_) {} };
+      return () => { try { delete window.__alloOpenMailboxSetup; } catch (_) {} };
+  }, []);
+  useEffect(() => {
     if (!mbPanelOpen) return;
     setMailboxScriptRequested(true);
     try { window.__alloLazyMailboxScriptSource?.(); } catch (_) {}
@@ -18513,7 +18506,58 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = (...__a) => _alloHostHandlers().handleToggleAllTools(...__a);
-  const executeRoleSelect = (...__a) => _alloHostHandlers().executeRoleSelect(...__a);
+  const executeRoleSelect = (role) => {
+      // Promote the setup wizard just after the role-selection feedback frame;
+      // its local script evaluation should never lengthen the role click.
+      if (role !== 'student') {
+          setTimeout(() => { try { window.__alloLazyQuickStartWizard?.(); } catch (_) {} }, 80);
+      }
+      if (role === 'student') {
+          setIsTeacherMode(false);
+          setIsParentMode(false);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(true);
+          setShowWizard(false);
+          setShowStudentEntry(true);
+          setIsAdventureStoryMode(false);
+      } else if (role === 'parent') {
+          setIsTeacherMode(true);
+          setIsParentMode(true);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(false);
+          setExpandedTools(['source-input', 'adventure', 'glossary', 'simplified']);
+          addToast(t('toasts.mode_parent_enabled'), "success");
+          setIsAdventureStoryMode(true);
+      } else if (role === 'independent') {
+          setIsTeacherMode(true);
+          setIsParentMode(false);
+          setIsStudentLinkMode(false);
+          setIsIndependentMode(true);
+          setShowStudentEntry(false);
+          // Self-study is mostly adults (adult education, licensure prep). Lift the
+          // untouched K-12 default; the Quick Start wizard that follows still asks,
+          // and a value the learner already set is left alone.
+          setGradeLevel(prev => (prev === '5th Grade' ? 'College' : prev));
+          addToast(t('toasts.mode_independent_enabled'), "success");
+          setIsAdventureStoryMode(false);
+      } else {
+          setIsTeacherMode(true);
+          setIsParentMode(false);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(false);
+          addToast(t('toasts.mode_teacher_enabled'), "success");
+          setIsAdventureStoryMode(false);
+      }
+      setHasSelectedRole(true);
+      // Remember the choice so RoleSelectionModal can badge "last time" next boot.
+      // Deliberately a HINT, not an auto-skip: there is no switch-role affordance
+      // after selection (the wizard never reopens), so skipping it would trap a
+      // shared device in one role. 'student' is not remembered — that path opens
+      // the student entry flow, which link-based entry already handles.
+      if (role !== 'student') {
+          try { localStorage.setItem('alloflow_last_role', role); } catch (_) {}
+      }
+  };
   // ── Family deep link (?allo_family) ──────────────────────────────────────
   // A teacher-distributable link (newsletter, IEP meeting handout) that lands a
   // family directly in Parent Mode: no launch pad, no role wizard. Parent mode
@@ -19124,7 +19168,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       return false;
   };
-  const showSpotlight = useCallback((...__a) => _alloHostHandlers().showSpotlight(...__a), []);
+  const showSpotlight = useCallback((element, title, text) => {
+      const rect = element.getBoundingClientRect();
+        const isBotAvatar = element.getAttribute('data-help-key') === 'bot_avatar';
+        const fixedBotRect = isBotAvatar ? {
+            top: rect.bottom - 120,
+            left: rect.right - 100,
+            bottom: rect.bottom - 20,
+            right: rect.right,
+            width: 100,
+            height: 100,
+            x: rect.right - 100,
+            y: rect.bottom - 120
+        } : rect;
+        setTourRect(fixedBotRect);
+      setBotSpotlightPos({ x: isBotAvatar ? rect.right - 50 : rect.left + rect.width/2, y: isBotAvatar ? rect.bottom - 70 : rect.top + rect.height/2 });
+      setSpotlightMessage({ title, text });
+      spotlightOpenTimeRef.current = Date.now();
+      setIsSpotlightMode(true);
+      // Screen-reader users get the help/tour text read immediately (the popup is otherwise silent).
+      try { if (window.alloAnnounce) window.alloAnnounce((title ? title + '. ' : '') + (text || ''), 'polite'); } catch (_) {}
+  }, []);
   const getStageElementId = (stageName) => {
       const map = {
           'source': 'tour-input-panel',
@@ -19357,7 +19421,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const raw = String(canvasRecoveryCurrentIdRef?.current || '').trim().slice(0, 200);
       return 'workspace:' + (raw || 'session');
   };
-  const _alloBlueprintLearningWebResource = (...__a) => _alloHostHandlers()._alloBlueprintLearningWebResource(...__a);
+  const _alloBlueprintLearningWebResource = (blueprint) => {
+      if (!blueprint || !Array.isArray(blueprint.resourcePlan) || !blueprint.resourcePlan.length) return null;
+      const bounded = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+      const resourcePlan = blueprint.resourcePlan.slice(0, 80).map((row, index) => ({
+          id: bounded(row?.uiId || row?.stepId || ('step-' + (index + 1)), 160),
+          title: bounded(row?.title || row?.label || row?.tool || row?.type || ('Step ' + (index + 1)), 200),
+          type: bounded(row?.type || row?.tool || 'resource', 100),
+          resourceId: bounded(row?.resourceId, 200),
+      }));
+      const idSeed = bounded(blueprint.id || blueprint.planId || blueprint.title || blueprint.name || 'active', 160);
+      return {
+          id: 'blueprint:' + idSeed,
+          type: 'blueprint',
+          title: bounded(blueprint.title || blueprint.name || 'Active Blueprint', 200),
+          resourcePlan,
+      };
+  };
   const _alloBoundLearningWebGraphForExplorer = (candidate, registryApi) => {
       const raw = candidate?.graph || candidate;
       if (!raw || raw.version !== 'acg/v1' || !Array.isArray(raw.nodes) || !Array.isArray(raw.edges)) return null;
@@ -19402,7 +19482,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           return { graph: null, registrySnapshot: empty, scopeId };
       }
   };
-  const _alloAlignmentRegistryRecordFromResource = (...__a) => _alloHostHandlers()._alloAlignmentRegistryRecordFromResource(...__a);
+  const _alloAlignmentRegistryRecordFromResource = (resource, scopeId) => {
+      if (!resource || resource.type !== 'alignment-report') return null;
+      const comprehensive = resource?.data?.comprehensive;
+      const graph = comprehensive?.alignmentMapGraph;
+      if (!_alloIsAlignmentGraph(graph)) return null;
+      const confirmations = (graph.edges || []).flatMap(edge => Array.isArray(edge?.attributionHistory) ? edge.attributionHistory : []);
+      const confirmedAt = confirmations.map(item => Date.parse(item?.confirmedAt || '')).filter(Number.isFinite).sort((a, b) => b - a)[0];
+      const resourceTime = Date.parse(resource?.updatedAt || resource?.timestamp || graph?.meta?.alignmentAudit?.generatedAt || '') || Date.now();
+      return {
+          id: 'alignment-map:' + String(resource.id || '').slice(0, 200),
+          graph,
+          scopeId,
+          kind: 'alignment-map',
+          title: String(resource.title || 'Alignment Map').slice(0, 200),
+          resourceId: String(resource.id || '').slice(0, 200),
+          resourceType: resource.type,
+          resourceTitle: resource.title,
+          updatedAt: new Date(confirmedAt || resourceTime).toISOString(),
+          provenance: graph?.meta?.alignmentAudit || {},
+      };
+  };
   const _alloAlignmentExportFromRegistryEntry = (...__a) => _alloHostHandlers()._alloAlignmentExportFromRegistryEntry(...__a);
   const _alloAlignmentGraphExportForContext = (...__a) => _alloHostHandlers()._alloAlignmentGraphExportForContext(...__a);
   const _alloNormalizeAlignmentGraphExportForHost = (payload) => {
@@ -20356,8 +20456,39 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
       setDraggedNodeId(nodeId);
   };
-  const handleNodeMouseMove = useCallback((...__a) => _alloHostHandlers().handleNodeMouseMove(...__a), [draggedNodeId, dragOffset]);
-  const handleNodeMouseUp = useCallback((...__a) => _alloHostHandlers().handleNodeMouseUp(...__a), [draggedNodeId]);
+  const handleNodeMouseMove = useCallback((e) => {
+      if (!draggedNodeId) return;
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+      const containerW = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 1200;
+      const containerH = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 800;
+      const clampedX = Math.max(0, Math.min(containerW, newX));
+      const clampedY = Math.max(0, Math.min(containerH, newY));
+      setConceptMapNodes(prev => prev.map(n =>
+          n.id === draggedNodeId ? { ...n, x: clampedX, y: clampedY } : n
+      ));
+  }, [draggedNodeId, dragOffset]);
+  const handleNodeMouseUp = useCallback(() => {
+      if (draggedNodeId) {
+          setConceptMapNodes(prevNodes => {
+              return prevNodes.map(node => {
+                  if (node.id === draggedNodeId && node.type === 'venn-token') {
+                      const zone = getVennZone(node.x, node.y);
+                      if (zone === 'bank' && node.y < VENN_ZONES.BANK_Y) {
+                          return {
+                              ...node,
+                              x: 100 + Math.random() * 600,
+                              y: 530 + Math.random() * 50
+                          };
+                      }
+                      return node;
+                  }
+                  return node;
+              });
+          });
+      }
+      setDraggedNodeId(null);
+  }, [draggedNodeId]);
   const handleNodeClick = (...__a) => _alloHostHandlers().handleNodeClick(...__a);
   const handleDeleteNode = (nodeId) => {
       setConfirmDialog({ message: t('concept_map.confirm_delete_node') || 'Delete this node?', onConfirm: () => {
@@ -23947,7 +24078,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const prepared = item && audioChannel === 'live' ? mbPreparedImagesRef.current.get(item)?.resource : null;
       return prepared || moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel });
   };
-  const prepareMailboxResourceImages = async (...__a) => _alloHostHandlers().prepareMailboxResourceImages(...__a);
+  const prepareMailboxResourceImages = async (item) => {
+      const cache = mbPreparedImagesRef.current;
+      if (cache.has(item)) return cache.get(item).promise;
+      const entry = {};
+      entry.promise = (async () => {
+          const api = _alloLiveAacModule();
+          if (!api?.prepareMailboxResource) throw new Error('Image delivery tools are still loading. Please retry.');
+          const result = await api.prepareMailboxResource(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel: 'live' });
+          entry.resource = result.resource;
+          const report = result.report;
+          if (report.omitted || report.resized) {
+              const signature = JSON.stringify(report);
+              if (mbImageNoticeRef.current.get(item.id) !== signature) {
+                  mbImageNoticeRef.current.set(item.id, signature);
+                  if (mbImageNoticeRef.current.size > 100) mbImageNoticeRef.current.delete(mbImageNoticeRef.current.keys().next().value);
+                  addToast('"' + (item.title || item.type) + '": ' + (report.omitted
+                      ? report.omitted + ' image(s) could not be included' + (report.tooLarge ? ' because they exceed the size limit' : ' because their format or URL is unsupported') + '. Use a smaller PNG, JPEG, WebP or AVIF picture and resend.'
+                      : report.resized + ' image(s) resized for delivery. Your original pictures are unchanged.'), report.omitted ? 'warning' : 'info');
+              }
+          }
+          return result.resource;
+      })().catch(error => { cache.delete(item); throw error; });
+      cache.set(item, entry);
+      return entry.promise;
+  };
   const describeSavedFollowUpLiveFailure = (...__a) => _alloHostHandlers().describeSavedFollowUpLiveFailure(...__a);
   const readSavedFollowUpLiveSessionIdentity = (...__a) => _alloHostHandlers().readSavedFollowUpLiveSessionIdentity(...__a);
   const isSavedFollowUpLiveSessionCurrent = (expected) => {
@@ -23961,7 +24116,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const resolveSavedFollowUpLiveDeliverySnapshot = (...__a) => _alloHostHandlers().resolveSavedFollowUpLiveDeliverySnapshot(...__a);
   const sendSavedFollowUpPlanToLiveSession = async (...__a) => _alloHostHandlers().sendSavedFollowUpPlanToLiveSession(...__a);
   // without yanking their view; opts.quiet=true suppresses per-item toasts.
-  const _mbPushOneResource = useCallback(async (...__a) => _alloHostHandlers()._mbPushOneResource(...__a), [mbLive, mbConfig]);
+  const _mbPushOneResource = useCallback(async (item, opts = {}) => {
+      if (!mbLive || !mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
+      const assertCurrent = () => { if (opts.isCurrent && !opts.isCurrent()) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
+      assertCurrent();
+      const flags = { open: opts.open !== false, quiet: opts.quiet === true };
+      const packItem = await prepareMailboxResourceImages(item);
+      if (!packItem) return { rtcCount: 0 };
+      const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
+      assertCurrent();
+      const parts = _alloSplitPackChunks(encoded);
+      const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      let rtcCount = 0;
+      const openPeers = Object.entries(mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
+      for (const [, peer] of openPeers) {
+          try {
+              for (let i = 0; i < parts.length; i += 1) {
+                  assertCurrent();
+                  await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet }));
+              }
+              rtcCount += 1;
+          } catch (dcErr) { if (dcErr?.name === 'AbortError') throw dcErr; warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
+      }
+      for (let i = 0; i < parts.length; i += 1) {
+          assertCurrent();
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
+      }
+      return { rtcCount };
+  }, [mbLive, mbConfig]);
   const pushResourceToMailbox = useCallback(async (...__a) => _alloHostHandlers().pushResourceToMailbox(...__a), [mbLive, mbConfig, generatedContent, history, mbRoster, _mbPushOneResource, requestWordSoundsAudioConfirmation]);
   // Async-mode parity: hand the class the teacher's whole student-safe pack
   // to explore freely (delivered quietly, without yanking anyone's view).
@@ -24428,7 +24610,93 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // One applier for teacher→student payloads from EITHER transport. The
   // shared chunk store + applied-rid set make the double delivery (instant
   // channel copy + mailbox replay copy) converge to a single render.
-  const applyMbDownPayload = useCallback(async (...__a) => _alloHostHandlers().applyMbDownPayload(...__a), [addToast]);
+  const applyMbDownPayload = useCallback(async (v) => {
+      if (!v) return;
+      if (v.kind === 'sdocv') {
+          // Bridge nudge over the data channel: the teacher just wrote to the
+          // session doc store — pull it soon (jittered: the nudge reaches the
+          // whole class at once, and simultaneous pulls collide with Apps
+          // Script's concurrency ceiling).
+          _alloMbNudge();
+          return;
+      }
+      if (v.kind === 'end') {
+          addToast('The teacher ended this live session.', 'info');
+          setMbStudent(null);
+          return;
+      }
+      if (v.kind === 'takehome') {
+          // Take-Home Pack v1: persist the CURRENT student-safe pack to this device so it
+          // survives the session (IndexedDB via storageDB — stable-origin). The pack channel
+          // already delivered/self-healed the resources; this message only flips persistence.
+          const items = _alloStudentSafeResources(hydratedHistoryRef.current || []);
+          if (!items.length) { addToast(t('takehome.empty_pack') || 'Your teacher sent homework, but no resources have arrived yet — stay connected a moment and ask them to resend.', 'info'); return; }
+          const shelf = {
+              v: 1,
+              savedAt: new Date().toISOString(),
+              code: (typeof mbLive === 'object' && mbLive) ? (mbLive.code || null) : null,
+              title: String(v.title || '').slice(0, 140) || 'Homework',
+              note: String(v.note || '').slice(0, 2000),
+              resources: items,
+          };
+          try {
+              const ok = await storageDB.set('allo_homework_shelf_v1', shelf);
+              if (ok === false) throw new Error('storage unavailable');
+              setHomeworkShelf(shelf);
+              addToast(t('takehome.saved', { title: shelf.title || 'saved pack', count: items.length }) || ('📥 ' + shelf.title + ' saved to THIS device (' + items.length + ' resources). Open AlloFlow at home to continue — no code needed.'), 'success');
+          } catch (persistErr) {
+              // Honest fallback (shared/locked-down devices): storage refused — offer the file.
+              warnLog('Take-home persist failed', persistErr);
+              setHomeworkShelf(shelf); // in-memory for this visit so the banner's download button works
+              addToast(t('takehome.save_failed') || 'This device would not save the homework — use the Download button on the homework banner to keep a file copy.', 'warning');
+          }
+          return;
+      }
+      if (v.kind === 'packdone') {
+          addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+          return;
+      }
+      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
+          setHistory(prev => {
+              const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
+              hydratedHistoryRef.current = next;
+              return next;
+          });
+          return;
+      }
+      if (v.kind === 'res') {
+          const store = mbChunkStoreRef.current || (mbChunkStoreRef.current = { parts: {}, applied: new Set() });
+          const assembled = _alloCollectResChunk(store, v);
+          if (!assembled) return;
+          try {
+              let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+              resource = _alloStudentSafeResources([resource])[0];
+              if (!resource) throw new Error('The transferred resource is not a valid student resource');
+              if (mbChunkStoreRef.current !== store) return;
+              setHistory(prev => {
+                  const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                  const next = [...rest, resource];
+                  // The pack IS the mailbox session's resource pool: keep the ref
+                  // the session-doc consumers read (sync jump, group/individual
+                  // pushes) pointing at it. Idempotent under double invocation.
+                  hydratedHistoryRef.current = next;
+                  return next;
+              });
+              // open=false delivers quietly into the pack (async-mode share);
+              // open=true (default) follows the teacher like sync mode.
+              if (v.open !== false) setPendingQrAssignmentResource(resource);
+              _alloFinishResChunk(store, v.rid, true);
+              setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
+              if (!v.quiet) addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+          } catch (decodeErr) {
+              if (mbChunkStoreRef.current !== store) return;
+              _alloFinishResChunk(store, v.rid, false);
+              setMbResourceReceiveError(true);
+              if ((store.failures?.[v.rid]?.count || 0) < 3) mbStudentCursorRef.current = 0;
+              warnLog('Mailbox resource decode failed', decodeErr);
+          }
+      }
+  }, [addToast]);
   const createHomeworkAssignmentLink = useCallback(async (resourceIds = null) => {
       const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
       const resourcesToAssign = resolveAssignmentResources(selectedResourceIds);
@@ -29825,7 +30093,29 @@ const parseTaggedContent = (text) => {
   const glossaryHealthFollowUpTimerRef = React.useRef(null);
   const glossaryHealthSignature = generatedContent?.type === 'glossary' && Array.isArray(generatedContent.data)
       ? JSON.stringify(generatedContent.data.map(item => item && [item.term, item.def, item.tier])) : '';
-  const runGlossaryHealthCheck = React.useCallback(async (...__a) => _alloHostHandlers().runGlossaryHealthCheck(...__a), [callGemini]);
+  const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
+    const module = window.AlloModules && window.AlloModules.ExportHandlers;
+    const live = glossaryLiveRef.current.resource;
+    if (!module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;
+    const signature = JSON.stringify(terms.map(item => item && [item.term, item.def, item.tier]));
+    const task = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask({
+        generatedContent: live, getGlossaryLive: () => glossaryLiveRef.current,
+        glossaryTaskRegistry: glossaryTaskRegistryRef.current,
+    }, null, [], 'health');
+    if (!task) return null;
+    const current = () => task.visible() && signature === JSON.stringify((glossaryLiveRef.current.resource?.data || []).map(item => item && [item.term, item.def, item.tier]));
+    glossaryHealthCheckIdRef.current = String(live.id) + ':' + signature;
+    try {
+        const result = await module.runGlossaryHealthCheck(terms, sourceText, {
+            debugLog, warnLog,
+            callGemini: (...args) => { args[5] = task.signal; return callGemini(...args); },
+            setIsRunningHealthCheck: value => { if (current()) setIsRunningHealthCheck(value); },
+            setShowHealthCheckPanel: value => { if (current()) setShowHealthCheckPanel(value); },
+            setGlossaryHealthCheck: value => { if (current()) setGlossaryHealthCheck(value); },
+        });
+        return current() ? result : null;
+    } finally { task.finish(); }
+  }, [callGemini]);
   const fetchReplacementSuggestion = React.useCallback(async (...__a) => _alloHostHandlers().fetchReplacementSuggestion(...__a), [callGemini]);
   useEffect(() => {
       const resource = glossaryLiveRef.current.resource;
@@ -33586,9 +33876,145 @@ const parseTaggedContent = (text) => {
 
   const resetCanvasWorkspaceSettings = (...__a) => _alloHostHandlers().resetCanvasWorkspaceSettings(...__a);
 
-  const clearCanvasWorkspaceState = (...__a) => _alloHostHandlers().clearCanvasWorkspaceState(...__a);
+  const clearCanvasWorkspaceState = (options = {}) => {
+      cancelActiveProjectLoad();
+      cancelActiveFileIntakeOperations('canvas-workspace-clear');
+      invalidateLocalDataHydration();
+      resetAllMathRuntimeState();
+      try { window.__alloBuilderEditedPack = null; } catch (_) {}
+      setHistory([]);
+      setGeneratedContent(null);
+      setActiveView('input');
+      setActiveSidebarTab('create');
+      setInputText('');
+      setSourceTopic('');
+      setUnits([]);
+      setProfiles([]);
+      setActiveUnitId('all');
+      setPersistedLessonDNA(null);
+      // The plan and its run record describe the workspace we are clearing —
+      // leaving them behind strands a status board pointing at resources that
+      // no longer exist, and the rows would invite a rebuild that duplicates
+      // work. Clear them with the history they belong to.
+      // Continuity: the archive key is deliberately NOT cleared here, and the
+      // outgoing plan is filed before the wipe — clearing a workspace must not
+      // silently empty the cabinet, or the archive is worse than nothing.
+      if (options.archivePlan !== false) archiveLivePlan();
+      setActiveBlueprint(null);
+      setBlueprintExecutionResult(null);
+      setFullPackRun(null); // the pack's status board belongs to this workspace too; null drops its saved envelope
 
-  const buildCanvasWorkspaceSnapshot = async (...__a) => _alloHostHandlers().buildCanvasWorkspaceSnapshot(...__a);
+      resetCanvasWorkspaceSettings();
+      setStudentProgressLog([]);
+      setStickers([]);
+      setGuidedMode(false);
+      resetGuidedProgress();
+      setAdventureState(ADVENTURE_INITIAL);
+      setHasSavedAdventure(false);
+      setWordSoundsHistory([]);
+      wsDispatch({ type: 'WS_RESET' });
+      setWordSoundsBadges([]);
+      setPhonemeMastery({});
+      setWordSoundsDailyProgress({ date: new Date().toDateString(), completed: 0, goalMet: false });
+      setWordSoundsConfusionPatterns({});
+  };
+
+  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {
+
+      const existing = canvasRecoveryStoreRef.current.snapshots.find(item => item.id === workspaceId);
+      let builderDraft = null;
+      try {
+          if (typeof window !== 'undefined' && window.__alloBuilderEditedPack) builderDraft = await _getBuilderDraftForProject();
+      } catch (_) {}
+      const savedAt = new Date().toISOString();
+      const title = String(sourceTopic || history[history.length - 1]?.title || 'Untitled workspace').trim().slice(0, 160) || 'Untitled workspace';
+      const snapshot = {
+          version: ALLO_WORKSPACE_RECOVERY.VERSION,
+          id: workspaceId,
+          title,
+          createdAt: existing?.createdAt || savedAt,
+          savedAt,
+          pinned: existing?.pinned === true,
+          assetPolicy: existing?.assetPolicy === 'text-only' ? 'text-only' : 'full',
+          omittedAssets: existing?.omittedAssets || 0,
+          omittedAssetManifest: Array.isArray(existing?.omittedAssetManifest) ? existing.omittedAssetManifest : [],
+          workspace: {
+              history,
+              units,
+              profiles,
+              selectedProfileId,
+              activeResourceId: generatedContent?.id || null,
+              activeView,
+              selAuthoringState: _alloCaptureCanvasSelAuthoringState(),
+              activeUnitId,
+              activeSidebarTab,
+              inputText,
+              sourceTopic,
+              persistedLessonDNA,
+              builderDraft,
+              guidedProgress: {
+                  enabled: guidedMode,
+                  step: guidedStep,
+                  selectedIds: guidedSelectedIds,
+                  completedIds: guidedCompletedIds,
+                  skippedIds: guidedSkippedIds,
+                  createdHistoryIds: guidedCreatedHistoryIds,
+                  deliveryEvidence: guidedDeliveryEvidence,
+                  planBrief: guidedPlanBrief
+              },
+              lessonSettings: {
+                  gradeLevel,
+                  differentiationRange,
+                  textFormat,
+                  leveledTextLength,
+                  studentInterests,
+                  leveledTextCustomInstructions,
+                  glossaryCustomInstructions,
+                  adventureCustomInstructions,
+                  personaCustomInstructions,
+                  useEmojis,
+                  keepCitations,
+                  includeCharts,
+                  dokLevel,
+                  targetStandards,
+                  standardInputValue,
+                  standardMode,
+                  selectedLanguages,
+                  leveledTextLanguage,
+                  sourceTone,
+                  sourceLevel,
+                  sourceVocabulary,
+                  sourceLength,
+                  sourceCustomInstructions,
+                  resourceCount,
+                  fullPackTargetGroup
+              },
+              projectState: {
+                  studentProjectSettings: _alloNormalizeStudentProjectSettings(studentProjectSettings),
+                  responses: studentResponses,
+                  progressLog: studentProgressLog,
+                  stickers: Array.isArray(stickers) ? stickers : []
+              },
+              wordSoundsState: {
+                  history: wordSoundsHistory,
+                  families: wordSoundsFamilies,
+                  audioLibrary: wordSoundsAudioLibrary,
+                  badges: wordSoundsBadges,
+                  phonemeMastery,
+                  dailyProgress: wordSoundsDailyProgress,
+                  confusionPatterns: wordSoundsConfusionPatterns,
+                  sessionScore: wordSoundsScore
+              }
+          }
+      };
+      const sessionSafeSnapshot = ALLO_WORKSPACE_RECOVERY.stripSessionOnlyAssets(snapshot);
+      if (existing?.assetPolicy === 'text-only') {
+          const explicitRemoval = existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media');
+          return ALLO_WORKSPACE_RECOVERY.stripLargeAssets(
+              sessionSafeSnapshot, explicitRemoval ? 'user-remove-media' : 'device-quota');
+      }
+      return sessionSafeSnapshot;
+  };
 
   const restoreCanvasWorkspaceSnapshot = async (...__a) => _alloHostHandlers().restoreCanvasWorkspaceSnapshot(...__a);
 
@@ -33622,7 +34048,17 @@ const parseTaggedContent = (text) => {
 
   const refreshStorageManagerInventory = async (...__a) => _alloHostHandlers().refreshStorageManagerInventory(...__a);
 
-  const getCanvasRecoveryVaultController = async (...__a) => _alloHostHandlers().getCanvasRecoveryVaultController(...__a);
+  const getCanvasRecoveryVaultController = async () => {
+      if (canvasRecoveryVaultControllerRef.current) return canvasRecoveryVaultControllerRef.current;
+      const deviceStorage = await _alloGetCanvasDeviceStorage();
+      const stack = await _alloGetRecoveryVaultStack();
+      const controller = stack.integration.createController(deviceStorage, {
+          vaultModule: stack.vault,
+          crypto: stack.crypto
+      });
+      canvasRecoveryVaultControllerRef.current = controller;
+      return controller;
+  };
 
   const emptyCanvasRecoveryVaultView = (status = {}) => ALLO_WORKSPACE_RECOVERY.normalizeStore({
       version: ALLO_WORKSPACE_RECOVERY.VERSION,
@@ -34420,6 +34856,7 @@ const parseTaggedContent = (text) => {
     setHistory([]);
     setGeneratedContent(null);
     setActiveView('input');
+    setFullPackRun(null);
     addToast(t('toasts.history_cleared'), "info");
   };
   const sanitizeSubmissionData = (...__a) => _alloHostHandlers().sanitizeSubmissionData(...__a);
@@ -37943,7 +38380,15 @@ const parseTaggedContent = (text) => {
     : domain === 'analysis' ? (t('toasts.undo_domain_analysis') || 'analysis source text')
     : (t('toasts.undo_domain_simplified') || 'leveled text');
   const _shiftTextStack = (...__a) => _alloHostHandlers()._shiftTextStack(...__a);
-  const handleTextUndo = (...__a) => _alloHostHandlers().handleTextUndo(...__a);
+  const handleTextUndo = () => {
+    const h = textUndoRef.current;
+    if (_shiftTextStack(h.undo, h.redo, 'undo')) return true;
+    // Nothing in the text history — fall back to annotation undo so the old
+    // Ctrl+Z behavior still reaches sticker users, then report empty.
+    if (annotationUndoStackRef.current.length > 0) { handleAnnotationUndo(); return true; }
+    addToast(t('toasts.nothing_undo_yet') || 'Nothing to undo yet.', 'info');
+    return false;
+  };
   const handleTextRedo = () => {
     const h = textUndoRef.current;
     if (_shiftTextStack(h.redo, h.undo, 'redo')) return true;
