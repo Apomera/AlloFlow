@@ -148,6 +148,34 @@ request; you answer, it continues.
    an unfinished document may restart. The client must remain active to answer
    new model requests. Resumption does not promise background model execution.
 
+### Keeping a keyless run fast
+
+Every request is a full turn of your own model, so the run's length is mostly
+your answering time. These habits keep it short without changing the result:
+
+- **Answer everything that is pending in one `remediation_agent_respond_batch`.**
+  The baseline audit publishes three auditor prompts at once and the fix pass
+  publishes one prompt per fragment; each batch reply returns the next work.
+- **Reply `UNCHANGED` to a fix prompt whose fragment needs no edit.** The fix
+  prompts say so. The pipeline keeps the fragment as it is and never treats
+  the word as a failed fix. Do not retype a fragment to say nothing changed.
+- **Change only what the violations list names** in a fix fragment, and keep
+  every other byte, including image placeholder tokens and visible text. A
+  fragment that loses visible text (a caption, a footnote) is rejected whole
+  by the content gate, together with any good edit it carried.
+- **Set `max_run_minutes` to 90 or more for scanned documents** and for hosts
+  whose turns are slow; the run is killed at the limit and the partial work
+  must be resumed. The reading step of a scanned document runs OCR for one to
+  three minutes before the first request appears.
+- **Poll for status with `include_images: false`** when you are only waiting;
+  fetch the images once, when you answer. Page images are large and stay in
+  the conversation.
+- **One document per conversation.** Every prompt and image you answer stays in
+  context and slows each later turn; start a new chat for the next document.
+- **Do not inflate audit scores.** The headline is the weakest of three
+  verification layers and the tagged PDF is withheld on a review verdict, so
+  a generous audit changes nothing except the honesty of the report.
+
 ## Narration and deliverables
 
 Keep both listening styles. `narration: "accessible"` is the recommended default
