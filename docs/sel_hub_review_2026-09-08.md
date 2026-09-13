@@ -343,4 +343,11 @@ Replaced the Comm Style personality profile and AI team-composition advice with 
 
 Validation: 13 focused browser checks, 624 regression checks and three unique actual-hub workflows passed (640 checks). Two pre-existing skips and 93 uniquely filtered hub cases are excluded. Both Teamwork flows passed initially; the older Values Sort flow had a click timeout and passed in isolation without source/test changes. All 72 tools rendered. Three scoped phone axe scans found no violations; nine captures were reviewed across three themes. Syntax, original questionnaire definitions, source/public parity and whitespace passed. See [the design and source note](sel_teamwork_communication_2026-09-12.md) and `reports/sel-teamwork-communication/validation.json`. No push, deployment or packaged build is included.
 
-Twenty-eighth-pass commit status: the unrelated content-engine drift cleared on recheck; saving the validated pass with a normal scoped commit.
+Twenty-eighth-pass commit status: saved normally as `5b1c465bb` after the unrelated content-engine drift cleared. No hook bypass was used.
+
+
+## Twenty-ninth pass: Virtual Team collaboration practice (2026-09-12)
+
+Replaced five ranked remote-work scenarios with five contextual situations, 15 grade-specific setups and ten conditional approaches. Learners consider written tone, schedule differences, camera privacy, usable turns and trust through reliable work. Benefits and limits sit in expandable panels; a changed circumstance and worked adjustment deepen each situation. Optional approach choices and four planning/revision notes persist separately by grade and situation. Proposals are distinguished from agreements the team has accepted. Earlier answers, reflections, flags and badges remain intact, with historical labels; the new practice does not score camera policies, reply speed or social participation.
+
+Validation: 21 focused browser checks, 637 regression checks and three actual-hub workflows passed (661 unique checks). Two pre-existing skips and 94 filtered hub cases are excluded. All 72 tools rendered. Three scoped phone axe scans found no violations and nine captures were reviewed across light, dark and high-contrast themes. Syntax, original virtual scenario definitions/IDs, source/public byte parity and whitespace passed. See [the design and source note](sel_teamwork_virtual_2026-09-12.md) and `reports/sel-teamwork-virtual/validation.json`. No push, deployment or packaged build is included. The previous Communication Plan pass is saved as `5b1c465bb`.

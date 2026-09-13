@@ -582,11 +582,11 @@ window.SelHub = window.SelHub || {
     { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
     { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' },
     { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
-    { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Complete all virtual team scenarios' },
+    { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Earlier activity: completed the virtual-team quiz' },
     { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Convert 3 conflicts into collaboration' },
     { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Complete a team retrospective' },
     { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 18 or more badges' },
-    { id: 'virtual_scenario_1', icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Complete your first virtual team scenario' },
+    { id: 'virtual_scenario_1', icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Earlier activity: answered a virtual-team scenario' },
     { id: 'retro_exporter',    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Export a retrospective as text' }
   ];
 
@@ -796,6 +796,140 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Virtual Team Simulator Data ──
   // ══════════════════════════════════════════════════════════════
+  // Authored remote collaboration practice. Original quiz records follow for compatibility.
+  var VIRTUAL_TEAM_PRACTICE = [
+  {
+    "id": "vt1",
+    "title": "Clarify a short message",
+    "setups": {
+      "elementary": "In a teacher-supported project, a child writes, \"That part needs work.\" Another child replies, \"Fine.\" The group does not know what that reply means.",
+      "middle": "A teammate receives \"That section needs work\" in the group chat and replies \"Fine.\" They have not sent another message. The group needs to clarify the feedback.",
+      "high": "A remote project team exchanges brief comments on a draft. After an unclear criticism and a one-word reply, members disagree about whether there is a conflict or simply a pause in responses."
+    },
+    "notice": "A short reply or silence does not tell you someone's feelings or intentions. The original feedback is vague. Clarify the actual issue and offer a workable way to respond without demanding an explanation for a delayed reply.",
+    "routes": [
+      {
+        "id": "plan1",
+        "title": "Clarify in writing",
+        "helps": "Name the specific issue: \"I meant the chart label is hard to read. Would a note on the draft help?\" Invite correction and allow an agreed time to reply.",
+        "limits": "Adding emojis or saying \"just a suggestion\" does not repair hurtful wording by itself. If the message caused harm, acknowledge that as well as clarifying the task."
+      },
+      {
+        "id": "plan2",
+        "title": "Offer a supported conversation",
+        "helps": "Ask whether an audio conversation, a teacher-supported discussion or another method would help. Keep a brief agreed record of the next step.",
+        "limits": "A call is an option, not an upgrade everyone can use. Check timing, access and willingness; cameras and immediate responses are not required to prove care."
+      }
+    ],
+    "change": "The teammate says they prefer written comments and need until the next class to review the draft.",
+    "model": "Respect that format and timing. Leave one specific comment and agree to check it during class. If the wording was hurtful, acknowledge it without requiring a call. Review whether the feedback is now usable rather than counting message speed."
+  },
+  {
+    "id": "vt2",
+    "title": "Coordinate different schedules",
+    "setups": {
+      "elementary": "Two classes are sharing a project online. Their teachers have different class times, so the children cannot all meet at once.",
+      "middle": "A group suggests evening meetings, but some members have family commitments or no device then. The team needs everyone's input before choosing a final idea.",
+      "high": "A student partnership spans different time zones and work schedules. The proposed meeting time repeatedly falls outside one member's available hours. Decisions are being made before they can respond."
+    },
+    "notice": "Begin with the decision and the available times, not an attendance judgment. A fair process may use shared updates instead of a meeting. Rotating an impossible time does not make it possible for everyone.",
+    "routes": [
+      {
+        "id": "plan1",
+        "title": "Use shared updates with a response window",
+        "helps": "Put the proposal and open questions in an accessible shared place. Agree when input is needed and how absent members can contribute before a decision.",
+        "limits": "A shared document is useful only if everyone can access it and their input is considered. Name dates and time zones when relevant; do not interpret missing replies as agreement."
+      },
+      {
+        "id": "plan2",
+        "title": "Use a brief meeting where it is workable",
+        "helps": "If a live discussion helps, choose a mutually workable time, share the agenda early and provide another route for input. A teacher can coordinate the schedule.",
+        "limits": "Do not require missed sleep or private explanations of availability. A written recap may be enough; joining a meeting does not mean agreeing to be recorded."
+      }
+    ],
+    "change": "There is no time when all members can meet, but everyone can respond during their own class period before the agreed review point.",
+    "model": "Use the proposal and question list during each class period. Assign someone to gather responses and a teacher to help resolve missing access or timing. Confirm the decision after that window and share an accessible recap; no recording or live attendance is needed for this plan."
+  },
+  {
+    "id": "vt3",
+    "title": "Participate without showing a camera",
+    "setups": {
+      "elementary": "During a teacher-led online activity, a child keeps the camera off and shares an answer another way. A classmate says a camera must be on to count.",
+      "middle": "A group wants to make cameras mandatory for a project discussion. Some members prefer not to show their room or face, and others have unreliable connections.",
+      "high": "A project team is preparing a presentation. Members want evidence of participation, but their proposed camera rule would expose private spaces and exclude people with limited bandwidth."
+    },
+    "notice": "Camera use is not a reliable measure of attention, effort or trust. Ask what the activity actually needs and how each person can contribute without having to disclose why a camera is off.",
+    "routes": [
+      {
+        "id": "plan1",
+        "title": "Agree on several participation methods",
+        "helps": "Offer audio, chat, an accessible shared document or a contribution before or after the meeting. Decide how each contribution will enter the work.",
+        "limits": "An alternative is not meaningful if it is ignored or assessed as less valuable. Confirm that people can access it and get a response."
+      },
+      {
+        "id": "plan2",
+        "title": "Plan a task-specific alternative with the teacher",
+        "helps": "If the task needs a demonstration, ask what must be shown and whether a diagram, object-only view, prerecorded work by agreement or a supported demonstration can meet the goal.",
+        "limits": "Do not turn an exception into a demand for personal disclosure. Before any recording, agree with the responsible adult what is captured, who can use it and whether a non-recorded option works."
+      }
+    ],
+    "change": "The live connection keeps dropping, but a member can contribute a diagram and written explanation through the class platform.",
+    "model": "Use the diagram and explanation as part of the group's actual work and give accurate credit. Check that teammates understand it and can ask follow-up questions during an agreed window. Keep the camera off; the learning goal is the contribution, not proof of presence."
+  },
+  {
+    "id": "vt4",
+    "title": "Make online turns usable",
+    "setups": {
+      "elementary": "During a class call, two children speak at once and a drawing shared in the chat is missed. The teacher wants every idea to have a way into the plan.",
+      "middle": "A group call has interruptions, connection delays and overlooked chat messages. A member who uses more time to form a response keeps losing their turn.",
+      "high": "A remote team uses a fast speaking queue and a strict timer. Chat contributions are not reviewed, and someone using a communication aid cannot finish within the same short limit."
+    },
+    "notice": "Speaking queues and timers do not automatically make participation fair. Connection delay, response time, communication aids and access to chat can change what a useful turn looks like.",
+    "routes": [
+      {
+        "id": "plan1",
+        "title": "Use a flexible facilitated discussion",
+        "helps": "Ask a facilitator to pause for responses, watch the queue and offer a pass or a later turn. Agree on flexible time based on what contributors need.",
+        "limits": "Do not spotlight a person who has not spoken or require a public explanation. The facilitator may need teacher support and should not carry every coordination task alone."
+      },
+      {
+        "id": "plan2",
+        "title": "Gather ideas before deciding",
+        "helps": "Invite ideas in a shared accessible format before or after the call. Assign someone to bring those ideas into the decision and check what was missed.",
+        "limits": "Written, drawn or recorded input needs time and a real response. Multiple channels can create extra work, so agree which record the team will use."
+      }
+    ],
+    "change": "A teammate says the queue helps, but their written ideas still do not appear in the final plan.",
+    "model": "Pause the decision and review the submitted ideas with the group. Ask the contributor how they want their idea represented and record what changed. Check influence and access, not equal minutes of speaking; involve the teacher if exclusion continues."
+  },
+  {
+    "id": "vt5",
+    "title": "Build trust without forced sharing",
+    "setups": {
+      "elementary": "A class group finishes online tasks together. One child enjoys games before the work, while another wants to skip personal questions and still be part of the group.",
+      "middle": "A team plans a virtual hangout to feel more connected. Some members cannot attend extra sessions or do not want to share personal stories. They still want to collaborate.",
+      "high": "A remote student team treats frequent informal messages and personal check-ins as signs of commitment. Members with limited time or different boundaries worry that their actual work is being overlooked."
+    },
+    "notice": "Trust can grow through clear commitments, follow-through, fair credit and repair. Social activities can help some people connect, but attendance, personal disclosure and constant availability are not tests of belonging.",
+    "routes": [
+      {
+        "id": "plan1",
+        "title": "Make the work dependable",
+        "helps": "Agree on manageable tasks, response expectations and what to do when plans change. Acknowledge contributions and correct mistakes or missed commitments.",
+        "limits": "Reliable does not mean always available or never needing help. Check whether the workload and tools are realistic before interpreting a missed update."
+      },
+      {
+        "id": "plan2",
+        "title": "Offer genuinely optional connection",
+        "helps": "Invite a short game, shared interest or low-pressure check-in with a pass option and no expectation of personal details.",
+        "limits": "Skipping must not cost someone information, roles or belonging. Keep important project decisions in the agreed work channel, not in the optional hangout."
+      }
+    ],
+    "change": "A member skips the social check-in and then finds that the group assigned roles and changed the deadline during it.",
+    "model": "Move the decisions back into the agreed work process, give everyone time to respond and correct any unfair assignment. Make the hangout optional in practice as well as in name. Check whether members can participate fully without sharing personal information."
+  }
+];
+
   var VIRTUAL_TEAM_SCENARIOS = [
     { id: 'vt1', title: 'Miscommunication Over Text', icon: '\uD83D\uDCAC',
       setup: 'You sent a message in the group chat saying "That section needs work." A teammate replies with "Fine." and goes silent. You can tell they\u2019re upset, but you meant it constructively. Tone got lost in text.',
@@ -936,7 +1070,7 @@ window.SelHub = window.SelHub || {
 
         // Virtual Team Simulator state
         var vtScenarioIdx     = d.vtScenarioIdx || 0;
-        var vtAnswers         = d.vtAnswers || {};
+        var vtAnswers         = d.vtAnswers && typeof d.vtAnswers === 'object' && !Array.isArray(d.vtAnswers) ? d.vtAnswers : {};
         var vtRevealed        = d.vtRevealed || {};
 
         // Conflict-to-Collaboration state
@@ -1183,7 +1317,7 @@ window.SelHub = window.SelHub || {
             challenges:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFD7', title: 'Challenges \u2014 the 5 dysfunctions',                       hint: 'Lencioni 2002: absence of trust \u2192 fear of conflict \u2192 lack of commitment \u2192 avoidance of accountability \u2192 inattention to results. Each layer rests on the one below; teams fail bottom-up.' },
             scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — rehearse a supported response', hint: 'Notice what happened, compare possible routes and plan a workable next step. Consider access, boundaries and shared responsibility; asking for help is part of teamwork.' },
             commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Communication Plan — choose what fits this situation', hint: 'Clarify the purpose, make the message usable, allow different ways to respond and check understanding. Adapt the plan when the conditions change.' },
-            virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCBB', title: 'Virtual Team \u2014 distance changes the rules',           hint: 'Async-first beats sync-first; written norms matter more without hallway clarification. Mark-of-attention (camera on / quick reply) IS the trust signal. Watson 2018: virtual teams underperform on creativity, beat in-person on focused output.' },
+            virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)', icon: '\uD83D\uDCBB', title: 'Virtual Team — agree on workable participation', hint: 'Plan for access, privacy and different schedules. Compare communication options and check that contributions reach the work; camera use and reply speed do not prove commitment.' },
             conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
             retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retro \u2014 keep / start / stop / drop',                  hint: 'Agile retrospective format. Without retros, teams repeat their failure modes; with retros, they upgrade them. Schedule before you need one \u2014 cadence beats crisis. Keep it short, action-oriented, blame-free.' },
             quiz:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDCCA', title: 'Quiz \u2014 self-knowledge check',                          hint: 'When are you the team accelerator? When are you the bottleneck? Both are normal. Pattern recognition turns reactive collaboration into deliberate. The quiz is a mirror, not a verdict.' },
@@ -2121,112 +2255,69 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var virtualTeamContent = null;
         if (activeTab === 'virtualteam') {
-          var curVt = VIRTUAL_TEAM_SCENARIOS[vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length];
-          var vtAnswered = vtAnswers[curVt.id] != null;
-          var vtReveal = !!vtRevealed[curVt.id];
-          var vtAnsweredCount = Object.keys(vtAnswers).length;
-
-          virtualTeamContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCBB Virtual Team Simulator'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-              band === 'elementary' ? 'Practice working with a team when you can\u2019t meet in person!' :
-              band === 'middle' ? 'Master the challenges of remote collaboration. 5 realistic scenarios.' :
-              'Navigate the complexities of virtual teamwork. Practice async communication, trust-building, and remote conflict resolution.'
+          function virtualRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+          var virtualSelections = virtualRecord(d.virtualSelections);
+          var oldVirtualIndex = typeof vtScenarioIdx === 'number' && isFinite(vtScenarioIdx) && vtScenarioIdx >= 0 ? Math.floor(vtScenarioIdx) % VIRTUAL_TEAM_PRACTICE.length : 0;
+          var virtualSelectedId = Object.prototype.hasOwnProperty.call(virtualSelections, band) ? virtualSelections[band] : null;
+          var virtualCase = VIRTUAL_TEAM_PRACTICE.find(function(item) { return item.id === virtualSelectedId; }) || VIRTUAL_TEAM_PRACTICE[oldVirtualIndex];
+          var virtualKey = band + ':' + virtualCase.id;
+          var virtualDrafts = virtualRecord(d.virtualDrafts);
+          var virtualDraft = virtualRecord(Object.prototype.hasOwnProperty.call(virtualDrafts, virtualKey) ? virtualDrafts[virtualKey] : null);
+          var virtualSurface = _teaHC ? '#000000' : _teaL ? '#ffffff' : '#0f172a';
+          var virtualInk = _teaHC ? '#ffff00' : _teaL ? '#0f172a' : '#e2e8f0';
+          var virtualEdge = _teaHC ? '#ffff00' : '#64748b';
+          var virtualControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + virtualEdge, borderRadius: 8, background: virtualSurface, color: virtualInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var virtualDisclosure = { borderTop: '1px solid ' + virtualEdge };
+          var virtualSummary = { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' };
+          function updateVirtualDraft(key, value) {
+            var next = Object.assign({}, virtualDrafts);
+            next[virtualKey] = Object.assign({}, virtualDraft);
+            next[virtualKey][key] = value;
+            upd('virtualDrafts', next);
+          }
+          function virtualNote(key, label, help) {
+            var id = 'teamwork-virtual-note-' + key;
+            var value = Object.prototype.hasOwnProperty.call(virtualDraft, key) && typeof virtualDraft[key] === 'string' ? virtualDraft[key] : '';
+            return h('div', { style: { margin: '12px 0' } },
+              h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label + ' (optional)'),
+              h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, help),
+              h('textarea', { id: id, rows: 3, value: value, 'aria-describedby': id + '-help', onChange: function(e) { updateVirtualDraft(key, e.target.value); }, style: Object.assign({}, virtualControl, { resize: 'vertical', lineHeight: 1.6 }) }));
+          }
+          var virtualRoute = virtualCase.routes.some(function(route) { return route.id === virtualDraft.route; }) || virtualDraft.route === 'own' ? virtualDraft.route : '';
+          var oldVirtualAnswers = virtualRecord(vtAnswers);
+          var earlierVirtual = VIRTUAL_TEAM_SCENARIOS.filter(function(item) { var answer = oldVirtualAnswers[item.id]; return Number.isInteger(answer) && answer >= 0 && answer < item.choices.length; });
+          virtualTeamContent = h('section', { role: 'region', 'aria-label': 'Virtual teamwork practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: virtualSurface, color: virtualInk, border: '1px solid ' + virtualEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+            h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Plan how to work together online'),
+            h('p', null, band === 'elementary' ? 'Read a made-up example together. Think about how everyone can join the work, then try a plan with help from a teacher. You can talk, draw or write. There is no score.' : 'Compare workable ways to collaborate across screens, schedules and access needs. Cameras, quick replies and social activity are not measures of trust or effort. You can discuss an example without writing.'),
+            h('label', { htmlFor: 'teamwork-virtual-choice', style: { display: 'block', fontWeight: 700 } }, 'Choose a virtual teamwork situation'),
+            h('select', { id: 'teamwork-virtual-choice', value: virtualCase.id, onChange: function(e) { var next = Object.assign({}, virtualSelections); next[band] = e.target.value; upd('virtualSelections', next); }, style: virtualControl }, VIRTUAL_TEAM_PRACTICE.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+            h('div', { key: virtualKey },
+              h('h3', { style: { fontSize: 18 } }, virtualCase.title), h('p', null, virtualCase.setups[band] || virtualCase.setups.elementary),
+              h('details', { style: virtualDisclosure }, h('summary', { style: virtualSummary }, 'Notice the conditions before judging'), h('p', null, virtualCase.notice)),
+              h('h4', { style: { fontSize: 16 } }, 'Compare possible approaches'),
+              h('p', null, 'Either approach may need support or adjustment. You can combine them or propose another; there is no ranked answer.'),
+              virtualCase.routes.map(function(route) { return h('details', { key: route.id, style: virtualDisclosure },
+                h('summary', { style: virtualSummary }, route.title),
+                h('p', null, h('strong', null, 'How it could help: '), route.helps),
+                h('p', null, h('strong', null, 'What it needs: '), route.limits)); }),
+              h('details', { style: virtualDisclosure },
+                h('summary', { style: virtualSummary }, 'Draft a team agreement (optional)'),
+                h('p', null, 'Use the fictional situation or another example you choose. Leave out identifying details. A draft is a proposal to discuss, not an agreement others have already accepted.'),
+                h('label', { htmlFor: 'teamwork-virtual-route', style: { display: 'block', fontWeight: 700 } }, 'An approach to try (optional)'),
+                h('select', { id: 'teamwork-virtual-route', value: virtualRoute, onChange: function(e) { updateVirtualDraft('route', e.target.value); }, style: virtualControl }, h('option', { value: '' }, 'Still deciding'), virtualCase.routes.map(function(route) { return h('option', { key: route.id, value: route.id }, route.title); }), h('option', { value: 'own' }, 'Combine approaches or use my own')),
+                virtualNote('access', 'Access and boundaries to plan for', band === 'elementary' ? 'What would help people join in? What should stay private? Ask a teacher to help.' : 'Consider devices, connection, usable formats, response time, privacy and power differences. Ask what is needed without demanding personal reasons.'),
+                virtualNote('agreement', 'Our proposed agreement', band === 'elementary' ? 'How could the group work together? Say how someone can join without being on camera or answering right away.' : 'Name the work channel, a workable response window and another way to contribute. Describe how everyone can consider the proposal before it becomes an agreement.'),
+                virtualNote('followup', 'Who will check, and when', band === 'elementary' ? 'Who can help check the plan? When will you see whether everyone has a way to join?' : 'Identify the next check-in and who owns it. Plan what happens if access fails, a reply is missing or someone needs support. Check contributions and influence rather than visible presence.')),
+              h('details', { style: virtualDisclosure },
+                h('summary', { style: virtualSummary }, 'Try a changed condition'), h('p', null, virtualCase.change),
+                virtualNote('revision', 'What I would revise, and why', band === 'elementary' ? 'What changed? What could you try or ask a teacher to help with now?' : 'Explain what to keep or revise, whose input is needed and how you would check that the revised process actually works.')),
+              h('details', { style: virtualDisclosure }, h('summary', { style: virtualSummary }, 'Compare one possible adjustment'), h('p', null, virtualCase.model), h('p', null, 'This is one response to the changed condition. It is not a promise of cooperation. If there is repeated exclusion, pressure or harm, involve a trusted adult; a student does not have to solve it alone.')),
+              h('p', null, 'Choices and notes stay with this situation and grade band in the current project. Use the hub save or export controls to keep them beyond this session. Review private details before sharing.')
             ),
-            h('div', { role: 'status', style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } },
-              'Scenario ' + ((vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length) + 1) + ' of ' + VIRTUAL_TEAM_SCENARIOS.length + ' \u00B7 ' + vtAnsweredCount + ' completed'
-            ),
-
-            // Scenario card
-            h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #3b82f644', marginBottom: 16 } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                h('span', { style: { fontSize: 28 } }, curVt.icon),
-                h('h4', { style: { fontSize: 16, fontWeight: 700, color: _teaFg('#f1f5f9'), margin: 0 } }, curVt.title)
-              ),
-              h('p', { style: { fontSize: 13, color: _teaFg('#cbd5e1'), lineHeight: 1.7, marginBottom: 16 } }, curVt.setup),
-
-              // Choices
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                curVt.choices.map(function(ch, ci) {
-                  var isChosen = vtAnswers[curVt.id] === ci;
-                  var showFeedback = vtReveal && isChosen;
-                  return h('div', { key: ci },
-                    h('button', {
-                      onClick: function() {
-                        if (vtAnswered) return;
-                        var newAns = Object.assign({}, vtAnswers);
-                        newAns[curVt.id] = ci;
-                        var newRev = Object.assign({}, vtRevealed);
-                        newRev[curVt.id] = true;
-                        upd({ vtAnswers: newAns, vtRevealed: newRev });
-                        logPractice('virtual_team', curVt.id);
-                        awardXP(15);
-                        if (ch.rating === 3) {
-                          if (soundEnabled) sfxCorrect();
-                          addToast('\u2B50\u2B50\u2B50 Excellent remote teamwork!', 'success');
-                        } else if (ch.rating === 2) {
-                          if (soundEnabled) sfxReveal();
-                          addToast('\u2B50\u2B50 Decent approach!', 'info');
-                        } else {
-                          if (soundEnabled) sfxWrong();
-                          addToast('\u2B50 There\u2019s a better way.', 'info');
-                        }
-                        tryAwardBadge('virtual_scenario_1');
-                        // Check all done
-                        var totalVtAnswered = Object.keys(newAns).length;
-                        if (totalVtAnswered >= VIRTUAL_TEAM_SCENARIOS.length) tryAwardBadge('virtual_team_pro');
-                      },
-                      disabled: vtAnswered,
-                      style: {
-                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')) : _teaBg('#334155')),
-                        background: isChosen ? (ch.rating === 3 ? '#22c55e11' : ch.rating === 2 ? '#f59e0b11' : '#ef444411') : '#0f172a',
-                        color: _teaFg('#e2e8f0'), fontSize: 13, textAlign: 'left', cursor: vtAnswered ? 'default' : 'pointer', lineHeight: 1.5
-                      }
-                    },
-                      h('span', null, ch.text),
-                      isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
-                    ),
-                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: _teaBg('#0f172a'), borderLeft: '3px solid ' + (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')), marginTop: -2, fontSize: 12, color: _teaFg('#94a3b8'), lineHeight: 1.6 } },
-                      ch.feedback
-                    )
-                  );
-                })
-              ),
-
-              // Show all ratings after answering
-              vtReveal && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: _teaFg('#94a3b8'), marginBottom: 6 } }, 'All response ratings:'),
-                curVt.choices.map(function(ch, ci) {
-                  var isChosen = vtAnswers[curVt.id] === ci;
-                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? _teaFg('#f1f5f9') : _teaFg('#94a3b8') } },
-                    renderStars(ch.rating),
-                    h('span', { style: { marginLeft: 4 } }, ch.text.substring(0, 50) + (ch.text.length > 50 ? '...' : '')),
-                    isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
-                  );
-                })
-              ),
-
-              // Remote work tip
-              vtReveal && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #3b82f633' } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: _teaFg('#3b82f6'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '\uD83D\uDCA1 Remote Work Tip'),
-                h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6 } }, curVt.tip)
-              ),
-
-              // Navigation
-              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
-                vtScenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
-                  onClick: function() { upd('vtScenarioIdx', vtScenarioIdx - 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
-                }, '\u2190 Previous'),
-                vtScenarioIdx < VIRTUAL_TEAM_SCENARIOS.length - 1 && h('button', { 'aria-label': 'Next',
-                  onClick: function() { upd('vtScenarioIdx', vtScenarioIdx + 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
-                }, 'Next \u2192')
-              )
-            ),
-
-            // Quick reflection
-            renderQuickReflection('virtualteam')
+            earlierVirtual.length > 0 && h('details', { style: virtualDisclosure },
+              h('summary', { style: virtualSummary }, 'Earlier virtual-team choices'),
+              h('p', null, 'These choices came from the earlier scored activity. They are historical records, not recommended norms or a measure of collaboration skill. They have not been copied into your new agreement.'),
+              earlierVirtual.map(function(item) { return h('p', { key: item.id }, h('strong', null, VIRTUAL_TEAM_PRACTICE.find(function(current) { return current.id === item.id; }).title + ': '), item.choices[oldVirtualAnswers[item.id]].text); }))
           );
         }
 
@@ -2539,14 +2630,14 @@ window.SelHub = window.SelHub || {
             if (Number.isInteger(a) && a >= 0 && a < s.choices.length) totalStars += s.choices[a].rating;
           });
 
-          var vtAnsweredTotal = Object.keys(vtAnswers).length;
+          var vtAnsweredTotal = VIRTUAL_TEAM_SCENARIOS.filter(function(item) { var answer = vtAnswers[item.id]; return Number.isInteger(answer) && answer >= 0 && answer < item.choices.length; }).length;
           var stats = [
             { icon: '\uD83D\uDC51', label: 'Roles Selected', value: selectedRoles.length + '/' + roles2.length, color: ACCENT },
             { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: _teaFg('#f59e0b') },
             { icon: '\uD83C\uDFAD', label: 'Earlier scenario answers', value: answeredScenarios + '/' + SCENARIOS.length, color: _teaFg('#8b5cf6') },
             { icon: '\u2B50', label: 'Earlier scenario stars', value: totalStars + '/' + (SCENARIOS.length * 3), color: _teaFg('#facc15') },
             { icon: '\uD83D\uDDE3\uFE0F', label: 'Earlier communication quiz', value: commStyleDone ? 'Completed' : 'No earlier completion', color: _teaFg('#ef4444') },
-            { icon: '\uD83D\uDCBB', label: 'Virtual Team', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
+            { icon: '\uD83D\uDCBB', label: 'Earlier virtual-team answers', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
             { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: _teaFg('#f59e0b') },
             { icon: '\uD83D\uDD04', label: 'Retrospective', value: retroSaved ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
             { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },

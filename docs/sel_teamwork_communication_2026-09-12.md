@@ -28,4 +28,4 @@ No push, deployment or packaged build is included. The ignored generated `deskto
 
 Final validation: 13 focused browser checks, 624 regression checks and three unique actual-hub workflows passed (640 unique checks). Two pre-existing regression skips and 93 uniquely filtered hub cases are excluded. Both Teamwork hub flows passed initially; the older Values Sort flow timed out clicking its tab, then passed in isolation with no source or test change. That retry filtered 95 hub cases. All 72 SEL tools rendered. Three scoped axe scans found no violations and nine phone captures were reviewed. Syntax, historical definitions, scoped whitespace and source/public parity passed. Raw logs are `reports/sel-teamwork-communication-{focused,regressions,hub,hub-values-retry,render}.log`.
 
-Commit status: the unrelated source-pair mismatch cleared on recheck. The validated pass is ready for a normal scoped commit, without bypassing the hook.
+Commit status: committed normally as `5b1c465bb` after the unrelated source-pair mismatch cleared. No hook bypass was used.

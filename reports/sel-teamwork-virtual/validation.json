@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-12",
+  "tool": "Teamwork Builder / Virtual Team",
+  "situations": 5,
+  "gradeSpecificSetups": 15,
+  "conditionalApproaches": 10,
+  "optionalNoteFields": 4,
+  "gradeBands": [
+    "elementary",
+    "middle",
+    "high"
+  ],
+  "focused": {
+    "passed": 21,
+    "files": 1
+  },
+  "regressions": {
+    "passed": 637,
+    "skipped": 2,
+    "files": 15
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 94,
+    "files": 1
+  },
+  "totalUniquePassed": 661,
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumSelectAndDisclosureHeight": 44
+  },
+  "sourcePublicSha256": "cdbf65be5c253ec160a0c4e5c82642f0714a0613d689de16b0b8a798aa020de3",
+  "legacyCompatibility": "Original five virtual scenario definitions and IDs unchanged. Earlier answers, flags, reflections, logs and badges retained; valid earlier choices shown as historical records.",
+  "persistence": "Approach and four notes remain independent by situation and grade; editable choices, serialized restoration, tab navigation and actual-hub return verified.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "Scoped accessibility scans cover the revised region, not all existing Teamwork tabs or the full hub.",
+    "Authored examples are not a validated assessment.",
+    "Shared approach explanations may benefit from adult discussion for younger learners.",
+    "Native phone selects can truncate long options; full wording is available in the situation heading and approach disclosures.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ],
+  "commit": {
+    "status": "ready",
+    "reason": "Validation complete; preparing normal scoped commit."
+  }
+}

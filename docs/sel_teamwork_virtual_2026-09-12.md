@@ -1,0 +1,28 @@
+# Teamwork Builder: workable virtual collaboration
+
+The former Virtual Team quiz treated a call as the best answer to unclear text, treated camera use and fast replies as trust signals, and implied that rotating inconvenience, strict speaking structures or social activities would reliably produce inclusion. Students selected a ranked answer, earned points and could not revise that choice.
+
+The new practice retains all five situation IDs but offers 15 fictional setups, one per grade band for each topic: short messages, different schedules, camera privacy, online turns and optional connection. Ten conditional approaches explain both their possible use and the conditions they need. Each situation introduces new information and one possible adjustment. The activity does not infer feelings from a short reply, insist that a call is superior, require a camera to show commitment, or treat social attendance as proof of belonging.
+
+The examples distinguish a communication channel from access to it, a meeting invitation from consent to record, equal speaking time from meaningful participation, and optional connection from a place where required decisions happen. They include reasonable response windows, explicit dates/time zones where relevant, accessible recaps, flexible turn-taking and adult support. A failed connection or missed update prompts a check of conditions before a judgment about effort. These are authored teaching examples, not a validated assessment or guarantees about team performance.
+
+Learners can try either approach, combine them, use their own or stay undecided. Four optional note fields cover access/boundaries, a proposed agreement, ownership and timing of a follow-up, and revision. The draft is explicitly a proposal to discuss, not an agreement other people have accepted. Reading and planning do not create quiz answers, scores, badges or practice-log entries. Other Teamwork activities retain their existing reward behavior.
+
+Source framing checked September 12, 2026:
+
+- [CAST UDL Guidelines 3.0, consideration 5.1](https://udlguidelines.cast.org/action-expression/expression-communication/multiple-media/) supports multiple communication media and fitting a medium to its purpose and audience. This informed the options for contribution and accessible alternatives, rather than a universal preference for live video.
+- [CASEL: What Is SEL?](https://casel.org/what-is-sel/) describes relationship skills through communication, collaboration, diverse settings and seeking/offering help. The cases apply that broad framing to remote collaboration; neither organization has evaluated these authored scenarios.
+
+Implementation and compatibility:
+
+- `virtualSelections[band]` remembers the selected situation. `virtualDrafts[band + ':' + situationId]` keeps an optional `route` and four notes: `access`, `agreement`, `followup`, `revision`. Context changes, grade changes, navigation and serialized project restoration retain independent drafts.
+- Native expandable panels reveal the comparison and changed condition without writing state. Labeled selects allow a chosen approach to be revised or cleared without erasing notes. Draft fields with unexpected types fall back to empty controls, while unknown fields survive edits.
+- Original `VIRTUAL_TEAM_SCENARIOS` definitions, `vtScenarioIdx`, `vtAnswers`, `vtRevealed`, reflections, logs and badges remain intact. Recognized old answers appear under a historical disclaimer and are not copied into new agreements. Progress counts only valid earlier answer indices and labels them as historical.
+- The `virtualteam` tab ID and Virtual Team label remain unchanged. The banner and historical badge descriptions reflect the revised activity. No provider call or message to teammates is made from the new practice.
+- Explicit light, dark and high-contrast surfaces, 16px inputs and 44px minimum select/disclosure controls support readable phone use. The full situation title appears below the selector; long approach labels may truncate inside a native phone dropdown, with full wording available in the approach panels.
+
+Validation is recorded in `reports/sel-teamwork-virtual/validation.json`. Focused tests cover all 15 grade-specific setups, conditional approaches, four-field persistence, editable choices, historical/malformed records, keyboard focus and three phone themes. Shared SEL tests and the previous scenario/communication suites provide regression coverage. Actual-hub tests check leaving and reopening the activities. Scoped axe scans and captures cover the revised region, not all existing Teamwork tabs or a full accessibility certification. Younger learners may benefit from discussing shared approach explanations with an adult.
+
+The previously blocked Communication Plan pass was committed normally as `5b1c465bb` after its unrelated source-pair blocker cleared. No push, deployment or packaged build is included. The ignored generated `desktop/app-build` output was not rebuilt; installed copies need a fresh package to receive these source changes.
+
+Final validation: 21 focused browser checks, 637 regression checks and three actual-hub workflows passed (661 unique checks). Two pre-existing skips and 94 filtered hub cases are excluded. All 72 SEL tools rendered. Three scoped axe scans found zero violations; all nine phone captures were reviewed. JavaScript syntax, unchanged original virtual-scenario definitions/IDs, source/public byte parity and scoped whitespace passed. Final source/public SHA256: `cdbf65be5c253ec160a0c4e5c82642f0714a0613d689de16b0b8a798aa020de3`. Normal scoped commit is ready; no deployment or packaged build.
