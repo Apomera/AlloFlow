@@ -494,6 +494,36 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.scenarioAnswers)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+  it('teamwork communication plans and supports survive example changes and the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="teamwork"]').click();
+    await page.getByRole('tab',{name:/Communication Plan/}).click();
+    const practice=page.getByRole('region',{name:'Communication planning practice',exact:true});
+    await practice.getByText('Build my plan (optional)',{exact:true}).click();
+    await practice.getByLabel('My message or demonstration (optional)',{exact:true}).fill('Can you label the diagram during class?');
+    await practice.getByRole('checkbox',{name:'Time to think or reply',exact:true}).check();
+    await practice.getByLabel('Choose a communication example',{exact:true}).selectOption('feedback');
+    await practice.getByText('Build my plan (optional)',{exact:true}).click();
+    await practice.getByLabel('How we will check understanding (optional)',{exact:true}).fill('Try the revised label with a willing reader.');
+    await practice.getByRole('checkbox',{name:'A clear example or record',exact:true}).check();
+    await practice.getByText('Try a changed situation',{exact:true}).click();
+    await practice.getByLabel('What I would adjust and why (optional)',{exact:true}).fill('The key exists; add a pointer.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();
+    await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="teamwork"]').click();
+    expect(await practice.getByLabel('Choose a communication example',{exact:true}).inputValue()).toBe('feedback');
+    await practice.getByText('Build my plan (optional)',{exact:true}).click();
+    expect(await practice.getByRole('checkbox',{name:'A clear example or record',exact:true}).isChecked()).toBe(true);
+    expect(await practice.getByLabel('How we will check understanding (optional)',{exact:true}).inputValue()).toContain('willing reader');
+    await practice.getByText('Try a changed situation',{exact:true}).click();
+    expect(await practice.getByLabel('What I would adjust and why (optional)',{exact:true}).inputValue()).toContain('add a pointer');
+    await practice.getByLabel('Choose a communication example',{exact:true}).selectOption('handoff');
+    await practice.getByText('Build my plan (optional)',{exact:true}).click();
+    expect(await practice.getByLabel('My message or demonstration (optional)',{exact:true}).inputValue()).toContain('during class');
+    expect(await practice.getByRole('checkbox',{name:'Time to think or reply',exact:true}).isChecked()).toBe(true);
+    const data=await page.evaluate(()=>window.__alloflowSelToolData.teamwork);
+    expect(data.activeTab).toBe('commstyle');expect(data.commStyleDone).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

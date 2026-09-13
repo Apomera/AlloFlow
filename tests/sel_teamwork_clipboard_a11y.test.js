@@ -36,7 +36,7 @@ describe('Teamwork clipboard fallback accessibility', () => {
     expect(text).toContain("'aria-label': 'Team role coach response'");
     expect(text).toContain("'aria-label': 'Teamwork challenge coach response'");
     // Scenario practice is now unscored; its keyboard and state semantics have browser coverage.
-    expect(text).toContain("announceToSR('Communication style assessment complete')");
+    // Communication planning replaces the profile quiz; browser tests cover its editable controls.
     expect(text).toContain("announceToSR('Team contract saved')");
     expect(text).toContain("announceToSR('Team retrospective saved')");
   });

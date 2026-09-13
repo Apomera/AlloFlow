@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-12",
+  "tool": "Teamwork Builder / Communication Plan",
+  "examples": 6,
+  "situatedTeachingMoves": 24,
+  "optionalNoteFields": 6,
+  "optionalSupportChoices": 4,
+  "gradeBands": [
+    "elementary",
+    "middle",
+    "high"
+  ],
+  "focused": {
+    "passed": 13,
+    "files": 1
+  },
+  "regressions": {
+    "passed": 624,
+    "skipped": 2,
+    "files": 14
+  },
+  "actualHub": {
+    "uniquePassed": 3,
+    "uniqueFiltered": 93,
+    "initialRun": {
+      "passed": 2,
+      "clickTimeout": 1,
+      "filtered": 93
+    },
+    "isolatedValuesRetry": {
+      "passed": 1,
+      "filtered": 95,
+      "sourceOrTestChanges": false
+    }
+  },
+  "totalUniquePassed": 640,
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumSelectDisclosureAndCheckboxLabelHeight": 44
+  },
+  "sourcePublicSha256": "e9e53117d6495800b6238550373072e921fbcd398517395a27cc2ab030bbd07b",
+  "legacyCompatibility": "Original questionnaire and style definitions unchanged. Earlier answers, completion/profile/advice records, reflections, logs and badges retained; no new profile or inferred team composition.",
+  "persistence": "Six notes and support choices remain independent by example and grade; serialized restoration, live review and real-hub return verified.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "Scoped accessibility evidence covers the revised practice region, not all existing Teamwork tabs or the full hub.",
+    "Authored examples are not a validated assessment.",
+    "The initial Values Sort hub regression timed out clicking its tab; the identical isolated test passed without source or test changes. Both Teamwork hub workflows passed initially.",
+    "Shared support explanations may benefit from adult discussion for younger learners.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ],
+  "commit": {
+    "status": "ready",
+    "reason": "Unrelated source-pair mismatch cleared on recheck; using the normal scoped commit."
+  }
+}

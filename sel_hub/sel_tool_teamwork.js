@@ -581,7 +581,7 @@ window.SelHub = window.SelHub || {
     { id: 'challenge_champ',   icon: '\uD83E\uDD47', name: 'Challenge Champion',   desc: 'Complete 5 collaborative challenges' },
     { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
     { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' },
-    { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Discover your communication style' },
+    { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
     { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Complete all virtual team scenarios' },
     { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Convert 3 conflicts into collaboration' },
     { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Complete a team retrospective' },
@@ -612,6 +612,101 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Communication Styles Data ──
   // ══════════════════════════════════════════════════════════════
+  // Authored communication planning practice; no personality classification.
+  var COMMUNICATION_PLANS = {
+  "elementary": [
+    {
+      "id": "game",
+      "title": "Explain a new game",
+      "situation": "A child says, \"Take a turn,\" but a new player does not know what to do with the game piece. The group wants everyone to be able to join.",
+      "focus": "A clear message tells someone what to do next and gives them a way to ask or show a question. A nod or a smile does not always mean the instructions are clear.",
+      "moves": {
+        "purpose": "Help the new player understand one turn, rather than explain every rule at once.",
+        "message": "\"On your turn, choose a piece and move it one square. I can show you a turn first.\"",
+        "access": "Show a short example or use a picture. Ask whether the player wants to move the piece, point or have someone help. Give them time to choose.",
+        "check": "Ask, \"Should I show another turn, or would you like to show me what comes next?\" A player can ask again or pass; this is not a test."
+      },
+      "change": "The player says the picture helped, but they still do not know when their turn begins.",
+      "repair": "Keep the picture and add a clear turn signal that the player can notice. Try a practice round together, then ask whether the signal works. Change the explanation rather than blame the player."
+    },
+    {
+      "id": "help",
+      "title": "Ask for a clearer instruction",
+      "situation": "A classmate says, \"Sort these for our project.\" A child sees many cards but does not know whether to group them by color, shape or something else.",
+      "focus": "Asking a question can help the whole group. Someone can need a clearer instruction even if others already understand it.",
+      "moves": {
+        "purpose": "Find out how the cards should be grouped before doing a lot of work.",
+        "message": "\"I am not sure what sort means here. Are we making color groups, shape groups or something else?\"",
+        "access": "Point to two cards, draw possible groups or ask a teacher to help with the question. Nobody needs to look at another person's eyes to show they are listening.",
+        "check": "Show one possible group and ask, \"Is this the kind of group we need?\" If the answer is different, try one together."
+      },
+      "change": "The classmate is also unsure. They were repeating an instruction they heard quickly.",
+      "repair": "Take two cards to the teacher and ask for a short example of the task. Share that example with the group, then check the first group of cards together. Neither child needs to pretend to know."
+    }
+  ],
+  "middle": [
+    {
+      "id": "handoff",
+      "title": "Make a task handoff clear",
+      "situation": "A group message says, \"Finish the slides soon.\" Members do not know which slides they own, what finished means or when the group will review them.",
+      "focus": "A useful handoff names the task, resources and a realistic review point. A short message can be clear; a longer message can still leave the important details missing.",
+      "moves": {
+        "purpose": "Agree on who can do each remaining part and what needs to be ready for the next class.",
+        "message": "\"The diagram slide still needs labels. Could someone take that part? We can review a draft at the start of our next science class. Please say if the task or timing does not work.\"",
+        "access": "Keep the task list in a place everyone can use, with a paper or other agreed alternative. Confirm that a person accepts a task before assigning it.",
+        "check": "Ask members to confirm their own next step in their chosen format. Check whether everyone has the resources and whether the proposed time is workable; no reply is not agreement."
+      },
+      "change": "A member can work during class but cannot access the slides at home.",
+      "repair": "Plan that part for classroom work time or offer an accessible offline option by agreement. Update the task list and review time so the team sees the same plan. Ask the teacher for support if the assignment requires access the team does not have."
+    },
+    {
+      "id": "feedback",
+      "title": "Make feedback usable",
+      "situation": "A teammate says, \"This poster is confusing.\" The creator does not know which part to change. Both want classmates to understand the project.",
+      "focus": "Useful feedback connects a specific observation to the purpose of the work and invites a response. Clear wording does not guarantee agreement, and a concern can be valid even when its delivery needs repair.",
+      "moves": {
+        "purpose": "Help a reader find the main result without telling the creator their work or ability is bad.",
+        "message": "\"I could not tell which label belongs to the blue bar. Could we look at that part together? Would a note on the draft or a short conversation work better?\"",
+        "access": "Give feedback in an agreed format and allow time to consider it. The creator may want a written comment, a demonstration or teacher support.",
+        "check": "Ask what the creator understood the concern to be, and invite a correction if the feedback missed something. Try the revised label with a willing reader; agreeing with the suggestion is not the only sign of understanding."
+      },
+      "change": "The creator points out that the key is on another page. The problem is where readers look first, rather than a missing label.",
+      "repair": "Acknowledge the correction and revise the feedback: \"The key exists; I did not know where to find it.\" Compare adding a pointer with moving the key, then check whether a reader can find it. Keep the useful observation while changing the proposed fix."
+    }
+  ],
+  "high": [
+    {
+      "id": "decision",
+      "title": "Record a group decision accurately",
+      "situation": "A student committee ends a meeting with \"We all agree, then.\" Several members have not spoken, and one has not had time to review the proposal. The notes will guide the next stage of work.",
+      "focus": "Shared understanding, agreement and permission are different things. A person can understand a proposal and disagree with it; silence alone establishes none of these.",
+      "moves": {
+        "purpose": "Record what is actually decided, what remains open and how people can raise unresolved concerns.",
+        "message": "\"Before we record agreement, here is the proposal and what it changes. Please mark support, concern or needing more information in the shared notes, or respond through the adviser. Can everyone use that process by the agreed review time?\"",
+        "access": "Provide the proposal in an accessible format and agree on a realistic response window. Offer a private supported route when power differences make public disagreement difficult.",
+        "check": "Ask someone to summarize the decision in their own chosen format and invite corrections. Separately confirm positions and permissions. Do not treat a majority vote as consent to share a person's information or ignore an access need."
+      },
+      "change": "One member understands the proposal but needs more information about a cost before taking a position.",
+      "repair": "Record the question as unresolved, identify who will obtain the information and set a new review point. Clarify which limited steps, if any, are already authorized. Do not rewrite \"needs information\" as either support or opposition."
+    },
+    {
+      "id": "concern",
+      "title": "Raise a concern with support",
+      "situation": "A student notices that an event notice leaves out an accessible entrance. The student coordinator says the notice is already approved and asks everyone to stop making changes.",
+      "focus": "Directness, politeness and communication format do not tell you whether a concern is valid. A clear request may help, but the person raising an access concern should not have to manage resistance alone.",
+      "moves": {
+        "purpose": "Get accurate entrance information into the notice before people use it, while identifying who can authorize the correction.",
+        "message": "\"The notice lists one entrance but leaves out the accessible entrance. Who can approve a correction before it is shared? I would like the adviser to help us confirm the details.\"",
+        "access": "Choose a written request, an accompanied conversation or direct adviser support. Do not require the student to disclose a disability or confront the coordinator privately.",
+        "check": "Ask the responsible adult to confirm the correct information and review the actual revised notice. A friendly reply is not evidence that the correction has been made."
+      },
+      "change": "The coordinator agrees to add a link, but the entrance information behind it is out of date.",
+      "repair": "Ask the responsible adult to verify the current entrance details and make the notice usable without relying on the outdated page. Review the correction before circulation. The communication plan now needs an information check as well as an agreed action."
+    }
+  ]
+};
+
+  // Original questionnaire definitions retained for earlier project records.
   var COMM_STYLES = {
     director: { name: 'Director', icon: '\uD83C\uDFAF', color: '#ef4444',
       desc: 'Task-focused and decisive. You like to get things done efficiently and lead by example.',
@@ -1007,7 +1102,7 @@ window.SelHub = window.SelHub || {
           { id: 'roles',       label: '\uD83D\uDC51 Roles' },
           { id: 'challenges',  label: '\uD83C\uDFD7\uFE0F Challenges' },
           { id: 'scenarios',   label: '\uD83C\uDFAD Scenarios' },
-          { id: 'commstyle',   label: '\uD83D\uDDE3\uFE0F Comm Style' },
+          { id: 'commstyle',   label: '\uD83D\uDDE3\uFE0F Communication Plan' },
           { id: 'virtualteam', label: '\uD83D\uDCBB Virtual Team' },
           { id: 'conflicttool', label: '\u267B\uFE0F Conflict\u2192Collab' },
           { id: 'retro',       label: '\uD83D\uDD04 Retro' },
@@ -1087,7 +1182,7 @@ window.SelHub = window.SelHub || {
             roles:        { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC51', title: 'Roles \u2014 Belbin\u2019s 9 team archetypes',                  hint: 'Belbin 1981: Plant, Resource Investigator, Coordinator, Shaper, Monitor Evaluator, Teamworker, Implementer, Completer Finisher, Specialist. Balanced teams beat all-stars; complementary roles outperform homogeneous talent.' },
             challenges:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFD7', title: 'Challenges \u2014 the 5 dysfunctions',                       hint: 'Lencioni 2002: absence of trust \u2192 fear of conflict \u2192 lack of commitment \u2192 avoidance of accountability \u2192 inattention to results. Each layer rests on the one below; teams fail bottom-up.' },
             scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — rehearse a supported response', hint: 'Notice what happened, compare possible routes and plan a workable next step. Consider access, boundaries and shared responsibility; asking for help is part of teamwork.' },
-            commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Comm Style \u2014 know your default',                       hint: 'DiSC, MBTI-style preferences. Each style has gifts + traps. Driver gets things done but bulldozes; analytical thinks deeply but slows. Pair complementary styles + name them \u2014 the friction disappears.' },
+            commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Communication Plan — choose what fits this situation', hint: 'Clarify the purpose, make the message usable, allow different ways to respond and check understanding. Adapt the plan when the conditions change.' },
             virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCBB', title: 'Virtual Team \u2014 distance changes the rules',           hint: 'Async-first beats sync-first; written norms matter more without hallway clarification. Mark-of-attention (camera on / quick reply) IS the trust signal. Watson 2018: virtual teams underperform on creativity, beat in-person on focused output.' },
             conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
             retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retro \u2014 keep / start / stop / drop',                  hint: 'Agile retrospective format. Without retros, teams repeat their failure modes; with retros, they upgrade them. Schedule before you need one \u2014 cadence beats crisis. Keep it short, action-oriented, blame-free.' },
@@ -1917,197 +2012,107 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var commStyleContent = null;
         if (activeTab === 'commstyle') {
-          var totalQuestions = COMM_STYLE_QUESTIONS.length;
-          var answeredQuestions = Object.keys(commStyleAnswers).length;
-
-          // Calculate results
-          function calcCommStyleResults() {
-            var tallies = { director: 0, collaborator: 0, analyzer: 0, supporter: 0 };
-            for (var k in commStyleAnswers) {
-              if (commStyleAnswers.hasOwnProperty(k)) {
-                var style = commStyleAnswers[k];
-                tallies[style] = (tallies[style] || 0) + 1;
-              }
-            }
-            var sorted = Object.keys(tallies).sort(function(a, b) { return tallies[b] - tallies[a]; });
-            return { tallies: tallies, primary: sorted[0], secondary: sorted[1], sorted: sorted };
+          function commPlanRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+          var commCases = COMMUNICATION_PLANS[band] || COMMUNICATION_PLANS.elementary;
+          var commSelections = commPlanRecord(d.communicationSelections);
+          var selectedCommId = Object.prototype.hasOwnProperty.call(commSelections, band) ? commSelections[band] : null;
+          var commCase = commCases.find(function(item) { return item.id === selectedCommId; }) || commCases[0];
+          var commKey = band + ':' + commCase.id;
+          var commDrafts = commPlanRecord(d.communicationDrafts);
+          var commDraft = commPlanRecord(Object.prototype.hasOwnProperty.call(commDrafts, commKey) ? commDrafts[commKey] : null);
+          var commSupports = commPlanRecord(commDraft.supports);
+          var commSurface = _teaHC ? '#000000' : _teaL ? '#ffffff' : '#0f172a';
+          var commInk = _teaHC ? '#ffff00' : _teaL ? '#0f172a' : '#e2e8f0';
+          var commEdge = _teaHC ? '#ffff00' : '#64748b';
+          var commControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + commEdge, borderRadius: 8, background: commSurface, color: commInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var commDisclosure = { borderTop: '1px solid ' + commEdge };
+          var commSummary = { minHeight: 44, padding: '12px 0', fontWeight: 700, cursor: 'pointer' };
+          var commSupportChoices = [
+            { key: 'time', label: 'Time to think or reply', help: 'Agree when a response is needed and what happens if someone needs more time.' },
+            { key: 'formats', label: 'More than one way to respond', help: 'Offer speech, writing, drawing, a communication aid or another workable method. Ask what fits.' },
+            { key: 'backup', label: 'A clear example or record', help: 'Use a demonstration, visual guide or shared note that people can access and correct.' },
+            { key: 'support', label: 'A private or supported conversation', help: 'Offer a trusted adult or another agreed support person. Personal disclosure is optional.' }
+          ];
+          var commFields = band === 'elementary' ? [
+            { key: 'purpose', label: 'Who needs to know what', help: 'Use the made-up example or another idea. What does someone need to understand or do?' },
+            { key: 'message', label: 'My message or demonstration', help: 'What could you say, write, draw or show? Keep the next step clear.' },
+            { key: 'access', label: 'Ways to take part', help: 'How can people ask or answer? What help or materials would make it easier?' },
+            { key: 'timing', label: 'Time and response plan', help: 'When can people think and reply? Ask an adult to help choose a fair time.' },
+            { key: 'check', label: 'How we will check understanding', help: 'How could you find out what is clear? Try one step together, ask a question or invite another explanation. Nobody has to agree just to show they understand.' }
+          ] : [
+            { key: 'purpose', label: 'Who needs to know what', help: 'Identify the audience, purpose and needed information. Separate sharing information, requesting action, inviting input and seeking permission.' },
+            { key: 'message', label: 'My message or demonstration', help: 'Draft a specific observation, question or next step. Explain key terms and leave room for the other person to correct an assumption.' },
+            { key: 'access', label: 'Ways to take part', help: 'Agree on usable formats, language support, resources and privacy. Do not infer preferences from a personality label or require someone to justify an access need.' },
+            { key: 'timing', label: 'Time and response plan', help: 'Set a realistic response window and a follow-up route. Account for schedules, processing time and access; silence is not automatic agreement.' },
+            { key: 'check', label: 'How we will check understanding', help: 'Invite a summary, example, question or demonstration in an agreed format. Distinguish understanding from agreement and consent; check the resulting action when relevant.' }
+          ];
+          function updateCommPlan(key, value) {
+            var next = Object.assign({}, commDrafts);
+            next[commKey] = Object.assign({}, commDraft);
+            next[commKey][key] = value;
+            upd('communicationDrafts', next);
           }
-
-          commStyleContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDDE3\uFE0F Communication Style Discovery'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-              band === 'elementary' ? 'Find out how you like to talk and work with your team! Answer 10 questions.' :
-              band === 'middle' ? 'Discover your natural communication style. There are no wrong answers \u2014 every style has strengths!' :
-              'Identify your dominant communication tendencies to leverage strengths and address blind spots in team settings.'
+          function commText(key) { return Object.prototype.hasOwnProperty.call(commDraft, key) && typeof commDraft[key] === 'string' ? commDraft[key] : ''; }
+          function commPlanNote(field) {
+            var id = 'teamwork-comm-note-' + field.key;
+            return h('div', { key: field.key, style: { margin: '12px 0' } },
+              h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+              h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, field.help),
+              h('textarea', { id: id, rows: 3, value: commText(field.key), 'aria-describedby': id + '-help', onChange: function(e) { updateCommPlan(field.key, e.target.value); }, style: Object.assign({}, commControl, { resize: 'vertical', lineHeight: 1.6 }) }));
+          }
+          var commReviewField = { key: 'review', label: 'What I would adjust and why', help: band === 'elementary' ? 'What new detail changes your plan? What could you try or ask for next?' : 'Use the changed situation or feedback on your own plan. Identify what to keep, revise or ask for, and how to check whether the change helped.' };
+          var oldCommAnswers = commPlanRecord(commStyleAnswers);
+          var oldCommRecords = [];
+          COMM_STYLE_QUESTIONS.forEach(function(question, index) {
+            if (!Object.prototype.hasOwnProperty.call(oldCommAnswers, index)) return;
+            var option = question.options.find(function(item) { return item.style === oldCommAnswers[index]; });
+            if (option) oldCommRecords.push({ question: question.q, answer: option.text });
+          });
+          commStyleContent = h('section', { role: 'region', 'aria-label': 'Communication planning practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: commSurface, color: commInk, border: '1px solid ' + commEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+            h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Make a communication plan'),
+            h('p', null, band === 'elementary' ? 'What will help people understand each other? Read an example together, then try a message or a way to show your idea. You can think, talk, draw or write. There is no score.' : 'Choose how to communicate for a purpose and a situation. Preferences can change with the task, people and setting. This practice does not assign personality types or tell you which teammates to choose.'),
+            h('label', { htmlFor: 'teamwork-comm-choice', style: { display: 'block', fontWeight: 700 } }, 'Choose a communication example'),
+            h('select', { id: 'teamwork-comm-choice', value: commCase.id, onChange: function(e) { var next = Object.assign({}, commSelections); next[band] = e.target.value; upd('communicationSelections', next); }, style: commControl }, commCases.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+            h('div', { key: commKey },
+              h('h3', { style: { fontSize: 18 } }, commCase.title), h('p', null, commCase.situation), h('p', null, commCase.focus),
+              h('details', { style: commDisclosure },
+                h('summary', { style: commSummary }, 'Compare a worked plan'),
+                [['purpose', 'Start with the purpose'], ['message', 'Make the message specific'], ['access', 'Make participation possible'], ['check', 'Check shared understanding']].map(function(part) {
+                  return h('div', { key: part[0] }, h('h4', { style: { fontSize: 16 } }, part[1]), h('p', null, commCase.moves[part[0]]));
+                }),
+                h('p', null, 'This is one possible plan, not a required script. Ask what fits the people and situation.')),
+              h('details', { style: commDisclosure },
+                h('summary', { style: commSummary }, 'Build my plan (optional)'),
+                h('p', null, 'Use the fictional example or a situation you choose. You can leave any part blank and discuss it instead; personal disclosure is optional.'),
+                commPlanNote(commFields[0]), commPlanNote(commFields[1]),
+                h('fieldset', { style: { border: '1px solid ' + commEdge, padding: 12, margin: '16px 0', borderRadius: 8, minWidth: 0 } },
+                  h('legend', { style: { fontWeight: 700 } }, 'Supports to consider (optional)'),
+                  h('p', null, 'Mark any that might help here, then describe how in your plan. You can change these choices. They are possibilities to agree on, not promises that support is already in place.'),
+                  commSupportChoices.map(function(item) {
+                    var id = 'teamwork-comm-support-' + item.key;
+                    return h('div', { key: item.key, style: { margin: '8px 0' } },
+                      h('label', { htmlFor: id, style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer', fontWeight: 700 } },
+                        h('input', { id: id, type: 'checkbox', checked: Object.prototype.hasOwnProperty.call(commSupports, item.key) && commSupports[item.key] === true, 'aria-describedby': id + '-help', onChange: function(e) { var next = Object.assign({}, commSupports); next[item.key] = e.target.checked; updateCommPlan('supports', next); }, style: { width: 22, height: 22, flexShrink: 0, accentColor: _teaHC ? '#ffff00' : '#4338ca' } }), item.label),
+                      h('p', { id: id + '-help', style: { margin: '0 0 8px' } }, item.help));
+                  })),
+                commFields.slice(2).map(commPlanNote),
+                h('p', null, 'You can ask a teacher or trusted adult for help. Clear wording does not make you responsible for harmful behavior by someone else or a refusal to provide access.')),
+              h('details', { style: commDisclosure },
+                h('summary', { style: commSummary }, 'Try a changed situation'), h('p', null, commCase.change),
+                commPlanNote(commReviewField),
+                h('details', { style: commDisclosure }, h('summary', { style: commSummary }, 'Compare a possible adjustment'), h('p', null, commCase.repair))),
+              h('details', { style: commDisclosure },
+                h('summary', { style: commSummary }, 'Review my communication plan'),
+                h('p', null, 'This review uses only the choices and notes you added for this example. Nothing is scored, completed or sent by opening it.'),
+                commFields.concat([commReviewField]).map(function(field) { return h('div', { key: field.key }, h('h4', { style: { fontSize: 16 } }, field.label), h('p', { style: { whiteSpace: 'pre-wrap' } }, commText(field.key).trim() ? commText(field.key) : 'No note added.')); }),
+                h('h4', { style: { fontSize: 16 } }, 'Supports I am considering'),
+                commSupportChoices.some(function(item) { return Object.prototype.hasOwnProperty.call(commSupports, item.key) && commSupports[item.key] === true; }) ? h('ul', null, commSupportChoices.filter(function(item) { return Object.prototype.hasOwnProperty.call(commSupports, item.key) && commSupports[item.key] === true; }).map(function(item) { return h('li', { key: item.key }, item.label); })) : h('p', null, 'No supports selected. You can still name another support in your notes.')),
+              h('p', null, 'Choices and notes stay with this example and grade band in the current project. Use the hub save or export controls to keep them beyond this session. Review private details before sharing.')
             ),
-            h('div', { role: 'status', style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
-
-            // Questions (not yet submitted)
-            !commStyleDone && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
-              COMM_STYLE_QUESTIONS.map(function(q, qi) {
-                var answered = commStyleAnswers[qi] != null;
-                return h('div', { key: qi, style: { padding: 14, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + (answered ? ACCENT + '44' : _teaBg('#334155')) } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, (qi + 1) + '. ' + q.q),
-                  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-                    q.options.map(function(opt, oi) {
-                      var isSelected = commStyleAnswers[qi] === opt.style;
-                      return h('button', {
-                        key: oi,
-                        onClick: function() {
-                          var newAns = Object.assign({}, commStyleAnswers);
-                          newAns[qi] = opt.style;
-                          upd('commStyleAnswers', newAns);
-                          if (soundEnabled) sfxClick();
-                        },
-                        style: {
-                          padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : _teaBg('#334155')),
-                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : _teaFg('#cbd5e1'),
-                          fontSize: 12, textAlign: 'left', cursor: 'pointer', lineHeight: 1.5, fontWeight: isSelected ? 600 : 400
-                        }
-                      }, opt.text);
-                    })
-                  )
-                );
-              })
-            ),
-
-            // Submit button
-            !commStyleDone && h('button', { 'aria-label': answeredQuestions === totalQuestions ? 'Submit communication style assessment' : 'Complete all communication style questions',
-              onClick: function() {
-                if (answeredQuestions < totalQuestions) { addToast('Answer all ' + totalQuestions + ' questions first!', 'info'); return; }
-                var results = calcCommStyleResults();
-                upd('commStyleDone', true);
-                upd('commStyleResult', results);
-                logPractice('comm_style', 'discovery');
-                tryAwardBadge('comm_style');
-                awardXP(25);
-                if (soundEnabled) sfxCorrect();
-                addToast('Communication style discovered! +25 XP', 'success');
-                celebrate && celebrate();
-                if (announceToSR) announceToSR('Communication style assessment complete');
-              },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : _teaBg('#334155'), color: answeredQuestions === totalQuestions ? '#0f172a' : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
-            }, answeredQuestions === totalQuestions ? '\u2705 Discover My Style' : 'Answer all ' + totalQuestions + ' questions'),
-
-            // Results
-            commStyleDone && commStyleResult && (function() {
-              var res = commStyleResult;
-              var primary = COMM_STYLES[res.primary];
-              var secondary = COMM_STYLES[res.secondary];
-              var tallies = res.tallies;
-              var styleKeys = ['director', 'collaborator', 'analyzer', 'supporter'];
-
-              return h('div', null,
-                // Primary & Secondary style cards
-                h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#1e293b'), border: '2px solid ' + primary.color + '66', marginBottom: 16 } },
-                  h('div', { style: { textAlign: 'center', marginBottom: 12 } },
-                    h('div', { style: { fontSize: 36 } }, primary.icon),
-                    h('div', { style: { fontSize: 18, fontWeight: 700, color: primary.color, marginTop: 4 } }, 'Primary: ' + primary.name),
-                    h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginTop: 4, lineHeight: 1.6 } }, primary.desc)
-                  ),
-                  h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
-                    h('div', { style: { padding: 12, borderRadius: 10, background: _teaBg('#0f172a') } },
-                      h('div', { style: { fontSize: 11, fontWeight: 700, color: _teaFg('#22c55e'), marginBottom: 6 } }, '\u2705 STRENGTHS'),
-                      primary.strengths.map(function(s, i) {
-                        return h('div', { key: i, style: { fontSize: 11, color: _teaFg('#cbd5e1'), padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
-                      })
-                    ),
-                    h('div', { style: { padding: 12, borderRadius: 10, background: _teaBg('#0f172a') } },
-                      h('div', { style: { fontSize: 11, fontWeight: 700, color: _teaFg('#f59e0b'), marginBottom: 6 } }, '\u26A0\uFE0F BLIND SPOTS'),
-                      primary.blindSpots.map(function(s, i) {
-                        return h('div', { key: i, style: { fontSize: 11, color: _teaFg('#cbd5e1'), padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
-                      })
-                    )
-                  )
-                ),
-
-                // Secondary style
-                h('div', { style: { padding: 14, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + secondary.color + '44', marginBottom: 16 } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                    h('span', { style: { fontSize: 24 } }, secondary.icon),
-                    h('div', null,
-                      h('div', { style: { fontSize: 13, fontWeight: 600, color: secondary.color } }, 'Secondary: ' + secondary.name),
-                      h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 2 } }, secondary.desc)
-                    )
-                  )
-                ),
-
-                // Score bars
-                h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, '\uD83D\uDCCA Style Breakdown'),
-                  styleKeys.map(function(sk) {
-                    var s = COMM_STYLES[sk];
-                    var count = tallies[sk] || 0;
-                    var pct = Math.round((count / totalQuestions) * 100);
-                    return h('div', { key: sk, style: { marginBottom: 8 } },
-                      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 } },
-                        h('span', { style: { fontSize: 12, color: _teaFg('#cbd5e1') } }, s.icon + ' ' + s.name),
-                        h('span', { style: { fontSize: 11, color: s.color, fontWeight: 600 } }, count + '/' + totalQuestions + ' (' + pct + '%)')
-                      ),
-                      h('div', { style: { height: 8, borderRadius: 4, background: _teaBg('#0f172a'), overflow: 'hidden' } },
-                        h('div', { style: { height: '100%', width: pct + '%', background: s.color, borderRadius: 4, transition: 'width 0.5s' } })
-                      )
-                    );
-                  })
-                ),
-
-                // How to work with each style
-                h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, '\uD83E\uDD1D How to Work With Each Style'),
-                  styleKeys.map(function(sk) {
-                    var s = COMM_STYLES[sk];
-                    return h('div', { key: sk, style: { padding: 10, borderRadius: 8, background: _teaBg('#0f172a'), marginBottom: 6, borderLeft: '3px solid ' + s.color } },
-                      h('div', { style: { fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.name),
-                      h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), lineHeight: 1.6 } }, s.workWith)
-                    );
-                  })
-                ),
-
-                // AI team composition advice
-                h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid #6366f133', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
-                  h('p', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
-                  h('button', { 'aria-label': commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice',
-                    onClick: function() {
-                      if (!callGemini) { addToast('AI not available.', 'error'); return; }
-                      upd('commStyleCoachLoad', true);
-                      upd('commStyleCoachResp', null);
-                      var prompt = 'You are a teamwork communication coach for ' + band + ' school students.\n\n' +
-                        'This student\'s communication style results:\n' +
-                        '- Primary style: ' + primary.name + ' (' + (tallies[res.primary] || 0) + '/' + totalQuestions + ' answers)\n' +
-                        '- Secondary style: ' + secondary.name + ' (' + (tallies[res.secondary] || 0) + '/' + totalQuestions + ' answers)\n\n' +
-                        'Provide:\n1. How their primary + secondary combination works together\n2. What kind of teammates complement their style best\n3. One specific tip for their biggest blind spot\n4. An ideal 4-person team composition that includes their style\n\n' +
-                        'Use ' + (band === 'elementary' ? 'simple, encouraging language for ages 5-10.' : band === 'middle' ? 'relatable language for ages 11-14.' : 'professional coaching language for ages 15-18.') +
-                        '\nKeep it under 180 words.';
-                      callGemini(prompt).then(function(result) {
-                        var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
-                        upd('commStyleCoachResp', resp);
-                        upd('commStyleCoachLoad', false);
-                        tryAwardBadge('ai_coach');
-                      }).catch(function(err) {
-                        upd('commStyleCoachLoad', false);
-                        addToast('Error: ' + err.message, 'error');
-                      });
-                    },
-                    disabled: commStyleCoachLoad,
-                    style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: commStyleCoachLoad ? _teaBg('#334155') : '#6366f1', color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: commStyleCoachLoad ? 'default' : 'pointer' }
-                  }, commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice'),
-                  commStyleCoachResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #6366f144' } },
-                    h('p', { style: { fontSize: 10, color: _teaFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
-                    h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, commStyleCoachResp)
-                  )
-                ),
-
-                // Retake
-                h('button', { 'aria-label': 'Retake Quiz',
-                  onClick: function() { upd({ commStyleAnswers: {}, commStyleDone: false, commStyleResult: null, commStyleCoachResp: null }); if (soundEnabled) sfxClick(); },
-                  style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
-                }, 'Retake Quiz')
-              );
-            })(),
-
-            // Quick reflection
-            commStyleDone && renderQuickReflection('commstyle')
+            oldCommRecords.length > 0 && h('details', { style: commDisclosure },
+              h('summary', { style: commSummary }, 'Earlier communication questionnaire'),
+              h('p', null, 'These are answers from the earlier questionnaire, not a fixed communication type. Old results and generated advice remain in project data; they are not used to build this plan.'),
+              oldCommRecords.map(function(record, index) { return h('div', { key: index }, h('h4', { style: { fontSize: 16 } }, record.question), h('p', { style: { whiteSpace: 'pre-wrap' } }, record.answer)); }))
           );
         }
 
@@ -2540,7 +2545,7 @@ window.SelHub = window.SelHub || {
             { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: _teaFg('#f59e0b') },
             { icon: '\uD83C\uDFAD', label: 'Earlier scenario answers', value: answeredScenarios + '/' + SCENARIOS.length, color: _teaFg('#8b5cf6') },
             { icon: '\u2B50', label: 'Earlier scenario stars', value: totalStars + '/' + (SCENARIOS.length * 3), color: _teaFg('#facc15') },
-            { icon: '\uD83D\uDDE3\uFE0F', label: 'Comm Style', value: commStyleDone ? 'Done' : 'Not yet', color: _teaFg('#ef4444') },
+            { icon: '\uD83D\uDDE3\uFE0F', label: 'Earlier communication quiz', value: commStyleDone ? 'Completed' : 'No earlier completion', color: _teaFg('#ef4444') },
             { icon: '\uD83D\uDCBB', label: 'Virtual Team', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
             { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: _teaFg('#f59e0b') },
             { icon: '\uD83D\uDD04', label: 'Retrospective', value: retroSaved ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
