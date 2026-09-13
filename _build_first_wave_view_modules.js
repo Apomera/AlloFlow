@@ -27,6 +27,16 @@ const CONFIGS = {
     output: 'video_studio_host_bridge_module.js',
     exports: ['VideoStudioHostBridgeView'],
   },
+  CanvasRecoveryDialogView: {
+    source: 'view_canvas_recovery_dialog_source.jsx',
+    output: 'view_canvas_recovery_dialog_module.js',
+    exports: ['CanvasRecoveryDialogView'],
+  },
+  ColdPathSurfaces: {
+    source: 'view_cold_path_surfaces_source.jsx',
+    output: 'view_cold_path_surfaces_module.js',
+    exports: ['AiBackendSettingsView', 'LmsAuditBannerView', 'ReadThisPagePanelView'],
+  },
 };
 
 function buildFirstWaveModule(key, sourceOverride) {
