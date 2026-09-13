@@ -376,6 +376,18 @@ function vendorContentType(name) {
   return 'application/javascript; charset=utf-8';
 }
 
+// Language models the vendor bundle actually carries (tessdata/<lang>.traineddata[.gz]). The page
+// uses this to refuse an unbundled language immediately instead of waiting out a worker timeout
+// per page and then silently recognising a non-Latin script with the English model.
+function bundledTesseractLanguages(files) {
+  const langs = new Set();
+  for (const name of (files instanceof Map ? files.keys() : Object.keys(files || {}))) {
+    const m = /^tessdata\/([A-Za-z0-9_+-]+)\.traineddata(?:\.gz)?$/.exec(String(name).replace(/\\/g, '/'));
+    if (m) langs.add(m[1]);
+  }
+  return [...langs].sort();
+}
+
 function loadVendorBundle() {
   if (vendorBundleCache) return vendorBundleCache;
   const root = resolveVendorRoot();
@@ -479,18 +491,28 @@ async function installVendorRuntime(page, options) {
     tesseractWorker: vendorAssetUrl('tesseract.worker.min.js'),
     tesseractCore: vendorAssetUrl('tesseract-core.wasm.js'),
     tesseractLang: 'http://127.0.0.1' + VENDOR_BOOT_PATH + 'tessdata/',
+    tesseractLangs: bundledTesseractLanguages(bundle.files),
   };
   await page.evaluate((assets) => {
     window.__alloflowRuntimeAssets = Object.assign({}, window.__alloflowRuntimeAssets || {}, assets);
     if (window.Tesseract && typeof window.Tesseract.createWorker === 'function' && !window.Tesseract.__alloflowLocalPatched) {
       const original = window.Tesseract.createWorker;
-      window.Tesseract.createWorker = (langs, oem, options, config) => original(
+      window.Tesseract.createWorker = (langs, oem, options, config) => {
+        const wanted = (Array.isArray(langs) ? langs : String(langs || 'eng').split('+')).map((l) => String(l).trim()).filter(Boolean);
+        const bundled = Array.isArray(assets.tesseractLangs) ? assets.tesseractLangs : null;
+        const missing = bundled ? wanted.filter((l) => !bundled.includes(l)) : [];
+        if (missing.length) {
+          return Promise.reject(new Error('Tesseract language data not bundled: ' + missing.join(', ')
+            + ' (bundled: ' + bundled.join(', ') + '). Vision OCR still covers the page; the English model is not a substitute for this script.'));
+        }
+        return original(
         langs, oem, Object.assign({}, options || {}, {
           workerPath: assets.tesseractWorker,
           corePath: assets.tesseractCore,
           langPath: assets.tesseractLang,
         }), config,
-      );
+        );
+      };
       window.Tesseract.__alloflowLocalPatched = true;
     }
   }, runtimeAssets);
@@ -1083,7 +1105,9 @@ function createDriver(options) {
       // it was invisible too: the form-field count above had to be chased with a
       // throwaway diagnostic because of it.
       // All of these are low-volume, decision-bearing lines — not per-element chatter.
-      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[PDF Det\]|\[Tesseract\]|\[Throttle\]|\[Auto-fix\]|\[aiFixChunked:[^\]]+\] rejected |\[WCAG Sanitizer\]|\[Legend repair\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
+      // [aiFixChunked:*] is forwarded whole (2026-09-13): the throttle-deferred verdict is decided by
+      // the chunk failure text, and a "rejected"-only filter hid exactly that text during the scan pilot.
+      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[PDF Det\]|\[Tesseract\]|\[Throttle\]|\[Auto-fix\]|\[aiFixChunked:[^\]]+\] |\[WCAG Sanitizer\]|\[Legend repair\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
       else if (process.env.ALLOFLOW_MCP_VERBOSE === '1') rlog('console: ' + t.slice(0, 300));
     });
     // Web Crypto is unavailable in Chromium's opaque `about:blank` context. The canonical
@@ -3030,6 +3054,7 @@ async function verifyGeminiApiKey({ timeoutMs = 15000 } = {}) {
 }
 
 module.exports = {
+  bundledTesseractLanguages,
   createDriver,
   compactTerminalCheckpointSnapshot,
   terminalCheckpointRemediationCapsule,

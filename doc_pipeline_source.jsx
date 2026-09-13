@@ -16402,8 +16402,19 @@ var createDocPipeline = function(deps) {
     // Unicode letter or number. Clean prose in ANY script (Latin, Arabic, Bengali, …) is mostly
     // letters/digits → low; symbol-soup garble (broken ligatures, stray punctuation, replacement
     // chars) → high. Lets us avoid a longer-but-garbled OCR pass beating a clean one. (ocr-quality)
+    // Transcription scaffolding is structure, not garble: fill-in blank runs ("________"), markdown
+    // table pipes and divider rows, heading hashes and list bullets. Left in, a faithful Vision
+    // transcript of a form scored 0.21-0.33 against Tesseract's 0.10-0.14 and lost three of four
+    // pages to garbled OCR (1954 IRS scan, agent-bridge pilot 2026-09-13). Dot leaders, stray
+    // punctuation and replacement characters still count.
+    const _ocrJunkProse = (s) => String(s || '')
+      .replace(/_{3,}/g, ' ')
+      .replace(/^[ \t]*\|?[ \t]*:?-{3,}:?(?:[ \t]*\|[ \t]*:?-{3,}:?)*[ \t]*\|?[ \t]*$/gm, ' ')
+      .replace(/\|/g, ' ')
+      .replace(/^[ \t]*#{1,6}[ \t]+/gm, '')
+      .replace(/^[ \t]*[*-][ \t]+/gm, '');
     const _ocrJunk = (s) => {
-      const ns = String(s || '').replace(/\s+/g, '');
+      const ns = _ocrJunkProse(s).replace(/\s+/g, '');
       if (!ns.length) return 1;
       const textChars = (ns.match(/[\p{L}\p{N}]/gu) || []).length;
       return 1 - textChars / ns.length;

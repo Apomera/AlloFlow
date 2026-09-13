@@ -145,6 +145,39 @@
       "sha256": "3c31f46fee98cac0c4323453e5109291a213b4de7fef8c058af9bf67f717433c",
       "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf",
       "license": "US Government work (public domain)"
+    },
+    {
+      "name": "ohchr-udhr-persian",
+      "band": "born-digital",
+      "file": "born-digital/ohchr-udhr-persian.pdf",
+      "bytes": 874332,
+      "sha256": "7410240962cb672408e116cb0c3c0ee812259b9f9466b5f1df4181f7458acc77",
+      "url": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/prs.pdf",
+      "license": "UN OHCHR; UDHR text is public domain; local test use only",
+      "downloaded": "2026-09-13",
+      "note": "RTL Arabic script (Dari/Persian); pages are images, text layer carries only the title"
+    },
+    {
+      "name": "ohchr-udhr-hebrew",
+      "band": "born-digital",
+      "file": "born-digital/ohchr-udhr-hebrew.pdf",
+      "bytes": 29785,
+      "sha256": "d38e6f39e98af665f49157796b6cd807dacec381ca1e35157a6453e0292e49a8",
+      "url": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/hbr.pdf",
+      "license": "UN OHCHR; UDHR text is public domain; local test use only",
+      "downloaded": "2026-09-13",
+      "note": "RTL Hebrew; text layer present but fonts have no ToUnicode map (decodes to control codes)"
+    },
+    {
+      "name": "ohchr-udhr-urdu",
+      "band": "born-digital",
+      "file": "born-digital/ohchr-udhr-urdu.pdf",
+      "bytes": 296273,
+      "sha256": "551fdac248735b79ce87811c6cab873c95b741da2e82c38fb263474d7965dc76",
+      "url": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/urd.pdf",
+      "license": "UN OHCHR; UDHR text is public domain; local test use only",
+      "downloaded": "2026-09-13",
+      "note": "RTL Arabic script (Urdu); image-only pages"
     }
   ]
 }

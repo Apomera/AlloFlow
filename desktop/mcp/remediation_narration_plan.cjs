@@ -170,10 +170,10 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     const normalize=text=>String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase().replace(/\s+/g,' ').trim();
     const sourceNormalized=normalize(sourceText),candidates=[];
     let previousOffset=0,tokenOffset=0;
-    for(const match of sourceNormalized.matchAll(/(-?\d+)[.)]\s+/g)){
+    for(const match of sourceNormalized.matchAll(/(\()?(-?\d+)[.)]\s+/g)){ // "1. ", "1) " and the parenthesized "(1) " of UDHR-style clauses
       if(match.index&& !/\s/.test(sourceNormalized[match.index-1]))continue;
       tokenOffset+=tokens(sourceNormalized.slice(previousOffset,match.index)).length;previousOffset=match.index;
-      candidates.push({label:match[1],at:tokenOffset,count:tokens(match[1]).length,bodyAt:match.index+match[0].length,used:false});
+      candidates.push({label:match[2],at:tokenOffset,count:tokens(match[2]).length,bodyAt:match.index+match[0].length,used:false});
     }
     const validInteger=value=>/^[+-]?\d+$/.test(String(value).trim())&&Number(value)>=-2147483648&&Number(value)<=2147483647;
     const decimalStyles=node=>{
@@ -198,7 +198,7 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
       let ordinal=ol.hasAttribute('start')?ol.start:step<0?items.length:1;
       for(const item of items){
         if(item.hasAttribute('value'))ordinal=item.value;
-        const literal=new RegExp('^\\s*'+ordinal+'[.)]\\s+').test(item.textContent||'');
+        const literal=new RegExp('^\\s*\\(?'+ordinal+'[.)]\\s+').test(item.textContent||'');
         if((!item.hasAttribute('type')||item.getAttribute('type')==='1')&&decimalStyles(item)&&!literal){
           // Anchor to this item's actual prose before its first nested list. This
           // also identifies flattened PDF markers without guessing from digits alone.

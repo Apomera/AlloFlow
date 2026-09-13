@@ -8,6 +8,16 @@ describe('source coverage accounts for semantic decimal list markers',()=>{
   it('preserves source numbering when plain text becomes a default semantic ordered list',()=>{
     expect(check('1. Alpha. 2. Beta.','<ol><li>Alpha.</li><li>Beta.</li></ol>')).toMatchObject({status:'matched',missingTokens:0,sourceTokens:4,outputTokens:4});
   });
+  it('credits parenthesized source markers, the UDHR and legal "(1)" convention (Hebrew pilot 2026-09-13)',()=>{
+    expect(check('(1) Alpha. (2) Beta. (3) Gamma.','<ol><li>Alpha.</li><li>Beta.</li><li>Gamma.</li></ol>')).toMatchObject({status:'matched',missingTokens:0,sourceTokens:6,outputTokens:6});
+    // A literal "(1)" kept inside the item is its own occurrence, not a second credit.
+    expect(check('(1) Alpha. (2) Beta.','<ol><li>(1) Alpha.</li><li>(2) Beta.</li></ol>')).toMatchObject({status:'matched',outputTokens:4});
+    // Numbering that does not start where the list does is still a mismatch, as in a clause list
+    // that begins at (2) after an unnumbered first clause.
+    expect(check('(2) Alpha. (3) Beta.','<ol><li>Alpha.</li><li>Beta.</li></ol>')).toMatchObject({status:'review_required',missingTokens:2});
+    // A parenthesized number that is not followed by a marker separator is numeric prose.
+    expect(check('1. Alpha. Room (12) is closed.','<ol><li>Alpha.</li></ol><p>Room is closed.</p>')).toMatchObject({status:'review_required',missingTokens:1});
+  });
   it('honors start and explicit item value, continuing from the reset',()=>{
     expect(check('5. Alpha. 10. Beta. 11. Gamma.','<ol start="5"><li>Alpha.</li><li value="10">Beta.</li><li>Gamma.</li></ol>')).toMatchObject({status:'matched',missingTokens:0});
   });
