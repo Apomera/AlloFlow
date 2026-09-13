@@ -27,6 +27,11 @@ const CONFIGS = {
     output: 'video_studio_host_bridge_module.js',
     exports: ['VideoStudioHostBridgeView'],
   },
+  HostHandlers: {
+    source: 'host_handlers_source.jsx',
+    output: 'host_handlers_module.js',
+    exports: ['createHostHandlers'],
+  },
   AlloCommandContext: {
     source: 'allo_command_context_source.js',
     output: 'allo_command_context_module.js',

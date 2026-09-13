@@ -60,7 +60,9 @@ describe('command context extraction', () => {
     expect(host.match(/const _alloCmdCtx = \(\) => \{/g)).toHaveLength(1);
     expect(host).not.toContain('toggleContentEditing: () => {');
     // The two call sites that used to dereference without a guard now tolerate null.
-    expect(host).toContain('if (!ctx || !ctx.voiceAvailable) {');
+    // (enableGlobalVoiceAccess moved to host_handlers_module.js in wave 3; its guard moved with it.)
+    const handlersSource = readFileSync('host_handlers_source.jsx', 'utf8');
+    expect(host + handlersSource).toContain('if (!ctx || !ctx.voiceAvailable) {');
     expect(host).toContain('const c = _alloCmdCtx(); if (!c) return;');
     expect(host).toContain(`window.AlloModules?.AlloCommands && window.AlloModules?.${MODULE_KEY} ? _alloCmdCtx() : null`);
   });
