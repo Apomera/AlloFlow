@@ -1,6 +1,6 @@
 # Dino Lab smoother body and tail transitions
 
-Continuous torso, neck, limb and tail skin now uses the smooth radius interpolation already used for cranial surfaces. Cross-section measurements and mesh resolution stay the same, while the transitions between those sections lose their flat ledges.
+Continuous torso, neck, limb and tail skin now uses the smooth radius interpolation already used for cranial surfaces. The interpolation retains each supplied cross-section size and the existing mesh resolution, while the transitions between sections lose their flat ledges.
 
 The separate rounded tail-base collar has been removed. The tail surface starts inside the pelvis and tapers outward, retaining its original hip pivot. Skin regions remain separate meshes for animation; this change refines their overlap and contours.
 
