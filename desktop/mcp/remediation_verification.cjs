@@ -102,8 +102,10 @@ function auditChecks(input) {
   const o=input||{}, count=v=>Number.isSafeInteger(v)&&v>=0?v:null;
   const state=(value,failures,review,partial)=>!value||!Number.isFinite(value.score)?'unavailable':failures>0?'failed':partial||failures===null||review===null?'partial':review>0?'review-required':'passed';
   const ai=o.ai,axe=o.axe,ea=o.equalAccess;
-  const aiFailures=Array.isArray(ai?.issues)?ai.issues.length:count(ai?.issueCount);
-  const aiReview=Array.isArray(ai?.issues)?ai.issues.filter(i=>i?.requiresManualReview).length:null;
+  // Compact evidence (compactVerificationEvidence) carries the full counts beside a capped issue
+  // list; prefer the counts so a long list is not undercounted. Raw audits have no counts.
+  const aiFailures=count(ai?.issueCount)??(Array.isArray(ai?.issues)?ai.issues.length:null);
+  const aiReview=count(ai?.reviewIssueCount)??(Array.isArray(ai?.issues)?ai.issues.filter(i=>i?.requiresManualReview).length:null);
   const axeFailures=count(axe?.totalViolations),axeReview=count(axe?.totalIncomplete);
   const eaFailures=count(ea?.failViolations),potential=count(ea?.potentialViolations),manual=count(ea?.manualViolations);
   const eaReview=count(ea?.reviewFindingCount)??(potential!==null&&manual!==null?potential+manual:null);
@@ -150,4 +152,70 @@ function normalizeCandidateRejectionEvidence(value, schema = CANDIDATE_REJECTION
     ? Math.min(schema.candidateRejectionCount.maximum, input.candidateRejectionCount) : 0;
   return { candidateRejectionCount: Math.max(count, records.length), candidateRejections: records };
 }
-module.exports={pdfUaEvidence,applyPdfDeliveryEvidence,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};
+// Compact, bounded per-engine verification evidence for reports and calibration (2026-09-13).
+// Accepts a pipeline result (verificationAudit / axeAudit / secondEngineAudit) or an already
+// compact object (ai / axe / equalAccess) and is idempotent, so the driver can build it inside the
+// page and the server can re-normalise what the page returned. Field names match auditChecks()
+// and tests/fixtures/pdf_calibration/README.md. Self-contained on purpose: the driver stringifies
+// it into Chromium, where nothing from this module's scope exists.
+function compactVerificationEvidence(source) {
+  const o = source && typeof source === 'object' ? source : null;
+  if (!o) return null;
+  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const count = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : null);
+  const str = (v, n) => (v == null ? null : String(v).slice(0, n));
+  const list = (v, n) => (Array.isArray(v) ? v.slice(0, n).filter((x) => x && typeof x === 'object') : []);
+  const ai = o.ai !== undefined ? o.ai : o.verificationAudit;
+  const axe = o.axe !== undefined ? o.axe : o.axeAudit;
+  const ea = o.equalAccess !== undefined ? o.equalAccess : o.secondEngineAudit;
+  const out = { ai: null, axe: null, equalAccess: null };
+  if (ai && typeof ai === 'object' && !Array.isArray(ai)) {
+    const issues = Array.isArray(ai.issues) ? ai.issues : null;
+    out.ai = {
+      score: num(ai.score),
+      issueCount: issues ? issues.length : count(ai.issueCount),
+      reviewIssueCount: issues ? issues.filter((i) => i && i.requiresManualReview === true).length : count(ai.reviewIssueCount),
+      passCount: Array.isArray(ai.passes) ? ai.passes.length : count(ai.passCount),
+      chunksAudited: count(ai.chunksAudited),
+      chunksRequested: count(ai.chunksRequested),
+      partial: ai._partialAudit === true || ai.partial === true,
+      scoreDegraded: ai._scoreDegraded === true || ai.scoreDegraded === true,
+      issues: list(issues, 50).map((i) => ({
+        ruleId: str(i.ruleId, 60), severity: str(i.severity, 20), wcag: str(i.wcag, 24),
+        issue: str(i.issue != null ? i.issue : i.description, 300), location: str(i.location, 120),
+        requiresManualReview: i.requiresManualReview === true,
+      })),
+    };
+  }
+  if (axe && typeof axe === 'object' && !Array.isArray(axe)) {
+    let violations = [];
+    if (Array.isArray(axe.violations)) violations = list(axe.violations, 50);
+    else for (const sev of ['critical', 'serious', 'moderate', 'minor']) for (const v of list(axe[sev], 50)) violations.push(Object.assign({ impact: sev }, v));
+    out.axe = {
+      score: num(axe.score),
+      totalViolations: count(axe.totalViolations),
+      totalIncomplete: count(axe.totalIncomplete),
+      violations: violations.slice(0, 50).map((v) => ({
+        id: str(v.id, 80), impact: str(v.impact, 20),
+        nodes: count(typeof v.nodes === 'number' ? v.nodes : (Array.isArray(v.nodes) ? v.nodes.length : null)),
+        description: str(v.description != null ? v.description : v.help, 300), wcag: str(v.wcag, 80),
+      })),
+    };
+  }
+  if (ea && typeof ea === 'object' && !Array.isArray(ea)) {
+    const rule = (f) => ({ id: str(f.id != null ? f.id : f.ruleId, 80), nodes: count(f.nodes), description: str(f.description != null ? f.description : f.message, 300) });
+    const review = Array.isArray(ea.reviewFindings) ? ea.reviewFindings : [].concat(list(ea.potentialFindings, 50), list(ea.manualFindings, 50));
+    out.equalAccess = {
+      score: num(ea.score),
+      failViolations: count(ea.failViolations),
+      potentialViolations: count(ea.potentialViolations),
+      manualViolations: count(ea.manualViolations),
+      reviewFindingCount: count(ea.reviewFindingCount),
+      fails: list(ea.fails, 50).map(rule),
+      reviewFindings: list(review, 50).map(rule),
+    };
+  }
+  if (!out.ai && !out.axe && !out.equalAccess) return null;
+  return out;
+}
+module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};

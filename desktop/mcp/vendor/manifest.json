@@ -8,7 +8,7 @@
     "fontkit": "@pdf-lib/fontkit@1.1.1",
     "axe": "axe-core@4.10.2",
     "tesseract": "tesseract.js@5.1.1",
-    "tesseractCore": "tesseract.js-core@5.1.0"
+    "tesseractCore": "tesseract.js-core@5.1.0 (simd-lstm build)"
   },
   "files": [
     {
@@ -53,14 +53,14 @@
       "bytes": 2952873
     },
     {
-      "path": "tesseract-core.wasm",
-      "sha256": "b47a852b19181ae0999f9d970c368cd351135a320ea978b35bd38602d8bcc0bc",
-      "bytes": 3457035
+      "path": "tesseract-core-simd-lstm.wasm",
+      "sha256": "66b601224a0c4a8977bc9d92dd39841189f9ca22cc4122fcd7208cdb0961eeef",
+      "bytes": 2859709
     },
     {
-      "path": "tesseract-core.wasm.js",
-      "sha256": "fe68f746dc186bb19e2c55de3514d3d6c4036ede53488b5a4db00dfe3f75e5f1",
-      "bytes": 4734776
+      "path": "tesseract-core-simd-lstm.wasm.js",
+      "sha256": "18797eef96bab787636c40b53efaa445cf5ca1c97abd735c4fd8dc3d03652959",
+      "bytes": 3938656
     },
     {
       "path": "tesseract.min.js",

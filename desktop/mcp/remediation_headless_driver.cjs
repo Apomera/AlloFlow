@@ -489,7 +489,7 @@ async function installVendorRuntime(page, options) {
   const runtimeAssets = {
     pdfjsWorker: vendorAssetUrl('pdf.worker.min.js'),
     tesseractWorker: vendorAssetUrl('tesseract.worker.min.js'),
-    tesseractCore: vendorAssetUrl('tesseract-core.wasm.js'),
+    tesseractCore: vendorAssetUrl('tesseract-core-simd-lstm.wasm.js'), // SIMD LSTM build (2026-09-13): same engine, roughly half the recognise time; Chromium supports WASM SIMD
     tesseractLang: 'http://127.0.0.1' + VENDOR_BOOT_PATH + 'tessdata/',
     tesseractLangs: bundledTesseractLanguages(bundle.files),
   };
@@ -1648,7 +1648,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn, candidateRejectionFn, candidateRejectionSchema }) => {
+      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn, candidateRejectionFn, candidateRejectionSchema, verificationEvidenceFn }) => {
         const pipeline = window.__mcpPipeline;
         // Text-family conversion — same mirror of the browser intake as audit()'s evaluate.
         let b64 = _rawB64;
@@ -2076,6 +2076,9 @@ function createDriver(options) {
           integrityCoverage: (cur && cur.integrityCoverage) !== undefined ? cur.integrityCoverage : null,
           integrityWarning: (cur && cur.integrityWarning) || null,
           ...(0,eval)('('+candidateRejectionFn+')')(cur, candidateRejectionSchema),
+          // Per-engine audit evidence (AI, axe, Equal Access), compact and bounded, so a report
+          // can be read and calibrated without the pipeline's log lines (2026-09-13).
+          verification: (0,eval)('('+verificationEvidenceFn+')')(cur),
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
           verificationState: (cur && cur.verificationState) || null,
           verificationHtmlBound: !!(cur && typeof pipeline.isLiveVerificationHtmlBound === 'function' && pipeline.isLiveVerificationHtmlBound(cur, cur.accessibleHtml)),
@@ -2099,6 +2102,7 @@ function createDriver(options) {
         b64, fileName, sourceCoverageFn:NarrationPlanner.assessSourceCoverage.toString(),
         candidateRejectionFn: Verification.normalizeCandidateRejectionEvidence.toString(),
         candidateRejectionSchema: Verification.CANDIDATE_REJECTION_SCHEMA,
+        verificationEvidenceFn: Verification.compactVerificationEvidence.toString(),
         targetScore: Number(opts.targetScore) || 95,
         fixPasses: Number.isFinite(Number(opts.fixPasses)) ? Number(opts.fixPasses) : 2,
         polishPasses: Number.isFinite(Number(opts.polishPasses)) ? Number(opts.polishPasses) : 0,

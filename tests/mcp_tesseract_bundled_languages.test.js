@@ -20,7 +20,7 @@ describe('bundledTesseractLanguages', () => {
       ['tessdata/eng.traineddata', {}],
       ['tessdata/chi_sim.traineddata.gz', {}],
       ['tesseract.min.js', {}],
-      ['tesseract-core.wasm.js', {}],
+      ['tesseract-core-simd-lstm.wasm.js', {}],
       ['pdfjs.min.js', {}],
     ]);
     expect(driver.bundledTesseractLanguages(files)).toEqual(['chi_sim', 'eng', 'heb']);

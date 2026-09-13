@@ -2709,6 +2709,10 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     integrityWarning: out.integrityWarning,
     fidelityNotes: out.fidelityNotes,
     ...Verification.normalizeCandidateRejectionEvidence(out),
+    // Compact per-engine audit evidence from the driver, re-normalised here (the page context is
+    // untrusted), and the same per-engine status summary the app derives from these objects.
+    verification: Verification.compactVerificationEvidence(out.verification),
+    verificationChecks: Verification.auditChecks(Verification.compactVerificationEvidence(out.verification) || {}),
     verificationState: safeVerificationState(out.verificationState),
     verificationHtmlBound: safeEvidenceBoolean(out.verificationHtmlBound),
     remainingAxeViolations: boundedEvidenceCount(out.remainingAxeViolations),
@@ -3505,7 +3509,7 @@ const S_REMEDIATE = obj({
     sliced: S_NULLABLE_BOOL,
   }, ['configuredAuditorCap', 'requestedAuditors', 'completedAuditors', 'sliced'], true),
   autoContinue: {}, taggedPdfError: {}, runId: {}, stats: {},
-  pdfUa: {}, verificationChecks: {}, deliveryReviewReasons: {type:'array',items:S_STR}, reviewRequired: S_BOOL, deliveryStatus: S_STR, htmlVerificationState: {},
+  pdfUa: {}, verificationChecks: {}, verification: {}, deliveryReviewReasons: {type:'array',items:S_STR}, reviewRequired: S_BOOL, deliveryStatus: S_STR, htmlVerificationState: {},
   note: S_STR,
 }, ['input', 'files']);
 const S_JOB_VIEW = obj({
