@@ -3572,6 +3572,15 @@ function PdfDiagnosticsLog(props) {
   const [open, setOpen] = R.useState(false);
   const [warnOnly, setWarnOnly] = R.useState(true);
   const [bundleBusy, setBundleBusy] = R.useState(false);
+  // Inline outcomes (2026-09-13, Aaron: "make it clearer when copy log works"). A toast can sit
+  // behind the modal or vanish before it is read; the button itself now says what happened for a
+  // few seconds and a status line under the buttons repeats it for screen readers.
+  const [copyState, setCopyState] = R.useState('');
+  const [cachesState, setCachesState] = R.useState('');
+  const [bundleState, setBundleState] = R.useState('');
+  const [panelNote, setPanelNote] = R.useState('');
+  const [bundleFallback, setBundleFallback] = R.useState('');
+  const _flash = (setter, text, ms) => { setter(text); setTimeout(() => { try { setter(''); } catch (_) {} }, ms || 3500); };
   const [, setTick] = R.useState(0);
   const scrollRef = R.useRef(null);
   const stickRef = R.useRef(true); // true = follow the live tail; flips false when the user scrolls up so new lines don't yank them back to the end
@@ -3657,8 +3666,12 @@ function PdfDiagnosticsLog(props) {
       const blob = await zip.generateAsync({ type: 'blob' });
       const stamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
       const fileName = 'alloflow-diag-' + _digest8(bundleJson) + '-' + stamp + '.zip';
+      // Inside Gemini Canvas a programmatic download is silently dropped by the sandbox, so the
+      // anchor click used to report "downloaded" while nothing was saved. There the clipboard is
+      // the only channel; elsewhere the download is tried first.
+      const inCanvas = typeof window !== 'undefined' && !!window._isCanvasEnv;
       let downloaded = false;
-      try {
+      if (!inCanvas) try {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -3670,9 +3683,22 @@ function PdfDiagnosticsLog(props) {
         downloaded = true;
       } catch (_) { downloaded = false; }
       const copied = await _copyText(bundleJson);
-      if (!downloaded && !copied) throw new Error('The bundle could not be downloaded or copied.');
+      if (!downloaded && !copied) {
+        // Last resort: show the JSON in the panel so it can be selected and copied by hand.
+        setBundleFallback(bundleJson);
+        throw new Error(inCanvas
+          ? 'Canvas cannot save files and the clipboard refused. The bundle is shown below: select all, copy, and paste it into a file named bundle.json.'
+          : 'The bundle could not be downloaded or copied. It is shown below: select all, copy, and paste it into a file named bundle.json.');
+      }
+      setBundleFallback('');
+      _flash(setBundleState, downloaded ? '✓ Downloaded' : '✓ Copied');
+      _flash(setPanelNote, downloaded
+        ? ('Diagnostic bundle downloaded as ' + fileName + (copied ? '; bundle.json is also on the clipboard.' : '.'))
+        : ('Diagnostic bundle copied to the clipboard' + (inCanvas ? ' (Canvas cannot save files): paste it into a file named bundle.json and attach that.' : ' (the download was blocked): paste it into a file named bundle.json.')), 12000);
       addToast('Diagnostic bundle ' + (downloaded ? 'downloaded' : 'ready in clipboard') + (copied ? '; bundle.json copied.' : '.'), downloaded ? 'success' : 'info');
     } catch (e) {
+      _flash(setBundleState, '✗ Failed');
+      _flash(setPanelNote, 'Diagnostic bundle failed: ' + (e && e.message ? e.message : 'unknown error'), 12000);
       addToast('Diagnostic bundle failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
     } finally {
       setBundleBusy(false);
@@ -3689,6 +3715,8 @@ function PdfDiagnosticsLog(props) {
     if (!ok) {
       try { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('aria-label', 'Temporary field for copying PDF diagnostics'); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; }
     }
+    _flash(setCopyState, ok ? ('✓ Copied ' + rows.length) : '✗ Not copied');
+    _flash(setPanelNote, ok ? ((t('pdf_audit.diag.copied') || 'Diagnostics log copied') + ' (' + rows.length + ' ' + (t('pdf_audit.diag.lines') || 'lines') + ')') : (t('pdf_audit.diag.copy_failed') || 'Could not copy — select the text manually.'), ok ? 6000 : 12000);
     addToast(ok ? ((t('pdf_audit.diag.copied') || 'Diagnostics log copied') + ' (' + rows.length + ')') : (t('pdf_audit.diag.copy_failed') || 'Could not copy — select the text manually.'), ok ? 'success' : 'error');
   };
   const _clear = () => { try { if (Array.isArray(window.__alloDiagLog)) window.__alloDiagLog.length = 0; } catch (_) {} setTick((n) => n + 1); };
@@ -3733,7 +3761,7 @@ function PdfDiagnosticsLog(props) {
             ))}
       </div>
       <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-700">
-        <button type="button" onClick={_copy} className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium">{t('pdf_audit.diag.copy') || 'Copy'}</button>
+        <button type="button" onClick={_copy} className={'px-2.5 py-1 rounded text-xs font-medium ' + (copyState ? (copyState.startsWith('✓') ? 'bg-emerald-600' : 'bg-rose-600') : 'bg-indigo-600 hover:bg-indigo-500')}>{copyState || (t('pdf_audit.diag.copy') || 'Copy')}</button>
         <button type="button" onClick={_clear} className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">{t('pdf_audit.diag.clear') || 'Clear'}</button>
         <button
           type="button"
@@ -3746,15 +3774,23 @@ function PdfDiagnosticsLog(props) {
               const _pipe = docPipeline || (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.DocPipelineModule) || null;
               if (!_pipe || typeof _pipe.clearPdfDocumentCaches !== 'function') { addToast(t('pdf_audit.clear_cache_unavailable') || 'Cache clearing is unavailable on this host version.', 'warning'); return; }
               const _res = await _pipe.clearPdfDocumentCaches();
+              _flash(setCachesState, '✓ Cleared' + (_res && Number.isFinite(_res.cleared) ? ' ' + _res.cleared : ''));
+              _flash(setPanelNote, (t('pdf_audit.diag.caches_cleared') || 'Document caches cleared') + (_res && Number.isFinite(_res.cleared) ? ' (' + _res.cleared + ')' : '') + '. The next run starts fresh.', 6000);
               addToast('🧹 ' + ((t('pdf_audit.diag.caches_cleared') || 'Document caches cleared') + (_res && Number.isFinite(_res.cleared) ? ' (' + _res.cleared + ')' : '')), 'success');
-            } catch (e) { addToast('Cache clear failed: ' + ((e && e.message) || e), 'error'); }
+            } catch (e) { _flash(setCachesState, '✗ Failed'); _flash(setPanelNote, 'Cache clear failed: ' + ((e && e.message) || e), 12000); addToast('Cache clear failed: ' + ((e && e.message) || e), 'error'); }
           }}
           className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
           title={t('pdf_audit.diag.forget_caches_title') || 'Forget cached audit/remediation results so the next run is fully fresh (diagnostics)'}
-        >🧹 {t('pdf_audit.diag.forget_caches') || 'Forget caches'}</button>
-        <button type="button" onClick={_diagnosticBundle} disabled={bundleBusy} className="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs" title="Download a privacy-safe developer diagnostic bundle">{bundleBusy ? 'Building...' : 'Diagnostic bundle'}</button>
+        >{cachesState || ('🧹 ' + (t('pdf_audit.diag.forget_caches') || 'Forget caches'))}</button>
+        <button type="button" onClick={_diagnosticBundle} disabled={bundleBusy} className="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs" title="Download a privacy-safe developer diagnostic bundle">{bundleBusy ? 'Building...' : (bundleState || 'Diagnostic bundle')}</button>
         <button type="button" onClick={() => setOpen(false)} className="ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" aria-label={t('pdf_audit.diag.close_aria') || 'Close diagnostics log'}>{t('pdf_audit.diag.close') || 'Close'}</button>
       </div>
+      {(panelNote || bundleFallback) && (
+        <div className="px-3 py-2 border-t border-slate-700 text-[11px] text-slate-200" role="status">
+          {panelNote}
+          {bundleFallback && <textarea readOnly value={bundleFallback} onFocus={(e) => { try { e.target.select(); } catch (_) {} }} aria-label="Diagnostic bundle JSON. Select all and copy." className="mt-1 w-full h-24 text-[10px] font-mono bg-slate-800 text-slate-100 rounded p-1" />}
+        </div>
+      )}
     </div>
   );
 }
@@ -12846,7 +12882,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // moment rounds take over. Events remain the only live source during the FIRST
                     // run, when nothing is committed yet. Deriving from the committed audits also
                     // means this queue and the engine-evidence panels below can never disagree.
-                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '' });
+                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '', where: (f && Array.isArray(f.details) ? f.details : []).map((d) => d && d.snippet ? String(d.snippet).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : '').filter(Boolean).slice(0, 3) });
                     const _rfEaAudit = pdfFixResult && (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit);
                     const _rfSource = (pdfFixResult && (pdfFixResult.axeAudit || _rfEaAudit))
                       ? { committed: true, findings: [].concat(
@@ -12894,6 +12930,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   {f.nodes > 0 && <span className="ml-1 opacity-70">{f.nodes} {f.nodes === 1 ? (t('pdf_audit.review_queue.element') || 'element') : (t('pdf_audit.review_queue.elements') || 'elements')}</span>}
                                   {(f.wcagCriteria || []).length > 0 && <span className="ml-1 opacity-70">WCAG {f.wcagCriteria.join(', ')}</span>}
                                   {f.description && <span className="block mt-0.5 opacity-90">{f.description}</span>}
+                                  {/* The engine's own snippet of each flagged element (2026-09-13): a person can judge
+                                      "is this a quotation" only when shown the text in question. */}
+                                  {(f.where || []).length > 0 && <span className="block mt-0.5 font-mono text-[10px] opacity-80">→ {f.where.map((w, wi) => <span key={wi}>{wi > 0 ? ' · ' : ''}“{w}”</span>)}</span>}
                                   {f.helpUrl && <a href={f.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
                                 </span>
                                 <span className="shrink-0 flex gap-1">

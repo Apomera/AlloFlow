@@ -4084,6 +4084,20 @@ function PdfDiagnosticsLog(props) {
   const [open, setOpen] = R.useState(false);
   const [warnOnly, setWarnOnly] = R.useState(true);
   const [bundleBusy, setBundleBusy] = R.useState(false);
+  const [copyState, setCopyState] = R.useState("");
+  const [cachesState, setCachesState] = R.useState("");
+  const [bundleState, setBundleState] = R.useState("");
+  const [panelNote, setPanelNote] = R.useState("");
+  const [bundleFallback, setBundleFallback] = R.useState("");
+  const _flash = (setter, text, ms) => {
+    setter(text);
+    setTimeout(() => {
+      try {
+        setter("");
+      } catch (_) {
+      }
+    }, ms || 3500);
+  };
   const [, setTick] = R.useState(0);
   const scrollRef = R.useRef(null);
   const stickRef = R.useRef(true);
@@ -4179,8 +4193,9 @@ function PdfDiagnosticsLog(props) {
       const blob = await zip.generateAsync({ type: "blob" });
       const stamp = (/* @__PURE__ */ new Date()).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "-");
       const fileName = "alloflow-diag-" + _digest8(bundleJson) + "-" + stamp + ".zip";
+      const inCanvas = typeof window !== "undefined" && !!window._isCanvasEnv;
       let downloaded = false;
-      try {
+      if (!inCanvas) try {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -4199,9 +4214,17 @@ function PdfDiagnosticsLog(props) {
         downloaded = false;
       }
       const copied = await _copyText(bundleJson);
-      if (!downloaded && !copied) throw new Error("The bundle could not be downloaded or copied.");
+      if (!downloaded && !copied) {
+        setBundleFallback(bundleJson);
+        throw new Error(inCanvas ? "Canvas cannot save files and the clipboard refused. The bundle is shown below: select all, copy, and paste it into a file named bundle.json." : "The bundle could not be downloaded or copied. It is shown below: select all, copy, and paste it into a file named bundle.json.");
+      }
+      setBundleFallback("");
+      _flash(setBundleState, downloaded ? "\u2713 Downloaded" : "\u2713 Copied");
+      _flash(setPanelNote, downloaded ? "Diagnostic bundle downloaded as " + fileName + (copied ? "; bundle.json is also on the clipboard." : ".") : "Diagnostic bundle copied to the clipboard" + (inCanvas ? " (Canvas cannot save files): paste it into a file named bundle.json and attach that." : " (the download was blocked): paste it into a file named bundle.json."), 12e3);
       addToast("Diagnostic bundle " + (downloaded ? "downloaded" : "ready in clipboard") + (copied ? "; bundle.json copied." : "."), downloaded ? "success" : "info");
     } catch (e) {
+      _flash(setBundleState, "\u2717 Failed");
+      _flash(setPanelNote, "Diagnostic bundle failed: " + (e && e.message ? e.message : "unknown error"), 12e3);
       addToast("Diagnostic bundle failed: " + (e && e.message ? e.message : "unknown error"), "error");
     } finally {
       setBundleBusy(false);
@@ -4234,6 +4257,8 @@ function PdfDiagnosticsLog(props) {
         ok = false;
       }
     }
+    _flash(setCopyState, ok ? "\u2713 Copied " + rows.length : "\u2717 Not copied");
+    _flash(setPanelNote, ok ? (t("pdf_audit.diag.copied") || "Diagnostics log copied") + " (" + rows.length + " " + (t("pdf_audit.diag.lines") || "lines") + ")" : t("pdf_audit.diag.copy_failed") || "Could not copy \u2014 select the text manually.", ok ? 6e3 : 12e3);
     addToast(ok ? (t("pdf_audit.diag.copied") || "Diagnostics log copied") + " (" + rows.length + ")" : t("pdf_audit.diag.copy_failed") || "Could not copy \u2014 select the text manually.", ok ? "success" : "error");
   };
   const _clear = () => {
@@ -4273,7 +4298,7 @@ function PdfDiagnosticsLog(props) {
       } catch (_) {
       }
     }, className: "flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words" }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 italic" }, t("pdf_audit.diag.empty") || "No log entries yet \u2014 run a remediation and they will appear here live.") : rows.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: e.level === "warn" ? "text-amber-300" : "text-slate-400" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, _time(e)), " ", e.msg))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-t border-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _copy, className: "px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium" }, t("pdf_audit.diag.copy") || "Copy"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _clear, className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" }, t("pdf_audit.diag.clear") || "Clear"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-t border-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _copy, className: "px-2.5 py-1 rounded text-xs font-medium " + (copyState ? copyState.startsWith("\u2713") ? "bg-emerald-600" : "bg-rose-600" : "bg-indigo-600 hover:bg-indigo-500") }, copyState || (t("pdf_audit.diag.copy") || "Copy")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _clear, className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" }, t("pdf_audit.diag.clear") || "Clear"), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -4285,17 +4310,26 @@ function PdfDiagnosticsLog(props) {
               return;
             }
             const _res = await _pipe.clearPdfDocumentCaches();
+            _flash(setCachesState, "\u2713 Cleared" + (_res && Number.isFinite(_res.cleared) ? " " + _res.cleared : ""));
+            _flash(setPanelNote, (t("pdf_audit.diag.caches_cleared") || "Document caches cleared") + (_res && Number.isFinite(_res.cleared) ? " (" + _res.cleared + ")" : "") + ". The next run starts fresh.", 6e3);
             addToast("\u{1F9F9} " + ((t("pdf_audit.diag.caches_cleared") || "Document caches cleared") + (_res && Number.isFinite(_res.cleared) ? " (" + _res.cleared + ")" : "")), "success");
           } catch (e) {
+            _flash(setCachesState, "\u2717 Failed");
+            _flash(setPanelNote, "Cache clear failed: " + (e && e.message || e), 12e3);
             addToast("Cache clear failed: " + (e && e.message || e), "error");
           }
         },
         className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs",
         title: t("pdf_audit.diag.forget_caches_title") || "Forget cached audit/remediation results so the next run is fully fresh (diagnostics)"
       },
-      "\u{1F9F9} ",
-      t("pdf_audit.diag.forget_caches") || "Forget caches"
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _diagnosticBundle, disabled: bundleBusy, className: "px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs", title: "Download a privacy-safe developer diagnostic bundle" }, bundleBusy ? "Building..." : "Diagnostic bundle"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close"))
+      cachesState || "\u{1F9F9} " + (t("pdf_audit.diag.forget_caches") || "Forget caches")
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _diagnosticBundle, disabled: bundleBusy, className: "px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs", title: "Download a privacy-safe developer diagnostic bundle" }, bundleBusy ? "Building..." : bundleState || "Diagnostic bundle"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close")),
+    (panelNote || bundleFallback) && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 border-t border-slate-700 text-[11px] text-slate-200", role: "status" }, panelNote, bundleFallback && /* @__PURE__ */ React.createElement("textarea", { readOnly: true, value: bundleFallback, onFocus: (e) => {
+      try {
+        e.target.select();
+      } catch (_) {
+      }
+    }, "aria-label": "Diagnostic bundle JSON. Select all and copy.", className: "mt-1 w-full h-24 text-[10px] font-mono bg-slate-800 text-slate-100 rounded p-1" }))
   );
 }
 PdfAuditView.buildPipelineTourSteps = buildPdfPipelineTourSteps;
@@ -11927,7 +11961,7 @@ Return ONLY JSON:
       },
       "Clear history"
     ))), (() => {
-      const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: f && f.id || "unknown-rule", description: f && f.description || "", nodes: f && f.nodes || 0, wcagCriteria: f && Array.isArray(f.wcagCriteria) ? f.wcagCriteria : [], helpUrl: f && f.helpUrl || "" });
+      const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: f && f.id || "unknown-rule", description: f && f.description || "", nodes: f && f.nodes || 0, wcagCriteria: f && Array.isArray(f.wcagCriteria) ? f.wcagCriteria : [], helpUrl: f && f.helpUrl || "", where: (f && Array.isArray(f.details) ? f.details : []).map((d) => d && d.snippet ? String(d.snippet).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) : "").filter(Boolean).slice(0, 3) });
       const _rfEaAudit = pdfFixResult && (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit);
       const _rfSource = pdfFixResult && (pdfFixResult.axeAudit || _rfEaAudit) ? { committed: true, findings: [].concat(
         (pdfFixResult.axeAudit && pdfFixResult.axeAudit.incomplete || []).map(_rfMapC("axe", "incomplete")),
@@ -11960,7 +11994,7 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2", role: "region", "aria-label": t("pdf_audit.review_queue.aria") || "Findings that need human judgment" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-900 flex-1" }, "\u{1F9D1}\u200D\u2696\uFE0F ", t("pdf_audit.review_queue.heading") || "Needs your judgment", " ", /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, "(", _rfOpen.length, ")")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5" }, _rfSource.committed ? t("pdf_audit.review_queue.current") || "current result" : (t("pdf_audit.review_queue.as_of") || "as of pass") + " " + _rfSource.passNumber), _rfDone > 0 && /* @__PURE__ */ React.createElement("button", { onClick: () => {
         setReviewDismissed({});
         setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev);
-      }, className: "text-[10px] font-bold text-slate-600 underline", title: t("pdf_audit.review_queue.reset_title") || "Bring back the findings you marked as reviewed \u2014 also clears the attestations recorded for the report" }, _rfDone, " ", t("pdf_audit.review_queue.reviewed") || "reviewed", " \u2014 ", t("pdf_audit.review_queue.reset") || "reset")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900" }, _remediationInFlight ? t("pdf_audit.review_queue.explainer") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own." : t("pdf_audit.review_queue.explainer_settled") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself."), _rfOpen.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "\u2705 ", t("pdf_audit.review_queue.all_done") || "All current review findings handled \u2014 new ones will appear here if a later pass surfaces any.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 list-none" }, _rfOpen.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold", "aria-hidden": "true" }, f.bucket === "incomplete" ? "\u26A0" : f.bucket === "potential" ? "\u{1F50E}" : "\u{1F440}"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold" }, f.id), /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[9px] font-bold uppercase tracking-wide" }, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + (_rfBucketLabel[f.bucket] || f.bucket)), f.nodes > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-70" }, f.nodes, " ", f.nodes === 1 ? t("pdf_audit.review_queue.element") || "element" : t("pdf_audit.review_queue.elements") || "elements"), (f.wcagCriteria || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-70" }, "WCAG ", f.wcagCriteria.join(", ")), f.description && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 opacity-90" }, f.description), f.helpUrl && /* @__PURE__ */ React.createElement("a", { href: f.helpUrl, target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("pdf_audit.wcag_report.guidance") || "Guidance")), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _reviewToWorkbench(f), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.wb_title") || "Send to the Expert Workbench \u2014 prefills a targeted command you review and run" }, "\u{1F6E0}"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      }, className: "text-[10px] font-bold text-slate-600 underline", title: t("pdf_audit.review_queue.reset_title") || "Bring back the findings you marked as reviewed \u2014 also clears the attestations recorded for the report" }, _rfDone, " ", t("pdf_audit.review_queue.reviewed") || "reviewed", " \u2014 ", t("pdf_audit.review_queue.reset") || "reset")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900" }, _remediationInFlight ? t("pdf_audit.review_queue.explainer") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own." : t("pdf_audit.review_queue.explainer_settled") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself."), _rfOpen.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "\u2705 ", t("pdf_audit.review_queue.all_done") || "All current review findings handled \u2014 new ones will appear here if a later pass surfaces any.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 list-none" }, _rfOpen.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold", "aria-hidden": "true" }, f.bucket === "incomplete" ? "\u26A0" : f.bucket === "potential" ? "\u{1F50E}" : "\u{1F440}"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold" }, f.id), /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[9px] font-bold uppercase tracking-wide" }, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + (_rfBucketLabel[f.bucket] || f.bucket)), f.nodes > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-70" }, f.nodes, " ", f.nodes === 1 ? t("pdf_audit.review_queue.element") || "element" : t("pdf_audit.review_queue.elements") || "elements"), (f.wcagCriteria || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-70" }, "WCAG ", f.wcagCriteria.join(", ")), f.description && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 opacity-90" }, f.description), (f.where || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 font-mono text-[10px] opacity-80" }, "\u2192 ", f.where.map((w, wi) => /* @__PURE__ */ React.createElement("span", { key: wi }, wi > 0 ? " \xB7 " : "", "\u201C", w, "\u201D"))), f.helpUrl && /* @__PURE__ */ React.createElement("a", { href: f.helpUrl, target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("pdf_audit.wcag_report.guidance") || "Guidance")), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _reviewToWorkbench(f), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.wb_title") || "Send to the Expert Workbench \u2014 prefills a targeted command you review and run" }, "\u{1F6E0}"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         const _k = _rfKey(f);
         const _at = Date.now();
         setReviewDismissed((prev) => ({ ...prev, [_k]: _at }));
