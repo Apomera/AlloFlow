@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "44px label targets where layout space permits",
+    "12px measured label text with wrapping",
+    "tap movement tolerance without unintended panning",
+    "press-time label identity retained",
+    "latched drag intent and multi-touch/cancel cleanup"
+  ],
+  "unitTests": 22,
+  "motionBrowserTests": 2,
+  "browserTests": 9,
+  "status": "passed"
+}

@@ -45,3 +45,22 @@ describe('stable anatomy annotation slots', () => {
   }
  });
 });
+
+
+describe('readable anatomy label text', () => {
+ const wrap = (text, width) => window.__alloCellPure.wrapCellAnatomyLabel(text, width, s => Array.from(s).length * 6);
+ it('wraps long names at word boundaries without dropping text', () => {
+  expect(wrap('Endoplasmic Reticulum', 80)).toEqual(['Endoplasmic', 'Reticulum']);
+  expect(wrap('Cell Wall', 80)).toEqual(['Cell Wall']);
+ });
+ it('splits an oversized word without splitting Unicode characters', () => {
+  const lines = wrap('Mitochondria', 30);
+  expect(lines.join('')).toBe('Mitochondria');
+  expect(lines.every(line => line.length <= 5)).toBe(true);
+  expect(wrap('🧬🧬🧬', 12)).toEqual(['🧬🧬', '🧬']);
+ });
+ it('ignores empty text and repeated whitespace', () => {
+  expect(wrap('  ',80)).toEqual([]);
+  expect(wrap('  Cell   Wall  ',80)).toEqual(['Cell Wall']);
+ });
+});

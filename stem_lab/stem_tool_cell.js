@@ -1002,6 +1002,21 @@ window.StemLab = window.StemLab || {
     return result.sort(function(a, b) { return a.index - b.index; });
   }
 
+  // Wrap measured names without horizontally compressing their letters.
+  function wrapCellAnatomyLabel(text, maxWidth, measure) {
+    var lines = [], line = '';
+    String(text || '').trim().split(/\s+/).filter(Boolean).forEach(function(word) {
+      if (line && measure(line + ' ' + word) <= maxWidth) { line += ' ' + word; return; }
+      if (line) { lines.push(line); line = ''; }
+      Array.from(word).forEach(function(character) {
+        if (line && measure(line + character) > maxWidth) { lines.push(line); line = ''; }
+        line += character;
+      });
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+
   function interiorBoundaryPoint(geometry, type, fraction, inset) {
     inset = Number(inset) || 0;
     var rx = Math.max(1, geometry.RX - inset), ry = Math.max(1, geometry.RY - inset);
@@ -1825,7 +1840,7 @@ window.StemLab = window.StemLab || {
   }
 
   try {
-    window.__alloCellPure = { cellGuideForType: cellGuideForType, cellGuideVisibleStep: cellGuideVisibleStep, createCellRecallRound: createCellRecallRound, normalizeCellRecallRound: normalizeCellRecallRound, recordCellRecallAnswer: recordCellRecallAnswer, layoutCellAnatomyLabels: layoutCellAnatomyLabels, interiorBoundaryPoint: interiorBoundaryPoint, interiorStructureFocus: interiorStructureFocus, drawCellStructureDetail: drawCellStructureDetail, CELL_ACTIVITY_META: CELL_ACTIVITY_META, CELL_INQUIRY_ROUTES: CELL_INQUIRY_ROUTES, cellActivitySearch: cellActivitySearch, cellInquiryState: cellInquiryState, cellInquiryReport: cellInquiryReport, cellComparisonModel: cellComparisonModel, cellComparisonReport: cellComparisonReport, renderCellComparison: renderCellComparison, osmosisNotebookPacket: osmosisNotebookPacket, parseOsmosisNotebook: parseOsmosisNotebook, osmosisNotebookReport: osmosisNotebookReport, CELL_RECALL_CLUES: CELL_RECALL_CLUES, cellRecallOptions: cellRecallOptions, osmosisModel: osmosisModel, renderOsmosisLab: renderOsmosisLab, CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
+    window.__alloCellPure = { cellGuideForType: cellGuideForType, cellGuideVisibleStep: cellGuideVisibleStep, createCellRecallRound: createCellRecallRound, normalizeCellRecallRound: normalizeCellRecallRound, recordCellRecallAnswer: recordCellRecallAnswer, layoutCellAnatomyLabels: layoutCellAnatomyLabels, wrapCellAnatomyLabel: wrapCellAnatomyLabel, interiorBoundaryPoint: interiorBoundaryPoint, interiorStructureFocus: interiorStructureFocus, drawCellStructureDetail: drawCellStructureDetail, CELL_ACTIVITY_META: CELL_ACTIVITY_META, CELL_INQUIRY_ROUTES: CELL_INQUIRY_ROUTES, cellActivitySearch: cellActivitySearch, cellInquiryState: cellInquiryState, cellInquiryReport: cellInquiryReport, cellComparisonModel: cellComparisonModel, cellComparisonReport: cellComparisonReport, renderCellComparison: renderCellComparison, osmosisNotebookPacket: osmosisNotebookPacket, parseOsmosisNotebook: parseOsmosisNotebook, osmosisNotebookReport: osmosisNotebookReport, CELL_RECALL_CLUES: CELL_RECALL_CLUES, cellRecallOptions: cellRecallOptions, osmosisModel: osmosisModel, renderOsmosisLab: renderOsmosisLab, CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -20594,7 +20609,7 @@ var d = labToolData.cell || {};
               if (sz < 4 || p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > HH + 100) return;
               if (!playAsOrg && (p.x < 0 || p.x > W || p.y < 0 || p.y > HH)) return;
               cctx.save();
-              var fontSize = 11 * dpr;
+              var fontSize = 12 * dpr;
               cctx.font = '600 ' + fontSize + 'px Inter, system-ui, sans-serif';
               cctx.textAlign = 'left'; cctx.textBaseline = 'middle';
               var labelFillColor = 'rgba(248,250,252,0.97)';
@@ -20610,11 +20625,15 @@ var d = labToolData.cell || {};
                 if (focusedAnatomy.length) visibleAnatomy = focusedAnatomy;
               }
               var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
+              var labelTextWidth = Math.max(1, (W - 22 * dpr) / 2 - 20 * dpr);
+              var measureLabel = function(text) { return cctx.measureText(text).width; };
               var items = visibleAnatomy.filter(function(a) { return typeof a.lx !== 'undefined'; }).map(function(a) {
-                return { anatomy: a, layoutX: a.lx, layoutY: a.ly,
+                var lines = wrapCellAnatomyLabel(a.name, labelTextWidth, measureLabel);
+                return { anatomy: a, lines: lines, layoutX: a.lx, layoutY: a.ly,
                   sx: p.x + (a.lx * cos - a.ly * sin) * sz,
                   sy: p.y + (a.lx * sin + a.ly * cos) * sz,
-                  w: cctx.measureText(a.name).width + 20 * dpr, h: 26 * dpr };
+                  w: Math.max(44 * dpr, Math.max.apply(null, lines.map(measureLabel)) + 20 * dpr),
+                  h: Math.max(44 * dpr, lines.length * 15 * dpr + 14 * dpr) };
               });
               var labelBoxes = layoutCellAnatomyLabels(items,
                 { left: 8 * dpr, right: W - 8 * dpr, top: labelSafeTop, bottom: Math.max(labelSafeTop + 30 * dpr, labelSafeBottom) },
@@ -20654,8 +20673,12 @@ var d = labToolData.cell || {};
                 cctx.shadowBlur = 0; cctx.shadowOffsetY = 0;
                 cctx.strokeStyle = box.emphasized ? '#0f766e' : hexToRgba(def.color, 0.65); cctx.lineWidth = (box.emphasized ? 2.5 : 1) * dpr; cctx.stroke();
                 cctx.fillStyle = labelTextColor;
-                cctx.fillText(box.anatomy.name, pillX + 10 * dpr, pillY + pillH / 2, pillW - 20 * dpr);
-                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o, selected: box.selected, hovered: box.hovered, sx: box.sx, sy: box.sy });
+                var lineHeight = Math.min(15 * dpr, Math.max(1, (pillH - 8 * dpr) / box.lines.length));
+                cctx.font = '600 ' + Math.min(fontSize, lineHeight / 1.25) + 'px Inter, system-ui, sans-serif';
+                box.lines.forEach(function(line, index) {
+                  cctx.fillText(line, pillX + 10 * dpr, pillY + pillH / 2 + (index - (box.lines.length - 1) / 2) * lineHeight);
+                });
+                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o, selected: box.selected, hovered: box.hovered, sx: box.sx, sy: box.sy, lines: box.lines });
               });
               cctx.restore();
             }
@@ -22545,6 +22568,7 @@ var d = labToolData.cell || {};
 
             // Pointer events cover mouse, touch, and pen while preserving drag cleanup.
             var activePointerId = null;
+            var pointerDidDrag = false, pointerTapTolerance = 5, pointerDownLabel = null;
 
             function updateHoverFromPoint(clientX, clientY) {
               var rect = canvasEl.getBoundingClientRect();
@@ -22648,6 +22672,7 @@ var d = labToolData.cell || {};
 
             function onPointerDown(e) {
               if (typeof e.button === 'number' && e.button !== 0) return;
+              if (activePointerId !== null) return;
               if (playAsOrg) {
                 var rect = canvasEl.getBoundingClientRect();
                 var mx = (e.clientX - rect.left) * dpr;
@@ -22660,6 +22685,11 @@ var d = labToolData.cell || {};
                 return;
               }
               activePointerId = e.pointerId;
+              pointerDidDrag = false;
+              pointerTapTolerance = e.pointerType === 'mouse' ? 5 : 10;
+              var tapRect = canvasEl.getBoundingClientRect();
+              var tapX = (e.clientX - tapRect.left) * dpr, tapY = (e.clientY - tapRect.top) * dpr;
+              pointerDownLabel = hitCellExplanationBody(tapX, tapY) ? null : findOrganelleLabelHit(tapX, tapY);
               dragging = true;
               dragStartX = e.clientX; dragStartY = e.clientY;
               camStartX = cam.x; camStartY = cam.y;
@@ -22671,12 +22701,15 @@ var d = labToolData.cell || {};
             function onPointerMove(e) {
               if (dragging) {
                 if (activePointerId !== null && e.pointerId !== activePointerId) return;
-                if (Math.abs(e.clientX - dragStartX) >= 5 || Math.abs(e.clientY - dragStartY) >= 5) setObservationFollow(false);
-                var dx = (e.clientX - dragStartX) / cam.zoom;
-                var dy = (e.clientY - dragStartY) / cam.zoom;
-                cam.x = camStartX - dx; cam.y = camStartY - dy;
-                clampCamera();
-                if (canvasEl._cellSimPaused) renderStaticFrame();
+                if (Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) >= pointerTapTolerance) pointerDidDrag = true;
+                if (pointerDidDrag) {
+                  setObservationFollow(false);
+                  var dx = (e.clientX - dragStartX) / cam.zoom;
+                  var dy = (e.clientY - dragStartY) / cam.zoom;
+                  cam.x = camStartX - dx; cam.y = camStartY - dy;
+                  clampCamera();
+                  if (canvasEl._cellSimPaused) renderStaticFrame();
+                }
                 if (e.pointerType !== 'mouse') e.preventDefault();
               }
               updateHoverFromPoint(e.clientX, e.clientY);
@@ -22684,11 +22717,16 @@ var d = labToolData.cell || {};
 
             function finishPointer(e, cancelled) {
               if (activePointerId === null || e.pointerId !== activePointerId) return;
-              if (!cancelled && Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
-                handleCanvasTap(e.clientX, e.clientY);
+              if (!cancelled && !pointerDidDrag && Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) < pointerTapTolerance) {
+                // A moving label can leave the release point; keep the structure touched at press time.
+                if (pointerDownLabel) {
+                  if (pointerDownLabel.org === selectedOrg && observationLabelsVisible) showOrganelleLabelTooltip(pointerDownLabel);
+                } else handleCanvasTap(e.clientX, e.clientY);
               }
               dragging = false;
               activePointerId = null;
+              pointerDownLabel = null;
+              pointerDidDrag = false;
               try { if (canvasEl.releasePointerCapture) canvasEl.releasePointerCapture(e.pointerId); } catch (err2) {}
               updateHoverFromPoint(e.clientX, e.clientY);
               if (e.pointerType !== 'mouse') e.preventDefault();
@@ -22699,6 +22737,8 @@ var d = labToolData.cell || {};
               if (activePointerId !== null && e.pointerId !== activePointerId) return;
               dragging = false;
               activePointerId = null;
+              pointerDownLabel = null;
+              pointerDidDrag = false;
               hoveredOrg = null;
               hoveredAnatomyLabel = null;
               canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
@@ -23201,7 +23241,7 @@ var d = labToolData.cell || {};
               return _labelHitRegions.map(function(region) {
                 return { name: region.anatomy.name, x: region.x / dpr, y: region.y / dpr,
                   width: region.w / dpr, height: region.h / dpr, selected: region.selected, hovered: region.hovered,
-                  anchorX: region.sx / dpr, anchorY: region.sy / dpr };
+                  anchorX: region.sx / dpr, anchorY: region.sy / dpr, lines: region.lines.slice() };
               });
             };
 
