@@ -848,3 +848,27 @@ Pick the work. Pick it carefully. Do it well.
 *Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
 
 ---
+
+## [auto-draft] Session d57e5b15 — 2026-09-14
+
+**Turns**: 13 user / 29 assistant
+
+**Session opened with**: Help me clean up the local alloflow folder so its not taking up 22gb when it doesnt need to
+
+**Last assistant turn closed with**: The AlloFlow folder is down from 20 GB to 10 GB. Git is clean and `main` is untouched. **What I removed** | Item | Freed | Why it was safe | |---|---|---| | Abandoned git temp packs (`.git/objects/pack/tmp_pack_*`) | 1.26 GB | Leftovers from interrupted pushes/fetches in Aug and Sep. Git itself fl...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session d661780d — 2026-09-14
+
+**Turns**: 159 user / 263 assistant
+
+**Session opened with**: Lets make sure all my updates are commited and pushed. Then let me know what I should be working on next.
+
+**Last assistant turn closed with**: Nothing else can proceed on my side: the tag push is the one action I'm not permitted to take, and the link commit should not go public until the release exists. **Where things stand** - Local main is one commit ahead of origin with the download links pointed at mcpb-v0.11.1. I'm holding that push...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
