@@ -252,11 +252,18 @@ describe('StudentQuizOverlay generalized live response formats', () => {
     });
     await click(Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('No, something is misplaced')));
     const sequenceRows = host.querySelectorAll('[data-live-response-type="sequence-sense"] ol button');
-    await click(sequenceRows[1]);
+    // 'Finish' and 'Middle' are swapped: the item was authored with index 1,
+    // but clicking the other half of the swap (index 2) must count too.
+    await click(sequenceRows[2]);
+    expect(host.querySelector('[data-live-sequence-arrange="true"]')).not.toBeNull();
+    expect(host.querySelectorAll('[data-live-sequence-arrange="true"] li')).toHaveLength(3);
+    await click(host.querySelector('button[aria-label="Move up: Middle"]'));
+    expect(Array.from(host.querySelectorAll('[data-live-sequence-arrange="true"] li span:nth-child(2)')).map((node) => node.textContent)).toEqual(['Start', 'Middle', 'Finish']);
+    await click(Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Done arranging')));
     await click(Array.from(host.querySelectorAll('button')).find((button) => button.textContent.trim() === 'process'));
     expect(sentPayload()).toMatchObject({
       itemType: 'sequence-sense',
-      answer: { verifyAnswer: 'no', clickedIdx: 1, principleAnswer: 'process', status: 'correct', score: 3 },
+      answer: { verifyAnswer: 'no', clickedIdx: 2, orderAnswer: [0, 1, 2], principleAnswer: 'process', status: 'correct', score: 4 },
     });
 
     act(() => root.unmount());

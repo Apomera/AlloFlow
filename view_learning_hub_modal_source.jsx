@@ -104,6 +104,33 @@ function LearningHubModal(props) {
     setShowLearningHub(false);
   };
   const hubGridRef = React.useRef(null);
+  // AI-only cards (2026-09-14). Six tools do nothing without an AI call, so a
+  // student whose AI is off (QR link without a personal key, or the project's
+  // hide-AI setting) would open an empty screen or an immediate error. Hide
+  // those cards on the same signal every module uses: the host swaps
+  // window.callGemini for a blocked function and sets __alloStudentAiDisabled.
+  // Tools that still work without AI (STEM Lab, Reading Library, SEL Hub, the
+  // writing studios) keep their cards and degrade inside.
+  const readHubAiHidden = () => {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (window.__alloStudentAiDisabled === true) return true;
+      const fn = window.callGemini;
+      return typeof fn === 'function' && fn._alloQrBlocked === true;
+    } catch (_) { return false; }
+  };
+  const [hubAiHidden, setHubAiHidden] = React.useState(readHubAiHidden);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const refresh = () => setHubAiHidden(readHubAiHidden());
+    refresh();
+    window.addEventListener('alloflow:student-ai-config-changed', refresh);
+    window.addEventListener('alloflow:ai-config-changed', refresh);
+    return () => {
+      window.removeEventListener('alloflow:student-ai-config-changed', refresh);
+      window.removeEventListener('alloflow:ai-config-changed', refresh);
+    };
+  }, [showLearningHub]);
   const [hubQuery, setHubQuery] = React.useState('');
   const [hubCards, setHubCards] = React.useState([]);
   const [hubFavoriteIds, setHubFavoriteIds] = React.useState(() => {
@@ -156,7 +183,7 @@ function LearningHubModal(props) {
   React.useEffect(() => {
     const grid = hubGridRef.current;
     if (!grid) return undefined;
-    const shells = Array.from(grid.querySelectorAll('[data-hub-id]'));
+    const shells = Array.from(grid.querySelectorAll('[data-hub-id]')).filter((shell) => !(hubAiHidden && shell.dataset.hubAiOnly === 'true'));
     setHubCards(shells.map((shell) => ({ id: shell.dataset.hubId, label: shell.dataset.hubLabel, section: shell.dataset.hubSection })));
     const remember = (event) => {
       const launch = event.target && event.target.closest ? event.target.closest('[data-hub-launch]') : null;
@@ -168,7 +195,7 @@ function LearningHubModal(props) {
     };
     grid.addEventListener('click', remember, true);
     return () => grid.removeEventListener('click', remember, true);
-  }, []);
+  }, [hubAiHidden]);
   React.useEffect(() => {
     const grid = hubGridRef.current;
     if (!grid) return;
@@ -179,7 +206,8 @@ function LearningHubModal(props) {
     shells.forEach((shell) => {
       const text = (shell.textContent || '').toLowerCase();
       const sectionCollapsed = hubCollapsedSections.includes(shell.dataset.hubSection);
-      const visible = (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || query || hubFavoritesOnly);
+      const aiOnlyHidden = hubAiHidden && shell.dataset.hubAiOnly === 'true';
+      const visible = !aiOnlyHidden && (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || query || hubFavoritesOnly);
       shell.hidden = !visible;
       shell.setAttribute('aria-hidden', visible ? 'false' : 'true');
       if (visible) { visibleSections.add(shell.dataset.hubSection); count += 1; }
@@ -198,7 +226,7 @@ function LearningHubModal(props) {
       }
     });
     setHubVisibleCount(count);
-  }, [hubQuery, hubFavoritesOnly, hubFavoriteIds, hubCards, hubCollapsedSections]);
+  }, [hubQuery, hubFavoritesOnly, hubFavoriteIds, hubCards, hubCollapsedSections, hubAiHidden]);
   const hubRolePreference = hubRoleOverride || userRole || (isTeacherMode ? 'teacher' : 'student');
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('family') ? 'family' : (hubRoleRaw.includes('teacher') || hubRoleRaw.includes('educator')) ? 'teacher' : 'student';
@@ -225,6 +253,11 @@ function LearningHubModal(props) {
               <button type="button" onClick={() => setShowLearningHub(false)} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('learning_hub.close_aria') || 'Close learning hub'}>{'\u2715'}</button>
             </div>
 
+            {hubAiHidden && (
+              <p role="note" data-hub-ai-hidden-note="" className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                {tr('hub.ai_tools_hidden', 'Some tools need AI and are turned off for students in this project. The tools shown here work without it.')}
+              </p>
+            )}
             <div className="mb-4 space-y-3" role="search" aria-label={tr('hub.search_label', 'Search tools')}>
               <div className="flex flex-col sm:flex-row gap-2">
                 <label htmlFor="learning-hub-search" className="sr-only">{tr('hub.search_label', 'Search tools')}</label>
@@ -293,7 +326,7 @@ function LearningHubModal(props) {
                 </div>
               </div>
               {typeof setStemLabTool === 'function' && typeof setLabToolData === 'function' && (
-                <div className="relative group" data-hub-id="lumen-study" data-hub-label="Lumen Study" data-hub-section="core">
+                <div className="relative group" data-hub-ai-only="true" data-hub-id="lumen-study" data-hub-label="Lumen Study" data-hub-section="core">
                   <button type="button" data-hub-launch="true" data-help-key="learning_hub_lumen_card" onClick={() => {
                   setShowLearningHub(false);
                   setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'study' } }));
@@ -334,7 +367,7 @@ function LearningHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('stem-lab')} aria-label={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': STEAM Lab' : tr('hub.add_favorite', 'Add to favorites') + ': STEAM Lab'} title={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('stem-lab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('stem-lab') ? '★' : '☆'}</button>
               </div>
-              <div className="relative group" data-hub-id="text-inquiry" data-hub-label="Text Inquiry Studio" data-hub-section="core">
+              <div className="relative group" data-hub-ai-only="true" data-hub-id="text-inquiry" data-hub-label="Text Inquiry Studio" data-hub-section="core">
                 <button type="button" data-hub-launch="true" data-help-key="learning_hub_text_inquiry_card" onClick={openTextInquiryStudio} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" aria-describedby={textInquiryLaunchError ? 'text-inquiry-launch-error' : undefined}>
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCC3'}</span>
                 <div>
@@ -356,7 +389,7 @@ function LearningHubModal(props) {
                 </div>
               </div>
               {typeof setIsLinguaPracticeOpen === 'function' && (
-                <div className="relative group" data-hub-id="lingua-practice" data-hub-label="Lingua Practice" data-hub-section="practice">
+                <div className="relative group" data-hub-ai-only="true" data-hub-id="lingua-practice" data-hub-label="Lingua Practice" data-hub-section="practice">
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsLinguaPracticeOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-sm font-black" aria-hidden="true">A/文</span>
                   <div>
@@ -396,7 +429,7 @@ function LearningHubModal(props) {
                   posture: this is the learner surface, so the card cannot be the
                   way a student reaches the unrestricted coach. It opens in its
                   own window because the site it coaches is not AlloFlow. */}
-              <div className="relative group" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
+              <div className="relative group" data-hub-ai-only="true" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} const w = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); if (w) { window.__alloPendingCoachWin = w; window.__alloPendingCoachPosture = 'learner'; } } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\u23F1\uFE0F'}</span>
                 <div>
@@ -416,7 +449,7 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-section-toggle="explore" aria-expanded={!hubCollapsedSections.includes('explore')} aria-label={hubCollapsedSections.includes('explore') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('explore')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('explore') ? '+' : '-'}</button>
                 </div>
               </div>
-              <div className="relative group" data-hub-id="research-hub" data-hub-label="Research Hub" data-hub-section="explore">
+              <div className="relative group" data-hub-ai-only="true" data-hub-id="research-hub" data-hub-label="Research Hub" data-hub-section="explore">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); if (typeof setShowResearchHub === 'function') setShowResearchHub(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCD1'}</span>
                 <div>
@@ -428,7 +461,7 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('research-hub')} aria-label={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Research Hub'} title={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-hub') ? '★' : '☆'}</button>
               </div>
               {typeof setShowLearningWebExplorer === 'function' && (
-                <div className="relative group" data-hub-id="learning-web-explorer" data-hub-label="Learning Web: Explore" data-hub-section="explore">
+                <div className="relative group" data-hub-ai-only="true" data-hub-id="learning-web-explorer" data-hub-label="Learning Web: Explore" data-hub-section="explore">
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowLearningWebExplorer(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                     <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD78\uFE0F'}</span>
                     <div>

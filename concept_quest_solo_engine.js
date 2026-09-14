@@ -28,6 +28,45 @@
     if (Array.isArray(item.correctIndices)) return Array.from(new Set(item.correctIndices)).filter(function(index) { return Number.isInteger(index) && index >= 0 && index < item.options.length; });
     return item.options.map(function(option, index) { return (Array.isArray(item.correctAnswers) ? item.correctAnswers : []).some(function(answer) { return norm(option) === norm(answer); }) ? index : -1; }).filter(function(index) { return index >= 0; });
   }
+  // Sequence Sense answer key. The author supplies one "intentionallyWrongIndex",
+  // but an adjacent swap leaves BOTH items out of place, so the accepted set is
+  // derived from the displayed order itself: a displayed position counts as
+  // misplaced when removing it leaves the remaining items in canonical order.
+  // Canonical (or missing) order -> nothing is misplaced. A scramble no single
+  // removal can repair falls back to the authored index, else every position
+  // (all are out of place). Returns { orderIsCorrect, misplaced: [positions] }.
+  function sequenceSenseTruth(presentedOrder, intentionallyWrongIndex, itemCount) {
+    var n = Number(itemCount) || 0;
+    var valid = n > 0 && Array.isArray(presentedOrder) && presentedOrder.length === n
+      && presentedOrder.every(function (value) { return Number.isInteger(value) && value >= 0 && value < n; })
+      && new Set(presentedOrder).size === n;
+    if (!valid || presentedOrder.every(function (value, index) { return value === index; })) return { orderIsCorrect: true, misplaced: [] };
+    var misplaced = [];
+    for (var skip = 0; skip < n; skip++) {
+      var previous = -1;
+      var sorted = true;
+      for (var j = 0; j < n && sorted; j++) {
+        if (j === skip) continue;
+        if (presentedOrder[j] < previous) sorted = false;
+        previous = presentedOrder[j];
+      }
+      if (sorted) misplaced.push(skip);
+    }
+    if (!misplaced.length) {
+      misplaced = Number.isInteger(intentionallyWrongIndex) && intentionallyWrongIndex >= 0 && intentionallyWrongIndex < n
+        ? [intentionallyWrongIndex]
+        : presentedOrder.map(function (_, index) { return index; });
+    }
+    return { orderIsCorrect: false, misplaced: misplaced };
+  }
+  // "items 2 and 3 were swapped" / "item 3 was misplaced" / "items 1, 3 and 4 were out of place"
+  function describeSequenceMisplaced(misplaced) {
+    var numbers = (Array.isArray(misplaced) ? misplaced : []).map(function (index) { return index + 1; });
+    if (!numbers.length) return 'the order was correct';
+    if (numbers.length === 1) return 'item ' + numbers[0] + ' was misplaced';
+    if (numbers.length === 2 && numbers[1] === numbers[0] + 1) return 'items ' + numbers[0] + ' and ' + numbers[1] + ' were swapped';
+    return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
+  }
   function hasKey(item) {
     if (item.type === 'mcq') return item.options.length >= 2 && item.correctIndex >= 0 && item.options.every(function(option) { return !!norm(option); });
     if (item.type === 'multi-select') {
@@ -83,7 +122,7 @@
     if (item.selfReviewRequired || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) return { text: '', guideRevealed: false, selfReview: '' };
     if (item.type === 'mcq') return { answerIndex: null };
     if (item.type === 'multi-select') return { selectedIndices: [] };
-    if (item.type === 'sequence-sense') return { verifyAnswer: '', wrongIndex: null, principleAnswer: '' };
+    if (item.type === 'sequence-sense') return { verifyAnswer: '', wrongIndex: null, order: null, principleAnswer: '' };
     if (item.type === 'relation-mismatch') return { pairIndex: null, partnerAnswer: '' };
     if (item.type === 'answer-evidence') return { answerIndex: null, evidenceIndex: null };
     return { text: '', unit: '' };
@@ -94,7 +133,10 @@
     else if (item.type === 'multi-select') answer = correctMultiIndices(item).map(function(index) { return item.options[index]; }).join('; ');
     else if (item.type === 'fill-blank') answer = text(item.expectedFill) + (Array.isArray(item.acceptableAlternatives) && item.acceptableAlternatives.length ? '\nAlso accept: ' + item.acceptableAlternatives.join(', ') : '');
     else if (item.type === 'numeric-response') answer = finiteNumber(item.correctValue) ? text(item.correctValue) + (item.unit ? ' ' + item.unit : '') + (Number(item.tolerance) > 0 ? ' (±' + item.tolerance + ')' : '') + (Array.isArray(item.acceptableUnits) && item.acceptableUnits.length ? '\nAlso accept units: ' + item.acceptableUnits.join(', ') : '') : '';
-    else if (item.type === 'sequence-sense') answer = (item.intentionallyWrongIndex == null ? 'The displayed order is correct.' : 'Misplaced displayed item: ' + (item.intentionallyWrongIndex + 1) + '.') + '\nCorrect order: ' + (item.items || []).join(' → ') + '\nOrdering principle: ' + text(item.orderingPrinciple);
+    else if (item.type === 'sequence-sense') {
+      var sequenceTruth = sequenceSenseTruth(item.presentedOrder, item.intentionallyWrongIndex, (item.items || []).length);
+      answer = (sequenceTruth.orderIsCorrect ? 'The displayed order is correct.' : 'Displayed ' + describeSequenceMisplaced(sequenceTruth.misplaced) + '.') + '\nCorrect order: ' + (item.items || []).join(' → ') + '\nOrdering principle: ' + text(item.orderingPrinciple);
+    }
     else if (item.type === 'relation-mismatch') { var pair = (item.pairs || [])[item.wrongPairIndex] || {}; answer = 'Mismatched pair: ' + text(pair.left) + ' ↔ ' + text(pair.right) + '\nRepair: ' + text(pair.left) + ' → ' + text(item.correctPartnerForWrong); }
     else if (item.type === 'answer-evidence') answer = 'Answer: ' + text(item.correctAnswer) + '\nEvidence: ' + text(item.correctEvidence);
     else answer = item.rubric || item.expectedAnswer || item.sampleAnswer || item.correctAnswer;
@@ -152,11 +194,15 @@
     if (item.type === 'sequence-sense') {
       if (['yes', 'no'].indexOf(response.verifyAnswer) < 0 || !norm(response.principleAnswer)) return incomplete('Check the order and choose its ordering principle.');
       if (response.verifyAnswer === 'no' && (!Number.isInteger(response.wrongIndex) || response.wrongIndex < 0 || response.wrongIndex >= item.items.length)) return incomplete('Choose the misplaced displayed item.');
-      var inOrder = item.intentionallyWrongIndex == null;
-      var verify = (response.verifyAnswer === 'yes') === inOrder;
-      var diagnose = response.verifyAnswer === 'yes' ? verify : response.wrongIndex === item.intentionallyWrongIndex;
+      var truth = sequenceSenseTruth(item.presentedOrder, item.intentionallyWrongIndex, item.items.length);
+      var verify = (response.verifyAnswer === 'yes') === truth.orderIsCorrect;
+      var diagnose = response.verifyAnswer === 'yes' ? verify : truth.misplaced.indexOf(response.wrongIndex) >= 0;
+      // response.order is the student's arrangement (canonical indices); null
+      // means "left as displayed", which is only right when the display was.
+      var arranged = Array.isArray(response.order) ? response.order : Array.isArray(item.presentedOrder) ? item.presentedOrder : item.items.map(function(_, index) { return index; });
+      var arrange = arranged.length === item.items.length && arranged.every(function(value, index) { return value === index; });
       var principle = norm(response.principleAnswer) === norm(item.orderingPrinciple);
-      return result(item, Number(verify) + Number(diagnose) + Number(principle), 3, { step1Correct: verify, step2Correct: diagnose, step3Correct: principle });
+      return result(item, Number(verify) + Number(diagnose) + Number(arrange) + Number(principle), 4, { step1Correct: verify, step2Correct: diagnose, arrangeCorrect: arrange, step3Correct: principle });
     }
     if (item.type === 'relation-mismatch') {
       if (!Number.isInteger(response.pairIndex) || response.pairIndex < 0 || response.pairIndex >= item.pairs.length || !norm(response.partnerAnswer)) return incomplete('Choose a mismatched pair and its replacement partner.');

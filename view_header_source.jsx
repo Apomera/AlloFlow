@@ -227,7 +227,7 @@ function HeaderBar(props) {
     isGeneratingSource, isHelpMode, isJoinPopoverOpen, isProcessing,
     isStudentLinkMode, isZenMode, joinAppIdInput, joinClassSession,
     joinCodeInput, languageToTTSCode, latestLessonPlan,
-    leveledTextLanguage, notebookEntryCount, openExportPreview, onReturnToStart, pptxLoaded,
+    leveledTextLanguage, liveStatus, notebookEntryCount, openExportPreview, onReturnToStart, pptxLoaded,
     resetFontSize, safeRemoveItem, selectedVoice, sessionData,
     sessionUnsubscribeRef, setActiveSessionCode, setHistory,
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
@@ -404,6 +404,30 @@ function HeaderBar(props) {
   _headerUseFocusTrap(_textSettingsRef, showTextSettings, handleSetShowTextSettingsToFalse);
   _headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings, handleSetShowVoiceSettingsToFalse);
   _headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen, handleSetIsJoinPopoverOpenToFalse);
+  // Student live-session status (2026-09-14). The fixed strip that used to sit
+  // over the top of the page for the whole session ("Class CODE · codename ·
+  // AI tools off · Change codename") now lives behind this header button; the
+  // strips in the shell only appear for join errors that need a Retry. The
+  // button is visible at every width because on phones it is the only place
+  // the session code shows.
+  const [isLiveStatusOpen, setIsLiveStatusOpen] = React.useState(false);
+  const _liveStatusRef = React.useRef(null);
+  const handleCloseLiveStatus = React.useCallback(() => setIsLiveStatusOpen(false), []);
+  _headerUseFocusTrap(_liveStatusRef, isLiveStatusOpen, handleCloseLiveStatus);
+  const _liveHostStale = !!(liveStatus && liveStatus.hostState === 'stale');
+  const _liveConnectionStatus = liveStatus && liveStatus.connection ? String(liveStatus.connection) : 'connected';
+  const _liveConnected = !_liveHostStale && (_liveConnectionStatus === 'connected' || _liveConnectionStatus === 'idle');
+  const _liveConnectionLabel = _liveHostStale
+    ? (t('live_connection.stale') || 'Teacher status check is stale')
+    : _liveConnectionStatus === 'connecting' ? (t('live_connection.connecting') || 'Connecting…')
+    : _liveConnectionStatus === 'retrying' ? (t('live_connection.retrying') || 'Reconnecting…')
+    : _liveConnectionStatus === 'failed' ? (t('live_connection.failed') || 'Connection lost')
+    : _liveConnectionStatus === 'access-required' ? (t('live_connection.access') || 'Access needed')
+    : (t('live_connection.connected') || 'Connected');
+  const _liveTone = _liveHostStale ? 'bg-rose-600 border-rose-300/60' : _liveConnected ? 'bg-emerald-600 border-emerald-300/60' : 'bg-amber-600 border-amber-300/60';
+  const _liveAiLabel = liveStatus && liveStatus.aiConfigured
+    ? (t('header.personal_ai_connected') || 'Personal AI connected')
+    : liveStatus && liveStatus.aiSetupAllowed ? 'Personal AI available' : 'AI tools off';
   _headerUseFocusTrap(_exportDialogRef, showExportMenu, handleSetShowExportMenuToFalse);
   React.useEffect(() => {
     if (!_joinOpenAfterExpandRef.current || headerCollapsed) return;
@@ -897,9 +921,49 @@ function HeaderBar(props) {
                   </button>
                 )}
                 {!isTeacherMode && activeSessionCode && (
-                  <span role="status" className="hidden md:inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-600 px-3 text-xs font-black text-white">
-                    <Wifi size={16} className="animate-pulse motion-reduce:animate-none" aria-hidden="true" /> {t('header.live_session') || 'Live:'} {activeSessionCode}
-                  </span>
+                  <div className="relative">
+                    <button type="button"
+                      onClick={() => setIsLiveStatusOpen(open => !open)}
+                      aria-haspopup="dialog"
+                      aria-expanded={isLiveStatusOpen}
+                      data-help-key="header_live_status"
+                      data-live-status-trigger=""
+                      title={'Live session status'}
+                      className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-black text-white transition-colors ${_liveTone}`}
+                    >
+                      <Wifi size={16} className={_liveConnected ? 'animate-pulse motion-reduce:animate-none' : ''} aria-hidden="true" />
+                      <span>{t('header.live_session') || 'Live:'} {activeSessionCode}</span>
+                      <span className="sr-only">{_liveConnectionLabel}</span>
+                    </button>
+                    {isLiveStatusOpen && (
+                      <>
+                        <div ref={_liveStatusRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-live-status-title" data-live-status-dialog="" className="absolute top-full right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-xl shadow-2xl border border-slate-200 p-3 z-[100] text-left text-slate-800">
+                          <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2 mb-2">
+                            <h2 id="header-live-status-title" className="text-sm font-black text-slate-800">{'Live session'}</h2>
+                            <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">✕</button>
+                          </div>
+                          <dl className="space-y-1.5 text-xs">
+                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{t('session.code') || 'Class code'}</dt><dd className="font-mono font-bold">{activeSessionCode}</dd></div>
+                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'Codename'}</dt><dd className="truncate">{(liveStatus && liveStatus.nickname) || ('Student')}</dd></div>
+                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'AI'}</dt><dd>{_liveAiLabel}</dd></div>
+                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'Connection'}</dt><dd className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</dd></div>
+                          </dl>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {liveStatus && typeof liveStatus.changeCodename === 'function' && (
+                              <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.changeCodename(); }} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100">{liveStatus.nickname ? 'Change codename' : 'Set codename'}</button>
+                            )}
+                            {!_liveConnected && liveStatus && typeof liveStatus.retryConnection === 'function' && (
+                              <button type="button" onClick={() => liveStatus.retryConnection()} className="rounded-lg bg-amber-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-amber-800">{t('mailbox.retry') || 'Retry'}</button>
+                            )}
+                            {liveStatus && typeof liveStatus.leave === 'function' && (
+                              <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.leave(); }} className="ml-auto rounded-lg border border-rose-300 bg-white px-2.5 py-1.5 text-xs font-bold text-rose-800 hover:bg-rose-50">{t('mailbox.leave_session') || 'Leave session'}</button>
+                            )}
+                          </div>
+                        </div>
+                        <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleCloseLiveStatus}></div>
+                      </>
+                    )}
+                  </div>
                 )}
                 {isTeacherMode && (
                   <button type="button"

@@ -138,6 +138,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(quiz.querySelector('input[data-allo-response-key="mixed-quiz:q8:number"][type="number"]')).not.toBeNull();
     expect(quiz.querySelector('input[data-allo-response-key="mixed-quiz:q8:unit"]')).not.toBeNull();
     expect(quiz.querySelector('select[data-allo-response-key="mixed-quiz:q5:sequence-principle"]')).not.toBeNull();
+    expect(quiz.querySelector('input[data-allo-response-key="mixed-quiz:q5:sequence-order"][type="text"]')).not.toBeNull();
     expect(Array.from(quiz.querySelectorAll('[data-item-type="sequence-sense"] input[type="radio"]')).map((node) => node.value)).toEqual(['yes', 'no']);
     expect(quiz.querySelector('table caption')?.textContent).toContain('Pairs to review');
     expect(quiz.querySelectorAll('table th')).toHaveLength(2);

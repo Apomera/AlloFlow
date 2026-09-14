@@ -294,7 +294,7 @@ function FabStack(props) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Search, { size: 18 })),
         /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("simplified.define_mode"))
-      ), /* @__PURE__ */ React.createElement(
+      ), !studentAiFeaturesHidden && /* @__PURE__ */ React.createElement(
         "button",
         {
           "data-student-tool": "true",

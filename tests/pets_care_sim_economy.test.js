@@ -80,6 +80,7 @@ function extractFunction(name) {
 }
 
 const CARE_SIM_DAYS = extractObject('CARE_SIM_DAYS');
+const CARE_SIM_WEEK2 = extractObject('CARE_SIM_WEEK2');
 const START_MONEY = extractObject('CARE_SIM_START_MONEY');
 const INTERACT_EFFECTS = extractObject('INTERACT_EFFECTS');
 const SKIP_COST = extractObject('CARE_SIM_ROUTINE_SKIP_COST');
@@ -102,8 +103,8 @@ const clamp = (v) => Math.max(0, Math.min(100, v));
  * then overnight upkeep (each skipped task costs its domain) and energy
  * recovery between days. The final night's upkeep counts too.
  */
-function playWeek(species, picks, careMask, scenarioFirst = false) {
-  const days = CARE_SIM_DAYS[species];
+function playWeek(species, picks, careMask, scenarioFirst = false, table = CARE_SIM_DAYS) {
+  const days = table[species];
   const start = START_MONEY[species];
   const s = {
     phys: 50, ment: 50, soc: 50, env: 50, en: 100, money: start,
@@ -182,8 +183,8 @@ function playWeek(species, picks, careMask, scenarioFirst = false) {
   return s;
 }
 
-function* allPicks(species) {
-  const counts = CARE_SIM_DAYS[species].map((d) => d.choices.length);
+function* allPicks(species, table = CARE_SIM_DAYS) {
+  const counts = table[species].map((d) => d.choices.length);
   const total = counts.reduce((a, b) => a * b, 1);
   for (let idx = 0; idx < total; idx++) {
     let r = idx;
@@ -204,13 +205,13 @@ function* allWeeks(species) {
 const welfareSum = (choice) => DOMAINS.reduce((sum, d) => sum + ((choice.effects || {})[d] || 0), 0);
 const fullCareMask = (sp) => (1 << CARE_SIM_DAYS[sp].length) - 1;
 /** Index of the highest-welfare choice on each day. */
-const bestPicks = (sp) => CARE_SIM_DAYS[sp].map((d) => {
+const bestPicks = (sp, table = CARE_SIM_DAYS) => table[sp].map((d) => {
   let best = 0;
   d.choices.forEach((c, i) => { if (welfareSum(c) > welfareSum(d.choices[best])) best = i; });
   return best;
 });
 /** Index of the lowest-welfare choice on each day. */
-const worstPicks = (sp) => CARE_SIM_DAYS[sp].map((d) => {
+const worstPicks = (sp, table = CARE_SIM_DAYS) => table[sp].map((d) => {
   let worst = 0;
   d.choices.forEach((c, i) => { if (welfareSum(c) < welfareSum(d.choices[worst])) worst = i; });
   return worst;
@@ -390,6 +391,13 @@ describe('Pets Lab — care-sim economy invariants', () => {
         expect((ev.money || 0) <= 0 && (ev.en || 0) <= 0).toBe(true);
         expect((ev.money || 0) < 0 || (ev.en || 0) < 0).toBe(true);
         expect(ev[d]).toBeUndefined();
+        // A second wording for consecutive nights, same cost, different words.
+        expect(ev.alt, sp + ' ' + d + ' alt').toBeTruthy();
+        expect(typeof ev.alt.label).toBe('string');
+        expect(typeof ev.alt.note).toBe('string');
+        expect(ev.alt.label).not.toBe(ev.label);
+        expect(ev.alt.note).not.toBe(ev.note);
+        expect(Object.keys(ev.alt).sort()).toEqual(['label', 'note']);
       }
     }
   });
@@ -405,6 +413,15 @@ describe('Pets Lab — care-sim economy invariants', () => {
   it.each(SPECIES)('%s: careless weeks do trigger overnight events', (sp) => {
     const w = playWeek(sp, worstPicks(sp), 0);
     expect(w.events).toBeGreaterThan(0);
+  });
+
+  it('consecutive nights alternate the event wording, and every call site passes the night', () => {
+    expect(SRC).toMatch(/function describeConsequence\(species, dom, night\)/);
+    expect(SRC).toMatch(/var useAlt = !!\(ev\.alt && Number\.isInteger\(night\) && night % 2 === 1\);/);
+    const calls = [...SRC.matchAll(/describeConsequence\(([^)]*)\)/g)].map((m) => m[1]);
+    const callSites = calls.filter((args) => !/^species, dom, night$/.test(args));
+    expect(callSites.length).toBeGreaterThanOrEqual(5);
+    for (const args of callSites) expect(args.split(',').length, args).toBe(3);
   });
 
   it('overnight events are charged in nextDay, announced, and listed on the reflection', () => {
@@ -681,7 +698,7 @@ describe('Pets Lab — care-sim economy invariants', () => {
   }, 30_000);
 
   it('the provisional badge check states the outlook and the day states what tonight will cost', () => {
-    expect(SRC).toMatch(/petsCareOutlook\(targetState, CARE_SIM_DAYS\[targetState\.species\] \|\| \[\], INTERACT_EFFECTS, CARE_SIM_ENERGY_RECOVERY\)/);
+    expect(SRC).toMatch(/petsCareOutlook\(targetState, petsCareDays\(targetState\.species, targetState\.week\), INTERACT_EFFECTS, CARE_SIM_ENERGY_RECOVERY\)/);
     expect(SRC).toContain("'data-pets-care-outlook': isFinal ? 'final' : (outlook.reachable ? 'reachable' : 'out-of-reach')");
     expect(SRC).toContain('This check is provisional until the week ends; later choices can change it. The badge is still within reach.');
     expect(SRC).toContain("'Out of reach this week: ' + outlook.reasons.join('; ') + '. Play the week out for the animal, then retry.'");
@@ -730,6 +747,225 @@ describe('Pets Lab — care-sim economy invariants', () => {
     expect(SRC).toMatch(/goToView\(dayObj\.link\.view, dayObj\.link\.label, dayObj\.link\.patch\)/);
   });
 
+  // ── Care Trade-off widget: the constraint that makes it a trade-off ─────
+
+  it('the care trade-off widget has a time budget that binds for the most demanding species and not for the rest', () => {
+    // Lift the species factors and the hours model from the widget source.
+    const spSrc = (SRC.match(/var sp = \(\{([\s\S]*?)\}\)\[iq\.species\]/) || [])[1];
+    const hoursSrc = (SRC.match(/var hoursAtFull = (\{[^}]*\});/) || [])[1];
+    expect(spSrc).toBeTruthy();
+    expect(hoursSrc).toBeTruthy();
+    // eslint-disable-next-line no-eval
+    const species = eval('({' + spSrc + '})');
+    // eslint-disable-next-line no-eval
+    const hoursAtFull = eval('(' + hoursSrc + ')');
+    const defaultHours = Number((SRC.match(/if \(source\.hours == null \|\| source\.hours === ''\) return (\d+);/) || [])[1]);
+    const maxHours = Number((SRC.match(/return isFinite\(value\) \? Math\.max\(4, Math\.min\((\d+), Math\.round\(value\)\)\) : 14;/) || [])[1]);
+    expect(defaultHours).toBeGreaterThan(0);
+    expect(maxHours).toBeGreaterThan(defaultHours);
+    const keys = ['food', 'exercise', 'social', 'vet', 'training'];
+    // Hours needed when every slider sits exactly on its species target (mult × 50).
+    const atTarget = {};
+    for (const [id, sp] of Object.entries(species)) {
+      atTarget[id] = keys.reduce((sum, k) => sum + ((sp[k] * 50) / 100) * hoursAtFull[k] * sp[k], 0);
+    }
+    const fits = Object.entries(atTarget).filter(([, h]) => h <= defaultHours).map(([id]) => id);
+    const binds = Object.entries(atTarget).filter(([, h]) => h > defaultHours).map(([id]) => id);
+    // A dog at target does not fit the default week: the student must trade.
+    expect(binds).toContain('dog');
+    // ...but the constraint is not a wall: most species fit at target...
+    expect(fits.length).toBeGreaterThanOrEqual(3);
+    // ...and the largest budget fits everything.
+    for (const h of Object.values(atTarget)) expect(h).toBeLessThanOrEqual(maxHours);
+    // Rendered, announced, logged.
+    expect(SRC).toContain("className: 'petslab-tradeoff-time'");
+    expect(SRC).toContain("'data-pets-tradeoff-over': hoursOver > 0.05 ? 'true' : 'false'");
+    expect(SRC).toMatch(/This plan takes about ' \+ hoursNeeded\.toFixed\(1\) \+ ' hours a week against ' \+ iq\.hours \+ ' available'/);
+    expect(SRC).toMatch(/hours: hoursNeeded\.toFixed\(1\), budget: iq\.hours \}/);
+  });
+
+  // ── Closing reflection ──────────────────────────────────────────────────
+
+  it('the week ends with a reflection note that persists per species and is recorded once as self-review, with no text in evidence', () => {
+    expect(SRC).toContain("className: 'petslab-care-reflect-note'");
+    // Persisted under its own sanitised key (free text never goes into evidence).
+    expect(SRC).toMatch(/var PETS_PERSIST_KEYS = \[[\s\S]*?'careReflections'[\s\S]*?\];/);
+    expect(SRC).toContain('snapshot.careReflections = normalizeCareReflections(snapshot.careReflections);');
+    expect(SRC).toContain("addIfChanged('careReflections', d.careReflections, careReflections);");
+    // Typing writes through the updater form, keyed by species.
+    expect(SRC).toMatch(/upd\('careReflections', function\(cur\) \{[\s\S]*?next\[noteKey\] = text;/);
+    // Keyed per species AND week, so a week-2 note never overwrites the week-1 note.
+    expect(SRC).toMatch(/var noteKey = c\.species \+ \(c\.week === 2 \? '-w2' : ''\);/);
+    // Recording is self-review evidence, once per finished week (a later
+    // self-review row after the week's activity row means "already recorded").
+    expect(SRC).toContain("recordEvidence('careSim', 'Reflected on the care week', { species: c.species }, 'self-review');");
+    expect(SRC).toMatch(/var recordedThisWeek = !!\(lastCareRecord && lastCareRecord\.kind === 'self-review'\);/);
+    expect(SRC).toMatch(/if \(recordedThisWeek \|\| words === 0\) return;/);
+    // The careSim evidence allowlist carries no free-text field.
+    const allow = (SRC.match(/careSim: \[([^\]]*)\]/) || [])[1] || '';
+    expect(allow).not.toMatch(/reflection|note|text/i);
+    // Privacy note travels with the field.
+    expect(SRC).toContain("'Your reflection saves with this project. Do not include names or identifying details.'");
+  });
+
+  // ── Teacher tab, trainer hand-off, species preview ──────────────────────
+
+  it('the teacher tab explains both simulators and offers debrief prompts; the trainer hands off to the care week; the picker previews the seven days', () => {
+    const targetsStart = SRC.indexOf('var learningTargets = [');
+    const targetsEnd = SRC.indexOf('];', targetsStart);
+    // eslint-disable-next-line no-eval
+    const targets = eval(SRC.slice(SRC.indexOf('[', targetsStart), targetsEnd + 1));
+    for (const name of ['Pet Training', 'Pet-Care Week']) {
+      const row = targets.find((t) => t.module === name);
+      expect(row, name).toBeTruthy();
+      expect(row.mechanics.length, name + ' mechanics').toBeGreaterThanOrEqual(3);
+      expect(row.discuss.length, name + ' discuss').toBeGreaterThanOrEqual(2);
+      for (const line of row.mechanics.concat(row.discuss)) expect(typeof line).toBe('string');
+    }
+    // The care-week rules summary states the numbers the code enforces.
+    const care = targets.find((t) => t.module === 'Pet-Care Week').mechanics.join(' ');
+    expect(care).toContain('below 40%');
+    expect(care).toContain('recovers 8 a night');
+    expect(SRC).toContain("'How the simulation works'");
+    expect(SRC).toContain("'Debrief prompts'");
+    expect(SRC).toContain("className: 'petslab-teacher-mechanics'");
+    expect(SRC).toContain("'📅 Apply it in Pet-Care Week'");
+    expect(SRC).toContain("className: 'petslab-care-species-days'");
+  });
+
+  // ── Money formatting ────────────────────────────────────────────────────
+
+  it('every balance the sim prints puts the sign before the dollar sign', () => {
+    const petsMoney = extractFunction('petsMoney');
+    expect(petsMoney(-225)).toBe('−$225');
+    expect(petsMoney(204)).toBe('$204');
+    expect(petsMoney(0)).toBe('$0');
+    expect(petsMoney(-0.4)).toBe('$0');
+    expect(petsMoney(117.6)).toBe('$118');
+    expect(petsMoney('junk')).toBe('$0');
+    // No raw "$" + number concatenations left on the care-sim surfaces.
+    const simStart = SRC.indexOf('function renderCareSim()');
+    const simEnd = SRC.indexOf('function renderSensory()', simStart);
+    const sim = SRC.slice(simStart, simEnd);
+    expect(sim).not.toMatch(/'\$' \+ Math\.round\(c\.money\)/);
+    expect(sim).not.toMatch(/'💰 \$' \+/);
+    expect(sim).not.toMatch(/'\$' \+ x\.moneyLeft/);
+    expect(sim).not.toMatch(/'\$' \+ Math\.round\(Number\(targetState\.money\)/);
+    // The teacher outcome line handles the sign inline (that helper is lifted into a VM by tests).
+    expect(SRC).toContain("(x.moneyLeft < 0 ? '\u2212$' + Math.abs(x.moneyLeft) : '$' + x.moneyLeft) + ' left)'");
+    // The day header speaks energy and money in words and hides the emoji figures.
+    expect(sim).toContain("'Your energy ' + Math.round(careSim.en) + ' percent. Money ' + petsMoney(careSim.money)");
+  });
+
+  // ── Week 2 ──────────────────────────────────────────────────────────────
+  // The same species budget and the same rules, so the same properties
+  // must hold for every authored second week.
+
+  const WEEK2_SPECIES = Object.keys(CARE_SIM_WEEK2);
+
+  it('week 2 exists for at least one species, with seven fully authored days', () => {
+    expect(WEEK2_SPECIES.length).toBeGreaterThanOrEqual(1);
+    for (const sp of WEEK2_SPECIES) {
+      expect(CARE_SIM_DAYS[sp], sp + ' needs a week 1 to unlock from').toBeTruthy();
+      expect(CARE_SIM_WEEK2[sp]).toHaveLength(7);
+      for (const day of CARE_SIM_WEEK2[sp]) {
+        expect(day.choices.length).toBeGreaterThanOrEqual(3);
+        for (const key of ['icon', 'label', 'detail', 'kind']) expect(typeof day.scene[key]).toBe('string');
+        expect(typeof day.link.view).toBe('string');
+        for (const c of day.choices) {
+          expect(typeof c.note).toBe('string');
+          expect(c.note.length).toBeGreaterThan(40);
+          for (const d of DOMAINS.concat(['en', 'money'])) expect(typeof c.effects[d]).toBe('number');
+        }
+      }
+      // New situations, not week 1 again.
+      const week1Prompts = new Set(CARE_SIM_DAYS[sp].map((d) => d.prompt));
+      for (const day of CARE_SIM_WEEK2[sp]) expect(week1Prompts.has(day.prompt)).toBe(false);
+    }
+  });
+
+  it.each(WEEK2_SPECIES)('%s week 2: the all-best week is affordable, rested and earns the badge; perfect decisions without routine care do not', (sp) => {
+    for (const scenarioFirst of [false, true]) {
+      const w = playWeek(sp, bestPicks(sp, CARE_SIM_WEEK2), fullCareMask(sp), scenarioFirst, CARE_SIM_WEEK2);
+      expect(w.money).toBeGreaterThanOrEqual(100);
+      expect(w.tiredCare).toBe(0);
+      expect(w.minTaskStart).toBeGreaterThanOrEqual(TIRED_BELOW);
+      expect(w.en).toBeGreaterThan(20);
+      expect(w.events).toBe(0);
+      expect(w.badge).toBe(true);
+    }
+    expect(playWeek(sp, bestPicks(sp, CARE_SIM_WEEK2), 0, false, CARE_SIM_WEEK2).badge).toBe(false);
+  });
+
+  it.each(WEEK2_SPECIES)('%s week 2: careless weeks can go bankrupt, the all-worst week is denied, and daily clicking cannot carry more than three worst days', (sp) => {
+    let maxSpend = 0; let maxWorst = 0; let badges = 0;
+    const worst = worstPicks(sp, CARE_SIM_WEEK2);
+    for (const picks of allPicks(sp, CARE_SIM_WEEK2)) {
+      for (const mask of [0, fullCareMask(sp)]) {
+        const w = playWeek(sp, picks, mask, true, CARE_SIM_WEEK2);
+        if (w.spent > maxSpend) maxSpend = w.spent;
+        if (w.badge) {
+          badges++;
+          const n = picks.filter((p, i) => p === worst[i]).length;
+          if (n > maxWorst) maxWorst = n;
+        }
+      }
+    }
+    expect(maxSpend).toBeGreaterThan(START_MONEY[sp]);
+    expect(badges).toBeGreaterThan(0);
+    expect(playWeek(sp, worst, fullCareMask(sp), true, CARE_SIM_WEEK2).badge).toBe(false);
+    expect(maxWorst).toBeLessThanOrEqual(3);
+  });
+
+  it.each(WEEK2_SPECIES)('%s week 2: aftermath only on careless options, links valid, and the outlook never gives up on a winnable week', (sp) => {
+    const tilesStart = SRC.indexOf('var MENU_TILES = [');
+    const tileIds = new Set([...SRC.slice(tilesStart, SRC.indexOf('];', tilesStart)).matchAll(/\{ id: '(\w+)', cat: /g)].map((m) => m[1]));
+    for (const day of CARE_SIM_WEEK2[sp]) {
+      const best = day.choices.reduce((b, c) => (welfareSum(c) > welfareSum(b) ? c : b), day.choices[0]);
+      for (const c of day.choices) {
+        if (!c.aftermath) continue;
+        expect(c.id).not.toBe(best.id);
+        for (const [k, v] of Object.entries(c.aftermath)) { expect(['en', 'money']).toContain(k); expect(v).toBeLessThan(0); }
+      }
+      expect(tileIds.has(day.link.view), day.link.view).toBe(true);
+      for (const c of day.choices) expect(day.link.why.toLowerCase()).not.toContain(c.label.slice(0, 18).toLowerCase());
+    }
+    let checked = 0;
+    for (const picks of allPicks(sp, CARE_SIM_WEEK2)) {
+      for (const mask of [0, fullCareMask(sp)]) {
+        const w = playWeek(sp, picks, mask, false, CARE_SIM_WEEK2);
+        if (!w.badge) continue;
+        for (const state of w.snapshots) {
+          const o = petsCareOutlook(Object.assign({ week: 2 }, state), CARE_SIM_WEEK2[sp], INTERACT_EFFECTS, RECOVERY);
+          expect(o.reachable, 'day ' + (state.day + 1) + ': ' + o.reasons.join('; ')).toBe(true);
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  }, 30_000);
+
+  it('a second week that meets the target earns its own badge, and only a second week does', () => {
+    expect(SRC).toMatch(/if \(earned && c\.week === 2\) awardBadge\('pets_seasoned', 'Seasoned Owner \(week 2 target met\)'\);/);
+    expect(SRC).toMatch(/var BADGE_XP = \{[\s\S]*?pets_seasoned: 15[\s\S]*?\};/);
+    expect(SRC).toContain("pets_seasoned: 'Seasoned Owner (week 2 target met)',");
+    // The tool's own descriptions know about the second week.
+    expect(SRC).toContain('Finish it to unlock a harder second week.');
+    expect(SRC).toContain('meeting its target earns the Seasoned Owner badge');
+  });
+
+  it('week 2 is wired: selected from state, unlocked by a finished week 1, continued from the reflection, and recorded in evidence', () => {
+    expect(SRC).toMatch(/function petsCareDays\(species, week\)/);
+    expect(SRC).not.toMatch(/var dayObj = CARE_SIM_DAYS\[careSim\.species\]/);
+    expect(SRC).not.toMatch(/var allDays = CARE_SIM_DAYS\[careSim\.species\]/);
+    expect(SRC).toContain("className: 'petslab-care-week2-continue'");
+    expect(SRC).toContain("className: 'petslab-care-week2-start'");
+    expect(SRC).toMatch(/x\.species === id && x\.week !== 2/);
+    expect(SRC).toMatch(/week: c\.week === 2 \? 2 : 1,/);
+    const allow = (SRC.match(/careSim: \[([^\]]*)\]/) || [])[1] || '';
+    expect(allow).toContain("'week'");
+  });
+
   // ── Trainer simulator ───────────────────────────────────────────────────
 
   it('the trainer HUD does not show the moment classification glyph before the response', () => {
@@ -742,6 +978,44 @@ describe('Pets Lab — care-sim economy invariants', () => {
     for (const label of labels) expect(label).toMatch(/^[✓×~] /);
     // The pre-response chip strips exactly that prefix.
     expect(SRC).toContain("revealed ? responseNames[selected] : moment.label.replace(/^[✓×~]\\s*/, '')");
+  });
+
+  it('the park session is a transfer task: same type sequence and poses as the kitchen bank, different situations', () => {
+    const bank = (name) => {
+      const start = SRC.indexOf('var ' + name + ' = [');
+      const end = SRC.indexOf('];', start);
+      // eslint-disable-next-line no-eval
+      return eval(SRC.slice(SRC.indexOf('[', start), end + 1));
+    };
+    const home = bank('TR_MOMENTS');
+    const park = bank('TR_MOMENTS_PARK');
+    expect(home).toHaveLength(10);
+    expect(park).toHaveLength(10);
+    // Identical type sequence: the model, the optimal path and the badge maths carry over.
+    expect(park.map((m) => m.type)).toEqual(home.map((m) => m.type));
+    // Every "wrong" moment says how the puppy is drawn; targets and approximations are typed.
+    for (const set of [home, park]) {
+      for (const m of set) {
+        expect(m.label).toMatch(/^[\u2713\u00d7~] /);
+        expect(typeof m.desc).toBe('string');
+        if (m.type === 'wrong') expect(['sniff', 'jump', 'bark']).toContain(m.pose);
+      }
+    }
+    // Different situations, not a reskin: no description is shared.
+    const homeDescs = new Set(home.map((m) => m.desc));
+    for (const m of park) expect(homeDescs.has(m.desc), m.desc).toBe(false);
+    // Wiring: the active bank comes from state, sessions alternate, the pose is read off the moment.
+    expect(SRC).toContain("var TR_MOMENT_BANKS = { home: TR_MOMENTS, park: TR_MOMENTS_PARK };");
+    expect(SRC).toMatch(/var trMoments = TR_MOMENT_BANKS\[trBank\];/);
+    expect(SRC).toMatch(/function nextTrBank\(\) \{ return trBank === 'home' \? 'park' : 'home'; \}/);
+    expect(SRC).toMatch(/var pose = moment\.pose \|\| \(moment\.type === 'target' \? 'sit'/);
+    expect(SRC).not.toMatch(/trSim\.idx === 1 \? 'sniff'/);
+    expect(SRC).toMatch(/bank: raw\.bank === 'park' \? 'park' : 'home'/);
+    expect(SRC).toContain("'Illustrated park training scene. Round '");
+    // No leftover direct reads of the kitchen bank inside the trainer.
+    const trainerStart = SRC.indexOf('var TR_RESPONSE_NAMES = {');
+    const trainerEnd = SRC.indexOf('function renderCareTimeline(');
+    expect(SRC.slice(trainerStart, trainerEnd)).not.toMatch(/\bTR_MOMENTS\b(?!_PARK)/);
   });
 
   it('the trainer summary names the stronger response, derived from the same model that scores the rounds', () => {

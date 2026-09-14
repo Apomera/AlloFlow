@@ -1877,7 +1877,10 @@ function SurpriseTopicLauncher(props) {
   const engine = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.SurpriseMeEngine : null;
   const providerApi = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.StandardsProvider : null;
   const provider = providerApi && typeof providerApi.getRegisteredProvider === 'function' ? providerApi.getRegisteredProvider() : null;
-  const surpriseAi = props.callGemini || (typeof window !== 'undefined' ? window.callGemini : null);
+  // props.callGemini is null when the host hides student AI; only fall back to
+  // the window global when the host passed nothing at all (undefined), and
+  // never to a blocked one.
+  const surpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);
   if (!engine || !provider || !surpriseAi) return null;
   const proposeFor = async (match) => {
     setSurpriseState('loading');

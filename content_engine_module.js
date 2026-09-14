@@ -15,7 +15,16 @@ var safeJsonParse = window.__alloUtils && window.__alloUtils.safeJsonParse;
 if (!safeJsonParse) safeJsonParse = function(t) { try { return t ? JSON.parse(t) : null; } catch(e) { return null; } };
 
 var createContentEngine = function(deps) {
-  var callGemini = deps.callGemini;
+  // Read the CURRENT host AI function on every call (2026-09-14). The engine
+  // is created once and used to capture deps.callGemini for its lifetime, so
+  // when the host later swaps its binding for a blocked function (a role flip
+  // to a student with AI hidden) the engine kept calling the teacher's live
+  // one. window.callGemini is kept in step with the host binding by every
+  // writer (API init, local bridge, QR guard, student guard); deps is the
+  // fallback for hosts without a window.
+  var _depsCallGemini = deps.callGemini;
+  var _currentCallGemini = function() { return (typeof window !== 'undefined' && typeof window.callGemini === 'function') ? window.callGemini : _depsCallGemini; };
+  var callGemini = function() { var fn = _currentCallGemini(); if (typeof fn !== 'function') return Promise.reject(new Error('AI is unavailable.')); return fn.apply(null, arguments); };
   var addToast = deps.addToast;
   var t = deps.t;
   var getBilingualPromptInstruction = deps.getBilingualPromptInstruction || function() { return ''; };
@@ -2332,6 +2341,17 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           y
       });
       if (wordLanguage === 'English') attachDictionary(word, requestId);
+      // AI hidden for this student (blocked function, 2026-09-14): the popup
+      // used to vanish with a "definition failed" toast even though the
+      // dictionary entry had attached. Keep the popup and say what is missing.
+      const _liveAi = _currentCallGemini();
+      const aiBlocked = typeof _liveAi !== 'function' || _liveAi._alloQrBlocked === true || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      if (aiBlocked) {
+          setDefinitionData(prev => requestId === _definitionReqId && prev && prev.word === word
+              ? { ...prev, text: wordLanguage === 'English' ? (t('simplified.definition_dictionary_only') || 'AI explanations are off; the dictionary entry is below.') : (t('simplified.definition_ai_off') || 'AI explanations are turned off for students in this project.') }
+              : prev);
+          return;
+      }
       try {
           const outputLang = wordLanguage === 'All Selected Languages' ? 'English' : wordLanguage;
           const prompt = `

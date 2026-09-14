@@ -48,8 +48,13 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating:', CACHE_NAME);
     event.waitUntil(
+        // Purge only OUR previous shell caches. Other named caches on this origin
+        // belong to other owners: 'transformers-cache' holds the 88 MB Kokoro
+        // voice model, and deleting it here forced a full re-download after
+        // every deploy (the student-shell copy has been prefix-scoped by
+        // build.js since the shell split; this is the same rule for the rest).
         caches.keys().then((keys) => Promise.all(
-            keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+            keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME).map(k => caches.delete(k))
         )).then(() => self.clients.claim())
     );
 });

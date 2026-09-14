@@ -255,7 +255,7 @@ test.describe('Pets Lab resume integrity and idle rendering', () => {
       stateKeys: [
         'badgeEarned', 'choices', 'consequenceLog', 'dailyInteractions', 'day', 'done',
         'en', 'env', 'lastInteract', 'lowMoney', 'ment', 'money', 'overnight', 'phys',
-        'soc', 'species', 'startMoney', 'tiredCare',
+        'soc', 'species', 'startMoney', 'tiredCare', 'week',
       ],
       species: 'dog',
       day: 1,

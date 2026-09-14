@@ -153,6 +153,7 @@ describe('generalized live presentation response aggregation', () => {
     const sequenceQuestion = {
       type: 'sequence-sense',
       items: ['Plan', 'Build', 'Review'],
+      presentedOrder: [0, 2, 1],
       intentionallyWrongIndex: 1,
       orderingPrinciple: 'process',
     };

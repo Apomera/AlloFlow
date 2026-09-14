@@ -13,7 +13,7 @@ const deferred = () => { let resolve; const promise = new Promise(yes => { resol
 let cleanup;
 beforeEach(() => { vi.useFakeTimers(); window.React = React; loadAlloModule('glossary_helpers_module.js'); });
 afterEach(() => { cleanup?.(); cleanup = null; vi.useRealTimers(); vi.restoreAllMocks(); });
-function mount() {
+function mount(options = {}) {
   let resource = { id: 'a', type: 'glossary', data: [{ entryId: 'leaf', term: 'Leaf', def: 'A part of a plant.' }] };
   const live = { current: {} }, registry = { current: new Map() }, speak = vi.fn();
   const requests = [], run = vi.fn(async (terms, source, deps) => {
@@ -27,6 +27,8 @@ function mount() {
   const scope = {
     useEffect: React.useEffect, glossaryLiveRef: live, glossaryTaskRegistryRef: registry,
     callGemini: vi.fn(), debugLog: vi.fn(), warnLog: vi.fn(),
+    // The check is teacher-only (2026-09-14): students never trigger the AI call.
+    isTeacherMode: options.isTeacherMode !== false,
     setGlossaryHealthCheck: vi.fn(), setIsRunningHealthCheck: vi.fn(), setShowHealthCheckPanel: vi.fn(),
     alloBotRef: { current: { speak } },
   };
@@ -53,6 +55,11 @@ describe('glossary health-check lifecycle', () => {
     expect(view.run).toHaveBeenCalledOnce(); expect(view.run.mock.calls[0][1]).toBe('Latest source');
     await finish(view.requests[0]);
     expect(view.scope.setGlossaryHealthCheck).toHaveBeenLastCalledWith(expect.objectContaining({ summary: 'Clear definitions.' }));
+  });
+  it('never schedules the check, or the spoken follow-up, for a student', async () => {
+    const view = mount({ isTeacherMode: false }); await advance(10000);
+    expect(view.run).not.toHaveBeenCalled(); expect(view.speak).not.toHaveBeenCalled();
+    expect(view.scope.setIsRunningHealthCheck).not.toHaveBeenCalled();
   });
   it('cancels the old timer before a different resource opens', async () => {
     const view = mount(); await advance(2000); view.render({ id: 'reader', type: 'simplified', data: 'Text' });

@@ -828,7 +828,47 @@ var _lazyIcon = function (name) {
     var summary = receipt.summary || {};
     var submittedLabel = receipt.submittedAt ? new Date(receipt.submittedAt).toLocaleString() : 'just now';
     return <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-6 shadow-sm" role="status"><div className="text-3xl mb-2" aria-hidden="true">✓</div><h2 className="text-2xl font-black text-emerald-950">Assessment submitted</h2><p className="text-sm text-emerald-900 mt-2">Your completed attempt is saved on this device. The in-progress draft was cleared only after that receipt was written.</p><div className="mt-4 flex gap-2 flex-wrap text-xs"><span className="rounded-full bg-white border border-emerald-200 px-3 py-1 font-bold text-emerald-900">{(summary.answered || 0) + ' / ' + (summary.total || 0) + ' answered'}</span><span className="rounded-full bg-white border border-emerald-200 px-3 py-1 font-bold text-emerald-900">{'Submitted ' + submittedLabel}</span></div><button type="button" onClick={p.onStartAnother} className="mt-5 px-4 py-2 rounded-lg bg-white border border-emerald-400 text-emerald-900 text-sm font-bold">Start another attempt</button></div>;
-  }  function SequenceSenseCard(p) {
+  }
+  // Sequence Sense answer key. The author supplies one "intentionallyWrongIndex",
+  // but an adjacent swap leaves BOTH items out of place, so the accepted set is
+  // derived from the displayed order itself: a displayed position counts as
+  // misplaced when removing it leaves the remaining items in canonical order.
+  // Canonical (or missing) order -> nothing is misplaced. A scramble no single
+  // removal can repair falls back to the authored index, else every position
+  // (all are out of place). Returns { orderIsCorrect, misplaced: [positions] }.
+  function sequenceSenseTruth(presentedOrder, intentionallyWrongIndex, itemCount) {
+    var n = Number(itemCount) || 0;
+    var valid = n > 0 && Array.isArray(presentedOrder) && presentedOrder.length === n
+      && presentedOrder.every(function (value) { return Number.isInteger(value) && value >= 0 && value < n; })
+      && new Set(presentedOrder).size === n;
+    if (!valid || presentedOrder.every(function (value, index) { return value === index; })) return { orderIsCorrect: true, misplaced: [] };
+    var misplaced = [];
+    for (var skip = 0; skip < n; skip++) {
+      var previous = -1;
+      var sorted = true;
+      for (var j = 0; j < n && sorted; j++) {
+        if (j === skip) continue;
+        if (presentedOrder[j] < previous) sorted = false;
+        previous = presentedOrder[j];
+      }
+      if (sorted) misplaced.push(skip);
+    }
+    if (!misplaced.length) {
+      misplaced = Number.isInteger(intentionallyWrongIndex) && intentionallyWrongIndex >= 0 && intentionallyWrongIndex < n
+        ? [intentionallyWrongIndex]
+        : presentedOrder.map(function (_, index) { return index; });
+    }
+    return { orderIsCorrect: false, misplaced: misplaced };
+  }
+  // "items 2 and 3 were swapped" / "item 3 was misplaced" / "items 1, 3 and 4 were out of place"
+  function describeSequenceMisplaced(misplaced) {
+    var numbers = (Array.isArray(misplaced) ? misplaced : []).map(function (index) { return index + 1; });
+    if (!numbers.length) return 'the order was correct';
+    if (numbers.length === 1) return 'item ' + numbers[0] + ' was misplaced';
+    if (numbers.length === 2 && numbers[1] === numbers[0] + 1) return 'items ' + numbers[0] + ' and ' + numbers[1] + ' were swapped';
+    return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
+  }
+  function SequenceSenseCard(p) {
     var q = p.q;
     var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
     var intentionallyWrongIndex = typeof q.intentionallyWrongIndex === 'number' ? q.intentionallyWrongIndex : null;
@@ -836,7 +876,10 @@ var _lazyIcon = function (name) {
     var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2 ? q.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
     var modeStrat = p.modeStrategy || null;
     var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    // The mode may ask for an explainer, but the host hands callGemini as null
+    // when student AI is off; offering a button that can only say "Explainer
+    // unavailable." is a leak, so the affordance needs both.
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
     var explainerState = React.useState({
       open: false,
       loading: false,
@@ -907,21 +950,33 @@ var _lazyIcon = function (name) {
     }
     var draftItemKey = 'q-' + p.questionIdx;
     var presentedOrderState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'presentedOrder', function () {
-      if (Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonicalItems.length) {
-        return q.presentedOrder.slice();
-      }
-      var indices = canonicalItems.map(function (_, i) {
-        return i;
-      });
-      for (var i = indices.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = indices[i];
-        indices[i] = indices[j];
-        indices[j] = tmp;
-      }
-      return indices;
+      var authored = Array.isArray(q.presentedOrder) ? q.presentedOrder : [];
+      var isPermutation = authored.length === canonicalItems.length
+        && authored.every(function (value) { return Number.isInteger(value) && value >= 0 && value < canonicalItems.length; })
+        && new Set(authored).size === authored.length;
+      return isPermutation ? authored.slice() : canonicalItems.map(function (_, i) { return i; });
     });
     var presentedOrder = presentedOrderState[0];
+    // What is actually wrong with the displayed order (see sequenceSenseTruth):
+    // for a swap both swapped positions count, so the student is never marked
+    // wrong for pointing at the other half of the same mistake.
+    var truth = sequenceSenseTruth(presentedOrder, intentionallyWrongIndex, canonicalItems.length);
+    var actualOrderIsCorrect = truth.orderIsCorrect;
+    var misplacedPositions = truth.misplaced;
+    var orderState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'orderAnswer', null);
+    var setOrderAnswer = orderState[1];
+    // The student's arrangement (canonical indices); starts as the displayed order.
+    var orderAnswer = Array.isArray(orderState[0]) && orderState[0].length === presentedOrder.length ? orderState[0] : presentedOrder;
+    var arrangedItems = orderAnswer.map(function (canonicalIdx) { return canonicalItems[canonicalIdx]; });
+    function moveOrderItem(position, delta) {
+      var target = position + delta;
+      if (position < 0 || position >= orderAnswer.length || target < 0 || target >= orderAnswer.length) return false;
+      var next = orderAnswer.slice();
+      next[position] = orderAnswer[target];
+      next[target] = orderAnswer[position];
+      setOrderAnswer(next);
+      return true;
+    }
     var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', 1);
     var step = stepState[0];
     var setStep = stepState[1];
@@ -945,24 +1000,28 @@ var _lazyIcon = function (name) {
       setClickedIdx(idx);
       setStep(3);
     }
+    function finishArrange() {
+      setStep(4);
+    }
     function answerPrinciple(p2) {
       setPrincipleAnswer(p2);
-      var actualOrderIsCorrect = intentionallyWrongIndex === null;
       var step1Correct = verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
       var step2Correct;
       if (verifyAnswer === 'yes') {
         step2Correct = step1Correct;
       } else {
-        step2Correct = clickedIdx === intentionallyWrongIndex;
+        step2Correct = misplacedPositions.indexOf(clickedIdx) >= 0;
       }
+      var arrangeCorrect = orderAnswer.every(function (canonicalIdx, position) { return canonicalIdx === position; });
       var step3Correct = p2 === orderingPrinciple;
-      var rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+      var rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
       var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
-      var score = partialCredit ? rawScore : (rawScore === 3 ? 3 : 0);
-      var status = score === 3 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+      var score = partialCredit ? rawScore : (rawScore === 4 ? 4 : 0);
+      var status = score === 4 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
       var gradeResult = {
         step1Correct: step1Correct,
         step2Correct: step2Correct,
+        arrangeCorrect: arrangeCorrect,
         step3Correct: step3Correct,
         status: status,
         score: score
@@ -978,6 +1037,7 @@ var _lazyIcon = function (name) {
             answer: {
               verifyAnswer: verifyAnswer,
               clickedIdx: clickedIdx,
+              orderAnswer: orderAnswer.slice(),
               principleAnswer: p2,
               score: score,
               status: status
@@ -992,6 +1052,7 @@ var _lazyIcon = function (name) {
       setStep(1);
       setVerifyAnswer(null);
       setClickedIdx(null);
+      setOrderAnswer(null);
       setPrincipleAnswer(null);
       setGrade(null);
     }
@@ -1003,12 +1064,15 @@ var _lazyIcon = function (name) {
           : step === 2
             ? 'Choose the misplaced item by its displayed number or exact text.'
             : step === 3
-              ? 'Choose the ordering principle: ' + principleOptions.join(', ') + '.'
-              : grade ? 'This sequence response has been checked. Say try again to reset it.' : '';
+              ? 'Put the items in the correct order. Say move item 2 up or move item 3 down, then say done.'
+              : step === 4
+                ? 'Choose the ordering principle: ' + principleOptions.join(', ') + '.'
+                : grade ? 'This sequence response has been checked. Say try again to reset it.' : '';
         return {
           type: 'sequence-sense',
           step: step,
           displayedItems: displayedItems,
+          arrangedItems: arrangedItems.slice(),
           verifyAnswer: verifyAnswer,
           selectedItemIndex: typeof clickedIdx === 'number' ? clickedIdx : null,
           principleAnswer: principleAnswer,
@@ -1042,7 +1106,7 @@ var _lazyIcon = function (name) {
             ok: true, state: 'sequence-step', step: verify === 'no' ? 2 : 3,
             message: verify === 'no'
               ? 'Order marked wrong. Choose the misplaced item by its displayed number or exact text.'
-              : 'Order marked correct. Choose the ordering principle: ' + principleOptions.join(', ') + '.'
+              : 'Order marked correct. Put the items in the correct order, or say done to keep them as they are.'
           };
         }
         if (step === 2) {
@@ -1050,15 +1114,27 @@ var _lazyIcon = function (name) {
           var itemIdx = _quizVoiceNamedChoiceIndex(choice, displayed);
           if (itemIdx < 0) return { ok: false, state: 'invalid-choice', message: 'Choose an available displayed item by number or exact text.' };
           answerMisplaced(itemIdx);
-          return { ok: true, state: 'sequence-step', step: 3, selectedItemIndex: itemIdx, message: 'Item ' + (itemIdx + 1) + ' selected. Choose the ordering principle: ' + principleOptions.join(', ') + '.' };
+          return { ok: true, state: 'sequence-step', step: 3, selectedItemIndex: itemIdx, message: 'Item ' + (itemIdx + 1) + ' selected. Now put the items in the correct order: say move item 2 up or move item 3 down, then say done.' };
+        }
+        if (step === 3) {
+          var arrangeText = String(choice == null ? '' : choice).trim().toLowerCase().replace(/[?!.,]+$/g, '').replace(/\s+/g, ' ');
+          if (/^(?:done|finished|confirm|keep|next|the order is right|that is the order)$/.test(arrangeText)) {
+            finishArrange();
+            return { ok: true, state: 'sequence-step', step: 4, message: 'Order saved. Choose the ordering principle: ' + principleOptions.join(', ') + '.' };
+          }
+          var move = /^move\s+(?:item\s+)?(.+?)\s+(up|down)$/.exec(arrangeText);
+          var movePosition = move ? _quizVoiceNamedChoiceIndex(move[1], arrangedItems) : -1;
+          if (!move || movePosition < 0) return { ok: false, state: 'invalid-choice', message: 'Say move item 2 up, move item 3 down, or done.' };
+          if (!moveOrderItem(movePosition, move[2] === 'up' ? -1 : 1)) return { ok: false, state: 'invalid-choice', message: 'Item ' + (movePosition + 1) + ' cannot move ' + move[2] + '.' };
+          return { ok: true, state: 'sequence-step', step: 3, message: 'Moved ' + arrangedItems[movePosition] + ' ' + move[2] + '. Say done when the order is right.' };
         }
         var principleIdx = _quizVoiceNamedChoiceIndex(choice, principleOptions);
-        if (step !== 3 || principleIdx < 0) return { ok: false, state: 'invalid-choice', message: 'Choose an available ordering principle by number or exact name.' };
+        if (step !== 4 || principleIdx < 0) return { ok: false, state: 'invalid-choice', message: 'Choose an available ordering principle by number or exact name.' };
         var result = answerPrinciple(principleOptions[principleIdx]);
         var resultMessage = result.status === 'correct'
-          ? 'Sequence response checked. All three parts are correct.'
+          ? 'Sequence response checked. All four parts are correct.'
           : result.status === 'partially-correct'
-            ? 'Sequence response checked. You earned ' + result.score + ' of 3 points.'
+            ? 'Sequence response checked. You earned ' + result.score + ' of 4 points.'
             : 'Sequence response checked. This sequence needs review.';
         return { ok: true, state: 'checked', correct: result.status === 'correct', score: result.score, message: resultMessage };
       }
@@ -1070,7 +1146,7 @@ var _lazyIcon = function (name) {
           var isClickable = step === 2;
           var isClicked = clickedIdx === displayIdx;
           var showCorrectness = grade !== null;
-          var thisIsActuallyMisplaced = intentionallyWrongIndex === displayIdx;
+          var thisIsActuallyMisplaced = misplacedPositions.indexOf(displayIdx) >= 0;
           var rowClass;
           if (showCorrectness) {
             if (thisIsActuallyMisplaced) rowClass = 'bg-amber-50 border-amber-400';else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';else rowClass = 'bg-slate-50 border-slate-300';
@@ -1087,15 +1163,21 @@ var _lazyIcon = function (name) {
               answerMisplaced(displayIdx);
             }
           } : undefined}><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{displayIdx + 1 + '.'}</span><span className="flex-1 text-sm text-slate-800">{item}</span>{showCorrectness && thisIsActuallyMisplaced && <span className="text-xs font-bold text-amber-700">↔ misplaced</span>}{showCorrectness && isClicked && !thisIsActuallyMisplaced && <span className="text-xs font-bold text-rose-700">✗</span>}</li>;
-        })}</ol>{step === 1 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 1 of 3 — Is this order correct?</div><div className="flex gap-2 flex-wrap"><button type="button" onClick={function () {
+        })}</ol>{step === 1 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 1 of 4 — Is this order correct?</div><div className="flex gap-2 flex-wrap"><button type="button" onClick={function () {
             answerVerify('yes');
           }} className="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✓ Yes, correct</button><button type="button" onClick={function () {
             answerVerify('no');
-          }} className="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✗ No, something is off</button>{allowIDK && <button type="button" onClick={markIDK} className="px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain")}><span aria-hidden="true">🤔 </span>I don't know</button>}</div></div>}{step === 2 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900">Step 2 of 3 — Click the item that's out of place above.</div></div>}{step === 3 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 3 of 3 — What's the ordering principle?</div><div className="grid grid-cols-2 md:grid-cols-3 gap-2">{principleOptions.map(function (opt) {
+          }} className="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✗ No, something is off</button>{allowIDK && <button type="button" onClick={markIDK} className="px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain")}><span aria-hidden="true">🤔 </span>I don't know</button>}</div></div>}{step === 2 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900">Step 2 of 4 — Click an item that's out of place above.</div></div>}{step === 3 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 3 of 4 — Put the items in the correct order. If they are already right, leave them.</div><ol className="space-y-1.5 mb-2" aria-label="Your order">{orderAnswer.map(function (canonicalIdx, position) {
+            return <li key={canonicalIdx} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-white border-indigo-200"><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{position + 1 + '.'}</span><span className="flex-1 text-sm text-slate-800">{canonicalItems[canonicalIdx]}</span><button type="button" disabled={position === 0} aria-label={'Move up: ' + canonicalItems[canonicalIdx]} onClick={function () {
+              moveOrderItem(position, -1);
+            }} className="px-2 py-1 rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 disabled:opacity-40">▲</button><button type="button" disabled={position === orderAnswer.length - 1} aria-label={'Move down: ' + canonicalItems[canonicalIdx]} onClick={function () {
+              moveOrderItem(position, 1);
+            }} className="px-2 py-1 rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 disabled:opacity-40">▼</button></li>;
+          })}</ol><button type="button" onClick={finishArrange} className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">Done arranging</button></div>}{step === 4 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 4 of 4 — What's the ordering principle?</div><div className="grid grid-cols-2 md:grid-cols-3 gap-2">{principleOptions.map(function (opt) {
             return <button key={opt} type="button" onClick={function () {
               answerPrinciple(opt);
             }} className="px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none">{opt}</button>;
-          })}</div></div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-2 flex-wrap"><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 3 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review')}</span></div>{grade.status !== 'idk' && <ul className={'space-y-1 text-sm text-' + statusColor + '-900'}><li>{(grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (intentionallyWrongIndex === null ? 'order was correct' : 'order had one misplaced item') + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')}</li>{verifyAnswer === 'no' && <li>{(grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found the misplaced item' : 'the misplaced item was item #' + ((intentionallyWrongIndex || 0) + 1))}</li>}<li>{(grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")')}</li></ul>}<div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={reset} className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300">Try again</button>{aiExplainerEnabled && !explainer.open && <button type="button" onClick={requestExplainer} className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">🤖 Explain this concept</button>}</div></div>}{explainer.open && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"><div className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <p className="text-sm text-slate-800 leading-relaxed">{explainer.text}</p>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
+          })}</div></div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-2 flex-wrap"><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 4 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review')}</span></div>{grade.status !== 'idk' && <ul className={'space-y-1 text-sm text-' + statusColor + '-900'}><li>{(grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')}</li>{verifyAnswer === 'no' && <li>{(grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : (actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : '')))}</li>}<li>{(grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))}</li><li>{(grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")')}</li></ul>}<div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={reset} className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300">Try again</button>{aiExplainerEnabled && !explainer.open && <button type="button" onClick={requestExplainer} className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">🤖 Explain this concept</button>}</div></div>}{explainer.open && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"><div className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <p className="text-sm text-slate-800 leading-relaxed">{explainer.text}</p>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
           // p.callTTS returns the audio URL without playing — never wired up
           // a playback step here, so the original button silently fetched and
           // discarded the audio. Route through AlloSpeechPlayer instead: it
@@ -1129,7 +1211,10 @@ var _lazyIcon = function (name) {
     var setGrade = gradeState[1];
     var modeStrat = p.modeStrategy || null;
     var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    // The mode may ask for an explainer, but the host hands callGemini as null
+    // when student AI is off; offering a button that can only say "Explainer
+    // unavailable." is a leak, so the affordance needs both.
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
     var explainerState = React.useState({
       open: false,
       loading: false,
@@ -1339,7 +1424,10 @@ var _lazyIcon = function (name) {
     var modeStrat = p.modeStrategy || null;
     var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
     var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    // The mode may ask for an explainer, but the host hands callGemini as null
+    // when student AI is off; offering a button that can only say "Explainer
+    // unavailable." is a leak, so the affordance needs both.
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
     if (!allowIDK && !allowConfidence && !aiExplainerEnabled) return null;
     var explainerState = React.useState({
       open: false,
@@ -2739,7 +2827,14 @@ var _lazyIcon = function (name) {
         var items = Array.isArray(q.items) ? q.items : [];
         var order = Array.isArray(q.presentedOrder) ? q.presentedOrder : [];
         if (items.length < 3) add(index, 'error', 'Sequence Sense needs at least three steps.', 'sequence-items');
-        if (order.length !== items.length || order.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= items.length; }) || new Set(order).size !== order.length) add(index, 'error', 'Displayed order must use every step index exactly once.', 'sequence-order');
+        var orderIsPermutation = order.length === items.length && !order.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= items.length; }) && new Set(order).size === order.length;
+        if (!orderIsPermutation) add(index, 'error', 'Displayed order must use every step index exactly once.', 'sequence-order');
+        if (orderIsPermutation && items.length >= 3) {
+          var authoredWrong = q.intentionallyWrongIndex;
+          var sequenceTruth = sequenceSenseTruth(order, authoredWrong, items.length);
+          if (sequenceTruth.orderIsCorrect && authoredWrong != null) add(index, 'warning', 'The displayed order is already correct, so no position is misplaced. Clear the misplaced position or change the displayed order.', 'sequence-misplaced');
+          else if (!sequenceTruth.orderIsCorrect && (authoredWrong == null || sequenceTruth.misplaced.indexOf(authoredWrong) === -1)) add(index, 'warning', 'The misplaced position does not match the displayed order (positions out of place: ' + sequenceTruth.misplaced.map(function (value) { return value + 1; }).join(', ') + ').', 'sequence-misplaced');
+        }
         if (!String(q.orderingPrinciple || '').trim()) add(index, 'error', 'Sequence Sense needs an ordering principle.', 'sequence-principle');
       } else if (type === 'relation-mismatch') {
         var pairs = Array.isArray(q.pairs) ? q.pairs : [];
@@ -3224,7 +3319,10 @@ var _lazyIcon = function (name) {
     var modeStrat = p.modeStrategy || null;
     var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
     var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    // The mode may ask for an explainer, but the host hands callGemini as null
+    // when student AI is off; offering a button that can only say "Explainer
+    // unavailable." is a leak, so the affordance needs both.
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
     var scoringPolicy = p.scoringPolicy || { partialCredit: true, writtenResponseMode: 'ai-provisional' };
     var teacherReviewWritten = scoringPolicy.writtenResponseMode === 'teacher-review' && (q.type === 'short-answer' || q.type === 'self-explanation');
     var draftItemKey = 'q-' + p.questionIdx;
@@ -4325,7 +4423,7 @@ var _lazyIcon = function (name) {
     var _quizMode = generatedContent && generatedContent.data && generatedContent.data.mode || 'exit-ticket';
     var _qmStrategiesMod = window.AlloModules && window.AlloModules.QuizModeStrategies || null;
     var _modeStrat = _qmStrategiesMod ? _qmStrategiesMod.getStrategy(_quizMode) : null;
-    var _aiExplainerEnabled = !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail);
+    var _aiExplainerEnabled = !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail) && typeof props.callGemini === 'function';
     var _showModeBanner = _quizMode !== 'exit-ticket' && !!_modeStrat;
     var _explainerState = React.useState({
       topic: '',
@@ -4422,7 +4520,12 @@ var _lazyIcon = function (name) {
     var oneQuestionAtATime = deliverySettings.pacing === 'one-at-a-time' && !isEditingQuiz && !isPresentationMode;
     var assessmentQuestionCount = Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 0;
     var reviewProgress = draftNamespace ? _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace)) : null;
-    var learnerAttemptPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <section className="rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4" aria-label="Assessment progress and submission"><AssessmentTimerBar enabled={deliverySettings.timeLimitMinutes > 0} remainingSeconds={assessmentTimer.remainingSeconds} running={assessmentTimer.running} expired={assessmentTimer.expired} warningMinutes={deliverySettings.warningMinutes} extensionMinutes={deliverySettings.extensionMinutes} onTogglePause={toggleAssessmentTimer} onExtend={extendAssessmentTimer} onReview={function () { setReviewOpen(true); }} /><div className={'flex items-center gap-2 flex-wrap ' + (deliverySettings.timeLimitMinutes > 0 ? 'mt-3' : '')}>{deliverySettings.showProgress && <span className="text-xs font-black text-indigo-950">{oneQuestionAtATime ? 'Question ' + (currentQuestionIdx + 1) + ' of ' + assessmentQuestionCount : assessmentQuestionCount + ' questions'}</span>}{oneQuestionAtATime && <div className="flex items-center gap-2"><button type="button" onClick={function () { goToAssessmentQuestion(currentQuestionIdx - 1); }} disabled={currentQuestionIdx <= 0} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40">Previous</button><button type="button" onClick={function () { goToAssessmentQuestion(currentQuestionIdx + 1); }} disabled={currentQuestionIdx >= assessmentQuestionCount - 1} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40">Next</button></div>}<button type="button" onClick={function () { setReviewOpen(true); }} className="ml-auto text-xs font-black px-3 py-1.5 rounded-lg bg-indigo-700 text-white hover:bg-indigo-800">Review &amp; submit</button></div></section> : null;
+    // The navigation row keeps `pr-20 md:pr-0`: on phones the Student Tools
+    // launcher is pinned to the bottom-right corner (view_fab_stack, 12px in),
+    // and Next / Review & submit are the row's right-most controls, so without
+    // that clearance the launcher covered them whenever the row scrolled to the
+    // bottom of the screen.
+    var learnerAttemptPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <section className="rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4" aria-label="Assessment progress and submission"><AssessmentTimerBar enabled={deliverySettings.timeLimitMinutes > 0} remainingSeconds={assessmentTimer.remainingSeconds} running={assessmentTimer.running} expired={assessmentTimer.expired} warningMinutes={deliverySettings.warningMinutes} extensionMinutes={deliverySettings.extensionMinutes} onTogglePause={toggleAssessmentTimer} onExtend={extendAssessmentTimer} onReview={function () { setReviewOpen(true); }} /><div className={'flex items-center gap-2 flex-wrap pr-20 md:pr-0 ' + (deliverySettings.timeLimitMinutes > 0 ? 'mt-3' : '')}>{deliverySettings.showProgress && <span className="text-xs font-black text-indigo-950">{oneQuestionAtATime ? 'Question ' + (currentQuestionIdx + 1) + ' of ' + assessmentQuestionCount : assessmentQuestionCount + ' questions'}</span>}{oneQuestionAtATime && <div className="flex items-center gap-2"><button type="button" onClick={function () { goToAssessmentQuestion(currentQuestionIdx - 1); }} disabled={currentQuestionIdx <= 0} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40">Previous</button><button type="button" onClick={function () { goToAssessmentQuestion(currentQuestionIdx + 1); }} disabled={currentQuestionIdx >= assessmentQuestionCount - 1} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40">Next</button></div>}<button type="button" onClick={function () { setReviewOpen(true); }} className="ml-auto text-xs font-black px-3 py-1.5 rounded-lg bg-indigo-700 text-white hover:bg-indigo-800">Review &amp; submit</button></div></section> : null;
     var reviewDialog = <AssessmentReviewDialog open={reviewOpen} progress={reviewProgress} onClose={function () { setReviewOpen(false); }} onGo={goToAssessmentQuestion} onSubmit={submitAssessmentAttempt} />;
     function getQuizReflections() {
       if (Array.isArray(assessmentData.reflections)) return assessmentData.reflections;

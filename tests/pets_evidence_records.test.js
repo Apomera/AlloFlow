@@ -50,10 +50,16 @@ function evidenceSchemaApi() {
       normalizeAiCritiqueRecord,
       normalizeAiCritiques,
       normalizeAiRevisionNotes,
-      normalizeCareTradeoffState
+      normalizeCareTradeoffState,
+      normalizeCareReflections,
+      normalizeSpeciesChecks
     }; })()`,
     {
       AI_SCENARIOS: [{ id: 'family-pick' }, { id: 'cat-litter' }],
+      SPECIES_CHECKS: {
+        dogs: { options: [{ id: 'bigger' }, { id: 'smaller' }, { id: 'same' }] },
+        cats: { options: [{ id: 'none' }, { id: 'taste' }, { id: 'nutrients' }] },
+      },
       PETS_BADGE_DISPLAY_LABELS: {
         pets_quiz_pass: 'Pets Quiz Passed',
         pets_quiz_ace: 'Pets Quiz Ace',
@@ -106,6 +112,8 @@ function persistenceApi() {
     normalizeAiCritiques: EVIDENCE_API.normalizeAiCritiques,
     normalizeAiRevisionNotes: EVIDENCE_API.normalizeAiRevisionNotes,
     normalizeCareTradeoffState: EVIDENCE_API.normalizeCareTradeoffState,
+    normalizeCareReflections: EVIDENCE_API.normalizeCareReflections,
+    normalizeSpeciesChecks: EVIDENCE_API.normalizeSpeciesChecks,
     normalizeTrainerState: guards.normalizeTrainerState,
     normalizeCareSimState: (value) => value,
     normalizePetsMiniGameState: guards.normalizePetsMiniGameState,
@@ -306,10 +314,12 @@ describe('Pets Lab structured evidence records', () => {
     expect(normalized[2]).toMatchObject({
       moduleId: 'dogs',
       moduleLabel: 'Dogs',
-      kind: 'self-review',
-      summary: 'Reviewed by learner',
+      kind: 'activity',
+      summary: 'Predicted and checked the dog lifespan question',
       details: {},
     });
+    // A restored row cannot keep a success flag it never earned.
+    expect(normalized[2].details.criterionMet).toBeUndefined();
     expect(JSON.stringify(normalized)).not.toContain(privateText);
 
     const persisted = snapshot({
@@ -352,6 +362,19 @@ describe('Pets Lab structured evidence records', () => {
     expect(safe.aiScenarioId).toBeNull();
     expect(safe.aiResponse).toBe('');
     expect(safe.aiDrafts).toEqual({ 'family-pick': 'A valid family draft' });
+    // Care-week reflections: one short text per real species, nothing else.
+    const reflections = EVIDENCE_API.normalizeCareReflections({
+      dog: 'Walk before the movie next time. ' + 'x'.repeat(700),
+      'dog-w2': 'Long line at the park until the recall is back.',
+      'dog-w3': 'no such week',
+      cat: '   ',
+      parrot: 'not a care-sim species',
+      rabbit: { private: 'object, not text' },
+    });
+    expect(Object.keys(reflections)).toEqual(['dog', 'dog-w2']);
+    expect(reflections.dog.length).toBe(600);
+    expect(EVIDENCE_API.normalizeCareReflections('junk')).toEqual({});
+    expect(EVIDENCE_API.normalizeCareReflections(['a'])).toEqual({});
     expect(safe.aiCritiques).toEqual({
       'family-pick': {
         text: 'A valid critique',
@@ -576,6 +599,17 @@ describe('Pets Lab structured evidence records', () => {
     expect(training).toMatch(/behaviorPct:\s*finalScore/);
     expect(training).toMatch(/trustPct:\s*trustScore/);
     expect(training).toMatch(/criterionMet:\s*finalScore\s*>=\s*70\s*&&\s*trustScore\s*>=\s*80/);
+    // The session setting travels with the record, validated to the two banks.
+    expect(training).toMatch(/setting:\s*trBank/);
+    const settingRows = Array.from(EVIDENCE_API.normalizeEvidenceRecords([
+      { moduleId: 'training', kind: 'activity', recordedAt: '2026-08-26T12:00:00.000Z', details: { rounds: 10, behaviorPct: 80, trustPct: 90, setting: 'park', criterionMet: true } },
+      { moduleId: 'training', kind: 'activity', recordedAt: '2026-08-26T12:01:00.000Z', details: { rounds: 10, behaviorPct: 80, trustPct: 90, setting: 'moon', criterionMet: true } },
+    ]));
+    expect(settingRows[0].details.setting).toBe('park');
+    expect(settingRows[1].details).not.toHaveProperty('setting');
+    const evidenceOutcomeFn = teacherHelper('function evidenceOutcome(record)', 'function evidenceGrowth(record)');
+    expect(evidenceOutcomeFn(settingRows[0])).toContain('at the park');
+    expect(evidenceOutcomeFn(settingRows[1])).not.toContain('at ');
 
     const bodyLanguage = completionCall('bodyLang');
     expect(bodyLanguage).toMatch(/score:\s*blQuiz\.score/);
@@ -728,8 +762,33 @@ describe('Pets Lab structured evidence records', () => {
       criterionMet: true,
     });
     expect(normalizedCare.details).not.toHaveProperty('tiredCareTasks');
+    // Overnight events are a bounded count (at most two a night for seven nights).
+    const eventful = Array.from(EVIDENCE_API.normalizeEvidenceRecords([{
+      moduleId: 'careSim', kind: 'activity', recordedAt: '2026-08-26T12:00:00.000Z',
+      details: { species: 'dog', days: 7, physical: 82, mental: 76, social: 79, environmental: 74, overnightEvents: 99, moneyLeft: 10, stayedInBudget: true, energyLeft: 40, caregiverSustainable: true, criterionMet: false },
+    }]))[0];
+    expect(eventful.details.overnightEvents).toBe(14);
+    expect(evidenceOutcome(eventful)).toContain('Overnight events 14');
     expect(evidenceOutcome(normalizedCare)).toContain('Budget sustainable ($118 left)');
     expect(evidenceOutcome(normalizedCare)).toContain('Caregiver energy 46% (sustainable)');
+
+    // The care week's only self-review is the closing reflection, so the row
+    // says so; other modules' self-review rows keep the generic wording.
+    const reflectionRow = Array.from(EVIDENCE_API.normalizeEvidenceRecords([{
+      moduleId: 'careSim', kind: 'self-review', recordedAt: '2026-08-26T12:05:00.000Z',
+      details: { species: 'dog', privateText: 'PRIVATE' },
+    }]))[0];
+    expect(reflectionRow.summary).toBe('Wrote a post-week reflection');
+    expect(reflectionRow.details).toEqual({});
+    const evidenceStatusFn = teacherHelper('function evidenceStatus(record, criterionRecord)', 'function evidenceOutcome(record)');
+    expect(evidenceStatusFn(reflectionRow)).toContain('Reflection recorded');
+    expect(evidenceStatusFn(reflectionRow)).toContain('not in evidence');
+    expect(evidenceOutcome(reflectionRow)).toContain('One thing to do differently next week');
+    const genericRow = Array.from(EVIDENCE_API.normalizeEvidenceRecords([{
+      moduleId: 'dogs', kind: 'self-review', recordedAt: '2026-08-26T12:06:00.000Z', details: {},
+    }]))[0];
+    expect(genericRow.summary).toBe('Reviewed by learner');
+    expect(evidenceStatusFn(genericRow)).toBe('Learner reviewed — no activity criterion recorded');
 
     const { state, helpers } = evidenceHarness();
     helpers.recordEvidence('careSim', 'Completed care week', {

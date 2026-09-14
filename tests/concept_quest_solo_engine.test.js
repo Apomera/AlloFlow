@@ -12,7 +12,7 @@ const fixtures = [
   [{ type: 'multi-select', question: 'Pick two', options: ['A', 'B', 'C'], correctAnswers: ['A', 'C'] }, { selectedIndices: [0, 2] }, { selectedIndices: [1] }],
   [{ type: 'fill-blank', question: 'Water becomes ___', expectedFill: 'ice', acceptableAlternatives: ['solid water'] }, { text: '  SOLID water ' }, { text: 'steam' }],
   [{ type: 'numeric-response', question: 'Measure', correctValue: 0.5, tolerance: 0.01, unit: 'm', acceptableUnits: ['metres'] }, { text: '1/2 metres' }, { text: '40 kg' }],
-  [{ type: 'sequence-sense', question: 'Check the order', items: ['First', 'Second', 'Third'], presentedOrder: [1, 0, 2], intentionallyWrongIndex: 0, orderingPrinciple: 'Time', principleOptions: ['Time', 'Size'] }, { verifyAnswer: 'no', wrongIndex: 0, principleAnswer: 'Time' }, { verifyAnswer: 'yes', principleAnswer: 'Size' }],
+  [{ type: 'sequence-sense', question: 'Check the order', items: ['First', 'Second', 'Third'], presentedOrder: [1, 0, 2], intentionallyWrongIndex: 0, orderingPrinciple: 'Time', principleOptions: ['Time', 'Size'] }, { verifyAnswer: 'no', wrongIndex: 0, order: [0, 1, 2], principleAnswer: 'Time' }, { verifyAnswer: 'yes', principleAnswer: 'Size' }],
   [{ type: 'relation-mismatch', question: 'Fix a pair', pairs: [{ left: 'Cat', right: 'Plant' }, { left: 'Rose', right: 'Plant' }], wrongPairIndex: 0, correctPartnerForWrong: 'Animal', candidatePartners: ['Animal', 'Plant'] }, { pairIndex: 0, partnerAnswer: 'Animal' }, { pairIndex: 1, partnerAnswer: 'Plant' }],
   [{ type: 'answer-evidence', question: 'Choose with evidence', answerOptions: ['Warm', 'Cold'], correctAnswer: 'Cold', evidencePrompt: 'Why?', evidenceOptions: ['Ice formed', 'Steam formed'], correctEvidence: 'Ice formed' }, { answerIndex: 1, evidenceIndex: 0 }, { answerIndex: 0, evidenceIndex: 1 }],
 ];
@@ -62,7 +62,8 @@ describe('Concept Quest solo canonical grading', () => {
     expect(solo.grade(normalize(fixtures[1][0]), { selectedIndices: [0] })).toMatchObject({ score: 50, maxScore: 100, correct: false, status: 'partially-correct' });
     expect(solo.grade(normalize(fixtures[1][0]), { selectedIndices: [0, 0, 0, 1] })).toMatchObject({ score: 0, correct: false });
     expect(solo.grade(normalize(fixtures[3][0]), { text: '0.5 kg' })).toMatchObject({ score: 50, valueCorrect: true, unitCorrect: false });
-    expect(solo.grade(normalize(fixtures[4][0]), { verifyAnswer: 'no', wrongIndex: 0, principleAnswer: 'Size' })).toMatchObject({ score: 2, maxScore: 3 });
+    // verify + diagnose right; order left as displayed (wrong) and principle wrong
+    expect(solo.grade(normalize(fixtures[4][0]), { verifyAnswer: 'no', wrongIndex: 0, principleAnswer: 'Size' })).toMatchObject({ score: 2, maxScore: 4 });
     expect(solo.grade(normalize(fixtures[5][0]), { pairIndex: 0, partnerAnswer: 'Plant' })).toMatchObject({ score: 1, maxScore: 2 });
     expect(solo.grade(normalize(fixtures[6][0]), { answerIndex: 1, evidenceIndex: 1 })).toMatchObject({ score: 1, maxScore: 2 });
     const noPartial = solo.normalizeItems({ data: { questions: [fixtures[1][0]], scoringPolicy: { partialCredit: false } } })[0];
@@ -78,10 +79,12 @@ describe('Concept Quest solo canonical grading', () => {
     expect(solo.grade(zero, { text: '1/0' }).complete).toBe(false);
     expect(solo.grade(zero, { text: 'Infinity' }).complete).toBe(false);
   });
-  it('checks all three sequence steps, including an already-correct order', () => {
+  it('checks all four sequence steps, including an already-correct order left as displayed', () => {
     const item = normalize({ ...fixtures[4][0], presentedOrder: [0, 1, 2], intentionallyWrongIndex: null });
-    expect(solo.grade(item, { verifyAnswer: 'yes', principleAnswer: 'Time' })).toMatchObject({ score: 3, correct: true });
-    expect(solo.grade(item, { verifyAnswer: 'no', wrongIndex: 0, principleAnswer: 'Time' })).toMatchObject({ score: 1, correct: false });
+    expect(solo.grade(item, { verifyAnswer: 'yes', principleAnswer: 'Time' })).toMatchObject({ score: 4, maxScore: 4, correct: true });
+    // Wrong verdict and wrong diagnosis; the untouched order and the principle still earn their points.
+    expect(solo.grade(item, { verifyAnswer: 'no', wrongIndex: 0, principleAnswer: 'Time' })).toMatchObject({ score: 2, correct: false });
+    expect(solo.grade(item, { verifyAnswer: 'yes', order: [1, 0, 2], principleAnswer: 'Time' })).toMatchObject({ score: 3, correct: false, arrangeCorrect: false });
   });
   it.each(['short-answer', 'self-explanation'])('requires an explicit guide comparison for %s and never invents correctness', type => {
     const item = normalize({ type, question: 'Explain', expectedAnswer: 'A reason', rubric: 'Use evidence' });

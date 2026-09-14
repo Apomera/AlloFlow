@@ -70,7 +70,9 @@ describe('launcher grounding and honesty', () => {
   });
 
   it('uses the CDN-module AI fallback pattern', () => {
-    expect(miscSource).toContain("props.callGemini || (typeof window !== 'undefined' ? window.callGemini : null)");
+    // null from the host means "student AI hidden" and must NOT fall through to the
+    // window global (2026-09-14); only an absent prop does, and never to a blocked one.
+    expect(miscSource).toContain("const surpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);");
   });
 });
 

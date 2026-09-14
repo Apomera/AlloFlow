@@ -774,15 +774,38 @@ const createExport = (deps) => {
         });
     };
 
+    // Displayed positions that are out of place (same rule as the quiz card's
+    // sequenceSenseTruth): a position counts when removing it leaves the rest in
+    // canonical order, so an adjacent swap yields both positions.
+    const _sequenceMisplacedPositions = (order, intentionallyWrongIndex, count) => {
+        const valid = count > 0 && Array.isArray(order) && order.length === count
+            && order.every((value) => Number.isInteger(value) && value >= 0 && value < count)
+            && new Set(order).size === count;
+        if (!valid || order.every((value, index) => value === index)) return [];
+        const found = [];
+        order.forEach((_, skip) => {
+            let previous = -1;
+            const sorted = order.every((value, index) => {
+                if (index === skip) return true;
+                const ok = value >= previous;
+                previous = value;
+                return ok;
+            });
+            if (sorted) found.push(skip);
+        });
+        if (found.length) return found;
+        return Number.isInteger(intentionallyWrongIndex) && intentionallyWrongIndex >= 0 && intentionallyWrongIndex < count ? [intentionallyWrongIndex] : order.map((_, index) => index);
+    };
     const _qtiDiagnosticManualPrompt = (q, type) => {
         if (type === 'sequence-sense') {
             const items = Array.isArray(q.items) ? q.items : [];
             const order = Array.isArray(q.presentedOrder) && q.presentedOrder.length ? q.presentedOrder : items.map((item, index) => index);
             const displayed = order.map((itemIndex, displayIndex) => (displayIndex + 1) + '. ' + String(items[itemIndex] == null ? '' : items[itemIndex])).join('\n');
             const canonical = items.map((item, itemIndex) => (itemIndex + 1) + '. ' + String(item == null ? '' : item)).join('\n');
+            const misplaced = _sequenceMisplacedPositions(order, q.intentionallyWrongIndex, items.length);
             return {
-                prompt: String(q.question || 'Review the sequence.') + '\n\nDisplayed sequence:\n' + displayed + '\n\nState whether the sequence is correct. If not, identify the misplaced step and explain the ordering principle.',
-                guide: 'Canonical order:\n' + canonical + (q.intentionallyWrongIndex == null ? '' : '\nIntentionally misplaced displayed position: ' + (Number(q.intentionallyWrongIndex) + 1)) + (q.orderingPrinciple ? '\nOrdering principle: ' + q.orderingPrinciple : '')
+                prompt: String(q.question || 'Review the sequence.') + '\n\nDisplayed sequence:\n' + displayed + '\n\nState whether the sequence is correct. If not, identify the misplaced step, write the correct order, and explain the ordering principle.',
+                guide: 'Canonical order:\n' + canonical + (misplaced.length ? '\nMisplaced displayed position' + (misplaced.length > 1 ? 's (either counts): ' : ': ') + misplaced.map((position) => position + 1).join(', ') : '\nThe displayed order is correct.') + (q.orderingPrinciple ? '\nOrdering principle: ' + q.orderingPrinciple : '')
             };
         }
         const pairs = Array.isArray(q.pairs) ? q.pairs : [];
@@ -1157,7 +1180,7 @@ const createExport = (deps) => {
                     } else if (kind === 'sequence-sense') {
                         const items = Array.isArray(q.items) ? q.items.map(plain).filter(Boolean) : [];
                         const displayed = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder.map((index) => items[index]).filter(Boolean) : items;
-                        included = items.length >= 3 && addEssay(prompt + ' Displayed order: ' + displayed.join(' → ') + '. State whether it is correct and explain the ordering principle.', 'Expected order: ' + items.join(' → ') + (q.orderingPrinciple ? '. Principle: ' + plain(q.orderingPrinciple) : ''));
+                        included = items.length >= 3 && addEssay(prompt + ' Displayed order: ' + displayed.join(' → ') + '. State whether it is correct, write the correct order, and explain the ordering principle.', 'Expected order: ' + items.join(' → ') + (q.orderingPrinciple ? '. Principle: ' + plain(q.orderingPrinciple) : ''));
                         if (included) { adapted += 1; manualReview += 1; }
                     } else if (kind === 'relation-mismatch') {
                         const pairs = Array.isArray(q.pairs) ? q.pairs.filter((pair) => pair && plain(pair.left) && plain(pair.right)) : [];

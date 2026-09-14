@@ -177,7 +177,7 @@ describe('Pets Lab — hook order across the view dispatch', () => {
     } finally {
       app.teardown();
     }
-  });
+  }, 20_000);  // three full mount round-trips: ~3 s alone, longer under a parallel run
 
   it('ESC still dismisses the Household Hazard Sleuth inline game from the hoisted slot', () => {
     const app = mountPetsLab(loadPetsLab());

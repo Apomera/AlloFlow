@@ -165,6 +165,14 @@ describe('Pets mini-game evidence and completion policy', () => {
       expect(gate.PETS_ACTIVITY_COMPLETION_MODULES[moduleId], moduleId).toBe(true);
       expect(gate.requiresActivityCompletion(moduleId), moduleId).toBe(true);
     }
-    expect(gate.requiresActivityCompletion('dogs')).toBe(false);
+    // The five species views carry a predict-then-reveal check, so they are
+    // activity-gated too: 'Complete' means the student made a prediction and
+    // saw the answer, not that they clicked 'I reviewed this module'.
+    for (const moduleId of ['dogs', 'cats', 'smallMammals', 'birds', 'reptiles']) {
+      expect(gate.PETS_ACTIVITY_COMPLETION_MODULES[moduleId], moduleId).toBe(true);
+      expect(gate.requiresActivityCompletion(moduleId), moduleId).toBe(true);
+    }
+    // A reference view with no activity stays self-attested.
+    expect(gate.requiresActivityCompletion('glossary')).toBe(false);
   });
 });

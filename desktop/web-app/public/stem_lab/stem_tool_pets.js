@@ -623,6 +623,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     }
   };
 
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 1b: SPECIES PREDICTION CHECKS
+  // The five species views were the only trackable modules in the lab with no
+  // activity at all: dense sourced reading, then "I reviewed this module" on
+  // the student's word alone. Every other practice module gates completion on
+  // something the student actually did.
+  //
+  // Each check is a PREDICTION made before reading, then a reveal. That order
+  // is the point: committing to an answer first is what makes the correction
+  // stick (Kornell 2009; Richland 2009 on pretesting). So a wrong prediction is
+  // worth as much as a right one here, and the UI says so — the module completes
+  // either way, and nothing in the evidence row scores it.
+  //
+  // Each prompt targets the one belief in that view students most reliably hold
+  // backwards, and every reveal is already carried by the prose below it, so
+  // this adds no unsourced claim.
+  // ─────────────────────────────────────────────────────────
+  var SPECIES_CHECKS = {
+    dogs: {
+      id: 'dogs',
+      prompt: 'Two healthy puppies, both well cared for: a Great Dane and a Chihuahua. Across mammals as a whole, bigger species usually live longer. Which dog do you expect to live longer — and does that mammal rule hold inside one species?',
+      options: [
+        { id: 'bigger', label: 'The Great Dane — bigger mammals live longer, so the rule holds.' },
+        { id: 'smaller', label: 'The Chihuahua — inside dogs the size rule runs backwards.' },
+        { id: 'same', label: 'About the same — breed size is cosmetic, not biological.' }
+      ],
+      answer: 'smaller',
+      reveal: 'Within dogs the relationship REVERSES. Giant breeds live about 6–8 years; small breeds reach 14–16. Between species the usual mammal pattern still holds (mouse 2 yr, elephant 70 yr) — it is inside the one species that it inverts, which is why "big dog, long life" is such a common and costly assumption when a family chooses a giant breed.',
+      why: 'Leading hypotheses are accelerated growth driving cellular damage, and IGF-1 signalling differences — the same growth pathway selection pushed on to make the breed large.',
+      missNote: 'This one is meant to catch people out — the between-species rule really is the opposite, so the intuition is reasonable. That is exactly why it is worth knowing.'
+    },
+    cats: {
+      id: 'cats',
+      prompt: 'A cat owner switches their cat to a carefully balanced vegetarian diet, matching protein and calories exactly. What is the problem?',
+      options: [
+        { id: 'none', label: 'No problem if protein and calories are matched.' },
+        { id: 'taste', label: 'Only that most cats will refuse to eat it.' },
+        { id: 'nutrients', label: 'Cats require specific nutrients that plant ingredients do not reliably supply.' }
+      ],
+      answer: 'nutrients',
+      reveal: 'Cats are obligate carnivores as a matter of biochemistry, not preference. Taurine, preformed vitamin A, arachidonic acid, and a high arginine requirement are the classic examples — a cat cannot rely on converting beta-carotene to meet its vitamin A requirement the way some other animals can. Severe taurine deficiency can damage the heart and retina; severe arginine deficiency can cause dangerous ammonia buildup.',
+      why: 'Matching protein and calories does not match a nutrient PROFILE. Note the honest nuance: a formulated food can supply some of these through purified or synthesized nutrients, so the dividing line is formulation and veterinary monitoring — not whether an ingredient came from an animal.',
+      missNote: 'Worth separating two different questions: whether a cat will eat something, and whether it can stay healthy on it. Only the second one is biochemistry.'
+    },
+    smallMammals: {
+      id: 'smallMammals',
+      prompt: 'A family wants a small pet and plans to buy one of each — one hamster, one guinea pig — so neither gets lonely in its own cage. Which part of that plan is backwards?',
+      options: [
+        { id: 'fine', label: 'Nothing — one of each is a sensible starter setup.' },
+        { id: 'gp', label: 'The guinea pig: it is a herd animal and should not live alone.' },
+        { id: 'hamster', label: 'The hamster: it should have a companion too.' }
+      ],
+      answer: 'gp',
+      reveal: 'The social rules run in OPPOSITE directions, and they are species-specific rather than a general "small pet" rule. Guinea pigs are strict herd animals — solo housing is enough of a welfare problem that it is illegal in Switzerland; they need a bonded same-sex pair or trio. Syrian hamsters are strictly solitary, and two in one cage can fight to the death. Rabbits are usually kept as a bonded pair; ferrets do best in pairs or trios.',
+      why: 'Small does not mean simple. "Starter pet" marketing flattens four species with four different social, dietary, and housing rules — guinea pigs are also vitamin-C dependent like humans, and rabbits need far more space than a cage.',
+      missNote: 'The useful habit is to look up the specific species rather than reasoning from "small rodent" as a category — the answers genuinely contradict each other.'
+    },
+    birds: {
+      id: 'birds',
+      prompt: 'Someone keeps a parrot in a clean, well-ventilated kitchen and cooks on a non-stick pan that overheats. The air smells fine to every person in the room. What happens to the bird?',
+      options: [
+        { id: 'fine', label: 'The bird is fine — if people cannot smell it, the level is too low to matter.' },
+        { id: 'mild', label: 'Mild irritation at worst, like smoke bothering a person.' },
+        { id: 'fatal', label: 'Fumes from overheated PTFE can kill a bird within minutes.' }
+      ],
+      answer: 'fatal',
+      reveal: 'Overheated PTFE (non-stick) cookware can kill a pet bird within roughly 5–15 minutes. Birds breathe through a one-way flow across nine air sacs instead of two-way tidal lungs, so each breath is a flow-through exchange and they take in far more air per kilogram than we do. A concentration that is merely unpleasant to a human can be lethal to a bird.',
+      why: 'Same physiology, same reason: pet birds historically warned miners about carbon monoxide and methane. Other common household risks are aerosol cleaners, scented candles and plug-ins, cigarette and cooking smoke, and self-cleaning oven cycles.',
+      missNote: 'The trap is using your own nose as the safety threshold. A bird\'s exposure per breath is not comparable to yours, so "I cannot smell anything" is not evidence the air is safe for the bird.'
+    },
+    reptiles: {
+      id: 'reptiles',
+      prompt: 'A bearded dragon\'s UVB bulb is 14 months old. It still lights the tank and looks as bright as it did on day one. Does it need replacing?',
+      options: [
+        { id: 'visible', label: 'No — a bulb that is still visibly bright is still working.' },
+        { id: 'burnout', label: 'No — replace it when it burns out.' },
+        { id: 'replace', label: 'Yes — UVB output fades long before the visible light does.' }
+      ],
+      answer: 'replace',
+      reveal: 'UVB bulbs lose their UVB output before they look any dimmer, so visible brightness tells you nothing about whether the animal is still getting UVB. Replace every 6–12 months even when the bulb still looks fine. Without UVB a diurnal reptile cannot synthesize vitamin D3, which leads to metabolic bone disease — deformed legs, a soft jaw, and it can be fatal.',
+      why: 'This sits inside the bigger principle: for an ectotherm, husbandry IS preventive care. The animal cannot generate its own body heat, so at the wrong temperature it cannot digest food, fight infection, or move — heat, humidity, lighting, and habitat are medical variables, not decor.',
+      missNote: 'The general lesson is that the cue you can see (visible light) and the thing that matters (UVB output) are two different outputs of the same bulb. Date the bulb when you install it.'
+    }
+  };
+
   // ─────────────────────────────────────────────────────────
   // SECTION 2: NUTRITION (household hazards + species requirements)
   // Citations: FDA, AVMA, Merck Veterinary Manual, ASPCA Animal Poison Control,
@@ -1525,6 +1611,379 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     ]
   };
 
+
+  // ─────────────────────────────────────────────────────────
+  // WEEK 2 — the same dog, eight months old. Unlocked by finishing
+  // week 1 with that species. Same machinery (routine upkeep, overnight
+  // events, aftermath, outlook, budget) and the same species budget, so
+  // every week-1 invariant in the economy test is checked against this
+  // table too. Adolescence is where most dogs are surrendered, and the
+  // week is built around the seven things that get them there.
+  // ─────────────────────────────────────────────────────────
+  var CARE_SIM_WEEK2 = {
+    dog: [
+      { day: 1, label: 'Day 1 — jumping on guests',
+        scene: { icon: '\uD83D\uDEAA', label: 'Guests at the door', detail: 'Four paws down earns the greeting', kind: 'guests' },
+        link: { view: 'training', patch: { trMode: 'read' }, label: 'Pet Training', why: 'What reinforcement actually rewards, jumping included.' },
+        prompt: 'Your dog is eight months old now: bigger, bouncier, and jumping on every guest who comes through the door. A friend with a toddler is visiting tonight.',
+        choices: [
+          { id: 'greet_sit', label: 'Leash on before the door opens; reward four paws on the floor, then a sit; the guest only greets a sitting dog',
+            effects: { phys: +2, ment: +8, soc: +6, env: +4, en: -6, money: 0 },
+            note: 'Jumping is reinforced every time it works (attention, even a shove). Teach what to do INSTEAD and pay it. The leash at the door is management while the sit is learned.' },
+          { id: 'other_room', label: 'Shut the dog in the bedroom until the guests have settled',
+            effects: { phys: 0, ment: -2, soc: -2, env: 0, en: -2, money: 0 },
+            note: 'Management, not training: nothing was learned, but nobody was knocked over. Fine tonight; not a plan.' },
+          { id: 'knee', label: 'Knee it in the chest and shout "off!" when it jumps',
+            effects: { phys: -3, ment: -4, soc: -8, env: 0, en: -1, money: 0 },
+            aftermath: { en: -3 },
+            note: 'Physical corrections teach the dog that guests predict scary things, and a knee can injure a growing chest. AVSAB advises against aversive methods; where they work at all, they work by fear.' }
+        ]
+      },
+      { day: 2, label: 'Day 2 — pulling on the leash',
+        scene: { icon: '\uD83E\uDDAE', label: 'Leash pulling', detail: 'A slack leash is what moves you', kind: 'walk' },
+        link: { view: 'training', patch: { trMode: 'read' }, label: 'Pet Training', why: 'Why a behaviour that keeps working keeps happening.' },
+        prompt: 'Walks have become a tow. Your shoulder hurts and the dog wheezes against its collar.',
+        choices: [
+          { id: 'harness_stop', label: 'Front-clip harness; stop when the leash tightens, walk on when it slackens; reward at your side',
+            effects: { phys: +6, ment: +8, soc: +4, env: 0, en: -8, money: -35 },
+            note: 'Pulling works because it moves the dog forward. Make slack the thing that moves you. A front-clip harness redirects without pain; expect two or three weeks of consistent walks.' },
+          { id: 'short_walks', label: 'Keep walks short and close to home for now',
+            effects: { phys: -4, ment: -3, soc: 0, env: 0, en: -3, money: 0 },
+            note: 'Avoids the problem rather than solving it. An under-exercised adolescent finds other outlets, usually indoors.' },
+          { id: 'choke', label: 'Buy a choke chain and give sharp leash corrections',
+            effects: { phys: -6, ment: -3, soc: -6, env: 0, en: -3, money: -40 },
+            aftermath: { en: -2 },
+            note: 'Choke and prong collars work by pain and pressure on the throat, and they pair walks with it. AVSAB\'s position statement recommends reward-based methods and finds no evidence that aversive tools train faster.' }
+        ]
+      },
+      { day: 3, label: 'Day 3 — guarding a chew',
+        scene: { icon: '\uD83E\uDDB4', label: 'Guarding a chew', detail: 'A growl is a warning, not defiance', kind: 'guard' },
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'Freezing and a hard stare are on the decoder.' },
+        prompt: 'Your dog freezes and growls when you walk past while it chews a bully stick.',
+        choices: [
+          { id: 'trade_up', label: 'Toss a better treat from a distance each time you pass; teach "drop" as a trade; book a certified trainer if it escalates',
+            effects: { phys: +2, ment: +6, soc: +8, env: +2, en: -6, money: -60 },
+            note: 'A growl is information: the dog thinks you are a threat to its chew. Make your approach predict good things. Guarding is common in adolescents and responds well to trade games; anything involving teeth is a job for a certified force-free trainer (CCPDT, IAABC).' },
+          { id: 'leave_it', label: 'Leave the dog alone when it has a chew; give chews only in its crate',
+            effects: { phys: 0, ment: +1, soc: 0, env: +3, en: -1, money: 0 },
+            note: 'Legitimate management. Guarding rarely gets worse if it is never provoked, and it protects a child who wanders past. Just do not confuse it with the problem being gone.' },
+          { id: 'take_it', label: 'Take the chew away to show it who is boss',
+            effects: { phys: -4, ment: -4, soc: -10, env: 0, en: -2, money: 0 },
+            aftermath: { en: -6, money: -120 },
+            note: 'Punishing the growl removes the warning, not the guarding: the next step is a bite with no growl first. Dominance framing does not describe pet dogs (Mech, who coined "alpha", withdrew it for wolves too). If teeth touched skin, wash it and see a doctor.' }
+        ]
+      },
+      { day: 4, label: 'Day 4 — the dental check',
+        scene: { icon: '\uD83E\uDDB7', label: 'Dental check', detail: 'Plaque is daily; the gumline is the vet\'s', kind: 'vet' },
+        link: { view: 'cost', patch: { costSpecies: 'dog-large' }, label: 'Lifetime Cost', why: 'Where dental care sits in a lifetime budget.' },
+        prompt: 'A routine visit. The vet points out tartar and red gums, recommends a cleaning under anaesthesia (estimate $380) and daily brushing.',
+        choices: [
+          { id: 'clean_brush', label: 'Book the cleaning; start brushing every day with a dog toothbrush and enzymatic paste',
+            effects: { phys: +10, ment: +2, soc: +2, env: 0, en: -6, money: -380 },
+            note: 'Most dogs show some periodontal disease by age three (AVDC). Brushing is the only thing that removes plaque daily; a cleaning under anaesthesia is the only way to treat below the gumline. Ask what the estimate includes and about pre-anaesthetic bloodwork.' },
+          { id: 'brush_defer', label: 'Start brushing now; recheck the gums in three months before deciding on the cleaning',
+            effects: { phys: +4, ment: 0, soc: +1, env: 0, en: -4, money: -15 },
+            note: 'A defensible plan if the vet agrees the gums can wait. Brushing has to actually happen daily, and the recheck needs a booked date, not an intention.' },
+          { id: 'no_teeth', label: '"Dogs in the wild don\'t brush." Skip both',
+            effects: { phys: -8, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            note: 'Dental disease is painful, mostly invisible, and linked to heart, kidney and liver strain. Wild canids die younger with worse teeth; that is not the comparison you want.' }
+        ]
+      },
+      { day: 5, label: 'Day 5 — recall at the park',
+        scene: { icon: '\uD83C\uDF33', label: 'Recall at the park', detail: 'Coming back must always pay', kind: 'outdoors' },
+        link: { view: 'training', patch: { trMode: 'read' }, label: 'Pet Training', why: 'Why the last thing the dog did is the thing you are rewarding or punishing.' },
+        prompt: 'Off leash at the park, you call "come." The dog looks at you, then sprints to a Labrador across the field.',
+        choices: [
+          { id: 'long_line', label: 'Back on a long line; pay every recall with roast chicken; practise in the yard and quiet corners before the busy field',
+            effects: { phys: +4, ment: +8, soc: +6, env: +2, en: -7, money: -20 },
+            note: 'A recall is only as strong as its history of paying off. Adolescent dogs lose their recall for a while; a long line lets you practise without the dog rehearsing "ignore and run".' },
+          { id: 'leash_only', label: 'Keep the regular leash on at the park for now',
+            effects: { phys: +2, ment: +2, soc: +2, env: 0, en: -3, money: 0 },
+            note: 'Safe and honest. Off-leash time is a privilege earned with a reliable recall, not a right of the park.' },
+          { id: 'scold_return', label: 'Chase it down, then scold it when you finally get hold of it',
+            effects: { phys: -2, ment: -4, soc: -8, env: 0, en: -4, money: 0 },
+            aftermath: { en: -4 },
+            note: 'The dog was scolded for the last thing it did: coming to you. Next time it will not. Never punish a recall, however long it took.' }
+        ]
+      },
+      { day: 6, label: 'Day 6 — a storm at 2 a.m.',
+        scene: { icon: '\u26C8\uFE0F', label: 'Night storm', detail: 'Fear is an emotion, not a behaviour', kind: 'rain' },
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'Panting and pacing when it is not hot are on the decoder.' },
+        prompt: 'A thunderstorm at 2 a.m. The dog is panting, pacing, and trying to squeeze in behind the toilet.',
+        choices: [
+          { id: 'safe_den', label: 'Let it hide; make the den comfortable, sit nearby calmly, put on white noise; call the vet about anxiety support if storms keep doing this',
+            effects: { phys: +2, ment: +6, soc: +6, env: +4, en: -6, money: 0 },
+            note: 'Comforting a frightened dog does not reinforce fear: fear is an emotion, not a behaviour. A dark, enclosed spot and a calm human are the first steps; for real storm phobia, veterinarians have medication options.' },
+          { id: 'sit_up', label: 'Sit up with it on the sofa, stroking it, until the storm passes',
+            effects: { phys: 0, ment: +3, soc: +4, env: 0, en: -10, money: 0 },
+            note: 'Kind, and better than nothing. Most storm-phobic dogs want an enclosed, dark space more than a lap.' },
+          { id: 'human_pill', label: 'Give it half of one of your own sleeping pills to calm it down',
+            effects: { phys: -15, ment: -4, soc: -3, env: 0, en: -3, money: 0 },
+            aftermath: { en: -10, money: -650 },
+            note: 'Human sedatives and sleep aids can be toxic to dogs, and the dose is not something to guess at home. If any human medication has been given, call the vet or a poison helpline immediately with the product name and amount.' }
+        ]
+      },
+      { day: 7, label: 'Day 7 — the neighbour\'s dog',
+        scene: { icon: '\uD83D\uDC15', label: 'Neighbour\'s dog', detail: 'Loose leashes, short sniff, move on', kind: 'social' },
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'What a stiff body and a high tail say before a scuffle.' },
+        prompt: 'The neighbour suggests the two dogs "meet and sort it out" at the fence.',
+        choices: [
+          { id: 'parallel_walk', label: 'Walk both dogs down the same side of the street a few metres apart, loose leashes; let them sniff for three seconds, then move on',
+            effects: { phys: +4, ment: +6, soc: +8, env: +2, en: -5, money: 0 },
+            note: 'Parallel walking lets dogs take each other in without the head-on tension of a fence or a tight leash. Short sniffs and a call-away keep arousal low, and you can always do it again tomorrow.' },
+          { id: 'skip_meet', label: 'Skip the introduction; wave and keep walking',
+            effects: { phys: 0, ment: 0, soc: 0, env: 0, en: -1, money: 0 },
+            note: 'Fine. Not every dog needs dog friends, and a bad first meeting is worse than none.' },
+          { id: 'fence_charge', label: 'Let them charge each other along the fence on tight leashes',
+            effects: { phys: -4, ment: -5, soc: -6, env: 0, en: -4, money: 0 },
+            aftermath: { en: -5, money: -90 },
+            note: 'Fence lines and tight leashes are where fights start: frustration and no room to retreat. A scuffle means a vet check for both dogs and two owners who now dread each other.' }
+        ]
+      }
+    ],
+    cat: [
+      { day: 1, label: 'Day 1 — 4 a.m. wake-ups',
+        scene: { icon: '\uD83C\uDF19', label: 'Night activity', detail: 'Play, then feed, then sleep', kind: 'noise' },
+        link: { view: 'cats', label: 'Cats', why: 'Why cats are most active at dusk and dawn.' },
+        prompt: 'A year in, your cat has a new habit: yowling and pouncing on your feet at 4 a.m., every morning.',
+        choices: [
+          { id: 'play_feed', label: 'A hard play session before bed, a timed feeder set for 4 a.m., and no reaction at night',
+            effects: { phys: +2, ment: +8, soc: +4, env: +2, en: -6, money: -30 },
+            note: 'Cats are crepuscular: dawn is hunting time. Give the hunt (play) and the meal on your schedule, and make the 4 a.m. audience disappear. Two weeks, usually.' },
+          { id: 'shut_out', label: 'Shut the cat out of the bedroom at night',
+            effects: { phys: 0, ment: -1, soc: -2, env: 0, en: -1, money: 0 },
+            note: 'Management. Some cats accept it; some scratch the door for an hour. Nothing about the cat\'s need to hunt at dawn has changed.' },
+          { id: 'feed_now', label: 'Get up and feed it so it stops',
+            effects: { phys: 0, ment: -3, soc: -1, env: 0, en: -3, money: 0 },
+            aftermath: { en: -6 },
+            note: 'You just taught the cat that yowling at 4 a.m. pays. Tomorrow it starts at 3:30. Reinforcement does not care whether you meant it.' }
+        ]
+      },
+      { day: 2, label: 'Day 2 — a second cat',
+        scene: { icon: '\uD83D\uDC08', label: 'A second cat', detail: 'Scent first, sight later, weeks not hours', kind: 'home' },
+        link: { view: 'cats', label: 'Cats', why: 'How cats decide who belongs in their territory.' },
+        prompt: 'A friend is moving abroad and asks whether you would take her two-year-old cat.',
+        choices: [
+          { id: 'slow_intro', label: 'Yes: a separate room, scent swapping with towels, meals either side of a closed door, then short supervised visits over two or three weeks',
+            effects: { phys: 0, ment: +6, soc: +8, env: +4, en: -8, money: -40 },
+            note: 'Cats bond to territory before they bond to each other. A slow introduction lets the newcomer become part of the smell of the house before it is a face in the room. One litter box per cat plus one, from day one.' },
+          { id: 'decline', label: 'Say no for now',
+            effects: { phys: 0, ment: 0, soc: 0, env: 0, en: -1, money: 0 },
+            note: 'Honest. A single cat is not lonely the way a single rabbit is; many are happier as the only cat.' },
+          { id: 'same_room', label: 'Yes: put them in the same room and let them work it out',
+            effects: { phys: -4, ment: -8, soc: -10, env: -2, en: -2, money: 0 },
+            aftermath: { en: -6, money: -140 },
+            note: 'A first meeting that turns into a fight can set the relationship for years, and cat bite wounds abscess. The vet visit is for the bite; the weeks of hissing are the real cost.' }
+        ]
+      },
+      { day: 3, label: 'Day 3 — peeing outside the box',
+        scene: { icon: '\uD83E\uDDF9', label: 'Missed the box', detail: 'Medical first, then the box itself', kind: 'litter' },
+        link: { view: 'cats', label: 'Cats', why: 'Which changes in a cat are urgent, and why a box problem starts at the vet.' },
+        prompt: 'You find a wet patch on the bath mat. The cat has used its box perfectly for a year.',
+        choices: [
+          { id: 'vet_first', label: 'Vet today for an exam and urinalysis; then audit the box: count, cleanliness, placement, litter type',
+            effects: { phys: +10, ment: +2, soc: 0, env: +6, en: -5, money: -160 },
+            note: 'A sudden change in a reliable cat is a medical question first: cystitis, crystals, infection. A male cat straining or producing little urine is an emergency the same hour. Only once the cat is cleared does it become a box question.' },
+          { id: 'box_audit', label: 'Add a second box, clean the mat with enzyme cleaner, and watch closely for two days',
+            effects: { phys: +2, ment: +1, soc: 0, env: +5, en: -4, money: -35 },
+            note: 'Reasonable ONLY while the cat is passing normal amounts of urine without straining. Any straining, blood, or repeated small visits ends the watching and starts the driving.' },
+          { id: 'punish', label: 'Carry it to the spot and scold it so it knows',
+            effects: { phys: -2, ment: -8, soc: -10, env: -2, en: -2, money: 0 },
+            aftermath: { en: -5, money: -40 },
+            note: 'Cats do not connect a scolding with a puddle from an hour ago. They connect it with you. If the cause is medical, you have just punished pain, and the cat will hide the next accident better.' }
+        ]
+      },
+      { day: 4, label: 'Day 4 — the annual check',
+        scene: { icon: '\u2696\uFE0F', label: 'Weight check', detail: 'Slow loss only; fast loss is dangerous', kind: 'vet' },
+        link: { view: 'nutrition', label: 'Nutrition Science', why: 'What a cat actually needs from a meal, and why free-feeding fails.' },
+        prompt: 'At the annual exam the cat weighs 6.5 kg. The vet says 4.5 would be healthy, and asks how it is fed. It is free-fed dry food.',
+        choices: [
+          { id: 'measured', label: 'Measured meals from a puzzle feeder, more play, and a gradual food change the vet signs off on',
+            effects: { phys: +10, ment: +6, soc: +2, env: 0, en: -5, money: -25 },
+            note: 'Weight comes off cats slowly or not at all: about one percent of body weight a week, under veterinary guidance. Puzzle feeders make the cat work for calories the way a hunt would. A lighter cat is a longer-lived cat.' },
+          { id: 'diet_kibble', label: 'Switch to a "light" dry food but keep the bowl topped up',
+            effects: { phys: +2, ment: 0, soc: 0, env: 0, en: -1, money: -30 },
+            note: 'Changing the food without changing the amount rarely changes the cat. Free-feeding is the habit that built the weight.' },
+          { id: 'crash', label: 'Cut the food to a third, starting tonight',
+            effects: { phys: -12, ment: -3, soc: -1, env: 0, en: -1, money: 0 },
+            aftermath: { en: -6, money: -400 },
+            note: 'Rapid weight loss in cats can trigger hepatic lipidosis, a serious liver illness. A cat that stops eating for more than a day or two is an emergency, not a diet working.' }
+        ]
+      },
+      { day: 5, label: 'Day 5 — the petting bite',
+        scene: { icon: '\uD83E\uDD1A', label: 'Petting bite', detail: 'Stop before the tail says stop', kind: 'guests' },
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'The tail flick, skin ripple and ears that come before the bite.' },
+        prompt: 'The cat climbs into your lap for stroking, then, thirty seconds in, bites your hand and bolts.',
+        choices: [
+          { id: 'read_signals', label: 'Watch for the tail flick, rippling skin and turned ears; stop stroking before them; keep sessions short and let the cat leave',
+            effects: { phys: 0, ment: +6, soc: +8, env: 0, en: -3, money: 0 },
+            note: 'Petting-induced aggression is overstimulation, not spite. The cat gave warnings; the skill is reading them. Short sessions that end before the bite build a cat that stays longer.' },
+          { id: 'no_petting', label: 'Stop petting the cat altogether',
+            effects: { phys: 0, ment: -1, soc: -3, env: 0, en: 0, money: 0 },
+            note: 'Safe, and a loss for both of you. The cat wanted contact; it wanted less of it, on its terms.' },
+          { id: 'scruff', label: 'Scruff it and tap its nose so it learns',
+            effects: { phys: -2, ment: -5, soc: -10, env: 0, en: -1, money: 0 },
+            aftermath: { en: -3, money: -110 },
+            note: 'Punishment after a bite teaches the cat that hands are dangerous, which is the belief that caused the bite. And a cat bite that breaks the skin usually needs a doctor the same day: the infection rate is high.' }
+        ]
+      },
+      { day: 6, label: 'Day 6 — moving house',
+        scene: { icon: '\uD83D\uDCE6', label: 'Moving day', detail: 'One safe room at each end', kind: 'travel' },
+        link: { view: 'cats', label: 'Cats', why: 'Why a cat treats a new house as the wrong territory.' },
+        prompt: 'You are moving across town on Saturday. The cat has never been anywhere but this flat and the vet.',
+        choices: [
+          { id: 'safe_rooms', label: 'Carrier left out with treats all week; the cat shut in one packed-up room on the day; a set-up safe room at the new place; indoors for at least three weeks',
+            effects: { phys: +2, ment: +6, soc: +4, env: +8, en: -10, money: -20 },
+            note: 'A move is the loss of the cat\'s whole territory. A safe room at each end gives it one place that smells right. Indoor for three to four weeks is how a cat learns the new house is home before it can leave it.' },
+          { id: 'loose_car', label: 'Put it in a cardboard box on the back seat and drive carefully',
+            effects: { phys: -3, ment: -4, soc: 0, env: +2, en: -4, money: 0 },
+            note: 'A loose or lightly boxed cat in a moving car is a danger to the cat and the driver. Carrier, seatbelt through the handle, a towel over the top.' },
+          { id: 'explore', label: 'Let it out the first evening at the new house to explore',
+            effects: { phys: -10, ment: -5, soc: -2, env: -4, en: -2, money: 0 },
+            aftermath: { en: -8, money: -80 },
+            note: 'Cats let out early after a move try to walk back to the old territory. Posters, shelters and a week of searching is the usual aftermath; some are never found.' }
+        ]
+      },
+      { day: 7, label: 'Day 7 — the lily bouquet',
+        scene: { icon: '\uD83D\uDC90', label: 'Lilies in the house', detail: 'Every part is toxic to cats', kind: 'plant' },
+        link: { view: 'nutrition', label: 'Nutrition Science', why: 'The household hazards list, lilies included.' },
+        prompt: 'A guest arrives with a bouquet of lilies. The cat is already sniffing the wrapping.',
+        choices: [
+          { id: 'refuse', label: 'Thank them, and put the lilies straight in the car or the bin; explain why',
+            effects: { phys: +6, ment: +2, soc: 0, env: +6, en: -2, money: 0 },
+            note: 'True lilies (Lilium, Hemerocallis) are toxic to cats in every part: petal, leaf, pollen, even the vase water. There is no safe shelf. The guest learned something; the cat did not have to.' },
+          { id: 'high_shelf', label: 'Put them on the highest shelf in the kitchen',
+            effects: { phys: -3, ment: 0, soc: 0, env: +1, en: -1, money: 0 },
+            note: 'Pollen drops, petals fall, and cats climb. Height buys hours, not safety.' },
+          { id: 'watch', label: 'The cat chews a leaf. "It only had a bit." Watch it for a day',
+            effects: { phys: -20, ment: -3, soc: 0, env: -2, en: -2, money: 0 },
+            aftermath: { en: -12, money: -900 },
+            note: 'Any lily exposure in a cat is an emergency: call the vet or a poison helpline immediately, before signs. Kidney damage can be under way before the cat looks ill, and treatment is fluids over days, not a wait-and-see.' }
+        ]
+      }
+    ],
+    rabbit: [
+      { day: 1, label: 'Day 1 — the pair falls out',
+        scene: { icon: '\uD83D\uDC30', label: 'Bond broken', detail: 'A vet visit changes a rabbit\'s smell', kind: 'bond' },
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'Why a bonded pair can turn on each other after one goes to the vet.' },
+        prompt: 'One rabbit came home from a vet visit yesterday. This morning the other chased it into a corner and pulled out a mouthful of fur.',
+        choices: [
+          { id: 'rebond', label: 'Separate now; rub both with the same towel; short supervised sessions in a neutral space, more each day, until they groom each other again',
+            effects: { phys: 0, ment: +6, soc: +8, env: +2, en: -8, money: 0 },
+            note: 'The clinic smell made a stranger of a partner. Re-bonding follows the same rules as bonding: neutral ground, short sessions, shared scent, and patience. Most pairs are back within days; some take weeks.' },
+          { id: 'separate', label: 'Keep them in side-by-side pens for now and hope it settles',
+            effects: { phys: 0, ment: -1, soc: -2, env: 0, en: -3, money: -60 },
+            note: 'Safe, and not a plan. Rabbits do not re-bond through a fence; they need supervised time together to rebuild the pair.' },
+          { id: 'fight_out', label: 'Leave them together; "they will sort out who is boss"',
+            effects: { phys: -10, ment: -5, soc: -8, env: 0, en: -1, money: 0 },
+            aftermath: { en: -6, money: -150 },
+            note: 'Rabbit fights escalate to bites that abscess and to eyes and ears torn. A pair that fights unsupervised can become a pair that can never be together again.' }
+        ]
+      },
+      { day: 2, label: 'Day 2 — a heatwave',
+        scene: { icon: '\u2600\uFE0F', label: 'Heatwave', detail: 'Rabbits cannot sweat or pant well', kind: 'heat' },
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'Why heat is more dangerous to a rabbit than cold.' },
+        prompt: 'Forecast: 33 °C. The rabbits live in the sunroom, which is already warm at breakfast.',
+        choices: [
+          { id: 'cool_room', label: 'Move them to the coolest room, frozen water bottles wrapped in towels, a fan moving air across the room (not at them), ears misted',
+            effects: { phys: +10, ment: +2, soc: 0, env: +6, en: -5, money: -10 },
+            note: 'Rabbits are built for cold, not heat: they cannot sweat and pant poorly. Heat stroke can begin in the high twenties Celsius. Cool ears shed heat, so a light mist there helps; a wet rabbit does not.' },
+          { id: 'fan_only', label: 'Point a fan at the pen and go to work',
+            effects: { phys: -4, ment: 0, soc: 0, env: 0, en: -1, money: 0 },
+            note: 'A fan moves air; in a hot room it does not lower the temperature. Check the room, not just the rabbits.' },
+          { id: 'sunroom', label: 'Leave them where they are; they have water',
+            effects: { phys: -20, ment: -3, soc: 0, env: -4, en: 0, money: 0 },
+            aftermath: { en: -8, money: -450 },
+            note: 'A sunroom in a heatwave is an oven. A rabbit stretched out, breathing fast, wet around the nose, is in heat stroke: cool it gradually and get to a rabbit-savvy vet at once.' }
+        ]
+      },
+      { day: 3, label: 'Day 3 — drooling and dropping food',
+        scene: { icon: '\uD83E\uDDB7', label: 'Wet chin', detail: 'Rabbit teeth never stop growing', kind: 'vet' },
+        link: { view: 'nutrition', label: 'Nutrition Science', why: 'Why hay is the dental plan.' },
+        prompt: 'One rabbit has a wet chin and keeps picking food up and dropping it.',
+        choices: [
+          { id: 'dental_vet', label: 'Rabbit-savvy vet this week; ask about molar spurs and a full dental exam; review the hay-to-pellet ratio',
+            effects: { phys: +12, ment: +2, soc: 0, env: 0, en: -5, money: -140 },
+            note: 'Slobbers and dropped food usually mean the molars, which you cannot see at home, have grown spurs that cut the tongue or cheek. Rabbit teeth grow all their lives; hay grinds them down, pellets do not.' },
+          { id: 'more_hay', label: 'Increase the hay and watch for a week',
+            effects: { phys: -2, ment: 0, soc: 0, env: 0, en: -1, money: 0 },
+            note: 'More hay is always right. Waiting is not: a rabbit that cannot eat properly slides toward GI stasis within days.' },
+          { id: 'clip_teeth', label: 'Trim the front teeth yourself with nail clippers',
+            effects: { phys: -15, ment: -3, soc: -6, env: 0, en: -2, money: 0 },
+            aftermath: { en: -6, money: -300 },
+            note: 'Clipping shatters teeth and opens the root to abscess, and the problem is usually the molars anyway. Dental work on a rabbit is a vet procedure, often under anaesthesia.' }
+        ]
+      },
+      { day: 4, label: 'Day 4 — a dirty bottom',
+        scene: { icon: '\uD83C\uDF3E', label: 'Soft droppings', detail: 'Too rich a diet, and a flystrike risk', kind: 'hay' },
+        link: { view: 'nutrition', label: 'Nutrition Science', why: 'What a rabbit\'s digestion needs, and what breaks it.' },
+        prompt: 'Soft, smelly droppings are stuck in the fur around one rabbit\'s tail. It is warm out and there are flies in the room.',
+        choices: [
+          { id: 'diet_fix', label: 'Cut treats and pellets back, hay first; clean the fur gently with a damp cloth; check the bottom twice a day; vet if it is not clear in a few days',
+            effects: { phys: +8, ment: 0, soc: 0, env: +6, en: -4, money: 0 },
+            note: 'Uneaten cecotropes stuck to the fur usually mean too many pellets or treats, or a rabbit too heavy to reach. In warm weather a soiled bottom invites flystrike, which can kill in a day. Diet, cleanliness, checks.' },
+          { id: 'bath', label: 'Give it a bath in the sink',
+            effects: { phys: -6, ment: -4, soc: -3, env: +2, en: -4, money: 0 },
+            note: 'Rabbits are not bathed: the shock and chill can be dangerous, and a wet rabbit takes hours to dry. Spot-clean the soiled area only.' },
+          { id: 'self_groom', label: 'Leave it; "rabbits groom themselves"',
+            effects: { phys: -12, ment: -2, soc: 0, env: -4, en: 0, money: 0 },
+            aftermath: { en: -6, money: -250 },
+            note: 'Flies lay eggs in soiled fur; maggots hatch within about a day and eat living tissue. Flystrike is an emergency and it is preventable by checking the bottom every day in warm months.' }
+        ]
+      },
+      { day: 5, label: 'Day 5 — chewing the skirting boards',
+        scene: { icon: '\uD83D\uDCE6', label: 'Chewing the house', detail: 'Give the chewing somewhere to go', kind: 'space' },
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'What a rabbit needs to do every day, and what happens when it cannot.' },
+        prompt: 'The skirting boards in the rabbit room are chewed to the plaster and there is a hole in the carpet.',
+        choices: [
+          { id: 'enrich', label: 'Cardboard castles, a dig box of shredded paper, willow balls, rotated weekly; protect the boards; more floor time',
+            effects: { phys: +2, ment: +10, soc: +3, env: +4, en: -5, money: -25 },
+            note: 'Chewing and digging are not bad habits; they are what a rabbit is. Give them legal targets and rotate them so they stay interesting. Protecting the boards is management; the castles are the fix.' },
+          { id: 'pen_more', label: 'Keep them in the pen more of the day',
+            effects: { phys: -3, ment: -5, soc: -1, env: +2, en: -1, money: 0 },
+            note: 'Less damage, less rabbit. Confinement is the cause of most chewing, not the cure.' },
+          { id: 'spray', label: 'Squirt them with a water bottle when they chew',
+            effects: { phys: -1, ment: -3, soc: -8, env: 0, en: -1, money: 0 },
+            aftermath: { en: -2 },
+            note: 'A prey animal sprayed by its keeper learns that its keeper is a threat. The chewing moves to when you are out; the trust does not come back as easily.' }
+        ]
+      },
+      { day: 6, label: 'Day 6 — the birthday party',
+        scene: { icon: '\uD83C\uDF88', label: 'A party', detail: 'Quiet room, door shut, one child at a time', kind: 'guests' },
+        link: { view: 'bodyLang', patch: { blMode: 'read' }, label: 'Body Language Decoder', why: 'What a frozen rabbit is telling you.' },
+        prompt: 'Eight children arrive for a birthday party and want to hold the rabbits.',
+        choices: [
+          { id: 'quiet_room', label: 'Rabbits in their own room with the door shut for the party; later, one calm child at a time on the floor, rabbits free to come or go',
+            effects: { phys: +2, ment: +4, soc: +4, env: +4, en: -4, money: 0 },
+            note: 'A room full of shrieking children is a predator event to a rabbit. Floor-level, one at a time, rabbit\'s choice: that is how a child meets a rabbit without either being hurt.' },
+          { id: 'watch_pen', label: 'Let the children watch through the pen, no touching',
+            effects: { phys: 0, ment: +1, soc: 0, env: +2, en: -2, money: 0 },
+            note: 'Better than handling. Eight faces over the pen is still a lot of predator for a prey animal; keep it short.' },
+          { id: 'pass_around', label: 'Pass the rabbits around so everyone gets a turn',
+            effects: { phys: -8, ment: -10, soc: -6, env: 0, en: -3, money: 0 },
+            aftermath: { en: -5, money: -60 },
+            note: 'A struggling rabbit can break its own back; a dropped one can break a leg. The freeze that looks like calm is terror. The vet check is for the drop; the fear of hands lasts longer.' }
+        ]
+      },
+      { day: 7, label: 'Day 7 — the annual check',
+        scene: { icon: '\u2695\uFE0F', label: 'Annual check', detail: 'Teeth, weight, and the vaccine question', kind: 'vet' },
+        link: { view: 'smallMammals', label: 'Small Mammals', why: 'What an annual rabbit check covers, and how a virus reaches an indoor animal.' },
+        prompt: 'The rabbits are due their annual check. The clinic asks whether you want to discuss RHDV2 vaccination.',
+        choices: [
+          { id: 'exam_vaccine', label: 'Book the exam for both and ask the vet what the current RHDV2 advice is for your area',
+            effects: { phys: +10, ment: 0, soc: 0, env: 0, en: -3, money: -120 },
+            note: 'Rabbit haemorrhagic disease virus type 2 spread through wild rabbits across much of the western US from 2020 and turns up elsewhere on contaminated hay, shoes and hands; indoor rabbits have died of it. A vaccine exists; whether it is advised where you live is a question for a rabbit-savvy vet, not a forum.' },
+          { id: 'exam_only', label: 'Book the exam; decide about the vaccine another time',
+            effects: { phys: +5, ment: 0, soc: 0, env: 0, en: -2, money: -70 },
+            note: 'The exam matters most: teeth, weight, feet, and the things you cannot see. Ask the question while you are there; deciding later usually means not deciding.' },
+          { id: 'skip_check', label: 'Skip it; "they are indoor rabbits and they look fine"',
+            effects: { phys: -8, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            note: 'Rabbits hide illness because looking ill gets a prey animal eaten. "Looks fine" is the resting state of a rabbit with molar spurs, and indoor status does not stop a virus carried in on your shoes.' }
+        ]
+      }
+    ]
+  };
+
   // Care-sim economy constants.
   //
   // START_MONEY is species-scaled, not flat, and is tuned against the
@@ -1583,33 +2042,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   var CARE_SIM_CONSEQUENCES = {
     dog: {
       phys: { icon: '\uD83E\uDD12', label: 'Off their food this morning', money: -45, en: -4,
-        note: 'Low physical welfare shows up as a dog that will not eat. A vet phone consult and a bland-diet day.' },
+        note: 'Low physical welfare shows up as a dog that will not eat. A vet phone consult and a bland-diet day.',
+        alt: { label: 'Vomited overnight', note: 'A run-down dog that is not eating well gets an upset stomach easily. Cleanup, a call to the clinic, and a watchful day.' } },
       ment: { icon: '\uD83D\uDECB\uFE0F', label: 'Chewed the couch cushion overnight', money: -40, en: -4, env: -3,
-        note: 'Bored dogs invent jobs. This one cost a cushion and an hour of cleanup.' },
+        note: 'Bored dogs invent jobs. This one cost a cushion and an hour of cleanup.',
+        alt: { label: 'Shredded a shoe and the doormat', note: 'The same lesson in a different object. A dog with nothing to do finds something to do.' } },
       soc:  { icon: '\uD83D\uDC15', label: 'Howled and paced after you left', money: 0, en: -3,
-        note: 'A neighbour texted. A lonely dog is a loud dog, and the stress compounds.' },
+        note: 'A neighbour texted. A lonely dog is a loud dog, and the stress compounds.',
+        alt: { label: 'Waited by the door all evening', note: 'Not loud this time, just miserable. Loneliness in a dog looks like stillness as often as noise.' } },
       env:  { icon: '\uD83E\uDDFB', label: 'Indoor accident to clean up', money: -8, en: -5,
-        note: 'A dirty, cramped or unpredictable space makes accidents likely. Enzyme cleaner and a mop before work.' }
+        note: 'A dirty, cramped or unpredictable space makes accidents likely. Enzyme cleaner and a mop before work.',
+        alt: { label: 'Tracked mud through the house', note: 'A space that is not kept up gets harder to keep up. Twenty minutes with a mop before breakfast.' } }
     },
     cat: {
       phys: { icon: '\uD83E\uDD12', label: 'Skipped breakfast and hid', money: -45, en: -4,
-        note: 'A cat that stops eating is never "just being a cat". A vet phone consult and close watching today.' },
+        note: 'A cat that stops eating is never "just being a cat". A vet phone consult and close watching today.',
+        alt: { label: 'Vomited on the rug', note: 'Stress and poor condition show up in a cat as a bad stomach. Cleanup and a phone consult.' } },
       ment: { icon: '\uD83E\uDEB4', label: 'Knocked everything off the shelf at 3 a.m.', money: -20, en: -4,
-        note: 'Under-stimulated cats make their own entertainment at night. You lost a plant pot and an hour of sleep.' },
+        note: 'Under-stimulated cats make their own entertainment at night. You lost a plant pot and an hour of sleep.',
+        alt: { label: 'Shredded the arm of the couch', note: 'A cat with nothing to hunt hunts furniture. That was the enrichment budget, spent on upholstery.' } },
       soc:  { icon: '\uD83D\uDC08', label: 'Hissed and hid when you came home', money: 0, en: -3,
-        note: 'Trust is a meter that drains. Rebuilding it takes slow, quiet sessions.' },
+        note: 'Trust is a meter that drains. Rebuilding it takes slow, quiet sessions.',
+        alt: { label: 'Would not come out from under the bed', note: 'Avoidance is how a cat says the relationship is not working. It cannot be fixed by reaching in.' } },
       env:  { icon: '\uD83E\uDDFB', label: 'Peed outside the litter box', money: -15, en: -5,
-        note: 'A dirty or badly placed box is the number one reason cats stop using it. Enzyme cleaner, and a hard look at the box.' }
+        note: 'A dirty or badly placed box is the number one reason cats stop using it. Enzyme cleaner, and a hard look at the box.',
+        alt: { label: 'Sprayed the hallway wall', note: 'A cat that is unhappy with its space marks it. Enzyme cleaner again, and the space itself needs a fix.' } }
     },
     rabbit: {
       phys: { icon: '\uD83E\uDD12', label: 'Fewer droppings this morning', money: -60, en: -5,
-        note: 'The first sign of GI trouble in a rabbit. An exotic-vet phone consult and hay pushed all day.' },
+        note: 'The first sign of GI trouble in a rabbit. An exotic-vet phone consult and hay pushed all day.',
+        alt: { label: 'Sat hunched and would not eat the greens', note: 'Two signs together. A rabbit that stops eating cannot wait until the weekend.' } },
       ment: { icon: '\uD83D\uDD0C', label: 'Chewed through a phone charger', money: -25, en: -3, env: -2,
-        note: 'A bored rabbit chews. Cords are the classic casualty, and a live one is a danger to the rabbit.' },
+        note: 'A bored rabbit chews. Cords are the classic casualty, and a live one is a danger to the rabbit.',
+        alt: { label: 'Dug a hole in the carpet', note: 'Digging is normal rabbit behaviour with nowhere to go. A dig box would have cost less than the carpet.' } },
       soc:  { icon: '\uD83D\uDC30', label: 'Thumped and hid at the sight of you', money: 0, en: -3,
-        note: 'A prey animal that does not trust you treats you as a threat. That takes floor time to undo.' },
+        note: 'A prey animal that does not trust you treats you as a threat. That takes floor time to undo.',
+        alt: { label: 'Bolted every time you moved', note: 'A rabbit that has not learned you are safe reacts to you as a hawk. Floor time, treats, no grabbing.' } },
       env:  { icon: '\uD83E\uDDFB', label: 'Soiled bedding and a sore hock', money: -12, en: -4,
-        note: 'Wet, dirty bedding causes hock sores fast. Full clean-out and a foot check.' }
+        note: 'Wet, dirty bedding causes hock sores fast. Full clean-out and a foot check.',
+        alt: { label: 'Urine-scald on the hind feet', note: 'Wet bedding does this within days. A full clean-out and a check of both hind feet.' } }
     }
   };
 
@@ -1624,6 +2095,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   // option harms the animal on balance; every such option's note carries a
   // warning, and no authored "acceptable alternative" is net-negative, so
   // this is the line between a mistake and a defensible different call.
+  // The day table for a species and week. Week 2 exists only where it has
+  // been authored (CARE_SIM_WEEK2); anything else is week 1.
+  var CARE_SIM_WEEK2_TITLES = { dog: 'the adolescent dog', cat: 'the cat at one year', rabbit: 'the bonded pair at one year' };
+  function petsCareDays(species, week) {
+    if (week === 2 && CARE_SIM_WEEK2[species]) return CARE_SIM_WEEK2[species];
+    return CARE_SIM_DAYS[species] || [];
+  }
+  // Money with the sign where a reader expects it: −$225, not $-225.
+  function petsMoney(amount) {
+    var n = Math.round(Number(amount) || 0);
+    return (n < 0 ? '\u2212$' : '$') + Math.abs(n);
+  }
+  var PETS_SR_ONLY = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' };
   function petsCareWelfareSum(choice) {
     var e = (choice && choice.effects) || {};
     return (e.phys || 0) + (e.ment || 0) + (e.soc || 0) + (e.env || 0);
@@ -2481,7 +2965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       pets_decoder_5: 8, pets_decoder_15: 12, pets_decoder_all: 20,
       pets_body_lang: 10, pets_quiz_pass: 10, pets_quiz_ace: 15,
       pets_trainer: 12, pets_caregiver: 15, pets_ai_designer: 5,
-      pets_sensory: 12
+      pets_sensory: 12, pets_seasoned: 15
     };
     var PETS_BADGE_DISPLAY_LABELS = {
       pets_explorer: 'Module Explorer (5 completed)',
@@ -2495,6 +2979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       pets_quiz_ace: 'Pets Quiz Ace',
       pets_trainer: 'Reinforcement Trainer',
       pets_caregiver: 'Caring Pet-Owner (week complete)',
+      pets_seasoned: 'Seasoned Owner (week 2 target met)',
       pets_ai_designer: 'AI Practice (response checked)',
       pets_sensory: 'Saw It Their Way (all three viewpoints)'
     };
@@ -2507,7 +2992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // transient UI/bitmap state does not. v2 reads v1 as a migration fallback.
     var PETS_PERSIST_KEYS = [
       'badges', 'modulesVisited', 'modulesCompleted', 'evidenceRecords', 'decoderMastery',
-      'quizState', 'zoonPractice', 'careSim', 'careTradeoff',
+      'quizState', 'zoonPractice', 'careSim', 'careTradeoff', 'careReflections',
       'aiScenarioId', 'aiDrafts', 'aiCritiques', 'aiRevisionNotes', 'aiResponse',
       'pickHousing', 'pickKids', 'pickKidAge', 'pickAllergies', 'pickReadiness',
       'pickHoursHome', 'pickBudget', 'pickExperience',
@@ -2517,7 +3002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       'lsSeed', 'lsShown', 'lsStreak', 'lsMissed', 'lsReview', 'tfsAns', 'tfsBest', 'tfsIdx',
       'tfsOpen', 'tfsPick', 'tfsRounds', 'tfsScore', 'tfsSeed',
       'tfsShown', 'tfsStreak', 'tfsMissed', 'tfsReview', 'diagramView', 'famousFilter',
-      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk',
+      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk', 'speciesChecks',
       'sensoryReduceMotion', 'sensorySeen', 'sensorySpecies', 'lastView'
     ];
     var PETS_EVIDENCE_MODULE_LABELS = {
@@ -2549,7 +3034,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       quiz: '15-question quiz'
     };
     var PETS_EVIDENCE_ACTIVITY_FIELDS = {
-      training: ['rounds', 'behaviorPct', 'trustPct', 'criterionMet'],
+      dogs: ['predicted', 'criterionMet'],
+      cats: ['predicted', 'criterionMet'],
+      smallMammals: ['predicted', 'criterionMet'],
+      birds: ['predicted', 'criterionMet'],
+      reptiles: ['predicted', 'criterionMet'],
+      training: ['rounds', 'behaviorPct', 'trustPct', 'setting', 'criterionMet'],
       nutrition: ['score', 'total', 'scorePct', 'needsPractice', 'criterionMet'],
       zoonoses: ['score', 'total', 'scorePct', 'bestPct', 'needsPractice', 'criterionMet'],
       bodyLang: ['score', 'total', 'scorePct', 'practiceMode', 'decoderMastery', 'needsPractice', 'criterionMet'],
@@ -2559,10 +3049,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         'biologyCorrect', 'biologyTotal', 'behaviorCorrect', 'behaviorTotal',
         'healthCorrect', 'healthTotal', 'welfareCorrect', 'welfareTotal', 'criterionMet'],
       aiPractice: ['scenarioId', 'draftChars', 'feedbackSource', 'reviewStatus', 'revisionMade', 'revisionNoteChars'],
-      careSim: ['species', 'days', 'physical', 'mental', 'social', 'environmental', 'weakestDomain', 'weakestPct', 'averagePct', 'overnightEvents', 'moneyLeft', 'avoidedNegativeBalance', 'stayedInBudget', 'energyLeft', 'finishedAboveEnergyTarget', 'avoidedExhaustedCare', 'caregiverSustainable', 'criterionMet'],
+      careSim: ['species', 'week', 'days', 'physical', 'mental', 'social', 'environmental', 'weakestDomain', 'weakestPct', 'averagePct', 'overnightEvents', 'moneyLeft', 'avoidedNegativeBalance', 'stayedInBudget', 'energyLeft', 'finishedAboveEnergyTarget', 'avoidedExhaustedCare', 'caregiverSustainable', 'criterionMet'],
       sensory: ['perspectives', 'criterionMet']
     };
+    // Self-review rows carry no details by design; where the module's only
+    // self-review is a specific act, name it so the teacher list is not a
+    // row of "Reviewed by learner".
+    var PETS_EVIDENCE_SELF_REVIEW_SUMMARIES = {
+      careSim: 'Wrote a post-week reflection'
+    };
     var PETS_EVIDENCE_ACTIVITY_SUMMARIES = {
+      dogs: 'Predicted and checked the dog lifespan question',
+      cats: 'Predicted and checked the cat nutrition question',
+      smallMammals: 'Predicted and checked the small-mammal housing question',
+      birds: 'Predicted and checked the bird air-quality question',
+      reptiles: 'Predicted and checked the reptile UVB question',
       training: 'Completed the reinforcement trainer',
       nutrition: 'Completed the Household Hazard Sleuth',
       zoonoses: 'Completed the Exposure Pathway Check',
@@ -2575,6 +3076,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       sensory: 'Compared the sensory perspectives'
     };
     var PETS_ACTIVITY_COMPLETION_REASONS = {
+      dogs: ['Prediction check completed'],
+      cats: ['Prediction check completed'],
+      smallMammals: ['Prediction check completed'],
+      birds: ['Prediction check completed'],
+      reptiles: ['Prediction check completed'],
       training: ['Finished the 10-round reinforcement trainer'],
       nutrition: ['Finished all 10 Household Hazard Sleuth vignettes', 'Finished all 10 Toxic Foods Sleuth vignettes'],
       zoonoses: ['Finished all 4 Exposure Pathway decisions'],
@@ -2589,6 +3095,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       careSim: ['Finished the seven-day pet-care simulation'],
       sensory: ['Compared all three visual perspectives']
     };
+    // The five species views that carry a predict-then-reveal check.
+    // Declared inside the evidence-schema region on purpose: the tests slice
+    // that region into a bare VM, so reconcileActivityEvidence() can only see
+    // names declared after the PETS_EVIDENCE_MODULE_LABELS marker.
+    // Kept in sync with SPECIES_CHECKS by pets_species_checks.test.js.
+    var PETS_SPECIES_CHECK_MODULES = ['dogs', 'cats', 'smallMammals', 'birds', 'reptiles'];
     function normalizePetsActivityCompletionReason(moduleId, reason) {
       var authored = PETS_ACTIVITY_COMPLETION_REASONS[moduleId] || [];
       if (authored.indexOf(reason) >= 0) return reason;
@@ -2645,7 +3157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             allowedStates.indexOf(state) < 0 ||
             allowedDomains.indexOf(worst) < 0 ||
             !isFinite(gap) || !isFinite(provided) || !isFinite(need)) return;
-        safeLog.push({
+        var safeEntry = {
           t: time,
           sp: species,
           gap: Math.max(0, Math.min(500, gap)).toFixed(1),
@@ -2653,7 +3165,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           worst: worst,
           provided: String(Math.max(0, Math.min(100, Math.round(provided)))),
           need: String(Math.max(0, Math.min(100, Math.round(need))))
-        });
+        };
+        // Time picture (optional: entries logged before it existed have none).
+        var hoursLogged = Number(entry.hours);
+        var budgetLogged = Number(entry.budget);
+        if (entry.hours != null && entry.budget != null && isFinite(hoursLogged) && isFinite(budgetLogged)) {
+          safeEntry.hours = Math.max(0, Math.min(200, hoursLogged)).toFixed(1);
+          safeEntry.budget = Math.max(4, Math.min(40, Math.round(budgetLogged)));
+        }
+        safeLog.push(safeEntry);
       });
       return {
         food: slider('food'),
@@ -2661,6 +3181,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         social: slider('social'),
         vet: slider('vet'),
         training: slider('training'),
+        hours: (function() {
+          if (source.hours == null || source.hours === '') return 14;
+          var value = Number(source.hours);
+          return isFinite(value) ? Math.max(4, Math.min(40, Math.round(value))) : 14;
+        })(),
         species: allowedSpecies.indexOf(source.species) >= 0 ? source.species : 'dog',
         hypothesis: savedText('hypothesis'),
         stuckRevealed: source.stuckRevealed === true,
@@ -2687,6 +3212,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return AI_SCENARIOS.some(function(item) { return item.id === value; })
         ? value : null;
     }
+    // One record per species view: which option the student predicted, and
+    // whether they have opened the reveal. Only authored species keys and
+    // authored option ids survive a restore, so a hand-edited or corrupt
+    // snapshot cannot render an unknown pick or mark a module complete.
+    // `revealed` is deliberately allowed to be true with a null pick: the
+    // student may skip predicting and just read the answer, which still
+    // counts as doing the activity but is recorded honestly as no prediction.
+    function normalizeSpeciesChecks(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      Object.keys(SPECIES_CHECKS).forEach(function(speciesId) {
+        var record = raw[speciesId];
+        if (!record || typeof record !== 'object' || Array.isArray(record)) return;
+        var validIds = SPECIES_CHECKS[speciesId].options.map(function(option) {
+          return option.id;
+        });
+        var pick = validIds.indexOf(record.pick) >= 0 ? record.pick : null;
+        var revealed = record.revealed === true;
+        if (!pick && !revealed) return;
+        safe[speciesId] = { pick: pick, revealed: revealed };
+      });
+      return safe;
+    }
+    // The activity is "made a prediction and saw the answer". Correctness is
+    // deliberately NOT part of it: a wrong prediction followed by the reveal is
+    // the sequence this activity exists to produce.
+    function speciesCheckDone(checks, speciesId) {
+      var record = checks && checks[speciesId];
+      return !!(record && record.revealed);
+    }
     function normalizeAiDrafts(raw) {
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
       var safe = {};
@@ -2694,6 +3249,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         if (!Object.prototype.hasOwnProperty.call(raw, scenario.id)) return;
         if (typeof raw[scenario.id] !== 'string') return;
         safe[scenario.id] = raw[scenario.id].slice(0, 4000);
+      });
+      return safe;
+    }
+    // One short reflection per species after a finished care week: "one thing
+    // I would do differently, and why". Free text, so it lives here (like the
+    // AI Practice drafts) rather than in evidence, which carries bounded
+    // metadata only. Kept per species AND week ('dog' for week 1, 'dog-w2'
+    // for week 2) so a retry shows what the student said they would change
+    // about THAT week, and a week-2 note never overwrites a week-1 one.
+    function normalizeCareReflections(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      ['dog', 'cat', 'rabbit', 'dog-w2', 'cat-w2', 'rabbit-w2'].forEach(function(key) {
+        if (typeof raw[key] !== 'string') return;
+        var text = raw[key].slice(0, 600);
+        if (text.trim()) safe[key] = text;
       });
       return safe;
     }
@@ -2788,7 +3359,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         behaviorCorrect: 3, behaviorTotal: 3,
         healthCorrect: 6, healthTotal: 6,
         welfareCorrect: 3, welfareTotal: 3,
-        draftChars: 4000, revisionNoteChars: 1200, days: 7, perspectives: 3
+        draftChars: 4000, revisionNoteChars: 1200, days: 7, perspectives: 3,
+        overnightEvents: 14, week: 2
       };
       if (Object.prototype.hasOwnProperty.call(countLimits, key) && typeof value === 'number' && isFinite(value)) {
         return Math.max(0, Math.min(countLimits[key], Math.round(value)));
@@ -2798,10 +3370,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           key === 'finishedAboveEnergyTarget' || key === 'avoidedExhaustedCare' ||
           key === 'caregiverSustainable' || key === 'revisionMade') &&
           typeof value === 'boolean') return value;
+      if (key === 'predicted' && ['answered', 'skipped'].indexOf(value) >= 0) return value;
       if (key === 'practiceMode' && ['random', 'unseen', 'missed', 'context'].indexOf(value) >= 0) return value;
       if (key === 'feedbackSource' && ['local', 'ai'].indexOf(value) >= 0) return value;
       if (key === 'reviewStatus' && value === 'teacher-review') return value;
       if (key === 'species' && ['dog', 'cat', 'rabbit'].indexOf(value) >= 0) return value;
+      if (key === 'setting' && ['home', 'park'].indexOf(value) >= 0) return value;
       if (key === 'weakestDomain' && ['Physical', 'Mental', 'Social', 'Environmental'].indexOf(value) >= 0) return value;
       if (key === 'scenarioId' && Array.isArray(AI_SCENARIOS) && AI_SCENARIOS.some(function(item) { return item.id === value; })) return value;
       return undefined;
@@ -2935,6 +3509,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         } else {
           delete details.criterionMet;
         }
+      } else if (PETS_SPECIES_CHECK_MODULES.indexOf(moduleId) >= 0) {
+        // Completion here is prediction + reveal; correctness is recorded but
+        // is NOT the bar. A restored row claiming a correct prediction it never
+        // made cannot keep it: no 'answered' marker, no criterionMet.
+        if (details.predicted !== 'answered') {
+          delete details.criterionMet;
+        }
       } else if (moduleId === 'sensory') {
         if (hasNumber('perspectives')) {
           details.criterionMet = details.perspectives === 3;
@@ -2974,7 +3555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           kind: kind,
           summary: kind === 'activity'
             ? PETS_EVIDENCE_ACTIVITY_SUMMARIES[moduleId]
-            : 'Reviewed by learner',
+            : (PETS_EVIDENCE_SELF_REVIEW_SUMMARIES[moduleId] || 'Reviewed by learner'),
           recordedAt: recordedAt,
           details: safeDetails
         });
@@ -3048,7 +3629,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         prob: isFinite(prob) ? Math.max(0, Math.min(1, prob)) : 0.20,
         trust: isFinite(trust) ? Math.max(0, Math.min(1, trust)) : 1,
         done: raw.done === true,
-        log: log
+        log: log,
+        bank: raw.bank === 'park' ? 'park' : 'home'
       };
     }
     function zoonosisPathwayCases() {
@@ -3616,6 +4198,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // content in the project snapshot.
       snapshot.aiScenarioId = normalizeAiScenarioId(snapshot.aiScenarioId);
       snapshot.aiDrafts = normalizeAiDrafts(snapshot.aiDrafts);
+      snapshot.careReflections = normalizeCareReflections(snapshot.careReflections);
+      snapshot.speciesChecks = normalizeSpeciesChecks(snapshot.speciesChecks);
       snapshot.aiCritiques = normalizeAiCritiques(snapshot.aiCritiques);
       snapshot.aiRevisionNotes = normalizeAiRevisionNotes(snapshot.aiRevisionNotes);
       snapshot.aiResponse = typeof snapshot.aiResponse === 'string'
@@ -3855,6 +4439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _zoonFeedbackRef = React.useRef(null);
     var _lifespanQuestionRef = React.useRef(null);
     var _lifespanFeedbackRef = React.useRef(null);
+    var _speciesCheckFeedbackRef = React.useRef(null);
     var _careQuestionRef = React.useRef(null);
     var _careFeedbackRef = React.useRef(null);
     var _quizQuestionRef = React.useRef(null);
@@ -3885,6 +4470,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var careTradeoffState = normalizeCareTradeoffState(d.careTradeoff);
     var aiScenarioId = normalizeAiScenarioId(d.aiScenarioId);
     var aiDrafts = normalizeAiDrafts(d.aiDrafts);
+    var careReflections = normalizeCareReflections(d.careReflections);
+    var speciesChecks = normalizeSpeciesChecks(d.speciesChecks);
     var legacyAiResponse = typeof d.aiResponse === 'string'
       ? d.aiResponse.slice(0, 4000) : '';
     var aiResponse = aiScenarioId && Object.prototype.hasOwnProperty.call(aiDrafts, aiScenarioId)
@@ -3936,6 +4523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       addIfChanged('welfareVisited', d.welfareVisited, welfareVisited);
       addIfChanged('aiScenarioId', d.aiScenarioId, aiScenarioId);
       addIfChanged('aiDrafts', d.aiDrafts, aiDrafts);
+      addIfChanged('careReflections', d.careReflections, careReflections);
       addIfChanged('aiCritiques', d.aiCritiques, aiCritiques);
       addIfChanged('aiRevisionNotes', d.aiRevisionNotes, aiRevisionNotes);
       addIfChanged('aiResponse', d.aiResponse, aiResponse);
@@ -4345,6 +4933,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return Object.keys(map || {}).filter(isTrackableModule).length;
     }
     var PETS_ACTIVITY_COMPLETION_MODULES = {
+      dogs: true,
+      cats: true,
+      smallMammals: true,
+      birds: true,
+      reptiles: true,
       training: true,
       nutrition: true,
       zoonoses: true,
@@ -4559,6 +5152,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }))
       );
     }
+    // Predict-then-reveal check for the five species views. Rendered directly
+    // under the hero so the prediction is made BEFORE the reading, which is the
+    // whole mechanism — see SPECIES_CHECKS.
+    //
+    // Stateless by construction: every branch reads persisted `speciesChecks`,
+    // so this can sit inside a view function without touching hook order.
+    function speciesCheck(speciesId) {
+      var check = SPECIES_CHECKS[speciesId];
+      if (!check) return null;
+      var record = speciesChecks[speciesId] || { pick: null, revealed: false };
+      var pick = record.pick;
+      var revealed = record.revealed;
+      var correct = pick === check.answer;
+      var answerOption = check.options.filter(function(option) {
+        return option.id === check.answer;
+      })[0];
+
+      function writeCheck(nextPick, nextRevealed) {
+        upd('speciesChecks', function(current) {
+          var next = normalizeSpeciesChecks(current);
+          if (!nextPick && !nextRevealed) delete next[speciesId];
+          else next[speciesId] = { pick: nextPick, revealed: nextRevealed };
+          return next;
+        });
+      }
+      function choose(optionId) {
+        if (revealed) return;
+        writeCheck(optionId, false);
+      }
+      function reveal() {
+        if (revealed) return;
+        writeCheck(pick, true);
+        // Completion is the prediction + reveal, never the score. The reason
+        // string is what upgrades a self-attested row to an activity row.
+        completeModule(speciesId, 'Prediction check completed', {
+          predicted: pick ? 'answered' : 'skipped',
+          criterionMet: !!pick && correct
+        });
+        petsAnnounce(pick
+          ? (correct ? 'Prediction correct. Explanation shown.' : 'Prediction incorrect. Explanation shown.')
+          : 'Explanation shown.');
+        focusPetsTarget(_speciesCheckFeedbackRef);
+      }
+      function tryAgain() {
+        writeCheck(null, false);
+        petsAnnounce('Prediction cleared. Choose again.');
+      }
+
+      var groupLabel = 'Prediction check: ' + check.prompt;
+      return h('section', {
+        className: 'petslab-species-check',
+        'aria-label': 'Prediction check',
+        style: {
+          padding: 14, borderRadius: 10, background: T.card,
+          border: '1px solid ' + T.accent, marginBottom: 14
+        }
+      },
+        h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6, letterSpacing: 0.3 } },
+          '\uD83E\uDD14 Predict first'),
+        h('p', { style: { margin: '0 0 4px', fontSize: 13, color: T.text, lineHeight: 1.6, fontWeight: 600 } },
+          check.prompt),
+        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+          !revealed
+            ? 'Commit to an answer before you read on. Being wrong here costs nothing and helps you remember the reading.'
+            : (pick && correct
+                ? 'Predicting first is what makes the reading stick \u2014 you had something to check it against.'
+                : 'A prediction you had to correct is remembered better than one you never made.')),
+        h('div', { role: 'group', 'aria-label': groupLabel, style: { display: 'grid', gap: 8 } },
+          check.options.map(function(option) {
+            var isPick = pick === option.id;
+            var isAnswer = option.id === check.answer;
+            // After the reveal the correct row is always marked, so a student
+            // who picked wrong can see BOTH their choice and the answer.
+            var ring = T.border;
+            var bg = T.cardAlt;
+            if (revealed && isAnswer) { ring = '#22c55e'; bg = 'rgba(34,197,94,0.12)'; }
+            else if (revealed && isPick) { ring = '#f87171'; bg = 'rgba(248,113,113,0.12)'; }
+            else if (isPick) { ring = T.accentHi; bg = 'rgba(245,158,11,0.12)'; }
+            var marker = revealed && isAnswer ? '\u2713 ' : (revealed && isPick ? '\u2717 ' : '');
+            return h('button', {
+              key: option.id,
+              type: 'button',
+              className: 'petslab-species-check-option',
+              'data-pets-focusable': true,
+              'aria-pressed': isPick ? 'true' : 'false',
+              disabled: revealed,
+              onClick: function() { choose(option.id); },
+              style: {
+                textAlign: 'left', padding: '10px 12px', borderRadius: 8,
+                background: bg, border: '1px solid ' + ring, color: T.text,
+                fontSize: 12.5, lineHeight: 1.5, cursor: revealed ? 'default' : 'pointer',
+                font: 'inherit', fontWeight: isPick ? 700 : 400
+              }
+            }, marker + option.label);
+          })),
+        !revealed && h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 } },
+          h('button', {
+            type: 'button',
+            className: 'petslab-species-check-reveal',
+            'data-pets-focusable': true,
+            onClick: reveal,
+            style: btnPrimary({ padding: '8px 12px', fontSize: 12 })
+          }, pick ? 'Lock it in and show the answer' : 'Skip the prediction and show the answer')),
+        revealed && h('div', {
+          ref: _speciesCheckFeedbackRef,
+          tabIndex: -1,
+          role: 'status',
+          style: {
+            marginTop: 12, padding: '11px 13px', borderRadius: 8,
+            background: T.cardAlt, border: '1px solid ' + T.border
+          }
+        },
+          h('div', { style: { fontSize: 13, fontWeight: 700, marginBottom: 6, color: pick ? (correct ? '#86efac' : '#fca5a5') : T.accentHi } },
+            pick
+              ? (correct ? '\u2713 Your prediction was right' : '\u2717 Not what happens \u2014 and this is the useful part')
+              : 'The answer'),
+          !pick && h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.dim, lineHeight: 1.55 } },
+            'You skipped the prediction. That is recorded honestly \u2014 the module still counts as done, but try predicting first on the next species.'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+            answerOption ? h('strong', { style: { color: T.text } }, answerOption.label + ' ') : null,
+            check.reveal),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+            h('strong', { style: { color: T.text } }, 'Why: '), check.why),
+          pick && !correct && h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.warm, lineHeight: 1.6, fontStyle: 'italic' } },
+            check.missNote),
+          h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: T.dim, lineHeight: 1.55 } },
+            'The reading below carries the full sourcing for this.'),
+          h('button', {
+            type: 'button',
+            className: 'petslab-species-check-retry',
+            'data-pets-focusable': true,
+            onClick: tryAgain,
+            style: btn({ padding: '7px 11px', fontSize: 11.5 })
+          }, 'Clear and predict again'))
+      );
+    }
+
     function crossLink(label, body, target) {
       return h('div', { className: 'petslab-crosslink', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent, marginTop: 12 } },
         h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, '🔗 ' + label),
@@ -4608,7 +5338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'zoonoses', cat: 'science',     icon: '🦠', label: 'Zoonoses & One Health', desc: 'Diseases that cross species. Maine ticks. Rabies.' },
       { id: 'service', cat: 'people',      icon: '♿', label: 'Service & Support Animals', desc: 'Service dog vs ESA vs therapy: legal + scientific distinctions.' },
       { id: 'welfare', cat: 'skills',      icon: '🛡️', label: 'Welfare & Ethics',     desc: 'Spay/neuter, adoption vs breeding, declawing, outdoor cats. Sourced inline.' },
-      { id: 'careSim', cat: 'skills',      icon: '📅', label: 'Pet-Care Week (sim)',  desc: 'Live a week with a dog/cat/rabbit. Decisions affect 4 welfare meters.' },
+      { id: 'careSim', cat: 'skills',      icon: '📅', label: 'Pet-Care Week (sim)',  desc: 'Live a week with a dog/cat/rabbit. Decisions affect 4 welfare meters. Finish it to unlock a harder second week.' },
       { id: 'sensory', cat: 'science',      icon: '👁️', label: 'Through Their Eyes (3D)', desc: 'Walk a room as a human, dog, or cat. Colour, acuity, eye height, night vision, and a dog\'s scent world.' },
       { id: 'picker', cat: 'skills',       icon: '🏠', label: 'Pet Picker',           desc: 'Compare species classes, verify readiness, and inspect the model’s tradeoffs.' },
       { id: 'bodyLang', cat: 'skills',     icon: '👀', label: 'Body Language Decoder', desc: 'Recognize whole-body cues, then apply them in cautious context challenges.' },
@@ -4919,6 +5649,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // Illustrative learning-model mismatch. These hand-authored targets
           // are not validated husbandry requirements or an animal assessment.
           function gap(provided, mult) { var need = mult * 50; return Math.max(0, need - provided) + Math.max(0, provided - need - 20) * 0.3; }
+          // The trade-off itself. Five sliders against five targets is not a
+          // trade-off until something is scarce: with no constraint, every
+          // slider at its target was "Close model fit" and the widget's own
+          // question ("which two domains trade off in your household?") had
+          // no answer in the model. Each domain now costs caregiver hours per
+          // week, scaled by how much is provided and by the species factor
+          // (an hour of "exercise" for a high-energy dog is a real walk; for
+          // a cat it is a play session). Illustrative, like the targets:
+          // full provision means roughly 90 min/day of exercise, an hour a
+          // day of company, 30 min of training, 15 min of feeding and a
+          // half-hour a week averaged over vet visits.
+          var hoursAtFull = { food: 1.75, exercise: 10.5, social: 7, vet: 0.5, training: 3.5 };
+          function hoursFor(key, provided) { return (Math.min(100, provided) / 100) * hoursAtFull[key] * sp[key]; }
+          var hoursNeeded = ['food', 'exercise', 'social', 'vet', 'training'].reduce(function(sum, key) { return sum + hoursFor(key, iq[key]); }, 0);
+          var hoursOver = hoursNeeded - iq.hours;
           var gFood = gap(iq.food, sp.food);
           var gEx = gap(iq.exercise, sp.exercise);
           var gSoc = gap(iq.social, sp.social);
@@ -4973,7 +5718,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }, domains[0]);
           var radarSummary = domains.map(function(domain) {
             return domain.label + ': provided ' + domain.provided + ', model target ' + domain.need.toFixed(0);
-          }).join('. ') + '. Welfare state: ' + sm.label + '.';
+          }).join('. ') + '. Welfare state: ' + sm.label + '. This plan takes about ' + hoursNeeded.toFixed(1) + ' hours a week against ' + iq.hours + ' available' +
+            (hoursOver > 0.05 ? ', over by ' + hoursOver.toFixed(1) + '.' : '.');
           function provisionOpacity(value) {
             return 0.18 + (Math.min(100, value) / 100) * 0.82;
           }
@@ -5329,9 +6075,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             )
               )
             ),
-            h('div', { id: 'pets-care-tradeoff-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', marginBottom: 10, borderRadius: 9, background: 'rgba(18,13,11,.66)', border: '1px solid ' + sm.border, fontSize: 10 } },
+            h('div', { id: 'pets-care-tradeoff-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', marginBottom: 6, borderRadius: 9, background: 'rgba(18,13,11,.66)', border: '1px solid ' + sm.border, fontSize: 10 } },
               h('span', { style: { color: '#e8d5b7', fontWeight: 800 } }, 'Total model mismatch:'),
               h('span', { style: { color: sm.color, font: '900 15px/1 monospace' } }, totalGap.toFixed(1) + ' - ' + sm.label)
+            ),
+            // Time: where the trade-off actually bites.
+            h('div', { className: 'petslab-tradeoff-time', 'data-pets-tradeoff-over': hoursOver > 0.05 ? 'true' : 'false',
+              style: { padding: '8px 10px', marginBottom: 10, borderRadius: 9, background: 'rgba(18,13,11,.66)', border: '1px solid ' + (hoursOver > 0.05 ? '#f59e0b' : '#5c4536'), fontSize: 11, lineHeight: 1.5 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+                h('span', { style: { color: '#e8d5b7', fontWeight: 800 } }, 'Caregiver time this plan needs:'),
+                h('span', { style: { color: hoursOver > 0.05 ? '#fdba74' : '#bef264', font: '900 15px/1 monospace' } },
+                  hoursNeeded.toFixed(1) + ' h / ' + iq.hours + ' h a week')),
+              h('div', { 'aria-hidden': 'true', style: { position: 'relative', height: 8, marginTop: 6, borderRadius: 4, background: '#181210', border: '1px solid #5c4536', overflow: 'hidden' } },
+                h('div', { style: { width: Math.min(100, (hoursNeeded / Math.max(iq.hours, 1)) * 100) + '%', height: '100%', background: hoursOver > 0.05 ? '#f59e0b' : '#84cc16' } })),
+              h('div', { style: { marginTop: 5, color: hoursOver > 0.05 ? '#fdba74' : '#bda891', fontSize: 10 } },
+                hoursOver > 0.05
+                  ? 'Over your available time by ' + hoursOver.toFixed(1) + ' hours. Something has to give: which domain would you cut, and what would the animal lose?'
+                  : 'Fits inside your time. Try the same targets with a different species, or fewer hours.'),
+              h('label', { style: { display: 'block', marginTop: 8, fontSize: 10 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
+                  h('span', null, 'Hours you can give this animal each week'),
+                  h('span', { style: { fontFamily: 'monospace', fontWeight: 700, color: '#e8d5b7' } }, iq.hours + ' h')),
+                h('input', { type: 'range', min: 4, max: 40, step: 1, value: iq.hours,
+                  'aria-label': __alloT('stem.pets.a11y_hours_you_can_give_this_animal_each_week', 'Hours you can give this animal each week'),
+                  'aria-valuetext': iq.hours + ' hours a week; this plan needs ' + hoursNeeded.toFixed(1),
+                  onChange: function(e) { setKey('hours', Number(e.target.value)); }, style: { width: '100%' } }))
             ),
             h('div', { className: 'petslab-tradeoff-sliders', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
               domains.map(function(s) {
@@ -5347,7 +6115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
               h('button', { type: 'button', onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
-                var entry = { t: t, sp: iq.species, gap: totalGap.toFixed(1), state: sm.label, worst: worstDomain.label, provided: worstDomain.provided, need: worstDomain.need.toFixed(0) };
+                var entry = { t: t, sp: iq.species, gap: totalGap.toFixed(1), state: sm.label, worst: worstDomain.label, provided: worstDomain.provided, need: worstDomain.need.toFixed(0), hours: hoursNeeded.toFixed(1), budget: iq.hours };
                 setIQ({ log: iq.log.concat([entry]).slice(-8) });
                 petsAnnounce('Scenario logged for ' + sp.label + '. ' + sm.label + '; largest mismatch ' + worstDomain.label + '.');
               }, style: { flex: 1, padding: 6, fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this scenario'),
@@ -5355,7 +6123,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ),
             iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': __alloT('stem.pets.a11y_logged_care_scenarios', 'Logged care scenarios'), tabIndex: 0, 'data-pets-focusable': true, style: { maxHeight: 96, overflow: 'auto', padding: 6, borderRadius: 6, background: '#181210', border: '1px solid #5c4536', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) {
-                var detail = e.worst ? ' · largest ' + e.worst + ' P' + e.provided + '/T' + e.need : '';
+                var detail = (e.worst ? ' · largest ' + e.worst + ' P' + e.provided + '/T' + e.need : '') +
+                  (e.hours != null && e.budget != null ? ' · ' + e.hours + 'h/' + e.budget + 'h' + (Number(e.hours) > Number(e.budget) ? ' over' : '') : '');
                 return h('div', { key: (e.t || 'entry') + '-' + i }, e.t + '  ' + e.sp + ' · ' + e.state + ' · gap ' + e.gap + detail);
               })
             ),
@@ -5397,6 +6166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('div', { className: 'petslab-species-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🐕 Dogs'),
         sourceCard('dogs'),
+        speciesCheck('dogs'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Domestication: 15,000–40,000 years ago'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -5444,6 +6214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('div', { className: 'petslab-species-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🐈 Cats'),
         sourceCard('cats'),
+        speciesCheck('cats'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🥩 Obligate carnivore biochemistry'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -5526,6 +6297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('div', { className: 'petslab-species-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🐹 Small mammals'),
         sourceCard('smallMammals'),
+        speciesCheck('smallMammals'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
             'Often marketed as "starter pets," but small does not mean simple: prey-species behavior, fragile GI systems, narrow diet needs, and species-specific social and housing rules all require adult planning.')),
@@ -5557,6 +6329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('div', { className: 'petslab-species-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🦜 Birds'),
         sourceCard('birds'),
+        speciesCheck('birds'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🫁 Air sacs: why birds are poison-canaries'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -5605,6 +6378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('div', { className: 'petslab-species-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🦎 Reptiles & amphibians'),
         sourceCard('reptiles'),
+        speciesCheck('reptiles'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🌡️ Ectothermy: temperature is your job'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -5692,16 +6466,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         // type: 'target' = the desired behavior (sit), 'almost' = close to it,
         // 'wrong' = unrelated behavior. Each moment includes a description.
         { type: 'target',  desc: 'You hold a treat above your puppy\'s nose. Their butt drops to the floor.', label: '✓ Sat fully' },
-        { type: 'wrong',   desc: 'Your puppy is sniffing the corner of the rug, ignoring you.', label: '× Distracted, sniffing' },
+        { type: 'wrong',   desc: 'Your puppy is sniffing the corner of the rug, ignoring you.', label: '× Distracted, sniffing', pose: 'sniff' },
         { type: 'almost',  desc: 'You say "sit." The puppy stares at you, doesn\'t move.', label: '~ Looking at you, not sitting' },
         { type: 'target',  desc: 'After "sit," the puppy lowers all the way to a clean sit.', label: '✓ Sat fully' },
-        { type: 'wrong',   desc: 'The puppy jumps up to lick your face.', label: '× Jumped up' },
+        { type: 'wrong',   desc: 'The puppy jumps up to lick your face.', label: '× Jumped up', pose: 'jump' },
         { type: 'target',  desc: 'You wait quietly. The puppy offers a sit on their own.', label: '✓ Offered a sit' },
         { type: 'almost',  desc: 'The puppy starts to lower, then stands back up.', label: '~ Half-sit' },
         { type: 'target',  desc: 'You say "sit." The puppy sits faster than before.', label: '✓ Quick sit on cue' },
-        { type: 'wrong',   desc: 'The puppy starts barking at a noise outside.', label: '× Barking at noise' },
+        { type: 'wrong',   desc: 'The puppy starts barking at a noise outside.', label: '× Barking at noise', pose: 'bark' },
         { type: 'target',  desc: 'You say "sit." The puppy holds the sit for 3 seconds.', label: '✓ Sustained sit' }
       ];
+      // Second session: the same skill (sit) at the park, with distractions.
+      // Same type sequence as the kitchen bank (target, wrong, almost, target,
+      // wrong, target, almost, target, wrong, target), so the reinforcement
+      // model, the optimal path and the poses are identical; only the
+      // situations change. "New session" alternates banks, so a replay after
+      // reading the round-by-round review is a transfer task, not a re-run.
+      var TR_MOMENTS_PARK = [
+        { type: 'target',  desc: 'At the park gate you say "sit." The puppy sits, eyes on the treat, as a jogger passes.', label: '✓ Sat as a jogger passed' },
+        { type: 'wrong',   desc: 'The puppy is nose-down in the grass, following a scent trail away from you.', label: '× Nose in the grass', pose: 'sniff' },
+        { type: 'almost',  desc: 'You say "sit." The puppy shifts its weight back, then a dog barks somewhere and it freezes, still standing.', label: '~ Started to sit, then froze' },
+        { type: 'target',  desc: 'You say "sit" as a cyclist rolls by. The puppy sits and holds it for a beat.', label: '✓ Sat as a cyclist passed' },
+        { type: 'wrong',   desc: 'A child runs past. The puppy lunges to the end of the leash after them.', label: '× Lunged after a runner', pose: 'jump' },
+        { type: 'target',  desc: 'You stop walking and wait. The puppy checks in and sits on its own.', label: '✓ Offered a sit on the path' },
+        { type: 'almost',  desc: 'The puppy\'s rear dips toward the ground and comes straight back up as a leaf blows past.', label: '~ Half-sit, distracted' },
+        { type: 'target',  desc: 'You say "sit" near the playground noise. The puppy sits promptly.', label: '✓ Sat by the playground' },
+        { type: 'wrong',   desc: 'A dog barks across the field. The puppy barks back, again and again.', label: '× Barking at another dog', pose: 'bark' },
+        { type: 'target',  desc: 'Back at the gate you say "sit." The puppy sits and holds it while you clip the leash.', label: '✓ Held the sit at the gate' }
+      ];
+      var TR_MOMENT_BANKS = { home: TR_MOMENTS, park: TR_MOMENTS_PARK };
+      var TR_BANK_NAMES = { home: 'at home', park: 'at the park' };
       var TR_RESPONSE_NAMES = {
         treat3s: 'Treat within 3 seconds',
         click: 'Marker only',
@@ -5717,17 +6511,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         almost: { id: 'click',   why: 'Mark the approximation so the puppy knows it is on the right track, and keep the treat for the full sit. That is shaping.' },
         wrong:  { id: 'wait',    why: 'Nothing to reinforce and nothing to punish. Behaviour that never pays fades on its own; a correction only adds stress.' }
       };
-      var trSim = normalizeTrainerState(d.trSim);  // { idx, choices, prob, trust, log }
-      function startTrSim() {
-        upd('trSim', { idx: 0, choices: [], prob: 0.20, trust: 1.00, done: false, log: [] });
+      var trSim = normalizeTrainerState(d.trSim);  // { idx, choices, prob, trust, log, bank }
+      var trBank = trSim && TR_MOMENT_BANKS[trSim.bank] ? trSim.bank : 'home';
+      var trMoments = TR_MOMENT_BANKS[trBank];
+      function startTrSim(bank) {
+        var nextBank = TR_MOMENT_BANKS[bank] ? bank : 'home';
+        upd('trSim', { idx: 0, choices: [], prob: 0.20, trust: 1.00, done: false, log: [], bank: nextBank });
+        petsAnnounce('Trainer session ' + TR_BANK_NAMES[nextBank] + ' started.');
         focusPetsTarget(_trainingQuestionRef);
       }
-      function newTrSim() { upd('trSim', null); startTrSim(); }
+      // A new session alternates the setting: kitchen, then park, then kitchen.
+      function nextTrBank() { return trBank === 'home' ? 'park' : 'home'; }
+      function newTrSim() { var bank = nextTrBank(); upd('trSim', null); startTrSim(bank); }
       function pickResponse(rxn) {
         if (!trSim) return;
         if (trSim.done) return;
         if ((trSim.choices || [])[trSim.idx] != null) return;  // already answered this round
-        var moment = TR_MOMENTS[trSim.idx];
+        var moment = trMoments[trSim.idx];
         var dProb = 0, dTrust = 0, verdict;
         // Reinforcement model — simplified for pedagogy
         // rxn: 'treat3s' (treat within 3s), 'click' (marker only), 'wait', 'correct'
@@ -5761,7 +6561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function nextTrRound() {
         if (!trSim) return;
-        if (trSim.idx < TR_MOMENTS.length - 1) {
+        if (trSim.idx < trMoments.length - 1) {
           upd('trSim', Object.assign({}, trSim, { idx: trSim.idx + 1 }));
         } else {
           // Done
@@ -5772,6 +6572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             rounds: 10,
             behaviorPct: finalScore,
             trustPct: trustScore,
+            setting: trBank,
             criterionMet: finalScore >= 70 && trustScore >= 80
           });
           upd('trSim', Object.assign({}, trSim, { done: true }));
@@ -5793,11 +6594,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function renderTrainerStage(moment, thisChoice, revealed, probPct, trustPct) {
         var round = trSim.idx + 1;
-        var pose = moment.type === 'target' ? 'sit'
+        var park = trBank === 'park';
+        var pose = moment.pose || (moment.type === 'target' ? 'sit'
           : moment.type === 'almost' ? 'crouch'
-          : trSim.idx === 1 ? 'sniff'
-          : trSim.idx === 4 ? 'jump'
-          : 'bark';
+          : 'bark');
         var responseNames = TR_RESPONSE_NAMES;
         var selected = revealed ? thisChoice.rxn : null;
         var outcomeColor = !revealed ? '#fbbf24'
@@ -5811,7 +6611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           : 'Observation recorded';
         var trustLow = trustPct < 70 || selected === 'correct';
         var tailClass = trustPct >= 70 && selected !== 'correct' ? 'petslab-trainer-tail' : '';
-        var sceneLabel = 'Illustrated kitchen training scene. Round ' + round + ' of ' + TR_MOMENTS.length +
+        var sceneLabel = (park ? 'Illustrated park training scene. Round ' : 'Illustrated kitchen training scene. Round ') + round + ' of ' + trMoments.length +
           '. Puppy action: ' + moment.desc + ' Behavior probability ' + probPct +
           ' percent. Trust ' + trustPct + ' percent.' +
           (revealed ? ' Selected response: ' + responseNames[selected] + '. ' + outcomeLabel + '.'
@@ -5975,6 +6775,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('stop', { offset: '55%', stopColor: '#c88443' }),
                 h('stop', { offset: '100%', stopColor: '#8a4f27' })
               ),
+              h('linearGradient', { id: 'pets-trainer-sky', x1: 0, y1: 0, x2: 0, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#bfe3f4' }),
+                h('stop', { offset: '100%', stopColor: '#eaf4dc' })
+              ),
+              h('linearGradient', { id: 'pets-trainer-grass', x1: 0, y1: 0, x2: 0, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#8fbf5a' }),
+                h('stop', { offset: '100%', stopColor: '#5c8f38' })
+              ),
               h('radialGradient', { id: 'pets-trainer-rug', cx: '50%', cy: '42%', r: '70%' },
                 h('stop', { offset: '0%', stopColor: '#d46b59' }),
                 h('stop', { offset: '100%', stopColor: '#8d3f3b' })
@@ -5983,16 +6791,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('feDropShadow', { dx: 0, dy: 5, stdDeviation: 5, floodColor: '#3b2418', floodOpacity: 0.3 })
               )
             ),
-            h('rect', { x: 0, y: 0, width: 760, height: 216, fill: 'url(#pets-trainer-wall)' }),
-            h('path', { d: 'M 0 57 H 760 M 0 111 H 760 M 0 165 H 760', stroke: '#b8916c', strokeWidth: 1, opacity: 0.25 }),
-            h('path', { d: 'M 52 0 V 216 M 108 0 V 216 M 164 0 V 216 M 220 0 V 216 M 276 0 V 216 M 332 0 V 216 M 388 0 V 216 M 444 0 V 216 M 500 0 V 216 M 556 0 V 216 M 612 0 V 216 M 668 0 V 216 M 724 0 V 216', stroke: '#b8916c', strokeWidth: 1, opacity: 0.16 }),
-            h('rect', { x: 0, y: 208, width: 760, height: 13, fill: '#fff3df' }),
-            h('rect', { x: 0, y: 218, width: 760, height: 112, fill: 'url(#pets-trainer-floor)' }),
-            h('path', { d: 'M 0 251 H 760 M 0 290 H 760 M 90 218 L 45 330 M 205 218 L 181 330 M 320 218 L 316 330 M 440 218 L 454 330 M 555 218 L 588 330 M 670 218 L 721 330', stroke: '#4f3324', strokeWidth: 2, opacity: 0.34 }),
-            h('ellipse', { cx: 375, cy: 286, rx: 178, ry: 38, fill: 'url(#pets-trainer-rug)', filter: 'url(#pets-trainer-shadow)' }),
-            h('ellipse', { cx: 375, cy: 286, rx: 151, ry: 27, fill: 'none', stroke: '#eda184', strokeWidth: 3, opacity: 0.72 }),
-            h('path', { d: 'M 242 283 Q 375 261 508 283 M 255 294 Q 375 274 495 294', fill: 'none', stroke: '#f7c0a3', strokeWidth: 2, opacity: 0.42 }),
-            h('g', { filter: 'url(#pets-trainer-shadow)' },
+            h('rect', { x: 0, y: 0, width: 760, height: 216, fill: park ? 'url(#pets-trainer-sky)' : 'url(#pets-trainer-wall)' }),
+            // Park: sun, a distant treeline and a fence where the kitchen has
+            // tiles, a counter and a window. Same puppy, same handler, same
+            // marks on the floor for the poses.
+            park && h('g', { 'aria-hidden': 'true' },
+              h('circle', { cx: 640, cy: 52, r: 26, fill: '#ffe59a' }),
+              h('path', { d: 'M 0 150 Q 60 118 120 148 Q 170 112 230 146 Q 290 120 350 150 Q 410 118 470 148 Q 530 112 590 146 Q 650 120 710 150 Q 740 138 760 150 V 216 H 0 Z', fill: '#6e9a54' }),
+              h('path', { d: 'M 0 196 H 760 M 0 206 H 760', stroke: '#c9b48a', strokeWidth: 3 }),
+              h('path', { d: 'M 30 186 V 216 M 110 186 V 216 M 190 186 V 216 M 270 186 V 216 M 470 186 V 216 M 550 186 V 216 M 630 186 V 216 M 710 186 V 216', stroke: '#c9b48a', strokeWidth: 4, strokeLinecap: 'round' }),
+              h('rect', { x: 88, y: 96, width: 22, height: 120, rx: 6, fill: '#6b4a2f' }),
+              h('circle', { cx: 99, cy: 78, r: 44, fill: '#4f8a3a' }),
+              h('circle', { cx: 64, cy: 100, r: 34, fill: '#5d9a44' }),
+              h('circle', { cx: 136, cy: 98, r: 36, fill: '#457f34' })
+            ),
+            !park && h('path', { d: 'M 0 57 H 760 M 0 111 H 760 M 0 165 H 760', stroke: '#b8916c', strokeWidth: 1, opacity: 0.25 }),
+            !park && h('path', { d: 'M 52 0 V 216 M 108 0 V 216 M 164 0 V 216 M 220 0 V 216 M 276 0 V 216 M 332 0 V 216 M 388 0 V 216 M 444 0 V 216 M 500 0 V 216 M 556 0 V 216 M 612 0 V 216 M 668 0 V 216 M 724 0 V 216', stroke: '#b8916c', strokeWidth: 1, opacity: 0.16 }),
+            !park && h('rect', { x: 0, y: 208, width: 760, height: 13, fill: '#fff3df' }),
+            h('rect', { x: 0, y: 218, width: 760, height: 112, fill: park ? 'url(#pets-trainer-grass)' : 'url(#pets-trainer-floor)' }),
+            !park && h('path', { d: 'M 0 251 H 760 M 0 290 H 760 M 90 218 L 45 330 M 205 218 L 181 330 M 320 218 L 316 330 M 440 218 L 454 330 M 555 218 L 588 330 M 670 218 L 721 330', stroke: '#4f3324', strokeWidth: 2, opacity: 0.34 }),
+            park
+              ? h('g', null,
+                  h('ellipse', { cx: 375, cy: 286, rx: 190, ry: 40, fill: '#c8ad7e', opacity: 0.9 }),
+                  h('path', { d: 'M 60 262 Q 90 250 96 268 M 620 268 Q 650 254 664 272 M 180 316 Q 200 302 214 318 M 560 312 Q 585 298 600 316', fill: 'none', stroke: '#3f6b2a', strokeWidth: 3, strokeLinecap: 'round' }))
+              : h('g', null,
+                  h('ellipse', { cx: 375, cy: 286, rx: 178, ry: 38, fill: 'url(#pets-trainer-rug)', filter: 'url(#pets-trainer-shadow)' }),
+                  h('ellipse', { cx: 375, cy: 286, rx: 151, ry: 27, fill: 'none', stroke: '#eda184', strokeWidth: 3, opacity: 0.72 }),
+                  h('path', { d: 'M 242 283 Q 375 261 508 283 M 255 294 Q 375 274 495 294', fill: 'none', stroke: '#f7c0a3', strokeWidth: 2, opacity: 0.42 })),
+            !park && h('g', { filter: 'url(#pets-trainer-shadow)' },
               h('rect', { x: 0, y: 104, width: 225, height: 108, fill: '#6b4935' }),
               h('rect', { x: 0, y: 98, width: 250, height: 15, rx: 3, fill: '#d7c0a2' }),
               h('rect', { x: 18, y: 122, width: 86, height: 79, rx: 3, fill: '#815940', stroke: '#a87b59', strokeWidth: 2 }),
@@ -6008,7 +6834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('circle', { cx: 175, cy: 70, r: 4, fill: '#a86635' }),
               h('circle', { cx: 181, cy: 82, r: 4, fill: '#a86635' })
             ),
-            h('g', { opacity: 0.96 },
+            !park && h('g', { opacity: 0.96 },
               h('rect', { x: 510, y: 35, width: 157, height: 104, rx: 4, fill: '#8fc7d6' }),
               h('circle', { cx: 625, cy: 67, r: 22, fill: '#ffe59a' }),
               h('path', { d: 'M 513 113 Q 550 78 583 109 Q 620 75 664 112 V 136 H 513 Z', fill: '#77a765' }),
@@ -6017,7 +6843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('line', { x1: 508, y1: 87, x2: 669, y2: 87, stroke: '#76533b', strokeWidth: 4 }),
               h('path', { d: 'M 492 22 Q 519 58 496 154 M 685 22 Q 657 61 680 154', fill: '#c45f51', stroke: '#9e443e', strokeWidth: 3 })
             ),
-            h('g', { opacity: 0.88 },
+            !park && h('g', { opacity: 0.88 },
               h('rect', { x: 280, y: 49, width: 99, height: 67, rx: 4, fill: '#815b42' }),
               h('rect', { x: 288, y: 57, width: 83, height: 51, fill: '#f3c970' }),
               h('path', { d: 'M 296 96 Q 318 65 336 91 Q 352 69 365 96', fill: '#6f8e69' }),
@@ -6041,7 +6867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           ),
           h('div', { className: 'petslab-stage-hud petslab-stage-hud--top', 'aria-hidden': 'true' },
             h('div', { className: 'petslab-hud-stack' },
-              h('span', { className: 'petslab-hud-chip' }, 'ROUND ', h('strong', null, round + ' / ' + TR_MOMENTS.length)),
+              h('span', { className: 'petslab-hud-chip' }, 'ROUND ', h('strong', null, round + ' / ' + trMoments.length)),
               // Before the response, show the behaviour WITHOUT its ✓ / × / ~
               // classification glyph: that glyph is the answer key (target /
               // wrong / almost), and with it on screen the round collapses to
@@ -6093,7 +6919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var W = 640, H = 250;
           var pad = { l: 52, r: 24, t: 28, b: 42 };
           var chartPoints = trSim.log || [];
-          var sx = function(i) { return pad.l + (i / (TR_MOMENTS.length - 1)) * (W - pad.l - pad.r); };
+          var sx = function(i) { return pad.l + (i / (trMoments.length - 1)) * (W - pad.l - pad.r); };
           var sy = function(p) { return pad.t + (1 - p) * (H - pad.t - pad.b); };
           var probPath = 'M ' + chartPoints.map(function(pt, i) { return sx(i) + ',' + sy(pt.prob); }).join(' L ');
           var trustPath = 'M ' + chartPoints.map(function(pt, i) { return sx(i) + ',' + sy(pt.trust); }).join(' L ');
@@ -6140,7 +6966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   rx: 5, fill: '#100b09', opacity: 0.55
                 }),
                 // Round grid, tick marks, and labels 1-10.
-                TR_MOMENTS.map(function(_, i) {
+                trMoments.map(function(_, i) {
                   return h('g', { key: 'round-' + i },
                     h('line', {
                       x1: sx(i), y1: pad.t, x2: sx(i), y2: H - pad.b,
@@ -6260,7 +7086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             // why. The headline tells the student to "review the moments where
             // probability dropped"; this is where they can.
             (function() {
-              var rounds = TR_MOMENTS.map(function(moment, i) {
+              var rounds = trMoments.map(function(moment, i) {
                 var ch = (trSim.choices || [])[i];
                 if (!ch) return null;
                 var best = TR_BEST_RESPONSE[moment.type] || null;
@@ -6294,16 +7120,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('button', { 'data-pets-focusable': true,
                 onClick: newTrSim,
                 style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
-              }, '🔁 New session'),
+              }, '🔁 New session ' + TR_BANK_NAMES[nextTrBank()]),
               h('button', { 'data-pets-focusable': true,
                 onClick: function() { setTrMode('read'); },
                 style: btn({ padding: '10px 18px', fontSize: 13 })
-              }, '📚 Back to scenarios')
+              }, '📚 Back to scenarios'),
+              h('button', { 'data-pets-focusable': true,
+                onClick: function() { goToView('careSim', 'Pet-Care Week'); },
+                style: btn({ padding: '10px 18px', fontSize: 13 })
+              }, '📅 Apply it in Pet-Care Week')
             )
           );
         }
         // Active round
-        var moment = TR_MOMENTS[trSim.idx];
+        var moment = trMoments[trSim.idx];
         var thisChoice = (trSim.choices || [])[trSim.idx];
         var revealed = thisChoice != null;
         var probPct = Math.round(trSim.prob * 100);
@@ -6319,12 +7149,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // Status bars
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 800, letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 8 } },
-              'Round ' + (trSim.idx + 1) + ' / ' + TR_MOMENTS.length),
+              'Round ' + (trSim.idx + 1) + ' / ' + trMoments.length),
             trainerMeter('Behavior probability', probPct, 70,
-              probPct >= 70 ? T.ok : probPct >= 30 ? T.accentHi : T.danger,
+              probPct >= 70 ? T.ok : probPct >= 30 ? T.accentHi : '#f87171',  // red-400: T.danger is 3.8:1 at this size on the card
               'Goal 70% - how likely the puppy is to offer "sit" on cue'),
             trainerMeter('Relationship trust', trustPct, 80,
-              trustPct >= 80 ? '#7dd3fc' : trustPct >= 60 ? T.accentHi : T.danger,
+              trustPct >= 80 ? '#7dd3fc' : trustPct >= 60 ? T.accentHi : '#f87171',
               'Goal 80% - how willing the puppy is to keep trying with you')
           ),
           // The moment
@@ -6378,7 +7208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('button', { 'data-pets-focusable': true,
               onClick: nextTrRound,
               style: btnPrimary({ padding: '10px 22px', fontSize: 13, width: '100%' })
-            }, trSim.idx < TR_MOMENTS.length - 1 ? 'Next round →' : 'See results ✓')
+            }, trSim.idx < trMoments.length - 1 ? 'Next round →' : 'See results ✓')
           )
         );
       }
@@ -10864,7 +11694,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { label: 'Sub day', body: 'Body Language Decoder + Myths Busted + Quiz. Three modules students run independently. Print Pet Picker as a worksheet.' }
       ];
       var learningTargets = [
-        { module: 'Pet Training', target: 'I can choose reinforcement timing that builds behavior without sacrificing trust.', success: 'Finish 10 rounds with behavior at 70%+ and trust at 80%+.' },
+        { module: 'Pet Training', target: 'I can choose reinforcement timing that builds behavior without sacrificing trust.', success: 'Finish 10 rounds with behavior at 70%+ and trust at 80%+.',
+          mechanics: [
+            'Ten moments (five true sits, two approximations, three unrelated behaviours). The moment is described before the response; its classification is shown only after.',
+            'Treat within 3 s builds behaviour most on a true sit; a marker alone is strongest on an approximation (shaping); waiting is the only response that does not reinforce or stress an unrelated behaviour. A verbal correction always costs trust.',
+            'The summary lists every round and names the stronger response, with the reason, wherever one existed.'
+          ],
+          discuss: [
+            'Why does rewarding a half-sit with a full treat still count as progress, and when does it stop being useful?',
+            'Which round would you have corrected, and what would the puppy have learned from it?'
+          ] },
         { module: 'Household Hazard Sleuth', target: 'I can recognize common food, plant, and fume hazard patterns and use a call-first response protocol.', success: 'Finish all 10 vignettes; 8/10 meets the activity target. Classification never replaces case-specific veterinary or poison-control advice.' },
         { module: 'Zoonoses & One Health', target: 'I can trace an exposure through its route, identify who may face greater risk, and choose a step that interrupts the pathway or brings in the right expert.', success: 'Finish all four Exposure Pathway cases; 3/4 meets the activity target. The result is prevention evidence—not a medical diagnosis or real-exposure clearance.' },
         { module: 'Body Language', target: 'I can recognize observable whole-body cues and use context to choose a cautious next step.', success: 'Score 8/10 on a random recognition set for the activity target. The four-case Context Challenge adds separate formative transfer evidence; neither result certifies real-animal handling.' },
@@ -10872,14 +11711,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { module: 'Lifespan Match', target: 'I can estimate the scale of a companion animal’s lifetime commitment.', success: 'Finish all 10 species; 8/10 meets the activity target. Missed species stay local for review and focused retry, while the full comparison remains available after the attempt.' },
         { module: 'Knowledge Quiz', target: 'I can answer a formative sample across pet biology, behavior, health, and welfare.', success: 'Finish all 15 questions with 70%+ overall and at least half correct in each of the four concept strands.' },
         { module: 'AI Practice', target: 'I can explain a welfare decision with relevant evidence, use feedback, and explain a revision.', success: 'Write a response and complete a rubric check or critique. Revising the draft and explaining one change adds stronger evidence; every record still requires teacher review.' },
-        { module: 'Pet-Care Week', target: 'I can balance all four welfare domains with caregiver time and money.', success: 'Finish seven days with every domain at 70%+ and the four domains averaging 80%+, never let money drop below $0, energy above 20%, and no care tasks attempted while exhausted (defined here as starting a routine task below 25% energy).' }
+        { module: 'Pet-Care Week', target: 'I can balance all four welfare domains with caregiver time and money.', success: 'Finish seven days with every domain at 70%+ and the four domains averaging 80%+, never let money drop below $0, energy above 20%, and no care tasks attempted while exhausted (defined here as starting a routine task below 25% energy).',
+          mechanics: [
+            'Seven scenario decisions move four welfare meters (physical, mental, social, environmental). The buttons preview only money and energy; welfare effects and any aftermath (the ER bill after the brownie) are revealed after the choice.',
+            'Five routine tasks a day (feed, water, play, pet, clean) add a little; each one skipped costs the animal a little overnight. Routine care keeps a good week good and cannot rescue a bad one.',
+            'A meter below 40% at night triggers an overnight event that costs the owner money and effort (an indoor accident, a chewed cord, a skipped breakfast). The evening note says what is coming before the student sleeps on it.',
+            'Budgets are tuned so every correct call is affordable; careless weeks can still go bankrupt. Energy recovers 8 a night; the check tells the student when the badge is already out of reach.',
+            'The summary names a stronger call only for decisions that harmed the animal on balance, shows the attempt trajectory, and asks for one thing to do differently (recorded as self-review, text kept in the project).',
+            'Finishing a week unlocks a second, harder week with the same animal months on (adolescence, a second cat, a broken rabbit bond). Same rules and budget; meeting its target earns the Seasoned Owner badge. Evidence records which week a result belongs to.'
+          ],
+          discuss: [
+            'Why can a week of every correct decision still miss the badge? Which routine task was it, and what does that say about real ownership?',
+            'Pick one overnight event from the log: what decision set it up, and what would have prevented it a day earlier?',
+            'The rabbit week costs the most and its correct calls are all expensive. How should that change the advice you give a friend who wants one?'
+          ] }
       ];
       var evidenceCounts = {};
       var latestEvidence = {};
       var latestCriterionEvidence = {};
+      var latestSelfReview = {};
       var activityHistory = {};
       evidenceRecords.forEach(function(record) {
         if (!record || !record.moduleId) return;
+        if (record.kind === 'self-review') {
+          var currentReview = latestSelfReview[record.moduleId];
+          if (!currentReview || String(record.recordedAt || '') >= String(currentReview.recordedAt || '')) {
+            latestSelfReview[record.moduleId] = record;
+          }
+        }
         if (record.kind === 'activity') {
           evidenceCounts[record.moduleId] = (evidenceCounts[record.moduleId] || 0) + 1;
           if (!activityHistory[record.moduleId]) activityHistory[record.moduleId] = [];
@@ -10891,8 +11750,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             }
           }
         }
+        // The card shows the most informative record: an activity result
+        // outranks a later self-review (for the care week, the closing
+        // reflection lands after the week's result and must not hide it).
         var currentLatest = latestEvidence[record.moduleId];
-        if (!currentLatest || String(record.recordedAt || '') >= String(currentLatest.recordedAt || '')) {
+        var outranked = currentLatest && currentLatest.kind === 'activity' && record.kind !== 'activity';
+        var outranks = currentLatest && currentLatest.kind !== 'activity' && record.kind === 'activity';
+        if (!currentLatest || outranks ||
+            (!outranked && String(record.recordedAt || '') >= String(currentLatest.recordedAt || ''))) {
           latestEvidence[record.moduleId] = record;
         }
       });
@@ -10998,6 +11863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function evidenceStatus(record, criterionRecord) {
         var details = record.details || {};
         if (record.legacy || record.kind === 'legacy-completion') return 'Earlier completion — criterion result unavailable';
+        if (record.kind === 'self-review' && record.moduleId === 'careSim') return 'Reflection recorded — the text is in the learner’s project, not in evidence';
         if (record.kind === 'self-review') return 'Learner reviewed — no activity criterion recorded';
         if (details.reviewStatus === 'teacher-review') return 'Evidence collected — teacher review needed';
         if (record.moduleId === 'decoderMastery' && details.coverageComplete === true) {
@@ -11027,7 +11893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function evidenceOutcome(record) {
         var x = record.details || {};
         if (record.legacy || record.kind === 'legacy-completion') return 'Completed in an earlier project; no activity score was saved';
-        if (record.moduleId === 'training' && x.behaviorPct != null) return 'Behavior ' + x.behaviorPct + '% · Trust ' + x.trustPct + '% · ' + x.rounds + ' rounds';
+        if (record.moduleId === 'training' && x.behaviorPct != null) return 'Behavior ' + x.behaviorPct + '% · Trust ' + x.trustPct + '% · ' + x.rounds + ' rounds' + (x.setting ? ' · ' + (x.setting === 'park' ? 'at the park' : 'at home') : '');
         if ((record.moduleId === 'nutrition' || record.moduleId === 'lifespan') && x.score != null) {
           return x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +
             (x.needsPractice != null ? ' · ' + x.needsPractice + ' case' + (x.needsPractice === 1 ? '' : 's') + ' to revisit' : '');
@@ -11054,11 +11920,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           return aiOutcome;
         }
         if (record.moduleId === 'careSim' && x.physical != null) {
-          var careOutcome = (x.species || 'Pet') + ' · Physical ' + x.physical + '% · Mental ' + x.mental + '% · Social ' + x.social + '% · Environmental ' + x.environmental + '% · Weakest: ' + x.weakestDomain + ' ' + x.weakestPct + '%';
+          var careOutcome = (x.species || 'Pet') + (x.week === 2 ? ' (week 2)' : '') + ' · Physical ' + x.physical + '% · Mental ' + x.mental + '% · Social ' + x.social + '% · Environmental ' + x.environmental + '% · Weakest: ' + x.weakestDomain + ' ' + x.weakestPct + '%';
           if (typeof x.averagePct === 'number') careOutcome += ' · Average ' + x.averagePct + '%';
           if (typeof x.overnightEvents === 'number') careOutcome += ' · Overnight events ' + x.overnightEvents;
           if (x.moneyLeft != null && typeof x.stayedInBudget === 'boolean') {
-            careOutcome += ' · Budget ' + (x.stayedInBudget ? 'sustainable' : 'overdrawn') + ' ($' + x.moneyLeft + ' left)';
+            // Inline sign handling: this helper is lifted into a VM by the evidence tests, so no module-scope calls.
+            careOutcome += ' · Budget ' + (x.stayedInBudget ? 'sustainable' : 'overdrawn') + ' (' + (x.moneyLeft < 0 ? '−$' + Math.abs(x.moneyLeft) : '$' + x.moneyLeft) + ' left)';
             if (typeof x.avoidedNegativeBalance === 'boolean') {
               careOutcome += ' · Balance ' + (x.avoidedNegativeBalance ? 'never negative' : 'went negative');
             }
@@ -11075,6 +11942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           return careOutcome;
         }
         if (record.moduleId === 'sensory' && x.perspectives != null) return x.perspectives + ' visual perspectives compared';
+        if (record.kind === 'self-review' && record.moduleId === 'careSim') return 'One thing to do differently next week, in the learner’s own words';
         return record.kind === 'self-review'
           ? 'Module reviewed; no scored activity was recorded'
           : 'Saved activity metadata';
@@ -11195,7 +12063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   var priorCriterion = record.moduleId === 'bodyLang' && criterionRecord && criterionRecord.id !== record.id
                     ? criterionRecord.details
                     : null;
-                  return h('article', { key: record.id || record.moduleId, role: 'listitem',
+                  return h('div', { key: record.id || record.moduleId, role: 'listitem',
                     style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + (targetMet ? T.ok : needsReview ? T.accent : T.warm) } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'baseline' } },
                       h('strong', { style: { color: T.text, fontSize: 12 } }, record.moduleLabel || record.moduleId),
@@ -11209,7 +12077,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     priorCriterion && priorCriterion.score != null && h('div', { style: { marginTop: 4, color: T.dim, fontSize: 9, lineHeight: 1.45 } },
                       'Random target record: ' + priorCriterion.score + ' / ' + priorCriterion.total + ' (' + priorCriterion.scorePct + '%).'),
                     record.recordedAt && h('time', { dateTime: record.recordedAt, style: { display: 'block', marginTop: 5, color: T.dim, fontSize: 9 } },
-                      new Date(record.recordedAt).toLocaleString())
+                      new Date(record.recordedAt).toLocaleString()),
+                    (function() {
+                      var review = latestSelfReview[record.moduleId];
+                      if (!review || record.kind !== 'activity' || String(review.recordedAt || '') < String(record.recordedAt || '')) return null;
+                      return h('div', { className: 'petslab-evidence-review-note', style: { marginTop: 5, paddingTop: 5, borderTop: '1px dashed ' + T.border, color: T.accentHi, fontSize: 10, lineHeight: 1.45 } },
+                        '\u270D\uFE0F ' + (record.moduleId === 'careSim' ? 'Reflection recorded after this week' : 'Reviewed by learner afterwards') +
+                        (review.recordedAt ? ' (' + new Date(review.recordedAt).toLocaleDateString() + ')' : '') +
+                        (record.moduleId === 'careSim' ? '. The text is in the learner\u2019s project.' : '.'));
+                    })()
                   );
                 })),
               allEvidenceRows.length > 10 && h('button', {
@@ -11235,12 +12111,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { id: 'pets-targets-heading', style: { margin: '0 0 9px', fontSize: 15, color: T.text } }, '🎯 Learning targets and success evidence'),
           h('div', { role: 'list', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(270px, 100%), 1fr))', gap: 8 } },
             learningTargets.map(function(item) {
-              return h('article', { key: item.module, role: 'listitem',
+              // A div, not an article: role="listitem" is not permitted on
+              // <article> (axe aria-allowed-role), and the parent is role="list".
+              return h('div', { key: item.module, role: 'listitem',
                 style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
                 h('strong', { style: { color: T.accentHi, fontSize: 12 } }, item.module),
                 h('p', { style: { margin: '5px 0 3px', color: T.text, fontSize: 11, lineHeight: 1.5 } }, item.target),
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 10, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.text } }, 'Success evidence: '), item.success));
+                  h('strong', { style: { color: T.text } }, 'Success evidence: '), item.success),
+                // Simulators carry a rules summary and debrief prompts so a
+                // teacher can explain a result without replaying the week.
+                item.mechanics && h('details', { className: 'petslab-teacher-mechanics', style: { marginTop: 6 } },
+                  h('summary', { style: { fontSize: 10, fontWeight: 700, color: T.accentHi, cursor: 'pointer' } }, 'How the simulation works'),
+                  h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: T.muted, fontSize: 10, lineHeight: 1.5 } },
+                    item.mechanics.map(function(line, li) { return h('li', { key: li }, line); }))),
+                item.discuss && h('details', { className: 'petslab-teacher-discuss', style: { marginTop: 4 } },
+                  h('summary', { style: { fontSize: 10, fontWeight: 700, color: T.accentHi, cursor: 'pointer' } }, 'Debrief prompts'),
+                  h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: T.muted, fontSize: 10, lineHeight: 1.5 } },
+                    item.discuss.map(function(line, li) { return h('li', { key: li }, line); }))));
             }))),
         h('div', { role: 'region', 'aria-label': __alloT('stem.pets.a11y_scrollable_potential_ngss_connections_table', 'Scrollable potential NGSS connections table'), tabIndex: 0, 'data-pets-focusable': true, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
           h('h3', { style: { margin: '0 0 5px', fontSize: 15, color: T.text } }, '📐 Potential NGSS connections'),
@@ -13505,7 +14393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
     function renderCareTimeline(careSim, allDays) {
       if (!careSim || !allDays) return null;
-      var events = CARE_SCENE_EVENTS[careSim.species] || [];
+      var events = allDays.map(function(day) { return day.scene || { icon: '\u2022', label: day.label, detail: '', kind: 'routine' }; });
       var domainMeta = [
         { key: 'phys', label: 'P', color: T.ok },
         { key: 'ment', label: 'M', color: '#7dd3fc' },
@@ -13540,7 +14428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             var routineDone = ['pet', 'feed', 'water', 'play', 'clean'].filter(function(kind) { return routineThatDay[kind]; }).length;
             var nightEvents = (Array.isArray(careSim.consequenceLog) ? careSim.consequenceLog : []).filter(function(entry) { return entry && entry.day === i; });
             var nightTable = CARE_SIM_CONSEQUENCES[careSim.species] || {};
-            var nightLabel = nightEvents.map(function(entry) { return (nightTable[entry.domain] || {}).label || entry.domain; }).join('; ');
+            var nightLabel = nightEvents.map(function(entry) { var evd = describeConsequence(careSim.species, entry.domain, entry.day); return evd ? evd.label : entry.domain; }).join('; ');
             return h('article', {
               key: i,
               className: 'petslab-care-timeline-day' + (isNow ? ' is-now' : '') + (isPast ? ' is-past' : ''),
@@ -13647,6 +14535,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       };
     }
 
+    // Hoisted out of renderCareSim: renderCareTimeline (a sibling) reads it too.
+    function describeAftermath(after) {
+      if (!after) return null;
+      var parts = [];
+      if (after.money) parts.push((after.money < 0 ? '−$' : '+$') + Math.abs(after.money));
+      if (after.en) parts.push((after.en < 0 ? '−' : '+') + Math.abs(after.en) + ' energy');
+      return parts.length ? parts.join(' · ') : null;
+    }
+    // `night` picks the wording: the same low meter on consecutive nights
+    // alternates between the two authored variants, so a bad week reads as
+    // a week rather than one sentence repeated. Costs are identical.
+    function describeConsequence(species, dom, night) {
+      var ev = (CARE_SIM_CONSEQUENCES[species] || {})[dom];
+      if (!ev) return null;
+      var costs = [];
+      if (ev.money) costs.push((ev.money < 0 ? '−$' : '+$') + Math.abs(ev.money));
+      if (ev.en) costs.push((ev.en < 0 ? '−' : '+') + Math.abs(ev.en) + ' energy');
+      if (ev.env) costs.push((ev.env < 0 ? '−' : '+') + Math.abs(ev.env) + ' environmental');
+      var useAlt = !!(ev.alt && Number.isInteger(night) && night % 2 === 1);
+      return { icon: ev.icon, label: useAlt ? ev.alt.label : ev.label, note: useAlt ? ev.alt.note : ev.note, cost: costs.join(', ') };
+    }
     function renderPetScene(species, careSim, dayIdx, totalDays, hasChosen, onInteract) {
       // Mood follows the WEAKEST pet-welfare domain. The 4 meters drive
       // posture; the OWNER meters (energy/money) don't change the
@@ -13654,7 +14563,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // do next. Strong domains cannot visually hide one critical gap.
       var careOutcome = evaluateCareWelfare(careSim);
       var mood = careOutcome.mood;
-      var sceneEvent = ((CARE_SCENE_EVENTS[species] || [])[dayIdx]) || { icon: '\u2022', label: 'Daily care', detail: 'Notice what your pet needs', kind: 'routine' };
+      var sceneDay = petsCareDays(species, careSim.week)[dayIdx];
+      var sceneEvent = (sceneDay && sceneDay.scene) || { icon: '\u2022', label: 'Daily care', detail: 'Notice what your pet needs', kind: 'routine' };
 
       // Time-of-day across the week. Day 0 = early dawn; final day
       // = dusk. Gives a felt sense of progress through the week.
@@ -14353,7 +15263,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     function normalizeCareSimState(raw) {
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
       var species = String(raw.species || '');
-      var days = CARE_SIM_DAYS[species];
+      var week = Number(raw.week) === 2 && CARE_SIM_WEEK2[species] ? 2 : 1;
+      var days = week === 2 ? CARE_SIM_WEEK2[species] : CARE_SIM_DAYS[species];
       if (!Array.isArray(days) || !days.length) return null;
       var speciesBudget = CARE_SIM_START_MONEY[species] != null ? CARE_SIM_START_MONEY[species] : 500;
       function numberOr(value, fallback) {
@@ -14457,6 +15368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       });
       return {
         species: species,
+        week: week,
         day: day,
         choices: safeChoices,
         phys: meter(raw.phys, 50),
@@ -14483,10 +15395,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
     function renderCareSim() {
       var careSim = careSimState;
-      function startSim(species) {
+      function startSim(species, week) {
         var startMoney = CARE_SIM_START_MONEY[species] != null ? CARE_SIM_START_MONEY[species] : 500;
+        var startWeek = week === 2 && CARE_SIM_WEEK2[species] ? 2 : 1;
         upd('careSim', {
-          species: species, day: 0, choices: [],
+          species: species, week: startWeek, day: 0, choices: [],
           phys: 50, ment: 50, soc: 50, env: 50,
           en: 100, money: startMoney, startMoney: startMoney,
           lowMoney: false, tiredCare: 0, done: false
@@ -14495,7 +15408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function chooseAction(choiceId) {
         if (!careSim || careSim.done) return;
-        var dayObj = CARE_SIM_DAYS[careSim.species][careSim.day];
+        var dayObj = petsCareDays(careSim.species, careSim.week)[careSim.day];
         var choice = null;
         for (var i = 0; i < dayObj.choices.length; i++) if (dayObj.choices[i].id === choiceId) { choice = dayObj.choices[i]; break; }
         if (!choice) return;
@@ -14525,14 +15438,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var upkeep = overnightUpkeep(careSim);
         if (typeof petsAnnounce === 'function') {
           var eventText = upkeep.overnight.events.map(function(dom) {
-            var ev = describeConsequence(careSim.species, dom);
+            var ev = describeConsequence(careSim.species, dom, careSim.day);
             return ev ? ' ' + ev.label + ' (' + ev.cost + ').' : '';
           }).join('');
           petsAnnounce((upkeep.overnight.skipped.length
             ? 'Overnight: ' + upkeep.overnight.skipped.map(careKindLabel).join(', ') + ' skipped, ' + describeCareDeltas(upkeep.overnight.deltas) + '.'
             : 'Overnight: every routine task was done, no welfare lost.') + eventText);
         }
-        if (careSim.day < CARE_SIM_DAYS[careSim.species].length - 1) {
+        if (careSim.day < petsCareDays(careSim.species, careSim.week).length - 1) {
           // Overnight rest. Energy is a renewable resource, not a one-way
           // drain — a week of full care stays sustainable, but stacking
           // energy-expensive days on top of full care still wears you down.
@@ -14555,6 +15468,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var finalWelfare = evaluateCareWelfare(c);
           var earned = (finalWelfare.welfareTarget && finalWelfare.sustainable);
           if (earned) awardBadge('pets_caregiver', 'Caring Pet-Owner (week complete)');
+          // The second week is the harder one (adolescence, a second cat, a
+          // broken bond); meeting its target earns its own badge.
+          if (earned && c.week === 2) awardBadge('pets_seasoned', 'Seasoned Owner (week 2 target met)');
           completeModule('careSim', 'Finished the seven-day pet-care simulation', {
             species: c.species,
             days: 7,
@@ -14564,6 +15480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             environmental: Math.round(c.env),
             weakestDomain: finalWelfare.weakest.label,
             weakestPct: Math.round(finalWelfare.minimum),
+            week: c.week === 2 ? 2 : 1,
             averagePct: Math.round(finalWelfare.average),
             overnightEvents: (c.consequenceLog || []).length,
             moneyLeft: Math.round(c.money),
@@ -14654,22 +15571,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         next.overnight = { skipped: skipped, deltas: deltas, events: events };
         return next;
       }
-      function describeAftermath(after) {
-        if (!after) return null;
-        var parts = [];
-        if (after.money) parts.push((after.money < 0 ? '−$' : '+$') + Math.abs(after.money));
-        if (after.en) parts.push((after.en < 0 ? '−' : '+') + Math.abs(after.en) + ' energy');
-        return parts.length ? parts.join(' · ') : null;
-      }
-      function describeConsequence(species, dom) {
-        var ev = (CARE_SIM_CONSEQUENCES[species] || {})[dom];
-        if (!ev) return null;
-        var costs = [];
-        if (ev.money) costs.push((ev.money < 0 ? '−$' : '+$') + Math.abs(ev.money));
-        if (ev.en) costs.push((ev.en < 0 ? '−' : '+') + Math.abs(ev.en) + ' energy');
-        if (ev.env) costs.push((ev.env < 0 ? '−' : '+') + Math.abs(ev.env) + ' environmental');
-        return { icon: ev.icon, label: ev.label, note: ev.note, cost: costs.join(', ') };
-      }
       function petInteract(kind) {
         if (!careSim || careSim.done) return;
         var d0 = careSim.day;
@@ -14714,7 +15615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var targetOutcome = evaluateCareWelfare(targetState);
         var outlook = isFinal
           ? { reachable: true, reasons: [] }
-          : petsCareOutlook(targetState, CARE_SIM_DAYS[targetState.species] || [], INTERACT_EFFECTS, CARE_SIM_ENERGY_RECOVERY);
+          : petsCareOutlook(targetState, petsCareDays(targetState.species, targetState.week), INTERACT_EFFECTS, CARE_SIM_ENERGY_RECOVERY);
         var tiredCareCount = Math.max(0, Number(targetState.tiredCare) || 0);
         var rows = [
           {
@@ -14731,7 +15632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             label: 'Money never goes below $0',
             detail: targetOutcome.moneySustainable
               ? (isFinal ? 'Balance stayed nonnegative; ' : 'Protected so far; ') +
-                '$' + Math.round(Number(targetState.money) || 0) + ' left.'
+                petsMoney(targetState.money) + ' left.'
               : 'The balance went below $0 during this week.'
           },
           {
@@ -14834,7 +15735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 16 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, '🎮 Live a week as a pet owner'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.65 } },
-              'Pick a species and walk through 7 days of decisions. Real trade-offs: walks vs. plans, vet bills vs. budget, comfort vs. enrichment. Four welfare meters track how the pet is doing; your energy + money meters track how YOU are doing.'
+              'Pick a species and walk through 7 days of decisions. Real trade-offs: walks vs. plans, vet bills vs. budget, comfort vs. enrichment. Four welfare meters track how the pet is doing; your energy + money meters track how YOU are doing. Finish a week and a second, harder week with the same animal unlocks.'
             ),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.65 } },
               'Each day also has five routine tasks on the scene (feed, water, play, pet, clean). Each one done adds a little; each one skipped costs the animal a little overnight. Routine care keeps a good week good. It cannot make up for a bad decision. And when a welfare meter falls low, things happen overnight (a chewed cushion, an accident, a skipped breakfast) that cost you money and effort.'
@@ -14844,6 +15745,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ),
             learningModelNote('Simulation model', 'The scores and scenarios are simplified for comparing consequences. They are not a welfare diagnosis, budget forecast, or substitute for species-specific advice from a veterinarian or qualified caregiver.')
           ),
+          (function() {
+            var unlocked = Object.keys(CARE_SIM_WEEK2).filter(function(id) {
+              return (evidenceRecords || []).some(function(record) {
+                var x = record && record.details;
+                return record && record.moduleId === 'careSim' && record.kind === 'activity' && x && x.species === id && x.week !== 2;
+              });
+            });
+            if (!unlocked.length) return null;
+            return h('div', { className: 'petslab-care-week2-row', style: { padding: '10px 12px', borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.accentHi } }, 'Week 2 unlocked. '), 'Same animal, months on: the problems that get pets given up, and what a good owner does about them.'),
+              unlocked.map(function(id) {
+                var preview = (CARE_SIM_WEEK2[id] || []).map(function(day) { return (day.scene && day.scene.label) || day.label; }).join(' · ');
+                return h('button', { key: id, type: 'button', 'data-pets-focusable': true,
+                  className: 'petslab-care-week2-start',
+                  title: 'Seven days: ' + preview,
+                  'aria-describedby': 'petslab-care-week2-' + id + '-preview',
+                  onClick: function() { startSim(id, 2); },
+                  style: btn({ padding: '7px 12px', fontSize: 12 })
+                },
+                  '▶ ' + id.charAt(0).toUpperCase() + id.slice(1) + ', week 2: ' + (CARE_SIM_WEEK2_TITLES[id] || ''),
+                  h('span', { id: 'petslab-care-week2-' + id + '-preview', style: PETS_SR_ONLY }, 'Seven days: ' + preview + '.'));
+              }));
+          })(),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
             [
               { id: 'dog',    icon: '🐕', label: 'Dog (high-energy young)', sub: 'Daily walks, training, social needs, emergency-prone' },
@@ -14861,19 +15786,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               var spHistoryText = spHistory.length
                 ? spHistory.length + (spHistory.length === 1 ? ' attempt' : ' attempts') + ' · best average ' + spBest + '%' + (spMet ? ' · target met' : ' · target not met yet')
                 : 'Not tried yet';
+              var spDays = (CARE_SIM_DAYS[sp.id] || []).map(function(day) { return (day.scene && day.scene.label) || day.label; }).join(', ');
+              // Name = the species; description = everything else. One long
+              // aria-label made every card a paragraph before its name.
+              var spNameId = 'petslab-care-species-' + sp.id + '-name';
+              var spDescId = 'petslab-care-species-' + sp.id + '-desc';
               return h('button', { key: sp.id, 'data-pets-focusable': true,
                 onClick: function() { startSim(sp.id); },
-                'aria-label': sp.label + '. Starting budget $' + spMoney + '. ' + sp.sub + '. ' + spHistoryText + '.',
+                'aria-labelledby': spNameId,
+                'aria-describedby': spDescId,
                 style: btn({ padding: 16, fontSize: 14, textAlign: 'left', minHeight: 100 })
               },
-                h('div', { style: { fontSize: 28, marginBottom: 4 } }, sp.icon),
-                h('div', { style: { fontWeight: 800, color: T.accentHi, fontSize: 15, marginBottom: 4 } }, sp.label),
+                h('div', { 'aria-hidden': 'true', style: { fontSize: 28, marginBottom: 4 } }, sp.icon),
+                h('div', { id: spNameId, style: { fontWeight: 800, color: T.accentHi, fontSize: 15, marginBottom: 4 } }, sp.label),
+                h('div', { id: spDescId },
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sp.sub),
+                h('div', { className: 'petslab-care-species-days', style: { fontSize: 10, color: T.dim, lineHeight: 1.45, marginTop: 5 } },
+                  'Seven days: ' + spDays.split(', ').join(' · ')),
                 h('div', { style: { fontSize: 11, color: T.dim, marginTop: 6, fontFamily: 'monospace' } },
                   'Week budget: $' + spMoney),
                 h('div', { className: 'petslab-care-species-history', 'data-pets-care-attempts': String(spHistory.length),
                   style: { fontSize: 11, marginTop: 4, color: spMet ? T.ok : spHistory.length ? T.accentHi : T.dim } },
-                  (spMet ? '\u2713 ' : '') + spHistoryText)
+                  (spMet ? '\u2713 ' : '') + spHistoryText))
               );
             })
           ),
@@ -14881,7 +15815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         );
       }
       // Active sim — render meters + current day
-      var allDays = CARE_SIM_DAYS[careSim.species];
+      var allDays = petsCareDays(careSim.species, careSim.week);
       var dayObj = careSim.day < allDays.length ? allDays[careSim.day] : null;
       var thisChoice = (careSim.choices || [])[careSim.day];
       var hasChosen = thisChoice != null;
@@ -14916,7 +15850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           return CARE_SIM_ROUTINE_SKIP_COST[kind][outcome.weakest.key] && skippedNights[kind];
         });
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('📅 Pet-Care Week — Reflection'),
+          backBar('📅 Pet-Care Week' + (c.week === 2 ? ' 2' : '') + ' — Reflection'),
           renderPetScene(c.species, c, allDays.length - 1, allDays.length, false, null),
           h('div', { style: { height: 12 } }),
           h('div', {
@@ -14951,7 +15885,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               var attempts = (evidenceRecords || []).filter(function(record) {
                 var x = record && record.details;
                 return record && record.moduleId === 'careSim' && record.kind === 'activity' &&
-                  x && x.species === c.species && typeof x.averagePct === 'number' && typeof x.weakestPct === 'number';
+                  x && x.species === c.species && (x.week === 2 ? 2 : 1) === (c.week === 2 ? 2 : 1) &&
+                  typeof x.averagePct === 'number' && typeof x.weakestPct === 'number';
               });
               if (attempts.length < 2) return null;
               var first = attempts[0].details;
@@ -14964,9 +15899,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 12 }
               },
                 h('h4', { id: 'petslab-care-attempts-heading', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
-                  '📈 Your attempts with this species: ' + attempts.length),
+                  '📈 Your attempts with this species' + (c.week === 2 ? ', week 2' : '') + ': ' + attempts.length),
                 h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-                  'Average welfare went from ' + first.averagePct + '% on your first week to ' + last.averagePct + '% on this one' +
+                  'Average welfare went from ' + first.averagePct + '% on your first attempt to ' + last.averagePct + '% on this one' +
                   (trend > 0 ? ' (up ' + trend + ')' : trend < 0 ? ' (down ' + Math.abs(trend) + ')' : ' (no change)') + '.' +
                   (last.criterionMet && !first.criterionMet ? ' The badge came on a retry, which is how most owners learn too.' : '')),
                 h('ol', { style: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 } },
@@ -14975,12 +15910,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     var isThis = i === attempts.length - 1;
                     return h('li', { key: record.id || i, style: { fontSize: 12, lineHeight: 1.5, color: isThis ? T.text : T.muted, fontWeight: isThis ? 700 : 400 } },
                       (isThis ? 'This week' : 'Attempt ' + (i + 1)) + ': weakest ' + x.weakestDomain + ' ' + x.weakestPct +
-                      '% · average ' + x.averagePct + '% · $' + x.moneyLeft + ' left · energy ' + x.energyLeft + '% · ' +
+                      '% · average ' + x.averagePct + '% · ' + petsMoney(x.moneyLeft) + ' left · energy ' + x.energyLeft + '% · ' +
                       (x.criterionMet ? '✓ target met' : '○ not met'));
                   }))
               );
             })(),
-            earnedCareBadge && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } }, '🏅 Badge earned: Caring Pet-Owner'),
+            earnedCareBadge && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } },
+              c.week === 2 ? '🏅 Badge earned: Seasoned Owner (week 2)' : '🏅 Badge earned: Caring Pet-Owner'),
             c.lowMoney && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } }, '⚠ Money went negative this week. In real life this often forces hard choices — surrendering the pet, skipping vet care, or going into debt.'),
             (c.tiredCare > 0 || c.en <= 20) && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } },
               c.tiredCare > 0
@@ -15016,12 +15952,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
                 h('div', { style: { fontSize: 11, color: T.dim } }, '💰 Money left'),
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: c.money >= 100 ? T.ok : c.money >= 0 ? T.accentHi : T.danger, fontFamily: 'monospace' } }, '$' + Math.round(c.money)),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: c.money >= 100 ? T.ok : c.money >= 0 ? T.accentHi : T.danger, fontFamily: 'monospace' } }, petsMoney(c.money)),
                 h('div', { style: { fontSize: 10, color: T.dim } },
                   'spent $' + Math.round((c.startMoney != null ? c.startMoney : 500) - c.money) + ' of $' + (c.startMoney != null ? c.startMoney : 500))
               )
             )
           ),
+          // The student's own closing move: one thing they would do differently,
+          // and why. Persisted per species (so a retry shows it back), recorded
+          // once per finished week as self-review evidence (no text in evidence).
+          (function() {
+            var noteKey = c.species + (c.week === 2 ? '-w2' : '');
+            var noteText = careReflections[noteKey] || '';
+            var careRecords = (evidenceRecords || []).filter(function(record) { return record && record.moduleId === 'careSim'; });
+            var lastCareRecord = careRecords.length ? careRecords[careRecords.length - 1] : null;
+            var recordedThisWeek = !!(lastCareRecord && lastCareRecord.kind === 'self-review');
+            var priorAttempts = careRecords.filter(function(record) {
+              return record.kind === 'activity' && record.details && record.details.species === c.species &&
+                (record.details.week === 2 ? 2 : 1) === (c.week === 2 ? 2 : 1);
+            }).length;
+            var words = noteText.trim() ? noteText.trim().split(/\s+/).length : 0;
+            return h('div', { className: 'petslab-care-reflect-note', 'data-pets-care-note-recorded': recordedThisWeek ? 'true' : 'false',
+              style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (recordedThisWeek ? T.ok : T.border), marginBottom: 12 } },
+              h('h3', { style: { margin: '0 0 4px', fontSize: 14, color: T.accentHi } }, '✍️ One thing you would do differently next week, and why'),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                priorAttempts > 1 && noteText
+                  ? 'Your note from the last attempt is below. Did you do it? Revise it for next time.'
+                  : 'Name one decision or one routine, and what the animal would gain. This is the part most owners skip.'),
+              h('label', { htmlFor: 'petslab-care-reflect-note', style: { display: 'block', fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 4 } }, 'Your reflection'),
+              h('textarea', {
+                id: 'petslab-care-reflect-note', value: noteText, maxLength: 600, rows: 3,
+                'aria-describedby': 'petslab-care-reflect-count petslab-care-reflect-privacy',
+                onChange: function(e) {
+                  var text = String(e.target.value || '').slice(0, 600);
+                  upd('careReflections', function(cur) {
+                    var next = Object.assign({}, cur || {});
+                    if (text.trim()) next[noteKey] = text; else delete next[noteKey];
+                    return next;
+                  });
+                },
+                style: { width: '100%', boxSizing: 'border-box', padding: 8, borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 13, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical' }
+              }),
+              h('div', { id: 'petslab-care-reflect-count', style: { marginTop: 4, fontSize: 10, color: T.dim } }, noteText.length + ' / 600 characters'),
+              h('p', { id: 'petslab-care-reflect-privacy', role: 'note', style: { margin: '4px 0 8px', fontSize: 10, color: T.dim, lineHeight: 1.45 } },
+                'Your reflection saves with this project. Do not include names or identifying details.'),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+                h('button', {
+                  type: 'button', 'data-pets-focusable': true,
+                  disabled: recordedThisWeek || words === 0,
+                  'aria-disabled': recordedThisWeek || words === 0 ? 'true' : 'false',
+                  onClick: function() {
+                    if (recordedThisWeek || words === 0) return;
+                    recordEvidence('careSim', 'Reflected on the care week', { species: c.species }, 'self-review');
+                    petsAnnounce('Reflection recorded for teacher review.');
+                    addToast('✍️ Reflection recorded.');
+                  },
+                  style: btn({ padding: '8px 14px', fontSize: 12, opacity: recordedThisWeek || words === 0 ? 0.6 : 1 })
+                }, recordedThisWeek ? '✓ Reflection recorded' : 'Record this reflection for teacher review'),
+                h('span', { style: { fontSize: 11, color: T.dim } }, recordedThisWeek
+                  ? 'Your text stays here and can still be revised.'
+                  : (words === 0 ? 'Write a sentence or two first.' : words + (words === 1 ? ' word' : ' words')))
+              )
+            );
+          })(),
           // Overnight events: what low welfare actually caused this week.
           h('div', {
             className: 'petslab-care-events',
@@ -15035,7 +16028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   'Nothing went wrong overnight all week. A welfare meter has to fall below ' + CARE_SIM_CONSEQUENCE_BELOW + '% before the animal starts making its own decisions about your couch, your cords or your carpet.')
               : h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 } },
                   consequenceLog.map(function(entry, i) {
-                    var ev = describeConsequence(c.species, entry.domain);
+                    var ev = describeConsequence(c.species, entry.domain, entry.day);
                     if (!ev) return null;
                     return h('li', { key: i, style: { padding: '8px 10px', borderRadius: 8, background: T.cardAlt, fontSize: 12, lineHeight: 1.5 } },
                       h('strong', { style: { color: T.text } }, 'Night ' + (entry.day + 1) + ' · ' + ev.icon + ' ' + ev.label),
@@ -15112,9 +16105,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               'Try ' + untried.map(function(id) { return names[id] || id; }).join(' or ') + ' next: the same four welfare domains, but what each one needs, and what it costs, is different.');
           })(),
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            h('button', { 'data-pets-focusable': true, onClick: function() { startSim(c.species); },
+            h('button', { 'data-pets-focusable': true, onClick: function() { startSim(c.species, c.week); },
               style: btnPrimary({ padding: '10px 18px' })
-            }, '🔁 Retry this species'),
+            }, c.week === 2 ? '🔁 Retry week 2' : '🔁 Retry this species'),
+            c.week !== 2 && CARE_SIM_WEEK2[c.species] && h('button', { 'data-pets-focusable': true,
+              className: 'petslab-care-week2-continue',
+              onClick: function() { startSim(c.species, 2); },
+              style: btnPrimary({ padding: '10px 18px' })
+            }, '▶ Continue: week 2, ' + (CARE_SIM_WEEK2_TITLES[c.species] || 'the same animal, months on')),
+            c.week === 2 && h('button', { 'data-pets-focusable': true,
+              onClick: function() { startSim(c.species, 1); },
+              style: btn({ padding: '10px 18px' })
+            }, '◀ Back to week 1'),
             h('button', { 'data-pets-focusable': true, onClick: reset,
               style: btn({ padding: '10px 18px' })
             }, '🐾 Change species'),
@@ -15134,9 +16136,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var meters = h('div', { className: 'petslab-metric-grid', style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
         h('div', { style: { gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginBottom: 2 } },
           h('span', null, 'Day ' + (careSim.day + 1) + ' / ' + allDays.length),
-          h('span', null,
+          h('span', { style: PETS_SR_ONLY }, 'Your energy ' + Math.round(careSim.en) + ' percent. Money ' + petsMoney(careSim.money) + (careSim.money < 0 ? ', below zero.' : ' left.')),
+          h('span', { 'aria-hidden': 'true' },
             '⚡ ', Math.round(careSim.en), '%   ',
-            h('span', { style: { color: careSim.money >= 0 ? T.text : T.danger } }, '💰 $' + Math.round(careSim.money))
+            h('span', { style: { color: careSim.money >= 0 ? T.text : T.danger } }, '💰 ' + petsMoney(careSim.money))
           )
         ),
         // 4 welfare bars
@@ -15213,7 +16216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           ? '🌙 Overnight: ' + overnight.skipped.map(careKindLabel).join(', ') + ' skipped yesterday, so ' + describeCareDeltas(overnight.deltas) + '.'
           : '🌙 Overnight: every routine task done yesterday. No welfare lost.'),
         overnightEvents.map(function(dom, i) {
-          var ev = describeConsequence(careSim.species, dom);
+          var ev = describeConsequence(careSim.species, dom, careSim.day - 1);
           if (!ev) return null;
           return h('div', { key: i, className: 'petslab-care-overnight-event', style: { marginTop: 4, color: T.text } },
             h('strong', null, ev.icon + ' ' + ev.label),
@@ -15225,7 +16228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       ) : null;
 
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-        backBar('📅 Pet-Care Week — ' + careSim.species.charAt(0).toUpperCase() + careSim.species.slice(1)),
+        backBar('📅 Pet-Care Week' + (careSim.week === 2 ? ' 2' : '') + ' — ' + careSim.species.charAt(0).toUpperCase() + careSim.species.slice(1)),
         // Immersive habitat scene — animal posture, ambient items, and
         // status chips reflect the current welfare meters in real time.
         // The 6th arg wires up the interactive care zones (pet/feed/water/
@@ -15358,7 +16361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   ? skipped.map(careKindLabel).join(', ') + ' not done, so ' + describeCareDeltas(tonight.deltas) + '.'
                   : 'every routine task done.'),
               events.map(function(dom, i) {
-                var ev = describeConsequence(careSim.species, dom);
+                var ev = describeConsequence(careSim.species, dom, careSim.day);
                 if (!ev) return null;
                 return h('div', { key: i, style: { marginTop: 3 } },
                   h('strong', null, ev.icon + ' ' + ev.label), ' is coming (' + ev.cost + '): ' + (CARE_DOMAIN_WORDS[dom] || dom) + ' ends tonight below ' + CARE_SIM_CONSEQUENCE_BELOW + '%.');

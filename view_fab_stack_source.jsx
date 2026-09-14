@@ -276,7 +276,8 @@ function FabStack(props) {
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><Search size={18} /></span>
                       <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.define_mode')}</span>
                     </button>
-                    <button
+                    {/* Explain mode is all AI calls (see view_simplified); withheld when student AI is hidden. */}
+                    {!studentAiFeaturesHidden && <button
                       data-student-tool="true"
                       data-help-toggle="true"
                       onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); setIsCompareMode(false); }}
@@ -288,7 +289,7 @@ function FabStack(props) {
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><HelpCircle size={18} /></span>
                       <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.explain_mode')}</span>
-                    </button>
+                    </button>}
                   </div>
                 </section>
               )}

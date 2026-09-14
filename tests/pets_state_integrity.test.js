@@ -104,9 +104,11 @@ describe('Pets restored-state guards', () => {
     }, true)));
 
     expect(completed).toEqual({
+      // dogs carries the prediction check, so an unauthored label is
+      // scrubbed to the generic activity label, not to self-review.
       dogs: {
         completed: '2026-08-26T12:00:00.000Z',
-        reason: 'Reviewed by learner',
+        reason: 'Activity completed',
       },
       training: {
         completed: '2026-08-26T12:01:00.000Z',
@@ -197,6 +199,7 @@ describe('Pets restored-state guards', () => {
       social: 50,
       vet: 50,
       training: 50,
+      hours: 14,
       species: 'dog',
       hypothesis: '',
       stuckRevealed: false,
@@ -204,6 +207,19 @@ describe('Pets restored-state guards', () => {
       explanation: '',
       log: [],
     });
+    // The caregiver-hours budget is bounded, and a logged time picture is
+    // kept only when both halves are numbers (older entries have none).
+    expect(normalize({ hours: 'x' }).hours).toBe(14);
+    expect(normalize({ hours: 999 }).hours).toBe(40);
+    expect(normalize({ hours: -3 }).hours).toBe(4);
+    expect(normalize({ hours: 22.4 }).hours).toBe(22);
+    const timed = normalize({ log: [
+      { t: '09:00:00', sp: 'dog', gap: '12.0', state: 'Small model gaps', worst: 'Exercise', provided: 40, need: 60, hours: 15.44, budget: 14 },
+      { t: '09:00:01', sp: 'dog', gap: '12.0', state: 'Small model gaps', worst: 'Exercise', provided: 40, need: 60, hours: 'x', budget: 14 },
+    ] }).log;
+    expect(timed[0]).toMatchObject({ hours: '15.4', budget: 14 });
+    expect(timed[1]).not.toHaveProperty('hours');
+    expect(timed[1]).not.toHaveProperty('budget');
     expect(PETS).toContain('var view = normalizePetsView(d.view)');
     expect(PETS).toContain("addIfChanged('view', d.view, view)");
     expect(PETS).toContain('var careTradeoffState = normalizeCareTradeoffState(d.careTradeoff)');
@@ -260,6 +276,10 @@ describe('Pets restored-state guards', () => {
       idx: 3, choices: [], prob: 0.5, trust: 0.5,
       log: Array.from({ length: 30 }, (_, index) => ({ rd: index + 1 })),
     }).log).toHaveLength(10);
+    // The session setting is kept, and anything unknown becomes the kitchen.
+    expect(api.normalizeTrainerState({ idx: 0, choices: [], prob: 0.2, trust: 1, bank: 'park' }).bank).toBe('park');
+    expect(api.normalizeTrainerState({ idx: 0, choices: [], prob: 0.2, trust: 1, bank: 'moon' }).bank).toBe('home');
+    expect(api.normalizeTrainerState({ idx: 0, choices: [], prob: 0.2, trust: 1 }).bank).toBe('home');
 
     const pathwayCases = api.zoonosisPathwayCases();
     expect(pathwayCases).toHaveLength(4);
@@ -546,8 +566,13 @@ describe('Pets restored-state guards', () => {
         effects: { phys: i + 1, money: -(i + 1) },
       }],
     }));
+    const week2Days = authoredDays.map((day, i) => ({
+      label: `Week 2 day ${i + 1}`,
+      choices: [{ id: `w2-choice-${i}`, label: `Week 2 choice ${i + 1}`, note: `Week 2 note ${i + 1}`, effects: { ment: i + 1 } }],
+    }));
     const normalize = vm.runInNewContext(`(${source})`, {
       CARE_SIM_DAYS: { dog: authoredDays },
+      CARE_SIM_WEEK2: { dog: week2Days },
       CARE_SIM_START_MONEY: { dog: 500 },
       isFinite,
     });
@@ -629,6 +654,17 @@ describe('Pets restored-state guards', () => {
     expect(withEvents.consequenceLog).toEqual([{ day: 1, domain: 'ment' }, { day: 2, domain: 'env' }]);
     expect(withEvents.overnight).toEqual({ skipped: ['clean'], deltas: { env: -3 }, events: ['env'] });
     expect(normalize({ species: 'dog', day: 0, overnight: { skipped: [], deltas: {} } }).overnight).toBeNull();
+
+    // Week 2 resolves its own day table; any other week value is week 1, and a
+    // week-2 request for a species without a week 2 falls back to week 1.
+    expect(normalize({ species: 'dog', day: 0 }).week).toBe(1);
+    expect(normalize({ species: 'dog', day: 0, week: '2' }).week).toBe(2);
+    expect(normalize({ species: 'dog', day: 0, week: 3 }).week).toBe(1);
+    const secondWeek = normalize({ species: 'dog', day: 1, week: 2, choices: [{ choiceId: 'w2-choice-0' }] });
+    expect(secondWeek.week).toBe(2);
+    expect(secondWeek.choices[0]).toMatchObject({ dayLabel: 'Week 2 day 1', choiceLabel: 'Week 2 choice 1' });
+    // A week-1 choice id is not a week-2 choice: the coherent day resets.
+    expect(normalize({ species: 'dog', day: 1, week: 2, choices: [{ choiceId: 'choice-0' }] }).choices).toEqual([]);
   });
 
   it('rejects malformed Body Language attempts and recomputes restored scores', () => {

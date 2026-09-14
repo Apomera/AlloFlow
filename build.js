@@ -131,12 +131,12 @@ function publishStudentShell() {
 
     const publishedSw = path.join(STUDENT_SHELL_PUBLIC_DIR, 'sw.js');
     let sw = fs.readFileSync(publishedSw, 'utf8');
-    if (!sw.includes("const CACHE_NAME = 'alloflow-v") || !sw.includes("keys.filter(k => k !== CACHE_NAME)")) {
+    if (!sw.includes("const CACHE_NAME = 'alloflow-v") || !sw.includes("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)")) {
         throw new Error('Student shell service-worker cache anchors were not found.');
     }
     sw = sw
         .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
-        .replace("keys.filter(k => k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
+        .replace("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
     fs.writeFileSync(publishedSw, sw, 'utf8');
 
     let copiedFiles = 0;
