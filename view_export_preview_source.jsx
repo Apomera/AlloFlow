@@ -8218,7 +8218,7 @@ function ExportPreviewView(props) {
               <header className="builder-workspace-header bg-white border-b border-slate-200">
                 <div className="builder-document-heading">
                   <h2 id="document-builder-title" className="text-[11px] font-semibold text-slate-600">{isAdvancedReview ? 'Review Studio' : 'Document Builder'}</h2>
-                  <h3 id="builder-current-document-title" className="truncate text-sm font-bold text-slate-800" title={previewDocumentTitle}>{previewDocumentTitle}</h3>
+                  <h3 id="builder-current-document-title" className="truncate text-sm font-semibold text-slate-700" title={previewDocumentTitle}>{previewDocumentTitle}</h3>
                 </div>
                 <div className="builder-workspace-actions">
                   <button ref={mobileSettingsButtonRef} type="button" aria-controls="builder-settings-panel" aria-expanded={mobileSettingsOpen && !isFocusMode}

@@ -44760,11 +44760,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              The teacher-chosen exportTheme is the baseline (Light = no
              override). Print rule hides the toolbar on paper output. */
           .alloflow-reading-tools-shell { position: sticky; top: 0; z-index: 9999; font-family: system-ui, -apple-system, sans-serif; }
-          .alloflow-tools-toggle { display: none; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; background: rgba(255,255,255,0.97); color: #1e293b; border: 0; border-bottom: 1px solid #cbd5e1; font: 700 13px system-ui,-apple-system,sans-serif; cursor: pointer; }
+          .alloflow-tools-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 12px; background: rgba(255,255,255,0.97); color: #1e293b; border: 0; border-bottom: 1px solid #cbd5e1; font: 700 12px system-ui,-apple-system,sans-serif; cursor: pointer; }
           .alloflow-tools-toggle:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
           .alloflow-tools-toggle-icon { transition: transform 0.16s ease; }
           .alloflow-reading-tools-shell:not(.expanded) .alloflow-tools-toggle-icon { transform: rotate(-90deg); }
           .alloflow-tools-panel { display: block; }
+          /* The tray collapses at every width (2026-09-13); the choice is remembered per device. */
+          .alloflow-reading-tools-shell:not(.expanded) .alloflow-tools-panel { display: none; }
           .alloflow-reading-tools { background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
           .alloflow-reading-tools-group { display: inline-flex; gap: 0; align-items: stretch; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
           .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #556070; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
@@ -45675,20 +45677,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
         </script>
         <script>
-          // Reading Tools - compact mobile tray.
+          // Reading Tools - collapsible tray. Open by default on wide screens, closed on
+          // narrow ones; a reader's own toggle is remembered on this device.
           (function () {
+            var KEY = 'alloflow-reading-tools-open';
             var shell = document.querySelector('.alloflow-reading-tools-shell');
             var toggle = document.querySelector('.alloflow-tools-toggle');
             if (shell && toggle) {
-              function setExpanded(v) {
+              function setExpanded(v, remember) {
                 shell.classList.toggle('expanded', !!v);
                 toggle.setAttribute('aria-expanded', v ? 'true' : 'false');
+                if (remember) { try { localStorage.setItem(KEY, v ? '1' : '0'); } catch (e) {} }
               }
-              try {
-                if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) setExpanded(false);
-                else setExpanded(true);
-              } catch (e) { setExpanded(true); }
-              toggle.addEventListener('click', function () { setExpanded(!shell.classList.contains('expanded')); });
+              var saved = null;
+              try { saved = localStorage.getItem(KEY); } catch (e) {}
+              if (saved === '1' || saved === '0') setExpanded(saved === '1', false);
+              else {
+                try {
+                  if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) setExpanded(false, false);
+                  else setExpanded(true, false);
+                } catch (e) { setExpanded(true, false); }
+              }
+              toggle.addEventListener('click', function () { setExpanded(!shell.classList.contains('expanded'), true); });
             }
           })();
         </script>

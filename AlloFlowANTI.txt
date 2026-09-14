@@ -34759,10 +34759,7 @@ const parseTaggedContent = (text) => {
       ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk, classId: stableClassId, assignmentId: offlineAssignmentId,
           ...(_mailboxSubmitTarget ? { mailboxSubmitTarget: _mailboxSubmitTarget } : {}) }
       : { ...exportConfig, ...(stableClassId ? { classId: stableClassId } : {}), assignmentId: offlineAssignmentId };
-    // Inject teacher's current annotations (stickers + notes + highlights)
-    // so they ride the exported HTML. Phase 4 of the annotation suite —
-    // the export becomes a self-contained surface that renders these
-    // annotations + lets the student add their own locally.
+    // Teacher annotations ride the export: the page renders them and lets students add their own.
     const activeResourceId = (generatedContent && generatedContent.id) || 'default';
     const annotationsByResource = { ...(stickersMapRef.current || {}) };
     if (activeResourceId) annotationsByResource[activeResourceId] = Array.isArray(stickers) ? stickers : [];
@@ -34790,29 +34787,54 @@ const parseTaggedContent = (text) => {
         a11yInspectMode,
     });
     warnLog('[updateExportPreview] ExportPreviewHelpers module not loaded yet — preview refresh deferred.');
-  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas]);
+  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas, _docPipeline]);
   _docPipelineLiveDepsRef.current.updateExportPreview = updateExportPreview;
 
+  // Cold-session first open: factory, writer and iframe land later; a closure captured before the pipeline instance existed writes ''.
+  const [builderPreviewReadyTick, setBuilderPreviewReadyTick] = useState(0);
+  const _builderPreviewTickCountRef = React.useRef(0);
+  const _writeBuilderPreviewPendingNote = (iframe) => {
+    try {
+      const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+      if (!doc || !doc.body || doc.body.hasAttribute('data-allo-preview-pending')) return;
+      if (doc.body.children.length) return;
+      const note = String(t('toasts.doc_pipeline_loading') || 'The document tools are still loading.').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+      doc.open();
+      doc.write('<!DOCTYPE html><html><body data-allo-preview-pending="1" style="margin:0;background:#f8fafc;color:#334155;font-family:system-ui,sans-serif"><p role="status" style="margin:2rem;font-size:14px">' + note + '</p></body></html>');
+      doc.close();
+    } catch (_) {}
+  };
   React.useEffect(() => {
     if (!showExportPreview) {
       _exportPreviewErrorRef.current = null; // reset so reopening can toast again
+      _builderPreviewTickCountRef.current = 0;
       return;
     }
     let cancelled = false;
     let attempts = 0;
+    const closureHasPipeline = !!_docPipeline;
     const tryRender = () => {
       if (cancelled) return;
-      const pipelineReady = !!(window.AlloModules && window.AlloModules.createDocPipeline);
-      if (pipelineReady || attempts > 20) {
+      const factoryReady = !!(window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function');
+      const writerReady = !!(window.AlloModules && window.AlloModules.ExportPreviewHelpers);
+      const iframe = exportPreviewRef.current;
+      if (factoryReady && writerReady && iframe) {
+        if (!closureHasPipeline && _builderPreviewTickCountRef.current < 3) {
+          _builderPreviewTickCountRef.current += 1;
+          setBuilderPreviewReadyTick((n) => n + 1);
+          return;
+        }
         updateExportPreview();
         return;
       }
+      if (attempts >= 430) { updateExportPreview(); return; }
       attempts++;
+      if (iframe && !factoryReady) _writeBuilderPreviewPendingNote(iframe);
       setTimeout(tryRender, 150);
     };
     tryRender();
     return () => { cancelled = true; };
-  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, studentResponses, selectedFont, updateExportPreview]);
+  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, studentResponses, selectedFont, updateExportPreview, builderPreviewReadyTick]);
 
   const setExportConfigAndRefresh = (updater) => {
     setExportConfig(updater);
@@ -34824,11 +34846,8 @@ const parseTaggedContent = (text) => {
       return _m.toggleA11yInspect({ setA11yInspectMode, exportPreviewRef });
     }
   }, []);
-  // ── Phase P: export handlers extracted to ExportHandlersModule ──
-  // generateExportAudio, executeExportFromPreview, handleExport, and
-  // downloadHtmlBlob now live in export_handlers_module.js. The shims
-  // below forward arguments + a fresh deps object every call so the
-  // module always sees current state (no stale closures).
+  // Export handlers live in export_handlers_module.js; each shim passes a fresh deps object per
+  // call so the module never sees a stale closure.
   const generateExportAudio = async (text, label) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.generateExportAudio === 'function') {
