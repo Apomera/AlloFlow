@@ -1073,6 +1073,14 @@ function createProviderTransport(config, options) {
 
 // ── Driver ──────────────────────────────────────────────────────────────────
 
+// Shared with remediation_epub_validation.cjs, which owns the cached `java -version` probe. If that
+// module is not packaged beside the driver (older staging layouts), fall back to the previous
+// behavior of trusting the spawn to fail on its own rather than refusing validation outright.
+function probeJavaRuntime(javaBin) {
+  try { return require('./remediation_epub_validation.cjs').javaRuntime(javaBin); }
+  catch (_) { return { present: true, version: null, error: null, unprobed: true }; }
+}
+
 function createDriver(options) {
   const o = options || {};
   const log = typeof o.log === 'function' ? o.log : defaultLog;
@@ -2321,6 +2329,18 @@ function createDriver(options) {
       // profile can exceed two minutes. Progress pulses keep the wider fail-safe observable.
       const timeoutMs = Math.max(1000, Math.min(300000, Number(o.timeoutMs) || 300000));
       const javaBin = process.env.ALLOFLOW_MCP_JAVA_BIN || 'java';
+      // A missing runtime used to surface as "veraPDF CLI returned no valid JSON (exit 1)" because the
+      // macOS java stub starts, prints to stderr (ignored) and exits. Probe first so the tool says
+      // what is actually wrong. Skipped when a test injects its own spawner: that fake never runs Java.
+      if (typeof (options && options.spawnProcess) !== 'function') {
+        const java = probeJavaRuntime(javaBin);
+        if (!java.present) {
+          throw new Error('Java runtime not found: `' + javaBin + ' -version` failed (' + (java.error || 'unknown error') + '). ' +
+            'PDF/UA validation runs the bundled veraPDF CLI through a local Java runtime (11 or newer). Install one ' +
+            '(for example Eclipse Temurin), or point ALLOFLOW_MCP_JAVA_BIN at a java executable, then retry. ' +
+            'Note that macOS ships a java stub on PATH even when no runtime is installed.');
+        }
+      }
       const args = ['-jar', jarPath, '--format', 'json', '--flavour', 'ua1', '--maxfailuresdisplayed', '25', '--loglevel', '1', immutablePath];
       const result = await new Promise((resolve, reject) => {
         const child = spawnProcess(javaBin, args, { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });

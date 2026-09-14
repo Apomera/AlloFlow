@@ -3572,6 +3572,10 @@ const OUTPUT_SCHEMAS = {
     keyVerified: S_BOOL,
     keyVerificationState: { type: 'string', enum: ['not-checked', 'valid', 'valid-but-quota-exhausted', 'invalid', 'unreachable'] },
     keyVerificationCheckedAt: { type: ['string', 'null'] },
+    connectorVersion: { type: 'string', description: 'Installed connector version (single-sourced from connector_version.cjs; the same number the MCPB manifest and serverInfo report).' },
+    javaAvailable: { type: 'boolean', description: 'A local `java -version` succeeded in this process. Required by pdf_validate_ua (veraPDF) and EPUBCheck; a PATH stub without a runtime reports false.' },
+    javaVersion: { type: ['string', 'null'] },
+    javaError: { type: ['string', 'null'] },
     playwrightAvailable: S_BOOL, chromiumInstalled: S_BOOL, setupHint: S_STR,
     vendorAssets: obj({ present: S_BOOL, hashVerified: S_BOOL, root: {}, files: S_NUM, error: S_STR }, ['present', 'hashVerified', 'files']),
     runtimeBuild: strictObj({ fingerprintSha256: S_STR, current: S_BOOL, checkedAt: S_STR, error: S_STR }, ['fingerprintSha256', 'current', 'checkedAt']),
@@ -3918,6 +3922,7 @@ const TOOL_HANDLERS = {
         message: 'Full keyless remediation is ready: use pdf_remediate_agent_start and answer its requests with the client model. Pass dir_path for a folder, effort: thorough for bounded improvement and validation, and narration: accessible to include local Kokoro/Piper audio. Local tools also cover structure, extraction and exports. ' + KEY_SETUP_HINT,
       };
     }
+    const javaRuntime = EpubValidation.javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN || null);
     return {
       modelBackend: describeModelBackend(),
       geminiKeyPresent: !!keyInfo.key,
@@ -3925,6 +3930,10 @@ const TOOL_HANDLERS = {
       keyVerified,
       keyVerificationState: keyVerification ? keyVerification.state : 'not-checked',
       keyVerificationCheckedAt: keyVerification ? keyVerification.checkedAt : null,
+      connectorVersion: SERVER_INFO.version,
+      javaAvailable: javaRuntime.present,
+      javaVersion: javaRuntime.version,
+      javaError: javaRuntime.error,
       keylessModeAvailable: true,
       transports: { stdio: true, http: Object.assign({}, HTTP_STATE) },
       keylessModeMeans: 'These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.',
