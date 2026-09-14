@@ -1,0 +1,49 @@
+{
+  "input": "/Users/hubby/AlloFlow/el_proposal_upload.pdf",
+  "files": {
+    "accessibleHtml": "/Users/hubby/AlloFlow/el_proposal_upload-accessible.html",
+    "report": "/Users/hubby/AlloFlow/el_proposal_upload-remediation-report.json",
+    "completionManifest": "/Users/hubby/AlloFlow/el_proposal_upload-remediation-completion.json"
+  },
+  "pdfUa": {
+    "skipped": "no tagged PDF (office input or tagged_pdf: false)"
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 1,
+    "cautionCount": 1
+  },
+  "beforeScore": 73,
+  "afterScore": 88,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "integrityCoverage": 100,
+  "integrityWarning": null,
+  "fidelityNotes": [],
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": false,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "active_content_scan_unavailable",
+  "runId": "run-mt0d4dhh-bouwn5",
+  "stats": {
+    "apiCalls": 10,
+    "visionCalls": 3,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; the tagged PDF only carries a PDF/UA declaration when it earned one."
+}
