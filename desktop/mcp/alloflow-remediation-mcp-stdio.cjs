@@ -158,6 +158,7 @@ function log(msg) { process.stderr.write('[alloflow-remediation-mcp] ' + msg + '
 
 let driver = null;
 let busyWith = null; // tool name of the in-flight run, or null
+let shuttingDown = false; // set by shutdown(): in-flight work is persisted as interrupted, not failed
 
 // ── Progress + cancellation for the SYNCHRONOUS tools ───────────────────────
 // A remediation blocks 5-30 minutes. Without these two the caller stares at a
@@ -1362,6 +1363,9 @@ function enqueueJob(job, runner) {
       else if (e && e.interrupted) {
         job.status = 'interrupted';
         job.error = e.message || String(e);
+      } else if (shuttingDown) {
+        job.status = 'interrupted';
+        job.error = 'The server process stopped while this job was in progress.';
       } else { job.status = 'failed'; job.error = (e && e.message) || String(e); }
     } finally {
       job.finishedAt = new Date().toISOString();
@@ -1632,8 +1636,11 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
       });
       rlog(rows.length > 1 ? 'batch finished: ' + run.progress.completed + ' completed, ' + run.progress.failed + ' failed, ' + rows.filter(row=>row.result?.reviewRequired).length + ' require review' : run.workflow.narrationOnly ? 'completed: narration outputs; verification ' + (summary.deliveryStatus||'review-required') : 'completed: verdict ' + (summary && summary.verdict && summary.verdict.level ? summary.verdict.level : 'unavailable'));
     } catch (e) {
-      run.status = run.abortController.signal.aborted ? 'cancelled' : 'failed';
-      run.error = (e && e.message) || String(e);
+      // A shutdown closes the browser under the run, which surfaces here as an ordinary error.
+      // Persist it as interrupted so the next process offers remediation_agent_resume instead of
+      // reporting a failure the document never had.
+      run.status = shuttingDown ? 'interrupted' : run.abortController.signal.aborted ? 'cancelled' : 'failed';
+      run.error = shuttingDown ? 'The server process stopped while this run was in progress; resume it with remediation_agent_resume.' : (e && e.message) || String(e);
       rlog(run.status + ': ' + run.error);
     } finally {
       failPending('Run finished');
@@ -5097,11 +5104,26 @@ const rl = readline.createInterface({ input: process.stdin, terminal: false });
 rl.on('line', (line) => {
   Promise.resolve().then(() => handleMessage(line)).catch((e) => log('unexpected error: ' + (e && e.message ? e.message : 'unknown')));
 });
-rl.on('close', async () => {
-  if (STDIO_KEEPALIVE) { log('stdin closed; HTTP transport keeps the server alive'); return; }
-  log('stdin closed; shutting down');
-  try { if (driver) await driver.close(); } catch (_) {}
+// Every MCP host stops a stdio server with SIGTERM (Claude Desktop on quit, Claude Code at session
+// end, the test harness with child.kill()). Node's default is to exit on that signal, but Playwright
+// registers its own SIGTERM/SIGHUP listener when it launches a browser: it closes the browser and
+// deliberately does not exit, so that a host program can keep running. Once Chromium has been
+// launched here, the default exit is therefore gone and the server lingers with its stdin still open,
+// which is how a remediation left mid-run produced an orphaned server that the next process could not
+// replace. Own the shutdown: close the driver within a bound, then exit. The on-disk job and agent-run
+// records are what a restarted server recovers from, so nothing else needs to be flushed.
+async function shutdown(reason) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log(reason + '; shutting down');
+  const bound = new Promise((resolve) => { const t = setTimeout(resolve, 5000); if (t.unref) t.unref(); });
+  try { if (driver) await Promise.race([driver.close(), bound]); } catch (_) {}
   process.exit(0);
+}
+for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) process.on(signal, () => { shutdown('received ' + signal); });
+rl.on('close', () => {
+  if (STDIO_KEEPALIVE) { log('stdin closed; HTTP transport keeps the server alive'); return; }
+  shutdown('stdin closed');
 });
 
 restoreJobs(); // before the first request, so a client can ask about work the last process was doing
