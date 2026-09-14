@@ -181,3 +181,25 @@ describe('retry and assembly paths cannot weaken the content gate', () => {
     expect(many.evidence[0].candidateRejections).toHaveLength(100);
   });
 });
+describe('skip links bind by destination id, not by the text of the landmark they point at', () => {
+  // A skip link targets <main>, whose textContent is the whole document. Binding it by content
+  // signature made every text-changing repair inside main — a table caption, an entity fix — look
+  // like a retargeted link and rejected the candidate as link-destination-changed at link:1.
+  const SKIP = '<a href="#main-content" class="sr-only">Skip to main content</a>';
+  const input = '<!DOCTYPE html><html lang="en"><body>' + SKIP + '<main id="main-content"><h1>Report</h1>' + TABLE + PARA + '</main></body></html>';
+  it('accepts a caption added inside the skip-link target', () => {
+    const h = harness(s => s);
+    const candidate = input.replace('<table>', '<table><caption>Scores by subtest</caption>');
+    const decision = h.acceptFixedHtmlDetailed(candidate, input, { mode: 'faithful', strictContent: true });
+    expect(decision.reason).not.toBe('link-destination-changed');
+    expect(decision.accepted).toBe(true);
+  });
+  it('still rejects a skip link retargeted at a different landmark', () => {
+    const h = harness(s => s);
+    const withNav = input.replace('<main id="main-content">', '<nav id="toc"><p>Contents</p></nav><main id="main-content">');
+    const candidate = withNav.replace('href="#main-content"', 'href="#toc"');
+    const decision = h.acceptFixedHtmlDetailed(candidate, withNav, { mode: 'faithful', strictContent: true });
+    expect(decision.accepted).toBe(false);
+    expect(decision.reason).toBe('link-destination-changed');
+  });
+});

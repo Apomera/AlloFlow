@@ -67,8 +67,17 @@ const renderJsonToHtml = (blocks) => {
           // scripting vector is neutralized (no attributes can pass the allow-list).
           const escapeTextField = (val) => {
             let _openAnchors = 0;
+            // The extraction prompt tells the model to write HTML in p/li text (<strong>, <em>,
+            // <a href>), and a model writing HTML writes entities: "Show &amp; Tell",
+            // "Fiorella &amp; Mayer". Escaping every "&" turned each of those into "&amp;amp;",
+            // which renders and is read aloud as the literal word "amp" — and the fix loop could
+            // not repair it, because dropping that visible "amp" token trips the strict
+            // reading-order gate. Leave a well-formed entity alone; escape every other "&".
+            // This keeps the XSS guard intact: "<" and ">" are still escaped unconditionally, and
+            // an entity can only ever decode to text, never to markup.
             const s = String(val == null ? '' : val)
-              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              .replace(/&(?!(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6});)/g, '&amp;')
+              .replace(/</g, '&lt;').replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
             const withInline = s
               .replace(/&lt;(\/?(?:strong|em|b|i|u|sub|sup|mark|code|s|small))&gt;/gi, '<$1>')

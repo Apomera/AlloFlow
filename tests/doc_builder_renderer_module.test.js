@@ -45,6 +45,28 @@ describe('dedicated document-block renderer module', () => {
     expect(blocks).toEqual(before);
   });
 
+  it('escapes stray ampersands once and leaves well-formed entities the model wrote alone', () => {
+    // The extraction prompt asks the model to write HTML inside p/li text, so a model writing
+    // "Show &amp; Tell" is doing exactly what it was told. Escaping that "&" again produced
+    // "&amp;amp;", which renders and is read aloud as the literal word "amp", and the fix loop
+    // could not repair it: dropping the visible "amp" token trips the strict reading-order gate.
+    const html = makeRenderer()([
+      { type: 'p', text: 'Fiorella &amp; Mayer (2013); Show &amp; Tell' },
+      { type: 'ul', items: ['AT&T and R&D', 'caf&eacute; &#233; &#xE9;'] },
+      { type: 'p', text: '&lt;script&gt;alert(1)&lt;/script&gt; <script>bad()</script> &lt;img onerror=x&gt;' },
+    ]);
+    expect(html).toContain('Fiorella &amp; Mayer (2013); Show &amp; Tell');
+    expect(html).not.toContain('&amp;amp;');
+    // A bare ampersand is still escaped exactly once.
+    expect(html).toContain('AT&amp;T and R&amp;D');
+    // Named, decimal and hex references survive as written.
+    expect(html).toContain('caf&eacute; &#233; &#xE9;');
+    // The XSS guard is unchanged: literal markup is escaped and pre-escaped markup stays inert.
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).toContain('&lt;img onerror=x&gt;');
+  });
+
   it('keeps the pipeline as an orchestrator and ships identical deployed bytes', () => {
     const pipeline = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
     const source = readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
