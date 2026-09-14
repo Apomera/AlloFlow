@@ -549,15 +549,23 @@ for (const theme of ['light', 'dark', 'contrast']) {
     const art = frame.locator('img');
     const slider = scene.getByRole('slider', { name: 'Scene image size', exact: true });
     const fit = scene.getByRole('button', { name: 'Full illustration', exact: true });
-    await expect(fit).toHaveAttribute('aria-pressed', 'false');
+    await expect(fit).toHaveAttribute('aria-expanded', 'false');
     await expect(art).toHaveCSS('object-fit', 'cover');
     await slider.focus(); await page.keyboard.press('ArrowRight');
     await expect(slider).toHaveValue('250');
     await expect(slider).toHaveAttribute('aria-valuetext', '250 px');
     await expect(art).toHaveCSS('height', '250px');
+    // 2026-09-14: "Full illustration" opens the artwork at viewport size in a dialog; the inline
+    // frame keeps its crop (the old object-fit swap at the same height barely changed anything).
     await fit.focus(); await page.keyboard.press('Space');
-    await expect(fit).toHaveAttribute('aria-pressed', 'true');
-    await expect(art).toHaveCSS('object-fit', 'contain');
+    await expect(fit).toHaveAttribute('aria-expanded', 'true');
+    const lightbox = page.getByRole('dialog', { name: 'Full illustration', exact: true });
+    await expect(lightbox).toBeVisible();
+    expect((await lightbox.locator('img').boundingBox())!.width).toBeGreaterThan((await art.boundingBox())!.width * 1.2);
+    await page.keyboard.press('Escape');
+    await expect(lightbox).toBeHidden();
+    await expect(fit).toBeFocused();
+    await expect(art).toHaveCSS('object-fit', 'cover');
     const color = theme === 'light' ? 'rgb(244, 247, 251)' : theme === 'dark' ? 'rgb(25, 38, 59)' : 'rgb(0, 0, 0)';
     await expect(page.locator('[data-adventure-canvas]')).toHaveCSS('background-color', color);
     await expect(scene.locator('[data-adventure-prose]')).toHaveCSS('font-size', '16px');
@@ -580,6 +588,9 @@ for (const theme of ['light', 'dark', 'contrast']) {
     await expect(slider).toHaveValue('150');
     await expect(art).toHaveCSS('height', '150px');
     await fit.click();
+    await expect(lightbox).toBeVisible();
+    await lightbox.getByRole('button').click(); // the close control
+    await expect(lightbox).toBeHidden();
     await expect(art).toHaveCSS('object-fit', 'cover');
     const narration = scene.getByRole('button', { name: /^Read aloud:/ }).first();
     await narration.focus(); await page.keyboard.press('Enter');
@@ -590,7 +601,8 @@ for (const theme of ['light', 'dark', 'contrast']) {
       sceneImagePreview: w.__adventureProps.adventureState.sceneImage, sceneImage: null, imagePolishStage: 'matching'
     } }); });
     await expect(frame.getByRole('status')).toContainText('Matching your cast');
-    await fit.click(); await expect(art).toHaveCSS('object-fit', 'contain');
+    // The preview image opens in the lightbox too; the polished image replaces it when it lands.
+    await fit.click(); await expect(lightbox).toBeVisible(); await page.keyboard.press('Escape'); await expect(lightbox).toBeHidden();
     await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { sceneImagePreview: null, isImageLoading: false } }));
     await expect(scene.getByRole('slider')).toHaveCount(0);
     await expect(fit).toHaveCount(0);
@@ -931,4 +943,65 @@ test('Reading view keeps a long Systems inventory within the phone viewport', as
   })).toBe(true);
   expect(await panel.evaluate((node: HTMLElement) => node.scrollWidth <= node.clientWidth && node.getBoundingClientRect().bottom <= innerHeight)).toBe(true);
   await page.screenshot({ path: info.outputPath('systems-reading-inventory.png'), fullPage: true });
+});
+
+// ── Appended by the 2026-09-14 session: immersive HUD pills + Full illustration lightbox ──
+test('immersive HUD meters hug their content instead of spanning the scene', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await load(page, 'light');
+  await mountActiveAdventure(page, 'light', { state: { isImmersiveMode: true } });
+  // The standard header's meters stay in the DOM (hidden) in immersive mode; measure only painted pills.
+  const widths = await page.evaluate(() => Array.from(document.querySelectorAll('[role="progressbar"]')).map(bar => Math.round((bar.parentElement as HTMLElement).getBoundingClientRect().width)).filter(w => w > 0));
+  const tops = await page.evaluate(() => Array.from(document.querySelectorAll('[role="progressbar"]')).filter(bar => (bar.parentElement as HTMLElement).getBoundingClientRect().width > 0).map(bar => Math.round((bar.parentElement as HTMLElement).getBoundingClientRect().top)));
+  await page.screenshot({ path: info.outputPath('immersive-hud-1280.png'), clip: { x: 0, y: 0, width: 1280, height: 420 } });
+  console.log('HUD pill widths', JSON.stringify(widths), 'tops', JSON.stringify(tops));
+  expect(widths.length).toBe(2);
+  for (const w of widths) expect(w).toBeLessThan(220);
+  expect(tops[0]).toBe(tops[1]); // one row
+});
+
+test('Full illustration opens the scene art at viewport size and returns focus', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await load(page, 'light');
+  await mountActiveAdventure(page, 'light', {});
+  const opener = page.getByRole('button', { name: 'Full illustration' });
+  await expect(opener).toBeVisible();
+  const inline = await page.locator('[data-adventure-illustration] img').boundingBox();
+  await opener.click();
+  const dialog = page.getByRole('dialog', { name: 'Full illustration' });
+  await expect(dialog).toBeVisible();
+  const big = await dialog.locator('img').boundingBox();
+  await page.screenshot({ path: info.outputPath('lightbox-1280.png') });
+  console.log('inline', JSON.stringify(inline), 'lightbox', JSON.stringify(big));
+  expect(big!.width).toBeGreaterThan(inline!.width * 1.3);
+  expect(String(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')))).toMatch(/close$/i); // the fixture's t() trims the 'common.' prefix
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  expect(await page.evaluate(() => (document.activeElement as HTMLElement)?.textContent)).toContain('Full illustration');
+  await axe(page, 'body');
+});
+
+test('a long decision debrief never pushes Make a Choice under the HUD and can be dismissed', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await load(page, 'light');
+  const changes = Array.from({ length: 6 }, (_, i) => ({ key: 'resource:' + i, label: 'Tracked value ' + (i + 1), before: i, after: i + 3 }));
+  const consequence = { version: 1, mode: 'choice', reasoning: 'strategic_success', explanation: 'By consulting with Indigenous leaders, you ensured that the treaty respects the rights and knowledge of those who know the land best. '.repeat(4), changes, concepts: ['Sovereignty', 'Treaty'], choice: 'Consult the Indigenous leaders first.', learningFeedback: { evidence: 'The treaty text names the river.', reasoning: 'Consultation precedes signing.' } };
+  await mountActiveAdventure(page, 'light', { state: { isImmersiveMode: true, history: [{ type: 'user', text: 'Consult the leaders' }, { type: 'feedback', text: 'Good call.', consequence }] } });
+  const button = page.getByRole('button', { name: 'Make a choice', exact: true });
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
+  const hud = await page.evaluate(() => Math.max(...Array.from(document.querySelectorAll('[role="progressbar"]')).map(bar => (bar.parentElement as HTMLElement).getBoundingClientRect().bottom)));
+  console.log('choice button top', box!.y, 'HUD meters bottom', hud);
+  await page.screenshot({ path: info.outputPath('debrief-immersive-720.png') });
+  expect(box!.y).toBeGreaterThan(hud + 8);
+  const dismiss = page.getByRole('button', { name: 'Dismiss decision debrief' });
+  await expect(dismiss).toBeVisible();
+  await dismiss.click();
+  await expect(page.locator('[data-adventure-immersive-debrief]')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Current scene', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('debrief-dismissed-720.png') });
+  await axe(page, 'body');
 });

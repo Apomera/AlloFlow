@@ -1772,6 +1772,37 @@ function AdventureFluencyPractice(props) {
 }
 function AdventureView(props) {
   const [showFullIllustration, setShowFullIllustration] = React.useState(false);
+  // "Full illustration" opens the scene art at viewport size (2026-09-14). It used to swap
+  // object-fit at the same fixed height, which barely changed anything on screen.
+  // Immersive reader: the decision debrief can be dismissed per feedback entry (index into
+  // history); a new debrief shows again.
+  const [dismissedDebriefIndex, setDismissedDebriefIndex] = React.useState(-1);
+  const fullIllustrationButtonRef = React.useRef(null);
+  const fullIllustrationCloseRef = React.useRef(null);
+  const closeFullIllustration = React.useCallback(() => {
+    setShowFullIllustration(false);
+    try {
+      fullIllustrationButtonRef.current?.focus({
+        preventScroll: true
+      });
+    } catch (_) {}
+  }, []);
+  React.useEffect(() => {
+    if (!showFullIllustration) return undefined;
+    try {
+      fullIllustrationCloseRef.current?.focus({
+        preventScroll: true
+      });
+    } catch (_) {}
+    const onKey = event => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        closeFullIllustration();
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [showFullIllustration, closeFullIllustration]);
   // State (object-bundle)
   var adventureState = props.adventureState;
   var setAdventureState = props.setAdventureState;
@@ -2729,14 +2760,42 @@ function AdventureView(props) {
     className: "text-[11px] font-medium tabular-nums"
   }, adventureImageSize, " px")), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-pressed": showFullIllustration,
-    onClick: () => setShowFullIllustration(value => !value),
+    ref: fullIllustrationButtonRef,
+    "aria-haspopup": "dialog",
+    "aria-expanded": showFullIllustration,
+    onClick: () => setShowFullIllustration(true),
     className: "min-h-11 min-w-0 px-3 py-2 rounded-xl border border-[var(--av-control)] text-[var(--av-ink)] bg-[var(--av-surface)] hover:bg-[var(--av-wash)] aria-pressed:bg-[var(--av-wash)] aria-pressed:border-[var(--av-accent)] aria-pressed:ring-1 aria-pressed:ring-[var(--av-accent)] text-xs font-semibold flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
   }, /*#__PURE__*/React.createElement(Maximize, {
     size: 14,
     "aria-hidden": "true",
     className: "shrink-0"
-  }), adventureSettingsText(t, 'full_illustration', 'Full illustration')))), adventureState.sceneImage || adventureState.sceneImagePreview ? /*#__PURE__*/React.createElement("div", {
+  }), adventureSettingsText(t, 'full_illustration', 'Full illustration')), showFullIllustration && /*#__PURE__*/React.createElement("div", {
+    "data-adventure-illustration-lightbox": true,
+    role: "presentation",
+    className: "fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-3 sm:p-6",
+    onMouseDown: event => {
+      if (event.target === event.currentTarget) closeFullIllustration();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": adventureSettingsText(t, 'full_illustration', 'Full illustration'),
+    className: "relative flex w-full items-center justify-center"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: adventureState.sceneImage || adventureState.sceneImagePreview,
+    alt: "",
+    decoding: "async",
+    className: "block h-auto w-[96vw] max-w-[1600px] max-h-[92vh] rounded-2xl object-contain shadow-2xl"
+  }), /*#__PURE__*/React.createElement("button", {
+    ref: fullIllustrationCloseRef,
+    type: "button",
+    onClick: closeFullIllustration,
+    "aria-label": t('common.close') || 'Close',
+    className: "absolute right-2 top-2 min-h-11 min-w-11 rounded-full border border-white/40 bg-black/70 p-2 text-white hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 18,
+    "aria-hidden": "true"
+  })))))), adventureState.sceneImage || adventureState.sceneImagePreview ? /*#__PURE__*/React.createElement("div", {
     "data-adventure-illustration": true,
     className: "mb-5 rounded-2xl overflow-hidden bg-[var(--av-wash)] border border-[var(--av-line)] shadow-inner relative group transition-all duration-300 motion-reduce:transition-none",
     style: {
@@ -2748,7 +2807,7 @@ function AdventureView(props) {
     alt: "",
     style: {
       height: `${adventureImageSize}px`,
-      objectFit: showFullIllustration ? 'contain' : 'cover',
+      objectFit: 'cover',
       filter: !adventureState.sceneImage && adventureState.sceneImagePreview ? 'blur(1.5px) saturate(0.9)' : 'none'
     },
     className: "block w-full animate-in fade-in duration-500 transition-[filter,opacity] motion-reduce:animate-none motion-reduce:transition-none",
@@ -2893,13 +2952,13 @@ function AdventureView(props) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute top-4 left-3 right-3 sm:left-4 sm:right-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-start z-40"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2 min-w-0"
+    className: "flex flex-wrap items-center gap-2 min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-black/60 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold w-fit max-w-full break-words shadow-sm"
   }, t('common.level_abbrev'), " ", adventureState.level), adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-amber-600/80 to-amber-800/80 backdrop-blur-md text-amber-100 border border-amber-400/50 px-3 py-1 rounded-full text-[11px] font-bold w-fit shadow-lg flex items-center gap-1.5 animate-pulse motion-reduce:animate-none"
   }, t('adventure.system_simulation')), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm",
+    className: "flex w-fit max-w-full items-center gap-2 bg-black/60 backdrop-blur-md p-1 pr-2.5 rounded-full border border-white/20 shadow-sm",
     title: adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
       value: energyValue
     }) : t('adventure.tooltips.energy', {
@@ -2929,7 +2988,7 @@ function AdventureView(props) {
       width: energyValue + '%'
     }
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm",
+    className: "flex w-fit max-w-full items-center gap-2 bg-black/60 backdrop-blur-md p-1 pr-2.5 rounded-full border border-white/20 shadow-sm",
     title: t('adventure.tooltips.xp', {
       current: adventureState.xp,
       next: adventureState.xpToNextLevel
@@ -3097,9 +3156,9 @@ function AdventureView(props) {
   }, item.icon || item.name.charAt(0))))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-[11px] text-white/50 py-2 italic"
   }, adventureInputMode === 'system' ? 'No policies enacted' : t('adventure.inventory_empty'))))))), !immersiveHideUI && /*#__PURE__*/React.createElement("div", {
-    className: "absolute bottom-0 left-0 right-0 px-2 sm:px-4 pb-2 z-30 flex flex-col justify-end"
+    className: "absolute top-36 sm:top-40 bottom-0 left-0 right-0 px-2 sm:px-4 pb-2 z-30 flex flex-col justify-end pointer-events-none"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-3 pt-6 sm:p-6 rounded-2xl shadow-lg relative min-h-[200px] flex flex-col justify-center"
+    className: "pointer-events-auto bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-3 pt-6 sm:p-6 rounded-2xl shadow-lg relative min-h-[200px] max-h-full overflow-hidden flex flex-col justify-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center shrink-0 mb-4"
   }, /*#__PURE__*/React.createElement("button", {
@@ -3120,7 +3179,7 @@ function AdventureView(props) {
     role: "region",
     "aria-label": adventureSettingsText(t, 'available_actions', 'Available actions'),
     style: adventureVisualTokens(theme, true),
-    className: "max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
+    className: "min-h-0 max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, adventureState.currentScene && /*#__PURE__*/React.createElement(AdventureDecisionProgress, {
     state: adventureState,
     t: t,
@@ -3208,7 +3267,7 @@ function AdventureView(props) {
     role: "region",
     "aria-label": adventureSettingsText(t, 'story_and_feedback', 'Story and feedback'),
     style: adventureVisualTokens(theme, true),
-    className: "max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
+    className: "min-h-0 max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, failedAdventureAction ? /*#__PURE__*/React.createElement(AdventureTurnRecovery, {
     t: t,
     theme: theme,
@@ -3222,8 +3281,21 @@ function AdventureView(props) {
     immersive: true
   }), (() => {
     const lastFeedback = adventureState.history.slice().reverse().find(h => h && h.type === 'feedback');
-    if (lastFeedback) {
+    const lastFeedbackIndex = lastFeedback ? adventureState.history.lastIndexOf(lastFeedback) : -1;
+    if (lastFeedback && dismissedDebriefIndex !== lastFeedbackIndex) {
       return /*#__PURE__*/React.createElement("div", {
+        "data-adventure-immersive-debrief": true,
+        className: "relative"
+      }, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: () => setDismissedDebriefIndex(lastFeedbackIndex),
+        "aria-label": adventureSettingsText(t, 'dismiss_debrief', 'Dismiss decision debrief'),
+        title: adventureSettingsText(t, 'dismiss_debrief', 'Dismiss decision debrief'),
+        className: "absolute right-2 top-2 z-10 min-h-11 min-w-11 rounded-full border border-white/30 bg-black/60 p-2 text-white hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+      }, /*#__PURE__*/React.createElement(X, {
+        size: 16,
+        "aria-hidden": "true"
+      })), /*#__PURE__*/React.createElement("div", {
         role: "status",
         "aria-live": "polite",
         "aria-atomic": "true",
@@ -3233,7 +3305,7 @@ function AdventureView(props) {
         t: t,
         theme: theme,
         immersive: true
-      }) : renderFormattedText(lastFeedback.text, false, true));
+      }) : renderFormattedText(lastFeedback.text, false, true)));
     }
     return null;
   })(), /*#__PURE__*/React.createElement("div", {

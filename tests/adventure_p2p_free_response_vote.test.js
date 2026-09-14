@@ -24,9 +24,13 @@ describe('existing Excalidraw companion integration', () => {
 
 describe('Adventure free-response class actions reuse P2P Live Polling', () => {
   it('launches a bounded free-text preset with an Adventure voting criterion and no session write', () => {
-    const start = shell.indexOf('const openAdventureActionVote = () =>');
-    const end = shell.indexOf('useEffect(() => {', start);
-    const block = shell.slice(start, end);
+    // The handler body moved to host_handlers_source.jsx (wave 3, 2026-09-13); the shell keeps a shim.
+    expect(shell).toContain('const openAdventureActionVote = (...__a) => _alloHostHandlers().openAdventureActionVote(...__a);');
+    const handlers = read('host_handlers_source.jsx');
+    const start = handlers.indexOf('const openAdventureActionVote = () =>');
+    expect(start).toBeGreaterThan(0);
+    const end = handlers.indexOf('\nconst ', start + 1);
+    const block = handlers.slice(start, end);
     expect(block).toContain("source: 'adventure-free-response'");
     expect(block).toContain("type: 'freetext'");
     expect(block).toContain("afterSubmitMode: 'wait'");
