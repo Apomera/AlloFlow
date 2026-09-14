@@ -946,18 +946,18 @@ function HeaderBar(props) {
                             <h2 id="header-live-status-title" className="text-sm font-black text-slate-800">{'Live session'}</h2>
                             <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">✕</button>
                           </div>
-                          <dl className="space-y-1.5 text-xs">
-                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{t('session.code') || 'Class code'}</dt><dd className="font-mono font-bold">{activeSessionCode}</dd></div>
-                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'Codename'}</dt><dd className="truncate">{(liveStatus && liveStatus.nickname) || ('Student')}</dd></div>
-                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'AI'}</dt><dd>{_liveAiLabel}</dd></div>
-                            <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'Connection'}</dt><dd className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</dd></div>
-                          </dl>
+                          <div className="space-y-1.5 text-xs">
+                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{t('session.code') || 'Class code'}</span><span className="font-mono font-bold">{activeSessionCode}</span></div>
+                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Codename'}</span><span className="truncate">{(liveStatus && liveStatus.nickname) || ('Student')}</span></div>
+                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'AI'}</span><span>{_liveAiLabel}</span></div>
+                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Connection'}</span><span className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</span></div>
+                          </div>
                           {liveStatus && liveStatus.signals && Array.isArray(liveStatus.signals.options) && liveStatus.signals.options.length > 0 && (
                             <fieldset className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2" data-live-signals="">
                               <legend className="px-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">{t('live_signals.title') || 'Send your teacher a signal'}</legend>
-                              <div className="grid grid-cols-2 gap-1.5">
+                              <div className="flex flex-col gap-1.5">
                                 {liveStatus.signals.options.map((opt) => (
-                                  <button key={opt.id} type="button" aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false} onClick={() => { liveStatus.signals.send(opt.id); handleCloseLiveStatus(); }} className={`min-h-9 rounded-lg border px-2 py-1 text-left text-xs font-semibold ${_liveSignalCurrent && _liveSignalCurrent.id === opt.id ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100'}`}>
+                                  <button key={opt.id} type="button" aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false} onClick={() => { liveStatus.signals.send(opt.id); handleCloseLiveStatus(); }} className={`min-h-9 rounded-lg border px-2.5 py-1.5 text-left text-xs font-semibold leading-tight ${_liveSignalCurrent && _liveSignalCurrent.id === opt.id ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100'}`}>
                                     <span aria-hidden="true">{opt.emoji} </span>{opt.label}
                                   </button>
                                 ))}
