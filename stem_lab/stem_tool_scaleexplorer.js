@@ -210,6 +210,46 @@
       note: 'Measured as twice the charge radius. A proton has no surface, so its size is defined by how its charge is spread out.' }
   ];
 
+  // ── Guided tours ───────────────────────────────────────────────────────
+  // The film is one continuous shot and the journey is one decade at a time;
+  // neither gives a class a narrative. A tour is a handful of stops with one
+  // sentence each: what to notice here, and how it relates to the last stop.
+  // Every ratio in a line was checked against the ITEMS sizes above.
+  var TOURS = [
+    { id: 'out', emoji: '🌌', title: 'From you to the edge of everything', stops: [
+      { id: 'human', line: 'Start here: you. Everything on this trip is measured against you.' },
+      { id: 'blue-whale', line: 'About fifteen of you, nose to tail. The largest animal that has ever lived is still something you could walk the length of.' },
+      { id: 'eiffel', line: 'Nearly two hundred of you. Buildings are where human-sized things stop feeling human-sized.' },
+      { id: 'everest', line: 'Five thousand of you. From here on nothing is built; everything is grown, piled up or blown.' },
+      { id: 'earth', line: 'Twelve thousand kilometres across. At this size Everest is a bump far too small to see.' },
+      { id: 'sun', line: 'One hundred and nine Earths across. The bright disc in the sky is this.' },
+      { id: 'au', line: 'The gap between the Earth and the Sun: about a hundred and seven Suns laid side by side.' },
+      { id: 'lightyear', line: 'One light year: sixty-three thousand Earth-Sun distances. The nearest other star is four of these away.' },
+      { id: 'milkyway', line: 'Our galaxy, about a hundred thousand light years across. Light takes a hundred thousand years to cross it.' },
+      { id: 'universe', line: 'The observable universe, ninety-three billion light years across. Past this, no light has had time to reach us.' } ] },
+    { id: 'in', emoji: '🔬', title: 'From you down to the proton', stops: [
+      { id: 'human', line: 'Start here: you. This time every stop is smaller than the last.' },
+      { id: 'hair', line: 'Seventy micrometres: the width of a hair, about the smallest thing an unaided eye can pick out.' },
+      { id: 'rbc', line: 'Seven and a half micrometres. About ten of these fit across that hair.' },
+      { id: 'ecoli', line: 'Two micrometres: a bacterium. Nearly four across one red blood cell.' },
+      { id: 'virus', line: 'A hundred nanometres. Too small for light to show; this is where microscopes switch to electrons.' },
+      { id: 'dna', line: 'Two nanometres wide: the double helix. A thousand of these across that bacterium.' },
+      { id: 'water', line: 'A water molecule, a quarter of a nanometre. One glass holds more of these than there are stars in the observable universe.' },
+      { id: 'carbon', line: 'One carbon atom. It has no hard edge, so this size is a convention, and the note on its card says so.' },
+      { id: 'nucleus', line: 'The nucleus of a gold atom: tens of thousands of times narrower than the atom around it. Almost all of an atom is empty space.' },
+      { id: 'proton', line: 'A proton. Below this, asking how wide something is stops having a clear answer, and the trip ends.' } ] },
+    { id: 'solar', emoji: '🪐', title: 'Around the Solar System', stops: [
+      { id: 'earth', line: 'Home: twelve thousand kilometres across.' },
+      { id: 'moon', line: 'A quarter of the Earth\u2019s width, and it sits thirty Earths away, farther than most pictures suggest.' },
+      { id: 'jupiter', line: 'Eleven Earths across, and most of the planetary mass in the Solar System.' },
+      { id: 'sun', line: 'Ten Jupiters across; about a thousand Jupiters would fit inside.' },
+      { id: 'au', line: 'One astronomical unit, the Earth\u2019s distance from the Sun: eight light minutes.' },
+      { id: 'solar-system', line: 'Neptune\u2019s orbit, sixty times the Earth-Sun distance. Light takes over eight hours to cross it.' },
+      { id: 'heliosphere', line: 'The Sun\u2019s bubble in the galaxy, where its wind gives out. Both Voyagers have crossed its edge.' },
+      { id: 'oort', line: 'The Oort cloud of comets, reaching most of a light year out: the true edge of the Sun\u2019s family.' },
+      { id: 'alpha-cen-dist', line: 'The nearest other star system, a little over four light years. Every stop so far fits into this gap.' } ] }
+  ];
+
   var MIN_EXP = -16.2, MAX_EXP = 27.6;   // a little past the smallest and largest items
   var DECADES_ACROSS = 3.2;              // how many powers of ten span the canvas width
   var HUMAN = 1.7;
@@ -250,6 +290,9 @@
     } catch (_) {}
     var p = linkNamesThisTool();
     if (!p) return null;
+    // ?tour=solar starts a guided tour at its first stop.
+    var tourWanted = String(p.get('tour') || '').toLowerCase().replace(/[^a-z]/g, '');
+    if (tourWanted && TOURS.some(function (x) { return x.id === tourWanted; })) return { focusId: null, exp: null, tour: tourWanted };
     var focus = String(p.get('focus') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
     for (var i = 0; i < items.length; i++) if (items[i].id === focus) return { focusId: items[i].id, exp: log10(items[i].size) };
     var at = parseFloat(p.get('at'));
@@ -384,7 +427,9 @@
       { id: 'scale_read', label: 'Read about something you found', icon: '📖',
         check: function (d) { return !!(d && (d.readCount || 0) >= 1); } },
       { id: 'scale_estimate', label: 'Estimate a gap before checking it', icon: '🎯',
-        check: function (d) { return !!(d && (d.estimateCount || 0) >= 1); } }
+        check: function (d) { return !!(d && (d.estimateCount || 0) >= 1); } },
+      { id: 'scale_tour', label: 'Finish a guided tour', icon: '🧭',
+        check: function (d) { return !!(d && (d.tourDoneCount || 0) >= 1); } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -437,7 +482,11 @@
         if (!yourCm) return ITEMS;
         return ITEMS.map(function (i) { return i.id === 'human' ? Object.assign({}, i, { size: yourCm / 100, you: true }) : i; });
       }, [yourCm]);
-      var start = React.useMemo(function () { return readStartFromLink(ITEMS) || { focusId: 'human', exp: log10(yourCm ? yourCm / 100 : HUMAN) }; }, []);
+      var start = React.useMemo(function () {
+        var r = readStartFromLink(ITEMS);
+        if (r && r.tour) { var first = ITEMS.filter(function (i) { return i.id === TOURS.filter(function (x) { return x.id === r.tour; })[0].stops[0].id; })[0]; return { focusId: first.id, exp: log10(first.size), tour: r.tour }; }
+        return r || { focusId: 'human', exp: log10(yourCm ? yourCm / 100 : HUMAN) };
+      }, []);
       var _focus = React.useState(start.focusId || 'human'); var focusId = _focus[0], setFocusId = _focus[1];
       var _exp = React.useState(start.exp); var exp = _exp[0], setExp = _exp[1];
       var _link = React.useState(''); var linkState = _link[0], setLinkState = _link[1]; // '' | 'copied' | 'failed'
@@ -463,6 +512,9 @@
       var journeyDirRef = React.useRef(0);
       var _showLadder = React.useState(true); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
       var _sci = React.useState(!!slice.sci); var sci = _sci[0], setSci = _sci[1];
+      // Guided tour: which tour, and which stop (-1 = not started).
+      var _tour = React.useState(start.tour || ''); var tourId = _tour[0], setTourId = _tour[1];
+      var _stop = React.useState(start.tour ? 0 : -1); var stopIdx = _stop[0], setStopIdx = _stop[1];
       var sciRef = React.useRef(sci); sciRef.current = sci;
       // One place decides how a length is written, so the card, the ladder, the
       // selects and the stage never disagree.
@@ -1014,6 +1066,22 @@
           { dec: round2(challenge.decades), big: itemText(challenge.big, 'name'),
             times: timesPhrase(challenge.ratio), small: lowerArticle(itemText(challenge.small, 'name')) });
       }
+      function tourText(tour, field, stop) {
+        if (field === 'title') return t('stem.scaleExplorer.tour_' + tour.id + '_title', tour.title);
+        return t('stem.scaleExplorer.tour_' + tour.id + '_stop_' + stop, tour.stops[stop].line);
+      }
+      function goToStop(tour, i) {
+        var stop = tour.stops[i]; var item = byId[stop.id]; if (!item) return;
+        setStopIdx(i);
+        flyTo(item);
+        say(S('tour_stop_sr', 'Stop {n} of {total}: {name}. {line}', { n: i + 1, total: tour.stops.length, name: itemText(item, 'name'), line: tourText(tour, 'line', i) }));
+        if (i === tour.stops.length - 1) updateSlice(function (cur) { cur.tourDoneCount = (cur.tourDoneCount || 0) + 1; });
+      }
+      function startTour(id) {
+        setTourId(id);
+        var tour = TOURS.filter(function (x) { return x.id === id; })[0];
+        if (tour) goToStop(tour, 0); else setStopIdx(-1);
+      }
       var cmpSecondRef = React.useRef(null);
       // From the focus card: put what you are looking at into the first slot and
       // hand focus to the second, so the next keystroke picks the other thing.
@@ -1250,6 +1318,25 @@
                   h('option', { value: 'normal' }, S('film_normal', 'Normal')),
                   h('option', { value: 'fast' }, S('film_fast', 'Fast')))),
               reduceMotion ? h('span', { style: { fontSize: '0.6875rem', color: P.dim } }, S('film_reduced', 'Reduced motion is on, so this plays one power of ten at a time.')) : null),
+            // Guided tours: a narrative with one sentence per stop, paced by the student.
+            (function () {
+              var tour = TOURS.filter(function (x) { return x.id === tourId; })[0] || null;
+              var atEnd = tour && stopIdx >= tour.stops.length - 1;
+              return h('div', { role: 'group', 'aria-label': S('tour_group', 'Guided tours'), style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 6 }) },
+                h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
+                  h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim } },
+                    '🧭 ' + S('tour_label', 'Guided tour'),
+                    h('select', { value: tourId, 'aria-label': S('tour_select_aria', 'Choose a guided tour'), onChange: function (e) { startTour(e.target.value); },
+                      style: Object.assign({}, sel, { padding: '4px 6px', fontSize: '0.75rem' }) },
+                      h('option', { value: '' }, S('tour_none', 'Choose a tour…')),
+                      TOURS.map(function (x) { return h('option', { key: x.id, value: x.id }, x.emoji + ' ' + tourText(x, 'title')); }))),
+                  tour ? h('button', { type: 'button', style: btn, disabled: stopIdx <= 0, onClick: function () { goToStop(tour, stopIdx - 1); } }, S('tour_prev', '◀ Back')) : null,
+                  tour ? h('button', { type: 'button', style: atEnd ? btn : goBtn, disabled: !!atEnd, onClick: function () { goToStop(tour, stopIdx + 1); } }, S('tour_next', 'Next stop ▶')) : null,
+                  tour ? h('span', { style: { fontSize: '0.71875rem', color: P.dim } }, S('tour_progress', 'Stop {n} of {total}', { n: stopIdx + 1, total: tour.stops.length })) : null),
+                tour && stopIdx >= 0 ? h('p', { style: { margin: 0, fontSize: '0.8125rem', lineHeight: 1.5 } },
+                  h('b', null, (byId[tour.stops[stopIdx].id] || {}).emoji + ' ' + itemText(byId[tour.stops[stopIdx].id], 'name') + ': '), tourText(tour, 'line', stopIdx)) : null,
+                atEnd ? h('p', { role: 'status', style: { margin: 0, fontSize: '0.75rem', color: P.ok } }, S('tour_done', 'Tour complete. Choose another, or explore from here.')) : null);
+            })(),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); }, 'aria-label': S('out_one', 'Zoom out one power of ten') }, '− 10×'),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); }, 'aria-label': S('in_one', 'Zoom in one power of ten') }, '+ 10×'),

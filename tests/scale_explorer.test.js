@@ -529,7 +529,7 @@ describe('Scale Explorer shareable views', () => {
   });
 
   it('starts state and refs from the link, and offers the copy control with a spoken name', () => {
-    expect(src).toMatch(/var start = React\.useMemo\(function \(\) \{ return readStartFromLink\(ITEMS\)/);
+    expect(src).toMatch(/var start = React\.useMemo\(function \(\) \{\s*var r = readStartFromLink\(ITEMS\);/);
     expect(src).toMatch(/React\.useState\(start\.focusId \|\| 'human'\)/);
     expect(src).toMatch(/var expRef = React\.useRef\(start\.exp\)/);
     expect(src).toMatch(/'aria-label': S\('copy_link_aria'/);
@@ -796,5 +796,65 @@ describe('Scale Explorer: a real photograph one click away', () => {
       const sec = JSON.parse(read(rel)).stem.scaleExplorer;
       for (const k of ['see_photo', 'see_photo_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
     }
+  });
+});
+
+// 2026-09-13. Guided tours: a handful of stops with one sentence each. The
+// sentences make numerical claims, so the claims are checked here against the
+// same ITEMS sizes the stage draws from.
+describe('Scale Explorer guided tours', () => {
+  const TOURS = readArray(src, 'TOURS');
+  const size = (id) => byId[id].size;
+  it('has three tours whose every stop is a real item, with a line to read', () => {
+    expect(TOURS.map((t) => t.id)).toEqual(['out', 'in', 'solar']);
+    for (const t of TOURS) {
+      expect(t.stops.length).toBeGreaterThanOrEqual(8);
+      for (const st of t.stops) { expect(byId[st.id], t.id + ' stop ' + st.id).toBeTruthy(); expect(st.line.length).toBeGreaterThan(30); }
+    }
+    // outward and inward tours are monotonic in size
+    const out = TOURS[0].stops.map((s) => size(s.id)); expect(out.every((v, i) => !i || v > out[i - 1])).toBe(true);
+    const inn = TOURS[1].stops.map((s) => size(s.id)); expect(inn.every((v, i) => !i || v < inn[i - 1])).toBe(true);
+  });
+  it('the numbers in the lines hold against the ladder', () => {
+    const r = (a, b) => size(a) / size(b);
+    expect(r('blue-whale', 'human')).toBeGreaterThan(13); expect(r('blue-whale', 'human')).toBeLessThan(17);   // "about fifteen of you"
+    expect(r('eiffel', 'human')).toBeGreaterThan(180); expect(r('eiffel', 'human')).toBeLessThan(210);        // "nearly two hundred"
+    expect(r('everest', 'human')).toBeGreaterThan(4800); expect(r('everest', 'human')).toBeLessThan(5500);    // "five thousand"
+    expect(r('sun', 'earth')).toBeGreaterThan(105); expect(r('sun', 'earth')).toBeLessThan(113);              // "one hundred and nine Earths"
+    expect(r('au', 'sun')).toBeGreaterThan(104); expect(r('au', 'sun')).toBeLessThan(111);                    // "a hundred and seven Suns"
+    expect(r('lightyear', 'au')).toBeGreaterThan(62000); expect(r('lightyear', 'au')).toBeLessThan(64500);   // "sixty-three thousand"
+    expect(r('hair', 'rbc')).toBeGreaterThan(8); expect(r('hair', 'rbc')).toBeLessThan(11);                   // "about ten"
+    expect(r('rbc', 'ecoli')).toBeGreaterThan(3); expect(r('rbc', 'ecoli')).toBeLessThan(4.5);                // "nearly four"
+    expect(r('ecoli', 'dna')).toBeGreaterThan(700); expect(r('ecoli', 'dna')).toBeLessThan(1200);             // "a thousand"
+    expect(r('moon', 'earth')).toBeGreaterThan(0.25); expect(r('moon', 'earth')).toBeLessThan(0.29);          // "a quarter"
+    expect(r('jupiter', 'earth')).toBeGreaterThan(10.5); expect(r('jupiter', 'earth')).toBeLessThan(11.8);    // "eleven Earths"
+    expect(r('sun', 'jupiter')).toBeGreaterThan(9); expect(r('sun', 'jupiter')).toBeLessThan(10.5);           // "ten Jupiters"
+    expect(r('solar-system', 'au')).toBeGreaterThan(55); expect(r('solar-system', 'au')).toBeLessThan(65);    // "sixty times"
+  });
+  it('a stop flies to its item, is announced with its line, and finishing a tour counts', () => {
+    const fn = src.slice(src.indexOf('function goToStop'), src.indexOf('function startTour'));
+    expect(fn).toMatch(/flyTo\(item\)/);
+    expect(fn).toMatch(/S\('tour_stop_sr', 'Stop \{n\} of \{total\}: \{name\}\. \{line\}'/);
+    expect(fn).toMatch(/if \(i === tour\.stops\.length - 1\) updateSlice\(function \(cur\) \{ cur\.tourDoneCount = \(cur\.tourDoneCount \|\| 0\) \+ 1; \}\)/);
+    expect(src).toMatch(/id: 'scale_tour'[\s\S]{0,120}tourDoneCount/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const t of TOURS) { expect(sec['tour_' + t.id + '_title']).toBe(t.title); t.stops.forEach((st, i) => expect(sec['tour_' + t.id + '_stop_' + i], rel + ' ' + t.id + ' ' + i).toBe(st.line)); }
+      for (const k of ['tour_group', 'tour_label', 'tour_select_aria', 'tour_none', 'tour_prev', 'tour_next', 'tour_progress', 'tour_done', 'tour_stop_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+describe('Scale Explorer: a link can start a tour', () => {
+  it('?tour=<id> opens at the tour\'s first stop; unknown ids are ignored', () => {
+    const lift = (name, until) => { const a = src.indexOf('function ' + name + '('); const b = src.indexOf('function ' + until + '(', a); return src.slice(a, b); };
+    const TOURS = readArray(src, 'TOURS');
+    const ctx = { window: { location: { search: '?tool=scaleExplorer&tour=solar', hostname: 'x' } }, URLSearchParams, MIN_EXP: -16.2, MAX_EXP: 27.6, log10: (v) => Math.log(v) / Math.LN10, Math, TOURS };
+    vm.runInNewContext(lift('linkNamesThisTool', 'shareBase') + '\nthis.read = readStartFromLink;', ctx);
+    expect(ctx.read(ITEMS)).toMatchObject({ tour: 'solar' });
+    ctx.window.location.search = '?tool=scaleExplorer&tour=nope&focus=rbc';
+    expect(ctx.read(ITEMS)).toMatchObject({ focusId: 'rbc' }); // falls through to focus
+    expect(src).toMatch(/React\.useState\(start\.tour \|\| ''\)/);
+    expect(src).toMatch(/React\.useState\(start\.tour \? 0 : -1\)/);
   });
 });
