@@ -692,6 +692,45 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             expect(assetRef.__alloMbRef).toBe('asset');
         } finally { api.teardown(); }
     });
+
+    it('carries the teacher Adventure broadcast to a student watcher (Aaron 2026-09-14: student never saw the adventure)', async () => {
+        // Teacher and student bridges share one real Code.gs sandbox. The teacher writes the
+        // REAL live-adventure payload with the standard updateDoc; the student's emulated
+        // onSnapshot must deliver it with currentResourceId = 'adventure-sync' intact.
+        const start = anti.indexOf('function _alloSanitizeLiveAdventureValue');
+        const end = anti.indexOf('// Privacy-by-design, FERPA-aligned', start);
+        const buildPayload = new Function(anti.slice(start, end) + '\nreturn _alloBuildLiveAdventurePayload;')();
+        const sb = openedSandbox();
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', currentResourceId: null, roster: {}, democracy: { isActive: false } } });
+        const teacher = makeBridge(sb);
+        const student = makeBridge(sb);
+        const guest = sb.joinParticipant();
+        teacher.api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, admin: sb.admin, isTeacher: true });
+        student.api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
+        try {
+            const seen = [];
+            student.api.onSnapshot(student.api.doc(...sessionArgs(sb.code)), s => seen.push(s.data()));
+            await student.api.pump();
+            expect(seen.length).toBe(1);
+            expect(seen[0].currentResourceId).toBeNull();
+            const scene = { text: 'You stand in the grand Hall of Global Accord.', options: [{ action: 'Read the treaty' }, { action: 'Consult the leaders' }] };
+            const payload = buildPayload({ currentScene: scene, sceneImage: 'https://cdn.example/hall.webp', level: 1, xp: 0, xpToNextLevel: 100, energy: 100, gold: 50, inventory: [], turnCount: 0 }, { inputMode: 'choice', difficulty: 'Normal' }, 1700000000001, 1700000000001);
+            await teacher.api.updateDoc(teacher.api.doc(...sessionArgs(sb.code)), payload);
+            await student.api.pump();
+            const latest = seen[seen.length - 1];
+            expect(latest.mode).toBe('sync');
+            expect(latest.currentResourceId).toBe('adventure-sync');
+            expect(latest.activeAdventureRevision).toBe(1700000000001);
+            expect(latest.activeAdventureState.currentScene.options.map(o => o.action)).toEqual(['Read the treaty', 'Consult the leaders']);
+            expect(latest.activeAdventureConfig.inputMode).toBe('choice');
+            // Next turn: a higher revision replaces the scene; nothing is stripped by the bridge.
+            const next = buildPayload({ currentScene: { text: 'The leaders agree.', options: [{ action: 'Sign' }] }, sceneImage: null, level: 2, xp: 40, xpToNextLevel: 100, energy: 90, gold: 100, inventory: [{ id: 'm1', name: 'Sacred River Map' }], turnCount: 1 }, { inputMode: 'choice' }, 1700000000002, 1700000000002);
+            await teacher.api.updateDoc(teacher.api.doc(...sessionArgs(sb.code)), next);
+            await student.api.pump();
+            expect(seen[seen.length - 1].activeAdventureState.turnCount).toBe(1);
+            expect(seen[seen.length - 1].activeAdventureState.inventory[0].name).toBe('Sacred River Map');
+        } finally { teacher.api.teardown(); student.api.teardown(); }
+    });
 });
 
 describe('three-copy sync pins (Phase C sections)', () => {

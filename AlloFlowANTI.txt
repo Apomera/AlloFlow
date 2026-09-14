@@ -9660,6 +9660,7 @@ const buildLiveHostPresence = (leaseId, now = Date.now()) => ({
   expiresAt: Number(now) + LIVE_HOST_LEASE_TTL_MS,
   leaseId: String(leaseId || '').slice(0, 120) || null,
 });
+const validLiveHostPresenceValue = (presence) => normalizeLiveHostPresence(presence) !== null;
 const ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY = 'alloflow_allohaven_classroom_reward_inbox_v1';
 const ALLOHAVEN_CLASSROOM_REWARD_REASONS = Object.freeze([
   { id: 'ready_to_learn', label: 'Ready to learn' },

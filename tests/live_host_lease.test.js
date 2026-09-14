@@ -10,7 +10,7 @@ const moduleSource = read('phase_o_misc_handlers_module.js');
 const publicModule = read('desktop/web-app/public/phase_o_misc_handlers_module.js');
 const helperStart = anti.indexOf('const LIVE_HOST_HEARTBEAT_INTERVAL_MS');
 const helperEnd = anti.indexOf("const ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY", helperStart);
-const helpers = new Function(anti.slice(helperStart, helperEnd) + '\nreturn { LIVE_HOST_HEARTBEAT_INTERVAL_MS, LIVE_HOST_LEASE_TTL_MS, LIVE_HOST_RECONNECT_GRACE_MS, normalizeLiveHostPresence, getLiveHostConnectionState, buildLiveHostPresence };')();
+const helpers = new Function(anti.slice(helperStart, helperEnd) + '\nreturn { LIVE_HOST_HEARTBEAT_INTERVAL_MS, LIVE_HOST_LEASE_TTL_MS, LIVE_HOST_RECONNECT_GRACE_MS, normalizeLiveHostPresence, getLiveHostConnectionState, buildLiveHostPresence, validLiveHostPresenceValue };')();
 
 describe('teacher host liveness lease', () => {
   it('defines a bounded Tier-1 lease envelope and keeps the module mirror synchronized', () => {
@@ -21,6 +21,15 @@ describe('teacher host liveness lease', () => {
     expect(anti).toContain('validLiveHostPresenceValue(safePayload.hostPresence)');
     expect(rules).toContain('hostPresence is host-owned lease metadata');
     expect(publicModule).toBe(moduleSource);
+  });
+
+  it('accepts the lease the heartbeat builds and rejects malformed values (the guard MUST exist: 2026-09-14 it was undefined, every beat threw)', () => {
+    // A text pin on the call site cannot see a ReferenceError; evaluate the guard for real.
+    expect(typeof helpers.validLiveHostPresenceValue).toBe('function');
+    expect(helpers.validLiveHostPresenceValue(helpers.buildLiveHostPresence('lease-1', 100000))).toBe(true);
+    expect(helpers.validLiveHostPresenceValue(null)).toBe(false);
+    expect(helpers.validLiveHostPresenceValue({ state: 'online' })).toBe(false);
+    expect(helpers.validLiveHostPresenceValue({ heartbeatAt: 200, expiresAt: 100 })).toBe(false);
   });
 
   it('derives online, reconnecting, stale, and unknown states from timestamps', () => {
