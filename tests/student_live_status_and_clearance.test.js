@@ -132,3 +132,28 @@ describe('AI-only affordances stay hidden when student AI is off', () => {
     expect(read('view_quiz_module.js')).toBe(read('desktop/web-app/public/view_quiz_module.js'));
   });
 });
+
+describe('teacher signals live in the header popover (2026-09-14)', () => {
+  const anti = read('AlloFlowANTI.txt');
+  const header = read('view_header_source.jsx');
+  it('the host feeds signal options, the current signal, send, clear and the privacy note through liveStatus', () => {
+    const site = anti.indexOf('liveStatus={!isTeacherMode && activeSessionCode ? {');
+    const props = anti.slice(site, anti.indexOf("})() : null } : null}", site));
+    for (const s of ['signals: (user && user.uid) ? (() => {', 'LIVE_SIGNAL_FRESH_MS', "options: LIVE_SIGNAL_OPTIONS.map(", 'send: (id) => {', 'clear: () => {', "privacyNote: t('live_signals.privacy_note')"]) expect(props).toContain(s);
+    // Enum-only: send refuses ids outside LIVE_SIGNAL_OPTIONS.
+    expect(props).toContain('if (!LIVE_SIGNAL_OPTIONS.some((opt) => opt.id === id)) return false;');
+  });
+  it('the floating bottom-right Signal button is gone', () => {
+    expect(anti).not.toContain('setShowStudentSignals(v => !v)');
+    expect(anti).not.toContain("t('live_signals.button') || '✋ Signal'");
+    expect(read('desktop/web-app/src/AlloFlowANTI.txt')).toBe(anti);
+  });
+  it('the popover lists the signals, marks the sent one, offers clear, and the pill shows the sent emoji', () => {
+    expect(header).toContain('data-live-signals=""');
+    expect(header).toContain("aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false}");
+    expect(header).toContain("{_liveSignalCurrent && <span aria-hidden=\"true\" title={_liveSignalCurrent.label}>{_liveSignalCurrent.emoji}</span>}");
+    expect(header).toContain("onClick={() => liveStatus.signals.clear()}");
+    expect(read('view_header_module.js')).toContain('data-live-signals');
+    expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
+  });
+});

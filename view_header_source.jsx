@@ -425,6 +425,9 @@ function HeaderBar(props) {
     : _liveConnectionStatus === 'access-required' ? (t('live_connection.access') || 'Access needed')
     : (t('live_connection.connected') || 'Connected');
   const _liveTone = _liveHostStale ? 'bg-rose-600 border-rose-300/60' : _liveConnected ? 'bg-emerald-600 border-emerald-300/60' : 'bg-amber-600 border-amber-300/60';
+  const _liveSignalCurrent = (liveStatus && liveStatus.signals && liveStatus.signals.current && Array.isArray(liveStatus.signals.options))
+    ? (liveStatus.signals.options.find((opt) => opt.id === liveStatus.signals.current) || null)
+    : null;
   const _liveAiLabel = liveStatus && liveStatus.aiConfigured
     ? (t('header.personal_ai_connected') || 'Personal AI connected')
     : liveStatus && liveStatus.aiSetupAllowed ? 'Personal AI available' : 'AI tools off';
@@ -933,7 +936,8 @@ function HeaderBar(props) {
                     >
                       <Wifi size={16} className={_liveConnected ? 'animate-pulse motion-reduce:animate-none' : ''} aria-hidden="true" />
                       <span>{t('header.live_session') || 'Live:'} {activeSessionCode}</span>
-                      <span className="sr-only">{_liveConnectionLabel}</span>
+                      {_liveSignalCurrent && <span aria-hidden="true" title={_liveSignalCurrent.label}>{_liveSignalCurrent.emoji}</span>}
+                      <span className="sr-only">{_liveConnectionLabel}{_liveSignalCurrent ? '. Signal sent: ' + _liveSignalCurrent.label : ''}</span>
                     </button>
                     {isLiveStatusOpen && (
                       <>
@@ -948,6 +952,22 @@ function HeaderBar(props) {
                             <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'AI'}</dt><dd>{_liveAiLabel}</dd></div>
                             <div className="flex items-baseline justify-between gap-3"><dt className="font-bold text-slate-600">{'Connection'}</dt><dd className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</dd></div>
                           </dl>
+                          {liveStatus && liveStatus.signals && Array.isArray(liveStatus.signals.options) && liveStatus.signals.options.length > 0 && (
+                            <fieldset className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2" data-live-signals="">
+                              <legend className="px-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">{t('live_signals.title') || 'Send your teacher a signal'}</legend>
+                              <div className="grid grid-cols-2 gap-1.5">
+                                {liveStatus.signals.options.map((opt) => (
+                                  <button key={opt.id} type="button" aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false} onClick={() => { liveStatus.signals.send(opt.id); handleCloseLiveStatus(); }} className={`min-h-9 rounded-lg border px-2 py-1 text-left text-xs font-semibold ${_liveSignalCurrent && _liveSignalCurrent.id === opt.id ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100'}`}>
+                                    <span aria-hidden="true">{opt.emoji} </span>{opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                              {_liveSignalCurrent && (
+                                <button type="button" onClick={() => liveStatus.signals.clear()} className="mt-1.5 text-[11px] font-bold text-indigo-700 hover:text-indigo-900">{t('live_signals.clear') || 'Clear my signal'}</button>
+                              )}
+                              <p className="mt-1.5 text-[10px] leading-snug text-slate-500">{liveStatus.signals.privacyNote}</p>
+                            </fieldset>
+                          )}
                           <div className="mt-3 flex flex-wrap gap-2">
                             {liveStatus && typeof liveStatus.changeCodename === 'function' && (
                               <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.changeCodename(); }} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100">{liveStatus.nickname ? 'Change codename' : 'Set codename'}</button>

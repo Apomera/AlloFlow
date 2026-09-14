@@ -38861,7 +38861,23 @@ const parseTaggedContent = (text) => {
           </button>
         </div>
       )}
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true) } : null} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true), signals: (user && user.uid) ? (() => {
+        // Help signals (student sender). Enum-only Tier-1 channel: writes
+        // roster.{uid}.signal + signalAt via writeToSession; the teacher's Live
+        // Session Center lists + clears them. No free text by design. Lived in
+        // a floating bottom-right button until 2026-09-14; now inside the
+        // header's Live popover with the rest of the session controls.
+        const myEntry = (sessionData && sessionData.roster && sessionData.roster[user.uid]) || {};
+        const current = (myEntry.signal && myEntry.signalAt && (Date.now() - myEntry.signalAt) < LIVE_SIGNAL_FRESH_MS) ? myEntry.signal : null;
+        const signalRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+        return {
+          options: LIVE_SIGNAL_OPTIONS.map((opt) => ({ id: opt.id, emoji: opt.emoji, label: t('live_signals.' + opt.id) || opt.label })),
+          current,
+          send: (id) => { if (!LIVE_SIGNAL_OPTIONS.some((opt) => opt.id === id)) return false; writeToSession(signalRef, { [`roster.${user.uid}.signal`]: id, [`roster.${user.uid}.signalAt`]: Date.now() }).catch(() => {}); return true; },
+          clear: () => { writeToSession(signalRef, { [`roster.${user.uid}.signal`]: null, [`roster.${user.uid}.signalAt`]: null }).catch(() => {}); },
+          privacyNote: t('live_signals.privacy_note') || 'Your teacher sees your codename with this signal. Nothing else is sent.',
+        };
+      })() : null } : null} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -41541,59 +41557,8 @@ const parseTaggedContent = (text) => {
           </div>
         </div>
       )}
-      {/* Help signals (student sender). Enum-only Tier-1 channel: writes */}
-      {/* roster.{uid}.signal + signalAt via writeToSession; the teacher's Live */}
-      {/* Session Center lists + clears them. No free text by design. */}
-      {!isTeacherMode && activeSessionCode && user && user.uid && (() => {
-        const myEntry = (sessionData && sessionData.roster && sessionData.roster[user.uid]) || {};
-        const myFresh = (myEntry.signal && myEntry.signalAt && (Date.now() - myEntry.signalAt) < LIVE_SIGNAL_FRESH_MS) ? myEntry.signal : null;
-        const myMeta = myFresh ? (LIVE_SIGNAL_OPTIONS.find(o => o.id === myFresh) || null) : null;
-        const signalRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
-        const sendSignal = (id) => {
-          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: id, [`roster.${user.uid}.signalAt`]: Date.now() }).catch(() => {});
-          setShowStudentSignals(false);
-        };
-        const clearMySignal = () => {
-          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: null, [`roster.${user.uid}.signalAt`]: null }).catch(() => {});
-          setShowStudentSignals(false);
-        };
-        return (
-          <>
-            <button
-              onClick={() => setShowStudentSignals(v => !v)}
-              aria-label={t('live_signals.open_aria') || 'Send your teacher a quick signal'}
-              aria-expanded={showStudentSignals}
-              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background: myFresh ? '#b45309' : '#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
-            >
-              {myMeta ? myMeta.emoji + ' ' + (t('live_signals.sent') || 'Sent') : (t('live_signals.button') || '✋ Signal')}
-            </button>
-            {showStudentSignals && (
-              <div role="dialog" aria-label={t('live_signals.title') || 'Send your teacher a signal'} style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,width:238,background:'white',borderRadius:14,border:'1px solid #e2e8f0',boxShadow:'0 18px 44px rgba(15,23,42,0.35)',padding:'0.7rem'}}>
-                <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.85rem',marginBottom:6}}>{t('live_signals.title') || 'Let your teacher know'}</div>
-                <div style={{display:'flex',flexDirection:'column',gap:5}}>
-                  {LIVE_SIGNAL_OPTIONS.map(opt => (
-                    <button
-                      key={opt.id}
-                      onClick={() => sendSignal(opt.id)}
-                      style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'0.45rem 0.55rem',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,color:'#0f172a',background: myFresh === opt.id ? '#eef2ff' : 'white',border: myFresh === opt.id ? '1.5px solid #1e3a8a' : '1px solid #e2e8f0'}}
-                    >
-                      <span aria-hidden="true">{opt.emoji}</span>{t('live_signals.' + opt.id) || opt.label}
-                    </button>
-                  ))}
-                  {myFresh && (
-                    <button onClick={clearMySignal} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
-                      {t('live_signals.clear') || 'Clear my signal'}
-                    </button>
-                  )}
-                </div>
-                <p style={{fontSize:'0.66rem',color:'#64748b',margin:'0.55rem 0 0 0',lineHeight:1.35}}>
-                  {t('live_signals.privacy_note') || 'Your teacher sees your codename with this signal. Nothing else is sent.'}
-                </p>
-              </div>
-            )}
-          </>
-        );
-      })()}
+      {/* Help signals moved into the header's Live popover (2026-09-14); see the
+          liveStatus.signals prop on HeaderBar. */}
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
       {(bridgeSendOpen && isTeacherMode) && window.AlloModules && window.AlloModules.BridgeSendModal && React.createElement(window.AlloModules.BridgeSendModal, {
           activeSessionCode, addToast, appId, bridgeChatMessages, bridgeChatOpen,
