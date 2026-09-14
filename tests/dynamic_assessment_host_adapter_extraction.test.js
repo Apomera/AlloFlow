@@ -107,7 +107,9 @@ describe('Dynamic Assessment host-adapter extraction', () => {
     expect(moduleSource).toContain('version: "1.4.1-host-adapter"');
     expect(moduleMirror).toBe(moduleSource);
     expect(rootSource.match(/dynamic_assessment_module\.js/g)).toHaveLength(1);
-    for (const key of hostKeys) expect(gateSource).toMatch(new RegExp(`\\b${key},`));
+    // Each host key is passed through; the AI callbacks are passed as
+    // `key: (studentAiFeaturesHidden ? null : key)` since 2026-09-14.
+    for (const key of hostKeys) expect(gateSource).toMatch(new RegExp(`\\b${key},|\\b${key}: \\(studentAiFeaturesHidden \\? null : ${key}\\)`));
     expect(() => parse(rootSource, { sourceType: 'module', plugins: ['jsx'] })).not.toThrow();
     expect(() => parse(moduleSource, { sourceType: 'script' })).not.toThrow();
   });

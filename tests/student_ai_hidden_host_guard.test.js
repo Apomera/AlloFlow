@@ -167,3 +167,17 @@ describe('adapted text under hidden AI', () => {
     expect(host).toContain('isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,');
   });
 });
+
+describe('student-reachable lazy tools get null AI callbacks when hidden', () => {
+  it('every AI prop at the eleven Learning Hub tool mounts is gated on studentAiFeaturesHidden', () => {
+    for (const key of ['AlloHaven', 'StoryForge', 'LitLab', 'PoetTree', 'ReadingLibrary', 'TestPrepHub', 'TimelineStudio', 'LinguaPractice', 'SelHub', 'CinematicStudio', 'DynamicAssessment']) {
+      const start = host.indexOf(`<CDNModuleGate moduleKey="${key}"`);
+      const block = host.slice(start, host.indexOf('</CDNModuleGate>', start));
+      expect(start, key).toBeGreaterThan(0);
+      // No raw pass-through of any AI function remains in the block.
+      expect(block, key).not.toMatch(/(?<![\w.:?])(callGemini|callImagen|callGeminiVision|callGeminiImageEdit),/);
+      expect(block, key).not.toMatch(/:\s*(callGemini|callImagen|callGeminiVision|callGeminiImageEdit)[,\s]/);
+      expect(block, key).toMatch(/studentAiFeaturesHidden \? null : call(Gemini|Imagen)/);
+    }
+  });
+});
