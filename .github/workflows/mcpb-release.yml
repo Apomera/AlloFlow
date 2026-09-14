@@ -132,7 +132,10 @@ jobs:
           $dist = 'desktop/dist/mcpb'
           $artifact = Get-Item "$dist/alloflow-remediation.mcpb"
           $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $artifact.FullName).Hash.ToLowerInvariant()
-          "$hash  $($artifact.Name)" | Set-Content -Encoding ascii "$dist/SHA256SUMS.txt"
+          # LF, no BOM: Set-Content on the Windows runner wrote CRLF, so `sha256sum -c SHA256SUMS.txt`
+          # (the check the release notes and pilot guide tell people to run) failed on macOS and
+          # Linux with "alloflow-remediation.mcpb\r: No such file or directory" (seen on mcpb-v0.11.3).
+          [IO.File]::WriteAllText((Join-Path (Get-Location) "$dist/SHA256SUMS.txt"), "$hash  $($artifact.Name)`n", (New-Object System.Text.UTF8Encoding $false))
           $manifestVersion = node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version"
           node desktop/mcp/build_registry_metadata.cjs --artifact "$dist/alloflow-remediation.mcpb" --tag "mcpb-v$manifestVersion" --output "$dist/server.json"
           npm sbom --prefix "$dist/staging" --omit=dev --sbom-format=cyclonedx |

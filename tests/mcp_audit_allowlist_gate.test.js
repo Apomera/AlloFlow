@@ -38,6 +38,12 @@ describe('MCPB dependency-audit gate', () => {
     }
   });
 
+  it('writes SHA256SUMS.txt with LF line endings so sha256sum -c works off the Windows runner', () => {
+    expect(workflow).toContain('[IO.File]::WriteAllText');
+    expect(workflow).toContain('"$hash  $($artifact.Name)`n"');
+    expect(workflow).not.toMatch(/Set-Content -Encoding ascii "\$dist\/SHA256SUMS\.txt"/);
+  });
+
   it('documents the accepted advisories where the release notes are published', () => {
     const notes = readFileSync(resolve(ROOT, 'desktop/mcp/MCPB_RELEASE.md'), 'utf8');
     expect(notes).toContain('## Accepted dependency advisories');
