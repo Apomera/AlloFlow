@@ -597,3 +597,55 @@ describe('Piper local loader resilience', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith(cached);
   });
 });
+
+describe('Kokoro init stall watchdog (2026-09-14)', () => {
+  it('retries once from a fresh worker when no progress arrives, then succeeds', async () => {
+    vi.useFakeTimers();
+    try {
+      FakeWorker.autoInit = false;
+      const api = loadKokoro();
+      const stages = [];
+      const initPromise = api.init((p) => stages.push(p.stage));
+      expect(FakeWorker.instances).toHaveLength(1);
+      // Progress keeps the watchdog quiet; silence for 60 s trips it.
+      FakeWorker.instances[0].emit({ type: 'progress', stage: 'Downloading voice model', pct: 0.3 });
+      await vi.advanceTimersByTimeAsync(50000);
+      expect(FakeWorker.instances).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(11000);
+      expect(FakeWorker.instances[0].terminated).toBe(true);
+      expect(FakeWorker.instances).toHaveLength(2);
+      expect(stages).toContain('Download stalled, retrying');
+      // The fresh worker finishes.
+      FakeWorker.instances[1].emit({ type: 'ready' });
+      await vi.advanceTimersByTimeAsync(0);
+      const warm = FakeWorker.instances[1].messages.find((m) => m.type === 'generate' && m.id === '__warmup__');
+      if (warm) FakeWorker.instances[1].emit({ type: 'audio', id: '__warmup__', buffer: new ArrayBuffer(8), elapsed: 1 });
+      await expect(initPromise).resolves.toBe(true);
+      expect(api.ready).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives up with a TimeoutError after the second stall, and a later init can try again', async () => {
+    vi.useFakeTimers();
+    try {
+      FakeWorker.autoInit = false;
+      const api = loadKokoro();
+      const initPromise = api.init(() => {});
+      initPromise.catch(() => {});
+      await vi.advanceTimersByTimeAsync(61000);
+      expect(FakeWorker.instances).toHaveLength(2);
+      await vi.advanceTimersByTimeAsync(61000);
+      await expect(initPromise).rejects.toMatchObject({ name: 'TimeoutError', code: 'kokoro-init-stalled' });
+      expect(FakeWorker.instances[1].terminated).toBe(true);
+      expect(api.ready).toBe(false);
+      // Not stuck on the rejected promise: a new init starts a third worker.
+      FakeWorker.autoInit = true;
+      await expect(api.init(() => {})).resolves.toBe(true);
+      expect(FakeWorker.instances).toHaveLength(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

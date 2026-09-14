@@ -792,6 +792,7 @@
             switch (data.type) {
                 case 'progress':
                     _loadProgress = data.pct;
+                    if (_stallTimer) { const p = _pendingMessages.get('__init__'); if (p) _armStallWatchdog(p.reject); }
                     if (_onProgress) _onProgress({ stage: data.stage, pct: data.pct });
                     // Only log at 25% milestones to reduce console noise
                     var pctRound = Math.round(data.pct * 100);
@@ -966,6 +967,32 @@
     }
 
     // ─── Initialize ─────────────────────────────────────────────────────
+    // Stall watchdog (2026-09-14). The model fetch runs inside the worker with
+    // no timeout of its own: a stalled network left the init promise pending
+    // forever and the host's progress pill frozen at one percentage until the
+    // person refreshed the page. Now, if NO progress message arrives for
+    // STALL_MS while initialising, the worker is terminated and the init is
+    // retried once from a fresh worker (files already fetched are served from
+    // the transformers-cache, so the retry resumes rather than restarts). A
+    // second stall rejects with a TimeoutError the host can report honestly.
+    const STALL_MS = 60000;
+    const STALL_RETRIES = 1;
+    let _stallTimer = null;
+    let _stallAttempt = 0;
+    function _armStallWatchdog(reject) {
+        if (_stallTimer) clearTimeout(_stallTimer);
+        _stallTimer = setTimeout(() => {
+            _stallTimer = null;
+            const error = new Error('Kokoro voice download stalled (no progress for ' + Math.round(STALL_MS / 1000) + 's)');
+            error.name = 'TimeoutError';
+            error.code = 'kokoro-init-stalled';
+            reject(error);
+        }, STALL_MS);
+    }
+    function _disarmStallWatchdog() {
+        if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
+    }
+
     async function init(onProgress) {
         if (onProgress) _onProgress = onProgress; // Always update callback before early returns
         if (_ready && _worker) return true;
@@ -975,9 +1002,12 @@
             try {
                 _worker = _createWorker();
 
+                let rejectInit = null;
                 const initDone = new Promise((resolve, reject) => {
+                    rejectInit = reject;
                     _pendingMessages.set('__init__', { resolve, reject });
                 });
+                _armStallWatchdog((error) => { if (rejectInit) rejectInit(error); });
 
                 _worker.postMessage({
                     type: 'init',
@@ -987,7 +1017,12 @@
                     sizeLabel: DTYPE_SIZES[_currentDtype] || '~88MB',
                 });
 
-                await initDone;
+                try {
+                    await initDone;
+                } finally {
+                    _disarmStallWatchdog();
+                }
+                _stallAttempt = 0;
 
                 // ── Warm-up inference ──
                 console.log('[Kokoro TTS] 🔥 Running warm-up inference...');
@@ -1006,6 +1041,15 @@
 
                 return true;
             } catch (e) {
+                _disarmStallWatchdog();
+                if (e && e.code === 'kokoro-init-stalled' && _stallAttempt < STALL_RETRIES) {
+                    _stallAttempt += 1;
+                    console.warn('[Kokoro TTS] ⏳ ' + e.message + '; retrying from a fresh worker (' + _stallAttempt + '/' + STALL_RETRIES + ')');
+                    try { if (_onProgress) _onProgress({ stage: 'Download stalled, retrying', pct: _loadProgress || 0 }); } catch (_) {}
+                    _terminateWorker(e);
+                    return init(_onProgress);
+                }
+                _stallAttempt = 0;
                 console.error('[Kokoro TTS] ❌ Initialization failed:', e);
                 _terminateWorker(e);
                 throw e;

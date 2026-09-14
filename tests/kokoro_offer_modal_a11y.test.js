@@ -33,7 +33,7 @@ describe('Kokoro offer modal accessibility', () => {
 
   it('reports every loader outcome through the accessible toast channel', () => {
     expect(source).toContain("typeof window.__loadKokoroTTS !== 'function'");
-    expect(source).toContain("addToast('Downloading Kokoro voice model (~40MB)...', 'info')");
+    expect(source).toContain("addToast('Downloading Kokoro voice model (~88MB)...', 'info')");
     expect(source).toContain("addToast('Kokoro voice ready! Switching to offline voice.', 'success')");
     expect(source).toContain('.catch(() => {');
     expect(source).toContain("addToast('Download failed; please try again later.', 'error')");

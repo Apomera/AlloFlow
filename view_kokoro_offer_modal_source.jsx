@@ -2,7 +2,7 @@
  * AlloFlow — Kokoro Offer Modal Module
  *
  * Modal shown when Gemini TTS is unavailable (quota/network) offering the
- * user the option to download Kokoro (~40MB browser-based offline voice).
+ * user the option to download Kokoro (~88MB browser-based offline voice).
  *
  * Pure props-driven; zero internal state. Conditional render lives at the
  * call site in AlloFlowANTI.txt; this component renders the modal contents
@@ -68,7 +68,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
           </div>
         </div>
         <p id="kokoro-offer-description" className="text-sm text-slate-600 mb-4">
-          Would you like to download a free browser-based voice? It's ~40MB and works completely offline — no cloud needed.
+          Would you like to download a free browser-based voice? It's ~88MB and works completely offline — no cloud needed.
         </p>
         <p id="kokoro-offer-note" className="text-xs text-slate-600 mb-4">
           Note: In this environment, the download won't persist between sessions.
@@ -84,7 +84,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
               return;
             }
             window.__kokoroTTSDownloading = true;
-            addToast('Downloading Kokoro voice model (~40MB)...', 'info');
+            addToast('Downloading Kokoro voice model (~88MB)...', 'info');
             Promise.resolve(window.__loadKokoroTTS()).then(ok => {
               window.__kokoroTTSDownloading = false;
               if (ok) { addToast('Kokoro voice ready! Switching to offline voice.', 'success'); setSelectedVoice('af_heart'); }
