@@ -735,7 +735,12 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                   : teamOptions[Math.floor(Math.random() * teamOptions.length)];
               const joinTeam = async () => {
                   try {
-                      const effectiveAppId = targetAppId || appId;
+                      // `appId` is a host-only binding (not injected into this module);
+                      // the old `|| appId` fallback was a ReferenceError. The host always
+                      // passes targetAppId (it defaults to the runtime app id), so a
+                      // missing one is a wiring bug: refuse rather than write elsewhere.
+                      const effectiveAppId = String(targetAppId || '').trim();
+                      if (!effectiveAppId) { console.warn('[StudentQuizOverlay] joinTeam: no targetAppId'); return; }
                       const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
                       await updateDoc(sessionRef, {
                           [`quizState.teams.${user.uid}`]: assignedColor
@@ -761,7 +766,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
           }
       }
       if (sentViaP2P) return 'peer';
-      const effectiveAppId = targetAppId || appId;
+      const effectiveAppId = String(targetAppId || '').trim();
+      if (!effectiveAppId) throw new Error('Quiz response could not be recorded: no session app id.');
       const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
       await updateDoc(sessionRef, {
           [`quizState.responseReceipts.${user.uid}`]: {

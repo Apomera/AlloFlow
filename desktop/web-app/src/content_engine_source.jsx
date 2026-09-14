@@ -673,7 +673,7 @@ var createContentEngine = function(deps) {
       setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
       setSelectedLanguages, setShowSourceGen, setStudentInterests,
       setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen,
-      setPhonicsData, setRevisionData, setSelectionMenu,
+      setPhonicsData, setRevisionData, setSelectionMenu, handleSimplifiedTextChange,
       setPlayingContentId, setPlaybackState,
       recordSourceProvenance, calculateReadability;
   var alloBotRef = { current: null };
@@ -727,6 +727,9 @@ var createContentEngine = function(deps) {
     setDefinitionData = s.setDefinitionData; setIsCustomReviseOpen = s.setIsCustomReviseOpen;
     setPhonicsData = s.setPhonicsData; setRevisionData = s.setRevisionData;
     setSelectionMenu = s.setSelectionMenu;
+    // Host writer for the adapted text (bag entry added 2026-09-14); a host
+    // without it gets a clear error instead of a ReferenceError.
+    handleSimplifiedTextChange = typeof s.handleSimplifiedTextChange === 'function' ? s.handleSimplifiedTextChange : function() { throw new Error('handleSimplifiedTextChange is not available in this host'); };
     setPlayingContentId = s.setPlayingContentId; setPlaybackState = s.setPlaybackState;
     recordSourceProvenance = s.recordSourceProvenance;
     calculateReadability = s.calculateReadability;
@@ -2617,9 +2620,12 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   const stopPlayback = () => {
     // Read refs from window state bag (they're React refs in the main component)
     var _state = _s() || window.__docPipelineState || {};
-    var _playbackRef = _state.playbackSessionRef || (typeof playbackSessionRef !== 'undefined' ? playbackSessionRef : null);
-    var _audioRef = _state.audioRef || (typeof audioRef !== 'undefined' ? audioRef : null);
-    var _blobUrlsRef = _state.activeBlobUrlsRef || (typeof activeBlobUrlsRef !== 'undefined' ? activeBlobUrlsRef : null);
+    // The refs and setters come ONLY from the host state bag; the old
+    // `typeof <free name>` fallbacks were dead (never declared in this module)
+    // and kept the free-variable gate red for this file.
+    var _playbackRef = _state.playbackSessionRef || null;
+    var _audioRef = _state.audioRef || null;
+    var _blobUrlsRef = _state.activeBlobUrlsRef || null;
     // Invalidate the current playback session so any in-flight playSequence
     // chain stops at its next iteration check
     if (_playbackRef) _playbackRef.current = -1;
@@ -2651,10 +2657,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
         clearTimeout(_timeoutRef.current);
         _timeoutRef.current = null;
     }
-    if (typeof setIsPlaying === 'function') setIsPlaying(false);
-    else if (_state.setIsPlaying) _state.setIsPlaying(false);
-    if (typeof setIsPaused === 'function') setIsPaused(false);
-    else if (_state.setIsPaused) _state.setIsPaused(false);
+    if (typeof _state.setIsPlaying === 'function') _state.setIsPlaying(false);
+    if (typeof _state.setIsPaused === 'function') _state.setIsPaused(false);
     if (typeof setPlayingContentId === 'function') setPlayingContentId(null);
     if (typeof setPlaybackState === 'function') setPlaybackState({ sentences: [], currentIdx: -1 });
     if (isPlayingRef) isPlayingRef.current = false;

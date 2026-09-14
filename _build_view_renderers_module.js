@@ -50,7 +50,9 @@ function detectIconsAndComponents() {
 
   // 2. Find every <CapitalRef in JSX position.
   const jsxRefs = new Set();
-  const jsxRe = /<\s*([A-Z][A-Za-z0-9]+)\b/g;
+  // `*`, not `+`: the single-letter Lucide icon <X /> (the Venn editor's remove
+  // buttons) was never aliased, so those buttons threw ReferenceError: X.
+  const jsxRe = /<\s*([A-Z][A-Za-z0-9]*)\b/g;
   let m;
   while ((m = jsxRe.exec(stripped)) !== null) jsxRefs.add(m[1]);
 

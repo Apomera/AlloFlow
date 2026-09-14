@@ -30697,6 +30697,12 @@ const parseTaggedContent = (text) => {
     setPhonicsData, setRevisionData, setSelectionMenu,
     setPlayingContentId, setPlaybackState, setIsPlaying, setIsPaused,
     recordSourceProvenance, calculateReadability,
+    // applyTextRevision writes the edited passage back through this handler;
+    // it was never in the bag, so Apply on a Simplify/Custom revision threw
+    // ReferenceError inside the engine (since the 2026-04 extraction). A
+    // getter, because the handler is a const declared ~7,000 lines below this
+    // bag and is only ever read from an event handler, after render.
+    get handleSimplifiedTextChange() { return handleSimplifiedTextChange; },
   };
   const _contentEngineRef = { current: null };
   window.__contentEngineState = contentEngineStateRef.current;
