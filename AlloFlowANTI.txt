@@ -1966,9 +1966,9 @@ function _alloStudentAiConfigIsValidated(config) {
     const keyless = ['alloflow-local', 'lmstudio', 'localai', 'ollama', 'onnx-npu', 'custom'];
     return keyless.includes(backend) || Boolean(String(config.apiKey || '').trim());
 }
-function _makeQrStudentAiBlockedFn(label) {
+function _makeQrStudentAiBlockedFn(label, message) {
     const blocked = async () => {
-        const err = new Error('AI generation is off for this teacher-prepared QR activity.');
+        const err = new Error(message || 'AI generation is off for this teacher-prepared QR activity.');
         err.code = 'allo-qr-ai-disabled';
         err.aiDisabledFor = label || 'qr-student-mode';
         throw err;
@@ -11990,6 +11990,61 @@ const AlloFlowContent = () => {
       studentProjectSettings.hideStudentAiFeatures === true
       || (qrStudentModeActive && !studentAiConfigured)
   );
+  // In-app students (2026-09-14). The QR guard swaps the window AI globals for
+  // blocked functions, but a student who is NOT on a QR link (Student role on
+  // a shared device with hideStudentAiFeatures on) kept the teacher's live
+  // window.callGemini. The host hands modules callGemini = null, yet ~40 module
+  // sites reach the AI through the global instead (Concept Map 3D layout and
+  // hints, Memory Palace sculptures, "Surprise me", persona image edits,
+  // vision alt-text), so the setting hid nothing there. Swap the text, vision
+  // and image-edit globals for blocked functions while the flag holds and put
+  // the originals back when the role flips to teacher. Audio is left alone:
+  // read-aloud is an access feature, not generation, and the QR path only
+  // blocks it when a personal key lacks it.
+  // The same applies to the host's own module-scope bindings: ~30 lazy tools
+  // (Learning Hub: AlloHaven, Test Prep, Lit Lab, Story Forge, Reading
+  // Library, SEL Hub, STEM Lab, ...) are mounted with `callGemini,` straight
+  // from those bindings, not through the null-when-hidden prop. callImagen
+  // reads window.__alloStudentAiDisabled itself.
+  const [, setStudentAiGuardTick] = useState(0);
+  useEffect(() => {
+      if (typeof window === 'undefined' || !studentAiFeaturesHidden) return undefined;
+      const message = 'AI features are turned off for students in this project.';
+      const savedWindow = {};
+      ['callGemini', 'callGeminiVision', 'callGeminiImageEdit'].forEach((name) => {
+          const current = window[name];
+          if (typeof current === 'function' && current._alloQrBlocked) return; // the QR guard already owns it
+          savedWindow[name] = current;
+          window[name] = _makeQrStudentAiBlockedFn(name, message);
+      });
+      const savedLocal = { callGemini, callGeminiSingleAttempt, callGeminiVision, callGeminiImageEdit };
+      const localSwapped = !(typeof callGemini === 'function' && callGemini._alloQrBlocked);
+      if (localSwapped) {
+          callGemini = _makeQrStudentAiBlockedFn('text', message);
+          callGeminiSingleAttempt = callGemini;
+          callGeminiVision = _makeQrStudentAiBlockedFn('vision', message);
+          callGeminiImageEdit = _makeQrStudentAiBlockedFn('image-edit', message);
+      }
+      const previousDisabled = window.__alloStudentAiDisabled;
+      window.__alloStudentAiDisabled = true;
+      // Children rendered in this same pass still hold the live functions;
+      // one more render hands every mount site the blocked ones.
+      setStudentAiGuardTick((tick) => tick + 1);
+      return () => {
+          Object.keys(savedWindow).forEach((name) => {
+              // Only undo our own swap; a re-initialised API may have replaced it.
+              if (typeof window[name] === 'function' && window[name]._alloQrBlocked) window[name] = savedWindow[name];
+          });
+          if (localSwapped && typeof callGemini === 'function' && callGemini._alloQrBlocked) {
+              callGemini = savedLocal.callGemini;
+              callGeminiSingleAttempt = savedLocal.callGeminiSingleAttempt;
+              callGeminiVision = savedLocal.callGeminiVision;
+              callGeminiImageEdit = savedLocal.callGeminiImageEdit;
+          }
+          window.__alloStudentAiDisabled = previousDisabled;
+          setStudentAiGuardTick((tick) => tick + 1);
+      };
+  }, [studentAiFeaturesHidden]);
   const [showClassAnalytics, setShowClassAnalytics] = useState(false);
   // Research Suite (2026-08-23): the standalone entry to the IRB study surface
   // that used to be reachable only as the Assessment Center's third tab. Same
@@ -30121,6 +30176,11 @@ const parseTaggedContent = (text) => {
   useEffect(() => {
       const resource = glossaryLiveRef.current.resource;
       if (activeView !== 'glossary') return;
+      // Teacher-only (2026-09-14): this is an authoring check (accuracy score,
+      // definition grade level, coverage gaps) and it costs an AI call, which a
+      // student with a personal key would have paid for; AlloBot then read the
+      // result aloud to the student six seconds later.
+      if (!isTeacherMode) return;
       if (resource?.type !== 'glossary' || !resource.data?.length) return;
       const key = String(resource.id) + ':' + glossaryHealthSignature;
       let active = true;
@@ -30149,7 +30209,7 @@ const parseTaggedContent = (text) => {
           glossaryHealthFollowUpTimerRef.current = null;
           if (glossaryHealthCheckIdRef.current === key) glossaryHealthCheckIdRef.current = null;
       };
-  }, [activeView, generatedContent?.id, glossaryHealthSignature, runGlossaryHealthCheck]);
+  }, [activeView, isTeacherMode, generatedContent?.id, glossaryHealthSignature, runGlossaryHealthCheck]);
   const resilientJsonParse = async (jsonString, attempt = 1) => {
       try {
           return JSON.parse(cleanJson(jsonString));
@@ -30462,8 +30522,8 @@ const parseTaggedContent = (text) => {
       const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
     };
     _throwIfImageAborted();
-    if (_isQrStudentAiDisabled()) {
-      const err = new Error('AI image generation is off for this teacher-prepared QR activity.');
+    if (_isQrStudentAiDisabled() || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true)) {
+      const err = new Error(_isQrStudentAiDisabled() ? 'AI image generation is off for this teacher-prepared QR activity.' : 'AI image generation is turned off for students in this project.');
       err.code = 'allo-qr-ai-disabled';
       err.aiDisabledFor = 'imagen';
       throw err;
@@ -39121,18 +39181,20 @@ const parseTaggedContent = (text) => {
           {liveResourceLoadState.status === 'failed' && <button type="button" onClick={retryLiveSessionResources} className="rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{t('mailbox.retry_resources') || 'Retry resources'}</button>}
         </div>
       )}
-      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinStatus || activeSessionCode) && (
+      {/* Join strips (2026-09-14): only while joining or when the join failed and
+          needs a Retry. Once a code is live, the header's Live button carries the
+          code, codename, AI status and connection, so nothing sits over the page
+          for the whole session. */}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinError || (liveJoinStatus && !activeSessionCode)) && (
         <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
           <span>{liveJoinStatus || `Class ${activeSessionCode} · ${studentNickname || 'Student'} · ${studentAiConfigured ? 'Personal AI connected' : studentAiSetupAllowed ? 'Personal AI available' : 'AI tools off'}`}</span>
           {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">{t('mailbox.retry') || 'Retry'}</button>}
-          {!liveJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
-      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinStatus || activeSessionCode) && (
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinError || (mbJoinStatus && !activeSessionCode)) && (
         <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
           <span>{mbJoinStatus || `Class ${activeSessionCode || window.__alloQrStudentMode?.code || ''} · ${studentNickname || 'Student'} · ${studentAiConfigured ? 'Personal AI connected' : studentAiSetupAllowed ? 'Personal AI available' : 'AI tools off'}`}</span>
           {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">{t('mailbox.retry') || 'Retry'}</button>}
-          {!mbJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
       {!isTeacherMode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) && (
@@ -39258,7 +39320,7 @@ const parseTaggedContent = (text) => {
           </button>
         </div>
       )}
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true) } : null} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -40619,7 +40681,7 @@ const parseTaggedContent = (text) => {
                 {activeView === 'simplified' && React.createElement(LazySimplifiedView, {
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
                     studentInterests, standardsInput, sourceTopic,
-                    isTeacherMode, isProcessing, isPlaying,
+                    isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,
                     interactionMode, isCompareMode, isFluencyMode, isEditingLeveledText,
                     isImmersiveReaderActive, immersiveSettings, immersiveRulerY,
                     isFocusReaderActive, isChunkReaderActive, chunkReaderIdx,

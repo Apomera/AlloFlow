@@ -464,28 +464,55 @@ const LiveAdvancedQuizResponse = React.memo(({
           && new Set(candidateOrder).size === items.length;
       const presentedOrder = isPermutation ? candidateOrder : items.map((_, index) => index);
       const displayedItems = presentedOrder.map((index) => items[index]);
-      const wrongIndex = Number.isInteger(question?.intentionallyWrongIndex)
-          && question.intentionallyWrongIndex >= 0
-          && question.intentionallyWrongIndex < displayedItems.length
-          ? question.intentionallyWrongIndex
-          : null;
+      // Same rule as the quiz card and the teacher-side aggregators
+      // (sequenceSenseTruth): a displayed position is misplaced when removing
+      // it leaves the rest in canonical order, so a swap accepts either half.
+      const misplacedPositions = [];
+      if (!presentedOrder.every((value, index) => value === index)) {
+          presentedOrder.forEach((_, skip) => {
+              let previous = -1;
+              const sorted = presentedOrder.every((value, index) => {
+                  if (index === skip) return true;
+                  const ok = value >= previous;
+                  previous = value;
+                  return ok;
+              });
+              if (sorted) misplacedPositions.push(skip);
+          });
+          if (!misplacedPositions.length) {
+              const authored = question?.intentionallyWrongIndex;
+              if (Number.isInteger(authored) && authored >= 0 && authored < items.length) misplacedPositions.push(authored);
+              else presentedOrder.forEach((_, index) => misplacedPositions.push(index));
+          }
+      }
+      const orderIsCorrect = misplacedPositions.length === 0;
+      const orderAnswer = Array.isArray(draft.orderAnswer) && draft.orderAnswer.length === items.length ? draft.orderAnswer : presentedOrder;
+      const moveItem = (position, delta) => {
+          const target = position + delta;
+          if (target < 0 || target >= orderAnswer.length) return;
+          const next = orderAnswer.slice();
+          next[position] = orderAnswer[target];
+          next[target] = orderAnswer[position];
+          patchDraft({ orderAnswer: next });
+      };
       const principleOptions = boundedLiveQuizStrings(question?.principleOptions, 12);
       const principles = principleOptions.length >= 2
           ? principleOptions
           : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
       const chooseVerification = (answer) => patchDraft({ verifyAnswer: answer, sequenceStep: answer === 'no' ? 2 : 3 });
       const chooseMisplaced = (index) => patchDraft({ clickedIdx: index, sequenceStep: 3 });
+      const finishArrange = () => patchDraft({ orderAnswer: orderAnswer.slice(), sequenceStep: 4 });
       const submitPrinciple = (principleAnswer) => {
-          const actualOrderIsCorrect = wrongIndex === null;
-          const step1Correct = draft.verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
-          const step2Correct = draft.verifyAnswer === 'yes' ? step1Correct : draft.clickedIdx === wrongIndex;
+          const step1Correct = draft.verifyAnswer === 'yes' ? orderIsCorrect : !orderIsCorrect;
+          const step2Correct = draft.verifyAnswer === 'yes' ? step1Correct : misplacedPositions.includes(draft.clickedIdx);
+          const arrangeCorrect = orderAnswer.every((value, index) => value === index);
           const expectedPrinciple = boundedLiveQuizText(question?.orderingPrinciple || '', 200);
           const step3Correct = expectedPrinciple ? principleAnswer === expectedPrinciple : null;
-          const gradableSteps = expectedPrinciple ? 3 : 2;
-          const rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+          const gradableSteps = expectedPrinciple ? 4 : 3;
+          const rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
           const status = rawScore === gradableSteps ? 'correct' : rawScore > 0 ? 'partially-correct' : 'incorrect';
           patchDraft({ principleAnswer });
-          sendAnswer({ verifyAnswer: draft.verifyAnswer, clickedIdx: draft.clickedIdx, principleAnswer, score: rawScore, status });
+          sendAnswer({ verifyAnswer: draft.verifyAnswer, clickedIdx: draft.clickedIdx, orderAnswer: orderAnswer.slice(), principleAnswer, score: rawScore, status });
       };
       return (
           <div className="mt-8 w-full max-w-4xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl" data-live-response-type={questionType}>
@@ -513,8 +540,24 @@ const LiveAdvancedQuizResponse = React.memo(({
                       </div>
                   </fieldset>
               )}
-              {draft.sequenceStep === 2 && <p className="mt-4 text-sm font-bold text-white">Select the misplaced item above.</p>}
+              {draft.sequenceStep === 2 && <p className="mt-4 text-sm font-bold text-white">Select a misplaced item above.</p>}
               {draft.sequenceStep === 3 && (
+                  <fieldset className="mt-4">
+                      <legend className="mb-2 text-sm font-black text-white">Put the items in the correct order. If they are already right, leave them.</legend>
+                      <ol className="space-y-2" aria-label="Your order" data-live-sequence-arrange="true">
+                          {orderAnswer.map((canonicalIndex, position) => (
+                              <li key={canonicalIndex} className="flex items-center gap-2 rounded-2xl border border-white/30 bg-white px-3 py-2 text-slate-900">
+                                  <span className="w-6 text-xs font-black">{position + 1}.</span>
+                                  <span className="min-w-0 flex-1 text-sm font-bold">{items[canonicalIndex]}</span>
+                                  <button type="button" disabled={isDisabled || position === 0} aria-label={`Move up: ${items[canonicalIndex]}`} onClick={() => moveItem(position, -1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▲</button>
+                                  <button type="button" disabled={isDisabled || position === orderAnswer.length - 1} aria-label={`Move down: ${items[canonicalIndex]}`} onClick={() => moveItem(position, 1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▼</button>
+                              </li>
+                          ))}
+                      </ol>
+                      <button type="button" disabled={isDisabled} onClick={finishArrange} className={`${submitButtonClass} mt-3`}>Done arranging</button>
+                  </fieldset>
+              )}
+              {draft.sequenceStep === 4 && (
                   <fieldset className="mt-4">
                       <legend className="mb-2 text-sm font-black text-white">What is the ordering principle?</legend>
                       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">

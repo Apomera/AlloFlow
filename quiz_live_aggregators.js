@@ -284,6 +284,46 @@
     return unique.size === expected.length ? expected : [];
   }
 
+  // Sequence Sense answer key. The author supplies one "intentionallyWrongIndex",
+  // but an adjacent swap leaves BOTH items out of place, so the accepted set is
+  // derived from the displayed order itself: a displayed position counts as
+  // misplaced when removing it leaves the remaining items in canonical order.
+  // Canonical (or missing) order -> nothing is misplaced. A scramble no single
+  // removal can repair falls back to the authored index, else every position
+  // (all are out of place). Returns { orderIsCorrect, misplaced: [positions] }.
+  function sequenceSenseTruth(presentedOrder, intentionallyWrongIndex, itemCount) {
+    var n = Number(itemCount) || 0;
+    var valid = n > 0 && Array.isArray(presentedOrder) && presentedOrder.length === n
+      && presentedOrder.every(function (value) { return Number.isInteger(value) && value >= 0 && value < n; })
+      && new Set(presentedOrder).size === n;
+    if (!valid || presentedOrder.every(function (value, index) { return value === index; })) return { orderIsCorrect: true, misplaced: [] };
+    var misplaced = [];
+    for (var skip = 0; skip < n; skip++) {
+      var previous = -1;
+      var sorted = true;
+      for (var j = 0; j < n && sorted; j++) {
+        if (j === skip) continue;
+        if (presentedOrder[j] < previous) sorted = false;
+        previous = presentedOrder[j];
+      }
+      if (sorted) misplaced.push(skip);
+    }
+    if (!misplaced.length) {
+      misplaced = Number.isInteger(intentionallyWrongIndex) && intentionallyWrongIndex >= 0 && intentionallyWrongIndex < n
+        ? [intentionallyWrongIndex]
+        : presentedOrder.map(function (_, index) { return index; });
+    }
+    return { orderIsCorrect: false, misplaced: misplaced };
+  }
+  // "items 2 and 3 were swapped" / "item 3 was misplaced" / "items 1, 3 and 4 were out of place"
+  function describeSequenceMisplaced(misplaced) {
+    var numbers = (Array.isArray(misplaced) ? misplaced : []).map(function (index) { return index + 1; });
+    if (!numbers.length) return 'the order was correct';
+    if (numbers.length === 1) return 'item ' + numbers[0] + ' was misplaced';
+    if (numbers.length === 2 && numbers[1] === numbers[0] + 1) return 'items ' + numbers[0] + ' and ' + numbers[1] + ' were swapped';
+    return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
+  }
+
   function presentationQuestionIsGameScorable(question) {
     var type = normalizeItemType(question, null);
     if (isUnscoredPollQuestion(question, null)) return false;
@@ -425,21 +465,29 @@
       var verifyAnswer = normalizeComparable(answerObject.verifyAnswer);
       var principleAnswer = normalizeComparable(answerObject.principleAnswer);
       if ((verifyAnswer !== 'yes' && verifyAnswer !== 'no') || !principleAnswer) return result('submitted', false, null);
-      var rawWrongIndex = question.intentionallyWrongIndex;
-      var intentionallyWrongIndex = Number.isInteger(rawWrongIndex) ? rawWrongIndex : null;
-      var actualOrderIsCorrect = intentionallyWrongIndex === null;
-      var step1Correct = verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
+      var sequenceItemCount = Array.isArray(question.items) ? question.items.length : 0;
+      var truth = sequenceSenseTruth(question.presentedOrder, question.intentionallyWrongIndex, sequenceItemCount);
+      var step1Correct = verifyAnswer === 'yes' ? truth.orderIsCorrect : !truth.orderIsCorrect;
       var step2Correct = verifyAnswer === 'yes'
         ? step1Correct
-        : intentionallyWrongIndex !== null && answerObject.clickedIdx === intentionallyWrongIndex;
+        : truth.misplaced.indexOf(answerObject.clickedIdx) >= 0;
+      // Clients that ran the arrange step send orderAnswer (canonical indices in
+      // the student's arrangement) and are scored out of 4; older payloads have
+      // none and stay 3-step so their totals do not shift under them.
+      var orderAnswer = Array.isArray(answerObject.orderAnswer) ? answerObject.orderAnswer : null;
+      var arrangeCorrect = orderAnswer
+        ? orderAnswer.length === sequenceItemCount && orderAnswer.every(function (value, index) { return value === index; })
+        : null;
       var step3Correct = principleAnswer === normalizeComparable(question.orderingPrinciple);
-      var sequenceRawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
-      var sequenceScore = policy.partialCredit ? sequenceRawScore : (sequenceRawScore === 3 ? 3 : 0);
-      return result(sequenceScore === 3 ? 'correct' : sequenceScore > 0 ? 'partially-correct' : 'incorrect', true, sequenceScore, {
+      var sequenceMax = orderAnswer ? 4 : 3;
+      var sequenceRawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
+      var sequenceScore = policy.partialCredit ? sequenceRawScore : (sequenceRawScore === sequenceMax ? sequenceMax : 0);
+      return result(sequenceScore === sequenceMax ? 'correct' : sequenceScore > 0 ? 'partially-correct' : 'incorrect', true, sequenceScore, {
         step1Correct: step1Correct,
         step2Correct: step2Correct,
+        arrangeCorrect: arrangeCorrect,
         step3Correct: step3Correct,
-        scoreFraction: sequenceScore / 3,
+        scoreFraction: sequenceScore / sequenceMax,
       });
     }
     if (type === 'relation-mismatch') {
@@ -573,11 +621,12 @@
     if (type === 'sequence-sense') {
       if (!presentationQuestionIsGameScorable(question)) return '';
       var principle = String(question.orderingPrinciple || '').trim();
-      if (question.intentionallyWrongIndex == null) return 'Sequence is valid · Principle: ' + principle;
-      var step = Array.isArray(question.items) ? question.items[question.intentionallyWrongIndex] : '';
-      return 'Step ' + (question.intentionallyWrongIndex + 1)
-        + (step ? ' (' + String(step) + ')' : '')
-        + ' is misplaced · Principle: ' + principle;
+      var sequenceTruth = sequenceSenseTruth(question.presentedOrder, question.intentionallyWrongIndex, question.items.length);
+      if (sequenceTruth.orderIsCorrect) return 'Sequence is valid · Principle: ' + principle;
+      var described = describeSequenceMisplaced(sequenceTruth.misplaced);
+      return described.charAt(0).toUpperCase() + described.slice(1)
+        + ' · Correct order: ' + question.items.map(function (value) { return String(value); }).join(' → ')
+        + ' · Principle: ' + principle;
     }
     if (type === 'relation-mismatch' && presentationQuestionIsGameScorable(question)) {
       var pair = question.pairs[question.wrongPairIndex] || {};
@@ -1871,6 +1920,8 @@
     classifyPresentationConfidence: classifyPresentationConfidence,
     extractLikertNumericValue: extractLikertNumericValue,
     describePresentationCorrectAnswer: describePresentationCorrectAnswer,
+    sequenceSenseTruth: sequenceSenseTruth,
+    describeSequenceMisplaced: describeSequenceMisplaced,
     normalizeConceptId: normalizeConceptId,
     _meta: {
       version: '1',

@@ -8087,11 +8087,17 @@
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
             // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
             celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
-            callGemini: typeof callGemini === 'function' ? callGemini : null,
-            ai: ai || null,
-            generateText: (ai && typeof ai.generateText === 'function')
-              ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
-              : (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),
+            // A blocked callGemini (QR student, or in-app student with AI hidden,
+            // 2026-09-14) is a function that only throws; hand tools null so their
+            // AI affordances hide instead of failing on click, and withhold the raw
+            // client with it.
+            callGemini: typeof callGemini === 'function' && !callGemini._alloQrBlocked ? callGemini : null,
+            ai: (typeof callGemini === 'function' && callGemini._alloQrBlocked) ? null : (ai || null),
+            generateText: (typeof callGemini === 'function' && callGemini._alloQrBlocked)
+              ? null
+              : (ai && typeof ai.generateText === 'function')
+                ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
+                : (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),
             storageDB: storageDB || null,
             // Guarded AI-hint entry point + its enabled flag. getHint self-gates
             // (off → zero traffic), enforces try-again/cap/reveal-check, and shows

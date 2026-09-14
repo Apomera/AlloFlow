@@ -609,7 +609,10 @@ function UniversalSettingsPanel(props) {
   // PROVIDER DATA — never from model output — so the model cannot invent
   // graph facts. AI access uses the established CDN-module fallback
   // (props.callGemini || window.callGemini), keeping this panel host-prop-free.
-  const surpriseAi = props.callGemini || (typeof window !== 'undefined' ? window.callGemini : null);
+  // props.callGemini is null when the host hides student AI; only fall back to
+  // the window global when the host passed nothing at all (undefined), and
+  // never to a blocked one.
+  const surpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);
   const runSurpriseMe = async () => {
     const match = localResolution && localResolution.match;
     if (!match || !localStandardsProvider || !surpriseAi) return;

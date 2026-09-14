@@ -7,6 +7,15 @@
 // Icons (lucide) are aliased at module level via _lazyIcon, components
 // and helpers come through the per-renderer deps interface.
 
+// Runtime AI availability for the affordances below (Concept Map 3D layout,
+// strand hints, Memory Palace sculptures, node mnemonics). A QR student and,
+// since 2026-09-14, an in-app student with AI hidden get window.callGemini
+// replaced by a BLOCKED function that only throws, so `typeof === 'function'`
+// alone kept offering buttons that could only fail. Check the marker too.
+const _alloRuntimeAiAvailable = () => {
+  try { return typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && window.__alloStudentAiDisabled !== true; } catch (_) { return false; }
+};
+
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
   const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks, t } = deps;
   const _t = t || ((k) => null);
@@ -2898,7 +2907,7 @@ function openConceptMap3D(opts) {
         handle = CG3D.render(body, graph, renderOpts);
       };
     }
-    if (typeof window.callGemini === 'function') {
+    if (_alloRuntimeAiAvailable()) {
       aiBtn = document.createElement('button');
       aiBtn.textContent = '✨ ' + (t('concept_map.view_3d_arrange') || 'Arrange by meaning');
       aiBtn.style.cssText = 'font-size:12px;font-weight:800;padding:6px 12px;min-height:44px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;';
@@ -3178,7 +3187,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     // other AI affordance.
     const requestHint = () => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
-        if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || typeof window.callGemini !== 'function') return;
+        if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || !_alloRuntimeAiAvailable()) return;
         const badId = Object.keys(lastScore.results).find((id) => lastScore.results[id] !== 'correct');
         if (!badId) return;
         const n = (challenge.graph.nodes || []).find((x) => x.id === badId);
@@ -3200,7 +3209,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const handleArrange = () => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
-        if (!E || !graphRef.current || typeof window.callGemini !== 'function') return;
+        if (!E || !graphRef.current || !_alloRuntimeAiAvailable()) return;
         setArranging(true);
         E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || '' })
             .then((merged) => {
@@ -3259,7 +3268,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     };
     const aiRateConstelLink = () => {
         const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
-        if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || typeof window.callGemini !== 'function' || constelBusy) return;
+        if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || !_alloRuntimeAiAvailable() || constelBusy) return;
         const la = (constelNodes.find((n) => n.id === constelA) || {}).label || constelA;
         const lb = (constelNodes.find((n) => n.id === constelB) || {}).label || constelB;
         setConstelBusy(true);
@@ -3312,7 +3321,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const doSculptFromLabel = () => {
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
         const cur = selectedNodeRef.current;
-        if (!P3D || !cur || !persist || directBusy || typeof window.callGemini !== 'function') return;
+        if (!P3D || !cur || !persist || directBusy || !_alloRuntimeAiAvailable()) return;
         setDirectBusy('generating');
         Promise.resolve(window.callGemini(P3D.buildRecipePrompt(cur.label), true))
             .then((res) => {
@@ -3336,7 +3345,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             setDirectBusy(null);
         };
         if (artType === 'sculpture') {
-            if (!P3D || typeof window.callGemini !== 'function') { setDirectBusy(null); return; }
+            if (!P3D || !_alloRuntimeAiAvailable()) { setDirectBusy(null); return; }
             Promise.resolve(window.callGemini(P3D.buildRecipePrompt(finalPrompt), true))
                 .then((res) => { const r = P3D.parseRecipe(_gemText(res)); finish(r ? { type: 'sculpture', recipe: r } : null); })
                 .catch(() => finish(null));
@@ -3349,7 +3358,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     };
     const handleArtSubmit = () => {
         const cur = selectedNodeRef.current;
-        if (!cur || directBusy || typeof window.callGemini !== 'function') return;
+        if (!cur || directBusy || !_alloRuntimeAiAvailable()) return;
         const userPrompt = directPrompt.trim();
         if (!userPrompt) return;
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -3383,7 +3392,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const handleArtRefine = () => {
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
         const cur = selectedNodeRef.current;
-        if (!P3D || !cur || !persist || refineBusy || typeof window.callGemini !== 'function') return;
+        if (!P3D || !cur || !persist || refineBusy || !_alloRuntimeAiAvailable()) return;
         const art = artRef.current && artRef.current[cur.id];
         const instr = refinePrompt.trim();
         if (!art || art.type !== 'sculpture' || !art.recipe || !instr) return;
@@ -3456,7 +3465,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
         if (!isTeacherMode || !persist || furnishing || challenge) return;
-        if (typeof window.callGemini !== 'function') return;
+        if (!_alloRuntimeAiAvailable()) return;
         const wantImages = furnishMode === 'image';
         if (wantImages && !canImagen) {
             if (addToast) addToast(t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.', 'info');
@@ -3750,7 +3759,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             >
                                 ✔ {t('concept_space.challenge_check') || 'Check placements'}
                             </button>
-                            {lastScore && !lastScore.complete && typeof window.callGemini === 'function' && (
+                            {lastScore && !lastScore.complete && _alloRuntimeAiAvailable() && (
                                 <button
                                     onClick={requestHint}
                                     disabled={hintLoading}
@@ -3847,7 +3856,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     Concept Recall: {recallLiveReadiness.message}
                                 </span>
                             )}
-                            {hasContent && typeof window.callGemini === 'function' && !failed && (
+                            {hasContent && _alloRuntimeAiAvailable() && !failed && (
                                 <button
                                     onClick={handleArrange}
                                     disabled={arranging}
@@ -3866,7 +3875,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     ↺ {t('concept_space.reset') || 'Reset arrangement'}
                                 </button>
                             )}
-                            {hasContent && persist && isTeacherMode && !failed && typeof window.callGemini === 'function' && (
+                            {hasContent && persist && isTeacherMode && !failed && _alloRuntimeAiAvailable() && (
                                 <button
                                     onClick={() => setFurnishOpen((o) => !o)}
                                     aria-pressed={furnishOpen ? 'true' : 'false'}
@@ -4175,7 +4184,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">
                             ⭐ {t('cg3d.constel_save') || 'Set my weight'}
                         </button>
-                        {typeof window.callGemini === 'function' && (
+                        {_alloRuntimeAiAvailable() && (
                             <button onClick={aiRateConstelLink} disabled={!constelA || !constelB || constelA === constelB || constelBusy}
                                 className="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-indigo-200 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
                                 title={t('cg3d.constel_ai_tooltip') || 'Ask the AI to rate the same link, then Compare shows where you differ'}>
@@ -4266,7 +4275,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     <div className="text-xs text-fuchsia-700 font-bold py-2 text-center" role="status">{directBusy === 'evaluating' ? (t('concept_space.art_checking') || '… Checking your idea') : (t('concept_space.art_creating') || '… Creating')}</div>
                                 ) : (
                                     <>
-                                        <button onClick={doSculptFromLabel} disabled={typeof window.callGemini !== 'function'} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
+                                        <button onClick={doSculptFromLabel} disabled={!_alloRuntimeAiAvailable()} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
                                         <div className="text-[11px] text-slate-500 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
                                         <div className="flex gap-1">
                                             <button onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🧊 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
@@ -5305,7 +5314,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const handleSculpt = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!MP || !P3D || !persist || sculpting || furnishing || typeof window.callGemini !== 'function') return;
+        if (!MP || !P3D || !persist || sculpting || furnishing || !_alloRuntimeAiAvailable()) return;
         const palace = MP.buildPalace(data || {});
         const targets = palace.loci.filter((l) => l.id !== '__entry' && !objects3d[l.id]);
         if (!targets.length) { if (addToast) addToast(t('memory_palace.sculpt_done_already') || 'Every locus already has a sculpture.', 'info'); return; }
@@ -5352,7 +5361,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const handleDirectSubmit = async (promptOverride) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const cur = currentRef.current;
-        if (!MP?.buildPromptEvalPrompt || !cur || cur.id === '__entry' || !persist || typeof window.callGemini !== 'function') return;
+        if (!MP?.buildPromptEvalPrompt || !cur || cur.id === '__entry' || !persist || !_alloRuntimeAiAvailable()) return;
         if (directType === 'image' ? !canImagen : !window.AlloModules?.Prim3D) return;
         const userPrompt = (typeof promptOverride === 'string' && promptOverride.trim()) ? promptOverride.trim() : directPrompt.trim();
         if (!userPrompt) return;
@@ -5391,7 +5400,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         try {
             let value, depth = null;
             if (context.type === 'sculpture') {
-                if (!P3D || typeof window.callGemini !== 'function') throw new Error('Sculpture generation unavailable');
+                if (!P3D || !_alloRuntimeAiAvailable()) throw new Error('Sculpture generation unavailable');
                 const res = await window.callGemini(P3D.buildRecipePrompt(finalPrompt), true);
                 const text = typeof res === 'string' ? res : ((res && (res.text || res.output || res.response)) || '');
                 value = P3D.parseRecipe(text);
@@ -5553,7 +5562,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
         const cur = currentRef.current;
-        if (!MP || !P3D || !cur || cur.id === '__entry' || !persist || refineBusy || typeof window.callGemini !== 'function') return;
+        if (!MP || !P3D || !cur || cur.id === '__entry' || !persist || refineBusy || !_alloRuntimeAiAvailable()) return;
         const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
         const instr = refinePrompt.trim();
         if (!rec || !instr || rec.glbItem) return;   // library items have no editable parts
@@ -5664,7 +5673,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!locus || locus.id === '__entry' || !persist || quickCreateRef.current?.status === 'generating') return;
         if (locus.applied && !_quickPreviewValid(locus)) return;
         if (type === 'image' && !canImagen) return;
-        if (type === 'sculpture' && (!P3D || typeof window.callGemini !== 'function')) return;
+        if (type === 'sculpture' && (!P3D || !_alloRuntimeAiAvailable())) return;
         const job = _beginArtJob(type, locus);
         if (!job) return;
         const target = _artTarget(locus);
@@ -6163,7 +6172,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <div className="col-span-full rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3" role="group" aria-label={t('memory_palace.controls_create') || 'Create & personalize'}>
                                 <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800">{t('memory_palace.controls_create') || 'Create & personalize'}</div>
                                 <div className="flex flex-wrap gap-2">
-                            {hasContent && !failed && !noWalk && persist && typeof window.callGemini === 'function' && (
+                            {hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && (
                                 <button
                                     onClick={() => { setDirectMode((d) => !d); setDirectEval(null); }}
                                     aria-pressed={directMode}
@@ -6216,7 +6225,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         : (t('memory_palace.furnish') || 'Furnish with AI images')}
                                 </button>
                             )}
-                            {hasContent && !failed && !noWalk && persist && typeof window.callGemini === 'function' && (
+                            {hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && (
                                 <button
                                     onClick={handleSculpt}
                                     disabled={artBusy || !window.AlloModules?.Prim3D}
@@ -6703,7 +6712,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                 🖼 {t('memory_palace.quick_image_here') || 'Quick image here'}
                                             </button>
                                         )}
-                                        {typeof window.callGemini === 'function' && !!(window.AlloModules && window.AlloModules.Prim3D) && (
+                                        {_alloRuntimeAiAvailable() && !!(window.AlloModules && window.AlloModules.Prim3D) && (
                                             <button type="button" onClick={() => handleQuickCreate('sculpture', proximityLocus)}
                                                 disabled={artBusy}
                                                 className="min-h-[44px] rounded-xl bg-slate-800 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-800">
@@ -6715,7 +6724,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                             className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
                                             🎁 {t('memory_palace.empty_use_builtins') || 'Use built-in cues'}
                                         </button>
-                                        {typeof window.callGemini === 'function' && (
+                                        {_alloRuntimeAiAvailable() && (
                                             <button type="button"
                                                 onClick={() => { setDirectMode(true); setDecorMode(false); setDirectEval(null); setNearbyEmpty(null); setQuickCreate(null); setCustomizeOpen(true); }}
                                                 className="min-h-[44px] rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-xs font-extrabold text-fuchsia-800 shadow-sm hover:bg-fuchsia-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-700">

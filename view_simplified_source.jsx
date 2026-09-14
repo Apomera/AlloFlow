@@ -892,10 +892,14 @@
     var standardsInput = props.standardsInput;
     var sourceTopic = props.sourceTopic;
     var isTeacherMode = props.isTeacherMode;
+    // Explain mode (2026-09-14): every action in its selection menu (Explain,
+    // Simplify, Custom) is an AI call, so the mode is withheld from a student
+    // whose AI is hidden. Word meaning stays: it has a dictionary path.
+    var studentAiFeaturesHidden = !isTeacherMode && !!props.studentAiFeaturesHidden;
     var isProcessing = props.isProcessing;
     var isPlaying = props.isPlaying;
     // Guard stale authoring state immediately when switching to student view.
-    var interactionMode = !isTeacherMode && ['revise', 'add-glossary'].includes(props.interactionMode) ? 'read' : props.interactionMode;
+    var interactionMode = !isTeacherMode && (['revise', 'add-glossary'].includes(props.interactionMode) || (studentAiFeaturesHidden && props.interactionMode === 'explain')) ? 'read' : props.interactionMode;
     var isCompareMode = isTeacherMode && props.isCompareMode;
     var isFluencyMode = props.isFluencyMode;
     var isEditingLeveledText = isTeacherMode && props.isEditingLeveledText;
@@ -2545,7 +2549,7 @@
                 ['read', 'simplified.read_mode', 'Read', Volume2],
                 ['define', 'simplified.word_meaning', 'Word meaning', Search],
                 ['phonics', 'simplified.word_sounds', 'Word sounds', Ear],
-                ['explain', 'simplified.explain_mode', 'Explain', HelpCircle],
+                ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]),
                 ...(isTeacherMode ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])
               ].map(([mode, key, fallback, Icon]) => <button type="button" key={mode} data-reading-mode={mode} data-help-key={mode === 'add-glossary' ? 'simplified_add_term' : 'simplified_' + mode + '_mode'} onClick={() => chooseReadingMode(mode)} aria-pressed={interactionMode === mode && !isCompareMode && !isFluencyMode && !isEditingLeveledText} className={'min-h-11 rounded-xl px-3 py-2 text-sm font-bold inline-flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (interactionMode === mode && !isCompareMode && !isFluencyMode && !isEditingLeveledText ? 'bg-indigo-100 text-indigo-900' : 'text-slate-700 hover:bg-slate-100')}><Icon size={16} aria-hidden="true" />{readerText(key, fallback)}</button>)}
               <button type="button" aria-expanded={practiceOpen} aria-controls="simplified-practice-tools" onClick={() => setPracticeOpen(!practiceOpen)} className="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{readerText('simplified.practice_tools', 'Practice')}{practiceOpen ? <ChevronUp size={14} className="inline ml-1" /> : <ChevronDown size={14} className="inline ml-1" />}</button>

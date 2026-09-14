@@ -41684,6 +41684,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               const items = Array.isArray(q.items) ? q.items : [];
                               const presentedOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder : items.map((_, idx) => idx);
                               const principleOpts = Array.isArray(q.principleOptions) ? q.principleOptions : ['chronological','cause-effect','process','size','hierarchy'];
+                              // Positions out of place, derived from the displayed order (an
+                              // adjacent swap yields both), matching the in-app graders.
+                              const misplacedPositions = (() => {
+                                  if (presentedOrder.every((value, idx) => value === idx)) return [];
+                                  const found = [];
+                                  presentedOrder.forEach((_, skip) => {
+                                      let previous = -1;
+                                      const sorted = presentedOrder.every((value, idx) => { if (idx === skip) return true; const ok = value >= previous; previous = value; return ok; });
+                                      if (sorted) found.push(skip);
+                                  });
+                                  if (found.length) return found;
+                                  const authored = q.intentionallyWrongIndex;
+                                  return Number.isInteger(authored) && authored >= 0 && authored < items.length ? [authored] : presentedOrder.map((_, idx) => idx);
+                              })();
+                              const correctOrderNumbers = items.map((_, canonIdx) => presentedOrder.indexOf(canonIdx) + 1).join(', ');
+                              const misplacedKey = misplacedPositions.length === 0
+                                  ? 'order is correct'
+                                  : misplacedPositions.length === 1
+                                      ? 'item #' + (misplacedPositions[0] + 1) + ' is misplaced'
+                                      : 'items #' + misplacedPositions.map((position) => position + 1).join(' and #') + (misplacedPositions.length === 2 && misplacedPositions[1] === misplacedPositions[0] + 1 ? ' are swapped (either counts)' : ' are out of place');
                               return `
                               <div class="question" data-item-type="sequence-sense">
                                   ${stem}
@@ -41704,10 +41724,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   </div>
                                   <div style="margin:0.5rem 0;">
                                       ${isWorksheet
-                                          ? `<strong style="font-size:0.9rem;">2. Ordering principle:</strong> <span style="color:#475569;">${principleOpts.map(_escTxt).join(' / ')}</span> ${fillableBlank(150)}`
-                                          : `<label for="${controlIdBase}_sequence_principle" class="alloflow-response-label">2. What's the ordering principle?</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"><option value="">Choose a principle</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escTxt(opt)}</option>`).join('')}</select>`}
+                                          ? `<strong style="font-size:0.9rem;">2. Write the correct order using the item numbers (for example 2, 1, 3):</strong> ${fillableBlank(150)}`
+                                          : `<label for="${controlIdBase}_sequence_order" class="alloflow-response-label">2. Write the correct order using the item numbers (for example 2, 1, 3)</label><input id="${controlIdBase}_sequence_order" type="text" class="alloflow-response-input" data-allo-response-key="${responseKeyAttr}:sequence-order" autocomplete="off">`}
                                   </div>
-                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? 'order is correct' : 'item #' + (q.intentionallyWrongIndex + 1) + ' is misplaced'} · principle: <em>${_escTxt(q.orderingPrinciple || '')}</em></p>` : ''}
+                                  <div style="margin:0.5rem 0;">
+                                      ${isWorksheet
+                                          ? `<strong style="font-size:0.9rem;">3. Ordering principle:</strong> <span style="color:#475569;">${principleOpts.map(_escTxt).join(' / ')}</span> ${fillableBlank(150)}`
+                                          : `<label for="${controlIdBase}_sequence_principle" class="alloflow-response-label">3. What's the ordering principle?</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"><option value="">Choose a principle</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escTxt(opt)}</option>`).join('')}</select>`}
+                                  </div>
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${misplacedKey} · correct order: ${correctOrderNumbers} · principle: <em>${_escTxt(q.orderingPrinciple || '')}</em></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'relation-mismatch') {
@@ -48036,7 +48061,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     const partLabels = {
                         'mcq': 'Answer', 'multi': 'Selected answers', 'fill': 'Fill-in answer',
                         'short': 'Short answer', 'explanation': 'Explanation',
-                        'sequence-verdict': 'Is the order correct?', 'sequence-item': 'Misplaced item number',
+                        'sequence-verdict': 'Is the order correct?', 'sequence-item': 'Misplaced item number', 'sequence-order': 'Correct order',
                         'sequence-principle': 'Ordering principle', 'wrong-pair': 'Wrong pair',
                         'partner': 'Correct partner', 'answer': 'Answer', 'evidence': 'Evidence',
                         'number': 'Value', 'unit': 'Unit', 'reflection': 'Reflection'
