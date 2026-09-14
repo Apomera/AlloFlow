@@ -93,6 +93,17 @@ The CycloneDX file covers packaged npm dependencies. vendor-manifest.json record
 byte count of every separately bundled browser-runtime asset; THIRD_PARTY_NOTICES.md documents those
 third-party components.
 
+## Accepted dependency advisories
+
+The release build audits the dependencies actually packaged and fails on any high or critical
+advisory that has not been reviewed. Reviewed advisories are recorded in
+desktop/mcp/audit_allowlist.json with the reason they are not reachable or are mitigated in this
+connector, who reviewed them, and an expiry after which the release fails again until they are
+re-reviewed. The build log prints every accepted advisory. As of 0.11.3 the accepted entries are
+two extract-zip advisories reached through DAISY Ace: Ace here only unpacks EPUBs this connector
+wrote itself, never a user-supplied archive, and the browser-download path that also uses
+extract-zip is disabled. No patched extract-zip exists.
+
 ## Registry discovery
 
 This release is also the install source for the official MCP Registry entry

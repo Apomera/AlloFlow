@@ -796,6 +796,12 @@ the downloadable MCPB bytes to the workflow that produced them; users can verify
 The release job processes no user documents and requires no Worker, AlloFlow account, institution
 account, or Gemini key.
 
+The job also audits the dependencies actually bundled (`desktop/mcp/audit_bundle_dependencies.cjs`).
+A high or critical advisory fails the release unless it is listed in `desktop/mcp/audit_allowlist.json`
+with a justification, reviewer and expiry; expired or stale entries fail too, and accepted entries are
+printed in the build log. Run `node desktop/mcp/audit_bundle_dependencies.cjs` after a local
+`build_mcpb.cjs` to see the same verdict.
+
 Before pushing a release tag, run `npm run verify:mcpb-ci` — the exact vitest selection the tag
 build runs in CI. The default local gates (`verify:mcp-parity`, the artifact boot-check) do not
 cover it, and versions 0.3.1–0.3.3 all failed in CI on a test only that selection executes.

@@ -121,8 +121,11 @@ jobs:
           }
       - name: Build, officially validate, extract, and boot-check the exact MCPB
         run: node desktop/mcp/build_mcpb.cjs
+      # Fails on any high/critical advisory in the staged bundle that is not listed, with a written
+      # justification and an expiry, in desktop/mcp/audit_allowlist.json. Accepted advisories are
+      # printed here so the release log carries the disclosure; expired or stale entries also fail.
       - name: Audit the dependencies actually bundled
-        run: npm audit --omit=dev --audit-level=high --prefix desktop/dist/mcpb/staging
+        run: node desktop/mcp/audit_bundle_dependencies.cjs --prefix desktop/dist/mcpb/staging --level high
       - name: Write checksums, dependency SBOM, and vendor evidence
         shell: pwsh
         run: |
