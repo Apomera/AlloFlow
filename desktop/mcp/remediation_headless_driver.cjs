@@ -2712,7 +2712,7 @@ function createDriver(options) {
         beforeScore: out && out.beforeScore,
         afterScore: out && out.afterScore,
         note: ok
-          ? 'This install can remediate: real pipeline, real browser, real fixAndVerifyPdf. Only the model was scripted, so a live run additionally needs a valid GEMINI_API_KEY.'
+          ? 'This install can remediate: real pipeline, real browser, real fixAndVerifyPdf. Only the model was scripted; a live run supplies one through the keyless agent bridge (pdf_remediate_agent_start, your MCP client model, no Gemini key) or through a valid GEMINI_API_KEY for the Gemini tools.'
           : 'The run completed but its output was not usable — see checks for which assertion failed.',
       };
     } catch (e) {
