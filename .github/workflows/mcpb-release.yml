@@ -73,6 +73,11 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Install Chromium for app-to-MCP parity
         run: npx playwright install chromium
+      # EPUBCheck is not in git (vendor/epubcheck is fetched and hash-verified at build time), but
+      # the parity smoke stages the vendor directory and verifies every manifest entry, so it must
+      # exist before that step runs. mcpb-v0.11.2 failed here on the runner for exactly this reason.
+      - name: Materialize manifest-verified EPUBCheck dependencies
+        run: node desktop/mcp/fetch_epubcheck.cjs
       - name: Verify canonical app-to-MCP parity
         run: npm run verify:mcp-parity
       - name: Verify MCP durability, cancellation, packaging, and release triggers
