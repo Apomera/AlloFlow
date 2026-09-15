@@ -47,7 +47,7 @@ var ImageIcon = _lazyIcon('ImageIcon');
 var Unplug = _lazyIcon('Unplug');
 var Cpu = _lazyIcon('Cpu');
 var Headphones = _lazyIcon('Headphones');
-const CANVAS_SHARE_URL_FALLBACK = "https://share.gemini.google/zh6S0qT3fvjN";
+const CANVAS_SHARE_URL_FALLBACK = "https://share.gemini.google/413rfk7Y5hg4";
 const CANVAS_RELEASE_JSON_URL = "https://alloflow-cdn.pages.dev/release.json";
 const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {
